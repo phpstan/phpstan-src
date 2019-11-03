@@ -42,10 +42,10 @@ jobs:
           git clone https://github.com/phpstan/phpstan-compiler && \
           composer install --working-dir=phpstan-compiler && \
           php phpstan-compiler/bin/compile $TRAVIS_COMMIT && \
-          git clone https://${GITHUB_TOKEN}@github.com/phpstan/phpstan-shim.git > /dev/null 2>&1 && \
-          cp phpstan-compiler/tmp/phpstan.phar phpstan-shim/phpstan.phar && \
-          cp phpstan-compiler/tmp/phpstan.phar phpstan-shim/phpstan && \
-          cd phpstan-shim && \
+          git clone https://${GITHUB_TOKEN}@github.com/phpstan/phpstan.git > /dev/null 2>&1 && \
+          cp phpstan-compiler/tmp/phpstan.phar phpstan/phpstan.phar && \
+          cp phpstan-compiler/tmp/phpstan.phar phpstan/phpstan && \
+          cd phpstan && \
           git config user.email "travis@travis-ci.org" && \
           git config user.name "Travis CI" && \
           git add phpstan phpstan.phar && \

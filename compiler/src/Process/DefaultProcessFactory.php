@@ -16,7 +16,12 @@ final class DefaultProcessFactory implements ProcessFactory
 		$this->output = new NullOutput();
 	}
 
-	public function create(string $command, string $cwd): Process
+	/**
+	 * @param string[] $command
+	 * @param string $cwd
+	 * @return \PHPStan\Compiler\Process\Process
+	 */
+	public function create(array $command, string $cwd): Process
 	{
 		return new SymfonyProcess($command, $cwd, $this->output);
 	}

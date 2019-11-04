@@ -13,8 +13,8 @@ final class SymfonyProcessTest extends TestCase
 		$output = $this->createMock(OutputInterface::class);
 		$output->expects(self::once())->method('write');
 
-		$process = (new SymfonyProcess('ls', __DIR__, $output))->getProcess();
-		self::assertSame('ls', $process->getCommandLine());
+		$process = (new SymfonyProcess(['ls'], __DIR__, $output))->getProcess();
+		self::assertSame('\'ls\'', $process->getCommandLine());
 		self::assertSame(__DIR__, $process->getWorkingDirectory());
 	}
 

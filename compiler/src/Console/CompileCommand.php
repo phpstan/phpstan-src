@@ -61,13 +61,13 @@ final class CompileCommand extends Command
 		/** @var string $version */
 		$version = $input->getArgument('version');
 
-		$this->processFactory->create(sprintf('git clone %s .', \escapeshellarg($repository)), $this->buildDir);
-		$this->processFactory->create(sprintf('git checkout --force %s', \escapeshellarg($version)), $this->buildDir);
-		$this->processFactory->create('composer require --no-update dg/composer-cleaner:^2.0', $this->buildDir);
+		$this->processFactory->create(['git', 'clone', $repository, '.'], $this->buildDir);
+		$this->processFactory->create(['git', 'checkout', '--force', $version], $this->buildDir);
+		$this->processFactory->create(['composer', 'require', '--no-update', 'dg/composer-cleaner:^2.0'], $this->buildDir);
 		$this->fixComposerJson($this->buildDir);
-		$this->processFactory->create('composer update --no-dev --classmap-authoritative', $this->buildDir);
+		$this->processFactory->create(['composer', 'update', '--no-dev', '--classmap-authoritative'], $this->buildDir);
 
-		$this->processFactory->create('php box.phar compile', $this->dataDir);
+		$this->processFactory->create(['php', 'box.phar', 'compile'], $this->dataDir);
 
 		return 0;
 	}

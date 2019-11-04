@@ -10,7 +10,12 @@ final class SymfonyProcess implements Process
 	/** @var \Symfony\Component\Process\Process */
 	private $process;
 
-	public function __construct(string $command, string $cwd, OutputInterface $output)
+	/**
+	 * @param string[] $command
+	 * @param string $cwd
+	 * @param \Symfony\Component\Console\Output\OutputInterface $output
+	 */
+	public function __construct(array $command, string $cwd, OutputInterface $output)
 	{
 		$this->process = (new \Symfony\Component\Process\Process($command, $cwd, null, null, null))
 			->mustRun(static function (string $type, string $buffer) use ($output): void {

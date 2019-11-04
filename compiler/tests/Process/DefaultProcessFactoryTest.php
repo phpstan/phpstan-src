@@ -16,8 +16,8 @@ final class DefaultProcessFactoryTest extends TestCase
 		$factory = new DefaultProcessFactory();
 		$factory->setOutput($output);
 
-		$process = $factory->create('ls', __DIR__)->getProcess();
-		self::assertSame('ls', $process->getCommandLine());
+		$process = $factory->create(['ls'], __DIR__)->getProcess();
+		self::assertSame('\'ls\'', $process->getCommandLine());
 		self::assertSame(__DIR__, $process->getWorkingDirectory());
 	}
 

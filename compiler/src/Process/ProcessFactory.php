@@ -7,7 +7,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 interface ProcessFactory
 {
 
-	public function create(string $command, string $cwd): Process;
+	/**
+	 * @param string[] $command
+	 * @param string $cwd
+	 * @return \PHPStan\Compiler\Process\Process
+	 */
+	public function create(array $command, string $cwd): Process;
 
 	public function setOutput(OutputInterface $output): void;
 

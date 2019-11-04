@@ -125,6 +125,7 @@
 			<arg path="tests/PHPStan/Rules/Arrays/data/offset-access-without-dim-for-reading.php"/>
 			<arg path="src" />
 			<arg path="tests" />
+			<arg path="compiler/src" />
 		</exec>
 	</target>
 
@@ -148,6 +149,7 @@
 					<arg value="-sp"/>
 					<arg path="src"/>
 					<arg path="tests"/>
+					<arg path="compiler/src" />
 				</exec>
 			</then>
 		</if>
@@ -167,6 +169,7 @@
 			<arg value="-sp"/>
 			<arg path="src"/>
 			<arg path="tests"/>
+			<arg path="compiler/src" />
 		</exec>
 	</target>
 

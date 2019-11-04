@@ -45,7 +45,7 @@
 	<rule ref="SlevomatCodingStandard.ControlStructures.DisallowShortTernaryOperator"/>
 	<rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
 		<properties>
-			<property name="rootNamespaces" type="array" value="src=>PHPStan,tests/PHPStan=>PHPStan"/>
+			<property name="rootNamespaces" type="array" value="compiler/src =>PHPStan\Compiler,src=>PHPStan,tests/PHPStan=>PHPStan"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>

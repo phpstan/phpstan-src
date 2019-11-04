@@ -31,20 +31,24 @@ script:
 
 jobs:
   include:
-    - stage: phar
-      name: PHAR
+    - stage: test
+      name: Compiler tests
       script:
         - |
-          git clone https://github.com/phpstan/phpstan-compiler && \
-          cd phpstan-compiler && \
-          ./run-e2e-tests.sh $TRAVIS_COMMIT && \
-          cd .. && \
-          composer install --working-dir=phpstan-compiler && \
-          php phpstan-compiler/bin/compile $TRAVIS_COMMIT && \
-          git clone https://${GITHUB_TOKEN}@github.com/phpstan/phpstan.git > /dev/null 2>&1 && \
-          cp phpstan-compiler/tmp/phpstan.phar phpstan/phpstan.phar && \
-          cp phpstan-compiler/tmp/phpstan.phar phpstan/phpstan && \
-          cd phpstan && \
+          cd compiler && \
+          composer install --no-interaction && \
+          vendor/bin/phpunit -c tests/phpunit.xml tests && \
+          ../bin/phpstan analyse -l 8 src && \
+          ./run-e2e-tests.sh $TRAVIS_COMMIT
+    - stage: phar
+      script:
+        - |
+          composer install --working-dir=compiler && \
+          php compiler/bin/compile $TRAVIS_COMMIT && \
+          git clone https://${GITHUB_TOKEN}@github.com/phpstan/phpstan.git phpstan-dist > /dev/null 2>&1 && \
+          cp compiler/tmp/phpstan.phar phpstan-dist/phpstan.phar && \
+          cp compiler/tmp/phpstan.phar phpstan-dist/phpstan && \
+          cd phpstan-dist && \
           git config user.email "travis@travis-ci.org" && \
           git config user.name "Travis CI" && \
           git add phpstan phpstan.phar && \

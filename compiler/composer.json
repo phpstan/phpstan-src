@@ -1,0 +1,25 @@
+{
+    "name": "phpstan/phpstan-compiler",
+    "type": "project",
+    "description": "PHAR Compiler for PHPStan",
+    "license": ["MIT"],
+    "require": {
+        "php": "^7.1",
+        "symfony/console": "^4.1",
+        "symfony/process": "^4.1",
+        "symfony/filesystem": "^4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "PHPStan\\Compiler\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PHPStan\\Compiler\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5"
+    }
+}

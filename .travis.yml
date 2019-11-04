@@ -40,7 +40,8 @@ jobs:
           composer install --no-interaction && \
           vendor/bin/phpunit -c tests/phpunit.xml tests && \
           ../bin/phpstan analyse -l 8 src && \
-          ./run-e2e-tests.sh
+          php bin/compile && \
+          ../tmp/phpstan.phar
     - stage: phar
       php: 7.3
       script:

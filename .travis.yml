@@ -39,15 +39,15 @@ jobs:
           composer install --no-interaction && \
           vendor/bin/phpunit -c tests/phpunit.xml tests && \
           ../bin/phpstan analyse -l 8 src && \
-          ./run-e2e-tests.sh $TRAVIS_COMMIT
+          ./run-e2e-tests.sh
     - stage: phar
       script:
         - |
           composer install --working-dir=compiler && \
-          php compiler/bin/compile $TRAVIS_COMMIT && \
+          php compiler/bin/compile && \
           git clone https://${GITHUB_TOKEN}@github.com/phpstan/phpstan.git phpstan-dist > /dev/null 2>&1 && \
-          cp compiler/tmp/phpstan.phar phpstan-dist/phpstan.phar && \
-          cp compiler/tmp/phpstan.phar phpstan-dist/phpstan && \
+          cp tmp/phpstan.phar phpstan-dist/phpstan.phar && \
+          cp tmp/phpstan.phar phpstan-dist/phpstan && \
           cd phpstan-dist && \
           git config user.email "travis@travis-ci.org" && \
           git config user.name "Travis CI" && \

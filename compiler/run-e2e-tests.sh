@@ -3,7 +3,7 @@ set -ev
 
 # compile phar
 if [ ! -f tmp/phpstan.phar ]; then
-    php bin/compile $1
+    php bin/compile
 fi
 
 # setup

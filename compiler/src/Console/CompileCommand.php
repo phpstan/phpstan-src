@@ -41,28 +41,13 @@ final class CompileCommand extends Command
 	protected function configure(): void
 	{
 		$this->setName('phpstan:compile')
-			->setDescription('Compile PHAR')
-			->addArgument('version', InputArgument::OPTIONAL, 'Version (tag/commit) to compile', 'master')
-			->addArgument('repository', InputArgument::OPTIONAL, 'Repository to compile', 'https://github.com/phpstan/phpstan-src.git');
+			->setDescription('Compile PHAR');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$this->processFactory->setOutput($output);
 
-		if ($this->filesystem->exists($this->buildDir)) {
-			$this->filesystem->remove($this->buildDir);
-		}
-		$this->filesystem->mkdir($this->buildDir);
-
-		/** @var string $repository */
-		$repository = $input->getArgument('repository');
-
-		/** @var string $version */
-		$version = $input->getArgument('version');
-
-		$this->processFactory->create(['git', 'clone', $repository, '.'], $this->buildDir);
-		$this->processFactory->create(['git', 'checkout', '--force', $version], $this->buildDir);
 		$this->processFactory->create(['composer', 'require', '--no-update', 'dg/composer-cleaner:^2.0'], $this->buildDir);
 		$this->fixComposerJson($this->buildDir);
 		$this->processFactory->create(['composer', 'update', '--no-dev', '--classmap-authoritative'], $this->buildDir);

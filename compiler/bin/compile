@@ -12,7 +12,7 @@ $compileCommand = new CompileCommand(
 	new SymfonyFilesystem(new \Symfony\Component\Filesystem\Filesystem()),
 	new DefaultProcessFactory(),
 	__DIR__ . '/../build',
-	__DIR__ . '/../tmp/build'
+	__DIR__ . '/../..'
 );
 
 $application = new Application();

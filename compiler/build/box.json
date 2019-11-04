@@ -1,7 +1,7 @@
 {
   "alias": "phpstan.phar",
   "banner": false,
-  "base-path": "../tmp/build",
+  "base-path": "../..",
   "check-requirements": false,
   "compactors": [
     "KevinGH\\Box\\Compactor\\PhpScoper"
@@ -12,6 +12,6 @@
     "stubs",
     "vendor"
   ],
-  "output": "../phpstan.phar",
-  "php-scoper": "../../build/scoper.inc.php"
+  "output": "tmp/phpstan.phar",
+  "php-scoper": "compiler/build/scoper.inc.php"
 }

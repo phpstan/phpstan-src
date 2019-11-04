@@ -2,8 +2,8 @@
 
 $stubs = [];
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
-foreach ($stubFinder->files()->name('*.php')->in('../tmp/build/stubs') as $file) {
-	$stubs[] = $file->getPathName();
+foreach ($stubFinder->files()->name('*.php')->in('../../stubs') as $file) {
+	$stubs[] = $file->getRealPath();
 }
 
 return [

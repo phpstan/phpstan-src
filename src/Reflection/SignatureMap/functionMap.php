@@ -10241,7 +10241,7 @@ return [
 'snmpset' => ['bool', 'host'=>'string', 'community'=>'string', 'object_id'=>'string', 'type'=>'string', 'value'=>'mixed', 'timeout='=>'int', 'retries='=>'int'],
 'snmpwalk' => ['array|false', 'host'=>'string', 'community'=>'string', 'object_id'=>'string', 'timeout='=>'int', 'retries='=>'int'],
 'snmpwalkoid' => ['array|false', 'hostname'=>'string', 'community'=>'string', 'object_id'=>'string', 'timeout='=>'int', 'retries='=>'int'],
-'SoapClient::__call' => ['', 'function_name'=>'string', 'arguments'=>'string'],
+'SoapClient::__call' => ['', 'function_name'=>'string', 'arguments'=>'array'],
 'SoapClient::__construct' => ['void', 'wsdl'=>'mixed', 'options='=>'array'],
 'SoapClient::__doRequest' => ['string', 'request'=>'string', 'location'=>'string', 'action'=>'string', 'version'=>'int', 'one_way='=>'int'],
 'SoapClient::__getCookies' => ['array'],

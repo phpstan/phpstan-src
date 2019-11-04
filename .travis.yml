@@ -32,6 +32,7 @@ script:
 jobs:
   include:
     - stage: test
+      php: 7.3
       name: Compiler tests
       script:
         - |
@@ -41,6 +42,7 @@ jobs:
           ../bin/phpstan analyse -l 8 src && \
           ./run-e2e-tests.sh
     - stage: phar
+      php: 7.3
       script:
         - |
           composer install --working-dir=compiler && \

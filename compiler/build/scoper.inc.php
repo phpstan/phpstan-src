@@ -3,7 +3,7 @@
 $stubs = [];
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
 foreach ($stubFinder->files()->name('*.php')->in('../../stubs') as $file) {
-	$stubs[] = $file->getRealPath();
+	$stubs[] = $file->getPathName();
 }
 
 return [

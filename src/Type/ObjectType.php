@@ -504,7 +504,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($this->isInstanceOf(\Traversable::class)->yes()) {
 			$traversableAncestor = $this->getAncestorWithClassName(\Traversable::class);
-			$templateTypeMap = $traversableAncestor->getClassReflection()->getActiveTemplateTypeMap();
+			if ($traversableAncestor === null) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$traversableReflection = $traversableAncestor->getClassReflection();
+			if ($traversableReflection === null) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			$templateTypeMap = $traversableReflection->getActiveTemplateTypeMap();
 			$tKey = $templateTypeMap->getType('TKey');
 
 			if ($tKey !== null) {
@@ -540,8 +548,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($this->isInstanceOf(\Traversable::class)->yes()) {
 			$traversableAncestor = $this->getAncestorWithClassName(\Traversable::class);
-			$templateTypeMap = $traversableAncestor->getClassReflection()->getActiveTemplateTypeMap();
+			if ($traversableAncestor === null) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
 
+			$traversableReflection = $traversableAncestor->getClassReflection();
+			if ($traversableReflection === null) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			$templateTypeMap = $traversableReflection->getActiveTemplateTypeMap();
 			$tValue = $templateTypeMap->getType('TValue');
 			if ($tValue !== null) {
 				return $tValue;

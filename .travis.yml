@@ -75,6 +75,9 @@ jobs:
         - echo 'extension=php_mysqli.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_intl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
+      script:
+        - vendor/bin/phing tests
+        - vendor/bin/phing phpstan
     - stage: test
       os: windows
       dist: 1803-containers
@@ -93,6 +96,9 @@ jobs:
         - echo 'extension=php_mysqli.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_intl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
+      script:
+        - vendor/bin/phing tests
+        - vendor/bin/phing phpstan
     - stage: test
       os: windows
       dist: 1803-containers
@@ -111,6 +117,9 @@ jobs:
         - echo 'extension=php_mysqli.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_intl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
+      script:
+        - vendor/bin/phing tests
+        - vendor/bin/phing phpstan
 
 cache:
   directories:

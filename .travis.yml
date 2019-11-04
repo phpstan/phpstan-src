@@ -1,3 +1,4 @@
+os: linux
 dist: xenial
 language: php
 
@@ -19,11 +20,10 @@ env:
 matrix:
   allow_failures:
     - php: master
+    - os: windows
 
 before_script:
   - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
-
-install:
   - composer update --no-interaction
 
 script:
@@ -56,6 +56,33 @@ jobs:
           git add phpstan phpstan.phar && \
           git commit -m "Updated PHPStan to commit ${TRAVIS_COMMIT}" && \
           git push --quiet origin master
+    - stage: test
+      os: windows
+      dist: 1803-containers
+      language: sh # No PHP currently
+      env: PHP_VERSION=7.1.32
+      install:
+        - choco install php --version=${PHP_VERSION} --package-parameters="/InstallDir:c:\tools\php"
+        - choco install composer --ia "/DEV=C:\tools\php"
+        - export PATH=/c/tools/php:$PATH
+    - stage: test
+      os: windows
+      dist: 1803-containers
+      language: sh # No PHP currently
+      env: PHP_VERSION=7.2.23
+      install:
+        - choco install php --version=${PHP_VERSION} --package-parameters="/InstallDir:c:\tools\php"
+        - choco install composer --ia "/DEV=C:\tools\php"
+        - export PATH=/c/tools/php:$PATH
+    - stage: test
+      os: windows
+      dist: 1803-containers
+      language: sh # No PHP currently
+      env: PHP_VERSION=7.3.10
+      install:
+        - choco install php --version=${PHP_VERSION} --package-parameters="/InstallDir:c:\tools\php"
+        - choco install composer --ia "/DEV=C:\tools\php"
+        - export PATH=/c/tools/php:$PATH
 
 cache:
   directories:

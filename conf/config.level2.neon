@@ -12,7 +12,6 @@ rules:
 	- PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
 	- PHPStan\Rules\Cast\PrintRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
-	- PHPStan\Rules\Functions\TemplateTypeDeclarationRule
 	- PHPStan\Rules\Generics\ClassAncestorsRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule
 	- PHPStan\Rules\Generics\FunctionTemplateTypeRule
@@ -21,7 +20,6 @@ rules:
 	- PHPStan\Rules\Generics\MethodTemplateTypeRule
 	- PHPStan\Rules\Generics\TraitTemplateTypeRule
 	- PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
-	- PHPStan\Rules\Methods\TemplateTypeDeclarationRule
 	- PHPStan\Rules\Operators\InvalidBinaryOperationRule
 	- PHPStan\Rules\Operators\InvalidUnaryOperationRule
 	- PHPStan\Rules\Operators\InvalidComparisonOperationRule

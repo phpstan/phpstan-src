@@ -259,10 +259,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		return $level->handle(
 			function (): string {
-				$classReflection = $this->getClassReflection();
-				if ($classReflection === null) {
+				$broker = Broker::getInstance();
+				if (!$broker->hasClass($this->className)) {
 					return $this->className;
 				}
+
+				$classReflection = $broker->getClass($this->className);
 
 				return $classReflection->getDisplayName(false);
 			},

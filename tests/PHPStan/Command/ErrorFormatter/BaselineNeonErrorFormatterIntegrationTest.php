@@ -15,8 +15,8 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 	{
 		$output = $this->runPhpStan(null);
 		$errors = Json::decode($output, Json::FORCE_ARRAY);
-		$this->assertSame(4, array_sum($errors['totals']));
-		$this->assertCount(4, $errors['files']);
+		$this->assertSame(7, array_sum($errors['totals']));
+		$this->assertCount(5, $errors['files']);
 	}
 
 	public function testGenerateBaselineAndRunAgainWithIt(): void

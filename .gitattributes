@@ -1,0 +1,1 @@
+tests/PHPStan/Command/ErrorFormatter/data/WindowsNewlines.php eol=crlf

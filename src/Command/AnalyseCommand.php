@@ -77,17 +77,21 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$inceptionResult = CommandHelper::begin(
-			$input,
-			$output,
-			$paths,
-			$pathsFile,
-			$memoryLimit,
-			$autoloadFile,
-			$configuration,
-			$level,
-			$allowXdebug
-		);
+		try {
+			$inceptionResult = CommandHelper::begin(
+				$input,
+				$output,
+				$paths,
+				$pathsFile,
+				$memoryLimit,
+				$autoloadFile,
+				$configuration,
+				$level,
+				$allowXdebug
+			);
+		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+			return 1;
+		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
 		$errorFormat = $input->getOption('error-format');

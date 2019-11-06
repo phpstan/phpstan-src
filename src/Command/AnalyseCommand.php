@@ -87,7 +87,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				$autoloadFile,
 				$configuration,
 				$level,
-				$allowXdebug
+				$allowXdebug,
+				$this->getApplication()
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

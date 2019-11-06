@@ -14,6 +14,7 @@ use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,7 +37,8 @@ class CommandHelper
 		?string $autoloadFile,
 		?string $projectConfigFile,
 		?string $level,
-		bool $allowXdebug
+		bool $allowXdebug,
+		Application $application
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
@@ -129,7 +131,7 @@ class CommandHelper
 			try {
 				$projectConfig = $loader->load($projectConfigFile, null);
 			} catch (\Nette\InvalidStateException | \Nette\FileNotFoundException $e) {
-				$errorOutput->writeln($e->getMessage());
+				$application->renderException($e);
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
 			$defaultParameters = [
@@ -302,7 +304,8 @@ class CommandHelper
 					require_once $file;
 				})($bootstrapFile);
 			} catch (\Throwable $e) {
-				$errorOutput->writeln($e->getMessage());
+				$application->renderException($e);
+
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
 		}

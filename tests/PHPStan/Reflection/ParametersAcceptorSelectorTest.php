@@ -12,6 +12,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -397,7 +398,8 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 						TemplateTypeFactory::create(
 							TemplateTypeScope::createWithFunction('a'),
 							'T',
-							null
+							null,
+							TemplateTypeVariance::createInvariant()
 						),
 						false,
 						PassedByReference::createNo(),

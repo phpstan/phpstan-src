@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Parameter #1 $it of function PHPStan\\Generics\\Variance\\acceptInvariantIterOfDateTimeInterface expects PHPStan\\Generics\\Variance\\InvariantIter<DateTimeInterface>, PHPStan\\Generics\\Variance\\InvariantIter<DateTime> given.",
+        "line": 46,
+        "ignorable": true
+    }
+]

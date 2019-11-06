@@ -8,6 +8,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class IterableTypeTest extends \PHPStan\Testing\TestCase
 {
@@ -188,7 +189,8 @@ class IterableTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
-				new MixedType()
+				new MixedType(),
+				TemplateTypeVariance::createInvariant()
 			);
 		};
 
@@ -255,7 +257,8 @@ class IterableTypeTest extends \PHPStan\Testing\TestCase
 		$templateType = TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
 			'T',
-			null
+			null,
+			TemplateTypeVariance::createInvariant()
 		);
 
 		return [

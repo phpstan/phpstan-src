@@ -6,6 +6,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -44,7 +45,8 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 				TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('a'),
 					'U',
-					null
+					null,
+					TemplateTypeVariance::createInvariant()
 				),
 				false,
 			],
@@ -64,7 +66,12 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 	public function testCreate(?Type $bound, bool $expectSuccess): void
 	{
 		$scope = TemplateTypeScope::createWithFunction('a');
-		$templateType = TemplateTypeFactory::create($scope, 'T', $bound);
+		$templateType = TemplateTypeFactory::create(
+			$scope,
+			'T',
+			$bound,
+			TemplateTypeVariance::createInvariant()
+		);
 
 		if ($expectSuccess) {
 			$this->assertInstanceOf(TemplateType::class, $templateType);

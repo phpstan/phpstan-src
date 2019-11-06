@@ -92,7 +92,7 @@ class TypeNodeResolver
 
 	public function getCacheKey(): string
 	{
-		$key = md5(uniqid());
+		$key = 'v73-generic-stubs';
 		foreach ($this->extensions as $extension) {
 			$key .= sprintf('-%s', $extension->getCacheKey());
 		}

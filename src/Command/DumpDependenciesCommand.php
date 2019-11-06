@@ -61,7 +61,8 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 				$autoloadFile,
 				$configurationFile,
 				'0', // irrelevant but prevents an error when a config file is passed
-				$allowXdebug
+				$allowXdebug,
+				$this->getApplication()
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

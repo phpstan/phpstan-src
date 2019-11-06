@@ -303,7 +303,7 @@ class CommandHelper
 				})($bootstrapFile);
 			} catch (\Throwable $e) {
 				$errorOutput->writeln($e->getMessage());
-				throw new \PHPStan\Command\InceptionNotSuccessfulException($e->getMessage(), 0, $e);
+				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
 		}
 

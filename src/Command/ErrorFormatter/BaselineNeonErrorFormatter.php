@@ -55,7 +55,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 			}
 
 			foreach ($fileErrorsCounts as $message => $count) {
-				$message = preg_replace('/\r\n|\r|\n/', "\r\n", $message);
+				$message = preg_replace('/\r\n|\r|\n/', "\n", $message);
 				$errorsToOutput[] = [
 					'message' => '#^' . preg_quote($message, '#') . '$#',
 					'count' => $count,

@@ -24,6 +24,11 @@ class GenericClassStringType extends ClassStringType
 		$this->type = $type;
 	}
 
+	public function getReferencedClasses(): array
+	{
+		return $this->type->getReferencedClasses();
+	}
+
 	public function getGenericType(): Type
 	{
 		return $this->type;

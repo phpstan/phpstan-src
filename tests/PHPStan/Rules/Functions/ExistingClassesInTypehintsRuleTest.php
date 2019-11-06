@@ -70,6 +70,14 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Return typehint of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid type TestFunctionTypehints\SomeTrait.',
 				70,
 			],
+			[
+				'Parameter $string of function TestFunctionTypehints\genericClassString() has invalid typehint type TestFunctionTypehints\SomeNonexistentClass.',
+				78,
+			],
+			[
+				'Parameter $string of function TestFunctionTypehints\genericTemplateClassString() has invalid typehint type TestFunctionTypehints\SomeNonexistentClass.',
+				87,
+			],
 		]);
 	}
 

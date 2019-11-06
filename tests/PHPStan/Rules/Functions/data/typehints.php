@@ -71,3 +71,20 @@ function referencesTraitsInPhpDoc($trait)
 {
 
 }
+
+/**
+ * @param class-string<SomeNonexistentClass> $string
+ */
+function genericClassString(string $string)
+{
+
+}
+
+/**
+ * @template T of SomeNonexistentClass
+ * @param class-string<T> $string
+ */
+function genericTemplateClassString(string $string)
+{
+
+}

@@ -9,6 +9,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -30,7 +31,8 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
-				$type
+				$type,
+				TemplateTypeVariance::createInvariant()
 			);
 		};
 

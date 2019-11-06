@@ -11,16 +11,16 @@ use PHPStan\Type\Type;
 final class TemplateTypeFactory
 {
 
-	public static function create(TemplateTypeScope $scope, string $name, ?Type $bound): Type
+	public static function create(TemplateTypeScope $scope, string $name, ?Type $bound, TemplateTypeVariance $variance): Type
 	{
 		$strategy = new TemplateTypeParameterStrategy();
 
 		if ($bound instanceof ObjectType) {
-			return new TemplateObjectType($scope, $strategy, $name, $bound->getClassName());
+			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound->getClassName());
 		}
 
 		if ($bound === null || get_class($bound) === MixedType::class) {
-			return new TemplateMixedType($scope, $strategy, $name);
+			return new TemplateMixedType($scope, $strategy, $variance, $name);
 		}
 
 		return new ErrorType();
@@ -28,7 +28,7 @@ final class TemplateTypeFactory
 
 	public static function fromTemplateTag(TemplateTypeScope $scope, TemplateTag $tag): Type
 	{
-		return self::create($scope, $tag->getName(), $tag->getBound());
+		return self::create($scope, $tag->getName(), $tag->getBound(), $tag->getVariance());
 	}
 
 }

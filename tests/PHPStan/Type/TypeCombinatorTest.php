@@ -12,9 +12,11 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 {
@@ -1104,7 +1106,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						null
+						null,
+						TemplateTypeVariance::createInvariant()
 					),
 					new ObjectType('DateTime'),
 				],
@@ -1116,7 +1119,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 					new ObjectType('DateTime'),
 				],
@@ -1128,12 +1132,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 				],
 				TemplateType::class,
@@ -1144,12 +1150,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'U',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 				],
 				UnionType::class,
@@ -1413,6 +1421,42 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				MixedType::class,
 				'mixed',
 			],
+			[
+				[
+					new GenericObjectType(Variance\Invariant::class, [
+						new ObjectType(\DateTimeInterface::class),
+					]),
+					new GenericObjectType(Variance\Invariant::class, [
+						new ObjectType(\DateTimeInterface::class),
+					]),
+				],
+				GenericObjectType::class,
+				'PHPStan\Type\Variance\Invariant<DateTimeInterface>',
+			],
+			[
+				[
+					new GenericObjectType(Variance\Invariant::class, [
+						new ObjectType(\DateTimeInterface::class),
+					]),
+					new GenericObjectType(Variance\Invariant::class, [
+						new ObjectType(\DateTime::class),
+					]),
+				],
+				UnionType::class,
+				'PHPStan\Type\Variance\Invariant<DateTime>|PHPStan\Type\Variance\Invariant<DateTimeInterface>',
+			],
+			[
+				[
+					new GenericObjectType(Variance\Covariant::class, [
+						new ObjectType(\DateTimeInterface::class),
+					]),
+					new GenericObjectType(Variance\Covariant::class, [
+						new ObjectType(\DateTime::class),
+					]),
+				],
+				GenericObjectType::class,
+				'PHPStan\Type\Variance\Covariant<DateTimeInterface>',
+			],
 		];
 	}
 
@@ -1519,7 +1563,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 						TemplateTypeFactory::create(
 							TemplateTypeScope::createWithFunction('_'),
 							'T',
-							null
+							null,
+							TemplateTypeVariance::createInvariant()
 						)
 					),
 				],
@@ -2052,7 +2097,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						null
+						null,
+						TemplateTypeVariance::createInvariant()
 					),
 					new ObjectType('DateTime'),
 				],
@@ -2064,7 +2110,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 					new ObjectType('DateTime'),
 				],
@@ -2076,12 +2123,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 				],
 				TemplateType::class,
@@ -2092,12 +2141,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'U',
-						new ObjectType('DateTime')
+						new ObjectType('DateTime'),
+						TemplateTypeVariance::createInvariant()
 					),
 				],
 				IntersectionType::class,
@@ -2108,7 +2159,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						null
+						null,
+						TemplateTypeVariance::createInvariant()
 					),
 					new MixedType(),
 				],
@@ -2346,6 +2398,18 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				MixedType::class,
 				'mixed',
+			],
+			[
+				[
+					new GenericObjectType(Variance\Covariant::class, [
+						new ObjectType(\DateTimeInterface::class),
+					]),
+					new GenericObjectType(Variance\Covariant::class, [
+						new ObjectType(\DateTime::class),
+					]),
+				],
+				GenericObjectType::class,
+				'PHPStan\Type\Variance\Covariant<DateTime>',
 			],
 		];
 	}

@@ -25,9 +25,13 @@ final class TemplateMixedType extends MixedType implements TemplateType
 	/** @var TemplateTypeStrategy */
 	private $strategy;
 
+	/** @var TemplateTypeVariance */
+	private $variance;
+
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
+		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		?Type $subtractedType = null
 	)
@@ -36,6 +40,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
+		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 	}
 
@@ -143,9 +148,15 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return new self(
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
+			$this->variance,
 			$this->name,
 			$this->getSubtractedType()
 		);
+	}
+
+	public function isValidVariance(Type $a, Type $b): bool
+	{
+		return $this->variance->isValidVariance($a, $b);
 	}
 
 	public function subtract(Type $type): Type
@@ -160,6 +171,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return new self(
 			$this->scope,
 			$this->strategy,
+			$this->variance,
 			$this->name,
 			$type
 		);
@@ -170,6 +182,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return new self(
 			$this->scope,
 			$this->strategy,
+			$this->variance,
 			$this->name,
 			null
 		);
@@ -180,6 +193,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return new self(
 			$this->scope,
 			$this->strategy,
+			$this->variance,
 			$this->name,
 			$subtractedType
 		);
@@ -194,6 +208,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return new self(
 			$properties['scope'],
 			$properties['strategy'],
+			$properties['variance'],
 			$properties['name'],
 			$properties['subtractedType']
 		);

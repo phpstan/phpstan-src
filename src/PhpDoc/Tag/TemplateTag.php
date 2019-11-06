@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc\Tag;
 
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 
 class TemplateTag
@@ -13,10 +14,14 @@ class TemplateTag
 	/** @var \PHPStan\Type\Type */
 	private $bound;
 
-	public function __construct(string $name, Type $bound)
+	/** @var TemplateTypeVariance */
+	private $variance;
+
+	public function __construct(string $name, Type $bound, TemplateTypeVariance $variance)
 	{
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->variance = $variance;
 	}
 
 	public function getName(): string
@@ -29,6 +34,11 @@ class TemplateTag
 		return $this->bound;
 	}
 
+	public function getVariance(): TemplateTypeVariance
+	{
+		return $this->variance;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return self
@@ -37,7 +47,8 @@ class TemplateTag
 	{
 		return new self(
 			$properties['name'],
-			$properties['bound']
+			$properties['bound'],
+			$properties['variance']
 		);
 	}
 

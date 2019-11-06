@@ -773,12 +773,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$type = TypeCombinator::union($this->subtractedType, $type);
 		}
 
-		return new self($this->className, $type);
+		return $this->changeSubtractedType($type);
 	}
 
 	public function getTypeWithoutSubtractedType(): Type
 	{
-		return new self($this->className);
+		return $this->changeSubtractedType(null);
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type

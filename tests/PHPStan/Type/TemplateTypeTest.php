@@ -7,6 +7,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class TemplateTypeTest extends \PHPStan\Testing\TestCase
 {
@@ -17,7 +18,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
-				$bound
+				$bound,
+				TemplateTypeVariance::createInvariant()
 			);
 		};
 
@@ -93,7 +95,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
-				$bound
+				$bound,
+				TemplateTypeVariance::createInvariant()
 			);
 		};
 
@@ -186,7 +189,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
-				$bound
+				$bound,
+				TemplateTypeVariance::createInvariant()
 			);
 		};
 

@@ -18,4 +18,6 @@ interface TemplateType extends CompoundType
 
 	public function isArgument(): bool;
 
+	public function isValidVariance(Type $a, Type $b): bool;
+
 }

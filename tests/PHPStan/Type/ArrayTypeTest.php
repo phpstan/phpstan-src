@@ -7,6 +7,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class ArrayTypeTest extends \PHPStan\Testing\TestCase
 {
@@ -144,7 +145,8 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
-				new MixedType()
+				new MixedType(),
+				TemplateTypeVariance::createInvariant()
 			);
 		};
 

@@ -14,7 +14,8 @@ class TemplateTypeHelperTest extends \PHPStan\Testing\TestCase
 		$templateType = TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
 			'T',
-			null
+			null,
+			TemplateTypeVariance::createInvariant()
 		);
 
 		$type = TemplateTypeHelper::resolveTemplateTypes(

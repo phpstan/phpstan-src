@@ -8,6 +8,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Test\A;
 use PHPStan\Type\Test\B;
+use PHPStan\Type\Test\C;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -51,6 +52,36 @@ class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
 			'implementation with @extends with different type args' => [
 				new GenericObjectType(B\I::class, [new ObjectType('DateTimeInteface')]),
 				new GenericObjectType(B\IImpl::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createNo(),
+			],
+			'invariant with equals types' => [
+				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createYes(),
+			],
+			'invariant with sub type' => [
+				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTimeInterface')]),
+				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createNo(),
+			],
+			'invariant with super type' => [
+				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTimeInterface')]),
+				TrinaryLogic::createNo(),
+			],
+			'covariant with equals types' => [
+				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createYes(),
+			],
+			'covariant with sub type' => [
+				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTimeInterface')]),
+				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createYes(),
+			],
+			'covariant with super type' => [
+				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTimeInterface')]),
 				TrinaryLogic::createNo(),
 			],
 		];
@@ -139,7 +170,8 @@ class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
-				$bound ?? new MixedType()
+				$bound ?? new MixedType(),
+				TemplateTypeVariance::createInvariant()
 			);
 		};
 

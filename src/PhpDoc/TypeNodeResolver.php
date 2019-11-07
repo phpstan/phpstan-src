@@ -92,7 +92,7 @@ class TypeNodeResolver
 
 	public function getCacheKey(): string
 	{
-		$key = 'v74-template-covariant';
+		$key = 'v75-update-phpdoc-parser';
 		foreach ($this->extensions as $extension) {
 			$key .= sprintf('-%s', $extension->getCacheKey());
 		}

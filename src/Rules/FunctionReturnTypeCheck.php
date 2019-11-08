@@ -4,8 +4,10 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
@@ -41,7 +43,24 @@ class FunctionReturnTypeCheck
 	): array
 	{
 		if ($isGenerator) {
-			return [];
+			if (!$returnType instanceof TypeWithClassName) {
+				return [];
+			}
+
+			$generatorAncestor = $returnType->getAncestorWithClassName(\Generator::class);
+			if (!$generatorAncestor instanceof ObjectType) {
+				return [];
+			}
+
+			$generatorClassReflection = $generatorAncestor->getClassReflection();
+			if ($generatorClassReflection === null) {
+				return [];
+			}
+			$templateTypeMap = $generatorClassReflection->getActiveTemplateTypeMap();
+			$returnType = $templateTypeMap->getType('TReturn');
+			if ($returnType === null) {
+				return [];
+			}
 		}
 
 		$isVoidSuperType = (new VoidType())->isSuperTypeOf($returnType);

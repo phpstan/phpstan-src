@@ -131,3 +131,26 @@ function arrayMapConservesNonEmptiness(array $arr) : int {
 
 	return array_shift($arr);
 }
+
+/**
+ * @return \Generator<int, string>
+ */
+function returnFromGeneratorMixed(): \Generator
+{
+	yield 1;
+	return 2;
+}
+
+/**
+ * @return \Generator<int, int, int, string>
+ */
+function returnFromGeneratorString(): \Generator
+{
+	yield 1;
+
+	if (rand(0, 1)) {
+		return;
+	}
+
+	return 2;
+}

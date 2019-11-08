@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -11,9 +12,10 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$broker = $this->createBroker();
 		return new TraitTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($this->createBroker())
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
 		);
 	}
 

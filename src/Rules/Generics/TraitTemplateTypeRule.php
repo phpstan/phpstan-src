@@ -57,6 +57,7 @@ class TraitTemplateTypeRule implements Rule
 		);
 
 		return $this->templateTypeCheck->check(
+			$node,
 			TemplateTypeScope::createWithClass($traitName),
 			$resolvedPhpDoc->getTemplateTags(),
 			sprintf('PHPDoc tag @template for trait %s cannot have existing class %%s as its name.', $traitName),

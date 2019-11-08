@@ -57,6 +57,7 @@ class InterfaceTemplateTypeRule implements Rule
 		);
 
 		return $this->templateTypeCheck->check(
+			$node,
 			TemplateTypeScope::createWithClass($interfaceName),
 			$resolvedPhpDoc->getTemplateTags(),
 			sprintf('PHPDoc tag @template for interface %s cannot have existing class %%s as its name.', $interfaceName),

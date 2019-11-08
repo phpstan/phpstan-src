@@ -362,6 +362,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Generics\TemplateTypeCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 
 	-
 		class: PHPStan\Rules\MissingTypehintCheck

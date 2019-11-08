@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -11,9 +12,11 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$broker = $this->createBroker();
+
 		return new ClassTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($this->createBroker())
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
 		);
 	}
 
@@ -31,6 +34,10 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template T for class ClassTemplateType\Baz with bound type int is not supported.',
 				24,
+			],
+			[
+				'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',
+				32,
 			],
 		]);
 	}

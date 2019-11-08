@@ -25,3 +25,11 @@ class Baz
 {
 
 }
+
+/**
+ * @template T of baz
+ */
+class Lorem
+{
+
+}

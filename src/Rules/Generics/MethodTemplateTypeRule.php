@@ -62,6 +62,7 @@ class MethodTemplateTypeRule implements Rule
 
 		$methodTemplateTags = $resolvedPhpDoc->getTemplateTags();
 		$messages = $this->templateTypeCheck->check(
+			$node,
 			TemplateTypeScope::createWithMethod($className, $methodName),
 			$methodTemplateTags,
 			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing class %%s as its name.', $className, $methodName),

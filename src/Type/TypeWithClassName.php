@@ -7,6 +7,6 @@ interface TypeWithClassName extends Type
 
 	public function getClassName(): string;
 
-	public function getAncestorWithClassName(string $className): ?self;
+	public function getAncestorWithClassName(string $className): ?ObjectType;
 
 }

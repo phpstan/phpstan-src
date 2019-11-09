@@ -56,7 +56,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->objectType->getClassName();
 	}
 
-	public function getAncestorWithClassName(string $className): ?TypeWithClassName
+	public function getAncestorWithClassName(string $className): ?ObjectType
 	{
 		return $this->objectType->getAncestorWithClassName($className);
 	}

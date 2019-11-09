@@ -10,7 +10,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 
 class YieldFromTypeRule implements Rule
@@ -94,6 +96,41 @@ class YieldFromTypeRule implements Rule
 				$returnType->getIterableValueType()->describe(VerbosityLevel::typeOnly()),
 				$exprType->getIterableValueType()->describe(VerbosityLevel::typeOnly())
 			))->line($node->expr->getLine())->build();
+		}
+
+		$scopeFunction = $scope->getFunction();
+		if ($scopeFunction === null) {
+			return $messages;
+		}
+
+		if (!$exprType instanceof TypeWithClassName) {
+			return $messages;
+		}
+
+		$currentReturnType = ParametersAcceptorSelector::selectSingle($scopeFunction->getVariants())->getReturnType();
+		if (!$currentReturnType instanceof TypeWithClassName) {
+			return $messages;
+		}
+
+		$exprSendType = GenericTypeVariableResolver::getType($exprType, \Generator::class, 'TSend');
+		$thisSendType = GenericTypeVariableResolver::getType($currentReturnType, \Generator::class, 'TSend');
+		if ($exprSendType === null || $thisSendType === null) {
+			return $messages;
+		}
+
+		$isSuperType = $exprSendType->isSuperTypeOf($thisSendType);
+		if ($isSuperType->no()) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Generator expects delegated TSend type %s, %s given.',
+				$exprSendType->describe(VerbosityLevel::typeOnly()),
+				$thisSendType->describe(VerbosityLevel::typeOnly())
+			))->build();
+		} elseif ($this->reportMaybes && !$isSuperType->yes()) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Generator expects delegated TSend type %s, %s given.',
+				$exprSendType->describe(VerbosityLevel::typeOnly()),
+				$thisSendType->describe(VerbosityLevel::typeOnly())
+			))->build();
 		}
 
 		return $messages;

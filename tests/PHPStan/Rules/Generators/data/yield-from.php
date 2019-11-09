@@ -31,4 +31,26 @@ class Foo
 		yield $stdClass => 1;
 	}
 
+	/**
+	 * @return \Generator<mixed, mixed, int|null, mixed>
+	 */
+	public function generatorAcceptingIntOrNull(): \Generator
+	{
+		yield 1;
+		yield 2;
+		yield from $this->generatorAcceptingInt();
+		yield from $this->generatorAcceptingIntOrNull();
+	}
+
+	/**
+	 * @return \Generator<mixed, mixed, int, mixed>
+	 */
+	public function generatorAcceptingInt(): \Generator
+	{
+		yield 1;
+		yield 2;
+		yield from $this->generatorAcceptingInt();
+		yield from $this->generatorAcceptingIntOrNull();
+	}
+
 }

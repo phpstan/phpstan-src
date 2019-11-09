@@ -29,6 +29,10 @@ class YieldFromTypeRuleTest extends RuleTestCase
 				'Generator expects value type string, int given.',
 				16,
 			],
+			[
+				'Generator expects delegated TSend type int, int|null given.',
+				41,
+			],
 		]);
 	}
 

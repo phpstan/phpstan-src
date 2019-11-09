@@ -8,11 +8,13 @@ use PHPStan\Broker\Broker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 class InvalidPhpDocVarTagTypeRule implements Rule
@@ -30,22 +32,32 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
 	private $genericObjectTypeCheck;
 
+	/** @var MissingTypehintCheck */
+	private $missingTypehintCheck;
+
 	/** @var bool */
 	private $checkClassCaseSensitivity;
+
+	/** @var bool */
+	private $checkMissingVarTagTypehint;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
 		Broker $broker,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
-		bool $checkClassCaseSensitivity
+		MissingTypehintCheck $missingTypehintCheck,
+		bool $checkClassCaseSensitivity,
+		bool $checkMissingVarTagTypehint
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->broker = $broker;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
+		$this->missingTypehintCheck = $missingTypehintCheck;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
+		$this->checkMissingVarTagTypehint = $checkMissingVarTagTypehint;
 	}
 
 	public function getNodeType(): string
@@ -98,6 +110,16 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				continue;
 			}
 
+			if ($this->checkMissingVarTagTypehint) {
+				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($varTagType) as $iterableType) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s has no value type specified in iterable type %s.',
+						$identifier,
+						$iterableType->describe(VerbosityLevel::typeOnly())
+					))->build();
+				}
+			}
+
 			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 				$varTagType,
 				sprintf('%s contains generic type %%s but class %%s is not generic.', $identifier),
@@ -105,6 +127,15 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				sprintf('Generic type %%s in %s specifies %%d template types, but class %%s supports only %%d: %%s', $identifier),
 				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of class %%s.', $identifier)
 			));
+
+			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s contains generic %s but does not specify its types: %s',
+					$identifier,
+					$innerName,
+					implode(', ', $genericTypeNames)
+				))->build();
+			}
 
 			$referencedClasses = $varTagType->getReferencedClasses();
 			foreach ($referencedClasses as $referencedClass) {

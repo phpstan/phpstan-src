@@ -40,5 +40,6 @@ services:
 		class: PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			checkMissingVarTagTypehint: %checkMissingVarTagTypehint%
 		tags:
 			- phpstan.rules.rule

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -19,6 +20,8 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			$broker,
 			new ClassCaseSensitivityCheck($broker),
 			new GenericObjectTypeCheck(),
+			new MissingTypehintCheck(true),
+			true,
 			true
 		);
 	}
@@ -73,6 +76,14 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			[
 				'Type stdClass in generic type InvalidPhpDocDefinitions\FooGeneric<int, stdClass> in PHPDoc tag @var for variable $test is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
 				55,
+			],
+			[
+				'PHPDoc tag @var for variable $test has no value type specified in iterable type array.',
+				58,
+			],
+			[
+				'PHPDoc tag @var for variable $test contains generic class InvalidPhpDocDefinitions\FooGeneric but does not specify its types: T, U',
+				61,
 			],
 		]);
 	}

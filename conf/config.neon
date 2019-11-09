@@ -15,6 +15,7 @@ parameters:
 	checkFunctionArgumentTypes: false
 	checkFunctionNameCase: false
 	checkGenericClassInNonGenericObjectType: false
+	checkMissingVarTagTypehint: false
 	checkArgumentsPassedByReference: false
 	checkMaybeUndefinedVariables: false
 	checkNullables: false
@@ -110,6 +111,7 @@ parametersSchema:
 	checkFunctionArgumentTypes: bool()
 	checkFunctionNameCase: bool()
 	checkGenericClassInNonGenericObjectType: bool()
+	checkMissingVarTagTypehint: bool()
 	checkArgumentsPassedByReference: bool()
 	checkMaybeUndefinedVariables: bool()
 	checkNullables: bool()

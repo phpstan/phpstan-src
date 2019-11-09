@@ -53,6 +53,12 @@ class Foo
 
 		/** @var \InvalidPhpDocDefinitions\FooGeneric<int, \stdClass> $test */
 		$test = doFoo();
+
+		/** @var array $test */
+		$test = doFoo();
+
+		/** @var \InvalidPhpDocDefinitions\FooGeneric $test */
+		$test = doFoo();
 	}
 
 }

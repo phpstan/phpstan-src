@@ -1,0 +1,22 @@
+[
+    {
+        "message": "PHPDoc tag @var for variable $maybeString has no value type specified in iterable type array.",
+        "line": 22,
+        "ignorable": true
+    },
+    {
+        "message": "PHPDoc tag @var for variable $maybeString has no value type specified in iterable type array.",
+        "line": 26,
+        "ignorable": true
+    },
+    {
+        "message": "PHPDoc tag @var for variable $maybeString has no value type specified in iterable type array.",
+        "line": 30,
+        "ignorable": true
+    },
+    {
+        "message": "PHPDoc tag @var for variable $maybeString has no value type specified in iterable type array.",
+        "line": 34,
+        "ignorable": true
+    }
+]

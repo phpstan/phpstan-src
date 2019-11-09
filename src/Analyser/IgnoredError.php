@@ -48,7 +48,7 @@ class IgnoredError
 		?string $path
 	): bool
 	{
-		// normalize newlines to allow working with ignore-patterns indepent of use newline-format
+		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
 		$errorMessage = $error->getMessage();
 		$errorMessage = preg_replace('/\r\n|\r|\n/', "\n", $errorMessage);
 		$ignoredErrorPattern = preg_replace('/\r\n|\r|\n/', "\n", $ignoredErrorPattern);

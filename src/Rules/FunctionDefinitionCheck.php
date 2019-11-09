@@ -5,10 +5,10 @@ namespace PHPStan\Rules;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Name;
-use PhpParser\Node\NullableType;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
@@ -18,20 +18,6 @@ use PHPStan\Type\VerbosityLevel;
 
 class FunctionDefinitionCheck
 {
-
-	private const VALID_TYPEHINTS = [
-		'self',
-		'array',
-		'callable',
-		'string',
-		'int',
-		'bool',
-		'float',
-		'void',
-		'iterable',
-		'object',
-		'parent',
-	];
 
 	/** @var \PHPStan\Broker\Broker */
 	private $broker;
@@ -93,13 +79,15 @@ class FunctionDefinitionCheck
 	}
 
 	/**
+	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Param[] $parameters
-	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\NullableType|null $returnTypeNode
+	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $returnTypeNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	public function checkAnonymousFunction(
+		Scope $scope,
 		array $parameters,
 		$returnTypeNode,
 		string $parameterMessage,
@@ -111,26 +99,21 @@ class FunctionDefinitionCheck
 			if ($param->type === null) {
 				continue;
 			}
-			$class = $param->type instanceof NullableType
-				? (string) $param->type->type
-				: (string) $param->type;
-			$lowercasedClass = strtolower($class);
-			if ($lowercasedClass === '' || in_array($lowercasedClass, self::VALID_TYPEHINTS, true)) {
-				continue;
-			}
-
-			if (!$this->broker->hasClass($class) || $this->broker->getClass($class)->isTrait()) {
-				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+			$type = $scope->getFunctionType($param->type, false, $param->variadic);
+			foreach ($type->getReferencedClasses() as $class) {
+				if (!$this->broker->hasClass($class) || $this->broker->getClass($class)->isTrait()) {
+					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, $class))->line($param->type->getLine())->build();
+				} elseif ($this->checkClassCaseSensitivity) {
+					$errors = array_merge(
+						$errors,
+						$this->classCaseSensitivityCheck->checkClassNames([
+							new ClassNameNodePair($class, $param->type),
+						])
+					);
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, $class))->line($param->type->getLine())->build();
-			} elseif ($this->checkClassCaseSensitivity) {
-				$errors = array_merge(
-					$errors,
-					$this->classCaseSensitivityCheck->checkClassNames([
-						new ClassNameNodePair($class, $param->type),
-					])
-				);
 			}
 		}
 
@@ -138,23 +121,15 @@ class FunctionDefinitionCheck
 			return $errors;
 		}
 
-		$returnType = $returnTypeNode instanceof NullableType
-			? (string) $returnTypeNode->type
-			: (string) $returnTypeNode;
-
-		$lowercasedReturnType = strtolower($returnType);
-
-		if (
-			$lowercasedReturnType !== ''
-			&& !in_array($lowercasedReturnType, self::VALID_TYPEHINTS, true)
-		) {
-			if (!$this->broker->hasClass($returnType) || $this->broker->getClass($returnType)->isTrait()) {
-				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $returnType))->line($returnTypeNode->getLine())->build();
+		$returnType = $scope->getFunctionType($returnTypeNode, false, false);
+		foreach ($returnType->getReferencedClasses() as $returnTypeClass) {
+			if (!$this->broker->hasClass($returnTypeClass) || $this->broker->getClass($returnTypeClass)->isTrait()) {
+				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $returnTypeClass))->line($returnTypeNode->getLine())->build();
 			} elseif ($this->checkClassCaseSensitivity) {
 				$errors = array_merge(
 					$errors,
 					$this->classCaseSensitivityCheck->checkClassNames([
-						new ClassNameNodePair($returnType, $returnTypeNode),
+						new ClassNameNodePair($returnTypeClass, $returnTypeNode),
 					])
 				);
 			}

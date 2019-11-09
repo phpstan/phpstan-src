@@ -32,6 +32,7 @@ class ExistingClassesInClosureTypehintsRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		return $this->check->checkAnonymousFunction(
+			$scope,
 			$node->getParams(),
 			$node->getReturnType(),
 			'Parameter $%s of anonymous function has invalid typehint type %s.',

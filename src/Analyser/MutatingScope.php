@@ -2264,7 +2264,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\NullableType|null $type
+	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $type
 	 * @param bool $isNullable
 	 * @param bool $isVariadic
 	 * @return Type
@@ -2302,6 +2302,13 @@ class MutatingScope implements Scope
 			return new ObjectType($className);
 		} elseif ($type instanceof Node\NullableType) {
 			return $this->getFunctionType($type->type, true, $isVariadic);
+		} elseif ($type instanceof Node\UnionType) {
+			$types = [];
+			foreach ($type->types as $unionTypeType) {
+				$types[] = $this->getFunctionType($unionTypeType, false, false);
+			}
+
+			return TypeCombinator::union(...$types);
 		}
 
 		$type = $type->name;

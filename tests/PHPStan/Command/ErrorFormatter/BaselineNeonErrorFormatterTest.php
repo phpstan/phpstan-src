@@ -176,4 +176,5 @@ class BaselineNeonErrorFormatterTest extends TestBaseFormatter
 			trim($this->getOutputContent())
 		);
 	}
+
 }

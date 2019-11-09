@@ -149,4 +149,31 @@ class BaselineNeonErrorFormatterTest extends TestBaseFormatter
 		);
 	}
 
+	public function testFormatErrorMessagesNormalizedNewlines(): void
+	{
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+
+		$result  = new AnalysisResult(
+			[new Error("Error message\nwith\r\ndifferent\rnewlines", 'Testfile')],
+			["Error message\nwith\r\ndifferent\rnewlines"],
+			false,
+			false,
+			null
+		);
+		$formatter->formatErrors(
+			$result,
+			$this->getErrorConsoleStyle()
+		);
+
+		self::assertSame(
+			trim(Neon::encode(['parameters' => ['ignoreErrors' => [
+				[
+					'message' => "#^Error message\nwith\ndifferent\nnewlines$#",
+					'count' => 1,
+					'path' => 'Testfile',
+				],
+			]]], Neon::BLOCK)),
+			trim($this->getOutputContent())
+		);
+	}
 }

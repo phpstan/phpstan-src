@@ -11,7 +11,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
@@ -49,13 +51,6 @@ class MissingReturnRule implements Rule
 		if ($statementResult->isAlwaysTerminating()) {
 			return [];
 		}
-		if ($statementResult->hasYield()) {
-			return [];
-		}
-
-		if (!$node->hasNativeReturnTypehint() && !$this->checkPhpDocMissingReturn) {
-			return [];
-		}
 
 		$anonymousFunctionReturnType = $scope->getAnonymousFunctionReturnType();
 		$scopeFunction = $scope->getFunction();
@@ -74,6 +69,31 @@ class MissingReturnRule implements Rule
 		}
 
 		if ($returnType instanceof VoidType) {
+			return [];
+		}
+
+		if ($statementResult->hasYield()) {
+			if ($returnType instanceof TypeWithClassName) {
+				$generatorReturnType = GenericTypeVariableResolver::getType(
+					$returnType,
+					\Generator::class,
+					'TReturn'
+				);
+				if ($generatorReturnType !== null) {
+					$returnType = $generatorReturnType;
+					if (!$returnType instanceof MixedType) {
+						return [
+							RuleErrorBuilder::message(
+								sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly()))
+							)->line($node->getNode()->getStartLine())->build(),
+						];
+					}
+				}
+			}
+			return [];
+		}
+
+		if (!$node->hasNativeReturnTypehint() && !$this->checkPhpDocMissingReturn) {
 			return [];
 		}
 

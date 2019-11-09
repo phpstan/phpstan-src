@@ -49,6 +49,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Function ReturnTypes\returnFromGeneratorString() should return string but returns int.',
 				155,
 			],
+			[
+				'Function ReturnTypes\returnVoidFromGenerator2() with return type void returns int but should not return anything.',
+				173,
+			],
 		]);
 	}
 

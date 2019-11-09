@@ -324,3 +324,76 @@ class FooTemplateMixedType
 	}
 
 }
+
+class MissingReturnGenerators
+{
+
+	public function emptyBodyUnspecifiedTReturn(): \Generator
+	{
+
+	}
+
+	public function bodyUnspecifiedTReturn(): \Generator
+	{
+		yield 1;
+	}
+
+	/**
+	 * @return \Generator<int, int>
+	 */
+	public function emptyBodyUnspecifiedTReturn2(): \Generator
+	{
+
+	}
+
+	/**
+	 * @return \Generator<int, int>
+	 */
+	public function bodyUnspecifiedTReturn2(): \Generator
+	{
+		yield 1;
+	}
+
+	/**
+	 * @return \Generator<int, int, int, string>
+	 */
+	public function emptyBodySpecifiedTReturn(): \Generator
+	{
+
+	}
+
+	/**
+	 * @return \Generator<int, int, int, string>
+	 */
+	public function bodySpecifiedTReturn(): \Generator
+	{
+		yield 1;
+	}
+
+	/**
+	 * @return \Generator<int, int, int, void>
+	 */
+	public function bodySpecifiedVoidTReturn(): \Generator
+	{
+		yield 1;
+	}
+
+	/**
+	 * @return \Generator<int, int, int, void>
+	 */
+	public function bodySpecifiedVoidTReturn2(): \Generator
+	{
+		yield 1;
+		return;
+	}
+
+	/**
+	 * @return \Generator<int, int, int, void>
+	 */
+	public function bodySpecifiedVoidTReturn3(): \Generator
+	{
+		yield 1;
+		return 2;
+	}
+
+}

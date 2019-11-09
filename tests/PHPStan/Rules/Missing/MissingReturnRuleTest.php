@@ -77,6 +77,22 @@ class MissingReturnRuleTest extends RuleTestCase
 				'Method MissingReturn\FooTemplateMixedType::doFoo() should return T but return statement is missing.',
 				321,
 			],
+			[
+				'Method MissingReturn\MissingReturnGenerators::emptyBodyUnspecifiedTReturn() should return Generator but return statement is missing.',
+				331,
+			],
+			[
+				'Method MissingReturn\MissingReturnGenerators::emptyBodyUnspecifiedTReturn2() should return Generator<int, int, mixed, mixed> but return statement is missing.',
+				344,
+			],
+			[
+				'Method MissingReturn\MissingReturnGenerators::emptyBodySpecifiedTReturn() should return Generator<int, int, int, string> but return statement is missing.',
+				360,
+			],
+			[
+				'Method MissingReturn\MissingReturnGenerators::bodySpecifiedTReturn() should return string but return statement is missing.',
+				370,
+			],
 		]);
 	}
 

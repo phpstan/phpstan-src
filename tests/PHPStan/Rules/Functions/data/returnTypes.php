@@ -154,3 +154,21 @@ function returnFromGeneratorString(): \Generator
 
 	return 2;
 }
+
+/**
+ * @return \Generator<int, int, int, void>
+ */
+function returnVoidFromGenerator(): \Generator
+{
+	yield 1;
+	return;
+}
+
+/**
+ * @return \Generator<int, int, int, void>
+ */
+function returnVoidFromGenerator2(): \Generator
+{
+	yield 1;
+	return 2;
+}

@@ -4,7 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
-use PHPStan\Type\ObjectType;
+use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -47,17 +47,11 @@ class FunctionReturnTypeCheck
 				return [];
 			}
 
-			$generatorAncestor = $returnType->getAncestorWithClassName(\Generator::class);
-			if (!$generatorAncestor instanceof ObjectType) {
-				return [];
-			}
-
-			$generatorClassReflection = $generatorAncestor->getClassReflection();
-			if ($generatorClassReflection === null) {
-				return [];
-			}
-			$templateTypeMap = $generatorClassReflection->getActiveTemplateTypeMap();
-			$returnType = $templateTypeMap->getType('TReturn');
+			$returnType = GenericTypeVariableResolver::getType(
+				$returnType,
+				\Generator::class,
+				'TReturn'
+			);
 			if ($returnType === null) {
 				return [];
 			}

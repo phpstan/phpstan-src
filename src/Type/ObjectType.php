@@ -505,18 +505,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\Traversable::class)->yes()) {
-			$traversableAncestor = $this->getAncestorWithClassName(\Traversable::class);
-			if ($traversableAncestor === null) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-
-			$traversableReflection = $traversableAncestor->getClassReflection();
-			if ($traversableReflection === null) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-			$templateTypeMap = $traversableReflection->getActiveTemplateTypeMap();
-			$tKey = $templateTypeMap->getType('TKey');
-
+			$tKey = GenericTypeVariableResolver::getType($this, \Traversable::class, 'TKey');
 			if ($tKey !== null) {
 				return $tKey;
 			}
@@ -549,17 +538,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\Traversable::class)->yes()) {
-			$traversableAncestor = $this->getAncestorWithClassName(\Traversable::class);
-			if ($traversableAncestor === null) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-
-			$traversableReflection = $traversableAncestor->getClassReflection();
-			if ($traversableReflection === null) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-			$templateTypeMap = $traversableReflection->getActiveTemplateTypeMap();
-			$tValue = $templateTypeMap->getType('TValue');
+			$tValue = GenericTypeVariableResolver::getType($this, \Traversable::class, 'TValue');
 			if ($tValue !== null) {
 				return $tValue;
 			}

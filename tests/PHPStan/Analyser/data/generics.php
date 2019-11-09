@@ -986,3 +986,9 @@ function getGenerator(): \Generator
 	$stdClass = yield 'foo';
 	assertType(\stdClass::class, $stdClass);
 }
+
+function testYieldFrom()
+{
+	$yield = yield from getGenerator();
+	assertType('null', $yield);
+}

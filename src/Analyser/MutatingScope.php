@@ -1298,6 +1298,8 @@ class MutatingScope implements Scope
 			}
 
 			return $generatorSendType;
+		} elseif ($node instanceof Expr\YieldFrom) {
+			return new NullType();
 		}
 
 		$exprString = $this->printer->prettyPrintExpr($node);

@@ -15,4 +15,10 @@ class Bar
 		return [['foo']];
 	}
 
+	/**
+	 * @param
+	 *            $object
+	 */
+	public function phpdocWithNewlines($object) {
+	}
 }

@@ -60,6 +60,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -1280,6 +1281,23 @@ class MutatingScope implements Scope
 			}
 
 			return $varType->toNumber();
+		} elseif ($node instanceof Expr\Yield_) {
+			$functionReflection = $this->getFunction();
+			if ($functionReflection === null) {
+				return new MixedType();
+			}
+
+			$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			if (!$returnType instanceof TypeWithClassName) {
+				return new MixedType();
+			}
+
+			$generatorSendType = GenericTypeVariableResolver::getType($returnType, \Generator::class, 'TSend');
+			if ($generatorSendType === null) {
+				return new MixedType();
+			}
+
+			return $generatorSendType;
 		}
 
 		$exprString = $this->printer->prettyPrintExpr($node);

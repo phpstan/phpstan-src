@@ -977,3 +977,12 @@ function testIterateOverTraversable($t1, $t2)
 		assertType('stdClass', $value);
 	}
 }
+
+/**
+ * @return \Generator<int, string, \stdClass, \Exception>
+ */
+function getGenerator(): \Generator
+{
+	$stdClass = yield 'foo';
+	assertType(\stdClass::class, $stdClass);
+}

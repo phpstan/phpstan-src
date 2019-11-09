@@ -48,10 +48,15 @@ class IgnoredError
 		?string $path
 	): bool
 	{
+		// normalize newlines to allow working with ignore-patterns indepent of use newline-format
+		$errorMessage = $error->getMessage();
+		$errorMessage = preg_replace('/\r\n|\r|\n/', "\n", $errorMessage);
+		$ignoredErrorPattern = preg_replace('/\r\n|\r|\n/', "\n", $ignoredErrorPattern);
+
 		if ($path !== null) {
 			$fileExcluder = new FileExcluder($fileHelper, [$path]);
 
-			if (\Nette\Utils\Strings::match($error->getMessage(), $ignoredErrorPattern) === null) {
+			if (\Nette\Utils\Strings::match($errorMessage, $ignoredErrorPattern) === null) {
 				return false;
 			}
 
@@ -63,7 +68,7 @@ class IgnoredError
 			return $isExcluded;
 		}
 
-		return \Nette\Utils\Strings::match($error->getMessage(), $ignoredErrorPattern) !== null;
+		return \Nette\Utils\Strings::match($errorMessage, $ignoredErrorPattern) !== null;
 	}
 
 }

@@ -59,46 +59,34 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param \PhpParser\Node\FunctionLike $function
+	 * @param \PhpParser\Node\Stmt\Function_ $function
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @return RuleError[]
 	 */
 	public function checkFunction(
-		FunctionLike $function,
+		Function_ $function,
 		string $parameterMessage,
 		string $returnMessage
 	): array
 	{
-		if ($function instanceof ClassMethod) {
-			throw new \PHPStan\ShouldNotHappenException('Use FunctionDefinitionCheck::checkClassMethod() instead.');
+		$functionName = $function->name->name;
+		if (isset($function->namespacedName)) {
+			$functionName = (string) $function->namespacedName;
 		}
-		if ($function instanceof Function_) {
-			$functionName = $function->name->name;
-			if (isset($function->namespacedName)) {
-				$functionName = (string) $function->namespacedName;
-			}
-			$functionNameName = new Name($functionName);
-			if (!$this->broker->hasCustomFunction($functionNameName, null)) {
-				return [];
-			}
-
-			$functionReflection = $this->broker->getCustomFunction($functionNameName, null);
-
-			/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
-			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
-
-			return $this->checkParametersAcceptor(
-				$parametersAcceptor,
-				$function,
-				$parameterMessage,
-				$returnMessage
-			);
+		$functionNameName = new Name($functionName);
+		if (!$this->broker->hasCustomFunction($functionNameName, null)) {
+			return [];
 		}
 
-		return $this->checkAnonymousFunction(
-			$function->getParams(),
-			$function->getReturnType(),
+		$functionReflection = $this->broker->getCustomFunction($functionNameName, null);
+
+		/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
+		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+
+		return $this->checkParametersAcceptor(
+			$parametersAcceptor,
+			$function,
 			$parameterMessage,
 			$returnMessage
 		);

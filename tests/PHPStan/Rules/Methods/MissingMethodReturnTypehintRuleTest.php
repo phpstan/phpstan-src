@@ -9,7 +9,7 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck());
+		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck(true));
 	}
 
 	public function testRule(): void
@@ -34,6 +34,14 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Method MissingMethodReturnTypehint\Foo::unionTypeWithUnknownArrayValueTypehint() return type has no value type specified in iterable type array.',
 				46,
+			],
+			[
+				'Method MissingMethodReturnTypehint\Bar::returnsGenericInterface() return type with generic interface MissingMethodReturnTypehint\GenericInterface does not specify its types: T, U',
+				79,
+			],
+			[
+				'Method MissingMethodReturnTypehint\Bar::returnsGenericClass() return type with generic class MissingMethodReturnTypehint\GenericClass does not specify its types: A, B',
+				89,
 			],
 		]);
 	}

@@ -43,3 +43,40 @@ class PrefixedTags
 	private $fooPsalm;
 
 }
+
+/**
+ * @template T
+ * @template U
+ */
+interface GenericInterface
+{
+
+}
+
+class NonGenericClass
+{
+
+}
+
+/**
+ * @template A
+ * @template B
+ */
+class GenericClass
+{
+
+}
+
+class Bar
+{
+
+	/** @var \MissingPropertyTypehint\GenericInterface */
+	private $foo;
+
+	/** @var \MissingPropertyTypehint\NonGenericClass */
+	private $bar;
+
+	/** @var \MissingPropertyTypehint\GenericClass */
+	private $baz;
+
+}

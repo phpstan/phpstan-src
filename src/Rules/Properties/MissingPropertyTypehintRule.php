@@ -55,6 +55,16 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 			);
 		}
 
+		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($propertyType) as [$name, $genericTypeNames]) {
+			$messages[] = sprintf(
+				'Property %s::$%s with generic %s does not specify its types: %s',
+				$propertyReflection->getDeclaringClass()->getDisplayName(),
+				$node->name->name,
+				$name,
+				implode(', ', $genericTypeNames)
+			);
+		}
+
 		return $messages;
 	}
 

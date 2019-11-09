@@ -1,6 +1,9 @@
 includes:
 	- config.level5.neon
 
+parameters:
+	checkGenericClassInNonGenericObjectType: true
+
 rules:
 	- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
 	- PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule

@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<VariableCloningRule>
+ */
 class VariableCloningRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

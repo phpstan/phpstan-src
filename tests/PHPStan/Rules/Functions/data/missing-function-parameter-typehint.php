@@ -94,4 +94,42 @@ namespace MissingFunctionParameterTypehint
 
 	}
 
+	/**
+	 * @template T
+	 * @template U
+	 */
+	interface GenericInterface
+	{
+
+	}
+
+	class NonGenericClass
+	{
+
+	}
+
+	function acceptsGenericInterface(GenericInterface $i)
+	{
+
+	}
+
+	function acceptsNonGenericClass(NonGenericClass $c)
+	{
+
+	}
+
+	/**
+	 * @template A
+	 * @template B
+	 */
+	class GenericClass
+	{
+
+	}
+
+	function acceptsGenericClass(GenericClass $c)
+	{
+
+	}
+
 }

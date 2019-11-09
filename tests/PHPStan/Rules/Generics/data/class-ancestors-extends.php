@@ -164,3 +164,14 @@ class FooGenericGeneric7 extends FooGeneric
 {
 
 }
+
+class FooExtendsNonGenericClass extends FooDoesNotExtendAnything
+{
+
+}
+
+
+class FooExtendsGenericClass extends FooGeneric
+{
+
+}

@@ -15,7 +15,8 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericAncestorsCheck(
 				$this->createBroker(),
-				new GenericObjectTypeCheck()
+				new GenericObjectTypeCheck(),
+				true
 			)
 		);
 	}
@@ -122,7 +123,19 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				52,
 			],
 			[
+				'Interface InterfaceAncestorsExtends\FooWrongClassImplemented extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
+				52,
+			],
+			[
+				'Interface InterfaceAncestorsExtends\FooWrongClassImplemented extends generic interface InterfaceAncestorsExtends\FooGeneric3 but does not specify its types: T, W',
+				52,
+			],
+			[
 				'Interface InterfaceAncestorsExtends\FooWrongTypeInImplementsTag @extends tag contains incompatible type class-string<InterfaceAncestorsExtends\T>.',
+				60,
+			],
+			[
+				'Interface InterfaceAncestorsExtends\FooWrongTypeInImplementsTag extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				60,
 			],
 			[
@@ -164,6 +177,10 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			[
 				'Type stdClass in generic type InterfaceAncestorsExtends\FooGeneric2<int, stdClass> in PHPDoc tag @extends is not subtype of template type V of Exception of interface InterfaceAncestorsExtends\FooGeneric2.',
 				182,
+			],
+			[
+				'Interface InterfaceAncestorsExtends\ExtendsGenericInterface extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
+				197,
 			],
 		]);
 	}

@@ -15,7 +15,8 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericAncestorsCheck(
 				$this->createBroker(),
-				new GenericObjectTypeCheck()
+				new GenericObjectTypeCheck(),
+				true
 			)
 		);
 	}
@@ -36,7 +37,15 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				43,
 			],
 			[
+				'Class ClassAncestorsExtends\FooWrongClassExtended extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
+				43,
+			],
+			[
 				'Class ClassAncestorsExtends\FooWrongTypeInExtendsTag @extends tag contains incompatible type class-string<ClassAncestorsExtends\T>.',
+				51,
+			],
+			[
+				'Class ClassAncestorsExtends\FooWrongTypeInExtendsTag extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				51,
 			],
 			[
@@ -71,6 +80,10 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				'Type stdClass in generic type ClassAncestorsExtends\FooGeneric<int, stdClass> in PHPDoc tag @extends is not subtype of template type U of Exception of class ClassAncestorsExtends\FooGeneric.',
 				163,
 			],
+			[
+				'Class ClassAncestorsExtends\FooExtendsGenericClass extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
+				174,
+			],
 		]);
 	}
 
@@ -90,7 +103,19 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				52,
 			],
 			[
+				'Class ClassAncestorsImplements\FooWrongClassImplemented implements generic interface ClassAncestorsImplements\FooGeneric but does not specify its types: T, U',
+				52,
+			],
+			[
+				'Class ClassAncestorsImplements\FooWrongClassImplemented implements generic interface ClassAncestorsImplements\FooGeneric3 but does not specify its types: T, W',
+				52,
+			],
+			[
 				'Class ClassAncestorsImplements\FooWrongTypeInImplementsTag @implements tag contains incompatible type class-string<ClassAncestorsImplements\T>.',
+				60,
+			],
+			[
+				'Class ClassAncestorsImplements\FooWrongTypeInImplementsTag implements generic interface ClassAncestorsImplements\FooGeneric but does not specify its types: T, U',
 				60,
 			],
 			[
@@ -132,6 +157,10 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Type stdClass in generic type ClassAncestorsImplements\FooGeneric2<int, stdClass> in PHPDoc tag @implements is not subtype of template type V of Exception of interface ClassAncestorsImplements\FooGeneric2.',
 				182,
+			],
+			[
+				'Class ClassAncestorsImplements\FooImplementsGenericInterface implements generic interface ClassAncestorsImplements\FooGeneric but does not specify its types: T, U',
+				198,
 			],
 		]);
 	}

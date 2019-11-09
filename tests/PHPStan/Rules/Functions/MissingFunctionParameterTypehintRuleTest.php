@@ -9,7 +9,7 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingFunctionParameterTypehintRule($this->createBroker([], []), new MissingTypehintCheck());
+		return new MissingFunctionParameterTypehintRule($this->createBroker([], []), new MissingTypehintCheck(true));
 	}
 
 	public function testRule(): void
@@ -39,6 +39,14 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 			[
 				'Function MissingFunctionParameterTypehint\unionTypeWithUnknownArrayValueTypehint() has parameter $a with no value type specified in iterable type array.',
 				60,
+			],
+			[
+				'Function MissingFunctionParameterTypehint\acceptsGenericInterface() has parameter $i with generic interface MissingFunctionParameterTypehint\GenericInterface but does not specify its types: T, U',
+				111,
+			],
+			[
+				'Function MissingFunctionParameterTypehint\acceptsGenericClass() has parameter $c with generic class MissingFunctionParameterTypehint\GenericClass but does not specify its types: A, B',
+				130,
 			],
 		]);
 	}

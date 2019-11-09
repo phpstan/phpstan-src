@@ -9,7 +9,7 @@ class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCas
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingFunctionReturnTypehintRule($this->createBroker([], []), new MissingTypehintCheck());
+		return new MissingFunctionReturnTypehintRule($this->createBroker([], []), new MissingTypehintCheck(true));
 	}
 
 	public function testRule(): void
@@ -27,6 +27,14 @@ class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCas
 			[
 				'Function MissingFunctionReturnTypehint\unionTypeWithUnknownArrayValueTypehint() return type has no value type specified in iterable type array.',
 				51,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsGenericInterface() return type with generic interface MissingFunctionReturnTypehint\GenericInterface does not specify its types: T, U',
+				70,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsGenericClass() return type with generic class MissingFunctionReturnTypehint\GenericClass does not specify its types: A, B',
+				89,
 			],
 		]);
 	}

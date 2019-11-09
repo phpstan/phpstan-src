@@ -92,6 +92,16 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 			);
 		}
 
+		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
+			$messages[] = sprintf(
+				'Function %s() has parameter $%s with generic %s but does not specify its types: %s',
+				$functionReflection->getName(),
+				$parameterReflection->getName(),
+				$name,
+				implode(', ', $genericTypeNames)
+			);
+		}
+
 		return $messages;
 	}
 

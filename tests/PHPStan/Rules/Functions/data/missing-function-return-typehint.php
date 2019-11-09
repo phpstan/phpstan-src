@@ -52,4 +52,42 @@ namespace MissingFunctionReturnTypehint
 	{
 
 	}
+
+	/**
+	 * @template T
+	 * @template U
+	 */
+	interface GenericInterface
+	{
+
+	}
+
+	class NonGenericClass
+	{
+
+	}
+
+	function returnsGenericInterface(): GenericInterface
+	{
+
+	}
+
+	function returnsNonGenericClass(): NonGenericClass
+	{
+
+	}
+
+	/**
+	 * @template A
+	 * @template B
+	 */
+	class GenericClass
+	{
+
+	}
+
+	function returnsGenericClass(): GenericClass
+	{
+
+	}
 }

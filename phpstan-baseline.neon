@@ -18,6 +18,11 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Method PHPStan\\\\Broker\\\\Broker\\:\\:getClassFromReflection\\(\\) has parameter \\$reflectionClass with generic class ReflectionClass but does not specify its types\\: T$#"
+			count: 1
+			path: src/Broker/Broker.php
+
+		-
 			message: "#^Access to constant EXTENSIONS on an unknown class PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\.$#"
 			count: 1
 			path: src/Command/CommandHelper.php
@@ -73,9 +78,414 @@ parameters:
 			path: src/PhpDoc/PhpDocBlock.php
 
 		-
+			message: "#^Property PHPStan\\\\Reflection\\\\ClassReflection\\:\\:\\$reflection with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:__construct\\(\\) has parameter \\$reflection with generic class ReflectionClass but does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getNativeReflection\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
 			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getCacheKey\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\BuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/BuiltinMethodReflection.php
+
+		-
+			message: "#^Property PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:\\$declaringClass with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:__construct\\(\\) has parameter \\$declaringClass with generic class ReflectionClass but does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\NativeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/NativeBuiltinMethodReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\PhpClassReflectionExtension\\:\\:collectTraits\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\PhpClassReflectionExtension\\:\\:collectTraits\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/AppendedArrayItemTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/AppendedArrayKeyTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\DeadForeachRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/DeadForeachRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\DuplicateKeysInLiteralArraysRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/DuplicateKeysInLiteralArraysRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\InvalidKeyInArrayDimFetchRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/InvalidKeyInArrayDimFetchRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\InvalidKeyInArrayItemRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/InvalidKeyInArrayItemRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\IterableInForeachRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/IterableInForeachRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\NonexistentOffsetInArrayDimFetchRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/NonexistentOffsetInArrayDimFetchRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessAssignOpRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/OffsetAccessAssignOpRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessAssignmentRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/OffsetAccessAssignmentRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessWithoutDimForReadingRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/OffsetAccessWithoutDimForReadingRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\UnpackIterableInArrayRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Arrays/UnpackIterableInArrayRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\EchoRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Cast/EchoRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\InvalidCastRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Cast/InvalidCastRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\InvalidPartOfEncapsedStringRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Cast/InvalidPartOfEncapsedStringRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\PrintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Cast/PrintRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ClassConstantDeclarationRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ClassConstantDeclarationRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ClassConstantRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ClassConstantRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInClassExtendsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ExistingClassInClassExtendsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInInstanceOfRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ExistingClassInInstanceOfRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInTraitUseRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ExistingClassInTraitUseRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassesInClassImplementsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ExistingClassesInClassImplementsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassesInInterfaceExtendsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ExistingClassesInInterfaceExtendsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ImpossibleInstanceOfRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/ImpossibleInstanceOfRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\InstantiationRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/InstantiationRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\NewStaticRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/NewStaticRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\UnusedConstructorParametersRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Classes/UnusedConstructorParametersRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\BooleanAndConstantConditionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/BooleanAndConstantConditionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\BooleanNotConstantConditionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/BooleanNotConstantConditionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\BooleanOrConstantConditionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/BooleanOrConstantConditionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ElseIfConstantConditionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/ElseIfConstantConditionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\IfConstantConditionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/IfConstantConditionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeFunctionCallRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/ImpossibleCheckTypeFunctionCallRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeMethodCallRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/ImpossibleCheckTypeMethodCallRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeStaticMethodCallRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/ImpossibleCheckTypeStaticMethodCallRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\NumberComparisonOperatorsConstantConditionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/NumberComparisonOperatorsConstantConditionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\StrictComparisonOfDifferentTypesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/StrictComparisonOfDifferentTypesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\TernaryOperatorConstantConditionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/TernaryOperatorConstantConditionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\UnreachableIfBranchesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/UnreachableIfBranchesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\UnreachableTernaryElseBranchRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Comparison/UnreachableTernaryElseBranchRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Constants\\\\ConstantRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Constants/ConstantRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\NoopRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/DeadCode/NoopRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\UnreachableStatementRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/DeadCode/UnreachableStatementRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Exceptions\\\\CaughtExceptionExistenceRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Exceptions/CaughtExceptionExistenceRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Exceptions\\\\DeadCatchRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Exceptions/DeadCatchRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ArrowFunctionReturnTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/ArrowFunctionReturnTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallCallablesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/CallCallablesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallToFunctionParametersRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/CallToFunctionParametersRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallToFunctionStamentWithoutSideEffectsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/CallToFunctionStamentWithoutSideEffectsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallToNonExistentFunctionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/CallToNonExistentFunctionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ClosureReturnTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/ClosureReturnTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInArrowFunctionTypehintsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/ExistingClassesInArrowFunctionTypehintsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInClosureTypehintsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/ExistingClassesInClosureTypehintsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInTypehintsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/ExistingClassesInTypehintsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\IncompatibleDefaultParameterTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/IncompatibleDefaultParameterTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\InnerFunctionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/InnerFunctionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionParameterTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/MissingFunctionParameterTypehintRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionReturnTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/MissingFunctionReturnTypehintRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\NonExistentDefinedFunctionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/NonExistentDefinedFunctionRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\PrintfParametersRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/PrintfParametersRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ReturnTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/ReturnTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\UnusedClosureUsesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Functions/UnusedClosureUsesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generators\\\\YieldFromTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generators/YieldFromTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generators\\\\YieldInGeneratorRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generators/YieldInGeneratorRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generators\\\\YieldTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generators/YieldTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\ClassAncestorsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generics/ClassAncestorsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\ClassTemplateTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generics/ClassTemplateTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\FunctionTemplateTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generics/FunctionTemplateTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\InterfaceAncestorsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generics/InterfaceAncestorsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\InterfaceTemplateTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generics/InterfaceTemplateTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\MethodTemplateTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generics/MethodTemplateTypeRule.php
 
 		-
 			message: "#^Cannot call method toString\\(\\) on PhpParser\\\\Node\\\\Identifier\\|null\\.$#"
@@ -83,13 +493,1423 @@ parameters:
 			path: src/Rules/Generics/MethodTemplateTypeRule.php
 
 		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\TraitTemplateTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Generics/TraitTemplateTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\CallMethodsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Methods/CallMethodsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\CallToMethodStamentWithoutSideEffectsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Methods/CallToMethodStamentWithoutSideEffectsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\CallToStaticMethodStamentWithoutSideEffectsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Methods/CallToStaticMethodStamentWithoutSideEffectsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\ExistingClassesInTypehintsRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Methods/ExistingClassesInTypehintsRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\IncompatibleDefaultParameterTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Methods/IncompatibleDefaultParameterTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\MethodSignatureRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Methods/MethodSignatureRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\ReturnTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Methods/ReturnTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Missing\\\\MissingClosureNativeReturnTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Missing/MissingClosureNativeReturnTypehintRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Missing\\\\MissingReturnRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Missing/MissingReturnRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Namespaces\\\\ExistingNamesInGroupUseRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Namespaces/ExistingNamesInGroupUseRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Namespaces\\\\ExistingNamesInUseRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Namespaces/ExistingNamesInUseRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidBinaryOperationRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Operators/InvalidBinaryOperationRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidComparisonOperationRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Operators/InvalidComparisonOperationRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidIncDecOperationRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Operators/InvalidIncDecOperationRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidUnaryOperationRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Operators/InvalidUnaryOperationRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\IncompatiblePhpDocTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/PhpDoc/IncompatiblePhpDocTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\IncompatiblePropertyPhpDocTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/PhpDoc/IncompatiblePropertyPhpDocTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidPhpDocTagValueRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/PhpDoc/InvalidPhpDocTagValueRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidPhpDocVarTagTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/PhpDoc/InvalidPhpDocVarTagTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidThrowsPhpDocValueRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/PhpDoc/InvalidThrowsPhpDocValueRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\WrongVariableNameInVarTagRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/PhpDoc/WrongVariableNameInVarTagRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessPropertiesInAssignRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/AccessPropertiesInAssignRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessPropertiesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/AccessPropertiesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessStaticPropertiesInAssignRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/AccessStaticPropertiesInAssignRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessStaticPropertiesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/AccessStaticPropertiesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\DefaultValueTypesAssignedToPropertiesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/DefaultValueTypesAssignedToPropertiesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\ExistingClassesInPropertiesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/ExistingClassesInPropertiesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\ReadingWriteOnlyPropertiesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/ReadingWriteOnlyPropertiesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/TypesAssignedToPropertiesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\WritingToReadOnlyPropertiesRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Properties/WritingToReadOnlyPropertiesRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Regexp\\\\RegularExpressionPatternRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Regexp/RegularExpressionPatternRule.php
+
+		-
+			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$rules with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Registry.php
+
+		-
+			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Registry.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Registry\\:\\:__construct\\(\\) has parameter \\$rules with generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Registry.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideClosureReturnTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideClosureReturnTypehintRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideFunctionReturnTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideFunctionReturnTypehintRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideMethodReturnTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideMethodReturnTypehintRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\DefinedVariableInAnonymousFunctionUseRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Variables/DefinedVariableInAnonymousFunctionUseRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\DefinedVariableRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Variables/DefinedVariableRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\ThisVariableRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Variables/ThisVariableRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\ThrowTypeRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Variables/ThrowTypeRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\VariableCertaintyInIssetRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Variables/VariableCertaintyInIssetRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\VariableCloningRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Variables/VariableCloningRule.php
+
+		-
+			message: "#^Method PHPStan\\\\Testing\\\\RuleTestCase\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Testing/RuleTestCase.php
+
+		-
+			message: "#^Parameter \\#1 \\$rules of class PHPStan\\\\Rules\\\\Registry constructor expects array\\<PHPStan\\\\Rules\\\\Rule\\>, array\\<int, TRule of PHPStan\\\\Rules\\\\Rule\\> given\\.$#"
+			count: 1
+			path: src/Testing/RuleTestCase.php
+
+		-
 			message: "#^Cannot call method getActiveTemplateTypeMap\\(\\) on PHPStan\\\\Reflection\\\\ClassReflection\\|null\\.$#"
 			count: 2
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
+			message: "#^Class PHPStan\\\\Analyser\\\\AnonymousClassNameRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Analyser/AnonymousClassNameRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Analyser\\\\AnonymousClassNameRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Analyser/AnonymousClassNameRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Analyser\\\\AnonymousClassNameRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Analyser/AnonymousClassNameRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Analyser\\\\EvaluationOrderRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Analyser/EvaluationOrderRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Analyser\\\\EvaluationOrderTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Analyser\\\\EvaluationOrderTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
+
+		-
 			message: "#^Constant SOME_CONSTANT_IN_AUTOLOAD_FILE not found\\.$#"
 			count: 1
 			path: tests/PHPStan/Command/AnalyseCommandTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Node\\\\FileNodeTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Node/FileNodeTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Node\\\\FileNodeTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Node/FileNodeTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\AlwaysFailRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/AlwaysFailRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\DeadForeachRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/DeadForeachRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\DeadForeachRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/DeadForeachRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\DuplicateKeysInLiteralArraysRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/DuplicateKeysInLiteralArraysRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\DuplicateKeysInLiteralArraysRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/DuplicateKeysInLiteralArraysRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\InvalidKeyInArrayDimFetchRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/InvalidKeyInArrayDimFetchRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\InvalidKeyInArrayDimFetchRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/InvalidKeyInArrayDimFetchRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\InvalidKeyInArrayItemRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/InvalidKeyInArrayItemRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\InvalidKeyInArrayItemRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/InvalidKeyInArrayItemRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\IterableInForeachRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/IterableInForeachRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\IterableInForeachRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/IterableInForeachRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\NonexistentOffsetInArrayDimFetchRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/NonexistentOffsetInArrayDimFetchRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\NonexistentOffsetInArrayDimFetchRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/NonexistentOffsetInArrayDimFetchRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessAssignOpRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/OffsetAccessAssignOpRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessAssignOpRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/OffsetAccessAssignOpRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessAssignmentRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/OffsetAccessAssignmentRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessAssignmentRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/OffsetAccessAssignmentRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessWithoutDimForReadingRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/OffsetAccessWithoutDimForReadingRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\OffsetAccessWithoutDimForReadingRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/OffsetAccessWithoutDimForReadingRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Arrays\\\\UnpackIterableInArrayRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/UnpackIterableInArrayRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\UnpackIterableInArrayRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/UnpackIterableInArrayRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\EchoRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/EchoRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Cast\\\\EchoRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/EchoRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\InvalidCastRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/InvalidCastRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Cast\\\\InvalidCastRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/InvalidCastRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\InvalidPartOfEncapsedStringRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/InvalidPartOfEncapsedStringRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Cast\\\\InvalidPartOfEncapsedStringRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/InvalidPartOfEncapsedStringRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Cast\\\\PrintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/PrintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Cast\\\\PrintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Cast/PrintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ClassConstantRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ClassConstantRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\ClassConstantRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ClassConstantRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInClassExtendsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassInClassExtendsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInClassExtendsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassInClassExtendsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInInstanceOfRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassInInstanceOfRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInInstanceOfRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassInInstanceOfRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInTraitUseRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassInTraitUseRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\ExistingClassInTraitUseRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassInTraitUseRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassesInClassImplementsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassesInClassImplementsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\ExistingClassesInClassImplementsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassesInClassImplementsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ExistingClassesInInterfaceExtendsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassesInInterfaceExtendsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\ExistingClassesInInterfaceExtendsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ExistingClassesInInterfaceExtendsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\ImpossibleInstanceOfRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ImpossibleInstanceOfRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\ImpossibleInstanceOfRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/ImpossibleInstanceOfRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\InstantiationRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/InstantiationRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\InstantiationRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/InstantiationRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\NewStaticRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/NewStaticRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\NewStaticRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/NewStaticRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\UnusedConstructorParametersRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/UnusedConstructorParametersRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\UnusedConstructorParametersRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Classes/UnusedConstructorParametersRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\BooleanAndConstantConditionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/BooleanAndConstantConditionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\BooleanAndConstantConditionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/BooleanAndConstantConditionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\BooleanNotConstantConditionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/BooleanNotConstantConditionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\BooleanNotConstantConditionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/BooleanNotConstantConditionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\BooleanOrConstantConditionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/BooleanOrConstantConditionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\BooleanOrConstantConditionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/BooleanOrConstantConditionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ElseIfConstantConditionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ElseIfConstantConditionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\ElseIfConstantConditionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ElseIfConstantConditionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\IfConstantConditionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/IfConstantConditionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\IfConstantConditionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/IfConstantConditionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeFunctionCallRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ImpossibleCheckTypeFunctionCallRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeFunctionCallRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ImpossibleCheckTypeFunctionCallRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeMethodCallRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ImpossibleCheckTypeMethodCallRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeMethodCallRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ImpossibleCheckTypeMethodCallRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeStaticMethodCallRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ImpossibleCheckTypeStaticMethodCallRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\ImpossibleCheckTypeStaticMethodCallRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/ImpossibleCheckTypeStaticMethodCallRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\NumberComparisonOperatorsConstantConditionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/NumberComparisonOperatorsConstantConditionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\NumberComparisonOperatorsConstantConditionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/NumberComparisonOperatorsConstantConditionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\StrictComparisonOfDifferentTypesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/StrictComparisonOfDifferentTypesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\StrictComparisonOfDifferentTypesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/StrictComparisonOfDifferentTypesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\TernaryOperatorConstantConditionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/TernaryOperatorConstantConditionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\TernaryOperatorConstantConditionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/TernaryOperatorConstantConditionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\UnreachableIfBranchesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/UnreachableIfBranchesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\UnreachableIfBranchesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/UnreachableIfBranchesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Comparison\\\\UnreachableTernaryElseBranchRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/UnreachableTernaryElseBranchRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\UnreachableTernaryElseBranchRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Comparison/UnreachableTernaryElseBranchRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Constants\\\\ConstantRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Constants/ConstantRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Constants\\\\ConstantRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Constants/ConstantRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\NoopRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/DeadCode/NoopRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\DeadCode\\\\NoopRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/DeadCode/NoopRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\UnreachableStatementRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/DeadCode/UnreachableStatementRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\DeadCode\\\\UnreachableStatementRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/DeadCode/UnreachableStatementRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\DummyRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/DummyRule.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Exceptions\\\\CaughtExceptionExistenceRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Exceptions/CaughtExceptionExistenceRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Exceptions\\\\CaughtExceptionExistenceRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Exceptions/CaughtExceptionExistenceRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Exceptions\\\\DeadCatchRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Exceptions/DeadCatchRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Exceptions\\\\DeadCatchRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Exceptions/DeadCatchRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ArrowFunctionReturnTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ArrowFunctionReturnTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\ArrowFunctionReturnTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ArrowFunctionReturnTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallCallablesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallCallablesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\CallCallablesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallCallablesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallToFunctionParametersRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallToFunctionParametersRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\CallToFunctionParametersRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallToFunctionParametersRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallToFunctionStamentWithoutSideEffectsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallToFunctionStamentWithoutSideEffectsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\CallToFunctionStamentWithoutSideEffectsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallToFunctionStamentWithoutSideEffectsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\CallToNonExistentFunctionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallToNonExistentFunctionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\CallToNonExistentFunctionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/CallToNonExistentFunctionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ClosureReturnTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ClosureReturnTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\ClosureReturnTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ClosureReturnTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInArrowFunctionTypehintsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ExistingClassesInArrowFunctionTypehintsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInArrowFunctionTypehintsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ExistingClassesInArrowFunctionTypehintsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInClosureTypehintsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ExistingClassesInClosureTypehintsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInClosureTypehintsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ExistingClassesInClosureTypehintsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInTypehintsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ExistingClassesInTypehintsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\ExistingClassesInTypehintsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ExistingClassesInTypehintsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\IncompatibleDefaultParameterTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/IncompatibleDefaultParameterTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\IncompatibleDefaultParameterTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/IncompatibleDefaultParameterTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\InnerFunctionRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/InnerFunctionRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\InnerFunctionRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/InnerFunctionRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionParameterTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/MissingFunctionParameterTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionParameterTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/MissingFunctionParameterTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/MissingFunctionReturnTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/MissingFunctionReturnTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\PrintfParametersRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/PrintfParametersRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\PrintfParametersRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/PrintfParametersRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\ReturnTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ReturnTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\ReturnTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/ReturnTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\UnusedClosureUsesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/UnusedClosureUsesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\UnusedClosureUsesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Functions/UnusedClosureUsesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generators\\\\YieldFromTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generators/YieldFromTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generators\\\\YieldFromTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generators/YieldFromTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generators\\\\YieldInGeneratorRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generators/YieldInGeneratorRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generators\\\\YieldInGeneratorRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generators/YieldInGeneratorRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generators\\\\YieldTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generators/YieldTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generators\\\\YieldTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generators/YieldTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\ClassAncestorsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/ClassAncestorsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generics\\\\ClassAncestorsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/ClassAncestorsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\ClassTemplateTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/ClassTemplateTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generics\\\\ClassTemplateTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/ClassTemplateTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\FunctionTemplateTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/FunctionTemplateTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generics\\\\FunctionTemplateTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/FunctionTemplateTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\InterfaceAncestorsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/InterfaceAncestorsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generics\\\\InterfaceAncestorsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/InterfaceAncestorsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\InterfaceTemplateTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/InterfaceTemplateTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generics\\\\InterfaceTemplateTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/InterfaceTemplateTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\MethodTemplateTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/MethodTemplateTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generics\\\\MethodTemplateTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/MethodTemplateTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Generics\\\\TraitTemplateTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/TraitTemplateTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Generics\\\\TraitTemplateTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Generics/TraitTemplateTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\CallMethodsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallMethodsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\CallMethodsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallMethodsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\CallStaticMethodsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallStaticMethodsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\CallStaticMethodsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallStaticMethodsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\CallToMethodStamentWithoutSideEffectsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallToMethodStamentWithoutSideEffectsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\CallToMethodStamentWithoutSideEffectsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallToMethodStamentWithoutSideEffectsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\CallToStaticMethodStamentWithoutSideEffectsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallToStaticMethodStamentWithoutSideEffectsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\CallToStaticMethodStamentWithoutSideEffectsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/CallToStaticMethodStamentWithoutSideEffectsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\ExistingClassesInTypehintsRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/ExistingClassesInTypehintsRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\ExistingClassesInTypehintsRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/ExistingClassesInTypehintsRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\IncompatibleDefaultParameterTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/IncompatibleDefaultParameterTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\IncompatibleDefaultParameterTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/IncompatibleDefaultParameterTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\MethodSignatureRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/MethodSignatureRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\MethodSignatureRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/MethodSignatureRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\MissingMethodParameterTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/MissingMethodParameterTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\MissingMethodParameterTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/MissingMethodParameterTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\MissingMethodReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/MissingMethodReturnTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\MissingMethodReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/MissingMethodReturnTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\ReturnTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/ReturnTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\ReturnTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Methods/ReturnTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Missing\\\\MissingClosureNativeReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Missing/MissingClosureNativeReturnTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Missing\\\\MissingClosureNativeReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Missing/MissingClosureNativeReturnTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Missing\\\\MissingReturnRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Missing/MissingReturnRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Missing\\\\MissingReturnRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Missing/MissingReturnRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Namespaces\\\\ExistingNamesInGroupUseRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Namespaces/ExistingNamesInGroupUseRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Namespaces\\\\ExistingNamesInGroupUseRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Namespaces/ExistingNamesInGroupUseRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Namespaces\\\\ExistingNamesInUseRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Namespaces/ExistingNamesInUseRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Namespaces\\\\ExistingNamesInUseRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Namespaces/ExistingNamesInUseRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidBinaryOperationRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidBinaryOperationRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Operators\\\\InvalidBinaryOperationRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidBinaryOperationRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidComparisonOperationRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidComparisonOperationRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Operators\\\\InvalidComparisonOperationRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidComparisonOperationRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidIncDecOperationRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidIncDecOperationRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Operators\\\\InvalidIncDecOperationRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidIncDecOperationRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Operators\\\\InvalidUnaryOperationRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidUnaryOperationRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Operators\\\\InvalidUnaryOperationRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Operators/InvalidUnaryOperationRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\IncompatiblePhpDocTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/IncompatiblePhpDocTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\PhpDoc\\\\IncompatiblePhpDocTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/IncompatiblePhpDocTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\IncompatiblePropertyPhpDocTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/IncompatiblePropertyPhpDocTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\PhpDoc\\\\IncompatiblePropertyPhpDocTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/IncompatiblePropertyPhpDocTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidPhpDocTagValueRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/InvalidPhpDocTagValueRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidPhpDocTagValueRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/InvalidPhpDocTagValueRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidPhpDocVarTagTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/InvalidPhpDocVarTagTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidPhpDocVarTagTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/InvalidPhpDocVarTagTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidThrowsPhpDocValueRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/InvalidThrowsPhpDocValueRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\PhpDoc\\\\InvalidThrowsPhpDocValueRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/InvalidThrowsPhpDocValueRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\PhpDoc\\\\WrongVariableNameInVarTagRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/WrongVariableNameInVarTagRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\PhpDoc\\\\WrongVariableNameInVarTagRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/PhpDoc/WrongVariableNameInVarTagRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessPropertiesInAssignRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessPropertiesInAssignRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\AccessPropertiesInAssignRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessPropertiesInAssignRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessPropertiesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\AccessPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessPropertiesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessStaticPropertiesInAssignRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessStaticPropertiesInAssignRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\AccessStaticPropertiesInAssignRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessStaticPropertiesInAssignRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\AccessStaticPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessStaticPropertiesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\AccessStaticPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/AccessStaticPropertiesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\DefaultValueTypesAssignedToPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/DefaultValueTypesAssignedToPropertiesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\DefaultValueTypesAssignedToPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/DefaultValueTypesAssignedToPropertiesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\ExistingClassesInPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/ExistingClassesInPropertiesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\ExistingClassesInPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/ExistingClassesInPropertiesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\MissingPropertyTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/MissingPropertyTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\MissingPropertyTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/MissingPropertyTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\ReadingWriteOnlyPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/ReadingWriteOnlyPropertiesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\ReadingWriteOnlyPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/ReadingWriteOnlyPropertiesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/TypesAssignedToPropertiesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/TypesAssignedToPropertiesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\WritingToReadOnlyPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/WritingToReadOnlyPropertiesRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\WritingToReadOnlyPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Properties/WritingToReadOnlyPropertiesRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Regexp\\\\RegularExpressionPatternRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Regexp/RegularExpressionPatternRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Regexp\\\\RegularExpressionPatternRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Regexp/RegularExpressionPatternRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideClosureReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/TooWideTypehints/TooWideClosureReturnTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideClosureReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/TooWideTypehints/TooWideClosureReturnTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideFunctionReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/TooWideTypehints/TooWideFunctionReturnTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideFunctionReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/TooWideTypehints/TooWideFunctionReturnTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideMethodReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/TooWideTypehints/TooWideMethodReturnTypehintRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\TooWideTypehints\\\\TooWideMethodReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/TooWideTypehints/TooWideMethodReturnTypehintRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\DefinedVariableInAnonymousFunctionUseRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/DefinedVariableInAnonymousFunctionUseRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Variables\\\\DefinedVariableInAnonymousFunctionUseRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/DefinedVariableInAnonymousFunctionUseRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\DefinedVariableRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/DefinedVariableRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Variables\\\\DefinedVariableRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/DefinedVariableRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\ThisVariableRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/ThisVariableRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Variables\\\\ThisVariableRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/ThisVariableRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\ThrowTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/ThrowTypeRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Variables\\\\ThrowTypeRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/ThrowTypeRuleTest.php
+
+		-
+			message: "#^Class PHPStan\\\\Rules\\\\Variables\\\\VariableCertaintyInIssetRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/VariableCertaintyInIssetRuleTest.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Variables\\\\VariableCertaintyInIssetRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: tests/PHPStan/Rules/Variables/VariableCertaintyInIssetRuleTest.php
 
 

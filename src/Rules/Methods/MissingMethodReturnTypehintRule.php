@@ -56,6 +56,16 @@ final class MissingMethodReturnTypehintRule implements \PHPStan\Rules\Rule
 			);
 		}
 
+		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($returnType) as [$name, $genericTypeNames]) {
+			$messages[] = sprintf(
+				'Method %s::%s() return type with generic %s does not specify its types: %s',
+				$methodReflection->getDeclaringClass()->getDisplayName(),
+				$methodReflection->getName(),
+				$name,
+				implode(', ', $genericTypeNames)
+			);
+		}
+
 		return $messages;
 	}
 

@@ -17,13 +17,18 @@ class GenericAncestorsCheck
 	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
 	private $genericObjectTypeCheck;
 
+	/** @var bool */
+	private $checkGenericClassInNonGenericObjectType;
+
 	public function __construct(
 		Broker $broker,
-		GenericObjectTypeCheck $genericObjectTypeCheck
+		GenericObjectTypeCheck $genericObjectTypeCheck,
+		bool $checkGenericClassInNonGenericObjectType
 	)
 	{
 		$this->broker = $broker;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
+		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
 	}
 
 	/**
@@ -41,16 +46,15 @@ class GenericAncestorsCheck
 		string $notEnoughTypesMessage,
 		string $extraTypesMessage,
 		string $typeIsNotSubtypeMessage,
-		string $invalidTypeMessage
+		string $invalidTypeMessage,
+		string $genericClassInNonGenericObjectType
 	): array
 	{
-		if (count($ancestorTypes) === 0) {
-			return [];
-		}
-
 		$names = array_fill_keys(array_map(static function (Name $nameNode): string {
 			return $nameNode->toString();
 		}, $nameNodes), true);
+
+		$unusedNames = $names;
 
 		$messages = [];
 		foreach ($ancestorTypes as $ancestorType) {
@@ -70,6 +74,8 @@ class GenericAncestorsCheck
 				continue;
 			}
 
+			unset($unusedNames[$ancestorTypeClassName]);
+
 			$genericObjectTypeCheckMessages = $this->genericObjectTypeCheck->check(
 				$ancestorType,
 				$classNotGenericMessage,
@@ -88,6 +94,25 @@ class GenericAncestorsCheck
 				}
 
 				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))->build();
+			}
+		}
+
+		if ($this->checkGenericClassInNonGenericObjectType) {
+			foreach (array_keys($unusedNames) as $unusedName) {
+				if (!$this->broker->hasClass($unusedName)) {
+					continue;
+				}
+
+				$unusedNameClassReflection = $this->broker->getClass($unusedName);
+				if (!$unusedNameClassReflection->isGeneric()) {
+					continue;
+				}
+
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					$genericClassInNonGenericObjectType,
+					$unusedName,
+					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes()))
+				))->build();
 			}
 		}
 

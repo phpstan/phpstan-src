@@ -67,6 +67,15 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 			$messages[] = sprintf('Function %s() return type has no value type specified in iterable type %s.', $functionReflection->getName(), $iterableType->describe(VerbosityLevel::typeOnly()));
 		}
 
+		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($returnType) as [$name, $genericTypeNames]) {
+			$messages[] = sprintf(
+				'Function %s() return type with generic %s does not specify its types: %s',
+				$functionReflection->getName(),
+				$name,
+				implode(', ', $genericTypeNames)
+			);
+		}
+
 		return $messages;
 	}
 

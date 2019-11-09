@@ -49,3 +49,46 @@ class Foo extends FooParent implements FooInterface
 	}
 
 }
+
+/**
+ * @template T
+ * @template U
+ */
+interface GenericInterface
+{
+
+}
+
+class NonGenericClass
+{
+
+}
+
+/**
+ * @template A
+ * @template B
+ */
+class GenericClass
+{
+
+}
+
+class Bar
+{
+
+	public function returnsGenericInterface(): GenericInterface
+	{
+
+	}
+
+	public function returnsNonGenericClass(): NonGenericClass
+	{
+
+	}
+
+	public function returnsGenericClass(): GenericClass
+	{
+
+	}
+
+}

@@ -183,3 +183,19 @@ class FooGenericGeneric8 implements FooGeneric, FooGeneric2
 {
 
 }
+
+interface NonGenericInterface
+{
+
+}
+
+class FooImplementsNonGenericInterface implements NonGenericInterface
+{
+
+}
+
+
+class FooImplementsGenericInterface implements FooGeneric
+{
+
+}

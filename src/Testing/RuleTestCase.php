@@ -15,12 +15,19 @@ use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 
+/**
+ * @template TRule of \PHPStan\Rules\Rule
+ */
 abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 {
 
 	/** @var \PHPStan\Analyser\Analyser|null */
 	private $analyser;
 
+	/**
+	 * @return \PHPStan\Rules\Rule
+	 * @phpstan-return TRule
+	 */
 	abstract protected function getRule(): Rule;
 
 	protected function getTypeSpecifier(): TypeSpecifier

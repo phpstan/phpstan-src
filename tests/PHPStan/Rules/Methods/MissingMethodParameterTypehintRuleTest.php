@@ -9,7 +9,7 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck());
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck(true));
 	}
 
 	public function testRule(): void
@@ -38,6 +38,14 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 			[
 				'Method MissingMethodParameterTypehint\Foo::unionTypeWithUnknownArrayValueTypehint() has parameter $a with no value type specified in iterable type array.',
 				58,
+			],
+			[
+				'Method MissingMethodParameterTypehint\Bar::acceptsGenericInterface() has parameter $i with generic interface MissingMethodParameterTypehint\GenericInterface but does not specify its types: T, U',
+				91,
+			],
+			[
+				'Method MissingMethodParameterTypehint\Bar::acceptsGenericClass() has parameter $c with generic class MissingMethodParameterTypehint\GenericClass but does not specify its types: A, B',
+				101,
 			],
 		]);
 	}

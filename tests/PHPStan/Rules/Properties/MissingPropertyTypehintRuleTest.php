@@ -9,7 +9,7 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingPropertyTypehintRule(new MissingTypehintCheck());
+		return new MissingPropertyTypehintRule(new MissingTypehintCheck(true));
 	}
 
 	public function testRule(): void
@@ -30,6 +30,14 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Property MissingPropertyTypehint\ChildClass::$unionProp type has no value type specified in iterable type array.',
 				32,
+			],
+			[
+				'Property MissingPropertyTypehint\Bar::$foo with generic interface MissingPropertyTypehint\GenericInterface does not specify its types: T, U',
+				74,
+			],
+			[
+				'Property MissingPropertyTypehint\Bar::$baz with generic class MissingPropertyTypehint\GenericClass does not specify its types: A, B',
+				80,
 			],
 		]);
 	}

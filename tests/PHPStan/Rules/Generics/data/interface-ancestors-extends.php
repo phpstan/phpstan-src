@@ -183,3 +183,18 @@ interface FooGenericGeneric8 extends FooGeneric, FooGeneric2
 {
 
 }
+
+interface NonGenericInterface
+{
+
+}
+
+interface ExtendsNonGenericInterface extends NonGenericInterface
+{
+
+}
+
+interface ExtendsGenericInterface extends FooGeneric
+{
+
+}

@@ -113,6 +113,7 @@ class GenericObjectTypeCheck
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 				$genericObjectTypes[] = $resolvedType;
+				return $type;
 			}
 			$traverse($type);
 			return $type;

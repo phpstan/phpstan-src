@@ -23,6 +23,9 @@ final class SymfonyProcess implements Process
 			});
 	}
 
+	/**
+	 * @return \Symfony\Component\Process\Process<string, string>
+	 */
 	public function getProcess(): \Symfony\Component\Process\Process
 	{
 		return $this->process;

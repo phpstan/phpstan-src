@@ -8,6 +8,7 @@ class RuleErrorBuilder
 	private const TYPE_MESSAGE = 1;
 	private const TYPE_LINE = 2;
 	private const TYPE_FILE = 4;
+	private const TYPE_TIP = 8;
 
 	/** @var int */
 	private $type;
@@ -42,6 +43,11 @@ class RuleErrorBuilder
 				'file',
 				'string',
 			],
+			self::TYPE_TIP => [
+				TipRuleError::class,
+				'tip',
+				'string',
+			],
 		];
 	}
 
@@ -62,6 +68,14 @@ class RuleErrorBuilder
 	{
 		$this->properties['file'] = $file;
 		$this->type |= self::TYPE_FILE;
+
+		return $this;
+	}
+
+	public function tip(string $tip): self
+	{
+		$this->properties['tip'] = $tip;
+		$this->type |= self::TYPE_TIP;
 
 		return $this;
 	}

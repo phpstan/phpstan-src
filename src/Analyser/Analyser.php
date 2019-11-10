@@ -9,6 +9,7 @@ use PHPStan\Parser\Parser;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\Registry;
+use PHPStan\Rules\TipRuleError;
 
 class Analyser
 {
@@ -175,6 +176,7 @@ class Analyser
 								$fileName = $scope->getFileDescription();
 								$filePath = $scope->getFile();
 								$traitFilePath = null;
+								$tip = null;
 								if ($scope->isInTrait()) {
 									$traitReflection = $scope->getTraitReflection();
 									if ($traitReflection->getFileName() !== false) {
@@ -199,6 +201,10 @@ class Analyser
 										$filePath = $ruleError->getFile();
 										$traitFilePath = null;
 									}
+
+									if ($ruleError instanceof TipRuleError) {
+										$tip = $ruleError->getTip();
+									}
 								}
 								$fileErrors[] = new Error(
 									$message,
@@ -206,7 +212,8 @@ class Analyser
 									$line,
 									true,
 									$filePath,
-									$traitFilePath
+									$traitFilePath,
+									$tip
 								);
 							}
 						}

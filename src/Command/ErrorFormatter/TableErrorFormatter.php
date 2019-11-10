@@ -83,9 +83,13 @@ class TableErrorFormatter implements ErrorFormatter
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
 			foreach ($errors as $error) {
+				$message = $error->getMessage();
+				if ($error->getTip() !== null) {
+					$message .= "\n💡 " . $error->getTip();
+				}
 				$rows[] = [
 					(string) $error->getLine(),
-					$error->getMessage(),
+					$message,
 				];
 			}
 

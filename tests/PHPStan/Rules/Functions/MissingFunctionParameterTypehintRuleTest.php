@@ -29,7 +29,7 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 				24,
 			],
 			[
-				'Function MissingFunctionParameterTypehint\missingIterableTypehint() has parameter $a with no value type specified in iterable type array.',
+				'Function MissingFunctionParameterTypehint\missingArrayTypehint() has parameter $a with no value type specified in iterable type array.',
 				36,
 			],
 			[
@@ -47,6 +47,14 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 			[
 				'Function MissingFunctionParameterTypehint\acceptsGenericClass() has parameter $c with generic class MissingFunctionParameterTypehint\GenericClass but does not specify its types: A, B',
 				130,
+			],
+			[
+				'Function MissingFunctionParameterTypehint\missingIterableTypehint() has parameter $iterable with no value type specified in iterable type iterable.',
+				135,
+			],
+			[
+				'Function MissingFunctionParameterTypehint\missingIterableTypehintPhpDoc() has parameter $iterable with no value type specified in iterable type iterable.',
+				143,
 			],
 		]);
 	}

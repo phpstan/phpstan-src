@@ -33,7 +33,7 @@ namespace MissingFunctionParameterTypehint
 
 	}
 
-	function missingIterableTypehint(array $a)
+	function missingArrayTypehint(array $a)
 	{
 
 	}
@@ -128,6 +128,19 @@ namespace MissingFunctionParameterTypehint
 	}
 
 	function acceptsGenericClass(GenericClass $c)
+	{
+
+	}
+
+	function missingIterableTypehint(iterable $iterable)
+	{
+
+	}
+
+	/**
+	 * @param iterable $iterable
+	 */
+	function missingIterableTypehintPhpDoc($iterable)
 	{
 
 	}

@@ -92,7 +92,7 @@ class TypeNodeResolver
 
 	public function getCacheKey(): string
 	{
-		$key = 'v75-update-phpdoc-parser';
+		$key = 'v76-iterable-typehint';
 		foreach ($this->extensions as $extension) {
 			$key .= sprintf('-%s', $extension->getCacheKey());
 		}
@@ -188,7 +188,7 @@ class TypeNodeResolver
 				]);
 
 			case 'iterable':
-				return new IterableType(new MixedType(true), new MixedType(true));
+				return new IterableType(new MixedType(), new MixedType());
 
 			case 'callable':
 				return new CallableType();

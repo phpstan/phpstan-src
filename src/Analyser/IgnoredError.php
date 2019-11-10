@@ -52,10 +52,9 @@ class IgnoredError
 		$errorMessage = $error->getMessage();
 		$errorMessage = preg_replace('/\r\n|\r|\n/', "\n", $errorMessage);
 		$ignoredErrorPattern = preg_replace('/\r\n|\r|\n/', "\n", $ignoredErrorPattern);
-
-                if ($errorMessage === null || $ignoredErrorPattern === null) {
-                        throw new \Exception(preg_last_error());
-                }
+		if ($errorMessage === null || $ignoredErrorPattern === null) {
+			throw new \Exception(preg_last_error());
+		}
 
 		if ($path !== null) {
 			$fileExcluder = new FileExcluder($fileHelper, [$path]);

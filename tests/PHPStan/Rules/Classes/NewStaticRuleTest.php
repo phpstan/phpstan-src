@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<NewStaticRule>
+ */
 class NewStaticRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
@@ -14,7 +17,7 @@ class NewStaticRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testRule(): void
 	{
-		$error = "Unsafe usage of new static().\n💡 Consider making the class or the constructor final.";
+		$error = 'Unsafe usage of new static().';
 		$this->analyse([__DIR__ . '/data/new-static.php'], [
 			[
 				$error,

@@ -6,7 +6,11 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements Rule<Node\Expr\New_>
+ */
 class NewStaticRule implements Rule
 {
 
@@ -15,11 +19,6 @@ class NewStaticRule implements Rule
 		return Node\Expr\New_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\New_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->class instanceof Node\Name) {
@@ -40,7 +39,9 @@ class NewStaticRule implements Rule
 		}
 
 		$messages = [
-			"Unsafe usage of new static().\n💡 Consider making the class or the constructor final.",
+			RuleErrorBuilder::message('Unsafe usage of new static().')
+				->tip('Consider making the class or the constructor final.')
+				->build(),
 		];
 		if (!$classReflection->hasConstructor()) {
 			return $messages;

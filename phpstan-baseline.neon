@@ -258,11 +258,6 @@ parameters:
 			path: src/Rules/Classes/InstantiationRule.php
 
 		-
-			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\NewStaticRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
-			count: 1
-			path: src/Rules/Classes/NewStaticRule.php
-
-		-
 			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\UnusedConstructorParametersRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
 			count: 1
 			path: src/Rules/Classes/UnusedConstructorParametersRule.php
@@ -1016,16 +1011,6 @@ parameters:
 			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\InstantiationRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Rules/Classes/InstantiationRuleTest.php
-
-		-
-			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\NewStaticRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
-			count: 1
-			path: tests/PHPStan/Rules/Classes/NewStaticRuleTest.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Classes\\\\NewStaticRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Rules/Classes/NewStaticRuleTest.php
 
 		-
 			message: "#^Class PHPStan\\\\Rules\\\\Classes\\\\UnusedConstructorParametersRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"

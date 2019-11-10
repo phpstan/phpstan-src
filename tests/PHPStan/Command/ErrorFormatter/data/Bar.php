@@ -14,4 +14,5 @@ class Bar
 	{
 		return [['foo']];
 	}
+
 }

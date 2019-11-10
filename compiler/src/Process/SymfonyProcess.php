@@ -7,7 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class SymfonyProcess implements Process
 {
 
-	/** @var \Symfony\Component\Process\Process */
+	/** @var \Symfony\Component\Process\Process<string, string> */
 	private $process;
 
 	/**

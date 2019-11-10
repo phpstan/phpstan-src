@@ -39,7 +39,7 @@ jobs:
           cd compiler && \
           composer install --no-interaction && \
           vendor/bin/phpunit -c tests/phpunit.xml tests && \
-          ../bin/phpstan analyse -l 8 src && \
+          ../bin/phpstan analyse -l 8 src tests && \
           php bin/compile && \
           ../tmp/phpstan.phar
     - stage: phar

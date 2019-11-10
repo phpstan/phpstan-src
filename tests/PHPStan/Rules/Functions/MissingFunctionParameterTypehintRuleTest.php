@@ -56,6 +56,14 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 				'Function MissingFunctionParameterTypehint\missingIterableTypehintPhpDoc() has parameter $iterable with no value type specified in iterable type iterable.',
 				143,
 			],
+			[
+				'Function MissingFunctionParameterTypehint\missingTraversableTypehint() has parameter $traversable with no value type specified in iterable type Traversable.',
+				148,
+			],
+			[
+				'Function MissingFunctionParameterTypehint\missingTraversableTypehintPhpDoc() has parameter $traversable with no value type specified in iterable type Traversable.',
+				156,
+			],
 		]);
 	}
 

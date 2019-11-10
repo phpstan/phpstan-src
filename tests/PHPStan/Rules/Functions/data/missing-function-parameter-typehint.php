@@ -145,4 +145,17 @@ namespace MissingFunctionParameterTypehint
 
 	}
 
+	function missingTraversableTypehint(\Traversable $traversable)
+	{
+
+	}
+
+	/**
+	 * @param \Traversable $traversable
+	 */
+	function missingTraversableTypehintPhpDoc($traversable)
+	{
+
+	}
+
 }

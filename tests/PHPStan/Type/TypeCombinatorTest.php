@@ -2356,24 +2356,24 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectType(\Traversable::class),
 					new IterableType(new MixedType(), new MixedType(true)),
 				],
-				ObjectType::class,
-				'Traversable',
+				IntersectionType::class,
+				'iterable&Traversable',
 			],
 			[
 				[
 					new ObjectType(\Traversable::class),
 					new IterableType(new MixedType(true), new MixedType()),
 				],
-				ObjectType::class,
-				'Traversable',
+				IntersectionType::class,
+				'iterable&Traversable',
 			],
 			[
 				[
 					new ObjectType(\Traversable::class),
 					new IterableType(new MixedType(true), new MixedType(true)),
 				],
-				ObjectType::class,
-				'Traversable',
+				IntersectionType::class,
+				'iterable&Traversable',
 			],
 			[
 				[

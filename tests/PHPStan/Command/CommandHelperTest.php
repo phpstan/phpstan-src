@@ -227,7 +227,7 @@ class CommandHelperTest extends TestCase
 		$parameters = $result->getContainer()->getParameters();
 		foreach ($expectedParameters as $name => $expectedValue) {
 			$this->assertArrayHasKey($name, $parameters);
-			$this->assertSame($expectedValue, $parameters[$name]);
+			$this->assertSamePaths($expectedValue, $parameters[$name]);
 		}
 	}
 

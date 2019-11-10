@@ -73,7 +73,7 @@ class MissingReturnRule implements Rule
 		}
 
 		if ($statementResult->hasYield()) {
-			if ($returnType instanceof TypeWithClassName) {
+			if ($returnType instanceof TypeWithClassName && $this->checkPhpDocMissingReturn) {
 				$generatorReturnType = GenericTypeVariableResolver::getType(
 					$returnType,
 					\Generator::class,
@@ -81,6 +81,9 @@ class MissingReturnRule implements Rule
 				);
 				if ($generatorReturnType !== null) {
 					$returnType = $generatorReturnType;
+					if ($returnType instanceof VoidType) {
+						return [];
+					}
 					if (!$returnType instanceof MixedType) {
 						return [
 							RuleErrorBuilder::message(

@@ -53,7 +53,7 @@ class IgnoredError
 		$errorMessage = preg_replace('/\r\n|\r|\n/', "\n", $errorMessage);
 		$ignoredErrorPattern = preg_replace('/\r\n|\r|\n/', "\n", $ignoredErrorPattern);
 		if ($errorMessage === null || $ignoredErrorPattern === null) {
-			throw new \Exception(preg_last_error());
+			throw new \Exception('Error while executing regex: '. preg_last_error());
 		}
 
 		if ($path !== null) {

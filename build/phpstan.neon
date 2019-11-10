@@ -31,6 +31,9 @@ parameters:
 		-
 			message: '#Fetching class constant class of deprecated class DeprecatedAnnotations\\DeprecatedWithMultipleTags.#'
 			path: %rootDir%/tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php
+		-
+			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
+			path: ../src/Rules/RuleErrorBuilder.php
 	reportStaticMethodSignatures: true
 	reportUnmatchedIgnoredErrors: false
 	tmpDir: %rootDir%/tmp

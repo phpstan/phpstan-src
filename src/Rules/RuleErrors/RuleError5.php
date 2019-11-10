@@ -2,22 +2,14 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
-use PHPStan\Rules\FileRuleError;
-
-class RuleErrorWithMessageAndFile implements FileRuleError
+class RuleError5 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\FileRuleError
 {
 
 	/** @var string */
-	private $message;
+	public $message;
 
 	/** @var string */
-	private $file;
-
-	public function __construct(string $message, string $file)
-	{
-		$this->message = $message;
-		$this->file = $file;
-	}
+	public $file;
 
 	public function getMessage(): string
 	{

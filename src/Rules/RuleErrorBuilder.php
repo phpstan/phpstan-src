@@ -2,62 +2,84 @@
 
 namespace PHPStan\Rules;
 
-use PHPStan\Rules\RuleErrors\RuleErrorWithMessage;
-use PHPStan\Rules\RuleErrors\RuleErrorWithMessageAndFile;
-use PHPStan\Rules\RuleErrors\RuleErrorWithMessageAndLine;
-use PHPStan\Rules\RuleErrors\RuleErrorWithMessageAndLineAndFile;
-
 class RuleErrorBuilder
 {
 
-	/** @var string */
-	private $message;
+	private const TYPE_MESSAGE = 1;
+	private const TYPE_LINE = 2;
+	private const TYPE_FILE = 4;
 
-	/** @var int|null */
-	private $line;
+	/** @var int */
+	private $type;
 
-	/** @var string|null */
-	private $file;
+	/** @var mixed[] */
+	private $properties;
 
-	private function __construct()
+	private function __construct(string $message)
 	{
+		$this->properties['message'] = $message;
+		$this->type = self::TYPE_MESSAGE;
+	}
+
+	/**
+	 * @return array<int, array{string, string}>
+	 */
+	public static function getRuleErrorTypes(): array
+	{
+		return [
+			self::TYPE_MESSAGE => [
+				RuleError::class,
+				'message',
+				'string',
+			],
+			self::TYPE_LINE => [
+				LineRuleError::class,
+				'line',
+				'int',
+			],
+			self::TYPE_FILE => [
+				FileRuleError::class,
+				'file',
+				'string',
+			],
+		];
 	}
 
 	public static function message(string $message): self
 	{
-		$self = new self();
-		$self->message = $message;
-
-		return $self;
+		return new self($message);
 	}
 
 	public function line(int $line): self
 	{
-		$this->line = $line;
+		$this->properties['line'] = $line;
+		$this->type |= self::TYPE_LINE;
 
 		return $this;
 	}
 
 	public function file(string $file): self
 	{
-		$this->file = $file;
+		$this->properties['file'] = $file;
+		$this->type |= self::TYPE_FILE;
 
 		return $this;
 	}
 
 	public function build(): RuleError
 	{
-		if ($this->line !== null && $this->file !== null) {
-			return new RuleErrorWithMessageAndLineAndFile($this->message, $this->line, $this->file);
-		}
-		if ($this->line !== null && $this->file === null) {
-			return new RuleErrorWithMessageAndLine($this->message, $this->line);
-		}
-		if ($this->line === null && $this->file !== null) {
-			return new RuleErrorWithMessageAndFile($this->message, $this->file);
+		/** @var class-string<RuleError> $className */
+		$className = sprintf('PHPStan\\Rules\\RuleErrors\\RuleError%d', $this->type);
+		if (!class_exists($className)) {
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Class %s does not exist.', $className));
 		}
 
-		return new RuleErrorWithMessage($this->message);
+		$ruleError = new $className();
+		foreach ($this->properties as $propertyName => $value) {
+			$ruleError->{$propertyName} = $value;
+		}
+
+		return $ruleError;
 	}
 
 }

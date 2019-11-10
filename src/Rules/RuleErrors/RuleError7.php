@@ -2,22 +2,17 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
-use PHPStan\Rules\LineRuleError;
-
-class RuleErrorWithMessageAndLine implements LineRuleError
+class RuleError7 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\FileRuleError
 {
 
 	/** @var string */
-	private $message;
+	public $message;
 
 	/** @var int */
-	private $line;
+	public $line;
 
-	public function __construct(string $message, int $line)
-	{
-		$this->message = $message;
-		$this->line = $line;
-	}
+	/** @var string */
+	public $file;
 
 	public function getMessage(): string
 	{
@@ -27,6 +22,11 @@ class RuleErrorWithMessageAndLine implements LineRuleError
 	public function getLine(): int
 	{
 		return $this->line;
+	}
+
+	public function getFile(): string
+	{
+		return $this->file;
 	}
 
 }

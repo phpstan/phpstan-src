@@ -56,10 +56,9 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 
 			foreach ($fileErrorsCounts as $message => $count) {
 				$message = preg_replace('/\r\n|\r|\n/', "\n", $message);
-
-                                if ($errorMessage === null || $ignoredErrorPattern === null) {
-                                        throw new \Exception(preg_last_error());
-                                }
+		 		if ($message === null) {
+		 			throw new \Exception(preg_last_error());
+				}
 
 				$errorsToOutput[] = [
 					'message' => '#^' . preg_quote($message, '#') . '$#',

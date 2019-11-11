@@ -81,6 +81,8 @@ class CommandHelper
 					break;
 				}
 			}
+		} else {
+			$projectConfigFile = $currentWorkingDirectoryFileHelper->absolutizePath($projectConfigFile);
 		}
 		$defaultLevelUsed = false;
 		if ($projectConfigFile === null && $level === null) {
@@ -177,7 +179,7 @@ class CommandHelper
 		}
 
 		if ($projectConfigFile !== null) {
-			$additionalConfigFiles[] = $currentWorkingDirectoryFileHelper->absolutizePath($projectConfigFile);
+			$additionalConfigFiles[] = $projectConfigFile;
 		}
 
 		self::detectDuplicateIncludedFiles(

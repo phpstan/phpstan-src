@@ -99,7 +99,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 				$parameterReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames)
-			))->build();
+			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
 		return $messages;

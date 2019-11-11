@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node\Name;
 use PHPStan\Broker\Broker;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\VerbosityLevel;
@@ -112,7 +113,7 @@ class GenericAncestorsCheck
 					$genericClassInNonGenericObjectType,
 					$unusedName,
 					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes()))
-				))->build();
+				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 			}
 		}
 

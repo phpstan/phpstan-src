@@ -40,6 +40,11 @@ class TableErrorFormatter implements ErrorFormatter
 		OutputStyle $style
 	): int
 	{
+		$projectConfigFile = 'phpstan.neon';
+		if ($analysisResult->getProjectConfigFile() !== null) {
+			$projectConfigFile = $this->relativePathHelper->getRelativePath($analysisResult->getProjectConfigFile());
+		}
+
 		if (!$analysisResult->hasErrors()) {
 			$style->success('No errors');
 			if ($this->showTipsOfTheDay) {
@@ -56,10 +61,6 @@ class TableErrorFormatter implements ErrorFormatter
 					&& $analysisResult->hasInferrablePropertyTypesFromConstructor()
 					&& !$this->inferPrivatePropertyTypeFromConstructor
 				) {
-					$projectConfigFile = 'phpstan.neon';
-					if ($analysisResult->getProjectConfigFile() !== null) {
-						$projectConfigFile = $this->relativePathHelper->getRelativePath($analysisResult->getProjectConfigFile());
-					}
 					$style->writeln('💡 Tip of the Day:');
 					$style->writeln("One or more properties in your code do not have a phpDoc with a type\nbut it could be inferred from the constructor to find more bugs.");
 					$style->writeln(sprintf('Use <fg=cyan>inferPrivatePropertyTypeFromConstructor: true</> in your <fg=cyan>%s</> to try it out!', $projectConfigFile));
@@ -85,7 +86,9 @@ class TableErrorFormatter implements ErrorFormatter
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
 				if ($error->getTip() !== null) {
-					$message .= "\n💡 " . $error->getTip();
+					$tip = $error->getTip();
+					$tip = str_replace('%configurationFile%', $projectConfigFile, $tip);
+					$message .= "\n💡 " . $tip;
 				}
 				$rows[] = [
 					(string) $error->getLine(),

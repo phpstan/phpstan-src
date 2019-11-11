@@ -71,7 +71,7 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 				$functionReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames)
-			))->build();
+			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
 		return $messages;

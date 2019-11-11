@@ -12,6 +12,8 @@ use PHPStan\Type\TypeTraverser;
 class MissingTypehintCheck
 {
 
+	public const TURN_OFF_NON_GENERIC_CHECK_TIP = 'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.';
+
 	/** @var bool */
 	private $checkGenericClassInNonGenericObjectType;
 

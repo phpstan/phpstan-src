@@ -134,7 +134,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					$identifier,
 					$innerName,
 					implode(', ', $genericTypeNames)
-				))->build();
+				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 			}
 
 			$referencedClasses = $varTagType->getReferencedClasses();

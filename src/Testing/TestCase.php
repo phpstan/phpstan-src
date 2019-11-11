@@ -348,8 +348,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	 */
 	protected function assertSamePaths(string $expected, string $actual, string $message = ''): void
 	{
-		$expected = str_replace('/', DIRECTORY_SEPARATOR, $expected);
-		$actual = str_replace('/', DIRECTORY_SEPARATOR, $actual);
+		$expected = $this->getFileHelper()->normalizePath($expected);
+		$actual = $this->getFileHelper()->normalizePath($actual);
 
 		$this->assertSame($expected, $actual, $message);
 	}

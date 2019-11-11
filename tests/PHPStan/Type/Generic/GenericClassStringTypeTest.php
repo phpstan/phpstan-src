@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -60,6 +61,81 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createNo(),
+			],
+			[
+				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new ConstantStringType(\Exception::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				new ConstantStringType(\Exception::class),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant()
+				)),
+				new ConstantStringType(\Exception::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new ObjectType(\Exception::class),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new ConstantStringType(\Exception::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new ObjectType(\Exception::class),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new ConstantStringType(\stdClass::class),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new ObjectType(\Exception::class),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new ConstantStringType(\InvalidArgumentException::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new ObjectType(\Exception::class),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new ConstantStringType(\Throwable::class),
+				TrinaryLogic::createYes(), // should be no
+			],
+			[
+				new GenericClassStringType(new StaticType(\Exception::class)),
+				new ConstantStringType(\Exception::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericClassStringType(new StaticType(\InvalidArgumentException::class)),
+				new ConstantStringType(\Exception::class),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new GenericClassStringType(new StaticType(\Throwable::class)),
+				new ConstantStringType(\Exception::class),
+				TrinaryLogic::createYes(),
 			],
 		];
 	}

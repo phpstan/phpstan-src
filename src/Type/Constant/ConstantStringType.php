@@ -13,7 +13,10 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
@@ -61,15 +64,24 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof GenericClassStringType) {
-			$broker = Broker::getInstance();
-			if (!$broker->hasClass($this->getValue())) {
+			$genericType = $type->getGenericType();
+			if ($genericType instanceof MixedType) {
+				return TrinaryLogic::createMaybe();
+			}
+			if ($genericType instanceof StaticType) {
+				$genericType = $genericType->getStaticObjectType();
+			}
+
+			$isSuperType = $genericType->isSuperTypeOf(new ObjectType($this->getValue()));
+			if ($genericType instanceof TemplateType) {
+				return $isSuperType;
+			}
+
+			if ($isSuperType->maybe()) {
 				return TrinaryLogic::createNo();
 			}
-			$isSuperType = $type->getGenericType()->isSuperTypeOf(new ObjectType($this->getValue()));
-			if (!$isSuperType->yes()) {
-				return TrinaryLogic::createNo();
-			}
-			return TrinaryLogic::createMaybe();
+
+			return $isSuperType->and(TrinaryLogic::createMaybe());
 		}
 		if ($type instanceof ClassStringType) {
 			$broker = Broker::getInstance();

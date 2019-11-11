@@ -7,7 +7,9 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -63,9 +65,24 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			$objectType = new ObjectType($type->getValue());
-			$isSuperType = $this->type->isSuperTypeOf($objectType);
-			if (!$isSuperType->yes()) {
+			$genericType = $this->type;
+			if ($genericType instanceof MixedType) {
+				return TrinaryLogic::createYes();
+			}
+			if ($genericType instanceof StaticType) {
+				$genericType = $genericType->getStaticObjectType();
+			}
+
+			$isSuperType = $genericType->isSuperTypeOf(new ObjectType($type->getValue()));
+			if ($genericType instanceof TemplateType) {
+				if ($isSuperType->maybe()) {
+					return TrinaryLogic::createYes();
+				}
+
+				return $isSuperType;
+			}
+
+			if ($isSuperType->maybe()) {
 				return TrinaryLogic::createNo();
 			}
 

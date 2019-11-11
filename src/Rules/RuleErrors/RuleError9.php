@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+/**
+ * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
+ */
 class RuleError9 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\TipRuleError
 {
 

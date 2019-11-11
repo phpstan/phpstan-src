@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+/**
+ * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
+ */
 class RuleError7 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\FileRuleError
 {
 

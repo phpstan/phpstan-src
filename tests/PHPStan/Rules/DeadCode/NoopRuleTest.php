@@ -6,6 +6,9 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<NoopRule>
+ */
 class NoopRuleTest extends RuleTestCase
 {
 

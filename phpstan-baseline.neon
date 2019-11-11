@@ -333,11 +333,6 @@ parameters:
 			path: src/Rules/Constants/ConstantRule.php
 
 		-
-			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\NoopRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
-			count: 1
-			path: src/Rules/DeadCode/NoopRule.php
-
-		-
 			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\UnreachableStatementRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
 			count: 1
 			path: src/Rules/DeadCode/UnreachableStatementRule.php
@@ -1151,16 +1146,6 @@ parameters:
 			message: "#^Method PHPStan\\\\Rules\\\\Constants\\\\ConstantRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Rules/Constants/ConstantRuleTest.php
-
-		-
-			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\NoopRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
-			count: 1
-			path: tests/PHPStan/Rules/DeadCode/NoopRuleTest.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\DeadCode\\\\NoopRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Rules/DeadCode/NoopRuleTest.php
 
 		-
 			message: "#^Class PHPStan\\\\Rules\\\\DeadCode\\\\UnreachableStatementRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"

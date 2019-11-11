@@ -9,6 +9,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
@@ -195,6 +196,19 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				)),
 				new ConstantStringType('NonexistentClass'),
 				TrinaryLogic::createNo(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant()
+				)),
+				new UnionType([
+					new ConstantStringType(\DateTime::class),
+					new ConstantStringType(\Exception::class),
+				]),
+				TrinaryLogic::createYes(),
 			],
 		];
 	}

@@ -993,6 +993,9 @@ function testYieldFrom()
 	assertType('null', $yield);
 }
 
+/**
+ * @template T
+ */
 class StaticClassConstant
 {
 
@@ -1001,6 +1004,19 @@ class StaticClassConstant
 		$staticClassName = static::class;
 		assertType('class-string<static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)>', $staticClassName);
 		assertType('static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)', new $staticClassName);
+	}
+
+	/**
+	 * @param class-string<T> $type
+	 */
+	public function doBar(string $type)
+	{
+		if ($type !== Foo::class && $type !== C::class) {
+			assertType('class-string<T (class PHPStan\Generics\FunctionsAssertType\StaticClassConstant, argument)>', $type);
+			throw new \InvalidArgumentException;
+		}
+
+		assertType('\'PHPStan\\\\Generics\\\\FunctionsAssertType\\\\C\'|\'PHPStan\\\\Generics\\\\FunctionsAssertType\\\\Foo\'', $type);
 	}
 
 }

@@ -9543,12 +9543,18 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type-extensions.php');
 	}
 
+	public function dataArrayKey(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
+	}
+
 	/**
 	 * @dataProvider dataGenerics
 	 * @dataProvider dataGenericClassStringType
 	 * @dataProvider dataInstanceOf
 	 * @dataProvider dataIntegerRangeTypes
 	 * @dataProvider dataClosureReturnTypes
+	 * @dataProvider dataArrayKey
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

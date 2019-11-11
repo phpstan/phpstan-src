@@ -20,6 +20,7 @@ use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
@@ -92,7 +93,7 @@ class TypeNodeResolver
 
 	public function getCacheKey(): string
 	{
-		$key = 'v76-iterable-typehint';
+		$key = 'v77-array-key';
 		foreach ($this->extensions as $extension) {
 			$key .= sprintf('-%s', $extension->getCacheKey());
 		}
@@ -152,6 +153,9 @@ class TypeNodeResolver
 
 			case 'class-string':
 				return new ClassStringType();
+
+			case 'array-key':
+				return new BenevolentUnionType([new IntegerType(), new StringType()]);
 
 			case 'bool':
 			case 'boolean':

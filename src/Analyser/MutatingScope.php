@@ -1364,7 +1364,7 @@ class MutatingScope implements Scope
 						$namesToResolve[] = 'static';
 					} elseif (strtolower($constantClass) === 'static') {
 						if (strtolower($constantName) === 'class') {
-							return new ClassStringType();
+							return new GenericClassStringType(new StaticType($this->getClassReflection()->getName()));
 						}
 						return new MixedType();
 					}

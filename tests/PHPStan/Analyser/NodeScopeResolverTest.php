@@ -3137,7 +3137,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$arrToPop',
 			],
 			[
-				'class-string',
+				'class-string<static(BinaryOperations\NestedNamespace\Foo)>',
 				'static::class',
 			],
 			[

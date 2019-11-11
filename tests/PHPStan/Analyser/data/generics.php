@@ -992,3 +992,15 @@ function testYieldFrom()
 	$yield = yield from getGenerator();
 	assertType('null', $yield);
 }
+
+class StaticClassConstant
+{
+
+	public function doFoo()
+	{
+		$staticClassName = static::class;
+		assertType('class-string<static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)>', $staticClassName);
+		assertType('static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)', new $staticClassName);
+	}
+
+}

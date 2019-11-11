@@ -97,18 +97,18 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$this->assertInstanceOf(Error::class, $result[0]);
 		$this->assertSame('Fail.', $result[0]->getMessage());
 		$this->assertSame(6, $result[0]->getLine());
-		$this->assertSame(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
+		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
 
 		$this->assertInstanceOf(Error::class, $result[1]);
 		$this->assertSame('Fail.', $result[1]->getMessage());
 		$this->assertSame(7, $result[1]->getLine());
-		$this->assertSame(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
+		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
 
 		$this->assertInstanceOf(Error::class, $result[2]);
 		$this->assertStringContainsString('Ignored error pattern #Fail\.#', $result[2]->getMessage());
 		$this->assertStringContainsString('is expected to occur 1 time, but occured 3 times.', $result[2]->getMessage());
 		$this->assertSame(6, $result[2]->getLine());
-		$this->assertSame(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
+		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 	}
 
 	public function testIgnoreErrorByPathAndCountLessThanExpected(): void
@@ -141,17 +141,17 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$this->assertInstanceOf(Error::class, $result[0]);
 		$this->assertSame('Fail.', $result[0]->getMessage());
 		$this->assertSame(5, $result[0]->getLine());
-		$this->assertSame(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
+		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
 
 		$this->assertInstanceOf(Error::class, $result[1]);
 		$this->assertSame('Fail.', $result[1]->getMessage());
 		$this->assertSame(6, $result[1]->getLine());
-		$this->assertSame(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
+		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
 
 		$this->assertInstanceOf(Error::class, $result[2]);
 		$this->assertSame('Fail.', $result[2]->getMessage());
 		$this->assertSame(7, $result[2]->getLine());
-		$this->assertSame(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
+		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 
 		$this->assertIsString($result[3]);
 		$this->assertStringContainsString('Ignored error pattern #Some custom error\.# in path', $result[3]);

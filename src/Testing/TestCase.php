@@ -339,6 +339,21 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return self::getContainer()->getByType(FileHelper::class);
 	}
 
+	/**
+	 * Provides a DIRECTORY_SEPARATOR agnostic assertion helper, to compare file paths.
+	 *
+	 * @param string $expected
+	 * @param string $actual
+	 * @param string $message
+	 */
+	protected function assertSamePaths(string $expected, string $actual, string $message = ''): void
+	{
+		$expected = $this->getFileHelper()->normalizePath($expected);
+		$actual = $this->getFileHelper()->normalizePath($actual);
+
+		$this->assertSame($expected, $actual, $message);
+	}
+
 	protected function skipIfNotOnWindows(): void
 	{
 		if (DIRECTORY_SEPARATOR === '\\') {

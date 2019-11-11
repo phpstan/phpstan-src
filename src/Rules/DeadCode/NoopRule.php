@@ -6,9 +6,11 @@ use PhpParser\Node;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ */
 class NoopRule implements Rule
 {
 
@@ -25,11 +27,6 @@ class NoopRule implements Rule
 		return Node\Stmt\Expression::class;
 	}
 
-	/**
-	 * @param Node\Stmt\Expression $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$originalExpr = $node->expr;

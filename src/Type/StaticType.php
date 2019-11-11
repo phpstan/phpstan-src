@@ -111,7 +111,7 @@ class StaticType implements TypeWithClassName
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return sprintf('static(%s)', $this->getStaticObjectType()->describe($level));
+		return sprintf('static(%s)', $this->getClassName());
 	}
 
 	public function canAccessProperties(): TrinaryLogic

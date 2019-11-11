@@ -1,0 +1,4 @@
+parameters:
+	stubFiles:
+		- data/stubs/function.php
+

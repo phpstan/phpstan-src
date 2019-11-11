@@ -33,6 +33,9 @@ class StubPhpDocProvider
 	/** @var array<string, array<string, ResolvedPhpDocBlock>>|null */
 	private $methodMap;
 
+	/** @var array<string, ResolvedPhpDocBlock>|null */
+	private $functionMap;
+
 	/** @var bool */
 	private $initialized = false;
 
@@ -95,6 +98,19 @@ class StubPhpDocProvider
 		return null;
 	}
 
+	public function findFunctionPhpDoc(string $functionName): ?ResolvedPhpDocBlock
+	{
+		if (!$this->initialized) {
+			$this->initialize();
+		}
+
+		if (isset($this->functionMap[$functionName])) {
+			return $this->functionMap[$functionName];
+		}
+
+		return null;
+	}
+
 	private function initialize(): void
 	{
 		if ($this->initializing) {
@@ -127,6 +143,25 @@ class StubPhpDocProvider
 
 	private function processNode(string $stubFile, Node $node): void
 	{
+		if ($node instanceof Node\Stmt\Namespace_) {
+			foreach ($node->stmts as $stmt) {
+				$this->processNode($stubFile, $stmt);
+			}
+			return;
+		}
+		if ($node instanceof Node\Stmt\Function_) {
+			if ($node->getDocComment() !== null) {
+				$functionName = (string) $node->namespacedName;
+				$this->functionMap[$functionName] = $this->fileTypeMapper->getResolvedPhpDoc(
+					$stubFile,
+					null,
+					null,
+					$functionName,
+					$node->getDocComment()->getText()
+				);
+			}
+			return;
+		}
 		if (!$node instanceof Class_ && !$node instanceof Interface_ && !$node instanceof Trait_) {
 			return;
 		}

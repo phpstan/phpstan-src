@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Parameter #1 $i of function StubsIntegrationTest\\foo expects int, string given.",
+        "line": 11,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $i of function StubsIntegrationTest\\foo expects int, string given.",
+        "line": 13,
+        "ignorable": true
+    }
+]

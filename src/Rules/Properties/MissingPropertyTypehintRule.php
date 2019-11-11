@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -37,32 +38,32 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 		$propertyType = $propertyReflection->getReadableType();
 		if ($propertyType instanceof MixedType && !$propertyType->isExplicitMixed()) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Property %s::$%s has no typehint specified.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
 					$node->name->name
-				),
+				))->build(),
 			];
 		}
 
 		$messages = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($propertyType) as $iterableType) {
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s type has no value type specified in iterable type %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->name->name,
 				$iterableType->describe(VerbosityLevel::typeOnly())
-			);
+			))->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($propertyType) as [$name, $genericTypeNames]) {
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s with generic %s does not specify its types: %s',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->name->name,
 				$name,
 				implode(', ', $genericTypeNames)
-			);
+			))->build();
 		}
 
 		return $messages;

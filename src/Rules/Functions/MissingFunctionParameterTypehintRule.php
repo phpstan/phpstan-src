@@ -10,9 +10,13 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ */
 final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 {
 
@@ -36,12 +40,6 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Stmt\Function_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Function_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 *
-	 * @return string[] errors
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$functionName = $node->name->name;
@@ -68,38 +66,40 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 	/**
 	 * @param \PHPStan\Reflection\FunctionReflection $functionReflection
 	 * @param \PHPStan\Reflection\ParameterReflection $parameterReflection
-	 * @return string[]
+	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	private function checkFunctionParameter(FunctionReflection $functionReflection, ParameterReflection $parameterReflection): array
 	{
 		$parameterType = $parameterReflection->getType();
 
 		if ($parameterType instanceof MixedType && !$parameterType->isExplicitMixed()) {
-			return [sprintf(
-				'Function %s() has parameter $%s with no typehint specified.',
-				$functionReflection->getName(),
-				$parameterReflection->getName()
-			)];
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Function %s() has parameter $%s with no typehint specified.',
+					$functionReflection->getName(),
+					$parameterReflection->getName()
+				))->build(),
+			];
 		}
 
 		$messages = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableType) {
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() has parameter $%s with no value type specified in iterable type %s.',
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$iterableType->describe(VerbosityLevel::typeOnly())
-			);
+			))->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() has parameter $%s with generic %s but does not specify its types: %s',
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames)
-			);
+			))->build();
 		}
 
 		return $messages;

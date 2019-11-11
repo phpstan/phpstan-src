@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\MissingTypehintCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<MissingFunctionReturnTypehintRule>
+ */
 class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

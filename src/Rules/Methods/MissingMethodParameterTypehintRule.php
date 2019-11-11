@@ -8,6 +8,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -52,41 +53,43 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 	/**
 	 * @param \PHPStan\Reflection\MethodReflection $methodReflection
 	 * @param \PHPStan\Reflection\ParameterReflection $parameterReflection
-	 * @return string[]
+	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	private function checkMethodParameter(MethodReflection $methodReflection, ParameterReflection $parameterReflection): array
 	{
 		$parameterType = $parameterReflection->getType();
 
 		if ($parameterType instanceof MixedType && !$parameterType->isExplicitMixed()) {
-			return [sprintf(
-				'Method %s::%s() has parameter $%s with no typehint specified.',
-				$methodReflection->getDeclaringClass()->getDisplayName(),
-				$methodReflection->getName(),
-				$parameterReflection->getName()
-			)];
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Method %s::%s() has parameter $%s with no typehint specified.',
+					$methodReflection->getDeclaringClass()->getDisplayName(),
+					$methodReflection->getName(),
+					$parameterReflection->getName()
+				))->build(),
+			];
 		}
 
 		$messages = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableType) {
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() has parameter $%s with no value type specified in iterable type %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
 				$iterableType->describe(VerbosityLevel::typeOnly())
-			);
+			))->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() has parameter $%s with generic %s but does not specify its types: %s',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames)
-			);
+			))->build();
 		}
 
 		return $messages;

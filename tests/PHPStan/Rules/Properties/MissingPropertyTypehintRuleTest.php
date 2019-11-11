@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\MissingTypehintCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<MissingPropertyTypehintRule>
+ */
 class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

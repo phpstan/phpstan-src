@@ -408,16 +408,6 @@ parameters:
 			path: src/Rules/Functions/InnerFunctionRule.php
 
 		-
-			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionParameterTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
-			count: 1
-			path: src/Rules/Functions/MissingFunctionParameterTypehintRule.php
-
-		-
-			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionReturnTypehintRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
-			count: 1
-			path: src/Rules/Functions/MissingFunctionReturnTypehintRule.php
-
-		-
 			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\NonExistentDefinedFunctionRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
 			count: 1
 			path: src/Rules/Functions/NonExistentDefinedFunctionRule.php
@@ -1318,26 +1308,6 @@ parameters:
 			path: tests/PHPStan/Rules/Functions/InnerFunctionRuleTest.php
 
 		-
-			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionParameterTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
-			count: 1
-			path: tests/PHPStan/Rules/Functions/MissingFunctionParameterTypehintRuleTest.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionParameterTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Rules/Functions/MissingFunctionParameterTypehintRuleTest.php
-
-		-
-			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
-			count: 1
-			path: tests/PHPStan/Rules/Functions/MissingFunctionReturnTypehintRuleTest.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Functions\\\\MissingFunctionReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Rules/Functions/MissingFunctionReturnTypehintRuleTest.php
-
-		-
 			message: "#^Class PHPStan\\\\Rules\\\\Functions\\\\PrintfParametersRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
 			count: 1
 			path: tests/PHPStan/Rules/Functions/PrintfParametersRuleTest.php
@@ -1536,26 +1506,6 @@ parameters:
 			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\MethodSignatureRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Rules/Methods/MethodSignatureRuleTest.php
-
-		-
-			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\MissingMethodParameterTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
-			count: 1
-			path: tests/PHPStan/Rules/Methods/MissingMethodParameterTypehintRuleTest.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\MissingMethodParameterTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Rules/Methods/MissingMethodParameterTypehintRuleTest.php
-
-		-
-			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\MissingMethodReturnTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
-			count: 1
-			path: tests/PHPStan/Rules/Methods/MissingMethodReturnTypehintRuleTest.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Methods\\\\MissingMethodReturnTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Rules/Methods/MissingMethodReturnTypehintRuleTest.php
 
 		-
 			message: "#^Class PHPStan\\\\Rules\\\\Methods\\\\ReturnTypeRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
@@ -1766,16 +1716,6 @@ parameters:
 			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\ExistingClassesInPropertiesRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Rules/Properties/ExistingClassesInPropertiesRuleTest.php
-
-		-
-			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\MissingPropertyTypehintRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
-			count: 1
-			path: tests/PHPStan/Rules/Properties/MissingPropertyTypehintRuleTest.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Properties\\\\MissingPropertyTypehintRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Rules/Properties/MissingPropertyTypehintRuleTest.php
 
 		-
 			message: "#^Class PHPStan\\\\Rules\\\\Properties\\\\ReadingWriteOnlyPropertiesRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"

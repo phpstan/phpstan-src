@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\MissingTypehintCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<MissingMethodParameterTypehintRule>
+ */
 class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

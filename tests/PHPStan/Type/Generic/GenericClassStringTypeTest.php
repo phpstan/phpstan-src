@@ -186,6 +186,16 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant()
+				)),
+				new ConstantStringType('NonexistentClass'),
+				TrinaryLogic::createNo(),
+			],
 		];
 	}
 

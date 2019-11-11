@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Broker\Broker;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
@@ -48,6 +49,11 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($type instanceof ConstantStringType) {
+			$broker = Broker::getInstance();
+			if (!$broker->hasClass($type->getValue())) {
+				return TrinaryLogic::createNo();
+			}
+
 			$objectType = new ObjectType($type->getValue());
 		} elseif ($type instanceof self) {
 			$objectType = $type->type;

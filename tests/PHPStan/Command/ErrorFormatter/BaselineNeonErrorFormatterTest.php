@@ -154,8 +154,8 @@ class BaselineNeonErrorFormatterTest extends TestBaseFormatter
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 
 		$result  = new AnalysisResult(
-			[new Error("Error message\nwith\r\ndifferent\rnewlines", 'Testfile')],
-			["Error message\nwith\r\ndifferent\rnewlines"],
+			[new Error('Error message\nwith\r\ndifferent\rnewlines', 'Testfile')],
+			['Error message\nwith\r\ndifferent\rnewlines'],
 			false,
 			false,
 			null

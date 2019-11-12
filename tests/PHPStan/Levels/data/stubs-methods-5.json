@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Parameter #1 $i of method StubsIntegrationTest\\Foo::doFoo() expects int, string given.",
+        "line": 16,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $i of method StubsIntegrationTest\\Foo::doFoo() expects int, string given.",
+        "line": 17,
+        "ignorable": true
+    }
+]

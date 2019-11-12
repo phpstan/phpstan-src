@@ -11,6 +11,7 @@ class StubsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 
 		return [
 			['stubs-functions'],
+			['stubs-methods'],
 		];
 	}
 

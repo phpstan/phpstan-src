@@ -1,4 +1,5 @@
 parameters:
 	stubFiles:
 		- data/stubs/function.php
+		- ../../notAutoloaded/stubs-methods.php
 

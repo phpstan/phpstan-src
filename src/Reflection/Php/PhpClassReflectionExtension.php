@@ -466,6 +466,46 @@ class PhpClassReflectionExtension
 			);
 		}
 
+		$declaringTraitName = $this->findMethodTrait($methodReflection);
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
+		if ($resolvedPhpDoc === null) {
+			if ($declaringClass->getFileName() !== false) {
+				$docComment = $methodReflection->getDocComment() !== false
+					? $methodReflection->getDocComment()
+					: null;
+
+				$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
+					$docComment,
+					$declaringClass,
+					$declaringTraitName,
+					$methodReflection->getName(),
+					$declaringClass->getFileName()
+				);
+
+				if ($phpDocBlock !== null) {
+					$phpDocBlockClassReflection = $phpDocBlock->getClassReflection();
+					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+						$phpDocBlock->getFile(),
+						$phpDocBlockClassReflection->getName(),
+						$phpDocBlock->getTrait(),
+						$methodReflection->getName(),
+						$phpDocBlock->getDocComment()
+					);
+					$isPhpDocBlockExplicit = $phpDocBlock->isExplicit();
+				}
+			}
+		} else {
+			$phpDocBlockClassReflection = $declaringClass;
+			$isPhpDocBlockExplicit = true;
+		}
+
+		$declaringTrait = null;
+		if (
+			$declaringTraitName !== null && $this->broker->hasClass($declaringTraitName)
+		) {
+			$declaringTrait = $this->broker->getClass($declaringTraitName);
+		}
+
 		$templateTypeMap = TemplateTypeMap::createEmpty();
 		$phpDocParameterTypes = [];
 		$phpDocReturnType = null;
@@ -474,54 +514,28 @@ class PhpClassReflectionExtension
 		$isDeprecated = false;
 		$isInternal = false;
 		$isFinal = false;
-		$declaringTraitName = $this->findMethodTrait($methodReflection);
-		if ($declaringClass->getFileName() !== false) {
-			$docComment = $methodReflection->getDocComment() !== false
-				? $methodReflection->getDocComment()
-				: null;
-
-			$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
-				$docComment,
-				$declaringClass,
-				$declaringTraitName,
-				$methodReflection->getName(),
-				$declaringClass->getFileName()
-			);
-
-			if ($phpDocBlock !== null) {
-				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-					$phpDocBlock->getFile(),
-					$phpDocBlock->getClassReflection()->getName(),
-					$phpDocBlock->getTrait(),
-					$methodReflection->getName(),
-					$phpDocBlock->getDocComment()
-				);
-				$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
-				$phpDocParameterTypes = array_map(static function (ParamTag $tag) use ($phpDocBlock): Type {
-					return TemplateTypeHelper::resolveTemplateTypes(
-						$tag->getType(),
-						$phpDocBlock->getClassReflection()->getActiveTemplateTypeMap()
-					);
-				}, $resolvedPhpDoc->getParamTags());
-				$nativeReturnType = TypehintHelper::decideTypeFromReflection(
-					$methodReflection->getReturnType(),
-					null,
-					$declaringClass->getName()
-				);
-				$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlock, $resolvedPhpDoc, $nativeReturnType);
-				$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
-				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-				$isDeprecated = $resolvedPhpDoc->isDeprecated();
-				$isInternal = $resolvedPhpDoc->isInternal();
-				$isFinal = $resolvedPhpDoc->isFinal();
+		if ($resolvedPhpDoc !== null) {
+			if (!isset($phpDocBlockClassReflection) || !isset($isPhpDocBlockExplicit)) {
+				throw new \PHPStan\ShouldNotHappenException();
 			}
-		}
-
-		$declaringTrait = null;
-		if (
-			$declaringTraitName !== null && $this->broker->hasClass($declaringTraitName)
-		) {
-			$declaringTrait = $this->broker->getClass($declaringTraitName);
+			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
+			$phpDocParameterTypes = array_map(static function (ParamTag $tag) use ($phpDocBlockClassReflection): Type {
+				return TemplateTypeHelper::resolveTemplateTypes(
+					$tag->getType(),
+					$phpDocBlockClassReflection->getActiveTemplateTypeMap()
+				);
+			}, $resolvedPhpDoc->getParamTags());
+			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
+				$methodReflection->getReturnType(),
+				null,
+				$declaringClass->getName()
+			);
+			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $isPhpDocBlockExplicit, $resolvedPhpDoc, $nativeReturnType);
+			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
+			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+			$isDeprecated = $resolvedPhpDoc->isDeprecated();
+			$isInternal = $resolvedPhpDoc->isInternal();
+			$isFinal = $resolvedPhpDoc->isFinal();
 		}
 
 		return $this->methodReflectionFactory->create(
@@ -812,7 +826,7 @@ class PhpClassReflectionExtension
 		return null;
 	}
 
-	private function getPhpDocReturnType(PhpDocBlock $phpDocBlock, ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type
+	private function getPhpDocReturnType(ClassReflection $phpDocBlockClassReflection, bool $isPhpDocBlockExplicit, ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type
 	{
 		$returnTag = $resolvedPhpDoc->getReturnTag();
 
@@ -823,10 +837,10 @@ class PhpClassReflectionExtension
 		$phpDocReturnType = $returnTag->getType();
 		$phpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 			$phpDocReturnType,
-			$phpDocBlock->getClassReflection()->getActiveTemplateTypeMap()
+			$phpDocBlockClassReflection->getActiveTemplateTypeMap()
 		);
 
-		if ($phpDocBlock->isExplicit() || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
+		if ($isPhpDocBlockExplicit || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
 			return $phpDocReturnType;
 		}
 

@@ -168,7 +168,7 @@ class BaselineNeonErrorFormatterTest extends TestBaseFormatter
 		self::assertSame(
 			trim(Neon::encode(['parameters' => ['ignoreErrors' => [
 				[
-					'message' => "#^Error message\nwith\ndifferent\nnewlines$#",
+					'message' => '#^Error message\\\\nwith\\\\ndifferent\\\\nnewlines$',
 					'count' => 1,
 					'path' => 'Testfile',
 				],

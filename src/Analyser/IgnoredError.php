@@ -50,8 +50,8 @@ class IgnoredError
 	{
 		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
 		$errorMessage = $error->getMessage();
-		$errorMessage = preg_replace('/\r\n|\r|\n/', "\n", $errorMessage);
-		$ignoredErrorPattern = preg_replace('/\r\n|\r|\n/', "\n", $ignoredErrorPattern);
+		$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);
+		$ignoredErrorPattern = str_replace(['\r\n', '\r'], '\n', $ignoredErrorPattern);
 		if ($errorMessage === null || $ignoredErrorPattern === null) {
 			throw new \Exception('Error while executing regex: ' . preg_last_error());
 		}

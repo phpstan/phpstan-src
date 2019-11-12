@@ -52,9 +52,6 @@ class IgnoredError
 		$errorMessage = $error->getMessage();
 		$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);
 		$ignoredErrorPattern = str_replace(['\r\n', '\r'], '\n', $ignoredErrorPattern);
-		if ($errorMessage === null || $ignoredErrorPattern === null) {
-			throw new \Exception('Error while executing regex: ' . preg_last_error());
-		}
 
 		if ($path !== null) {
 			$fileExcluder = new FileExcluder($fileHelper, [$path]);

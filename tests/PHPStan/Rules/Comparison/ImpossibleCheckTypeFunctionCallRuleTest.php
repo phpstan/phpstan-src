@@ -141,10 +141,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					585,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'undefinedMethod\' will always evaluate to false.',
-					588,
-				],
-				[
 					'Call to function method_exists() with \'UndefinedClass\' and string will always evaluate to false.',
 					594,
 				],
@@ -154,43 +150,43 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				],
 				[
 					'Call to function method_exists() with CheckTypeFunctionCall\MethodExists and \'testWithNewObjectIn…\' will always evaluate to true.',
-					606,
+					609,
 				],
 				[
 					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'method\' will always evaluate to true.',
-					621,
-				],
-				[
-					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'someAnother\' will always evaluate to true.',
 					624,
 				],
 				[
-					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'someAnother\' will always evaluate to true.',
 					627,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'unknown\' will always evaluate to false.',
 					630,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'method\' will always evaluate to true.',
 					633,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'someAnother\' will always evaluate to true.',
 					636,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
 					639,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'method\' will always evaluate to true.',
 					642,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'someAnother\' will always evaluate to true.',
 					645,
+				],
+				[
+					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
+					648,
 				],
 			]
 		);
@@ -263,10 +259,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					571,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'undefinedMethod\' will always evaluate to false.',
-					588,
-				],
-				[
 					'Call to function method_exists() with \'UndefinedClass\' and string will always evaluate to false.',
 					594,
 				],
@@ -276,15 +268,15 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				],
 				[
 					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'unknown\' will always evaluate to false.',
-					627,
+					630,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
-					636,
+					639,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
-					645,
+					648,
 				],
 			]
 		);

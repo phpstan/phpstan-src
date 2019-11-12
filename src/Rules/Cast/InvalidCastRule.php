@@ -5,13 +5,15 @@ namespace PHPStan\Rules\Cast;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Cast>
+ */
 class InvalidCastRule implements \PHPStan\Rules\Rule
 {
 
@@ -35,11 +37,6 @@ class InvalidCastRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\Cast::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Cast $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$castTypeCallback = static function (Type $type) use ($node): ?Type {

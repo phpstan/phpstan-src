@@ -2,8 +2,12 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Ternary>
+ */
 class TernaryOperatorConstantConditionRule implements \PHPStan\Rules\Rule
 {
 
@@ -22,11 +26,6 @@ class TernaryOperatorConstantConditionRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\Ternary::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Ternary $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(
 		\PhpParser\Node $node,
 		\PHPStan\Analyser\Scope $scope
@@ -35,10 +34,10 @@ class TernaryOperatorConstantConditionRule implements \PHPStan\Rules\Rule
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);
 		if ($exprType instanceof ConstantBooleanType) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Ternary operator condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false'
-				),
+				))->build(),
 			];
 		}
 

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Methods;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<MethodSignatureRule>
+ */
 class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

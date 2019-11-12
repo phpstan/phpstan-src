@@ -8,10 +8,14 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\MethodReturnStatementsNode>
+ */
 class TooWideMethodReturnTypehintRule implements Rule
 {
 
@@ -20,11 +24,6 @@ class TooWideMethodReturnTypehintRule implements Rule
 		return MethodReturnStatementsNode::class;
 	}
 
-	/**
-	 * @param \PHPStan\Node\MethodReturnStatementsNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$method = $scope->getFunction();
@@ -72,7 +71,12 @@ class TooWideMethodReturnTypehintRule implements Rule
 				continue;
 			}
 
-			$messages[] = sprintf('Method %s::%s() never returns %s so it can be removed from the return typehint.', $method->getDeclaringClass()->getDisplayName(), $method->getName(), $type->describe(VerbosityLevel::typeOnly()));
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Method %s::%s() never returns %s so it can be removed from the return typehint.',
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName(),
+				$type->describe(VerbosityLevel::typeOnly())
+			))->build();
 		}
 
 		return $messages;

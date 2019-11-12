@@ -10,6 +10,9 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ */
 class MethodTemplateTypeRule implements Rule
 {
 
@@ -33,11 +36,6 @@ class MethodTemplateTypeRule implements Rule
 		return Node\Stmt\ClassMethod::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Interface_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$docComment = $node->getDocComment();

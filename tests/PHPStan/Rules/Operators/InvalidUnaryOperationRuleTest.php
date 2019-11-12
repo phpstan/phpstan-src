@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Operators;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidUnaryOperationRule>
+ */
 class InvalidUnaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

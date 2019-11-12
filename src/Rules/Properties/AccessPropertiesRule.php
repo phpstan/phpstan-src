@@ -5,11 +5,15 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node\Expr\PropertyFetch;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\PropertyFetch>
+ */
 class AccessPropertiesRule implements \PHPStan\Rules\Rule
 {
 
@@ -38,11 +42,6 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 		return PropertyFetch::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\PropertyFetch $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if (!$node->name instanceof \PhpParser\Node\Identifier) {
@@ -69,7 +68,11 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 
 		if (!$type->canAccessProperties()->yes()) {
 			return [
-				sprintf('Cannot access property $%s on %s.', $name, $type->describe(VerbosityLevel::typeOnly())),
+				RuleErrorBuilder::message(sprintf(
+					'Cannot access property $%s on %s.',
+					$name,
+					$type->describe(VerbosityLevel::typeOnly())
+				))->build(),
 			];
 		}
 
@@ -102,11 +105,11 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 				while ($parentClassReflection !== false) {
 					if ($parentClassReflection->hasProperty($name)) {
 						return [
-							sprintf(
+							RuleErrorBuilder::message(sprintf(
 								'Access to private property $%s of parent class %s.',
 								$name,
 								$parentClassReflection->getDisplayName()
-							),
+							))->build(),
 						];
 					}
 
@@ -115,23 +118,23 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 			}
 
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Access to an undefined property %s::$%s.',
 					$type->describe(VerbosityLevel::typeOnly()),
 					$name
-				),
+				))->build(),
 			];
 		}
 
 		$propertyReflection = $type->getProperty($name, $scope);
 		if (!$scope->canAccessProperty($propertyReflection)) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Access to %s property %s::$%s.',
 					$propertyReflection->isPrivate() ? 'private' : 'protected',
 					$type->describe(VerbosityLevel::typeOnly()),
 					$name
-				),
+				))->build(),
 			];
 		}
 

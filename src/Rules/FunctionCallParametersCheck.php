@@ -47,7 +47,7 @@ class FunctionCallParametersCheck
 	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\New_ $funcCall
 	 * @param string[] $messages Nine message templates
-	 * @return string[]
+	 * @return RuleError[]
 	 */
 	public function check(
 		ParametersAcceptor $parametersAcceptor,
@@ -84,24 +84,24 @@ class FunctionCallParametersCheck
 			|| ($this->checkExtraArguments && $invokedParametersCount > $functionParametersMaxCount)
 		) {
 			if ($functionParametersMinCount === $functionParametersMaxCount) {
-				$errors[] = sprintf(
+				$errors[] = RuleErrorBuilder::message(sprintf(
 					$invokedParametersCount === 1 ? $messages[0] : $messages[1],
 					$invokedParametersCount,
 					$functionParametersMinCount
-				);
+				))->build();
 			} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
-				$errors[] = sprintf(
+				$errors[] = RuleErrorBuilder::message(sprintf(
 					$invokedParametersCount === 1 ? $messages[2] : $messages[3],
 					$invokedParametersCount,
 					$functionParametersMinCount
-				);
+				))->build();
 			} elseif ($functionParametersMaxCount !== -1) {
-				$errors[] = sprintf(
+				$errors[] = RuleErrorBuilder::message(sprintf(
 					$invokedParametersCount === 1 ? $messages[4] : $messages[5],
 					$invokedParametersCount,
 					$functionParametersMinCount,
 					$functionParametersMaxCount
-				);
+				))->build();
 			}
 		}
 
@@ -110,7 +110,7 @@ class FunctionCallParametersCheck
 			&& !$scope->isInFirstLevelStatement()
 			&& !$funcCall instanceof \PhpParser\Node\Expr\New_
 		) {
-			$errors[] = $messages[7];
+			$errors[] = RuleErrorBuilder::message($messages[7])->build();
 		}
 
 		if (!$this->checkArgumentTypes && !$this->checkArgumentsPassedByReference) {
@@ -136,11 +136,11 @@ class FunctionCallParametersCheck
 					!$iterableTypeResultType instanceof ErrorType
 					&& !$iterableTypeResultType->isIterable()->yes()
 				) {
-					$errors[] = sprintf(
+					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Only iterables can be unpacked, %s given in argument #%d.',
 						$iterableTypeResultType->describe(VerbosityLevel::typeOnly()),
 						$i + 1
-					);
+					))->build();
 				}
 			}
 
@@ -192,13 +192,13 @@ class FunctionCallParametersCheck
 				$verbosityLevel = TypeUtils::containsCallable($parameterType) || count(TypeUtils::getConstantArrays($parameterType)) > 0
 					? VerbosityLevel::value()
 					: VerbosityLevel::typeOnly();
-				$errors[] = sprintf(
+				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[6],
 					$i + 1,
 					sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName()),
 					$parameterType->describe($verbosityLevel),
 					$argumentValueType->describe($verbosityLevel)
-				);
+				))->build();
 			}
 
 			if (
@@ -212,11 +212,11 @@ class FunctionCallParametersCheck
 				continue;
 			}
 
-			$errors[] = sprintf(
+			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
 				$i + 1,
 				sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName())
-			);
+			))->build();
 		}
 
 		foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
@@ -224,7 +224,7 @@ class FunctionCallParametersCheck
 				continue;
 			}
 
-			$errors[] = sprintf($messages[9], $name);
+			$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->build();
 		}
 
 		return $errors;

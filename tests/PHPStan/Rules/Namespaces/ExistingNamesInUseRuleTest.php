@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Namespaces;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ExistingNamesInUseRule>
+ */
 class ExistingNamesInUseRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

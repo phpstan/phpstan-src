@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Functions;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<CallToNonExistentFunctionRule>
+ */
 class CallToNonExistentFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

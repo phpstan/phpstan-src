@@ -5,8 +5,10 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\FunctionDefinitionCheck;
-use PHPStan\Rules\RuleError;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrowFunction>
+ */
 class ExistingClassesInArrowFunctionTypehintsRule implements \PHPStan\Rules\Rule
 {
 
@@ -23,11 +25,6 @@ class ExistingClassesInArrowFunctionTypehintsRule implements \PHPStan\Rules\Rule
 		return Node\Expr\ArrowFunction::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\ArrowFunction $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		return $this->check->checkAnonymousFunction(

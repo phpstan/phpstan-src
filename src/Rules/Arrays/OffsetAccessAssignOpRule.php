@@ -4,12 +4,16 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\AssignOp>
+ */
 class OffsetAccessAssignOpRule implements \PHPStan\Rules\Rule
 {
 
@@ -26,11 +30,6 @@ class OffsetAccessAssignOpRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\AssignOp::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\AssignOp $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if (!$node->var instanceof ArrayDimFetch) {
@@ -79,17 +78,21 @@ class OffsetAccessAssignOpRule implements \PHPStan\Rules\Rule
 		}
 
 		if ($dimType === null) {
-			return [sprintf(
-				'Cannot assign new offset to %s.',
-				$varType->describe(VerbosityLevel::typeOnly())
-			)];
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Cannot assign new offset to %s.',
+					$varType->describe(VerbosityLevel::typeOnly())
+				))->build(),
+			];
 		}
 
-		return [sprintf(
-			'Cannot assign offset %s to %s.',
-			$dimType->describe(VerbosityLevel::value()),
-			$varType->describe(VerbosityLevel::typeOnly())
-		)];
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Cannot assign offset %s to %s.',
+				$dimType->describe(VerbosityLevel::value()),
+				$varType->describe(VerbosityLevel::typeOnly())
+			))->build(),
+		];
 	}
 
 }

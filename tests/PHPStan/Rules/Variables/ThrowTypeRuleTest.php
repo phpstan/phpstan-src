@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ThrowTypeRule>
+ */
 class ThrowTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

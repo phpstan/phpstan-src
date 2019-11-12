@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInTypehintsRule>
+ */
 class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

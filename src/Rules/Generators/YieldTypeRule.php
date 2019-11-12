@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\IntegerType;
@@ -14,6 +13,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Yield_>
+ */
 class YieldTypeRule implements Rule
 {
 
@@ -32,11 +34,6 @@ class YieldTypeRule implements Rule
 		return Node\Expr\Yield_::class;
 	}
 
-	/**
-	 * @param Node\Expr\Yield_ $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$anonymousFunctionReturnType = $scope->getAnonymousFunctionReturnType();

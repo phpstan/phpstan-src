@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<NumberComparisonOperatorsConstantConditionRule>
+ */
 class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 {
 

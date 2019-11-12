@@ -6,9 +6,11 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\UnreachableStatementNode>
+ */
 class UnreachableStatementRule implements Rule
 {
 
@@ -17,11 +19,6 @@ class UnreachableStatementRule implements Rule
 		return UnreachableStatementNode::class;
 	}
 
-	/**
-	 * @param UnreachableStatementNode $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node->getOriginalStatement() instanceof Node\Stmt\Nop) {

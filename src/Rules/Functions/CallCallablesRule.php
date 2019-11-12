@@ -6,12 +6,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ */
 class CallCallablesRule implements \PHPStan\Rules\Rule
 {
 
@@ -40,11 +44,6 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\FuncCall::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\FuncCall $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(
 		\PhpParser\Node $node,
 		Scope $scope
@@ -70,12 +69,16 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 		$isCallable = $type->isCallable();
 		if ($isCallable->no()) {
 			return [
-				sprintf('Trying to invoke %s but it\'s not a callable.', $type->describe(VerbosityLevel::value())),
+				RuleErrorBuilder::message(
+					sprintf('Trying to invoke %s but it\'s not a callable.', $type->describe(VerbosityLevel::value()))
+				)->build(),
 			];
 		}
 		if ($this->reportMaybes && $isCallable->maybe()) {
 			return [
-				sprintf('Trying to invoke %s but it might not be a callable.', $type->describe(VerbosityLevel::value())),
+				RuleErrorBuilder::message(
+					sprintf('Trying to invoke %s but it might not be a callable.', $type->describe(VerbosityLevel::value()))
+				)->build(),
 			];
 		}
 
@@ -87,12 +90,12 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 			&& $parametersAcceptors[0] instanceof InaccessibleMethod
 		) {
 			$method = $parametersAcceptors[0]->getMethod();
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Call to %s method %s() of class %s.',
 				$method->isPrivate() ? 'private' : 'protected',
 				$method->getName(),
 				$method->getDeclaringClass()->getDisplayName()
-			);
+			))->build();
 		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(

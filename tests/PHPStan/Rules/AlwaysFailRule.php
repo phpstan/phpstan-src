@@ -5,6 +5,9 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ */
 class AlwaysFailRule implements \PHPStan\Rules\Rule
 {
 

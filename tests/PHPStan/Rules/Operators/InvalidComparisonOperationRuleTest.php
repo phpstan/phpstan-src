@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Operators;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidComparisonOperationRule>
+ */
 class InvalidComparisonOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

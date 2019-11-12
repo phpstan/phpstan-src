@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<DeadForeachRule>
+ */
 class DeadForeachRuleTest extends RuleTestCase
 {
 

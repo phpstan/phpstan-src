@@ -8,6 +8,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ */
 class FunctionTemplateTypeRule implements Rule
 {
 
@@ -31,11 +34,6 @@ class FunctionTemplateTypeRule implements Rule
 		return Node\Stmt\Function_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Function_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$docComment = $node->getDocComment();

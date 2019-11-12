@@ -3,7 +3,11 @@
 namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrayDimFetch>
+ */
 class OffsetAccessWithoutDimForReadingRule implements \PHPStan\Rules\Rule
 {
 
@@ -12,11 +16,6 @@ class OffsetAccessWithoutDimForReadingRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\ArrayDimFetch::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\ArrayDimFetch $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if ($scope->isInExpressionAssign($node)) {
@@ -27,7 +26,9 @@ class OffsetAccessWithoutDimForReadingRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		return ['Cannot use [] for reading.'];
+		return [
+			RuleErrorBuilder::message('Cannot use [] for reading.')->build(),
+		];
 	}
 
 }

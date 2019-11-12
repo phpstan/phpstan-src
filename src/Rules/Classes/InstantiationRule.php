@@ -11,10 +11,15 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\RuleError;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\New_>
+ */
 class InstantiationRule implements \PHPStan\Rules\Rule
 {
 
@@ -43,11 +48,6 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 		return New_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\New_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];
@@ -61,7 +61,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	 * @param string $class
 	 * @param \PhpParser\Node\Expr\New_ $node
 	 * @param Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
+	 * @return RuleError[]
 	 */
 	private function checkClassName(string $class, Node $node, Scope $scope): array
 	{
@@ -71,7 +71,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 		if ($lowercasedClass === 'static') {
 			if (!$scope->isInClass()) {
 				return [
-					sprintf('Using %s outside of class scope.', $class),
+					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))->build(),
 				];
 			}
 
@@ -95,31 +95,31 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 		} elseif ($lowercasedClass === 'self') {
 			if (!$scope->isInClass()) {
 				return [
-					sprintf('Using %s outside of class scope.', $class),
+					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))->build(),
 				];
 			}
 			$classReflection = $scope->getClassReflection();
 		} elseif ($lowercasedClass === 'parent') {
 			if (!$scope->isInClass()) {
 				return [
-					sprintf('Using %s outside of class scope.', $class),
+					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))->build(),
 				];
 			}
 			if ($scope->getClassReflection()->getParentClass() === false) {
 				return [
-					sprintf(
+					RuleErrorBuilder::message(sprintf(
 						'%s::%s() calls new parent but %s does not extend any class.',
 						$scope->getClassReflection()->getDisplayName(),
 						$scope->getFunctionName(),
 						$scope->getClassReflection()->getDisplayName()
-					),
+					))->build(),
 				];
 			}
 			$classReflection = $scope->getClassReflection()->getParentClass();
 		} else {
 			if (!$this->broker->hasClass($class)) {
 				return [
-					sprintf('Instantiated class %s not found.', $class),
+					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))->build(),
 				];
 			} else {
 				$messages = $this->classCaseSensitivityCheck->checkClassNames([
@@ -132,23 +132,27 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 
 		if (!$isStatic && $classReflection->isInterface()) {
 			return [
-				sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName()),
+				RuleErrorBuilder::message(
+					sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName())
+				)->build(),
 			];
 		}
 
 		if (!$isStatic && $classReflection->isAbstract()) {
 			return [
-				sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName()),
+				RuleErrorBuilder::message(
+					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName())
+				)->build(),
 			];
 		}
 
 		if (!$classReflection->hasConstructor()) {
 			if (count($node->args) > 0) {
 				return array_merge($messages, [
-					sprintf(
+					RuleErrorBuilder::message(sprintf(
 						'Class %s does not have a constructor and must be instantiated without any parameters.',
 						$classReflection->getDisplayName()
-					),
+					))->build(),
 				]);
 			}
 
@@ -157,13 +161,13 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 
 		$constructorReflection = $classReflection->getConstructor();
 		if (!$scope->canCallMethod($constructorReflection)) {
-			$messages[] = sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Cannot instantiate class %s via %s constructor %s::%s().',
 				$classReflection->getDisplayName(),
 				$constructorReflection->isPrivate() ? 'private' : 'protected',
 				$constructorReflection->getDeclaringClass()->getDisplayName(),
 				$constructorReflection->getName()
-			);
+			))->build();
 		}
 
 		return array_merge($messages, $this->check->check(

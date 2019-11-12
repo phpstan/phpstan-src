@@ -5,13 +5,15 @@ namespace PHPStan\Rules\Cast;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Print_>
+ */
 class PrintRule implements Rule
 {
 
@@ -28,11 +30,6 @@ class PrintRule implements Rule
 		return Node\Expr\Print_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Print_ $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(

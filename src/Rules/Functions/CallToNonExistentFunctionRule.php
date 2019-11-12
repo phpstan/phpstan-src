@@ -6,7 +6,11 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ */
 class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 {
 
@@ -30,11 +34,6 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 		return FuncCall::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\FuncCall $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!($node->name instanceof \PhpParser\Node\Name)) {
@@ -42,7 +41,9 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 		}
 
 		if (!$this->broker->hasFunction($node->name, $scope)) {
-			return [sprintf('Function %s not found.', (string) $node->name)];
+			return [
+				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->build(),
+			];
 		}
 
 		$function = $this->broker->getFunction($node->name, $scope);
@@ -55,7 +56,13 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 				strtolower($function->getName()) === strtolower($calledFunctionName)
 				&& $function->getName() !== $calledFunctionName
 			) {
-				return [sprintf('Call to function %s() with incorrect case: %s', $function->getName(), $name)];
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Call to function %s() with incorrect case: %s',
+						$function->getName(),
+						$name
+					))->build(),
+				];
 			}
 		}
 

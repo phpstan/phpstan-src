@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Cast;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidPartOfEncapsedStringRule>
+ */
 class InvalidPartOfEncapsedStringRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

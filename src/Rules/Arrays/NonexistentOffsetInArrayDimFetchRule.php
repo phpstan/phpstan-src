@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -12,6 +11,9 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrayDimFetch>
+ */
 class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 {
 
@@ -35,11 +37,6 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\ArrayDimFetch::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\ArrayDimFetch $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if ($node->dim !== null) {

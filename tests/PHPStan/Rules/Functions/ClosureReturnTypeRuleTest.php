@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ClosureReturnTypeRule>
+ */
 class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

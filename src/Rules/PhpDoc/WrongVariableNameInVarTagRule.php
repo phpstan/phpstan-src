@@ -9,6 +9,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ */
 class WrongVariableNameInVarTagRule implements Rule
 {
 
@@ -25,11 +28,6 @@ class WrongVariableNameInVarTagRule implements Rule
 		return \PhpParser\Node::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (

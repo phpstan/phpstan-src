@@ -7,6 +7,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ArrowFunctionReturnTypeRule>
+ */
 class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 {
 

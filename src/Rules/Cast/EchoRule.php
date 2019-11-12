@@ -5,13 +5,15 @@ namespace PHPStan\Rules\Cast;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Echo_>
+ */
 class EchoRule implements Rule
 {
 
@@ -28,11 +30,6 @@ class EchoRule implements Rule
 		return Node\Stmt\Echo_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Echo_ $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = [];

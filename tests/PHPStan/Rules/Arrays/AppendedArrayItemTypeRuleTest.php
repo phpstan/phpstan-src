@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<AppendedArrayItemTypeRule>
+ */
 class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

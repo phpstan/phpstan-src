@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
@@ -18,6 +19,9 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\StaticPropertyFetch>
+ */
 class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 {
 
@@ -46,11 +50,6 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 		return StaticPropertyFetch::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\StaticPropertyFetch $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->name instanceof Node\VarLikeIdentifier) {
@@ -65,33 +64,33 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 			if (in_array($lowercasedClass, ['self', 'static'], true)) {
 				if (!$scope->isInClass()) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
 							$class,
 							$name
-						),
+						))->build(),
 					];
 				}
 				$className = $scope->getClassReflection()->getName();
 			} elseif ($lowercasedClass === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
 							$class,
 							$name
-						),
+						))->build(),
 					];
 				}
 				if ($scope->getClassReflection()->getParentClass() === false) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'%s::%s() accesses parent::$%s but %s does not extend any class.',
 							$scope->getClassReflection()->getDisplayName(),
 							$scope->getFunctionName(),
 							$name,
 							$scope->getClassReflection()->getDisplayName()
-						),
+						))->build(),
 					];
 				}
 
@@ -109,11 +108,11 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 			} else {
 				if (!$this->broker->hasClass($class)) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'Access to static property $%s on an unknown class %s.',
 							$name,
 							$class
-						),
+						))->build(),
 					];
 				} else {
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
@@ -150,7 +149,11 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 
 		if (!$classType->canAccessProperties()->yes()) {
 			return array_merge($messages, [
-				sprintf('Cannot access static property $%s on %s.', $name, $typeForDescribe->describe(VerbosityLevel::typeOnly())),
+				RuleErrorBuilder::message(sprintf(
+					'Cannot access static property $%s on %s.',
+					$name,
+					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+				))->build(),
 			]);
 		}
 
@@ -160,11 +163,11 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 			}
 
 			return array_merge($messages, [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Access to an undefined static property %s::$%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 					$name
-				),
+				))->build(),
 			]);
 		}
 
@@ -178,22 +181,22 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 			}
 
 			return array_merge($messages, [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Static access to instance property %s::$%s.',
 					$property->getDeclaringClass()->getDisplayName(),
 					$name
-				),
+				))->build(),
 			]);
 		}
 
 		if (!$scope->canAccessProperty($property)) {
 			return array_merge($messages, [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Access to %s property $%s of class %s.',
 					$property->isPrivate() ? 'private' : 'protected',
 					$name,
 					$property->getDeclaringClass()->getDisplayName()
-				),
+				))->build(),
 			]);
 		}
 

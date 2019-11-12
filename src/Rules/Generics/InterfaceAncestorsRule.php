@@ -10,6 +10,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Interface_>
+ */
 class InterfaceAncestorsRule implements Rule
 {
 
@@ -33,11 +36,6 @@ class InterfaceAncestorsRule implements Rule
 		return Node\Stmt\Interface_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Interface_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!isset($node->namespacedName)) {

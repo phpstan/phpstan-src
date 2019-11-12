@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<DefaultValueTypesAssignedToPropertiesRule>
+ */
 class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

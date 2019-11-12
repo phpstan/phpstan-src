@@ -9,10 +9,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\FunctionLike>
+ */
 class IncompatibleDefaultParameterTypeRule implements Rule
 {
 
@@ -29,11 +31,6 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 		return FunctionLike::class;
 	}
 
-	/**
-	 * @param FunctionLike $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!($node instanceof Function_)) {

@@ -10,6 +10,9 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Return_>
+ */
 class ReturnTypeRule implements \PHPStan\Rules\Rule
 {
 
@@ -26,11 +29,6 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 		return Return_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Return_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($scope->getFunction() === null) {

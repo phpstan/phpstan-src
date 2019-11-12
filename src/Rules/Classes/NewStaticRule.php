@@ -9,7 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements Rule<Node\Expr\New_>
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\New_>
  */
 class NewStaticRule implements Rule
 {

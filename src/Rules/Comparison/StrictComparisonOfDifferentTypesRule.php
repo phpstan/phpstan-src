@@ -4,9 +4,13 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp>
+ */
 class StrictComparisonOfDifferentTypesRule implements \PHPStan\Rules\Rule
 {
 
@@ -23,11 +27,6 @@ class StrictComparisonOfDifferentTypesRule implements \PHPStan\Rules\Rule
 		return Node\Expr\BinaryOp::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\BinaryOp $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[] errors
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node instanceof Node\Expr\BinaryOp\Identical && !$node instanceof Node\Expr\BinaryOp\NotIdentical) {
@@ -44,21 +43,21 @@ class StrictComparisonOfDifferentTypesRule implements \PHPStan\Rules\Rule
 
 		if (!$nodeType->getValue()) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Strict comparison using %s between %s and %s will always evaluate to false.',
 					$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
 					$leftType->describe(VerbosityLevel::value()),
 					$rightType->describe(VerbosityLevel::value())
-				),
+				))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueStrictComparison) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Strict comparison using %s between %s and %s will always evaluate to true.',
 					$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
 					$leftType->describe(VerbosityLevel::value()),
 					$rightType->describe(VerbosityLevel::value())
-				),
+				))->build(),
 			];
 		}
 

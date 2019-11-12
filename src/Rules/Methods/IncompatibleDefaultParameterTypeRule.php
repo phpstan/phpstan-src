@@ -8,10 +8,12 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InClassMethodNode>
+ */
 class IncompatibleDefaultParameterTypeRule implements Rule
 {
 
@@ -20,11 +22,6 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 		return InClassMethodNode::class;
 	}
 
-	/**
-	 * @param InClassMethodNode $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$method = $scope->getFunction();

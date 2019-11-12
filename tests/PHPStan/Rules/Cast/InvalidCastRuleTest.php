@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Cast;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidCastRule>
+ */
 class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

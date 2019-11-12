@@ -8,9 +8,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\PropertyProperty>
+ */
 class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 {
 
@@ -44,11 +46,6 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 		return PropertyProperty::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\PropertyProperty $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {

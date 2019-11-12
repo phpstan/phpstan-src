@@ -7,10 +7,14 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ */
 class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 {
 
@@ -34,11 +38,6 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if (
@@ -79,11 +78,11 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 		if (!$this->ruleLevelHelper->accepts($itemType, $assignedValueType, $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = $itemType->isCallable()->and($assignedValueType->isCallable())->yes() ? VerbosityLevel::value() : VerbosityLevel::typeOnly();
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept %s.',
 					$assignedToType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel)
-				),
+				))->build(),
 			];
 		}
 

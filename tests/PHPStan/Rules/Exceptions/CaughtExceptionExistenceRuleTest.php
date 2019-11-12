@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<CaughtExceptionExistenceRule>
+ */
 class CaughtExceptionExistenceRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

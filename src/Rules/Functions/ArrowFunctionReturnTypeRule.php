@@ -8,6 +8,9 @@ use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Type\ObjectType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InArrowFunctionNode>
+ */
 class ArrowFunctionReturnTypeRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +27,6 @@ class ArrowFunctionReturnTypeRule implements \PHPStan\Rules\Rule
 		return InArrowFunctionNode::class;
 	}
 
-	/**
-	 * @param \PHPStan\Node\InArrowFunctionNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInAnonymousFunction()) {

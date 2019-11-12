@@ -5,6 +5,9 @@ namespace PHPStan\Rules\DeadCode;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<UnreachableStatementRule>
+ */
 class UnreachableStatementRuleTest extends RuleTestCase
 {
 

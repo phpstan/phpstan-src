@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Comparison;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ImpossibleCheckTypeFunctionCallRule>
+ */
 class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

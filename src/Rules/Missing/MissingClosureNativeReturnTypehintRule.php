@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntersectionType;
@@ -20,6 +19,9 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClosureReturnStatementsNode>
+ */
 class MissingClosureNativeReturnTypehintRule implements Rule
 {
 
@@ -36,11 +38,6 @@ class MissingClosureNativeReturnTypehintRule implements Rule
 		return ClosureReturnStatementsNode::class;
 	}
 
-	/**
-	 * @param \PHPStan\Node\ClosureReturnStatementsNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[] errors
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$closure = $node->getClosureExpr();

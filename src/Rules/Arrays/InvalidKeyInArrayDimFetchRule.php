@@ -3,10 +3,14 @@
 namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrayDimFetch>
+ */
 class InvalidKeyInArrayDimFetchRule implements \PHPStan\Rules\Rule
 {
 
@@ -23,11 +27,6 @@ class InvalidKeyInArrayDimFetchRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\ArrayDimFetch::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\ArrayDimFetch $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if ($node->dim === null) {
@@ -43,11 +42,15 @@ class InvalidKeyInArrayDimFetchRule implements \PHPStan\Rules\Rule
 		$isSuperType = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
 		if ($isSuperType->no()) {
 			return [
-				sprintf('Invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly())),
+				RuleErrorBuilder::message(
+					sprintf('Invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly()))
+				)->build(),
 			];
 		} elseif ($this->reportMaybes && $isSuperType->maybe() && !$dimensionType instanceof MixedType) {
 			return [
-				sprintf('Possibly invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly())),
+				RuleErrorBuilder::message(
+					sprintf('Possibly invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly()))
+				)->build(),
 			];
 		}
 

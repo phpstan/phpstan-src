@@ -7,6 +7,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ClassTemplateTypeRule>
+ */
 class ClassTemplateTypeRuleTest extends RuleTestCase
 {
 

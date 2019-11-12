@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Variables;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ThisVariableRule>
+ */
 class ThisVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

@@ -5,7 +5,11 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClosureUse;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ClosureUse>
+ */
 class DefinedVariableInAnonymousFunctionUseRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +28,6 @@ class DefinedVariableInAnonymousFunctionUseRule implements \PHPStan\Rules\Rule
 		return ClosureUse::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\ClosureUse $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node->byRef || !is_string($node->var->name)) {
@@ -37,14 +36,14 @@ class DefinedVariableInAnonymousFunctionUseRule implements \PHPStan\Rules\Rule
 
 		if ($scope->hasVariableType($node->var->name)->no()) {
 			return [
-				sprintf('Undefined variable: $%s', $node->var->name),
+				RuleErrorBuilder::message(sprintf('Undefined variable: $%s', $node->var->name))->build(),
 			];
 		} elseif (
 			$this->checkMaybeUndefinedVariables
 			&& !$scope->hasVariableType($node->var->name)->yes()
 		) {
 			return [
-				sprintf('Variable $%s might not be defined.', $node->var->name),
+				RuleErrorBuilder::message(sprintf('Variable $%s might not be defined.', $node->var->name))->build(),
 			];
 		}
 

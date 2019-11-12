@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Functions;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InnerFunctionRule>
+ */
 class InnerFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

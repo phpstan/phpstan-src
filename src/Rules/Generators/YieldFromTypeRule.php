@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\YieldFrom;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\GenericTypeVariableResolver;
@@ -15,6 +14,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\YieldFrom>
+ */
 class YieldFromTypeRule implements Rule
 {
 
@@ -38,11 +40,6 @@ class YieldFromTypeRule implements Rule
 		return YieldFrom::class;
 	}
 
-	/**
-	 * @param YieldFrom $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$exprType = $scope->getType($node->expr);

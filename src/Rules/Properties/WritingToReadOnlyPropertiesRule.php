@@ -4,8 +4,12 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ */
 class WritingToReadOnlyPropertiesRule implements \PHPStan\Rules\Rule
 {
 
@@ -39,11 +43,6 @@ class WritingToReadOnlyPropertiesRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
@@ -83,10 +82,10 @@ class WritingToReadOnlyPropertiesRule implements \PHPStan\Rules\Rule
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $propertyFetch);
 
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'%s is not writable.',
 					$propertyDescription
-				),
+				))->build(),
 			];
 		}
 

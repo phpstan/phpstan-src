@@ -6,7 +6,11 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\MethodCall>
+ */
 class ImpossibleCheckTypeMethodCallRule implements \PHPStan\Rules\Rule
 {
 
@@ -30,11 +34,6 @@ class ImpossibleCheckTypeMethodCallRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\MethodCall::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\MethodCall $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[] errors
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->name instanceof Node\Identifier) {
@@ -48,20 +47,24 @@ class ImpossibleCheckTypeMethodCallRule implements \PHPStan\Rules\Rule
 
 		if (!$isAlways) {
 			$method = $this->getMethod($node->var, $node->name->name, $scope);
-			return [sprintf(
-				'Call to method %s::%s()%s will always evaluate to false.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
-			)];
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Call to method %s::%s()%s will always evaluate to false.',
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
+				))->build(),
+			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
 			$method = $this->getMethod($node->var, $node->name->name, $scope);
-			return [sprintf(
-				'Call to method %s::%s()%s will always evaluate to true.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
-			)];
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Call to method %s::%s()%s will always evaluate to true.',
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
+				))->build(),
+			];
 		}
 
 		return [];

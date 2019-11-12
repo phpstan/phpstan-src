@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Comparison;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<StrictComparisonOfDifferentTypesRule>
+ */
 class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

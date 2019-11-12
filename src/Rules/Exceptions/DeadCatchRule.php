@@ -5,13 +5,15 @@ namespace PHPStan\Rules\Exceptions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\TryCatch>
+ */
 class DeadCatchRule implements Rule
 {
 
@@ -20,11 +22,6 @@ class DeadCatchRule implements Rule
 		return Node\Stmt\TryCatch::class;
 	}
 
-	/**
-	 * @param Node\Stmt\TryCatch $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$catchTypes = array_map(static function (Node\Stmt\Catch_ $catch): Type {

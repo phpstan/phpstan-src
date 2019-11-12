@@ -30,7 +30,7 @@ class FunctionReturnTypeCheck
 	 * @param string $voidMessage
 	 * @param string $typeMismatchMessage
 	 * @param bool $isGenerator
-	 * @return string[]
+	 * @return RuleError[]
 	 */
 	public function checkReturnType(
 		Scope $scope,
@@ -67,10 +67,10 @@ class FunctionReturnTypeCheck
 			}
 
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					$emptyReturnStatementMessage,
 					$returnType->describe($verbosityLevel)
-				),
+				))->build(),
 			];
 		}
 
@@ -78,20 +78,20 @@ class FunctionReturnTypeCheck
 
 		if ($isVoidSuperType->yes()) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					$voidMessage,
 					$returnValueType->describe($verbosityLevel)
-				),
+				))->build(),
 			];
 		}
 
 		if (!$this->ruleLevelHelper->accepts($returnType, $returnValueType, $scope->isDeclareStrictTypes())) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					$typeMismatchMessage,
 					$returnType->describe($verbosityLevel),
 					$returnValueType->describe($verbosityLevel)
-				),
+				))->build(),
 			];
 		}
 

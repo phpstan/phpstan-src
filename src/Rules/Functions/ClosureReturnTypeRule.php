@@ -8,6 +8,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Type\ObjectType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Return_>
+ */
 class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +27,6 @@ class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 		return Return_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Return_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInAnonymousFunction()) {

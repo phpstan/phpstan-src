@@ -4,10 +4,12 @@ namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\LiteralArrayNode;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConstantScalarType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\LiteralArrayNode>
+ */
 class DuplicateKeysInLiteralArraysRule implements \PHPStan\Rules\Rule
 {
 
@@ -26,11 +28,6 @@ class DuplicateKeysInLiteralArraysRule implements \PHPStan\Rules\Rule
 		return LiteralArrayNode::class;
 	}
 
-	/**
-	 * @param LiteralArrayNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		$values = [];

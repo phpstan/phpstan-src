@@ -5,6 +5,9 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Type\FileTypeMapper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<IncompatiblePhpDocTypeRule>
+ */
 class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

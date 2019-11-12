@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInArrowFunctionTypehintsRule>
+ */
 class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

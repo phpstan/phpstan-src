@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Functions;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<PrintfParametersRule>
+ */
 class PrintfParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

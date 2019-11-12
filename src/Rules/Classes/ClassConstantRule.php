@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
@@ -16,6 +17,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ClassConstFetch>
+ */
 class ClassConstantRule implements \PHPStan\Rules\Rule
 {
 
@@ -44,11 +48,6 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 		return ClassConstFetch::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\ClassConstFetch $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->name instanceof Node\Identifier) {
@@ -64,7 +63,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {
 				if (!$scope->isInClass()) {
 					return [
-						sprintf('Using %s outside of class scope.', $className),
+						RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $className))->build(),
 					];
 				}
 
@@ -72,17 +71,17 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 			} elseif ($lowercasedClassName === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
-						sprintf('Using %s outside of class scope.', $className),
+						RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $className))->build(),
 					];
 				}
 				$currentClassReflection = $scope->getClassReflection();
 				if ($currentClassReflection->getParentClass() === false) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'Access to parent::%s but %s does not extend any class.',
 							$constantName,
 							$currentClassReflection->getDisplayName()
-						),
+						))->build(),
 					];
 				}
 				$className = $currentClassReflection->getParentClass()->getName();
@@ -90,12 +89,14 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				if (!$this->broker->hasClass($className)) {
 					if (strtolower($constantName) === 'class') {
 						return [
-							sprintf('Class %s not found.', $className),
+							RuleErrorBuilder::message(sprintf('Class %s not found.', $className))->build(),
 						];
 					}
 
 					return [
-						sprintf('Access to constant %s on an unknown class %s.', $constantName, $className),
+						RuleErrorBuilder::message(
+							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className)
+						)->build(),
 					];
 				} else {
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
@@ -129,7 +130,11 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 
 		if (!$classType->canAccessConstants()->yes()) {
 			return array_merge($messages, [
-				sprintf('Cannot access constant %s on %s.', $constantName, $typeForDescribe->describe(VerbosityLevel::typeOnly())),
+				RuleErrorBuilder::message(sprintf(
+					'Cannot access constant %s on %s.',
+					$constantName,
+					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+				))->build(),
 			]);
 		}
 
@@ -139,23 +144,23 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 
 		if (!$classType->hasConstant($constantName)->yes()) {
 			return array_merge($messages, [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Access to undefined constant %s::%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 					$constantName
-				),
+				))->build(),
 			]);
 		}
 
 		$constantReflection = $classType->getConstant($constantName);
 		if (!$scope->canAccessConstant($constantReflection)) {
 			return array_merge($messages, [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Access to %s constant %s of class %s.',
 					$constantReflection->isPrivate() ? 'private' : 'protected',
 					$constantName,
 					$constantReflection->getDeclaringClass()->getDisplayName()
-				),
+				))->build(),
 			]);
 		}
 

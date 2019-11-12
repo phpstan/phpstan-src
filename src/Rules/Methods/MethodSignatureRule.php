@@ -8,12 +8,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ */
 class MethodSignatureRule implements \PHPStan\Rules\Rule
 {
 
@@ -37,11 +41,6 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 		return ClassMethod::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\ClassMethod $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$methodName = (string) $node->name;
@@ -71,7 +70,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 
 			$returnTypeCompatibility = $this->checkReturnTypeCompatibility($parameters->getReturnType(), $parentParameters->getReturnType());
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
-				$errors[] = sprintf(
+				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Return type (%s) of method %s::%s() should be %s with return type (%s) of method %s::%s()',
 					$parameters->getReturnType()->describe(VerbosityLevel::typeOnly()),
 					$method->getDeclaringClass()->getDisplayName(),
@@ -80,7 +79,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 					$parentParameters->getReturnType()->describe(VerbosityLevel::typeOnly()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName()
-				);
+				))->build();
 			}
 
 			$parameterResults = $this->checkParameterTypeCompatibility($parameters->getParameters(), $parentParameters->getParameters());
@@ -93,7 +92,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 				}
 				$parameter = $parameters->getParameters()[$parameterIndex];
 				$parentParameter = $parentParameters->getParameters()[$parameterIndex];
-				$errors[] = sprintf(
+				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s (%s) of method %s::%s() should be %s with parameter $%s (%s) of method %s::%s()',
 					$parameterIndex + 1,
 					$parameter->getName(),
@@ -105,7 +104,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 					$parentParameter->getType()->describe(VerbosityLevel::typeOnly()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName()
-				);
+				))->build();
 			}
 		}
 

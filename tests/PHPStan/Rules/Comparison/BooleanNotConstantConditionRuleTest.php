@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Comparison;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<BooleanNotConstantConditionRule>
+ */
 class BooleanNotConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

@@ -4,12 +4,16 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Throw_>
+ */
 class ThrowTypeRule implements \PHPStan\Rules\Rule
 {
 
@@ -28,11 +32,6 @@ class ThrowTypeRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Stmt\Throw_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Throw_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$throwableType = new ObjectType(\Throwable::class);
@@ -56,7 +55,10 @@ class ThrowTypeRule implements \PHPStan\Rules\Rule
 		}
 
 		return [
-			sprintf('Invalid type %s to throw.', $foundType->describe(VerbosityLevel::typeOnly())),
+			RuleErrorBuilder::message(sprintf(
+				'Invalid type %s to throw.',
+				$foundType->describe(VerbosityLevel::typeOnly())
+			))->build(),
 		];
 	}
 

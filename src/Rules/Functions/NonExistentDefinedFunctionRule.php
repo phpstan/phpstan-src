@@ -7,7 +7,11 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ */
 class NonExistentDefinedFunctionRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +28,6 @@ class NonExistentDefinedFunctionRule implements \PHPStan\Rules\Rule
 		return Function_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Function_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$functionName = $node->name->name;
@@ -41,10 +40,10 @@ class NonExistentDefinedFunctionRule implements \PHPStan\Rules\Rule
 		}
 
 		return [
-			sprintf(
+			RuleErrorBuilder::message(sprintf(
 				'Function %s not found while trying to analyse it - autoloading is probably not configured properly.',
 				$functionName
-			),
+			))->build(),
 		];
 	}
 

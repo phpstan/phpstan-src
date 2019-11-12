@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Missing;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<MissingReturnRule>
+ */
 class MissingReturnRuleTest extends RuleTestCase
 {
 

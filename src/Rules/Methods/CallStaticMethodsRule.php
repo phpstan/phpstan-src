@@ -12,6 +12,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
@@ -84,34 +85,34 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {
 				if (!$scope->isInClass()) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'Calling %s::%s() outside of class scope.',
 							$className,
 							$methodName
-						),
+						))->build(),
 					];
 				}
 				$className = $scope->getClassReflection()->getName();
 			} elseif ($lowercasedClassName === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'Calling %s::%s() outside of class scope.',
 							$className,
 							$methodName
-						),
+						))->build(),
 					];
 				}
 				$currentClassReflection = $scope->getClassReflection();
 				if ($currentClassReflection->getParentClass() === false) {
 					return [
-						sprintf(
+						RuleErrorBuilder::message(sprintf(
 							'%s::%s() calls parent::%s() but %s does not extend any class.',
 							$scope->getClassReflection()->getDisplayName(),
 							$scope->getFunctionName(),
 							$methodName,
 							$scope->getClassReflection()->getDisplayName()
-						),
+						))->build(),
 					];
 				}
 
@@ -123,7 +124,11 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			} else {
 				if (!$this->broker->hasClass($className)) {
 					return [
-						sprintf('Call to static method %s() on an unknown class %s.', $methodName, $className),
+						RuleErrorBuilder::message(sprintf(
+							'Call to static method %s() on an unknown class %s.',
+							$methodName,
+							$className
+						))->build(),
 					];
 				} else {
 					$errors = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
@@ -159,7 +164,11 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 
 		if (!$classType->canCallMethods()->yes()) {
 			return array_merge($errors, [
-				sprintf('Cannot call static method %s() on %s.', $methodName, $typeForDescribe->describe(VerbosityLevel::typeOnly())),
+				RuleErrorBuilder::message(sprintf(
+					'Cannot call static method %s() on %s.',
+					$methodName,
+					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+				))->build(),
 			]);
 		}
 
@@ -179,11 +188,11 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			}
 
 			return array_merge($errors, [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Call to an undefined static method %s::%s().',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 					$methodName
-				),
+				))->build(),
 			]);
 		}
 
@@ -201,34 +210,34 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 				)
 			) {
 				return array_merge($errors, [
-					sprintf(
+					RuleErrorBuilder::message(sprintf(
 						'Static call to instance method %s::%s().',
 						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName()
-					),
+					))->build(),
 				]);
 			}
 		}
 
 		if (!$scope->canCallMethod($method)) {
 			$errors = array_merge($errors, [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Call to %s %s %s() of class %s.',
 					$method->isPrivate() ? 'private' : 'protected',
 					$method->isStatic() ? 'static method' : 'method',
 					$method->getName(),
 					$method->getDeclaringClass()->getDisplayName()
-				),
+				))->build(),
 			]);
 		}
 
 		if ($isInterface && $method->isStatic()) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Cannot call static method %s() on interface %s.',
 					$method->getName(),
 					$classType->describe(VerbosityLevel::typeOnly())
-				),
+				))->build(),
 			];
 		}
 
@@ -269,7 +278,11 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			$this->checkFunctionNameCase
 			&& $method->getName() !== $methodName
 		) {
-			$errors[] = sprintf('Call to %s with incorrect case: %s', $lowercasedMethodName, $methodName);
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Call to %s with incorrect case: %s',
+				$lowercasedMethodName,
+				$methodName
+			))->build();
 		}
 
 		return $errors;

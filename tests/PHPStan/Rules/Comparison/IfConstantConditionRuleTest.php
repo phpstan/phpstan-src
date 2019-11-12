@@ -9,6 +9,9 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<IfConstantConditionRule>
+ */
 class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

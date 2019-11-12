@@ -596,6 +596,9 @@ class MethodExists
 
 		if (method_exists('UndefinedClass', 'test')) {
 		}
+
+		if (method_exists($string, 'test')) {
+		}
 	}
 
 	public function testWithNewObjectInFirstArgument(): void

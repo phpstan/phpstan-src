@@ -257,20 +257,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return $level->handle(
-			function (): string {
-				$broker = Broker::getInstance();
-				if (!$broker->hasClass($this->className)) {
-					return $this->className;
-				}
-
-				$classReflection = $broker->getClass($this->className);
-
-				return $classReflection->getDisplayName(false);
-			},
-			function (): string {
+		$preciseNameCallback = function (): string {
+			$broker = Broker::getInstance();
+			if (!$broker->hasClass($this->className)) {
 				return $this->className;
-			},
+			}
+
+			return $broker->getClassName($this->className);
+		};
+		return $level->handle(
+			$preciseNameCallback,
+			$preciseNameCallback,
 			function () use ($level): string {
 				$description = $this->className;
 				if ($this->subtractedType !== null) {

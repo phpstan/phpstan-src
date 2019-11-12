@@ -294,6 +294,22 @@ class Broker
 		return $this->classReflections[$className];
 	}
 
+	public function getClassName(string $className): string
+	{
+		if (!$this->hasClass($className)) {
+			throw new \PHPStan\Broker\ClassNotFoundException($className);
+		}
+
+		$reflectionClass = new ReflectionClass($className);
+		$realName = $reflectionClass->getName();
+
+		if (isset(self::$anonymousClasses[$realName])) {
+			return self::$anonymousClasses[$realName]->getDisplayName();
+		}
+
+		return $realName;
+	}
+
 	public function getAnonymousClassReflection(
 		\PhpParser\Node\Stmt\Class_ $classNode,
 		Scope $scope

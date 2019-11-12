@@ -1476,6 +1476,7 @@ class MutatingScope implements Scope
 					$returnTypes = [];
 					foreach ($type->getTypes() as $innerType) {
 						$returnType = $this->methodCallReturnType(
+							$type,
 							$innerType,
 							$methodName,
 							$node
@@ -1492,6 +1493,7 @@ class MutatingScope implements Scope
 					return TypeCombinator::intersect(...$returnTypes);
 				}
 				return $this->methodCallReturnType(
+					$type,
 					$type,
 					$methodName,
 					$node
@@ -3330,17 +3332,17 @@ class MutatingScope implements Scope
 		return $decidedType;
 	}
 
-	private function methodCallReturnType(Type $calledOnType, string $methodName, MethodCall $node): ?Type
+	private function methodCallReturnType(Type $calledOnType, Type $typeWithMethod, string $methodName, MethodCall $node): ?Type
 	{
-		if (!$calledOnType->hasMethod($methodName)->yes()) {
+		if (!$typeWithMethod->hasMethod($methodName)->yes()) {
 			return null;
 		}
 
-		$methodReflection = $calledOnType->getMethod($methodName, $this);
+		$methodReflection = $typeWithMethod->getMethod($methodName, $this);
 
-		if ($calledOnType instanceof TypeWithClassName) {
+		if ($typeWithMethod instanceof TypeWithClassName) {
 			$resolvedTypes = [];
-			foreach ($this->broker->getDynamicMethodReturnTypeExtensionsForClass($calledOnType->getClassName()) as $dynamicMethodReturnTypeExtension) {
+			foreach ($this->broker->getDynamicMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicMethodReturnTypeExtension) {
 				if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
 					continue;
 				}

@@ -9548,6 +9548,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
 	}
 
+	public function dataIntersectionStatic(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/intersection-static.php');
+	}
+
 	/**
 	 * @dataProvider dataGenerics
 	 * @dataProvider dataGenericClassStringType
@@ -9555,6 +9560,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataIntegerRangeTypes
 	 * @dataProvider dataClosureReturnTypes
 	 * @dataProvider dataArrayKey
+	 * @dataProvider dataIntersectionStatic
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

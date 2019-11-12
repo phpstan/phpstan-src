@@ -907,6 +907,14 @@ class StdClassCollection
 		return $this->list;
 	}
 
+	/**
+	 * @return static
+	 */
+	public function returnStatic(): self
+	{
+
+	}
+
 }
 
 function () {
@@ -916,6 +924,7 @@ function () {
 
 	$std = new StdClassCollection([new \stdClass()]);
 	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<int, stdClass>', $std);
+	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<int, stdClass>', $std->returnStatic());
 	assertType('array<int, stdClass>', $std->getAll());
 };
 

@@ -6,6 +6,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ClassAncestorsRule>
+ */
 class ClassAncestorsRuleTest extends RuleTestCase
 {
 

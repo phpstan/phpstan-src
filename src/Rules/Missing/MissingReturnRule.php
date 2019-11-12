@@ -8,7 +8,6 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\GenericTypeVariableResolver;
@@ -17,6 +16,9 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ExecutionEndNode>
+ */
 class MissingReturnRule implements Rule
 {
 
@@ -40,11 +42,6 @@ class MissingReturnRule implements Rule
 		return ExecutionEndNode::class;
 	}
 
-	/**
-	 * @param ExecutionEndNode $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$statementResult = $node->getStatementResult();

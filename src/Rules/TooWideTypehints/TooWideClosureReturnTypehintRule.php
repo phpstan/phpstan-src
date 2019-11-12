@@ -6,10 +6,14 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClosureReturnStatementsNode>
+ */
 class TooWideClosureReturnTypehintRule implements Rule
 {
 
@@ -18,11 +22,6 @@ class TooWideClosureReturnTypehintRule implements Rule
 		return ClosureReturnStatementsNode::class;
 	}
 
-	/**
-	 * @param \PHPStan\Node\ClosureReturnStatementsNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$closureReturnType = $scope->getAnonymousFunctionReturnType();
@@ -61,7 +60,10 @@ class TooWideClosureReturnTypehintRule implements Rule
 				continue;
 			}
 
-			$messages[] = sprintf('Anonymous function never returns %s so it can be removed from the return typehint.', $type->describe(VerbosityLevel::typeOnly()));
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Anonymous function never returns %s so it can be removed from the return typehint.',
+				$type->describe(VerbosityLevel::typeOnly())
+			))->build();
 		}
 
 		return $messages;

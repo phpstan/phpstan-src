@@ -4,6 +4,9 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Type\FileTypeMapper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidThrowsPhpDocValueRule>
+ */
 class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

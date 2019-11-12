@@ -8,11 +8,15 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\MethodCall>
+ */
 class CallMethodsRule implements \PHPStan\Rules\Rule
 {
 
@@ -51,11 +55,6 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 		return MethodCall::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\MethodCall $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->name instanceof Node\Identifier) {
@@ -77,7 +76,11 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 		}
 		if (!$type->canCallMethods()->yes()) {
 			return [
-				sprintf('Cannot call method %s() on %s.', $name, $type->describe(VerbosityLevel::typeOnly())),
+				RuleErrorBuilder::message(sprintf(
+					'Cannot call method %s() on %s.',
+					$name,
+					$type->describe(VerbosityLevel::typeOnly())
+				))->build(),
 			];
 		}
 
@@ -103,11 +106,11 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 				while ($parentClassReflection !== false) {
 					if ($parentClassReflection->hasMethod($name)) {
 						return [
-							sprintf(
+							RuleErrorBuilder::message(sprintf(
 								'Call to private method %s() of parent class %s.',
 								$parentClassReflection->getMethod($name, $scope)->getName(),
 								$parentClassReflection->getDisplayName()
-							),
+							))->build(),
 						];
 					}
 
@@ -116,11 +119,11 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 			}
 
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Call to an undefined method %s::%s().',
 					$type->describe(VerbosityLevel::typeOnly()),
 					$name
-				),
+				))->build(),
 			];
 		}
 
@@ -128,12 +131,12 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 		$messagesMethodName = $methodReflection->getDeclaringClass()->getDisplayName() . '::' . $methodReflection->getName() . '()';
 		$errors = [];
 		if (!$scope->canCallMethod($methodReflection)) {
-			$errors[] = sprintf(
+			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Call to %s method %s() of class %s.',
 				$methodReflection->isPrivate() ? 'private' : 'protected',
 				$methodReflection->getName(),
 				$methodReflection->getDeclaringClass()->getDisplayName()
-			);
+			))->build();
 		}
 
 		$errors = array_merge($errors, $this->check->check(
@@ -163,7 +166,9 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 			&& strtolower($methodReflection->getName()) === strtolower($name)
 			&& $methodReflection->getName() !== $name
 		) {
-			$errors[] = sprintf('Call to method %s with incorrect case: %s', $messagesMethodName, $name);
+			$errors[] = RuleErrorBuilder::message(
+				sprintf('Call to method %s with incorrect case: %s', $messagesMethodName, $name)
+			)->build();
 		}
 
 		return $errors;

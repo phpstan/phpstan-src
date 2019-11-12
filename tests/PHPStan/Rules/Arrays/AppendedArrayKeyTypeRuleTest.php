@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<AppendedArrayKeyTypeRule>
+ */
 class AppendedArrayKeyTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

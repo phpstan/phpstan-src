@@ -6,6 +6,9 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<CallStaticMethodsRule>
+ */
 class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

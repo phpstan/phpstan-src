@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Comparison;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ElseIfConstantConditionRule>
+ */
 class ElseIfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

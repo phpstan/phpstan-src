@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<WritingToReadOnlyPropertiesRule>
+ */
 class WritingToReadOnlyPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

@@ -11,6 +11,9 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\PropertyProperty>
+ */
 class IncompatiblePropertyPhpDocTypeRule implements Rule
 {
 
@@ -27,11 +30,6 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		return Node\Stmt\PropertyProperty::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\PropertyProperty $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {

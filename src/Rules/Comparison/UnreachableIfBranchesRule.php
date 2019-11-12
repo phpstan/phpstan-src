@@ -4,10 +4,12 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\If_>
+ */
 class UnreachableIfBranchesRule implements \PHPStan\Rules\Rule
 {
 
@@ -26,11 +28,6 @@ class UnreachableIfBranchesRule implements \PHPStan\Rules\Rule
 		return Node\Stmt\If_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\If_ $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];

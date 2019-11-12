@@ -6,12 +6,14 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\MixedType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ */
 class YieldInGeneratorRule implements Rule
 {
 
@@ -28,11 +30,6 @@ class YieldInGeneratorRule implements Rule
 		return Node\Expr::class;
 	}
 
-	/**
-	 * @param Node\Expr $node
-	 * @param Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node instanceof Node\Expr\Yield_ && !$node instanceof Node\Expr\YieldFrom) {

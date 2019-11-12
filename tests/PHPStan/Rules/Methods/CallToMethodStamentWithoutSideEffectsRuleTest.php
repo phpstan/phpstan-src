@@ -6,6 +6,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<CallToMethodStamentWithoutSideEffectsRule>
+ */
 class CallToMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 {
 

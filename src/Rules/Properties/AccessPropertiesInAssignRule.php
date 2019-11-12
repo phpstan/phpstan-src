@@ -6,6 +6,9 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Assign>
+ */
 class AccessPropertiesInAssignRule implements Rule
 {
 
@@ -22,11 +25,6 @@ class AccessPropertiesInAssignRule implements Rule
 		return Node\Expr\Assign::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Assign $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return (string|\PHPStan\Rules\RuleError)[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->var instanceof Node\Expr\PropertyFetch) {

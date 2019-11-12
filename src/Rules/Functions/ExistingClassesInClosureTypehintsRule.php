@@ -6,8 +6,10 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\FunctionDefinitionCheck;
-use PHPStan\Rules\RuleError;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Closure>
+ */
 class ExistingClassesInClosureTypehintsRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +26,6 @@ class ExistingClassesInClosureTypehintsRule implements \PHPStan\Rules\Rule
 		return Closure::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Closure $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		return $this->check->checkAnonymousFunction(

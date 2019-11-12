@@ -2,10 +2,12 @@
 
 namespace PHPStan\Rules\Comparison;
 
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp\BooleanOr>
+ */
 class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +26,6 @@ class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr\BinaryOp\BooleanOr::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\BinaryOp\BooleanOr $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(
 		\PhpParser\Node $node,
 		\PHPStan\Analyser\Scope $scope

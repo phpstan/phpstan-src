@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Comparison;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<TernaryOperatorConstantConditionRule>
+ */
 class TernaryOperatorConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

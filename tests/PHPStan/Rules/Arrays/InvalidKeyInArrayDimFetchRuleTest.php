@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Arrays;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidKeyInArrayDimFetchRule>
+ */
 class InvalidKeyInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

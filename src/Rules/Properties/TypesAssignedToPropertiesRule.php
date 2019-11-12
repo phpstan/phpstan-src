@@ -4,9 +4,13 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ */
 class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 {
 
@@ -35,11 +39,6 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Expr::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
@@ -74,12 +73,12 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $propertyFetch);
 
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'%s (%s) does not accept %s.',
 					$propertyDescription,
 					$propertyType->describe(VerbosityLevel::typeOnly()),
 					$assignedValueType->describe(VerbosityLevel::typeOnly())
-				),
+				))->build(),
 			];
 		}
 

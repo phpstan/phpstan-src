@@ -9,6 +9,9 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ */
 class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 {
 
@@ -29,11 +32,6 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 		return FuncCall::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\FuncCall $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!($node->name instanceof \PhpParser\Node\Name)) {

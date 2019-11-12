@@ -15,6 +15,9 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\FunctionLike>
+ */
 class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 {
 
@@ -38,11 +41,6 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\FunctionLike::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\FunctionLike $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$docComment = $node->getDocComment();

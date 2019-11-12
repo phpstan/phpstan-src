@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Arrays;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidKeyInArrayItemRule>
+ */
 class InvalidKeyInArrayItemRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

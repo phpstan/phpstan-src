@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<OffsetAccessAssignOpRule>
+ */
 class OffsetAccessAssignOpRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

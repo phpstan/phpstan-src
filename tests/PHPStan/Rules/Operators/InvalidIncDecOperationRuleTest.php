@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Operators;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidIncDecOperationRule>
+ */
 class InvalidIncDecOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

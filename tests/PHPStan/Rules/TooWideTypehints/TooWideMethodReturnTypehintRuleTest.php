@@ -5,6 +5,9 @@ namespace PHPStan\Rules\TooWideTypehints;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<TooWideMethodReturnTypehintRule>
+ */
 class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 {
 

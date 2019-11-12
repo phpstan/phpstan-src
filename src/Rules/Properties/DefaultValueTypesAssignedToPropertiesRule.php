@@ -5,9 +5,13 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Property;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Property>
+ */
 class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +28,6 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 		return Property::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Property $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
@@ -54,14 +53,14 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
-			$errors[] = sprintf(
+			$errors[] = RuleErrorBuilder::message(sprintf(
 				'%s %s::$%s (%s) does not accept default value of type %s.',
 				$node->isStatic() ? 'Static property' : 'Property',
 				$classReflection->getDisplayName(),
 				$property->name->name,
 				$propertyType->describe(VerbosityLevel::typeOnly()),
 				$defaultValueType->describe(VerbosityLevel::typeOnly())
-			);
+			))->build();
 		}
 
 		return $errors;

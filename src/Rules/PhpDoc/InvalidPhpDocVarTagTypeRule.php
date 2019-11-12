@@ -17,6 +17,9 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ */
 class InvalidPhpDocVarTagTypeRule implements Rule
 {
 
@@ -65,11 +68,6 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 		return \PhpParser\Node::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (

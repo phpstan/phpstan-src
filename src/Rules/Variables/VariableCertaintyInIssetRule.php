@@ -4,8 +4,12 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NullType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Isset_>
+ */
 class VariableCertaintyInIssetRule implements \PHPStan\Rules\Rule
 {
 
@@ -14,11 +18,6 @@ class VariableCertaintyInIssetRule implements \PHPStan\Rules\Rule
 		return Node\Expr\Isset_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Isset_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = [];
@@ -50,14 +49,23 @@ class VariableCertaintyInIssetRule implements \PHPStan\Rules\Rule
 					$scope->getFunction() !== null
 					|| $scope->isInAnonymousFunction()
 				) {
-					$messages[] = sprintf('Variable $%s in isset() is never defined.', $var->name);
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Variable $%s in isset() is never defined.',
+						$var->name
+					))->build();
 				}
 			} elseif ($certainty->yes() && !$isSubNode) {
 				$variableType = $scope->getVariableType($var->name);
 				if ($variableType->isSuperTypeOf(new NullType())->no()) {
-					$messages[] = sprintf('Variable $%s in isset() always exists and is not nullable.', $var->name);
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Variable $%s in isset() always exists and is not nullable.',
+						$var->name
+					))->build();
 				} elseif ((new NullType())->isSuperTypeOf($variableType)->yes()) {
-					$messages[] = sprintf('Variable $%s in isset() is always null.', $var->name);
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Variable $%s in isset() is always null.',
+						$var->name
+					))->build();
 				}
 			}
 		}

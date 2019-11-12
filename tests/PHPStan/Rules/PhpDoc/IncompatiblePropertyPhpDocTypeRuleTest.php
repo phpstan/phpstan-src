@@ -5,6 +5,9 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<IncompatiblePropertyPhpDocTypeRule>
+ */
 class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

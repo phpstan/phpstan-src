@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Classes;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ImpossibleInstanceOfRule>
+ */
 class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

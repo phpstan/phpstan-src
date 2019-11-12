@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ExistingClassInTraitUseRule>
+ */
 class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

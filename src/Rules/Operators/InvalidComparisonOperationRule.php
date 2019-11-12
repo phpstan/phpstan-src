@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -15,6 +14,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp>
+ */
 class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 {
 
@@ -31,11 +33,6 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 		return Node\Expr\BinaryOp::class;
 	}
 
-	/**
-	 * @param Node $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (

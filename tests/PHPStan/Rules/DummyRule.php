@@ -5,6 +5,9 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ */
 class DummyRule implements \PHPStan\Rules\Rule
 {
 
@@ -13,11 +16,6 @@ class DummyRule implements \PHPStan\Rules\Rule
 		return 'PhpParser\Node\Expr\FuncCall';
 	}
 
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		return [];

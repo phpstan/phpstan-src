@@ -9,6 +9,9 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ */
 class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 {
 
@@ -25,11 +28,6 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 		return ClassMethod::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\ClassMethod $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
@@ -44,7 +42,10 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$message = sprintf('Constructor of class %s has an unused parameter $%%s.', $scope->getClassReflection()->getDisplayName());
+		$message = sprintf(
+			'Constructor of class %s has an unused parameter $%%s.',
+			$scope->getClassReflection()->getDisplayName()
+		);
 		if ($scope->getClassReflection()->isAnonymous()) {
 			$message = 'Constructor of an anonymous class has an unused parameter $%s.';
 		}

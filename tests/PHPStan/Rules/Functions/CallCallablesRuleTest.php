@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<CallCallablesRule>
+ */
 class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

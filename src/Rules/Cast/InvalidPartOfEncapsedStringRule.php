@@ -4,13 +4,15 @@ namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Scalar\Encapsed>
+ */
 class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 {
 
@@ -34,11 +36,6 @@ class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Scalar\Encapsed::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Scalar\Encapsed $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = [];

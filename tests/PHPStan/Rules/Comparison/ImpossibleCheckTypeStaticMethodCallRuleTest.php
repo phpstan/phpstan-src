@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Tests\AssertionClassStaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\PHPUnit\Assert\AssertStaticMethodTypeSpecifyingExtension;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ImpossibleCheckTypeStaticMethodCallRule>
+ */
 class ImpossibleCheckTypeStaticMethodCallRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

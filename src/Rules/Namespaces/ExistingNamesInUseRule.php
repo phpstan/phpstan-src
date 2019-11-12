@@ -10,6 +10,9 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Use_>
+ */
 class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 {
 
@@ -38,11 +41,6 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Stmt\Use_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Use_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node->type === Node\Stmt\Use_::TYPE_UNKNOWN) {

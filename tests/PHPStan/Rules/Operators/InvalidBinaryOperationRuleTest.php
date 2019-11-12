@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Operators;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidBinaryOperationRule>
+ */
 class InvalidBinaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

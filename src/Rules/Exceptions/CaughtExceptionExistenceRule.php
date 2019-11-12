@@ -8,9 +8,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Catch_>
+ */
 class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 {
 
@@ -39,11 +41,6 @@ class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 		return Catch_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Catch_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];

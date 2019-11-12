@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<AccessStaticPropertiesRule>
+ */
 class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

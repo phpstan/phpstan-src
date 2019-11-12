@@ -7,8 +7,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
-use PHPStan\Rules\RuleError;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InClassMethodNode>
+ */
 class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 {
 
@@ -25,11 +27,6 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 		return InClassMethodNode::class;
 	}
 
-	/**
-	 * @param \PHPStan\Node\InClassMethodNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$methodReflection = $scope->getFunction();

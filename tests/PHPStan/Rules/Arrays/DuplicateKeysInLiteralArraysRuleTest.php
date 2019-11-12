@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Arrays;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<DuplicateKeysInLiteralArraysRule>
+ */
 class DuplicateKeysInLiteralArraysRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

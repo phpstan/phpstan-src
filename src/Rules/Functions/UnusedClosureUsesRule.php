@@ -6,6 +6,9 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Closure>
+ */
 class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
 {
 
@@ -22,11 +25,6 @@ class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
 		return Node\Expr\Closure::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Closure $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (count($node->uses) === 0) {

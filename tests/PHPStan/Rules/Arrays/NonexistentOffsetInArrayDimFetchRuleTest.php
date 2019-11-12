@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Rules\RuleLevelHelper;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<NonexistentOffsetInArrayDimFetchRule>
+ */
 class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

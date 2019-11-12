@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Generators;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<YieldInGeneratorRule>
+ */
 class YieldInGeneratorRuleTest extends RuleTestCase
 {
 

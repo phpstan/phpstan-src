@@ -6,7 +6,11 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Variable>
+ */
 class ThisVariableRule implements \PHPStan\Rules\Rule
 {
 
@@ -15,11 +19,6 @@ class ThisVariableRule implements \PHPStan\Rules\Rule
 		return Variable::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Variable $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!is_string($node->name) || $node->name !== 'this') {
@@ -32,7 +31,7 @@ class ThisVariableRule implements \PHPStan\Rules\Rule
 
 		if (!$scope->isInClass()) {
 			return [
-				'Using $this outside a class.',
+				RuleErrorBuilder::message('Using $this outside a class.')->build(),
 			];
 		}
 
@@ -43,11 +42,11 @@ class ThisVariableRule implements \PHPStan\Rules\Rule
 
 		if ($function->isStatic()) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Using $this in static method %s::%s().',
 					$scope->getClassReflection()->getDisplayName(),
 					$function->getName()
-				),
+				))->build(),
 			];
 		}
 

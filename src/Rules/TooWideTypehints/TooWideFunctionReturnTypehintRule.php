@@ -8,10 +8,14 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\FunctionReturnStatementsNode>
+ */
 class TooWideFunctionReturnTypehintRule implements Rule
 {
 
@@ -20,11 +24,6 @@ class TooWideFunctionReturnTypehintRule implements Rule
 		return FunctionReturnStatementsNode::class;
 	}
 
-	/**
-	 * @param \PHPStan\Node\FunctionReturnStatementsNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$function = $scope->getFunction();
@@ -68,7 +67,11 @@ class TooWideFunctionReturnTypehintRule implements Rule
 				continue;
 			}
 
-			$messages[] = sprintf('Function %s() never returns %s so it can be removed from the return typehint.', $function->getName(), $type->describe(VerbosityLevel::typeOnly()));
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Function %s() never returns %s so it can be removed from the return typehint.',
+				$function->getName(),
+				$type->describe(VerbosityLevel::typeOnly())
+			))->build();
 		}
 
 		return $messages;

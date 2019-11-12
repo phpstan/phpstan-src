@@ -6,11 +6,15 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Assign>
+ */
 class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 {
 
@@ -34,11 +38,6 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 		return Assign::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\Assign $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if (!($node->var instanceof ArrayDimFetch)) {
@@ -80,11 +79,11 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 
 		if (!$arrayType->getIterableKeyType()->isSuperTypeOf($keyType)->yes()) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept key %s.',
 					$arrayType->describe(VerbosityLevel::typeOnly()),
 					$keyType->describe(VerbosityLevel::value())
-				),
+				))->build(),
 			];
 		}
 

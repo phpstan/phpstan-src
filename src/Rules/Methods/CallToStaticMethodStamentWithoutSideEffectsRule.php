@@ -6,11 +6,15 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ */
 class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 {
 
@@ -34,11 +38,6 @@ class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 		return Node\Stmt\Expression::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Expression $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->expr instanceof Node\Expr\StaticCall) {
@@ -84,12 +83,12 @@ class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 		$method = $calledOnType->getMethod($methodName, $scope);
 		if ($method->hasSideEffects()->no()) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Call to %s %s::%s() on a separate line has no effect.',
 					$method->isStatic() ? 'static method' : 'method',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName()
-				),
+				))->build(),
 			];
 		}
 

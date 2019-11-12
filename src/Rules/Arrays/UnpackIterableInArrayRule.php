@@ -12,6 +12,9 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\LiteralArrayNode>
+ */
 class UnpackIterableInArrayRule implements Rule
 {
 
@@ -30,11 +33,6 @@ class UnpackIterableInArrayRule implements Rule
 		return LiteralArrayNode::class;
 	}
 
-	/**
-	 * @param \PHPStan\Node\LiteralArrayNode $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Rules\RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];

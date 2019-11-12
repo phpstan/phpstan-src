@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<CallToFunctionStamentWithoutSideEffectsRule>
+ */
 class CallToFunctionStamentWithoutSideEffectsRuleTest extends RuleTestCase
 {
 

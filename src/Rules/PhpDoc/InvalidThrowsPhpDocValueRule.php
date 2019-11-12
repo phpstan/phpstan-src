@@ -4,11 +4,15 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\FunctionLike>
+ */
 class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 {
 
@@ -25,11 +29,6 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\FunctionLike::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\FunctionLike $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$docComment = $node->getDocComment();
@@ -66,10 +65,12 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		return [sprintf(
-			'PHPDoc tag @throws with type %s is not subtype of Throwable',
-			$phpDocThrowsType->describe(VerbosityLevel::typeOnly())
-		)];
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'PHPDoc tag @throws with type %s is not subtype of Throwable',
+				$phpDocThrowsType->describe(VerbosityLevel::typeOnly())
+			))->build(),
+		];
 	}
 
 }

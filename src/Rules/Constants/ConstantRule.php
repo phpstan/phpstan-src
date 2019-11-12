@@ -4,7 +4,11 @@ namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ConstFetch>
+ */
 class ConstantRule implements \PHPStan\Rules\Rule
 {
 
@@ -13,19 +17,14 @@ class ConstantRule implements \PHPStan\Rules\Rule
 		return Node\Expr\ConstFetch::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\ConstFetch $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->hasConstant($node->name)) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					'Constant %s not found.',
 					(string) $node->name
-				),
+				))->build(),
 			];
 		}
 

@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInPropertiesRule>
+ */
 class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

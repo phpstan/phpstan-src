@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Regexp;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<RegularExpressionPatternRule>
+ */
 class RegularExpressionPatternRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

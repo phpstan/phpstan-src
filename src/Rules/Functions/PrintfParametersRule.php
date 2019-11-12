@@ -5,8 +5,12 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeUtils;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ */
 class PrintfParametersRule implements \PHPStan\Rules\Rule
 {
 
@@ -15,11 +19,6 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 		return FuncCall::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\FuncCall $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!($node->name instanceof \PhpParser\Node\Name)) {
@@ -77,7 +76,7 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 
 		if ($argsCount !== $placeHoldersCount + 1) {
 			return [
-				sprintf(
+				RuleErrorBuilder::message(sprintf(
 					sprintf(
 						'%s, %s.',
 						$placeHoldersCount === 1 ? 'Call to %s contains %d placeholder' : 'Call to %s contains %d placeholders',
@@ -86,7 +85,7 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 					$name,
 					$placeHoldersCount,
 					$argsCount - 1
-				),
+				))->build(),
 			];
 		}
 

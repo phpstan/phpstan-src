@@ -6,6 +6,9 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassConst>
+ */
 class ClassConstantDeclarationRule implements Rule
 {
 
@@ -14,11 +17,6 @@ class ClassConstantDeclarationRule implements Rule
 		return Node\Stmt\ClassConst::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\ClassConst $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {

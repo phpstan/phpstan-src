@@ -5,7 +5,11 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Foreach_>
+ */
 class DeadForeachRule implements Rule
 {
 
@@ -14,11 +18,6 @@ class DeadForeachRule implements Rule
 		return Node\Stmt\Foreach_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Foreach_ $node
-	 * @param Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$iterableType = $scope->getType($node->expr);
@@ -31,7 +30,7 @@ class DeadForeachRule implements Rule
 		}
 
 		return [
-			'Empty array passed to foreach.',
+			RuleErrorBuilder::message('Empty array passed to foreach.')->build(),
 		];
 	}
 

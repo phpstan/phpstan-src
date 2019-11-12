@@ -5,13 +5,15 @@ namespace PHPStan\Rules\Operators;
 use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ */
 class InvalidBinaryOperationRule implements \PHPStan\Rules\Rule
 {
 
@@ -35,11 +37,6 @@ class InvalidBinaryOperationRule implements \PHPStan\Rules\Rule
 		return Node\Expr::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		if (

@@ -3,11 +3,13 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node\Expr\BinaryOp;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp>
+ */
 class NumberComparisonOperatorsConstantConditionRule implements \PHPStan\Rules\Rule
 {
 
@@ -16,11 +18,6 @@ class NumberComparisonOperatorsConstantConditionRule implements \PHPStan\Rules\R
 		return BinaryOp::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Expr\BinaryOp $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(
 		\PhpParser\Node $node,
 		\PHPStan\Analyser\Scope $scope

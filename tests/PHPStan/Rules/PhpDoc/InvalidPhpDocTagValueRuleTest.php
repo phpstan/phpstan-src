@@ -5,6 +5,9 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<InvalidPhpDocTagValueRule>
+ */
 class InvalidPhpDocTagValueRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

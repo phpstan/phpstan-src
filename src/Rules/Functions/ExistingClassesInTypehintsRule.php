@@ -6,8 +6,10 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\FunctionDefinitionCheck;
-use PHPStan\Rules\RuleError;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ */
 class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 {
 
@@ -24,11 +26,6 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 		return Function_::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\Function_ $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		return $this->check->checkFunction(

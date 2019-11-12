@@ -12,6 +12,9 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Tests\AssertionClassMethodTypeSpecifyingExtension;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ImpossibleCheckTypeMethodCallRule>
+ */
 class ImpossibleCheckTypeMethodCallRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

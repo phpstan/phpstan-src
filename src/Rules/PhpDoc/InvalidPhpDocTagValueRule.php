@@ -8,7 +8,11 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ */
 class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 {
 
@@ -29,11 +33,6 @@ class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
@@ -62,12 +61,12 @@ class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
-			$errors[] = sprintf(
+			$errors[] = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag %s has invalid value (%s): %s',
 				$phpDocTag->name,
 				$phpDocTag->value->value,
 				$phpDocTag->value->exception->getMessage()
-			);
+			))->build();
 		}
 
 		return $errors;

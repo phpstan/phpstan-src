@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<UnusedClosureUsesRule>
+ */
 class UnusedClosureUsesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

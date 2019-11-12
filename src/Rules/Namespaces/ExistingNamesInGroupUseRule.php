@@ -11,6 +11,9 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\GroupUse>
+ */
 class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 {
 
@@ -39,11 +42,6 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 		return \PhpParser\Node\Stmt\GroupUse::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node\Stmt\GroupUse $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return RuleError[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];

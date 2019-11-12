@@ -5,9 +5,13 @@ namespace PHPStan\Rules\Regexp;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\TypeUtils;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ */
 class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 {
 
@@ -16,11 +20,6 @@ class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 		return FuncCall::class;
 	}
 
-	/**
-	 * @param FuncCall $node
-	 * @param Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$patterns = $this->extractPatterns($node, $scope);
@@ -32,7 +31,7 @@ class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
-			$errors[] = sprintf('Regex pattern is invalid: %s', $errorMessage);
+			$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern is invalid: %s', $errorMessage))->build();
 		}
 
 		return $errors;

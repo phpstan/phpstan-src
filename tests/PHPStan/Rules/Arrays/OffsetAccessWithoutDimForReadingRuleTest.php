@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Arrays;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<OffsetAccessWithoutDimForReadingRule>
+ */
 class OffsetAccessWithoutDimForReadingRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

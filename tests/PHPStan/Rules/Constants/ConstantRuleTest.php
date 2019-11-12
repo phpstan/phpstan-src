@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Constants;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<ConstantRule>
+ */
 class ConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 

@@ -129,6 +129,9 @@ final class GenericObjectType extends ObjectType
 			if (!isset($this->types[$i])) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
+			if ($templateType instanceof ErrorType) {
+				continue;
+			}
 			if (!$templateType instanceof TemplateType) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}

@@ -48,6 +48,9 @@ class FileTypeMapper
 	/** @var (false|callable|\PHPStan\PhpDoc\NameScopedPhpDocString)[][] */
 	private $inProcess = [];
 
+	/** @var array<string, ResolvedPhpDocBlock> */
+	private $resolvedPhpDocBlockCache = [];
+
 	public function __construct(
 		Parser $phpParser,
 		PhpDocStringResolver $phpDocStringResolver,
@@ -78,6 +81,10 @@ class FileTypeMapper
 		}
 
 		$phpDocKey = $this->getPhpDocKey($className, $traitName, $functionName, $docComment);
+		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {
+			return $this->resolvedPhpDocBlockCache[$phpDocKey];
+		}
+
 		$phpDocMap = [];
 
 		if (!isset($this->inProcess[$fileName])) {
@@ -85,7 +92,7 @@ class FileTypeMapper
 		}
 
 		if (isset($phpDocMap[$phpDocKey])) {
-			return $this->createResolvedPhpDocBlock($phpDocMap[$phpDocKey]);
+			return $this->createResolvedPhpDocBlock($phpDocKey, $phpDocMap[$phpDocKey]);
 		}
 
 		if (!isset($this->inProcess[$fileName][$phpDocKey])) { // wrong $fileName due to traits
@@ -103,10 +110,10 @@ class FileTypeMapper
 		}
 
 		assert($this->inProcess[$fileName][$phpDocKey] instanceof NameScopedPhpDocString);
-		return $this->createResolvedPhpDocBlock($this->inProcess[$fileName][$phpDocKey]);
+		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$phpDocKey]);
 	}
 
-	private function createResolvedPhpDocBlock(NameScopedPhpDocString $nameScopedPhpDocString): ResolvedPhpDocBlock
+	private function createResolvedPhpDocBlock(string $phpDocKey, NameScopedPhpDocString $nameScopedPhpDocString): ResolvedPhpDocBlock
 	{
 		$phpDocNode = $this->phpDocStringResolver->resolve($nameScopedPhpDocString->getPhpDocString());
 		$nameScope = $nameScopedPhpDocString->getNameScope();
@@ -127,13 +134,15 @@ class FileTypeMapper
 			$templateTypeMap = TemplateTypeMap::createEmpty();
 		}
 
-		return ResolvedPhpDocBlock::create(
+		$this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
 			$phpDocNode,
 			$nameScope,
 			$templateTypeMap,
 			$templateTags,
 			$this->phpDocNodeResolver
 		);
+
+		return $this->resolvedPhpDocBlockCache[$phpDocKey];
 	}
 
 	/**

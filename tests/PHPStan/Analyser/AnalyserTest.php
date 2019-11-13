@@ -7,6 +7,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\DirectParser;
+use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
@@ -356,6 +357,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		/** @var RelativePathHelper $relativePathHelper */
 		$relativePathHelper = self::getContainer()->getService('relativePathHelper');
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);
 		return new Analyser(
 			$this->createScopeFactory($broker, $typeSpecifier),
@@ -364,7 +366,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			new NodeScopeResolver(
 				$broker,
 				$this->getParser(),
-				new FileTypeMapper($this->getParser(), $phpDocStringResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper), new \PHPStan\PhpDoc\TypeNodeResolver([], self::getContainer())),
+				new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper), new \PHPStan\PhpDoc\TypeNodeResolver([], self::getContainer())),
 				$fileHelper,
 				$typeSpecifier,
 				false,

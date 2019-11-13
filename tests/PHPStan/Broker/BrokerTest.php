@@ -8,6 +8,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\Parser;
+use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\FunctionReflectionFactory;
@@ -23,6 +24,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 	protected function setUp(): void
 	{
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 
 		$workingDirectory = __DIR__;
 		$relativePathHelper = new FuzzyRelativePathHelper($workingDirectory, DIRECTORY_SEPARATOR, []);
@@ -36,7 +38,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			[],
 			[],
 			$this->createMock(FunctionReflectionFactory::class),
-			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $this->createMock(Cache::class), $anonymousClassNameHelper, new \PHPStan\PhpDoc\TypeNodeResolver([], self::getContainer())),
+			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper, new \PHPStan\PhpDoc\TypeNodeResolver([], self::getContainer())),
 			self::getContainer()->getByType(SignatureMapProvider::class),
 			self::getContainer()->getByType(\PhpParser\PrettyPrinter\Standard::class),
 			$anonymousClassNameHelper,

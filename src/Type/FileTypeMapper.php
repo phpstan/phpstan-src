@@ -7,10 +7,14 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\Parser;
+use PHPStan\PhpDoc\NameScopedPhpDocString;
+use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function array_key_exists;
 
@@ -26,6 +30,9 @@ class FileTypeMapper
 	/** @var \PHPStan\PhpDoc\PhpDocStringResolver */
 	private $phpDocStringResolver;
 
+	/** @var \PHPStan\PhpDoc\PhpDocNodeResolver */
+	private $phpDocNodeResolver;
+
 	/** @var \PHPStan\Cache\Cache */
 	private $cache;
 
@@ -35,15 +42,16 @@ class FileTypeMapper
 	/** @var \PHPStan\PhpDoc\TypeNodeResolver */
 	private $typeNodeResolver;
 
-	/** @var \PHPStan\PhpDoc\ResolvedPhpDocBlock[][] */
+	/** @var \PHPStan\PhpDoc\NameScopedPhpDocString[][] */
 	private $memoryCache = [];
 
-	/** @var (false|callable|\PHPStan\PhpDoc\ResolvedPhpDocBlock)[][] */
+	/** @var (false|callable|\PHPStan\PhpDoc\NameScopedPhpDocString)[][] */
 	private $inProcess = [];
 
 	public function __construct(
 		Parser $phpParser,
 		PhpDocStringResolver $phpDocStringResolver,
+		PhpDocNodeResolver $phpDocNodeResolver,
 		Cache $cache,
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		TypeNodeResolver $typeNodeResolver
@@ -51,6 +59,7 @@ class FileTypeMapper
 	{
 		$this->phpParser = $phpParser;
 		$this->phpDocStringResolver = $phpDocStringResolver;
+		$this->phpDocNodeResolver = $phpDocNodeResolver;
 		$this->cache = $cache;
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 		$this->typeNodeResolver = $typeNodeResolver;
@@ -76,7 +85,7 @@ class FileTypeMapper
 		}
 
 		if (isset($phpDocMap[$phpDocKey])) {
-			return $phpDocMap[$phpDocKey];
+			return $this->createResolvedPhpDocBlock($phpDocMap[$phpDocKey]);
 		}
 
 		if (!isset($this->inProcess[$fileName][$phpDocKey])) { // wrong $fileName due to traits
@@ -93,13 +102,43 @@ class FileTypeMapper
 			$this->inProcess[$fileName][$phpDocKey] = $resolveCallback();
 		}
 
-		assert($this->inProcess[$fileName][$phpDocKey] instanceof ResolvedPhpDocBlock);
-		return $this->inProcess[$fileName][$phpDocKey];
+		assert($this->inProcess[$fileName][$phpDocKey] instanceof NameScopedPhpDocString);
+		return $this->createResolvedPhpDocBlock($this->inProcess[$fileName][$phpDocKey]);
+	}
+
+	private function createResolvedPhpDocBlock(NameScopedPhpDocString $nameScopedPhpDocString): ResolvedPhpDocBlock
+	{
+		$phpDocNode = $this->phpDocStringResolver->resolve($nameScopedPhpDocString->getPhpDocString());
+		$nameScope = $nameScopedPhpDocString->getNameScope();
+		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
+		$templateTypeScope = $nameScope->getTemplateTypeScope();
+
+		if ($templateTypeScope !== null) {
+			$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
+				return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
+			}, $templateTags));
+			$nameScope = $nameScope->withTemplateTypeMap(
+				new TemplateTypeMap(array_merge(
+					$nameScope->getTemplateTypeMap()->getTypes(),
+					$templateTypeMap->getTypes()
+				))
+			);
+		} else {
+			$templateTypeMap = TemplateTypeMap::createEmpty();
+		}
+
+		return ResolvedPhpDocBlock::create(
+			$phpDocNode,
+			$nameScope,
+			$templateTypeMap,
+			$templateTags,
+			$this->phpDocNodeResolver
+		);
 	}
 
 	/**
 	 * @param string $fileName
-	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock[]
+	 * @return \PHPStan\PhpDoc\NameScopedPhpDocString[]
 	 */
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
@@ -108,7 +147,7 @@ class FileTypeMapper
 			if ($modifiedTime === false) {
 				$modifiedTime = time();
 			}
-			$cacheKey = sprintf('%s-%d-%s', $fileName, $modifiedTime, $this->typeNodeResolver->getCacheKey());
+			$cacheKey = sprintf('%s-phpdocstring-%d-%s', $fileName, $modifiedTime, $this->typeNodeResolver->getCacheKey());
 			$map = $this->cache->load($cacheKey);
 
 			if ($map === null) {
@@ -124,7 +163,7 @@ class FileTypeMapper
 
 	/**
 	 * @param string $fileName
-	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock[]
+	 * @return \PHPStan\PhpDoc\NameScopedPhpDocString[]
 	 */
 	private function createResolvedPhpDocMap(string $fileName): array
 	{
@@ -305,7 +344,7 @@ class FileTypeMapper
 				$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 
 				$phpDocKey = $this->getPhpDocKey($className, $lookForTrait, $functionName, $phpDocString);
-				$phpDocMap[$phpDocKey] = function () use ($phpDocString, $namespace, $uses, $className, $functionName, $typeMapCb, $resolvableTemplateTypes): ResolvedPhpDocBlock {
+				$phpDocMap[$phpDocKey] = static function () use ($phpDocString, $namespace, $uses, $className, $functionName, $typeMapCb, $resolvableTemplateTypes): NameScopedPhpDocString {
 					$nameScope = new NameScope(
 						$namespace,
 						$uses,
@@ -331,7 +370,7 @@ class FileTypeMapper
 							});
 						})
 					);
-					return $this->phpDocStringResolver->resolve($phpDocString, $nameScope);
+					return new NameScopedPhpDocString($phpDocString, $nameScope);
 				};
 
 				if (!($node instanceof Node\Stmt\ClassLike) && !($node instanceof Node\FunctionLike)) {

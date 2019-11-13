@@ -2,4 +2,4 @@ parameters:
 	stubFiles:
 		- data/stubs/function.php
 		- ../../notAutoloaded/stubs-methods.php
-
+		- data/stubs/doctrineCollection.php

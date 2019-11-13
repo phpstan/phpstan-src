@@ -18,6 +18,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
+use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\TypeStringResolver;
@@ -155,8 +156,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 		};
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $cache, new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, [])), self::getContainer()->getByType(\PHPStan\PhpDoc\TypeNodeResolver::class));
+		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, [])), self::getContainer()->getByType(\PHPStan\PhpDoc\TypeNodeResolver::class));
 		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension($fileTypeMapper);
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);
 		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
@@ -246,7 +248,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions()),
 			$this->getOperatorTypeSpecifyingExtensions(),
 			$functionReflectionFactory,
-			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $cache, $anonymousClassNameHelper, self::getContainer()->getByType(\PHPStan\PhpDoc\TypeNodeResolver::class)),
+			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper, self::getContainer()->getByType(\PHPStan\PhpDoc\TypeNodeResolver::class)),
 			$signatureMapProvider,
 			self::getContainer()->getByType(Standard::class),
 			$anonymousClassNameHelper,

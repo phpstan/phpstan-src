@@ -107,4 +107,19 @@ class NameScope
 		);
 	}
 
+	/**
+	 * @param mixed[] $properties
+	 * @return self
+	 */
+	public static function __set_state(array $properties): self
+	{
+		return new self(
+			$properties['namespace'],
+			$properties['uses'],
+			$properties['className'],
+			$properties['functionName'],
+			$properties['templateTypeMap']
+		);
+	}
+
 }

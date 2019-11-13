@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
 use PHPStan\Parser\Parser;
 use PHPStan\Type\FileTypeMapper;
+use function array_key_exists;
 
 class StubPhpDocProvider
 {
@@ -42,6 +43,12 @@ class StubPhpDocProvider
 	/** @var bool */
 	private $initializing = false;
 
+	/** @var array<string, true>|null */
+	private $knownClasses;
+
+	/** @var array<string, true>|null */
+	private $knownFunctions;
+
 	/**
 	 * @param \PHPStan\Parser\Parser $parser
 	 * @param string[] $stubFiles
@@ -61,6 +68,9 @@ class StubPhpDocProvider
 
 	public function findClassPhpDoc(string $className): ?ResolvedPhpDocBlock
 	{
+		if (!$this->isKnownClass($className)) {
+			return null;
+		}
 		if (!$this->initialized) {
 			$this->initialize();
 		}
@@ -74,6 +84,9 @@ class StubPhpDocProvider
 
 	public function findPropertyPhpDoc(string $className, string $propertyName): ?ResolvedPhpDocBlock
 	{
+		if (!$this->isKnownClass($className)) {
+			return null;
+		}
 		if (!$this->initialized) {
 			$this->initialize();
 		}
@@ -87,6 +100,9 @@ class StubPhpDocProvider
 
 	public function findMethodPhpDoc(string $className, string $methodName): ?ResolvedPhpDocBlock
 	{
+		if (!$this->isKnownClass($className)) {
+			return null;
+		}
 		if (!$this->initialized) {
 			$this->initialize();
 		}
@@ -100,6 +116,9 @@ class StubPhpDocProvider
 
 	public function findFunctionPhpDoc(string $functionName): ?ResolvedPhpDocBlock
 	{
+		if (!$this->isKnownFunction($functionName)) {
+			return null;
+		}
 		if (!$this->initialized) {
 			$this->initialize();
 		}
@@ -210,6 +229,74 @@ class StubPhpDocProvider
 				$this->methodMap[$className][$methodName] = $resolvedPhpDoc;
 			}
 		}
+	}
+
+	private function isKnownClass(string $className): bool
+	{
+		if ($this->knownClasses !== null) {
+			return array_key_exists($className, $this->knownClasses);
+		}
+
+		$this->initializeKnownElements();
+
+		/** @var array<string, true> $knownClasses */
+		$knownClasses = $this->knownClasses;
+
+		return array_key_exists($className, $knownClasses);
+	}
+
+	private function isKnownFunction(string $functionName): bool
+	{
+		if ($this->knownFunctions !== null) {
+			return array_key_exists($functionName, $this->knownFunctions);
+		}
+
+		$this->initializeKnownElements();
+
+		/** @var array<string, true> $knownFunctions */
+		$knownFunctions = $this->knownFunctions;
+
+		return array_key_exists($functionName, $knownFunctions);
+	}
+
+	private function initializeKnownElements(): void
+	{
+		$this->knownClasses = [];
+		$this->knownFunctions = [];
+
+		foreach ($this->stubFiles as $stubFile) {
+			$nodes = $this->parser->parseFile($stubFile);
+			foreach ($nodes as $node) {
+				$this->initializeKnownElementNode($node);
+			}
+		}
+	}
+
+	private function initializeKnownElementNode(Node $node): void
+	{
+		if ($node instanceof Node\Stmt\Namespace_) {
+			foreach ($node->stmts as $stmt) {
+				$this->initializeKnownElementNode($stmt);
+			}
+			return;
+		}
+
+		if ($node instanceof Node\Stmt\Function_) {
+			$functionName = (string) $node->namespacedName;
+			$this->knownFunctions[$functionName] = true;
+			return;
+		}
+
+		if (!$node instanceof Class_ && !$node instanceof Interface_ && !$node instanceof Trait_) {
+			return;
+		}
+
+		if (!isset($node->namespacedName)) {
+			return;
+		}
+
+		$className = (string) $node->namespacedName;
+		$this->knownClasses[$className] = true;
 	}
 
 }

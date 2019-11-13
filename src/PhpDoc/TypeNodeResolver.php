@@ -61,9 +61,6 @@ class TypeNodeResolver
 	/** @var Container */
 	private $container;
 
-	/** @var bool */
-	private $iterableGenericFallback = true;
-
 	/**
 	 * @param TypeNodeResolverExtension[] $extensions
 	 */
@@ -79,16 +76,6 @@ class TypeNodeResolver
 
 		$this->extensions = $extensions;
 		$this->container = $container;
-	}
-
-	public function disableIterableGenericFallback(): void
-	{
-		$this->iterableGenericFallback = false;
-	}
-
-	public function enableIterableGenericFallback(): void
-	{
-		$this->iterableGenericFallback = true;
 	}
 
 	public function getCacheKey(): string
@@ -350,7 +337,7 @@ class TypeNodeResolver
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
 
 		if ($mainType instanceof TypeWithClassName) {
-			if (!$this->iterableGenericFallback || !$this->getBroker()->hasClass($mainType->getClassName())) {
+			if (!$this->getBroker()->hasClass($mainType->getClassName())) {
 				return new GenericObjectType($mainType->getClassName(), $genericTypes);
 			}
 
@@ -400,7 +387,7 @@ class TypeNodeResolver
 			}
 		}
 
-		if ($this->iterableGenericFallback && $mainType->isIterable()->yes()) {
+		if ($mainType->isIterable()->yes()) {
 			if (count($genericTypes) === 1) { // Foo<ValueType>
 				return TypeCombinator::intersect(
 					$mainType,

@@ -2192,7 +2192,7 @@ return [
 'Ds\Set::sort' => ['void', 'comparator='=>'callable'],
 'Ds\Set::sorted' => ['Ds\Set', 'comparator='=>'callable'],
 'Ds\Set::sum' => ['int|float'],
-'Ds\Set::union' => ['?Ds\Set', 'set'=>'Ds\Set'],
+'Ds\Set::union' => ['Ds\Set', 'set'=>'Ds\Set'],
 'Ds\Set::xor' => ['Ds\Set', 'set'=>'Ds\Set'],
 'Ds\Set::clear' => ['void'],
 'Ds\Set::copy' => ['Ds\Set'],

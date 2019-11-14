@@ -2158,7 +2158,7 @@ return [
 'Ds\Map::sort' => ['void', 'comparator='=>'callable'],
 'Ds\Map::sorted' => ['Ds\Map', 'comparator='=>'callable'],
 'Ds\Map::sum' => ['int|float'],
-'Ds\Map::union' => ['Ds\Map', 'map'=>'mixed'],
+'Ds\Map::union' => ['Ds\Map', 'map'=>'Ds\Map'],
 'Ds\Map::values' => ['Ds\Sequence'],
 'Ds\Map::xor' => ['Ds\Map', 'map'=>'Ds\Map'],
 'Ds\Map::clear' => ['void'],

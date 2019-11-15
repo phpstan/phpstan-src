@@ -3,6 +3,9 @@
 namespace PHPStan\Reflection\Php;
 
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Declare_;
+use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\Broker\Broker;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
@@ -267,7 +270,11 @@ class PhpMethodReflection implements MethodReflection
 		}
 
 		if (!$isNativelyVariadic && $filename !== false) {
-			$key = sprintf('variadic-method-%s-%s-v1', $declaringClass->getName(), $this->reflection->getName());
+			$modifiedTime = filemtime($filename);
+			if ($modifiedTime === false) {
+				$modifiedTime = time();
+			}
+			$key = sprintf('variadic-method-%s-%s-%s-%d-v2', $declaringClass->getName(), $this->reflection->getName(), $filename, $modifiedTime);
 			$cachedResult = $this->cache->load($key);
 			if ($cachedResult === null || !is_bool($cachedResult)) {
 				$nodes = $this->parser->parseFile($filename);
@@ -284,27 +291,24 @@ class PhpMethodReflection implements MethodReflection
 
 	/**
 	 * @param ClassReflection $declaringClass
-	 * @param mixed $nodes
+	 * @param \PhpParser\Node[] $nodes
 	 * @return bool
 	 */
-	private function callsFuncGetArgs(ClassReflection $declaringClass, $nodes): bool
+	private function callsFuncGetArgs(ClassReflection $declaringClass, array $nodes): bool
 	{
 		foreach ($nodes as $node) {
-			if (is_array($node)) {
-				if ($this->callsFuncGetArgs($declaringClass, $node)) {
-					return true;
-				}
-			}
-
-			if (!($node instanceof \PhpParser\Node)) {
-				continue;
-			}
-
 			if (
 				$node instanceof \PhpParser\Node\Stmt\ClassLike
-				&& isset($node->namespacedName)
-				&& $declaringClass->getName() !== (string) $node->namespacedName
 			) {
+				if (!isset($node->namespacedName)) {
+					continue;
+				}
+				if ($declaringClass->getName() !== (string) $node->namespacedName) {
+					continue;
+				}
+				if ($this->callsFuncGetArgs($declaringClass, $node->stmts)) {
+					return true;
+				}
 				continue;
 			}
 
@@ -321,7 +325,22 @@ class PhpMethodReflection implements MethodReflection
 				continue;
 			}
 
-			if ($this->callsFuncGetArgs($declaringClass, $node)) {
+			if ($node instanceof Function_) {
+				continue;
+			}
+
+			if ($node instanceof Namespace_) {
+				if ($this->callsFuncGetArgs($declaringClass, $node->stmts)) {
+					return true;
+				}
+				continue;
+			}
+
+			if (!$node instanceof Declare_ || $node->stmts === null) {
+				continue;
+			}
+
+			if ($this->callsFuncGetArgs($declaringClass, $node->stmts)) {
 				return true;
 			}
 		}

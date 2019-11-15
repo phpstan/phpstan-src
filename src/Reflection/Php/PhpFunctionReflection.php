@@ -2,7 +2,10 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
@@ -162,10 +165,16 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 	{
 		$isNativelyVariadic = $this->reflection->isVariadic();
 		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false) {
-			$key = sprintf('variadic-function-%s-v0', $this->reflection->getName());
+			$fileName = $this->reflection->getFileName();
+			$functionName = $this->reflection->getName();
+			$modifiedTime = filemtime($fileName);
+			if ($modifiedTime === false) {
+				$modifiedTime = time();
+			}
+			$key = sprintf('variadic-function-%s-%s-%d-v1', $functionName, $fileName, $modifiedTime);
 			$cachedResult = $this->cache->load($key);
 			if ($cachedResult === null) {
-				$nodes = $this->parser->parseFile($this->reflection->getFileName());
+				$nodes = $this->parser->parseFile($fileName);
 				$result = $this->callsFuncGetArgs($nodes);
 				$this->cache->save($key, $result);
 				return $result;
@@ -178,22 +187,12 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 	}
 
 	/**
-	 * @param mixed $nodes
+	 * @param \PhpParser\Node[] $nodes
 	 * @return bool
 	 */
-	private function callsFuncGetArgs($nodes): bool
+	private function callsFuncGetArgs(array $nodes): bool
 	{
 		foreach ($nodes as $node) {
-			if (is_array($node)) {
-				if ($this->callsFuncGetArgs($node)) {
-					return true;
-				}
-			}
-
-			if (!($node instanceof \PhpParser\Node)) {
-				continue;
-			}
-
 			if ($node instanceof Function_) {
 				$functionName = (string) $node->namespacedName;
 
@@ -204,7 +203,21 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 				continue;
 			}
 
-			if ($this->callsFuncGetArgs($node)) {
+			if ($node instanceof ClassLike) {
+				continue;
+			}
+
+			if ($node instanceof Namespace_) {
+				if ($this->callsFuncGetArgs($node->stmts)) {
+					return true;
+				}
+			}
+
+			if (!$node instanceof Declare_ || $node->stmts === null) {
+				continue;
+			}
+
+			if ($this->callsFuncGetArgs($node->stmts)) {
 				return true;
 			}
 		}

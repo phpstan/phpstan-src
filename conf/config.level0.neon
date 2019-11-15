@@ -139,6 +139,13 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Variables\CompactVariablesRule
+		arguments:
+			checkMaybeUndefinedVariables: %checkMaybeUndefinedVariables%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Variables\DefinedVariableRule
 		arguments:
 			cliArgumentsVariablesRegistered: %cliArgumentsVariablesRegistered%

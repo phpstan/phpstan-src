@@ -25,11 +25,11 @@ class Cache
 	/**
 	 * @param string $key
 	 * @param mixed $data
-	 * @return bool
+	 * @return void
 	 */
-	public function save(string $key, $data): bool
+	public function save(string $key, $data): void
 	{
-		return $this->storage->save($key, $data);
+		$this->storage->save($key, $data);
 	}
 
 }

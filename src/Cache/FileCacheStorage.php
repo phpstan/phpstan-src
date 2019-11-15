@@ -32,15 +32,18 @@ class FileCacheStorage implements CacheStorage
 	/**
 	 * @param string $key
 	 * @param mixed $data
-	 * @return bool
+	 * @return void
 	 */
-	public function save(string $key, $data): bool
+	public function save(string $key, $data): void
 	{
-		$writtenBytes = @file_put_contents(
-			$this->getFilePath($key),
+		$path = $this->getFilePath($key);
+		$success = @file_put_contents(
+			$path,
 			sprintf("<?php declare(strict_types = 1);\n\nreturn %s;", var_export($data, true))
 		);
-		return $writtenBytes !== false;
+		if ($success === false) {
+			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
+		}
 	}
 
 	private function getFilePath(string $key): string

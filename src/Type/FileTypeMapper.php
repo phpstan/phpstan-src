@@ -39,9 +39,6 @@ class FileTypeMapper
 	/** @var \PHPStan\Broker\AnonymousClassNameHelper */
 	private $anonymousClassNameHelper;
 
-	/** @var \PHPStan\PhpDoc\TypeNodeResolver */
-	private $typeNodeResolver;
-
 	/** @var \PHPStan\PhpDoc\NameScopedPhpDocString[][] */
 	private $memoryCache = [];
 
@@ -56,8 +53,7 @@ class FileTypeMapper
 		PhpDocStringResolver $phpDocStringResolver,
 		PhpDocNodeResolver $phpDocNodeResolver,
 		Cache $cache,
-		AnonymousClassNameHelper $anonymousClassNameHelper,
-		TypeNodeResolver $typeNodeResolver
+		AnonymousClassNameHelper $anonymousClassNameHelper
 	)
 	{
 		$this->phpParser = $phpParser;
@@ -65,7 +61,6 @@ class FileTypeMapper
 		$this->phpDocNodeResolver = $phpDocNodeResolver;
 		$this->cache = $cache;
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
-		$this->typeNodeResolver = $typeNodeResolver;
 	}
 
 	public function getResolvedPhpDoc(
@@ -156,7 +151,7 @@ class FileTypeMapper
 			if ($modifiedTime === false) {
 				$modifiedTime = time();
 			}
-			$cacheKey = sprintf('%s-phpdocstring-%d-%s', $fileName, $modifiedTime, $this->typeNodeResolver->getCacheKey());
+			$cacheKey = sprintf('%s-phpdocstring-%d', $fileName, $modifiedTime);
 			$map = $this->cache->load($cacheKey);
 
 			if ($map === null) {

@@ -357,7 +357,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				886,
 			],
 			[
-				'Method ReflectionNamedType::getName() invoked with 1 parameter, 0 required.',
+				'Call to an undefined method ReflectionType::getName().',
+				896,
+			],
+			[
+				'Call to an undefined method ReflectionType::getName().',
 				897,
 			],
 			[

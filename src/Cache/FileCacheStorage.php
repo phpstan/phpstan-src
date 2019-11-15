@@ -11,8 +11,12 @@ class FileCacheStorage implements CacheStorage
 	public function __construct(string $directory)
 	{
 		$this->directory = $directory;
+	}
 
-		if (@mkdir($this->directory) && !is_dir($this->directory)) {
+	private function makeDir(string $directory): void
+	{
+		$result = @mkdir($directory, 0777, true);
+		if ($result === false && !is_dir($directory)) {
 			throw new \InvalidArgumentException(sprintf('Directory "%s" doesn\'t exist.', $this->directory));
 		}
 	}
@@ -25,7 +29,7 @@ class FileCacheStorage implements CacheStorage
 	{
 		return (function (string $key) {
 			$filePath = $this->getFilePath($key);
-			return is_file($filePath) ? require $this->getFilePath($key) : null;
+			return is_file($filePath) ? require $filePath : null;
 		})($key);
 	}
 
@@ -37,9 +41,14 @@ class FileCacheStorage implements CacheStorage
 	public function save(string $key, $data): void
 	{
 		$path = $this->getFilePath($key);
+		$this->makeDir(dirname($path));
 		$success = @file_put_contents(
 			$path,
-			sprintf("<?php declare(strict_types = 1);\n\nreturn %s;", var_export($data, true))
+			sprintf(
+				"<?php declare(strict_types = 1);\n\n%s\n\nreturn %s;",
+				'// ' . $key,
+				var_export($data, true)
+			)
 		);
 		if ($success === false) {
 			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
@@ -48,7 +57,14 @@ class FileCacheStorage implements CacheStorage
 
 	private function getFilePath(string $key): string
 	{
-		return sprintf('%s/%s.php', $this->directory, preg_replace('~[^-\\w]~', '_', $key));
+		$keyHash = sha1($key);
+		return sprintf(
+			'%s/%s/%s/%s.php',
+			$this->directory,
+			substr($keyHash, 0, 2),
+			substr($keyHash, 2, 2),
+			$keyHash
+		);
 	}
 
 }

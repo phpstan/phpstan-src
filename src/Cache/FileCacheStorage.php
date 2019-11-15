@@ -45,8 +45,7 @@ class FileCacheStorage implements CacheStorage
 		$success = @file_put_contents(
 			$path,
 			sprintf(
-				"<?php declare(strict_types = 1);\n\n%s\n\nreturn %s;",
-				'// ' . $key,
+				"<?php declare(strict_types = 1);\n\nreturn %s;",
 				var_export($data, true)
 			)
 		);

@@ -96,6 +96,7 @@ class ResolvedPhpDocBlock
 	public static function createEmpty(): self
 	{
 		$self = new self();
+		$self->phpDocNode = new PhpDocNode([]);
 		$self->templateTypeMap = TemplateTypeMap::createEmpty();
 		$self->templateTags = [];
 		$self->varTags = [];
@@ -113,6 +114,11 @@ class ResolvedPhpDocBlock
 		$self->isFinal = false;
 
 		return $self;
+	}
+
+	public function getPhpDocNode(): PhpDocNode
+	{
+		return $this->phpDocNode;
 	}
 
 	/**

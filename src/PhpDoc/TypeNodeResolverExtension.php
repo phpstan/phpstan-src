@@ -9,8 +9,6 @@ use PHPStan\Type\Type;
 interface TypeNodeResolverExtension
 {
 
-	public function getCacheKey(): string;
-
 	public function resolve(TypeNode $typeNode, NameScope $nameScope): ?Type;
 
 }

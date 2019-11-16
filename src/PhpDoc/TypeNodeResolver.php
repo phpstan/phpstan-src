@@ -78,16 +78,6 @@ class TypeNodeResolver
 		$this->container = $container;
 	}
 
-	public function getCacheKey(): string
-	{
-		$key = 'v78-refactored-phpdocnode';
-		foreach ($this->extensions as $extension) {
-			$key .= sprintf('-%s', $extension->getCacheKey());
-		}
-
-		return $key;
-	}
-
 	public function resolve(TypeNode $typeNode, NameScope $nameScope): Type
 	{
 		foreach ($this->extensions as $extension) {

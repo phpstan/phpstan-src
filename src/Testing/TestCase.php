@@ -42,11 +42,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
 
 	/** @var Container|null */
-	private $container;
+	private static $container;
 
-	public function getContainer(): Container
+	public static function getContainer(): Container
 	{
-		if ($this->container === null) {
+		if (self::$container === null) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
 			if (!@mkdir($tmpDir, 0777, true) && !is_dir($tmpDir)) {
 				self::fail(sprintf('Cannot create temp directory %s', $tmpDir));
@@ -54,18 +54,18 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			$rootDir = __DIR__ . '/../..';
 			$containerFactory = new ContainerFactory($rootDir);
-			$this->container = $containerFactory->create($tmpDir, array_merge([
+			self::$container = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',
 			], static::getAdditionalConfigFiles()), []);
 		}
 
-		return $this->container;
+		return self::$container;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getAdditionalConfigFiles(): array
+	public static function getAdditionalConfigFiles(): array
 	{
 		return [];
 	}
@@ -73,7 +73,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	public function getParser(): \PHPStan\Parser\Parser
 	{
 		/** @var \PHPStan\Parser\Parser $parser */
-		$parser = $this->getContainer()->getService('directParser');
+		$parser = self::getContainer()->getService('directParser');
 		return $parser;
 	}
 
@@ -163,14 +163,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			}
 
 		};
-		$phpDocStringResolver = $this->getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = $this->getContainer()->getByType(PhpDocNodeResolver::class);
+		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, [])));
 		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension($fileTypeMapper);
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);
-		$signatureMapProvider = $this->getContainer()->getByType(SignatureMapProvider::class);
-		$phpExtension = new PhpClassReflectionExtension($this->getContainer(), $methodReflectionFactory, $fileTypeMapper, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, $this->getContainer()->getByType(StubPhpDocProvider::class), true);
+		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
+		$phpExtension = new PhpClassReflectionExtension(self::getContainer(), $methodReflectionFactory, $fileTypeMapper, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), true);
 		$functionReflectionFactory = new class($this->getParser(), $functionCallStatementFinder, $cache) implements FunctionReflectionFactory {
 
 			/** @var \PHPStan\Parser\Parser */
@@ -243,7 +243,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$broker = new Broker(
 			[
 				$phpExtension,
-				new PhpDefectClassReflectionExtension($this->getContainer()->getByType(TypeStringResolver::class), $annotationsPropertiesClassReflectionExtension),
+				new PhpDefectClassReflectionExtension(self::getContainer()->getByType(TypeStringResolver::class), $annotationsPropertiesClassReflectionExtension),
 				new UniversalObjectCratesClassReflectionExtension([\stdClass::class]),
 				$annotationsPropertiesClassReflectionExtension,
 			],
@@ -251,19 +251,19 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$phpExtension,
 				$annotationsMethodsClassReflectionExtension,
 			],
-			array_merge($this->getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicMethodReturnTypeExtensions, $this->getDynamicMethodReturnTypeExtensions()),
-			array_merge($this->getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
-			array_merge($this->getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicMethodReturnTypeExtensions, $this->getDynamicMethodReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions()),
 			$this->getOperatorTypeSpecifyingExtensions(),
 			$functionReflectionFactory,
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper),
 			$signatureMapProvider,
-			$this->getContainer()->getByType(Standard::class),
+			self::getContainer()->getByType(Standard::class),
 			$anonymousClassNameHelper,
-			$this->getContainer()->getByType(Parser::class),
+			self::getContainer()->getByType(Parser::class),
 			new FuzzyRelativePathHelper($this->getCurrentWorkingDirectory(), DIRECTORY_SEPARATOR, []),
-			$this->getContainer()->getByType(StubPhpDocProvider::class),
-			$this->getContainer()->getParameter('universalObjectCratesClasses')
+			self::getContainer()->getByType(StubPhpDocProvider::class),
+			self::getContainer()->getParameter('universalObjectCratesClasses')
 		);
 		$methodReflectionFactory->broker = $broker;
 
@@ -272,7 +272,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 	public function createScopeFactory(Broker $broker, TypeSpecifier $typeSpecifier): ScopeFactory
 	{
-		$container = $this->getContainer();
+		$container = self::getContainer();
 
 		return new ScopeFactory(
 			MutatingScope::class,
@@ -338,7 +338,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return new TypeSpecifier(
 			$printer,
 			$broker,
-			$this->getContainer()->getServicesByTag(TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
+			self::getContainer()->getServicesByTag(TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$methodTypeSpecifyingExtensions,
 			$staticMethodTypeSpecifyingExtensions
 		);
@@ -346,7 +346,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 	public function getFileHelper(): FileHelper
 	{
-		return $this->getContainer()->getByType(FileHelper::class);
+		return self::getContainer()->getByType(FileHelper::class);
 	}
 
 	/**

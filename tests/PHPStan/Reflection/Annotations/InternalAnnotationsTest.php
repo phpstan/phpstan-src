@@ -112,7 +112,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\TestCase
 	public function testInternalAnnotations(bool $internal, string $className, array $internalAnnotations): void
 	{
 		/** @var Broker $broker */
-		$broker = $this->getContainer()->getByType(Broker::class);
+		$broker = self::getContainer()->getByType(Broker::class);
 		$class = $broker->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -142,7 +142,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\TestCase
 		require_once __DIR__ . '/data/annotations-internal.php';
 
 		/** @var Broker $broker */
-		$broker = $this->getContainer()->getByType(Broker::class);
+		$broker = self::getContainer()->getByType(Broker::class);
 
 		$this->assertFalse($broker->getFunction(new Name\FullyQualified('InternalAnnotations\foo'), null)->isInternal()->yes());
 		$this->assertTrue($broker->getFunction(new Name\FullyQualified('InternalAnnotations\internalFoo'), null)->isInternal()->yes());

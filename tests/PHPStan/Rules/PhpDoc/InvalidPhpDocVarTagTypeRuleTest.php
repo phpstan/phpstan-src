@@ -19,7 +19,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 	{
 		$broker = $this->createBroker();
 		return new InvalidPhpDocVarTagTypeRule(
-			$this->getContainer()->getByType(FileTypeMapper::class),
+			self::getContainer()->getByType(FileTypeMapper::class),
 			$broker,
 			new ClassCaseSensitivityCheck($broker),
 			new GenericObjectTypeCheck(),

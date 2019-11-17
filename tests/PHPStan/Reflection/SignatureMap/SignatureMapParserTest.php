@@ -333,7 +333,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 	): void
 	{
 		/** @var SignatureMapParser $parser */
-		$parser = $this->getContainer()->getByType(SignatureMapParser::class);
+		$parser = self::getContainer()->getByType(SignatureMapParser::class);
 		$functionSignature = $parser->getFunctionSignature($map, $className);
 		$this->assertCount(
 			count($expectedSignature->getParameters()),
@@ -383,7 +383,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 
 	public function testParseAll(): void
 	{
-		$parser = $this->getContainer()->getByType(SignatureMapParser::class);
+		$parser = self::getContainer()->getByType(SignatureMapParser::class);
 		$signatureMap = require __DIR__ . '/../../../../src/Reflection/SignatureMap/functionMap.php';
 
 		$count = 0;

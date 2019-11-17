@@ -23,8 +23,8 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 
 	protected function setUp(): void
 	{
-		$phpDocStringResolver = $this->getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = $this->getContainer()->getByType(PhpDocNodeResolver::class);
+		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 
 		$workingDirectory = __DIR__;
 		$relativePathHelper = new FuzzyRelativePathHelper($workingDirectory, DIRECTORY_SEPARATOR, []);
@@ -39,12 +39,12 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			[],
 			$this->createMock(FunctionReflectionFactory::class),
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),
-			$this->getContainer()->getByType(SignatureMapProvider::class),
-			$this->getContainer()->getByType(\PhpParser\PrettyPrinter\Standard::class),
+			self::getContainer()->getByType(SignatureMapProvider::class),
+			self::getContainer()->getByType(\PhpParser\PrettyPrinter\Standard::class),
 			$anonymousClassNameHelper,
-			$this->getContainer()->getByType(Parser::class),
+			self::getContainer()->getByType(Parser::class),
 			$relativePathHelper,
-			$this->getContainer()->getByType(StubPhpDocProvider::class),
+			self::getContainer()->getByType(StubPhpDocProvider::class),
 			[]
 		);
 	}

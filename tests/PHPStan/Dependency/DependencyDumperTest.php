@@ -19,7 +19,7 @@ class DependencyDumperTest extends TestCase
 
 	public function testDumpDependencies(): void
 	{
-		$container = $this->getContainer();
+		$container = self::getContainer();
 
 		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);

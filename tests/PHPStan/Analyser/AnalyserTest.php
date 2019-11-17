@@ -352,12 +352,12 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 
 		$broker = $this->createBroker();
 		$printer = new \PhpParser\PrettyPrinter\Standard();
-		$fileHelper = $this->getContainer()->getByType(FileHelper::class);
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 
 		/** @var RelativePathHelper $relativePathHelper */
-		$relativePathHelper = $this->getContainer()->getService('relativePathHelper');
-		$phpDocStringResolver = $this->getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = $this->getContainer()->getByType(PhpDocNodeResolver::class);
+		$relativePathHelper = self::getContainer()->getService('relativePathHelper');
+		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);
 		return new Analyser(
 			$this->createScopeFactory($broker, $typeSpecifier),

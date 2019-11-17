@@ -51,7 +51,7 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 	public function testThrowsAnnotations(string $className, array $throwsAnnotations): void
 	{
 		/** @var Broker $broker */
-		$broker = $this->getContainer()->getByType(Broker::class);
+		$broker = self::getContainer()->getByType(Broker::class);
 		$class = $broker->getClass($className);
 		$scope = $this->createMock(Scope::class);
 
@@ -67,7 +67,7 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 		require_once __DIR__ . '/data/annotations-throws.php';
 
 		/** @var Broker $broker */
-		$broker = $this->getContainer()->getByType(Broker::class);
+		$broker = self::getContainer()->getByType(Broker::class);
 
 		$this->assertNull($broker->getFunction(new Name\FullyQualified('ThrowsAnnotations\withoutThrows'), null)->getThrowType());
 
@@ -79,7 +79,7 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 	public function testThrowsOnNativeFunctions(): void
 	{
 		/** @var Broker $broker */
-		$broker = $this->getContainer()->getByType(Broker::class);
+		$broker = self::getContainer()->getByType(Broker::class);
 
 		$this->assertNull($broker->getFunction(new Name('str_replace'), null)->getThrowType());
 		$this->assertNull($broker->getFunction(new Name('get_class'), null)->getThrowType());

@@ -41,12 +41,15 @@ use PHPStan\Type\Type;
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
 
-	/** @var Container|null */
-	private static $container;
+	/** @var array<string, Container> */
+	private static $containers = [];
 
 	public static function getContainer(): Container
 	{
-		if (self::$container === null) {
+		$additionalConfigFiles = static::getAdditionalConfigFiles();
+		$cacheKey = sha1(implode("\n", $additionalConfigFiles));
+
+		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
 			if (!@mkdir($tmpDir, 0777, true) && !is_dir($tmpDir)) {
 				self::fail(sprintf('Cannot create temp directory %s', $tmpDir));
@@ -54,12 +57,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			$rootDir = __DIR__ . '/../..';
 			$containerFactory = new ContainerFactory($rootDir);
-			self::$container = $containerFactory->create($tmpDir, array_merge([
+			self::$containers[$cacheKey] = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',
-			], static::getAdditionalConfigFiles()), []);
+			], $additionalConfigFiles), []);
 		}
 
-		return self::$container;
+		return self::$containers[$cacheKey];
 	}
 
 	/**

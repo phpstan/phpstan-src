@@ -78,3 +78,11 @@ class Generator implements Iterator
 	public function send($value) {}
 
 }
+
+/**
+ * @implements Traversable<mixed, mixed>
+ */
+class SimpleXMLElement
+{
+
+}

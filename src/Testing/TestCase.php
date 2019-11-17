@@ -54,12 +54,20 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			$rootDir = __DIR__ . '/../..';
 			$containerFactory = new ContainerFactory($rootDir);
-			self::$container = $containerFactory->create($tmpDir, [
+			self::$container = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',
-			], []);
+			], static::getAdditionalConfigFiles()), []);
 		}
 
 		return self::$container;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [];
 	}
 
 	public function getParser(): \PHPStan\Parser\Parser

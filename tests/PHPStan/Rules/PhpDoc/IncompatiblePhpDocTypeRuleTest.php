@@ -14,7 +14,7 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new IncompatiblePhpDocTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
+			$this->getContainer()->getByType(FileTypeMapper::class),
 			new GenericObjectTypeCheck()
 		);
 	}

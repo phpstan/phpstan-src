@@ -44,7 +44,7 @@ class FinalAnnotationsTest extends \PHPStan\Testing\TestCase
 	public function testFinalAnnotations(bool $final, string $className, array $finalAnnotations): void
 	{
 		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
+		$broker = $this->getContainer()->getByType(Broker::class);
 		$class = $broker->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -64,7 +64,7 @@ class FinalAnnotationsTest extends \PHPStan\Testing\TestCase
 		require_once __DIR__ . '/data/annotations-final.php';
 
 		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
+		$broker = $this->getContainer()->getByType(Broker::class);
 
 		$this->assertFalse($broker->getFunction(new Name\FullyQualified('FinalAnnotations\foo'), null)->isFinal()->yes());
 		$this->assertTrue($broker->getFunction(new Name\FullyQualified('FinalAnnotations\finalFoo'), null)->isFinal()->yes());

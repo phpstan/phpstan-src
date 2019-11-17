@@ -104,7 +104,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	public function testVariadicTraitMethod(): void
 	{
 		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
+		$broker = $this->getContainer()->getService('broker');
 		$fooReflection = $broker->getClass(\HasTraitUse\Foo::class);
 		$variadicMethod = $fooReflection->getNativeMethod('variadicMethod');
 		$methodVariant = ParametersAcceptorSelector::selectSingle($variadicMethod->getVariants());
@@ -114,7 +114,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	public function testGenericInheritance(): void
 	{
 		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
+		$broker = $this->getContainer()->getService('broker');
 		$reflection = $broker->getClass(\GenericInheritance\C::class);
 
 		$this->assertSame('GenericInheritance\\C', $reflection->getDisplayName());
@@ -136,7 +136,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	public function testGenericInheritanceOverride(): void
 	{
 		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
+		$broker = $this->getContainer()->getService('broker');
 		$reflection = $broker->getClass(\GenericInheritance\Override::class);
 
 		$this->assertSame([
@@ -151,7 +151,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	public function testIsGenericWithStubPhpDoc(): void
 	{
 		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
+		$broker = $this->getContainer()->getService('broker');
 		$reflection = $broker->getClass(\ReflectionClass::class);
 		$this->assertTrue($reflection->isGeneric());
 	}

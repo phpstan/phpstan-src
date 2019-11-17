@@ -167,7 +167,7 @@ class ScopeTest extends TestCase
 	public function testGeneralize(Type $a, Type $b, string $expectedTypeDescription): void
 	{
 		/** @var ScopeFactory $scopeFactory */
-		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
+		$scopeFactory = $this->getContainer()->getByType(ScopeFactory::class);
 		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a);
 		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b);
 		$resultScope = $scopeA->generalizeWith($scopeB);
@@ -177,7 +177,7 @@ class ScopeTest extends TestCase
 	public function testGetConstantType(): void
 	{
 		/** @var ScopeFactory $scopeFactory */
-		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
+		$scopeFactory = $this->getContainer()->getByType(ScopeFactory::class);
 		$scope = $scopeFactory->create(ScopeContext::create(__DIR__ . '/data/compiler-halt-offset.php'));
 		$node = new ConstFetch(new FullyQualified('__COMPILER_HALT_OFFSET__'));
 		$type = $scope->getType($node);

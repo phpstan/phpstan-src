@@ -12,7 +12,7 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\TestCase
 
 	protected function setUp(): void
 	{
-		$this->fileHelper = self::getContainer()->getByType(FileHelper::class);
+		$this->fileHelper = $this->getContainer()->getByType(FileHelper::class);
 	}
 
 	public function testMethodIsInClassUsingTrait(): void
@@ -164,7 +164,7 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\TestCase
 			return $this->getFileHelper()->normalizePath($file);
 		}, $files);
 		/** @var \PHPStan\Analyser\Analyser $analyser */
-		$analyser = self::getContainer()->getByType(Analyser::class);
+		$analyser = $this->getContainer()->getByType(Analyser::class);
 		/** @var \PHPStan\Analyser\Error[] $errors */
 		$errors = $analyser->analyse($files, false);
 		return $errors;

@@ -14,8 +14,8 @@ class InvalidPhpDocTagValueRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new InvalidPhpDocTagValueRule(
-			self::getContainer()->getByType(Lexer::class),
-			self::getContainer()->getByType(PhpDocParser::class)
+			$this->getContainer()->getByType(Lexer::class),
+			$this->getContainer()->getByType(PhpDocParser::class)
 		);
 	}
 

@@ -17,7 +17,7 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 	{
 		$broker = $this->createBroker();
 		return new TraitTemplateTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
+			$this->getContainer()->getByType(FileTypeMapper::class),
 			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
 		);
 	}

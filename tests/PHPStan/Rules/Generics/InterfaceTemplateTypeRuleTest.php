@@ -17,7 +17,7 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 	{
 		$broker = $this->createBroker();
 		return new InterfaceTemplateTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
+			$this->getContainer()->getByType(FileTypeMapper::class),
 			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
 		);
 	}

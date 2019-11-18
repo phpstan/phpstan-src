@@ -1029,3 +1029,15 @@ class StaticClassConstant
 	}
 
 }
+
+/**
+ * @template T of \DateTime
+ * @template U as \DateTime
+ * @param T $a
+ * @param U $b
+ */
+function testBounds($a, $b): void
+{
+	assertType('T of DateTime (function PHPStan\Generics\FunctionsAssertType\testBounds(), argument)', $a);
+	assertType('U of DateTime (function PHPStan\Generics\FunctionsAssertType\testBounds(), argument)', $b);
+}

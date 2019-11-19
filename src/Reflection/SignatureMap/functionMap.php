@@ -11522,7 +11522,7 @@ return [
 'ssh2_publickey_remove' => ['bool', 'pkey'=>'resource', 'algoname'=>'string', 'blob'=>'string'],
 'ssh2_scp_recv' => ['bool', 'session'=>'resource', 'remote_file'=>'string', 'local_file'=>'string'],
 'ssh2_scp_send' => ['bool', 'session'=>'resource', 'local_file'=>'string', 'remote_file'=>'string', 'create_mode='=>'int'],
-'ssh2_sftp' => ['resource', 'session'=>'resource'],
+'ssh2_sftp' => ['resource|false', 'session'=>'resource'],
 'ssh2_sftp_chmod' => ['bool', 'sftp'=>'resource', 'filename'=>'string', 'mode'=>'int'],
 'ssh2_sftp_lstat' => ['array', 'sftp'=>'resource', 'path'=>'string'],
 'ssh2_sftp_mkdir' => ['bool', 'sftp'=>'resource', 'dirname'=>'string', 'mode='=>'int', 'recursive='=>'bool'],

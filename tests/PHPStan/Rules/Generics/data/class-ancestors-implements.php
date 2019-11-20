@@ -199,3 +199,21 @@ class FooImplementsGenericInterface implements FooGeneric
 {
 
 }
+
+/**
+ * @template-covariant T
+ * @template U
+ */
+interface FooGeneric9
+{
+
+}
+
+/**
+ * @template-covariant T
+ * @implements FooGeneric9<T, T>
+ */
+class FooGeneric10 implements FooGeneric9
+{
+
+}

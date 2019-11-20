@@ -8,6 +8,8 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeReference;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 interface Type
 {
@@ -90,6 +92,24 @@ interface Type
 	 * the received Type.
 	 */
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap;
+
+	/**
+	 * Returns the template types referenced by this Type, recursively
+	 *
+	 * The return value is a list of TemplateTypeReferences, who contain the
+	 * referenced template type as well as the variance position in which it was
+	 * found.
+	 *
+	 * For example, calling this on array<Foo<T>,Bar> (with T a template type)
+	 * will return one TemplateTypeReference for the type T.
+	 *
+	 * @param TemplateTypeVariance $positionVariance The variance position in
+	 *                                               which the receiver type was
+	 *                                               found.
+	 *
+	 * @return TemplateTypeReference[]
+	 */
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array;
 
 	/**
 	 * Traverses inner types

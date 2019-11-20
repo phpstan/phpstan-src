@@ -7,6 +7,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\VerbosityLevel;
 
 class GenericAncestorsCheck
@@ -18,17 +19,22 @@ class GenericAncestorsCheck
 	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
 	private $genericObjectTypeCheck;
 
+	/** @var \PHPStan\Rules\Generics\VarianceCheck */
+	private $varianceCheck;
+
 	/** @var bool */
 	private $checkGenericClassInNonGenericObjectType;
 
 	public function __construct(
 		Broker $broker,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
+		VarianceCheck $varianceCheck,
 		bool $checkGenericClassInNonGenericObjectType
 	)
 	{
 		$this->broker = $broker;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
+		$this->varianceCheck = $varianceCheck;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
 	}
 
@@ -48,7 +54,8 @@ class GenericAncestorsCheck
 		string $extraTypesMessage,
 		string $typeIsNotSubtypeMessage,
 		string $invalidTypeMessage,
-		string $genericClassInNonGenericObjectType
+		string $genericClassInNonGenericObjectType,
+		string $invalidVarianceMessage
 	): array
 	{
 		$names = array_fill_keys(array_map(static function (Name $nameNode): string {
@@ -95,6 +102,15 @@ class GenericAncestorsCheck
 				}
 
 				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))->build();
+			}
+
+			$variance = TemplateTypeVariance::createInvariant();
+			$messageContext = sprintf(
+				$invalidVarianceMessage,
+				$ancestorType->describe(VerbosityLevel::typeOnly())
+			);
+			foreach ($this->varianceCheck->check($variance, $ancestorType, $messageContext) as $message) {
+				$messages[] = $message;
 			}
 		}
 

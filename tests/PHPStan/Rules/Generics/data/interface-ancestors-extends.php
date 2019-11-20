@@ -198,3 +198,21 @@ interface ExtendsGenericInterface extends FooGeneric
 {
 
 }
+
+/**
+ * @template-covariant T
+ * @template U
+ */
+interface FooGeneric9
+{
+
+}
+
+/**
+ * @template-covariant T
+ * @extends FooGeneric9<T, T>
+ */
+interface FooGeneric10 extends FooGeneric9
+{
+
+}

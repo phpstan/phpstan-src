@@ -11,6 +11,7 @@ use PHPStan\Reflection\Type\IntersectionTypeMethodReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class IntersectionType implements CompoundType
 {
@@ -389,6 +390,19 @@ class IntersectionType implements CompoundType
 		}
 
 		return $types;
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$references = [];
+
+		foreach ($this->types as $type) {
+			foreach ($type->getReferencedTemplateTypes($positionVariance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		return $references;
 	}
 
 	public function traverse(callable $cb): Type

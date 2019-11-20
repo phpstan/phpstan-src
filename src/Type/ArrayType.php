@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
@@ -323,6 +324,16 @@ class ArrayType implements Type
 		}
 
 		return TemplateTypeMap::createEmpty();
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$variance = $positionVariance->compose(TemplateTypeVariance::createInvariant());
+
+		return array_merge(
+			$this->getKeyType()->getReferencedTemplateTypes($variance),
+			$this->getItemType()->getReferencedTemplateTypes($variance)
+		);
 	}
 
 	public function traverse(callable $cb): Type

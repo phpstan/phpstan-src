@@ -9,6 +9,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Test\A;
 use PHPStan\Type\Test\B;
 use PHPStan\Type\Test\C;
+use PHPStan\Type\Test\D;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -278,6 +279,177 @@ class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
 				return $type->describe(VerbosityLevel::precise());
 			}, $result->getTypes())
 		);
+	}
+
+	/** @return array<array{TemplateTypeVariance,Type,array<TemplateTypeReference>}> */
+	public function dataGetReferencedTypeArguments(): array
+	{
+		$templateType = static function (string $name, ?Type $bound = null): TemplateType {
+			$templateType = TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('a'),
+				$name,
+				$bound ?? new MixedType(),
+				TemplateTypeVariance::createInvariant()
+			);
+			if (!$templateType instanceof TemplateType) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			return $templateType;
+		};
+
+		return [
+			'param: Invariant<T>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Invariant::class, [
+					$templateType('T'),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+			],
+			'param: Out<T>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Out::class, [
+					$templateType('T'),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createContravariant()
+					),
+				],
+			],
+			'param: Out<Out<T>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Out::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createContravariant()
+					),
+				],
+			],
+			'param: Out<Out<Out<T>>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Out::class, [
+						new GenericObjectType(D\Out::class, [
+							$templateType('T'),
+						]),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createContravariant()
+					),
+				],
+			],
+			'return: Invariant<T>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Invariant::class, [
+					$templateType('T'),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+			],
+			'return: Out<T>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Out::class, [
+					$templateType('T'),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createCovariant()
+					),
+				],
+			],
+			'return: Out<Out<T>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Out::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createCovariant()
+					),
+				],
+			],
+			'return: Out<Out<Out<T>>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Out::class, [
+						new GenericObjectType(D\Out::class, [
+							$templateType('T'),
+						]),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createCovariant()
+					),
+				],
+			],
+			'return: Out<Invariant<T>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Invariant::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGetReferencedTypeArguments
+	 *
+	 * @param array<TemplateTypeReference> $expectedReferences
+	 */
+	public function testGetReferencedTypeArguments(TemplateTypeVariance $positionVariance, Type $type, array $expectedReferences): void
+	{
+		$result = [];
+		foreach ($type->getReferencedTemplateTypes($positionVariance) as $r) {
+			$result[] = $r;
+		}
+
+		$comparableResult = array_map(static function (TemplateTypeReference $ref): array {
+			return [
+				'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
+				'positionVariance' => $ref->getPositionVariance()->describe(),
+			];
+		}, $result);
+
+		$comparableExpect = array_map(static function (TemplateTypeReference $ref): array {
+			return [
+				'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
+				'positionVariance' => $ref->getPositionVariance()->describe(),
+			];
+		}, $expectedReferences);
+
+		$this->assertSame($comparableExpect, $comparableResult);
 	}
 
 }

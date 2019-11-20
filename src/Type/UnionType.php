@@ -11,6 +11,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class UnionType implements CompoundType
 {
@@ -571,6 +572,19 @@ class UnionType implements CompoundType
 		}
 
 		return $types;
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$references = [];
+
+		foreach ($this->types as $type) {
+			foreach ($type->getReferencedTemplateTypes($positionVariance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		return $references;
 	}
 
 	public function traverse(callable $cb): Type

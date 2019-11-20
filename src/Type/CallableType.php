@@ -8,6 +8,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
@@ -243,6 +244,23 @@ class CallableType implements CompoundType, ParametersAcceptor
 		}
 
 		return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType));
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$references = $this->getReturnType()->getReferencedTemplateTypes(
+			$positionVariance->compose(TemplateTypeVariance::createCovariant())
+		);
+
+		$paramVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
+
+		foreach ($this->getParameters() as $param) {
+			foreach ($param->getType()->getReferencedTemplateTypes($paramVariance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		return $references;
 	}
 
 	public function traverse(callable $cb): Type

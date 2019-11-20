@@ -374,6 +374,9 @@ services:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 
 	-
+		class: PHPStan\Rules\Generics\VarianceCheck
+
+	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%

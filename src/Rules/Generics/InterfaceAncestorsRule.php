@@ -71,7 +71,8 @@ class InterfaceAncestorsRule implements Rule
 			'Generic type %s in PHPDoc tag @extends specifies %d template types, but interface %s supports only %d: %s',
 			'Type %s in generic type %s in PHPDoc tag @extends is not subtype of template type %s of interface %s.',
 			'PHPDoc tag @extends has invalid type %s.',
-			sprintf('Interface %s extends generic interface %%s but does not specify its types: %%s', $interfaceName)
+			sprintf('Interface %s extends generic interface %%s but does not specify its types: %%s', $interfaceName),
+			sprintf('in extended type %%s of interface %s', $interfaceName)
 		);
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
@@ -81,6 +82,7 @@ class InterfaceAncestorsRule implements Rule
 			}, $implementsTags),
 			sprintf('Interface %s @implements tag contains incompatible type %%s.', $interfaceName),
 			sprintf('Interface %s has @implements tag, but can not implement any interface, must extend from it.', $interfaceName),
+			'',
 			'',
 			'',
 			'',

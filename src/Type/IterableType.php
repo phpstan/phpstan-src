@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
@@ -228,6 +229,14 @@ class IterableType implements CompoundType
 		$valueTypeMap = $this->getIterableValueType()->inferTemplateTypes($receivedType->getIterableValueType());
 
 		return $keyTypeMap->union($valueTypeMap);
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		return array_merge(
+			$this->getIterableKeyType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()),
+			$this->getIterableValueType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant())
+		);
 	}
 
 	public function traverse(callable $cb): Type

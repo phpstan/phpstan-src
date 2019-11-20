@@ -13,6 +13,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -527,6 +528,26 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return TemplateTypeMap::createEmpty();
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$variance = $positionVariance->compose(TemplateTypeVariance::createInvariant());
+		$references = [];
+
+		foreach ($this->keyTypes as $type) {
+			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		foreach ($this->valueTypes as $type) {
+			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		return $references;
 	}
 
 	public function traverse(callable $cb): Type

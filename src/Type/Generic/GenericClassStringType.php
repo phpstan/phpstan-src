@@ -136,6 +136,13 @@ class GenericClassStringType extends ClassStringType
 		return TemplateTypeMap::createEmpty();
 	}
 
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
+
+		return $this->type->getReferencedTemplateTypes($variance);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

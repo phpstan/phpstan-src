@@ -145,6 +145,11 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return TemplateTypeMap::createEmpty();
 	}
 
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		return [new TemplateTypeReference($this, $positionVariance)];
+	}
+
 	public function isArgument(): bool
 	{
 		return $this->strategy->isArgument();
@@ -204,6 +209,11 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$this->name,
 			$subtractedType
 		);
+	}
+
+	public function getVariance(): TemplateTypeVariance
+	{
+		return $this->variance;
 	}
 
 	/**

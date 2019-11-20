@@ -20,4 +20,6 @@ interface TemplateType extends CompoundType
 
 	public function isValidVariance(Type $a, Type $b): bool;
 
+	public function getVariance(): TemplateTypeVariance;
+
 }

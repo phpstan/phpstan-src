@@ -220,6 +220,17 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		return TemplateTypeMap::createEmpty();
 	}
 
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		return [];
+	}
+
+	public function getVariance(): TemplateTypeVariance
+	{
+		return $this->variance;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

@@ -200,6 +200,31 @@ final class GenericObjectType extends ObjectType
 		return $typeMap;
 	}
 
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection !== null) {
+			$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+		} else {
+			$typeList = [];
+		}
+
+		$references = [];
+
+		foreach ($this->types as $i => $type) {
+			$variance = $positionVariance->compose(
+				isset($typeList[$i]) && $typeList[$i] instanceof TemplateType
+					? $typeList[$i]->getVariance()
+					: TemplateTypeVariance::createInvariant()
+			);
+			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		return $references;
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType()) : null;

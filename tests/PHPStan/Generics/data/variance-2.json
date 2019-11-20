@@ -1,0 +1,72 @@
+[
+    {
+        "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter a of method PHPStan\\Generics\\Variance\\Foo::x().",
+        "line": 52,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter c of method PHPStan\\Generics\\Variance\\Foo::x().",
+        "line": 52,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter e of method PHPStan\\Generics\\Variance\\Foo::x().",
+        "line": 52,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in parameter b of method PHPStan\\Generics\\Variance\\Foo::x().",
+        "line": 52,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in parameter d of method PHPStan\\Generics\\Variance\\Foo::x().",
+        "line": 52,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in extended type PHPStan\\Generics\\Variance\\Invariant<T> of interface PHPStan\\Generics\\Variance\\Bar.",
+        "line": 60,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in implemented type PHPStan\\Generics\\Variance\\Invariant<T> of class PHPStan\\Generics\\Variance\\Qux.",
+        "line": 76,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in extended type PHPStan\\Generics\\Variance\\Quux<T> of class PHPStan\\Generics\\Variance\\Quuz.",
+        "line": 89,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter a of function PHPStan\\Generics\\Variance\\x().",
+        "line": 101,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter c of function PHPStan\\Generics\\Variance\\x().",
+        "line": 101,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter e of function PHPStan\\Generics\\Variance\\x().",
+        "line": 101,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in parameter b of function PHPStan\\Generics\\Variance\\x().",
+        "line": 101,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in parameter d of function PHPStan\\Generics\\Variance\\x().",
+        "line": 101,
+        "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in return type of function PHPStan\\Generics\\Variance\\returnInvariant().",
+        "line": 117,
+        "ignorable": true
+    }
+]

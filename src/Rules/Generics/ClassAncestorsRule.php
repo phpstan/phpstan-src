@@ -73,7 +73,8 @@ class ClassAncestorsRule implements Rule
 			'Generic type %s in PHPDoc tag @extends specifies %d template types, but class %s supports only %d: %s',
 			'Type %s in generic type %s in PHPDoc tag @extends is not subtype of template type %s of class %s.',
 			'PHPDoc tag @extends has invalid type %s.',
-			sprintf('Class %s extends generic class %%s but does not specify its types: %%s', $className)
+			sprintf('Class %s extends generic class %%s but does not specify its types: %%s', $className),
+			sprintf('in extended type %%s of class %s', $className)
 		);
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
@@ -89,7 +90,8 @@ class ClassAncestorsRule implements Rule
 			'Generic type %s in PHPDoc tag @implements specifies %d template types, but interface %s supports only %d: %s',
 			'Type %s in generic type %s in PHPDoc tag @implements is not subtype of template type %s of interface %s.',
 			'PHPDoc tag @implements has invalid type %s.',
-			sprintf('Class %s implements generic interface %%s but does not specify its types: %%s', $className)
+			sprintf('Class %s implements generic interface %%s but does not specify its types: %%s', $className),
+			sprintf('in implemented type %%s of class %s', $className)
 		);
 
 		return array_merge($extendsErrors, $implementsErrors);

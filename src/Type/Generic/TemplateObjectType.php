@@ -157,6 +157,11 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return TemplateTypeMap::createEmpty();
 	}
 
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		return [new TemplateTypeReference($this, $positionVariance)];
+	}
+
 	public function isArgument(): bool
 	{
 		return $this->strategy->isArgument();
@@ -189,6 +194,11 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			$this->getClassName(),
 			$subtractedType
 		);
+	}
+
+	public function getVariance(): TemplateTypeVariance
+	{
+		return $this->variance;
 	}
 
 	/**

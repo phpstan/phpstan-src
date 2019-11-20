@@ -31,6 +31,93 @@ function acceptIterOfDateTime($it): void {
 function acceptIterOfDateTimeInterface($it): void {
 }
 
+/** @template T */
+interface Invariant {
+}
+
+/** @template-covariant T */
+interface Out {
+}
+
+/** @template-covariant T */
+interface Foo {
+	/**
+	 * @param T $a
+	 * @param Invariant<T> $b
+	 * @param Out<T> $c
+	 * @param array<T> $d
+	 * @param Out<Out<Out<T>>> $e
+	 * @return T
+	 */
+	function x($a, $b, $c, $d, $e);
+}
+
+/**
+ * @template-covariant T
+ * @extends Invariant<T>
+ * @extends Out<T>
+ */
+interface Bar extends Invariant, Out {
+}
+
+/**
+ * @template T
+ * @extends Invariant<T>
+ * @extends Out<T>
+ */
+interface Baz extends Invariant, Out {
+}
+
+/**
+ * @template-covariant T
+ * @implements Invariant<T>
+ * @implements Out<T>
+ */
+class Qux implements Invariant, Out {
+}
+
+/**
+ * @template T
+ */
+class Quux {
+}
+
+/**
+ * @template-covariant T
+ * @extends Quux<T>
+ */
+class Quuz extends Quux {
+}
+
+/**
+ * @template-covariant T
+ * @param T $a
+ * @param Invariant<T> $b
+ * @param Out<T> $c
+ * @param array<T> $d
+ * @param Out<Out<Out<T>>> $e
+ * @return T
+ */
+function x($a, $b, $c, $d, $e) {
+	return $a;
+}
+
+/**
+ * @template-covariant T
+ * @return Out<T>
+ */
+function returnOut() {
+	throw new \Exception();
+}
+
+/**
+ * @template-covariant T
+ * @return Invariant<T>
+ */
+function returnInvariant() {
+	throw new \Exception();
+}
+
 /**
  * @param Iter<\DateTime> $itOfDateTime
  * @param InvariantIter<\DateTime> $invariantItOfDateTime

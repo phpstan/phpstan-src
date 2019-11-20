@@ -59,6 +59,31 @@ class TemplateTypeVariance
 		return $this->value === self::CONTRAVARIANT;
 	}
 
+	public function compose(self $other): self
+	{
+		if ($this->contravariant()) {
+			if ($other->contravariant()) {
+				return self::createCovariant();
+			}
+			if ($other->covariant()) {
+				return self::createContravariant();
+			}
+			return self::createInvariant();
+		}
+
+		if ($this->covariant()) {
+			if ($other->contravariant()) {
+				return self::createCovariant();
+			}
+			if ($other->covariant()) {
+				return self::createCovariant();
+			}
+			return self::createInvariant();
+		}
+
+		return $other;
+	}
+
 	public function isValidVariance(Type $a, Type $b): bool
 	{
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
@@ -87,6 +112,20 @@ class TemplateTypeVariance
 	public function equals(self $other): bool
 	{
 		return $other->value === $this->value;
+	}
+
+	public function describe(): string
+	{
+		switch ($this->value) {
+			case self::INVARIANT:
+				return 'invariant';
+			case self::COVARIANT:
+				return 'covariant';
+			case self::CONTRAVARIANT:
+				return 'contravariant';
+		}
+
+		throw new \PHPStan\ShouldNotHappenException();
 	}
 
 	/**

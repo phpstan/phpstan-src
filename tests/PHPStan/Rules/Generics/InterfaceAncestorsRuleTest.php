@@ -19,6 +19,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			new GenericAncestorsCheck(
 				$this->createBroker(),
 				new GenericObjectTypeCheck(),
+				new VarianceCheck(),
 				true
 			)
 		);
@@ -184,6 +185,10 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			[
 				'Interface InterfaceAncestorsExtends\ExtendsGenericInterface extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				197,
+			],
+			[
+				'Template type T is declared as covariant, but occurs in invariant position in extended type InterfaceAncestorsExtends\FooGeneric9<T, T> of interface InterfaceAncestorsExtends\FooGeneric10.',
+				215,
 			],
 		]);
 	}

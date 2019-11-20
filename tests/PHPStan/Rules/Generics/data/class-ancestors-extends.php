@@ -175,3 +175,21 @@ class FooExtendsGenericClass extends FooGeneric
 {
 
 }
+
+/**
+ * @template-covariant T
+ * @template U
+ */
+class FooGeneric8
+{
+
+}
+
+/**
+ * @template-covariant T
+ * @extends FooGeneric8<T, T>
+ */
+class FooGeneric9 extends FooGeneric8
+{
+
+}

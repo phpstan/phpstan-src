@@ -40,10 +40,13 @@ class TooWideMethodReturnTypehintRule implements Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 		$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
+		$showTip = false;
 		if (!$method->isPrivate()) {
 			if (!$isFirstDeclaration) {
 				if (PHP_VERSION_ID < 70400 || !$this->checkPossibleCovariantMethodReturnType) {
 					return [];
+				} else {
+					$showTip = true;
 				}
 			} elseif (!$method->getDeclaringClass()->isFinal() && !$method->isFinal()->yes()) {
 				return [];
@@ -95,12 +98,16 @@ class TooWideMethodReturnTypehintRule implements Rule
 				continue;
 			}
 
-			$messages[] = RuleErrorBuilder::message(sprintf(
+			$builder = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() never returns %s so it can be removed from the return typehint.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$type->describe(VerbosityLevel::typeOnly())
-			))->build();
+			));
+			if ($showTip) {
+				$builder->tip('If you don\'t want to allow covariant return typehints even on PHP 7.4, turn this off with <fg=cyan>checkPossibleCovariantMethodReturnType: false</> in your <fg=cyan>%configurationFile%</>.');
+			}
+			$messages[] = $builder->build();
 		}
 
 		return $messages;

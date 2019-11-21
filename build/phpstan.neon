@@ -36,6 +36,7 @@ parameters:
 			path: ../src/Rules/RuleErrorBuilder.php
 	reportStaticMethodSignatures: true
 	reportUnmatchedIgnoredErrors: false
+	checkPossibleCovariantMethodReturnType: false
 	tmpDir: %rootDir%/tmp
 services:
 	-

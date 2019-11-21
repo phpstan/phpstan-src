@@ -41,6 +41,10 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 				'Method TooWideMethodReturnType\Bar::baz() never returns null so it can be removed from the return typehint.',
 				18,
 			],
+			[
+				'Method TooWideMethodReturnType\Bazz::lorem() never returns string so it can be removed from the return typehint.',
+				35,
+			],
 		]);
 	}
 

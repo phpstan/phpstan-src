@@ -28,3 +28,13 @@ final class Bar
 	}
 
 }
+
+class Bazz
+{
+
+	final public function lorem(): ?string
+	{
+		return null;
+	}
+
+}

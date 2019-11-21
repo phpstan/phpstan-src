@@ -44,7 +44,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 				if (PHP_VERSION_ID < 70400 || !$this->checkPossibleCovariantMethodReturnType) {
 					return [];
 				}
-			} elseif (!$method->getDeclaringClass()->isFinal()) {
+			} elseif (!$method->getDeclaringClass()->isFinal() && !$method->isFinal()->yes()) {
 				return [];
 			}
 		}

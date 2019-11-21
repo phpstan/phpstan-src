@@ -25,6 +25,7 @@ parameters:
 	checkPhpDocMissingReturn: false
 	checkExtraArguments: false
 	checkMissingClosureNativeReturnTypehintRule: false
+	checkPossibleCovariantMethodReturnType: true
 	inferPrivatePropertyTypeFromConstructor: false
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
@@ -121,6 +122,7 @@ parametersSchema:
 	checkPhpDocMissingReturn: bool()
 	checkExtraArguments: bool()
 	checkMissingClosureNativeReturnTypehintRule: bool()
+	checkPossibleCovariantMethodReturnType: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
 	tipsOfTheDay: bool()
 	reportMaybes: bool()

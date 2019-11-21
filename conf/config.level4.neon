@@ -20,7 +20,6 @@ rules:
 	- PHPStan\Rules\Methods\CallToStaticMethodStamentWithoutSideEffectsRule
 	- PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
-	- PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule
 
 services:
 	-
@@ -55,5 +54,12 @@ services:
 		class: PHPStan\Rules\Comparison\StrictComparisonOfDifferentTypesRule
 		arguments:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule
+		arguments:
+			checkPossibleCovariantMethodReturnType: %checkPossibleCovariantMethodReturnType%
 		tags:
 			- phpstan.rules.rule

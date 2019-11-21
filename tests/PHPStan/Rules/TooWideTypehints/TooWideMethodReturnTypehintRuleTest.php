@@ -13,7 +13,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TooWideMethodReturnTypehintRule();
+		return new TooWideMethodReturnTypehintRule(true);
 	}
 
 	public function testPrivate(): void
@@ -50,6 +50,19 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 			[
 				'Method TooWideMethodReturnType\Baz::baz() never returns null so it can be removed from the return typehint.',
 				27,
+			],
+		]);
+	}
+
+	public function testPublicProtectedMethodCanBeCovariantOnPhp74(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/tooWideMethodReturnType-php74.php'], [
+			[
+				'Method TooWideMethodReturnType74\Bar::doFoo() never returns null so it can be removed from the return typehint.',
+				15,
 			],
 		]);
 	}

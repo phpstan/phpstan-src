@@ -19,6 +19,14 @@ use PHPStan\Type\VerbosityLevel;
 class TooWideMethodReturnTypehintRule implements Rule
 {
 
+	/** @var bool */
+	private $checkPossibleCovariantMethodReturnType;
+
+	public function __construct(bool $checkPossibleCovariantMethodReturnType)
+	{
+		$this->checkPossibleCovariantMethodReturnType = $checkPossibleCovariantMethodReturnType;
+	}
+
 	public function getNodeType(): string
 	{
 		return MethodReturnStatementsNode::class;
@@ -33,9 +41,10 @@ class TooWideMethodReturnTypehintRule implements Rule
 		if (!$method->isPrivate()) {
 			$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
 			if (!$isFirstDeclaration) {
-				return [];
-			}
-			if (!$method->getDeclaringClass()->isFinal()) {
+				if (PHP_VERSION_ID < 70400 || !$this->checkPossibleCovariantMethodReturnType) {
+					return [];
+				}
+			} elseif (!$method->getDeclaringClass()->isFinal()) {
 				return [];
 			}
 		}

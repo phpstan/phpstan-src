@@ -37,3 +37,16 @@ class Foo
 {
 
 }
+
+class Bar
+{
+
+	/**
+	 * @psalm-param list() $a
+	 */
+	public function doFoo($a)
+	{
+
+	}
+
+}

@@ -61,6 +61,10 @@ class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
+			if (strpos($phpDocTag->name, '@psalm-') === 0) {
+				continue;
+			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag %s has invalid value (%s): %s',
 				$phpDocTag->name,

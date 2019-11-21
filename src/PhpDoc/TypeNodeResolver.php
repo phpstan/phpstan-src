@@ -188,6 +188,9 @@ class TypeNodeResolver
 
 			case 'never':
 				return new NeverType(true);
+
+			case 'list':
+				return new ErrorType();
 		}
 
 		if ($nameScope->getClassName() !== null) {

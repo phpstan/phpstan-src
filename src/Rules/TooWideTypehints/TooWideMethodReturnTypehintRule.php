@@ -30,9 +30,14 @@ class TooWideMethodReturnTypehintRule implements Rule
 		if (!$method instanceof MethodReflection) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
-		$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
-		if (!$method->isPrivate() && (!$isFirstDeclaration || !$method->getDeclaringClass()->isFinal())) {
-			return [];
+		if (!$method->isPrivate()) {
+			$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
+			if (!$isFirstDeclaration) {
+				return [];
+			}
+			if (!$method->getDeclaringClass()->isFinal()) {
+				return [];
+			}
 		}
 
 		$methodReturnType = ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType();

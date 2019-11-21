@@ -22,7 +22,7 @@ class LevelsCheckAlwaysTrueIntegrationTest extends \PHPStan\Testing\LevelsTestCa
 		return __DIR__ . '/../../../bin/phpstan';
 	}
 
-	public function getPhpStanConfigPath(): ?string
+	public function getPhpStanConfigPath(): string
 	{
 		return __DIR__ . '/alwaysTrue.neon';
 	}

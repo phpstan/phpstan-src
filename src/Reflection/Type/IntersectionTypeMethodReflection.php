@@ -107,12 +107,24 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function getDeprecatedDescription(): ?string
 	{
-		return implode(' ', array_map(static function (MethodReflection $method): string {
-			if (!$method->isDeprecated()->yes()) {
-				return '';
+		$descriptions = [];
+		foreach ($this->methods as $method) {
+			if ($method->isDeprecated()->yes()) {
+				continue;
 			}
-			return $method->getDeprecatedDescription() ?? '';
-		}, $this->methods));
+			$description = $method->getDeprecatedDescription();
+			if ($description === null) {
+				continue;
+			}
+
+			$descriptions[] = $description;
+		}
+
+		if (count($descriptions) === 0) {
+			return null;
+		}
+
+		return implode(' ', $descriptions);
 	}
 
 	public function isFinal(): TrinaryLogic

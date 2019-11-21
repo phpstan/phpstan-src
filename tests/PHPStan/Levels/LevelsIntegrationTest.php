@@ -45,7 +45,7 @@ class LevelsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 		return __DIR__ . '/../../../bin/phpstan';
 	}
 
-	public function getPhpStanConfigPath(): ?string
+	public function getPhpStanConfigPath(): string
 	{
 		return __DIR__ . '/dynamicConstantNames.neon';
 	}

@@ -22,7 +22,7 @@ class InferPrivatePropertyTypeFromConstructorIntegrationTest extends \PHPStan\Te
 		return __DIR__ . '/../../../bin/phpstan';
 	}
 
-	public function getPhpStanConfigPath(): ?string
+	public function getPhpStanConfigPath(): string
 	{
 		return __DIR__ . '/inferPropertyType.neon';
 	}

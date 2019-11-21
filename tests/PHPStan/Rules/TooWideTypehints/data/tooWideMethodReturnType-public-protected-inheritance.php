@@ -37,3 +37,20 @@ final class Baz extends Ancestor
 	}
 
 }
+
+interface FooInterface
+{
+
+	public function doFoo(): ?string;
+
+}
+
+class BarClass implements FooInterface
+{
+
+	public function doFoo(): ?string
+	{
+		return 'fooo';
+	}
+
+}

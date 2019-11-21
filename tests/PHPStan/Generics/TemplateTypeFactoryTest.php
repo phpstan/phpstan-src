@@ -13,33 +13,34 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 
 class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 {
 
-	/** @return array<array{?Type, bool}> */
+	/** @return array<array{?Type, Type}> */
 	public function dataCreate(): array
 	{
 		return [
 			[
 				new ObjectType('DateTime'),
-				true,
+				new ObjectType('DateTime'),
 			],
 			[
 				new MixedType(),
-				true,
+				new MixedType(),
 			],
 			[
 				null,
-				true,
+				new MixedType(),
 			],
 			[
 				new StringType(),
-				false,
+				new MixedType(),
 			],
 			[
 				new ErrorType(),
-				false,
+				new MixedType(),
 			],
 			[
 				TemplateTypeFactory::create(
@@ -48,14 +49,14 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 					null,
 					TemplateTypeVariance::createInvariant()
 				),
-				false,
+				new MixedType(),
 			],
 			[
 				new UnionType([
 					new StringType(),
 					new IntegerType(),
 				]),
-				false,
+				new MixedType(),
 			],
 		];
 	}
@@ -63,7 +64,7 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 	/**
 	 * @dataProvider dataCreate
 	 */
-	public function testCreate(?Type $bound, bool $expectSuccess): void
+	public function testCreate(?Type $bound, Type $expectedBound): void
 	{
 		$scope = TemplateTypeScope::createWithFunction('a');
 		$templateType = TemplateTypeFactory::create(
@@ -73,12 +74,11 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 			TemplateTypeVariance::createInvariant()
 		);
 
-		if ($expectSuccess) {
-			$this->assertInstanceOf(TemplateType::class, $templateType);
-			$this->assertTrue(($bound ?? new MixedType())->equals($templateType->getBound()));
-		} else {
-			$this->assertInstanceOf(ErrorType::class, $templateType);
-		}
+		$this->assertInstanceOf(TemplateType::class, $templateType);
+		$this->assertTrue(
+			$expectedBound->equals($templateType->getBound()),
+			sprintf('%s -> equals(%s)', $expectedBound->describe(VerbosityLevel::precise()), $templateType->getBound()->describe(VerbosityLevel::precise()))
+		);
 	}
 
 }

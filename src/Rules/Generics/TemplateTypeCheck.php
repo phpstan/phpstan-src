@@ -7,9 +7,9 @@ use PHPStan\Broker\Broker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ErrorType;
-use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 
@@ -83,8 +83,8 @@ class TemplateTypeCheck
 				$messages = array_merge($messages, $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs));
 			}
 
-			$processedType = TemplateTypeFactory::fromTemplateTag($templateTypeScope, $templateTag);
-			if (!$processedType instanceof ErrorType) {
+			$bound = $templateTag->getBound();
+			if (get_class($bound) === MixedType::class || $bound instanceof ObjectType) {
 				continue;
 			}
 

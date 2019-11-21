@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @template T
+ * @template T of object
  */
 class ReflectionClass
 {

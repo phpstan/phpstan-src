@@ -9,6 +9,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -38,8 +39,8 @@ class TooWideMethodReturnTypehintRule implements Rule
 		if (!$method instanceof MethodReflection) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
+		$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
 		if (!$method->isPrivate()) {
-			$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
 			if (!$isFirstDeclaration) {
 				if (PHP_VERSION_ID < 70400 || !$this->checkPossibleCovariantMethodReturnType) {
 					return [];
@@ -78,6 +79,15 @@ class TooWideMethodReturnTypehintRule implements Rule
 		}
 
 		$returnType = TypeCombinator::union(...$returnTypes);
+		if (
+			PHP_VERSION_ID >= 70400
+			&& $this->checkPossibleCovariantMethodReturnType
+			&& !$method->isPrivate()
+			&& $returnType instanceof NullType
+			&& !$isFirstDeclaration
+		) {
+			return [];
+		}
 
 		$messages = [];
 		foreach ($methodReturnType->getTypes() as $type) {

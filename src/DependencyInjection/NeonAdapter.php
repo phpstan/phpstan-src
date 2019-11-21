@@ -13,7 +13,7 @@ use PHPStan\File\FileHelper;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v4';
+	public const CACHE_KEY = 'v5';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 

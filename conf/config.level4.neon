@@ -18,6 +18,7 @@ rules:
 	- PHPStan\Rules\Functions\CallToFunctionStamentWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToMethodStamentWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToStaticMethodStamentWithoutSideEffectsRule
+	- PHPStan\Rules\TooWideTypehints\TooWideArrowFunctionReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule

@@ -1,0 +1,52 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Rules\TooWideTypehints;
+
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Node\InArrowFunctionNode;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
+
+/**
+ * @implements Rule<InArrowFunctionNode>
+ */
+class TooWideArrowFunctionReturnTypehintRule implements Rule
+{
+
+	public function getNodeType(): string
+	{
+		return InArrowFunctionNode::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		$functionReturnType = $scope->getAnonymousFunctionReturnType();
+		if ($functionReturnType === null || !$functionReturnType instanceof UnionType) {
+			return [];
+		}
+
+		$expr = $node->getOriginalNode()->expr;
+		if ($expr instanceof Node\Expr\YieldFrom || $expr instanceof Node\Expr\Yield_) {
+			return [];
+		}
+
+		$returnType = $scope->getType($expr);
+		$messages = [];
+		foreach ($functionReturnType->getTypes() as $type) {
+			if (!$type->isSuperTypeOf($returnType)->no()) {
+				continue;
+			}
+
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Anonymous function never returns %s so it can be removed from the return typehint.',
+				$type->describe(VerbosityLevel::typeOnly())
+			))->build();
+		}
+
+		return $messages;
+	}
+
+}

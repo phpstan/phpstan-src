@@ -28,6 +28,9 @@ final class TemplateMixedType extends MixedType implements TemplateType
 	/** @var TemplateTypeVariance */
 	private $variance;
 
+	/** @var MixedType|null */
+	private $bound;
+
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
@@ -72,12 +75,16 @@ final class TemplateMixedType extends MixedType implements TemplateType
 	{
 		return $type instanceof self
 			&& $type->scope->equals($this->scope)
-			&& $type->name === $this->name;
+			&& $type->name === $this->name
+			&& parent::equals($type);
 	}
 
 	public function getBound(): Type
 	{
-		return new MixedType(true, $this->getSubtractedType());
+		if ($this->bound === null) {
+			$this->bound = new MixedType(true, $this->getSubtractedType());
+		}
+		return $this->bound;
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

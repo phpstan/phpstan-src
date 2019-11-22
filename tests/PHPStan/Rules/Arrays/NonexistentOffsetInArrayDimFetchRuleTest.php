@@ -54,6 +54,26 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				114,
 			],
 			[
+				'Offset \'test\' does not exist on null.',
+				126,
+			],
+			[
+				'Cannot access offset 42 on int.',
+				142,
+			],
+			[
+				'Cannot access offset 42 on float.',
+				143,
+			],
+			[
+				'Cannot access offset 42 on bool.',
+				144,
+			],
+			[
+				'Cannot access offset 42 on resource.',
+				145,
+			],
+			[
 				'Offset \'c\' does not exist on array(\'c\' => bool)|array(\'e\' => true).',
 				171,
 			],
@@ -136,6 +156,30 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 			[
 				'Cannot access offset \'foo\' on stdClass.',
 				13,
+			],
+			[
+				'Cannot access offset \'foo\' on true.',
+				16,
+			],
+			[
+				'Cannot access offset \'foo\' on false.',
+				19,
+			],
+			[
+				'Cannot access offset \'foo\' on resource.',
+				23,
+			],
+			[
+				'Cannot access offset \'foo\' on 4.141.',
+				26,
+			],
+			[
+				'Cannot access offset \'foo\' on array|int.',
+				30,
+			],
+			[
+				'Cannot access offset \'foo\' on 42.',
+				33,
 			],
 		]);
 	}

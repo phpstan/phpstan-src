@@ -2025,8 +2025,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					]),
 					new HasOffsetType(new StringType()),
 				],
-				UnionType::class,
-				'(array<string>&hasOffset(string))|null',
+				IntersectionType::class,
+				'array<string>&hasOffset(string)',
 			],
 			[
 				[

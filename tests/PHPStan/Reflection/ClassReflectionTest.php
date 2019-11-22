@@ -19,7 +19,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @dataProvider dataHasTraitUse
-	 * @param string $className
+	 * @param class-string $className
 	 * @param bool $has
 	 */
 	public function testHasTraitUse(string $className, bool $has): void
@@ -73,7 +73,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @dataProvider dataClassHierarchyDistances
-	 * @param string $class
+	 * @param class-string $class
 	 * @param int[] $expectedDistances
 	 */
 	public function testClassHierarchyDistances(

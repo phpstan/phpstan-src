@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -208,6 +209,31 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 					new ConstantStringType(\DateTime::class),
 					new ConstantStringType(\Exception::class),
 				]),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new ObjectWithoutClassType(),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new ClassStringType(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new ObjectWithoutClassType(),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Boo'),
+					'U',
+					new ObjectWithoutClassType(),
+					TemplateTypeVariance::createInvariant()
+				)),
 				TrinaryLogic::createYes(),
 			],
 		];

@@ -968,7 +968,7 @@ function testReflectionClass($ref)
 	assertType('class-string<PHPStan\Generics\FunctionsAssertType\Foo>', $ref->getName());
 	assertType('PHPStan\Generics\FunctionsAssertType\Foo', $ref->newInstanceWithoutConstructor());
 
-	assertType('ReflectionClass<PHPStan\Generics\FunctionsAssertType\Foo|string>', new \ReflectionClass(Foo::class));
+	assertType('ReflectionClass<PHPStan\Generics\FunctionsAssertType\Foo>', new \ReflectionClass(Foo::class));
 }
 
 /**
@@ -1041,3 +1041,39 @@ function testBounds($a, $b): void
 	assertType('T of DateTime (function PHPStan\Generics\FunctionsAssertType\testBounds(), argument)', $a);
 	assertType('U of DateTime (function PHPStan\Generics\FunctionsAssertType\testBounds(), argument)', $b);
 }
+
+/**
+ * @template T of object
+ * @param T $a
+ * @return T
+ */
+function testGenericObjectWithoutClassType($a)
+{
+	return $a;
+}
+
+/**
+ * @template T of object
+ * @param T $a
+ * @return T
+ */
+function testGenericObjectWithoutClassType2($a)
+{
+	assertType('T of object (function PHPStan\Generics\FunctionsAssertType\testGenericObjectWithoutClassType2(), argument)', $a);
+	assertType('T of object (function PHPStan\Generics\FunctionsAssertType\testGenericObjectWithoutClassType2(), argument)', testGenericObjectWithoutClassType($a));
+	$b = $a;
+	if ($b instanceof \stdClass) {
+		return $a;
+	}
+
+	assertType('T of object~stdClass (function PHPStan\Generics\FunctionsAssertType\testGenericObjectWithoutClassType2(), argument)', $b);
+
+	return $a;
+}
+
+function () {
+	$a = new \stdClass();
+	assertType('stdClass', testGenericObjectWithoutClassType($a));
+	assertType('stdClass', testGenericObjectWithoutClassType(testGenericObjectWithoutClassType($a)));
+	assertType('stdClass', testGenericObjectWithoutClassType2(testGenericObjectWithoutClassType($a)));
+};

@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -57,6 +58,8 @@ class GenericClassStringType extends ClassStringType
 			$objectType = new ObjectType($type->getValue());
 		} elseif ($type instanceof self) {
 			$objectType = $type->type;
+		} elseif ($type instanceof ClassStringType) {
+			$objectType = new ObjectWithoutClassType();
 		} else {
 			return TrinaryLogic::createNo();
 		}

@@ -10,6 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 
@@ -84,7 +85,12 @@ class TemplateTypeCheck
 			}
 
 			$bound = $templateTag->getBound();
-			if (get_class($bound) === MixedType::class || $bound instanceof ObjectType) {
+			$boundClass = get_class($bound);
+			if (
+				$boundClass === MixedType::class
+				|| $boundClass === ObjectWithoutClassType::class
+				|| $bound instanceof ObjectType
+			) {
 				continue;
 			}
 

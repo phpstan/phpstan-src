@@ -310,6 +310,7 @@ class FileTypeMapper
 					}
 
 					foreach ($node->traits as $traitName) {
+						/** @var class-string $traitName */
 						$traitName = (string) $traitName;
 						if (!trait_exists($traitName)) {
 							continue;

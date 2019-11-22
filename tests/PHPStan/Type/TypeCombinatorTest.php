@@ -13,6 +13,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateObjectWithoutClassType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -1457,6 +1458,45 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				GenericObjectType::class,
 				'PHPStan\Type\Variance\Covariant<DateTimeInterface>',
 			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+					new ObjectWithoutClassType(),
+				],
+				ObjectWithoutClassType::class,
+				'object',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+					new ObjectType(\stdClass::class),
+				],
+				UnionType::class,
+				'stdClass|T of object (function a(), parameter)',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+					new MixedType(),
+				],
+				MixedType::class,
+				'mixed',
+			],
 		];
 	}
 
@@ -2410,6 +2450,45 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				GenericObjectType::class,
 				'PHPStan\Type\Variance\Covariant<DateTime>',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+					new ObjectWithoutClassType(),
+				],
+				TemplateObjectWithoutClassType::class,
+				'T of object (function a(), parameter)',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+					new ObjectType(\stdClass::class),
+				],
+				IntersectionType::class,
+				'stdClass&T of object (function a(), parameter)',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+					new MixedType(),
+				],
+				TemplateObjectWithoutClassType::class,
+				'T of object (function a(), parameter)',
 			],
 		];
 	}

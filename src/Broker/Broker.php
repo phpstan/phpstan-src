@@ -264,6 +264,8 @@ class Broker
 
 	public function getClass(string $className): \PHPStan\Reflection\ClassReflection
 	{
+		/** @var class-string $className */
+		$className = $className;
 		if (!$this->hasClass($className)) {
 			throw new \PHPStan\Broker\ClassNotFoundException($className);
 		}
@@ -300,6 +302,8 @@ class Broker
 			throw new \PHPStan\Broker\ClassNotFoundException($className);
 		}
 
+		/** @var class-string $className */
+		$className = $className;
 		$reflectionClass = new ReflectionClass($className);
 		$realName = $reflectionClass->getName();
 
@@ -343,8 +347,11 @@ class Broker
 
 		eval($this->printer->prettyPrint([$classNode]));
 
+		/** @var class-string $className */
+		$className = $className;
+
 		self::$anonymousClasses[$className] = $this->getClassFromReflection(
-			new \ReflectionClass('\\' . $className),
+			new \ReflectionClass($className),
 			sprintf('class@anonymous/%s:%s', $filename, $classNode->getLine()),
 			$scopeFile
 		);

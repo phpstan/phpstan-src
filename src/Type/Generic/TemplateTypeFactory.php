@@ -5,6 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 
 final class TemplateTypeFactory
@@ -14,11 +15,20 @@ final class TemplateTypeFactory
 	{
 		$strategy = new TemplateTypeParameterStrategy();
 
+		if ($bound === null) {
+			return new TemplateMixedType($scope, $strategy, $variance, $name);
+		}
+
 		if ($bound instanceof ObjectType) {
 			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound->getClassName());
 		}
 
-		if ($bound === null || get_class($bound) === MixedType::class) {
+		$boundClass = get_class($bound);
+		if ($boundClass === ObjectWithoutClassType::class) {
+			return new TemplateObjectWithoutClassType($scope, $strategy, $variance, $name);
+		}
+
+		if ($boundClass === MixedType::class) {
 			return new TemplateMixedType($scope, $strategy, $variance, $name);
 		}
 

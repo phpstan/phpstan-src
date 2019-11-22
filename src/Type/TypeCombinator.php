@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\TemplateType;
 
 class TypeCombinator
 {
@@ -95,8 +96,15 @@ class TypeCombinator
 			if ($typeToRemove instanceof NonEmptyArrayType) {
 				return new ConstantArrayType([], []);
 			}
-		} elseif ($fromType instanceof SubtractableType && $fromType->isSuperTypeOf($typeToRemove)->yes()) {
-			return $fromType->subtract($typeToRemove);
+		} elseif ($fromType instanceof SubtractableType) {
+			$typeToSubtractFrom = $fromType;
+			if ($fromType instanceof TemplateType) {
+				$typeToSubtractFrom = $fromType->getBound();
+			}
+
+			if ($typeToSubtractFrom->isSuperTypeOf($typeToRemove)->yes()) {
+				return $fromType->subtract($typeToRemove);
+			}
 		}
 
 		return $fromType;

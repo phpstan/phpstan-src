@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -53,6 +54,9 @@ class TooWideClosureReturnTypehintRule implements Rule
 		}
 
 		$returnType = TypeCombinator::union(...$returnTypes);
+		if ($returnType instanceof NullType) {
+			return [];
+		}
 
 		$messages = [];
 		foreach ($closureReturnType->getTypes() as $type) {

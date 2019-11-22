@@ -23,10 +23,6 @@ class TooWideArrowFunctionReturnTypehintRuleTest extends RuleTestCase
 		}
 		$this->analyse([__DIR__ . '/data/tooWideArrowFunctionReturnType.php'], [
 			[
-				'Anonymous function never returns string so it can be removed from the return typehint.',
-				12,
-			],
-			[
 				'Anonymous function never returns null so it can be removed from the return typehint.',
 				14,
 			],

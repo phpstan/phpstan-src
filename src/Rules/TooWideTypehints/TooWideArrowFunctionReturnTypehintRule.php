@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\NullType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -34,6 +35,9 @@ class TooWideArrowFunctionReturnTypehintRule implements Rule
 		}
 
 		$returnType = $scope->getType($expr);
+		if ($returnType instanceof NullType) {
+			return [];
+		}
 		$messages = [];
 		foreach ($functionReturnType->getTypes() as $type) {
 			if (!$type->isSuperTypeOf($returnType)->no()) {

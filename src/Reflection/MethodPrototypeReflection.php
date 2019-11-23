@@ -60,10 +60,9 @@ class MethodPrototypeReflection implements ClassMemberReflection
 		return $this->isAbstract;
 	}
 
-	/** @return string|false */
-	public function getDocComment()
+	public function getDocComment(): ?string
 	{
-		return false;
+		return null;
 	}
 
 }

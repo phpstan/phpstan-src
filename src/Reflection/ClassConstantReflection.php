@@ -89,10 +89,14 @@ class ClassConstantReflection implements ConstantReflection
 		return TrinaryLogic::createFromBoolean($this->isInternal);
 	}
 
-	/** @return string|false */
-	public function getDocComment()
+	public function getDocComment(): ?string
 	{
-		return $this->reflection->getDocComment();
+		$docComment = $this->reflection->getDocComment();
+		if ($docComment === false) {
+			return null;
+		}
+
+		return $docComment;
 	}
 
 }

@@ -13,7 +13,6 @@ interface ClassMemberReflection
 
 	public function isPublic(): bool;
 
-	/** @return string|false */
-	public function getDocComment();
+	public function getDocComment(): ?string;
 
 }

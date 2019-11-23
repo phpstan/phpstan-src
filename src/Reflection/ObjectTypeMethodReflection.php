@@ -50,8 +50,7 @@ class ObjectTypeMethodReflection implements MethodReflection
 		return $this->reflection->isPublic();
 	}
 
-	/** @return string|false */
-	public function getDocComment()
+	public function getDocComment(): ?string
 	{
 		return $this->reflection->getDocComment();
 	}

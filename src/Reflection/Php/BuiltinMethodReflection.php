@@ -26,10 +26,7 @@ interface BuiltinMethodReflection
 	 */
 	public function getEndLine();
 
-	/**
-	 * @return string|false
-	 */
-	public function getDocComment();
+	public function getDocComment(): ?string;
 
 	public function isStatic(): bool;
 

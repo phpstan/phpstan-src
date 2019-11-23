@@ -150,10 +150,7 @@ class PhpMethodReflection implements MethodReflection
 		return $this->declaringTrait;
 	}
 
-	/**
-	 * @return string|false
-	 */
-	public function getDocComment()
+	public function getDocComment(): ?string
 	{
 		return $this->reflection->getDocComment();
 	}

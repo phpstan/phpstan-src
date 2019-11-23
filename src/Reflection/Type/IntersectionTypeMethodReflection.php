@@ -168,10 +168,9 @@ class IntersectionTypeMethodReflection implements MethodReflection
 		}, $this->methods));
 	}
 
-	/** @return string|false */
-	public function getDocComment()
+	public function getDocComment(): ?string
 	{
-		return false;
+		return null;
 	}
 
 }

@@ -51,8 +51,7 @@ final class ClosureCallMethodReflection implements MethodReflection
 		return $this->nativeMethodReflection->isPublic();
 	}
 
-	/** @return string|false */
-	public function getDocComment()
+	public function getDocComment(): ?string
 	{
 		return $this->nativeMethodReflection->getDocComment();
 	}

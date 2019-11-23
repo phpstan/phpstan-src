@@ -458,9 +458,7 @@ class PhpClassReflectionExtension
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== false) {
-				$docComment = $methodReflection->getDocComment() !== false
-					? $methodReflection->getDocComment()
-					: null;
+				$docComment = $methodReflection->getDocComment();
 
 				$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
 					$docComment,

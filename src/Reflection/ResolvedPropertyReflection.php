@@ -107,8 +107,7 @@ class ResolvedPropertyReflection implements PropertyReflection
 		return $this->reflection->isWritable();
 	}
 
-	/** @return string|false */
-	public function getDocComment()
+	public function getDocComment(): ?string
 	{
 		return $this->reflection->getDocComment();
 	}

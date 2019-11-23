@@ -233,7 +233,7 @@ class PhpDocBlock
 				? $traitReflection->getName()
 				: null;
 
-			if ($parentReflection->getDocComment() !== false) {
+			if ($parentReflection->getDocComment() !== null) {
 				return self::$resolveMethodName(
 					$parentReflection->getDocComment(),
 					$classReflection,

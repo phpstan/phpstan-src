@@ -642,6 +642,11 @@ services:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
+		class: PHPStan\Type\Php\ClassExistsFunctionTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
 		class: PHPStan\Type\Php\DefineConstantTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension

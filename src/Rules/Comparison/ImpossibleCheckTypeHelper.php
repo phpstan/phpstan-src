@@ -52,6 +52,13 @@ class ImpossibleCheckTypeHelper
 		) {
 			if ($node->name instanceof \PhpParser\Node\Name) {
 				$functionName = strtolower((string) $node->name);
+				if (in_array($functionName, [
+					'class_exists',
+					'interface_exists',
+					'trait_exists',
+				], true)) {
+					return null;
+				}
 				if ($functionName === 'count') {
 					return null;
 				} elseif ($functionName === 'is_numeric') {

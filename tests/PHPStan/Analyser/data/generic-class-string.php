@@ -86,3 +86,37 @@ function testClassString($a) {
 		assertType('DateTime', new $a());
 	}
 }
+
+function testClassExists(string $str)
+{
+	assertType('string', $str);
+	if (class_exists($str)) {
+		assertType('class-string', $str);
+	}
+
+	$existentClass = \stdClass::class;
+	if (class_exists($existentClass)) {
+		assertType('\'stdClass\'', $existentClass);
+	}
+
+	$nonexistentClass = 'NonexistentClass';
+	if (class_exists($nonexistentClass)) {
+		assertType('\'NonexistentClass\'', $nonexistentClass);
+	}
+}
+
+function testInterfaceExists(string $str)
+{
+	assertType('string', $str);
+	if (interface_exists($str)) {
+		assertType('class-string', $str);
+	}
+}
+
+function testTraitExists(string $str)
+{
+	assertType('string', $str);
+	if (trait_exists($str)) {
+		assertType('class-string', $str);
+	}
+}

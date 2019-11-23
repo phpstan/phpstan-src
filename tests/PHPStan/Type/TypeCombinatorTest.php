@@ -2490,6 +2490,22 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				TemplateObjectWithoutClassType::class,
 				'T of object (function a(), parameter)',
 			],
+			[
+				[
+					new ConstantStringType('NonexistentClass'),
+					new ClassStringType(),
+				],
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				[
+					new ConstantStringType(\stdClass::class),
+					new ClassStringType(),
+				],
+				ConstantStringType::class,
+				'\'stdClass\'',
+			],
 		];
 	}
 

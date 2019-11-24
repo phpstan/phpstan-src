@@ -210,7 +210,7 @@ class PhpDocBlock
 		bool $explicit
 	): ?self
 	{
-		if ($classReflection->getFileName() !== false && $classReflection->$hasMethodName($name)) {
+		if ($classReflection->getFileNameWithPhpDocs() !== null && $classReflection->$hasMethodName($name)) {
 			/** @var \PHPStan\Reflection\PropertyReflection|\PHPStan\Reflection\MethodReflection $parentReflection */
 			$parentReflection = $classReflection->$getMethodName($name);
 			if ($parentReflection->isPrivate()) {
@@ -239,7 +239,7 @@ class PhpDocBlock
 					$classReflection,
 					$trait,
 					$name,
-					$classReflection->getFileName(),
+					$classReflection->getFileNameWithPhpDocs(),
 					$explicit
 				);
 			}

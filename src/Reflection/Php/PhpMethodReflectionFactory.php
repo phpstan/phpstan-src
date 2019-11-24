@@ -21,6 +21,7 @@ interface PhpMethodReflectionFactory
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
+	 * @param string|null $stubPhpDocString
 	 *
 	 * @return \PHPStan\Reflection\Php\PhpMethodReflection
 	 */
@@ -35,7 +36,8 @@ interface PhpMethodReflectionFactory
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		bool $isFinal
+		bool $isFinal,
+		?string $stubPhpDocString
 	): PhpMethodReflection;
 
 }

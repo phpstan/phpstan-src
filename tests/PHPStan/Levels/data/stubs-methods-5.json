@@ -8,5 +8,15 @@
         "message": "Parameter #1 $i of method StubsIntegrationTest\\Foo::doFoo() expects int, string given.",
         "line": 17,
         "ignorable": true
-    }
+    },
+	{
+		"message": "Parameter #1 $i of method StubsIntegrationTest\\FooChild::doFoo() expects int, string given.",
+		"line": 31,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $i of method StubsIntegrationTest\\FooChild::doFoo() expects int, string given.",
+		"line": 32,
+		"ignorable": true
+	}
 ]

@@ -192,6 +192,7 @@ class PhpClassReflectionExtension
 			$declaringClassName,
 			$propertyReflection->getName()
 		);
+		$stubPhpDocString = null;
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClassReflection->getFileName() !== false) {
 				$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForProperty(
@@ -218,6 +219,7 @@ class PhpClassReflectionExtension
 			}
 		} else {
 			$phpDocBlockClassReflection = $declaringClassReflection;
+			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
 
 		if ($resolvedPhpDoc !== null) {
@@ -271,7 +273,8 @@ class PhpClassReflectionExtension
 			$propertyReflection,
 			$deprecatedDescription,
 			$isDeprecated,
-			$isInternal
+			$isInternal,
+			$stubPhpDocString
 		);
 	}
 
@@ -393,6 +396,7 @@ class PhpClassReflectionExtension
 				$variantName = sprintf($signatureMapMethodName . '\'' . $i);
 			}
 
+			$stubPhpDocString = null;
 			$variants = [];
 			foreach ($variantNames as $innerVariantName) {
 				$methodSignature = $this->signatureMapProvider->getFunctionSignature($innerVariantName, $declaringClassName);
@@ -402,6 +406,7 @@ class PhpClassReflectionExtension
 				if (count($variantNames) === 1) {
 					$stubPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
 					if ($stubPhpDoc !== null) {
+						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
 						$templateTypeMap = $declaringClass->getActiveTemplateTypeMap();
 						$returnTag = $stubPhpDoc->getReturnTag();
 						if ($returnTag !== null) {
@@ -450,12 +455,14 @@ class PhpClassReflectionExtension
 				$declaringClass,
 				$methodReflection,
 				$variants,
-				$hasSideEffects
+				$hasSideEffects,
+				$stubPhpDocString
 			);
 		}
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
+		$stubPhpDocString = null;
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== false) {
 				$docComment = $methodReflection->getDocComment();
@@ -483,6 +490,7 @@ class PhpClassReflectionExtension
 		} else {
 			$phpDocBlockClassReflection = $declaringClass;
 			$isPhpDocBlockExplicit = true;
+			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
 
 		$declaringTrait = null;
@@ -535,7 +543,8 @@ class PhpClassReflectionExtension
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$isFinal
+			$isFinal,
+			$stubPhpDocString
 		);
 	}
 

@@ -91,7 +91,7 @@ class FileTypeMapper
 		}
 
 		if (isset($phpDocMap[$phpDocKey])) {
-			return $this->createResolvedPhpDocBlock($phpDocKey, $phpDocMap[$phpDocKey]);
+			return $this->createResolvedPhpDocBlock($phpDocKey, $phpDocMap[$phpDocKey], $fileName);
 		}
 
 		if (!isset($this->inProcess[$fileName][$phpDocKey])) { // wrong $fileName due to traits
@@ -109,12 +109,13 @@ class FileTypeMapper
 		}
 
 		assert($this->inProcess[$fileName][$phpDocKey] instanceof NameScopedPhpDocString);
-		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$phpDocKey]);
+		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$phpDocKey], $fileName);
 	}
 
-	private function createResolvedPhpDocBlock(string $phpDocKey, NameScopedPhpDocString $nameScopedPhpDocString): ResolvedPhpDocBlock
+	private function createResolvedPhpDocBlock(string $phpDocKey, NameScopedPhpDocString $nameScopedPhpDocString, string $fileName): ResolvedPhpDocBlock
 	{
-		$phpDocNode = $this->resolvePhpDocStringToDocNode($nameScopedPhpDocString->getPhpDocString());
+		$phpDocString = $nameScopedPhpDocString->getPhpDocString();
+		$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
 		$nameScope = $nameScopedPhpDocString->getNameScope();
 		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 		$templateTypeScope = $nameScope->getTemplateTypeScope();
@@ -135,6 +136,8 @@ class FileTypeMapper
 
 		$this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
 			$phpDocNode,
+			$phpDocString,
+			$fileName,
 			$nameScope,
 			$templateTypeMap,
 			$templateTags,

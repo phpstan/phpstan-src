@@ -130,6 +130,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			 * @param bool $isDeprecated
 			 * @param bool $isInternal
 			 * @param bool $isFinal
+			 * @param string|null $stubPhpDocString
 			 * @return PhpMethodReflection
 			 */
 			public function create(
@@ -143,7 +144,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				?string $deprecatedDescription,
 				bool $isDeprecated,
 				bool $isInternal,
-				bool $isFinal
+				bool $isFinal,
+				?string $stubPhpDocString
 			): PhpMethodReflection
 			{
 				return new PhpMethodReflection(
@@ -161,7 +163,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$deprecatedDescription,
 					$isDeprecated,
 					$isInternal,
-					$isFinal
+					$isFinal,
+					$stubPhpDocString
 				);
 			}
 

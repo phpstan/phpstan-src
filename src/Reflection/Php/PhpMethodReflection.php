@@ -86,6 +86,9 @@ class PhpMethodReflection implements MethodReflection
 	/** @var bool */
 	private $isFinal;
 
+	/** @var string|null */
+	private $stubPhpDocString;
+
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private $variants;
 
@@ -104,6 +107,7 @@ class PhpMethodReflection implements MethodReflection
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
+	 * @param string|null $stubPhpDocString
 	 */
 	public function __construct(
 		ClassReflection $declaringClass,
@@ -120,7 +124,8 @@ class PhpMethodReflection implements MethodReflection
 		?string $deprecatedDescription,
 		bool $isDeprecated = false,
 		bool $isInternal = false,
-		bool $isFinal = false
+		bool $isFinal = false,
+		?string $stubPhpDocString = null
 	)
 	{
 		$this->declaringClass = $declaringClass;
@@ -138,6 +143,7 @@ class PhpMethodReflection implements MethodReflection
 		$this->isDeprecated = $isDeprecated;
 		$this->isInternal = $isInternal;
 		$this->isFinal = $isFinal;
+		$this->stubPhpDocString = $stubPhpDocString;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -152,6 +158,10 @@ class PhpMethodReflection implements MethodReflection
 
 	public function getDocComment(): ?string
 	{
+		if ($this->stubPhpDocString !== null) {
+			return $this->stubPhpDocString;
+		}
+
 		return $this->reflection->getDocComment();
 	}
 

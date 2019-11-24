@@ -29,19 +29,24 @@ class NativeMethodReflection implements MethodReflection
 	/** @var TrinaryLogic */
 	private $hasSideEffects;
 
+	/** @var string|null */
+	private $stubPhpDocString;
+
 	/**
 	 * @param \PHPStan\Broker\Broker $broker
 	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
 	 * @param BuiltinMethodReflection $reflection
 	 * @param \PHPStan\Reflection\ParametersAcceptor[] $variants
 	 * @param TrinaryLogic $hasSideEffects
+	 * @param string|null $stubPhpDocString
 	 */
 	public function __construct(
 		Broker $broker,
 		ClassReflection $declaringClass,
 		BuiltinMethodReflection $reflection,
 		array $variants,
-		TrinaryLogic $hasSideEffects
+		TrinaryLogic $hasSideEffects,
+		?string $stubPhpDocString
 	)
 	{
 		$this->broker = $broker;
@@ -49,6 +54,7 @@ class NativeMethodReflection implements MethodReflection
 		$this->reflection = $reflection;
 		$this->variants = $variants;
 		$this->hasSideEffects = $hasSideEffects;
+		$this->stubPhpDocString = $stubPhpDocString;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -134,6 +140,10 @@ class NativeMethodReflection implements MethodReflection
 
 	public function getDocComment(): ?string
 	{
+		if ($this->stubPhpDocString !== null) {
+			return $this->stubPhpDocString;
+		}
+
 		return $this->reflection->getDocComment();
 	}
 

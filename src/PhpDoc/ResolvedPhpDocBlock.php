@@ -12,6 +12,12 @@ class ResolvedPhpDocBlock
 	/** @var PhpDocNode */
 	private $phpDocNode;
 
+	/** @var string */
+	private $phpDocString;
+
+	/** @var string|null */
+	private $filename;
+
 	/** @var NameScope */
 	private $nameScope;
 
@@ -69,6 +75,8 @@ class ResolvedPhpDocBlock
 
 	/**
 	 * @param \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode $phpDocNode
+	 * @param string $phpDocString
+	 * @param string $filename
 	 * @param \PHPStan\Analyser\NameScope $nameScope
 	 * @param \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap
 	 * @param \PHPStan\PhpDoc\Tag\TemplateTag[] $templateTags
@@ -77,6 +85,8 @@ class ResolvedPhpDocBlock
 	 */
 	public static function create(
 		PhpDocNode $phpDocNode,
+		string $phpDocString,
+		string $filename,
 		NameScope $nameScope,
 		TemplateTypeMap $templateTypeMap,
 		array $templateTags,
@@ -85,6 +95,8 @@ class ResolvedPhpDocBlock
 	{
 		$self = new self();
 		$self->phpDocNode = $phpDocNode;
+		$self->phpDocString = $phpDocString;
+		$self->filename = $filename;
 		$self->nameScope = $nameScope;
 		$self->templateTypeMap = $templateTypeMap;
 		$self->templateTags = $templateTags;
@@ -97,6 +109,8 @@ class ResolvedPhpDocBlock
 	{
 		$self = new self();
 		$self->phpDocNode = new PhpDocNode([]);
+		$self->phpDocString = '/** */';
+		$self->filename = null;
 		$self->templateTypeMap = TemplateTypeMap::createEmpty();
 		$self->templateTags = [];
 		$self->varTags = [];
@@ -119,6 +133,16 @@ class ResolvedPhpDocBlock
 	public function getPhpDocNode(): PhpDocNode
 	{
 		return $this->phpDocNode;
+	}
+
+	public function getPhpDocString(): string
+	{
+		return $this->phpDocString;
+	}
+
+	public function getFilename(): ?string
+	{
+		return $this->filename;
 	}
 
 	/**

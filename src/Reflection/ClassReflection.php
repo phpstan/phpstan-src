@@ -140,6 +140,20 @@ class ClassReflection implements ReflectionWithFilename
 		return $fileName;
 	}
 
+	public function getFileNameWithPhpDocs(): ?string
+	{
+		if ($this->stubPhpDocBlock !== null) {
+			return $this->stubPhpDocBlock->getFilename();
+		}
+
+		$filename = $this->getFileName();
+		if ($filename === false) {
+			return null;
+		}
+
+		return $filename;
+	}
+
 	/**
 	 * @return false|\PHPStan\Reflection\ClassReflection
 	 */

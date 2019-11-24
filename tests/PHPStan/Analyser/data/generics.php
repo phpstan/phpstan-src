@@ -1077,3 +1077,52 @@ function () {
 	assertType('stdClass', testGenericObjectWithoutClassType(testGenericObjectWithoutClassType($a)));
 	assertType('stdClass', testGenericObjectWithoutClassType2(testGenericObjectWithoutClassType($a)));
 };
+
+/**
+ * @template T of object
+ * @extends \ReflectionClass<T>
+ */
+class GenericReflectionClass extends \ReflectionClass
+{
+
+	public $name;
+
+	public function newInstanceWithoutConstructor()
+	{
+		return parent::newInstanceWithoutConstructor();
+	}
+
+}
+
+/**
+ * @extends \ReflectionClass<\stdClass>
+ */
+class SpecificReflectionClass extends \ReflectionClass
+{
+
+	public $name;
+
+	public function newInstanceWithoutConstructor()
+	{
+		return parent::newInstanceWithoutConstructor();
+	}
+
+}
+
+/**
+ * @param GenericReflectionClass<\stdClass> $ref
+ */
+function testGenericReflectionClass($ref)
+{
+	assertType('class-string<stdClass>', $ref->name);
+	assertType('stdClass', $ref->newInstanceWithoutConstructor());
+};
+
+/**
+ * @param SpecificReflectionClass $ref
+ */
+function testSpecificReflectionClass($ref)
+{
+	assertType('class-string<stdClass>', $ref->name);
+	assertType('stdClass', $ref->newInstanceWithoutConstructor());
+};

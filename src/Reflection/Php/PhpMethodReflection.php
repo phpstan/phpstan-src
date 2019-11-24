@@ -122,10 +122,10 @@ class PhpMethodReflection implements MethodReflection
 		?Type $phpDocReturnType,
 		?Type $phpDocThrowType,
 		?string $deprecatedDescription,
-		bool $isDeprecated = false,
-		bool $isInternal = false,
-		bool $isFinal = false,
-		?string $stubPhpDocString = null
+		bool $isDeprecated,
+		bool $isInternal,
+		bool $isFinal,
+		?string $stubPhpDocString
 	)
 	{
 		$this->declaringClass = $declaringClass;

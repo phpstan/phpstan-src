@@ -618,7 +618,12 @@ class TypeCombinator
 						continue 2;
 					}
 				}
-				$isSuperTypeA = $types[$j]->isSuperTypeOf($types[$i]);
+				if ($types[$j] instanceof IterableType) {
+					$isSuperTypeA = $types[$j]->isSuperTypeOfMixed($types[$i]);
+				} else {
+					$isSuperTypeA = $types[$j]->isSuperTypeOf($types[$i]);
+				}
+
 				if ($isSuperTypeA->no()) {
 					return new NeverType();
 
@@ -627,7 +632,12 @@ class TypeCombinator
 					continue;
 				}
 
-				$isSuperTypeB = $types[$i]->isSuperTypeOf($types[$j]);
+				if ($types[$i] instanceof IterableType) {
+					$isSuperTypeB = $types[$i]->isSuperTypeOfMixed($types[$j]);
+				} else {
+					$isSuperTypeB = $types[$i]->isSuperTypeOf($types[$j]);
+				}
+
 				if ($isSuperTypeB->maybe()) {
 					if ($types[$i] instanceof IntegerRangeType && $types[$j] instanceof IntegerRangeType) {
 						$min = max($types[$i]->getMin(), $types[$j]->getMin());

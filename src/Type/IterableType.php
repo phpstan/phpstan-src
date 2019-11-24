@@ -67,6 +67,13 @@ class IterableType implements CompoundType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		return $type->isIterable()
+			->and($this->getIterableValueType()->isSuperTypeOf($type->getIterableValueType()))
+			->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
+	}
+
+	public function isSuperTypeOfMixed(Type $type): TrinaryLogic
+	{
+		return $type->isIterable()
 			->and($this->isNestedTypeSuperTypeOf($this->getIterableValueType(), $type->getIterableValueType()))
 			->and($this->isNestedTypeSuperTypeOf($this->getIterableKeyType(), $type->getIterableKeyType()));
 	}

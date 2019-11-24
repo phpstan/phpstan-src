@@ -67,7 +67,8 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 			return 1;
 		}
 
-		$consoleStyle = $inceptionResult->getConsoleStyle();
+		$stdOutput = $inceptionResult->getStdOutput();
+		$stdOutputStyole = $stdOutput->getStyle();
 
 		/** @var DependencyDumper $dependencyDumper */
 		$dependencyDumper = $inceptionResult->getContainer()->getByType(DependencyDumper::class);
@@ -82,16 +83,16 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 		}, $analysedPaths);
 		$dependencies = $dependencyDumper->dumpDependencies(
 			$inceptionResult->getFiles(),
-			static function (int $count) use ($consoleStyle): void {
-				$consoleStyle->progressStart($count);
+			static function (int $count) use ($stdOutputStyole): void {
+				$stdOutputStyole->progressStart($count);
 			},
-			static function () use ($consoleStyle): void {
-				$consoleStyle->progressAdvance();
+			static function () use ($stdOutputStyole): void {
+				$stdOutputStyole->progressAdvance();
 			},
 			count($analysedPaths) > 0 ? $analysedPaths : null
 		);
-		$consoleStyle->progressFinish();
-		$consoleStyle->writeln(Json::encode($dependencies, Json::PRETTY));
+		$stdOutputStyole->progressFinish();
+		$stdOutput->writeLineFormatted(Json::encode($dependencies, Json::PRETTY));
 
 		return $inceptionResult->handleReturn(0);
 	}

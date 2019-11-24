@@ -103,7 +103,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		$container = $inceptionResult->getContainer();
 		$errorFormatterServiceName = sprintf('errorFormatter.%s', $errorFormat);
 		if (!$container->hasService($errorFormatterServiceName)) {
-			$errorOutput->writeln(sprintf(
+			$errorOutput->writeLineFormatted(sprintf(
 				'Error formatter "%s" not found. Available error formatters are: %s',
 				$errorFormat,
 				implode(', ', array_map(static function (string $name): string {
@@ -128,7 +128,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			$application->analyse(
 				$inceptionResult->getFiles(),
 				$inceptionResult->isOnlyFiles(),
-				$inceptionResult->getConsoleStyle(),
+				$inceptionResult->getStdOutput(),
+				$inceptionResult->getErrorOutput(),
 				$errorFormatter,
 				$inceptionResult->isDefaultLevelUsed(),
 				$debug,

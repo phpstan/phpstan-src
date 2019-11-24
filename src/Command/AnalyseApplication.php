@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Scope;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
+use PHPStan\Command\Symfony\SymfonyOutput;
+use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\Type\MixedType;
 use Symfony\Component\Console\Style\OutputStyle;
 
@@ -30,7 +32,8 @@ class AnalyseApplication
 	/**
 	 * @param string[] $files
 	 * @param bool $onlyFiles
-	 * @param \Symfony\Component\Console\Style\OutputStyle $style
+	 * @param \PHPStan\Command\Output $stdOutput
+	 * @param \PHPStan\Command\Output $errorOutput
 	 * @param \PHPStan\Command\ErrorFormatter\ErrorFormatter $errorFormatter
 	 * @param bool $defaultLevelUsed
 	 * @param bool $debug
@@ -40,7 +43,8 @@ class AnalyseApplication
 	public function analyse(
 		array $files,
 		bool $onlyFiles,
-		OutputStyle $style,
+		Output $stdOutput,
+		Output $errorOutput,
 		ErrorFormatter $errorFormatter,
 		bool $defaultLevelUsed,
 		bool $debug,
@@ -70,20 +74,20 @@ class AnalyseApplication
 			$progressStarted = false;
 			$fileOrder = 0;
 			$preFileCallback = null;
-			$postFileCallback = function () use ($style, &$progressStarted, $files, &$fileOrder): void {
+			$postFileCallback = function () use ($errorOutput, &$progressStarted, $files, &$fileOrder): void {
 				if (!$progressStarted) {
-					$style->progressStart(count($files));
+					$errorOutput->getStyle()->progressStart(count($files));
 					$progressStarted = true;
 				}
-				$style->progressAdvance();
+				$errorOutput->getStyle()->progressAdvance();
 				if ($fileOrder % 100 === 0) {
 					$this->updateMemoryLimitFile();
 				}
 				$fileOrder++;
 			};
 		} else {
-			$preFileCallback = static function (string $file) use ($style): void {
-				$style->writeln($file);
+			$preFileCallback = static function (string $file) use ($stdOutput): void {
+				$stdOutput->writeLineFormatted($file);
 			};
 			$postFileCallback = null;
 		}
@@ -130,7 +134,7 @@ class AnalyseApplication
 		));
 
 		if (isset($progressStarted) && $progressStarted) {
-			$style->progressFinish();
+			$errorOutput->getStyle()->progressFinish();
 		}
 
 		$fileSpecificErrors = [];
@@ -143,6 +147,15 @@ class AnalyseApplication
 			}
 		}
 
+		if (!$stdOutput instanceof SymfonyOutput || !$stdOutput->getStyle() instanceof SymfonyStyle) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$errorFormatterStyle = $stdOutput->getStyle()->getSymfonyStyle();
+		if (!$errorFormatterStyle instanceof OutputStyle) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
 		return $errorFormatter->formatErrors(
 			new AnalysisResult(
 				$fileSpecificErrors,
@@ -151,7 +164,7 @@ class AnalyseApplication
 				$hasInferrablePropertyTypesFromConstructor,
 				$projectConfigFile
 			),
-			$style
+			$errorFormatterStyle
 		);
 	}
 

@@ -3,8 +3,6 @@
 namespace PHPStan\Command;
 
 use PHPStan\DependencyInjection\Container;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\OutputStyle;
 
 class InceptionResult
 {
@@ -15,10 +13,10 @@ class InceptionResult
 	/** @var bool */
 	private $onlyFiles;
 
-	/** @var OutputStyle */
-	private $consoleStyle;
+	/** @var Output */
+	private $stdOutput;
 
-	/** @var OutputInterface */
+	/** @var Output */
 	private $errorOutput;
 
 	/** @var \PHPStan\DependencyInjection\Container */
@@ -36,8 +34,8 @@ class InceptionResult
 	/**
 	 * @param string[] $files
 	 * @param bool $onlyFiles
-	 * @param OutputStyle $consoleStyle
-	 * @param OutputInterface $errorOutput
+	 * @param Output $stdOutput
+	 * @param Output $errorOutput
 	 * @param \PHPStan\DependencyInjection\Container $container
 	 * @param bool $isDefaultLevelUsed
 	 * @param string $memoryLimitFile
@@ -46,8 +44,8 @@ class InceptionResult
 	public function __construct(
 		array $files,
 		bool $onlyFiles,
-		OutputStyle $consoleStyle,
-		OutputInterface $errorOutput,
+		Output $stdOutput,
+		Output $errorOutput,
 		Container $container,
 		bool $isDefaultLevelUsed,
 		string $memoryLimitFile,
@@ -56,7 +54,7 @@ class InceptionResult
 	{
 		$this->files = $files;
 		$this->onlyFiles = $onlyFiles;
-		$this->consoleStyle = $consoleStyle;
+		$this->stdOutput = $stdOutput;
 		$this->errorOutput = $errorOutput;
 		$this->container = $container;
 		$this->isDefaultLevelUsed = $isDefaultLevelUsed;
@@ -77,12 +75,12 @@ class InceptionResult
 		return $this->onlyFiles;
 	}
 
-	public function getConsoleStyle(): OutputStyle
+	public function getStdOutput(): Output
 	{
-		return $this->consoleStyle;
+		return $this->stdOutput;
 	}
 
-	public function getErrorOutput(): OutputInterface
+	public function getErrorOutput(): Output
 	{
 		return $this->errorOutput;
 	}

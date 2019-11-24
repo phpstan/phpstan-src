@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
+use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\File\FuzzyRelativePathHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -43,9 +44,9 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 		}
 		$output = new StreamOutput($resource);
 
-		$style = new SymfonyStyle(
-			$this->createMock(InputInterface::class),
-			$output
+		$symfonyOutput = new SymfonyOutput(
+			$output,
+			new \PHPStan\Command\Symfony\SymfonyStyle(new SymfonyStyle($this->createMock(InputInterface::class), $output))
 		);
 
 		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
@@ -54,7 +55,8 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 		$statusCode = $analyserApplication->analyse(
 			[$path],
 			true,
-			$style,
+			$symfonyOutput,
+			$symfonyOutput,
 			new TableErrorFormatter($relativePathHelper, false, false, false),
 			false,
 			false,

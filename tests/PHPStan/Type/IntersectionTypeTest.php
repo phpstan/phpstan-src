@@ -201,6 +201,42 @@ class IntersectionTypeTest extends \PHPStan\Testing\TestCase
 			]),
 			TrinaryLogic::createMaybe(),
 		];
+
+		yield [
+			new IntersectionType([
+				new ObjectType(\Traversable::class),
+				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+			]),
+			new IntersectionType([
+				new ObjectType(\Traversable::class),
+				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new IntersectionType([
+				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+			]),
+			new IntersectionType([
+				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new IntersectionType([
+				new ObjectType(\TestIntersectionTypeIsSupertypeOf\Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+			]),
+			new IntersectionType([
+				new ObjectType(\TestIntersectionTypeIsSupertypeOf\Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+			]),
+			TrinaryLogic::createYes(),
+		];
 	}
 
 	/**

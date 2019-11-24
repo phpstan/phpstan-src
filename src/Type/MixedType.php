@@ -54,6 +54,38 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic
+	{
+		if ($this->subtractedType === null) {
+			if ($this->isExplicitMixed) {
+				if ($type->isExplicitMixed) {
+					return TrinaryLogic::createYes();
+				}
+				return TrinaryLogic::createMaybe();
+			}
+
+			return TrinaryLogic::createYes();
+		}
+
+		if ($type->subtractedType === null) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		$isSuperType = $type->subtractedType->isSuperTypeOf($this->subtractedType);
+		if ($isSuperType->yes()) {
+			if ($this->isExplicitMixed) {
+				if ($type->isExplicitMixed) {
+					return TrinaryLogic::createYes();
+				}
+				return TrinaryLogic::createMaybe();
+			}
+
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($this->subtractedType === null) {

@@ -230,7 +230,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new IntegerType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -944,7 +944,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(false, new StringType()),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -955,7 +955,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					])),
 				],
 				MixedType::class,
-				'mixed~int',
+				'mixed~int=implicit',
 			],
 			[
 				[
@@ -966,7 +966,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					])),
 				],
 				MixedType::class,
-				'mixed~1',
+				'mixed~1=implicit',
 			],
 			[
 				[
@@ -977,7 +977,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					])),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -985,7 +985,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(false, new ConstantIntegerType(1)),
 				],
 				MixedType::class,
-				'mixed~1',
+				'mixed~1=implicit',
 			],
 			[
 				[
@@ -993,7 +993,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(false, new ConstantIntegerType(1)),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1004,7 +1004,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					]),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1012,7 +1012,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectWithoutClassType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1020,7 +1020,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectWithoutClassType(new ObjectType('A')),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1028,7 +1028,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectWithoutClassType(new ObjectType('A')),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1036,7 +1036,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectWithoutClassType(new ObjectType('A')),
 				],
 				MixedType::class,
-				'mixed~A',
+				'mixed~A=implicit',
 			],
 			[
 				[
@@ -1044,7 +1044,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new NullType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1052,7 +1052,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new IntegerType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1060,7 +1060,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ConstantIntegerType(1),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1068,7 +1068,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectType('Throwable'),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1076,7 +1076,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectType('Exception'),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1084,7 +1084,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ObjectType('InvalidArgumentException'),
 				],
 				MixedType::class,
-				'mixed', // should be MixedType~Exception+InvalidArgumentException
+				'mixed=implicit', // should be MixedType~Exception+InvalidArgumentException
 			],
 			[
 				[
@@ -1092,7 +1092,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(false, new NullType()),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1100,7 +1100,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(false, new NullType()),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1404,7 +1404,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1412,7 +1412,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -1420,7 +1420,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(true),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=explicit',
 			],
 			[
 				[
@@ -1495,7 +1495,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 		];
 	}
@@ -1513,10 +1513,18 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 	): void
 	{
 		$actualType = TypeCombinator::union(...$types);
+		$actualTypeDescription = $actualType->describe(VerbosityLevel::precise());
+		if ($actualType instanceof MixedType) {
+			if ($actualType->isExplicitMixed()) {
+				$actualTypeDescription .= '=explicit';
+			} else {
+				$actualTypeDescription .= '=implicit';
+			}
+		}
 
 		$this->assertSame(
 			$expectedTypeDescription,
-			$actualType->describe(VerbosityLevel::precise()),
+			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
 				static function (Type $type): string {
 					return $type->describe(VerbosityLevel::precise());
@@ -1554,10 +1562,18 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 	): void
 	{
 		$types = array_reverse($types);
-		$result = TypeCombinator::union(...$types);
+		$actualType = TypeCombinator::union(...$types);
+		$actualTypeDescription = $actualType->describe(VerbosityLevel::precise());
+		if ($actualType instanceof MixedType) {
+			if ($actualType->isExplicitMixed()) {
+				$actualTypeDescription .= '=explicit';
+			} else {
+				$actualTypeDescription .= '=implicit';
+			}
+		}
 		$this->assertSame(
 			$expectedTypeDescription,
-			$result->describe(VerbosityLevel::precise()),
+			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
 				static function (Type $type): string {
 					return $type->describe(VerbosityLevel::precise());
@@ -1565,7 +1581,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				$types
 			)))
 		);
-		$this->assertInstanceOf($expectedTypeClass, $result);
+		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
 	public function dataIntersect(): array
@@ -2130,7 +2146,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(false, new IntegerType()),
 				],
 				MixedType::class,
-				'mixed~int|string',
+				'mixed~int|string=implicit',
 			],
 			[
 				[
@@ -2205,7 +2221,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(),
 				],
 				TemplateType::class,
-				'T (function a(), parameter)',
+				'T (function a(), parameter)=explicit',
 			],
 			[
 				[
@@ -2421,7 +2437,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=implicit',
 			],
 			[
 				[
@@ -2429,7 +2445,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=explicit',
 			],
 			[
 				[
@@ -2437,7 +2453,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new MixedType(true),
 				],
 				MixedType::class,
-				'mixed',
+				'mixed=explicit',
 			],
 			[
 				[
@@ -2521,9 +2537,17 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 		string $expectedTypeDescription
 	): void
 	{
-		$result = TypeCombinator::intersect(...$types);
-		$this->assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
-		$this->assertInstanceOf($expectedTypeClass, $result);
+		$actualType = TypeCombinator::intersect(...$types);
+		$actualTypeDescription = $actualType->describe(VerbosityLevel::precise());
+		if ($actualType instanceof MixedType) {
+			if ($actualType->isExplicitMixed()) {
+				$actualTypeDescription .= '=explicit';
+			} else {
+				$actualTypeDescription .= '=implicit';
+			}
+		}
+		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
+		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
 	/**
@@ -2538,9 +2562,17 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 		string $expectedTypeDescription
 	): void
 	{
-		$result = TypeCombinator::intersect(...array_reverse($types));
-		$this->assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
-		$this->assertInstanceOf($expectedTypeClass, $result);
+		$actualType = TypeCombinator::intersect(...array_reverse($types));
+		$actualTypeDescription = $actualType->describe(VerbosityLevel::precise());
+		if ($actualType instanceof MixedType) {
+			if ($actualType->isExplicitMixed()) {
+				$actualTypeDescription .= '=explicit';
+			} else {
+				$actualTypeDescription .= '=implicit';
+			}
+		}
+		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
+		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
 	public function dataRemove(): array

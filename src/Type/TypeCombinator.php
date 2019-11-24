@@ -283,30 +283,40 @@ class TypeCombinator
 					}
 				}
 
-				if (
-					$types[$i] instanceof SubtractableType
-					&& $types[$i]->getTypeWithoutSubtractedType()->isSuperTypeOf($types[$j])->yes()
-				) {
-					$subtractedType = null;
-					if ($types[$j] instanceof SubtractableType) {
-						$subtractedType = $types[$j]->getSubtractedType();
+				if ($types[$i] instanceof SubtractableType) {
+					$typeWithoutSubtractedTypeA = $types[$i]->getTypeWithoutSubtractedType();
+					if ($typeWithoutSubtractedTypeA instanceof MixedType && $types[$j] instanceof MixedType) {
+						$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOfMixed($types[$j]);
+					} else {
+						$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOf($types[$j]);
 					}
-					$types[$i] = self::intersectWithSubtractedType($types[$i], $subtractedType);
-					array_splice($types, $j--, 1);
-					continue 1;
+					if ($isSuperType->yes()) {
+						$subtractedType = null;
+						if ($types[$j] instanceof SubtractableType) {
+							$subtractedType = $types[$j]->getSubtractedType();
+						}
+						$types[$i] = self::intersectWithSubtractedType($types[$i], $subtractedType);
+						array_splice($types, $j--, 1);
+						continue 1;
+					}
 				}
 
-				if (
-					$types[$j] instanceof SubtractableType
-					&& $types[$j]->getTypeWithoutSubtractedType()->isSuperTypeOf($types[$i])->yes()
-				) {
-					$subtractedType = null;
-					if ($types[$i] instanceof SubtractableType) {
-						$subtractedType = $types[$i]->getSubtractedType();
+				if ($types[$j] instanceof SubtractableType) {
+					$typeWithoutSubtractedTypeB = $types[$j]->getTypeWithoutSubtractedType();
+					if ($typeWithoutSubtractedTypeB instanceof MixedType && $types[$i] instanceof MixedType) {
+						$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOfMixed($types[$i]);
+					} else {
+						$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOf($types[$i]);
 					}
-					$types[$j] = self::intersectWithSubtractedType($types[$j], $subtractedType);
-					array_splice($types, $i--, 1);
-					continue 2;
+					if ($isSuperType->yes()) {
+						$subtractedType = null;
+						if ($types[$i] instanceof SubtractableType) {
+							$subtractedType = $types[$i]->getSubtractedType();
+						}
+						$types[$j] = self::intersectWithSubtractedType($types[$j], $subtractedType);
+						array_splice($types, $i--, 1);
+						continue 2;
+					}
 				}
 
 				if (
@@ -580,7 +590,13 @@ class TypeCombinator
 		for ($i = 0; $i < count($types); $i++) {
 			for ($j = $i + 1; $j < count($types); $j++) {
 				if ($types[$j] instanceof SubtractableType) {
-					$isSuperTypeSubtractableA = $types[$j]->getTypeWithoutSubtractedType()->isSuperTypeOf($types[$i]);
+					$typeWithoutSubtractedTypeA = $types[$j]->getTypeWithoutSubtractedType();
+
+					if ($typeWithoutSubtractedTypeA instanceof MixedType && $types[$i] instanceof MixedType) {
+						$isSuperTypeSubtractableA = $typeWithoutSubtractedTypeA->isSuperTypeOfMixed($types[$i]);
+					} else {
+						$isSuperTypeSubtractableA = $typeWithoutSubtractedTypeA->isSuperTypeOf($types[$i]);
+					}
 					if ($isSuperTypeSubtractableA->yes()) {
 						$types[$i] = self::unionWithSubtractedType($types[$i], $types[$j]->getSubtractedType());
 						array_splice($types, $j--, 1);
@@ -589,7 +605,13 @@ class TypeCombinator
 				}
 
 				if ($types[$i] instanceof SubtractableType) {
-					$isSuperTypeSubtractableB = $types[$i]->getTypeWithoutSubtractedType()->isSuperTypeOf($types[$j]);
+					$typeWithoutSubtractedTypeB = $types[$i]->getTypeWithoutSubtractedType();
+
+					if ($typeWithoutSubtractedTypeB instanceof MixedType && $types[$j] instanceof MixedType) {
+						$isSuperTypeSubtractableB = $typeWithoutSubtractedTypeB->isSuperTypeOfMixed($types[$j]);
+					} else {
+						$isSuperTypeSubtractableB = $typeWithoutSubtractedTypeB->isSuperTypeOf($types[$j]);
+					}
 					if ($isSuperTypeSubtractableB->yes()) {
 						$types[$j] = self::unionWithSubtractedType($types[$j], $types[$i]->getSubtractedType());
 						array_splice($types, $i--, 1);

@@ -4,6 +4,9 @@ namespace PHPStan\DependencyInjection\Nette;
 
 use PHPStan\DependencyInjection\Container;
 
+/**
+ * @internal
+ */
 class NetteContainer implements Container
 {
 

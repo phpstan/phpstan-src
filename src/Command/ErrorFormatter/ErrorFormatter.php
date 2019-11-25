@@ -3,6 +3,7 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\Output;
 
 interface ErrorFormatter
 {
@@ -11,12 +12,12 @@ interface ErrorFormatter
 	 * Formats the errors and outputs them to the console.
 	 *
 	 * @param \PHPStan\Command\AnalysisResult $analysisResult
-	 * @param \Symfony\Component\Console\Style\OutputStyle $style
+	 * @param \PHPStan\Command\Output $output
 	 * @return int Error code.
 	 */
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		\Symfony\Component\Console\Style\OutputStyle $style
+		Output $output
 	): int;
 
 }

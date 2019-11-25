@@ -206,7 +206,7 @@ class JsonErrorFormatterTest extends TestBaseFormatter
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getErrorConsoleStyle()
+			$this->getOutput()
 		), $message);
 
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent());
@@ -234,7 +234,7 @@ class JsonErrorFormatterTest extends TestBaseFormatter
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getErrorConsoleStyle()
+			$this->getOutput()
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: JSON do not match', $message));

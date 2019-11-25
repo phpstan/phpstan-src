@@ -3,14 +3,14 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalysisResult;
-use Symfony\Component\Console\Style\OutputStyle;
+use PHPStan\Command\Output;
 
 class RawErrorFormatter implements ErrorFormatter
 {
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		OutputStyle $style
+		Output $output
 	): int
 	{
 		if (!$analysisResult->hasErrors()) {
@@ -18,11 +18,12 @@ class RawErrorFormatter implements ErrorFormatter
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
-			$style->writeln(sprintf('?:?:%s', $notFileSpecificError));
+			$output->writeRaw(sprintf('?:?:%s', $notFileSpecificError));
+			$output->writeLineFormatted('');
 		}
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-			$style->writeln(
+			$output->writeRaw(
 				sprintf(
 					'%s:%d:%s',
 					$fileSpecificError->getFile(),
@@ -30,6 +31,7 @@ class RawErrorFormatter implements ErrorFormatter
 					$fileSpecificError->getMessage()
 				)
 			);
+			$output->writeLineFormatted('');
 		}
 
 		return 1;

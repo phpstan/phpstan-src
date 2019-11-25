@@ -5,6 +5,9 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\ErrorsConsoleStyle;
+use PHPStan\Command\Output;
+use PHPStan\Command\Symfony\SymfonyOutput;
+use PHPStan\Command\Symfony\SymfonyStyle;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
 
@@ -16,8 +19,8 @@ abstract class TestBaseFormatter extends \PHPStan\Testing\TestCase
 	/** @var StreamOutput */
 	private $outputStream;
 
-	/** @var ErrorsConsoleStyle */
-	private $errorConsoleStyle;
+	/** @var Output */
+	private $output;
 
 	protected function setUp(): void
 	{
@@ -30,7 +33,8 @@ abstract class TestBaseFormatter extends \PHPStan\Testing\TestCase
 
 		$this->outputStream = new StreamOutput($resource);
 
-		$this->errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $this->outputStream);
+		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $this->outputStream);
+		$this->output = new SymfonyOutput($this->outputStream, new SymfonyStyle($errorConsoleStyle));
 	}
 
 	protected function getOutputContent(): string
@@ -45,9 +49,9 @@ abstract class TestBaseFormatter extends \PHPStan\Testing\TestCase
 		return $this->rtrimMultiline($contents);
 	}
 
-	protected function getErrorConsoleStyle(): ErrorsConsoleStyle
+	protected function getOutput(): Output
 	{
-		return $this->errorConsoleStyle;
+		return $this->output;
 	}
 
 	protected function getAnalysisResult(int $numFileErrors, int $numGenericErrors): AnalysisResult

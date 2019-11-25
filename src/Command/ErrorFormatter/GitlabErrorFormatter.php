@@ -4,8 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\OutputStyle;
+use PHPStan\Command\Output;
 
 /**
  * @see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#implementing-a-custom-tool
@@ -13,7 +12,7 @@ use Symfony\Component\Console\Style\OutputStyle;
 class GitlabErrorFormatter implements ErrorFormatter
 {
 
-	public function formatErrors(AnalysisResult $analysisResult, OutputStyle $style): int
+	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
 		$errorsArray = [];
 
@@ -60,7 +59,7 @@ class GitlabErrorFormatter implements ErrorFormatter
 
 		$json = Json::encode($errorsArray, Json::PRETTY);
 
-		$style->write($json, false, OutputInterface::OUTPUT_RAW);
+		$output->writeRaw($json);
 
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}

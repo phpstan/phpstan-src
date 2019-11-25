@@ -3,8 +3,8 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
-use Symfony\Component\Console\Style\OutputStyle;
 
 class CheckstyleErrorFormatter implements ErrorFormatter
 {
@@ -17,50 +17,52 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 		$this->relativePathHelper = $relativePathHelper;
 	}
 
-	/**
-	 * Formats the errors and outputs them to the console.
-	 *
-	 * @param \PHPStan\Command\AnalysisResult $analysisResult
-	 * @param \Symfony\Component\Console\Style\OutputStyle $style
-	 * @return int Error code.
-	 */
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		OutputStyle $style
+		Output $output
 	): int
 	{
-		$style->writeln('<?xml version="1.0" encoding="UTF-8"?>');
-		$style->writeln('<checkstyle>');
+		$output->writeRaw('<?xml version="1.0" encoding="UTF-8"?>');
+		$output->writeLineFormatted('');
+		$output->writeRaw('<checkstyle>');
+		$output->writeLineFormatted('');
 
 		foreach ($this->groupByFile($analysisResult) as $relativeFilePath => $errors) {
-			$style->writeln(sprintf(
+			$output->writeRaw(sprintf(
 				'<file name="%s">',
 				$this->escape($relativeFilePath)
 			));
+			$output->writeLineFormatted('');
 
 			foreach ($errors as $error) {
-				$style->writeln(sprintf(
+				$output->writeRaw(sprintf(
 					'  <error line="%d" column="1" severity="error" message="%s" />',
 					$this->escape((string) $error->getLine()),
 					$this->escape((string) $error->getMessage())
 				));
+				$output->writeLineFormatted('');
 			}
-			$style->writeln('</file>');
+			$output->writeRaw('</file>');
+			$output->writeLineFormatted('');
 		}
 
 		$notFileSpecificErrors = $analysisResult->getNotFileSpecificErrors();
 
 		if (count($notFileSpecificErrors) > 0) {
-			$style->writeln('<file>');
+			$output->writeRaw('<file>');
+			$output->writeLineFormatted('');
 
 			foreach ($notFileSpecificErrors as $error) {
-				$style->writeln(sprintf('  <error severity="error" message="%s" />', $this->escape($error)));
+				$output->writeRaw(sprintf('  <error severity="error" message="%s" />', $this->escape($error)));
+				$output->writeLineFormatted('');
 			}
 
-			$style->writeln('</file>');
+			$output->writeRaw('</file>');
+			$output->writeLineFormatted('');
 		}
 
-		$style->writeln('</checkstyle>');
+		$output->writeRaw('</checkstyle>');
+		$output->writeLineFormatted('');
 
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}

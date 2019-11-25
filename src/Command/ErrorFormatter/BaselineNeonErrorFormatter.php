@@ -4,9 +4,8 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use Nette\Neon\Neon;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\OutputStyle;
 use function preg_quote;
 
 class BaselineNeonErrorFormatter implements ErrorFormatter
@@ -22,15 +21,15 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		OutputStyle $style
+		Output $output
 	): int
 	{
 		if (!$analysisResult->hasErrors()) {
-			$style->writeln(Neon::encode([
+			$output->writeRaw(Neon::encode([
 				'parameters' => [
 					'ignoreErrors' => [],
 				],
-			], Neon::BLOCK), OutputInterface::OUTPUT_RAW);
+			], Neon::BLOCK));
 			return 0;
 		}
 
@@ -63,11 +62,11 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 			}
 		}
 
-		$style->writeln(Neon::encode([
+		$output->writeRaw(Neon::encode([
 			'parameters' => [
 				'ignoreErrors' => $errorsToOutput,
 			],
-		], Neon::BLOCK), OutputInterface::OUTPUT_RAW);
+		], Neon::BLOCK));
 
 		return 1;
 	}

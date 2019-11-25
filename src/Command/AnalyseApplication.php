@@ -6,10 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Scope;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
-use PHPStan\Command\Symfony\SymfonyOutput;
-use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\Type\MixedType;
-use Symfony\Component\Console\Style\OutputStyle;
 
 class AnalyseApplication
 {
@@ -147,15 +144,6 @@ class AnalyseApplication
 			}
 		}
 
-		if (!$stdOutput instanceof SymfonyOutput || !$stdOutput->getStyle() instanceof SymfonyStyle) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
-		$errorFormatterStyle = $stdOutput->getStyle()->getSymfonyStyle();
-		if (!$errorFormatterStyle instanceof OutputStyle) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
 		return $errorFormatter->formatErrors(
 			new AnalysisResult(
 				$fileSpecificErrors,
@@ -164,7 +152,7 @@ class AnalyseApplication
 				$hasInferrablePropertyTypesFromConstructor,
 				$projectConfigFile
 			),
-			$errorFormatterStyle
+			$stdOutput
 		);
 	}
 

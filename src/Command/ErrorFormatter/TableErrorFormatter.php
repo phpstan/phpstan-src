@@ -4,8 +4,8 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
-use Symfony\Component\Console\Style\OutputStyle;
 
 class TableErrorFormatter implements ErrorFormatter
 {
@@ -37,7 +37,7 @@ class TableErrorFormatter implements ErrorFormatter
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		OutputStyle $style
+		Output $output
 	): int
 	{
 		$projectConfigFile = 'phpstan.neon';
@@ -45,26 +45,28 @@ class TableErrorFormatter implements ErrorFormatter
 			$projectConfigFile = $this->relativePathHelper->getRelativePath($analysisResult->getProjectConfigFile());
 		}
 
+		$style = $output->getStyle();
+
 		if (!$analysisResult->hasErrors()) {
 			$style->success('No errors');
 			if ($this->showTipsOfTheDay) {
 				if ($analysisResult->isDefaultLevelUsed()) {
-					$style->writeln('💡 Tip of the Day:');
-					$style->writeln(sprintf(
+					$output->writeLineFormatted('💡 Tip of the Day:');
+					$output->writeLineFormatted(sprintf(
 						"PHPStan is performing only the most basic checks.\nYou can pass a higher rule level through the <fg=cyan>--%s</> option\n(the default and current level is %d) to analyse code more thoroughly.",
 						AnalyseCommand::OPTION_LEVEL,
 						AnalyseCommand::DEFAULT_LEVEL
 					));
-					$style->writeln('');
+					$output->writeLineFormatted('');
 				} elseif (
 					!$this->checkThisOnly
 					&& $analysisResult->hasInferrablePropertyTypesFromConstructor()
 					&& !$this->inferPrivatePropertyTypeFromConstructor
 				) {
-					$style->writeln('💡 Tip of the Day:');
-					$style->writeln("One or more properties in your code do not have a phpDoc with a type\nbut it could be inferred from the constructor to find more bugs.");
-					$style->writeln(sprintf('Use <fg=cyan>inferPrivatePropertyTypeFromConstructor: true</> in your <fg=cyan>%s</> to try it out!', $projectConfigFile));
-					$style->writeln('');
+					$output->writeLineFormatted('💡 Tip of the Day:');
+					$output->writeLineFormatted("One or more properties in your code do not have a phpDoc with a type\nbut it could be inferred from the constructor to find more bugs.");
+					$output->writeLineFormatted(sprintf('Use <fg=cyan>inferPrivatePropertyTypeFromConstructor: true</> in your <fg=cyan>%s</> to try it out!', $projectConfigFile));
+					$output->writeLineFormatted('');
 				}
 			}
 

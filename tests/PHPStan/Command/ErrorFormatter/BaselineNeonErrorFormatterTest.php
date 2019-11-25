@@ -114,7 +114,7 @@ class BaselineNeonErrorFormatterTest extends TestBaseFormatter
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getErrorConsoleStyle()
+			$this->getOutput()
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
@@ -134,7 +134,7 @@ class BaselineNeonErrorFormatterTest extends TestBaseFormatter
 		);
 		$formatter->formatErrors(
 			$result,
-			$this->getErrorConsoleStyle()
+			$this->getOutput()
 		);
 
 		self::assertSame(

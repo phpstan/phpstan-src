@@ -83,9 +83,6 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
-/**
- * @internal
- */
 class MutatingScope implements Scope
 {
 

@@ -22,17 +22,22 @@ class TableErrorFormatter implements ErrorFormatter
 	/** @var bool */
 	private $inferPrivatePropertyTypeFromConstructor;
 
+	/** @var bool */
+	private $checkMissingTypehints;
+
 	public function __construct(
 		RelativePathHelper $relativePathHelper,
 		bool $showTipsOfTheDay,
 		bool $checkThisOnly,
-		bool $inferPrivatePropertyTypeFromConstructor
+		bool $inferPrivatePropertyTypeFromConstructor,
+		bool $checkMissingTypehints
 	)
 	{
 		$this->relativePathHelper = $relativePathHelper;
 		$this->showTipsOfTheDay = $showTipsOfTheDay;
 		$this->checkThisOnly = $checkThisOnly;
 		$this->inferPrivatePropertyTypeFromConstructor = $inferPrivatePropertyTypeFromConstructor;
+		$this->checkMissingTypehints = $checkMissingTypehints;
 	}
 
 	public function formatErrors(
@@ -47,6 +52,21 @@ class TableErrorFormatter implements ErrorFormatter
 
 		$style = $output->getStyle();
 
+		$showInferPropertiesTip = function () use ($output, $analysisResult, $projectConfigFile): void {
+			if (
+				$this->checkThisOnly
+				|| !$analysisResult->hasInferrablePropertyTypesFromConstructor()
+				|| $this->inferPrivatePropertyTypeFromConstructor
+			) {
+				return;
+			}
+
+			$output->writeLineFormatted('💡 Tip of the Day:');
+			$output->writeLineFormatted("One or more properties in your code do not have a phpDoc with a type\nbut it could be inferred from the constructor to find more bugs.");
+			$output->writeLineFormatted(sprintf('Use <fg=cyan>inferPrivatePropertyTypeFromConstructor: true</> in your <fg=cyan>%s</> to try it out!', $projectConfigFile));
+			$output->writeLineFormatted('');
+		};
+
 		if (!$analysisResult->hasErrors()) {
 			$style->success('No errors');
 			if ($this->showTipsOfTheDay) {
@@ -58,15 +78,8 @@ class TableErrorFormatter implements ErrorFormatter
 						AnalyseCommand::DEFAULT_LEVEL
 					));
 					$output->writeLineFormatted('');
-				} elseif (
-					!$this->checkThisOnly
-					&& $analysisResult->hasInferrablePropertyTypesFromConstructor()
-					&& !$this->inferPrivatePropertyTypeFromConstructor
-				) {
-					$output->writeLineFormatted('💡 Tip of the Day:');
-					$output->writeLineFormatted("One or more properties in your code do not have a phpDoc with a type\nbut it could be inferred from the constructor to find more bugs.");
-					$output->writeLineFormatted(sprintf('Use <fg=cyan>inferPrivatePropertyTypeFromConstructor: true</> in your <fg=cyan>%s</> to try it out!', $projectConfigFile));
-					$output->writeLineFormatted('');
+				} else {
+					$showInferPropertiesTip();
 				}
 			}
 
@@ -110,6 +123,11 @@ class TableErrorFormatter implements ErrorFormatter
 		}
 
 		$style->error(sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount()));
+
+		if ($this->checkMissingTypehints && $this->showTipsOfTheDay) {
+			$showInferPropertiesTip();
+		}
+
 		return 1;
 	}
 

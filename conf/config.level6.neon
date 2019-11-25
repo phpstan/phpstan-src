@@ -4,6 +4,7 @@ includes:
 parameters:
 	checkGenericClassInNonGenericObjectType: true
 	checkMissingVarTagTypehint: true
+	checkMissingTypehints: true
 
 rules:
 	- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule

@@ -57,7 +57,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 			true,
 			$symfonyOutput,
 			$symfonyOutput,
-			new TableErrorFormatter($relativePathHelper, false, false, false),
+			new TableErrorFormatter($relativePathHelper, false, false, false, true),
 			false,
 			false,
 			null

@@ -57,6 +57,7 @@ parameters:
 		- ../stubs/iterable.php
 		- ../stubs/ArrayObject.php
 		- ../stubs/WeakReference.php
+		- ../stubs/ext-ds.php
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

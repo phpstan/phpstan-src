@@ -271,12 +271,16 @@ class ArrayType implements Type
 			return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
 		}
 
-		if ($offsetType instanceof IntegerType || $offsetType instanceof FloatType || $offsetType instanceof BooleanType) {
+		if ($offsetType instanceof IntegerType) {
+			return $offsetType;
+		}
+
+		if ($offsetType instanceof FloatType || $offsetType instanceof BooleanType) {
 			return new IntegerType();
 		}
 
 		if ($offsetType instanceof StringType) {
-			return new StringType();
+			return $offsetType;
 		}
 
 		return new UnionType([new IntegerType(), new StringType()]);

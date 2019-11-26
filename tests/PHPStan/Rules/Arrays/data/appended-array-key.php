@@ -47,3 +47,24 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	/** @var array<class-string<\stdClass>, true> */
+	private $classStringKey;
+
+	/**
+	 * @param class-string<\stdClass> $s
+	 */
+	public function doFoo(string $s)
+	{
+		$this->classStringKey[$s] = true;
+	}
+
+	public function doBar()
+	{
+		$this->classStringKey[\stdClass::class] = true;
+	}
+
+}

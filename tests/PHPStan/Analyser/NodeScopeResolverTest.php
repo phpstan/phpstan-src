@@ -9513,6 +9513,13 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	public function dataBug2577(): array
+	{
+		require_once __DIR__ . '/data/bug2577.php';
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug2577.php');
+	}
+
 	public function dataGenerics(): array
 	{
 		require_once __DIR__ . '/data/generics.php';
@@ -9560,6 +9567,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	}
 
 	/**
+	 * @dataProvider dataBug2577
 	 * @dataProvider dataGenerics
 	 * @dataProvider dataGenericClassStringType
 	 * @dataProvider dataInstanceOf

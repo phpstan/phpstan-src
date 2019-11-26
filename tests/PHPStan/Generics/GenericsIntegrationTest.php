@@ -14,6 +14,7 @@ class GenericsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 			['varyingAcceptor'],
 			['classes'],
 			['variance'],
+			['bug2577'],
 		];
 	}
 

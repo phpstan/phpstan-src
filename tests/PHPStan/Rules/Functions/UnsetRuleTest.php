@@ -7,6 +7,7 @@ namespace PHPStan\Rules\Functions;
  */
 class UnsetRuleTest extends \PHPStan\Testing\RuleTestCase
 {
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new UnsetRule(true);
@@ -46,4 +47,5 @@ class UnsetRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 		]);
 	}
+
 }

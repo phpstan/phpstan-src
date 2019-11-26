@@ -19,6 +19,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				$ruleLevelHelper,
 				true,
 				true,
+				true,
 				true
 			),
 			$ruleLevelHelper,

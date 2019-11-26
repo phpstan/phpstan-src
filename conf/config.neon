@@ -354,6 +354,7 @@ services:
 			checkArgumentTypes: %checkFunctionArgumentTypes%
 			checkArgumentsPassedByReference: %checkArgumentsPassedByReference%
 			checkExtraArguments: %checkExtraArguments%
+			checkMissingTypehints: %checkMissingTypehints%
 
 	-
 		class: PHPStan\Rules\FunctionDefinitionCheck

@@ -3,5 +3,15 @@
         "message": "Function PHPStan\\Generics\\Functions\\testF() has no return typehint specified.",
         "line": 27,
         "ignorable": true
+    },
+    {
+        "message": "Unable to resolve the template type B in call to function PHPStan\\Generics\\Functions\\f",
+        "line": 38,
+        "ignorable": true
+    },
+    {
+        "message": "Unable to resolve the template type B in call to function PHPStan\\Generics\\Functions\\f",
+        "line": 39,
+        "ignorable": true
     }
 ]

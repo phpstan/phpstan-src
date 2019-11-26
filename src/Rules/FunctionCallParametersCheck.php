@@ -29,17 +29,22 @@ class FunctionCallParametersCheck
 	/** @var bool */
 	private $checkExtraArguments;
 
+	/** @var bool */
+	private $checkMissingTypehints;
+
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
 		bool $checkArgumentTypes,
 		bool $checkArgumentsPassedByReference,
-		bool $checkExtraArguments
+		bool $checkExtraArguments,
+		bool $checkMissingTypehints
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->checkArgumentTypes = $checkArgumentTypes;
 		$this->checkArgumentsPassedByReference = $checkArgumentsPassedByReference;
 		$this->checkExtraArguments = $checkExtraArguments;
+		$this->checkMissingTypehints = $checkMissingTypehints;
 	}
 
 	/**
@@ -219,12 +224,14 @@ class FunctionCallParametersCheck
 			))->build();
 		}
 
-		foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
-			if (!($type instanceof ErrorType) && !($type instanceof NeverType)) {
-				continue;
-			}
+		if ($this->checkMissingTypehints) {
+			foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
+				if (!($type instanceof ErrorType) && !($type instanceof NeverType)) {
+					continue;
+				}
 
-			$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->build();
+			}
 		}
 
 		return $errors;

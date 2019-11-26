@@ -10,7 +10,7 @@
         "ignorable": true
     },
     {
-        "message": "Cannot access offset 'b' on array('a' => 1)|stdClass.",
+        "message": "Offset 'b' does not exist on array('a' => 1)|stdClass.",
         "line": 28,
         "ignorable": true
     }

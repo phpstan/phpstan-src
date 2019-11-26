@@ -40,4 +40,14 @@ class Foo
 		echo $arr['b'];
 	}
 
+	/**
+	 * @param array<int, string>|false $a
+	 * @param array<int, string>|null $b
+	 */
+	public function doBaz($a, $b): void
+	{
+		echo $a[0];
+		echo $b[0];
+	}
+
 }

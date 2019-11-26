@@ -47,24 +47,20 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 			$unknownClassPattern = 'Access to an offset on an unknown class %s.';
 		}
 
-		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+		$isOffsetAccessibleTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->var,
 			$unknownClassPattern,
-			static function (Type $type) use ($dimType): bool {
-				if ($dimType === null) {
-					return $type->isOffsetAccessible()->yes();
-				}
-
-				return $type->isOffsetAccessible()->yes() && $type->hasOffsetValueType($dimType)->yes();
+			static function (Type $type): bool {
+				return $type->isOffsetAccessible()->yes();
 			}
 		);
-		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
-			return $typeResult->getUnknownClassErrors();
+		$isOffsetAccessibleType = $isOffsetAccessibleTypeResult->getType();
+		if ($isOffsetAccessibleType instanceof ErrorType) {
+			return $isOffsetAccessibleTypeResult->getUnknownClassErrors();
 		}
 
-		$isOffsetAccessible = $type->isOffsetAccessible();
+		$isOffsetAccessible = $isOffsetAccessibleType->isOffsetAccessible();
 
 		if ($scope->isInExpressionAssign($node) && !$isOffsetAccessible->no()) {
 			return [];
@@ -76,7 +72,7 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 					RuleErrorBuilder::message(sprintf(
 						'Cannot access offset %s on %s.',
 						$dimType->describe(VerbosityLevel::value()),
-						$type->describe(VerbosityLevel::value())
+						$isOffsetAccessibleType->describe(VerbosityLevel::value())
 					))->build(),
 				];
 			}
@@ -84,13 +80,26 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access an offset on %s.',
-					$type->describe(VerbosityLevel::typeOnly())
+					$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly())
 				))->build(),
 			];
 		}
 
 		if ($dimType === null) {
 			return [];
+		}
+
+		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$node->var,
+			$unknownClassPattern,
+			static function (Type $type) use ($dimType): bool {
+				return $type->hasOffsetValueType($dimType)->yes();
+			}
+		);
+		$type = $typeResult->getType();
+		if ($type instanceof ErrorType) {
+			return $typeResult->getUnknownClassErrors();
 		}
 
 		$hasOffsetValueType = $type->hasOffsetValueType($dimType);

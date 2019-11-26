@@ -1580,7 +1580,7 @@ class MutatingScope implements Scope
 		if ($node instanceof PropertyFetch && $node->name instanceof Node\Identifier) {
 			$propertyFetchedOnType = $this->getType($node->var);
 			$propertyName = $node->name->name;
-			$type = TypeTraverser::map($propertyFetchedOnType, function (Type $type, callable $traverse) use ($propertyName, $node): Type {
+			$map = function (Type $type, callable $traverse) use ($propertyName, $node): Type {
 				if ($type instanceof UnionType) {
 					return $traverse($type);
 				}
@@ -1608,11 +1608,13 @@ class MutatingScope implements Scope
 					$propertyName,
 					$node
 				) ?? new NeverType();
-			});
-			if ($type instanceof NeverType) {
+			};
+
+			$returnType = TypeTraverser::map($propertyFetchedOnType, $map);
+			if ($returnType instanceof NeverType) {
 				return new ErrorType();
 			}
-			return $type;
+			return $returnType;
 		}
 
 		if (
@@ -3380,10 +3382,23 @@ class MutatingScope implements Scope
 		$propertyReflection = $fetchedOnType->getProperty($propertyName, $this);
 
 		if ($this->isInExpressionAssign($node)) {
-			return $propertyReflection->getWritableType();
+			$propertyType = $propertyReflection->getWritableType();
+		} else {
+			$propertyType = $propertyReflection->getReadableType();
 		}
 
-		return $propertyReflection->getReadableType();
+		$fetchedOnThis = $fetchedOnType instanceof ThisType && $this->isInClass();
+
+		return TypeTraverser::map($propertyType, function (Type $propertyType, callable $traverse) use ($fetchedOnType, $fetchedOnThis): Type {
+			if ($propertyType instanceof StaticType) {
+				if ($fetchedOnThis && $this->isInClass()) {
+					return $traverse($propertyType->changeBaseClass($this->getClassReflection()->getName()));
+				}
+				return $traverse($fetchedOnType);
+			}
+
+			return $traverse($propertyType);
+		});
 	}
 
 }

@@ -21,6 +21,14 @@ use PHPStan\Type\VerbosityLevel;
 class TooWideMethodReturnTypehintRule implements Rule
 {
 
+	/** @var bool */
+	private $checkProtectedAndPublicMethods;
+
+	public function __construct(bool $checkProtectedAndPublicMethods)
+	{
+		$this->checkProtectedAndPublicMethods = $checkProtectedAndPublicMethods;
+	}
+
 	public function getNodeType(): string
 	{
 		return MethodReturnStatementsNode::class;
@@ -34,6 +42,9 @@ class TooWideMethodReturnTypehintRule implements Rule
 		}
 		$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
 		if (!$method->isPrivate()) {
+			if (!$this->checkProtectedAndPublicMethods) {
+				return [];
+			}
 			if ($isFirstDeclaration && !$method->getDeclaringClass()->isFinal() && !$method->isFinal()->yes()) {
 				return [];
 			}

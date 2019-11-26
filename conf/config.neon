@@ -27,6 +27,7 @@ parameters:
 	checkMissingClosureNativeReturnTypehintRule: false
 	checkPossibleCovariantMethodReturnType: true
 	checkMissingTypehints: false
+	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	inferPrivatePropertyTypeFromConstructor: false
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
@@ -125,6 +126,7 @@ parametersSchema:
 	checkMissingClosureNativeReturnTypehintRule: bool()
 	checkPossibleCovariantMethodReturnType: bool()
 	checkMissingTypehints: bool()
+	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
 	tipsOfTheDay: bool()
 	reportMaybes: bool()

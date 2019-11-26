@@ -8,6 +8,9 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Unset_>
+ */
 class UnsetRule implements \PHPStan\Rules\Rule
 {
 
@@ -26,6 +29,10 @@ class UnsetRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$node instanceof Node\Stmt\Unset_) {
+			return [];
+		}
+
 		/** @var Node\Stmt\Unset_ $node */
 		$functionArguments = $node->vars;
 		$messages = [];
@@ -37,9 +44,14 @@ class UnsetRule implements \PHPStan\Rules\Rule
 		return $messages;
 	}
 
+	/**
+	 * @param Node $node
+	 * @param Scope $scope
+	 * @param string[] $messages
+	 */
 	private function canBeUnset(Node $node, Scope $scope, array &$messages): void
 	{
-		if ($node instanceof Node\Expr\Variable) {
+		if ($node instanceof Node\Expr\Variable && is_string($node->name)) {
 			$scopeHasVariable = $scope->hasVariableType($node->name);
 
 			if ($scopeHasVariable->no()) {
@@ -51,9 +63,7 @@ class UnsetRule implements \PHPStan\Rules\Rule
 					sprintf('Call to function unset() contains possibly undefined variable $%s.', $node->name)
 				)->line($node->getLine())->build();
 			}
-		}
-
-		if ($node instanceof Node\Expr\ArrayDimFetch) {
+		} elseif ($node instanceof Node\Expr\ArrayDimFetch && $node->dim !== null) {
 			$type = $scope->getType($node->var);
 			$dimType = $scope->getType($node->dim);
 

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Functions;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<UnsetRule>
+ */
 class UnsetRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 	protected function getRule(): \PHPStan\Rules\Rule

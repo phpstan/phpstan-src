@@ -1,31 +1,32 @@
 <?php
 
-unset($notSetVariable);
+function unsetInaccessible ()
+{
 
-$scalar = 3;
+	unset($notSetVariable);
 
-unset($scalar['a']);
+	$scalar = 3;
 
-$singleDimArray = ['a' => 1];
+	unset($scalar['a']);
 
-unset($singleDimArray['a']['b']);
+	$singleDimArray = ['a' => 1];
 
-$multiDimArray = ['a' => ['b' => 1]];
+	unset($singleDimArray['a']['b']);
 
-unset($multiDimArray['a']['b']['c'], $scalar, $singleDimArray['a']['b']);
+	$multiDimArray = ['a' => ['b' => 1]];
 
-if (rand()) {
-	$maybeSet = 1;
+	unset($multiDimArray['a']['b']['c'], $scalar, $singleDimArray['a']['b']);
+
 }
 
-unset($maybeSet);
-
 /** @param iterable<int> $iterable */
-function unsetOnMaybeIterable(iterable $iterable) {
+function unsetOnMaybeIterable(iterable $iterable)
+{
 	unset($iterable['string']);
 }
 
 /** @param iterable<int, int> $iterable */
-function unsetOnYesIterable(iterable $iterable) {
+function unsetOnYesIterable(iterable $iterable)
+{
 	unset($iterable['string']);
 }

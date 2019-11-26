@@ -10,7 +10,7 @@ class UnsetRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new UnsetRule(true);
+		return new UnsetRule();
 	}
 
 	public function testUnsetRule(): void
@@ -19,31 +19,27 @@ class UnsetRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/unset.php'], [
 			[
 				'Call to function unset() contains undefined variable $notSetVariable.',
-				3,
+				6,
 			],
 			[
 				'Cannot unset offset \'a\' on 3.',
-				7,
+				10,
 			],
 			[
 				'Cannot unset offset \'b\' on 1.',
-				11,
+				14,
 			],
 			[
 				'Cannot unset offset \'c\' on 1.',
-				15,
+				18,
 			],
 			[
 				'Cannot unset offset \'b\' on 1.',
-				15,
-			],
-			[
-				'Call to function unset() contains possibly undefined variable $maybeSet.',
-				21,
+				18,
 			],
 			[
 				'Cannot unset offset \'string\' on iterable<int, int>.',
-				30,
+				31,
 			],
 		]);
 	}

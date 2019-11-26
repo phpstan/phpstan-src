@@ -155,6 +155,15 @@ class IterableType implements CompoundType
 		return sprintf('iterable<%s, %s>', $this->keyType->describe($level), $this->itemType->describe($level));
 	}
 
+	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
+	{
+		if ($this->getIterableKeyType()->isSuperTypeOf($offsetType)->no()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

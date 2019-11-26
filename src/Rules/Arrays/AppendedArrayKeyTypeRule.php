@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
@@ -18,18 +17,13 @@ use PHPStan\Type\VerbosityLevel;
 class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var PropertyReflectionFinder */
-	private $propertyReflectionFinder;
-
 	/** @var bool */
 	private $checkUnionTypes;
 
 	public function __construct(
-		PropertyReflectionFinder $propertyReflectionFinder,
 		bool $checkUnionTypes
 	)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
 		$this->checkUnionTypes = $checkUnionTypes;
 	}
 
@@ -51,12 +45,7 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->var->var, $scope);
-		if ($propertyReflection === null) {
-			return [];
-		}
-
-		$arrayType = $propertyReflection->getReadableType();
+		$arrayType = $scope->getType($node->var->var);
 		if (!$arrayType instanceof ArrayType) {
 			return [];
 		}

@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ArrayType;
@@ -18,18 +17,13 @@ use PHPStan\Type\VerbosityLevel;
 class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\Properties\PropertyReflectionFinder */
-	private $propertyReflectionFinder;
-
 	/** @var \PHPStan\Rules\RuleLevelHelper */
 	private $ruleLevelHelper;
 
 	public function __construct(
-		PropertyReflectionFinder $propertyReflectionFinder,
 		RuleLevelHelper $ruleLevelHelper
 	)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
@@ -58,12 +52,7 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->var->var, $scope);
-		if ($propertyReflection === null) {
-			return [];
-		}
-
-		$assignedToType = $propertyReflection->getWritableType();
+		$assignedToType = $scope->getType($node->var->var);
 		if (!($assignedToType instanceof ArrayType)) {
 			return [];
 		}

@@ -53,3 +53,26 @@ class Bar
 	}
 
 }
+
+class Baz
+{
+
+	/** @var array<static> */
+	public $staticProperty;
+
+}
+
+class Lorem extends Baz
+{
+
+}
+
+function (Lorem $lorem)
+{
+	$lorem->staticProperty[] = new Lorem();
+};
+
+function (Lorem $lorem)
+{
+	$lorem->staticProperty[] = new Baz();
+};

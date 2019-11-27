@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @template T of object
+ * @template-covariant T of object
  */
 class ReflectionClass
 {

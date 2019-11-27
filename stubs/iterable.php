@@ -1,16 +1,16 @@
 <?php
 
 /**
- * @template TKey
- * @template TValue
+ * @template-covariant TKey
+ * @template-covariant TValue
  */
 interface Traversable
 {
 }
 
 /**
- * @template TKey
- * @template TValue
+ * @template-covariant TKey
+ * @template-covariant TValue
  *
  * @extends Traversable<TKey, TValue>
  */
@@ -25,8 +25,8 @@ interface IteratorAggregate extends Traversable
 }
 
 /**
- * @template TKey
- * @template TValue
+ * @template-covariant TKey
+ * @template-covariant TValue
  *
  * @extends Traversable<TKey, TValue>
  */
@@ -46,10 +46,10 @@ interface Iterator extends Traversable
 }
 
 /**
- * @template TKey
- * @template TValue
+ * @template-covariant TKey
+ * @template-covariant TValue
  * @template TSend
- * @template TReturn
+ * @template-covariant TReturn
  *
  * @implements Iterator<TKey, TValue>
  */

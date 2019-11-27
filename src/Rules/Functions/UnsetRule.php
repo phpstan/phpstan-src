@@ -50,7 +50,7 @@ class UnsetRule implements \PHPStan\Rules\Rule
 			$type = $scope->getType($node->var);
 			$dimType = $scope->getType($node->dim);
 
-			$isOffsetAccessible = $type->isOffsetAccessible() && $type->getIterableKeyType()->isSuperTypeOf($dimType)->no();
+			$isOffsetAccessible = !$type->isOffsetAccessible()->no() && $type->getIterableKeyType()->isSuperTypeOf($dimType)->no();
 
 			if ($isOffsetAccessible || $type->hasOffsetValueType($dimType)->no()) {
 				return RuleErrorBuilder::message(

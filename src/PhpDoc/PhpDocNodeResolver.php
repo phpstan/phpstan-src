@@ -220,13 +220,17 @@ class PhpDocNodeResolver
 	public function resolveTemplateTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
 		$resolved = [];
+		$resolvedPrefix = [];
+
+		$prefixPriority = [
+			'' => 0,
+			'psalm' => 1,
+			'phpstan' => 2,
+		];
 
 		foreach ($phpDocNode->getTags() as $phpDocTagNode) {
 			$valueNode = $phpDocTagNode->value;
 			if (!$valueNode instanceof TemplateTagValueNode) {
-				continue;
-			}
-			if (isset($resolved[$valueNode->name])) {
 				continue;
 			}
 
@@ -239,11 +243,27 @@ class PhpDocNodeResolver
 				continue;
 			}
 
+			if (strpos($tagName, '@psalm-') === 0) {
+				$prefix = 'psalm';
+			} elseif (strpos($tagName, '@phpstan-') === 0) {
+				$prefix = 'phpstan';
+			} else {
+				$prefix = '';
+			}
+
+			if (isset($resolved[$valueNode->name])) {
+				$setPrefix = $resolvedPrefix[$valueNode->name];
+				if ($prefixPriority[$prefix] <= $prefixPriority[$setPrefix]) {
+					continue;
+				}
+			}
+
 			$resolved[$valueNode->name] = new TemplateTag(
 				$valueNode->name,
 				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScope) : new MixedType(),
 				$variance
 			);
+			$resolvedPrefix[$valueNode->name] = $prefix;
 		}
 
 		return $resolved;

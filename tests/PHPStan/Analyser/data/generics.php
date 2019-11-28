@@ -1126,3 +1126,79 @@ function testSpecificReflectionClass($ref)
 	assertType('class-string<stdClass>', $ref->name);
 	assertType('stdClass', $ref->newInstanceWithoutConstructor());
 };
+
+/**
+ * @template T of Foo
+ * @phpstan-template T of Bar
+ */
+class PrefixedTemplateWins
+{
+
+	/** @var T */
+	public $name;
+
+}
+
+/**
+ * @phpstan-template T of Bar
+ * @template T of Foo
+ */
+class PrefixedTemplateWins2
+{
+
+	/** @var T */
+	public $name;
+
+}
+
+/**
+ * @template T of Foo
+ * @phpstan-template T of Bar
+ * @psalm-template T of Baz
+ */
+class PrefixedTemplateWins3
+{
+
+	/** @var T */
+	public $name;
+
+}
+
+/**
+ * @template T of Foo
+ * @psalm-template T of Bar
+ */
+class PrefixedTemplateWins4
+{
+
+	/** @var T */
+	public $name;
+
+}
+
+/**
+ * @psalm-template T of Foo
+ * @phpstan-template T of Bar
+ */
+class PrefixedTemplateWins5
+{
+
+	/** @var T */
+	public $name;
+
+}
+
+function testPrefixed(
+	PrefixedTemplateWins $a,
+	PrefixedTemplateWins2 $b,
+	PrefixedTemplateWins3 $c,
+	PrefixedTemplateWins4 $d,
+	PrefixedTemplateWins5 $e
+
+) {
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $a->name);
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $b->name);
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $c->name);
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $d->name);
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $e->name);
+};

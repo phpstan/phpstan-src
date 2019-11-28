@@ -7,12 +7,14 @@ class Foo
 
 	/**
 	 * @param $mixed
+	 * @param int $integer
 	 * @param array $mixedArray
 	 * @param array $nonEmptyArray
 	 * @param array<string, mixed> $arrayWithStringKeys
 	 */
 	public function doFoo(
 		$mixed,
+		int $integer,
 		array $mixedArray,
 		array $nonEmptyArray,
 		array $arrayWithStringKeys

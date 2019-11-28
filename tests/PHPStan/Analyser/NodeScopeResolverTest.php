@@ -9241,12 +9241,20 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'json_encode($mixed,  JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
+				'string',
+				'json_encode($mixed,  $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
+			],
+			[
 				'mixed',
 				'json_decode($mixed)',
 			],
 			[
 				'mixed~false',
 				'json_decode($mixed, false, 512, JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
+			],
+			[
+				'mixed~false',
+				'json_decode($mixed, false, 512, $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
 				'int|string|null',

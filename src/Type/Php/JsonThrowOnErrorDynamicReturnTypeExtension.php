@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -46,7 +49,13 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 			return $defaultReturnType;
 		}
 
-		$valueType = $scope->getType($functionCall->args[$argumentPosition]->value);
+		$optionsExpr = $functionCall->args[$argumentPosition]->value;
+		$constrictedReturnType = TypeCombinator::remove($defaultReturnType, new ConstantBooleanType(false));
+		if ($this->isBitwiseOrWithJsonThrowOnError($optionsExpr)) {
+			return $constrictedReturnType;
+		}
+
+		$valueType = $scope->getType($optionsExpr);
 		if (!$valueType instanceof ConstantIntegerType) {
 			return $defaultReturnType;
 		}
@@ -56,7 +65,21 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 			return $defaultReturnType;
 		}
 
-		return TypeCombinator::remove($defaultReturnType, new ConstantBooleanType(false));
+		return $constrictedReturnType;
+	}
+
+	private function isBitwiseOrWithJsonThrowOnError(Expr $expr): bool
+	{
+		if ($expr instanceof ConstFetch && $expr->name->toCodeString() === '\JSON_THROW_ON_ERROR') {
+			return true;
+		}
+
+		if (!$expr instanceof BitwiseOr) {
+			return false;
+		}
+
+		return $this->isBitwiseOrWithJsonThrowOnError($expr->left) ||
+			   $this->isBitwiseOrWithJsonThrowOnError($expr->right);
 	}
 
 }

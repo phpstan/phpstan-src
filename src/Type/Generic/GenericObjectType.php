@@ -101,7 +101,7 @@ final class GenericObjectType extends ObjectType
 
 		$ancestor = $type->getAncestorWithClassName($this->getClassName());
 		if ($ancestor === null) {
-			return $nakedSuperTypeOf->and(TrinaryLogic::createMaybe());
+			return TrinaryLogic::createNo();
 		}
 		if (!$ancestor instanceof self) {
 			if ($acceptsContext) {

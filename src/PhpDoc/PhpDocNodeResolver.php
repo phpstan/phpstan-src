@@ -17,6 +17,7 @@ use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ArrayType;
@@ -220,24 +221,29 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach (['@template', '@psalm-template', '@phpstan-template'] as $tagName) {
-			foreach ($phpDocNode->getTemplateTagValues($tagName) as $tagValue) {
-				$resolved[$tagValue->name] = new TemplateTag(
-					$tagValue->name,
-					$tagValue->bound !== null ? $this->typeNodeResolver->resolve($tagValue->bound, $nameScope) : new MixedType(),
-					TemplateTypeVariance::createInvariant()
-				);
+		foreach ($phpDocNode->getTags() as $phpDocTagNode) {
+			$valueNode = $phpDocTagNode->value;
+			if (!$valueNode instanceof TemplateTagValueNode) {
+				continue;
 			}
-		}
+			if (isset($resolved[$valueNode->name])) {
+				continue;
+			}
 
-		foreach (['@template-covariant', '@psalm-template-covariant', '@phpstan-template-covariant'] as $tagName) {
-			foreach ($phpDocNode->getTemplateTagValues($tagName) as $tagValue) {
-				$resolved[$tagValue->name] = new TemplateTag(
-					$tagValue->name,
-					$tagValue->bound !== null ? $this->typeNodeResolver->resolve($tagValue->bound, $nameScope) : new MixedType(),
-					TemplateTypeVariance::createCovariant()
-				);
+			$tagName = $phpDocTagNode->name;
+			if (in_array($tagName, ['@template', '@psalm-template', '@phpstan-template'], true)) {
+				$variance = TemplateTypeVariance::createInvariant();
+			} elseif (in_array($tagName, ['@template-covariant', '@psalm-template-covariant', '@phpstan-template-covariant'], true)) {
+				$variance = TemplateTypeVariance::createCovariant();
+			} else {
+				continue;
 			}
+
+			$resolved[$valueNode->name] = new TemplateTag(
+				$valueNode->name,
+				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScope) : new MixedType(),
+				$variance
+			);
 		}
 
 		return $resolved;

@@ -13,7 +13,7 @@ use PHPStan\File\FileHelper;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v5';
+	public const CACHE_KEY = 'v6';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -99,7 +99,7 @@ class NeonAdapter implements Adapter
 				'[parameters][symfony][console_application_loader]',
 				'[parameters][symfony][container_xml_path]',
 				'[parameters][doctrine][objectManagerLoader]',
-			], true) && is_string($val) && strpos($val, '%') === false) {
+			], true) && is_string($val) && strpos($val, '%') === false && strpos($val, '*') !== 0) {
 				$fileHelper = $this->createFileHelperByFile($file);
 				$val = $fileHelper->normalizePath($fileHelper->absolutizePath($val));
 			}

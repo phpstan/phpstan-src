@@ -13,3 +13,5 @@ parameters:
 	memoryLimitFile: .memory_limit
 	excludes_analyse:
 		- src
+		- src/*/data
+		- */src/*/data

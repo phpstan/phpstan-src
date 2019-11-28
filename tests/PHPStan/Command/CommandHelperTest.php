@@ -174,7 +174,11 @@ class CommandHelperTest extends TestCase
 						__DIR__ . '/relative-paths/src',
 					],
 					'memoryLimitFile' => __DIR__ . '/relative-paths/.memory_limit',
-					'excludes_analyse' => [__DIR__ . '/relative-paths/src'],
+					'excludes_analyse' => [
+						__DIR__ . '/relative-paths/src',
+						__DIR__ . '/relative-paths/src/*/data',
+						'*/src/*/data',
+					],
 				],
 			],
 			[

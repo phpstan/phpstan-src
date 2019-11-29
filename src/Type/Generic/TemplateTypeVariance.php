@@ -11,6 +11,7 @@ class TemplateTypeVariance
 	private const INVARIANT = 1;
 	private const COVARIANT = 2;
 	private const CONTRAVARIANT = 3;
+	private const CONSTRUCTOR = 4;
 
 	/** @var self[] */
 	private static $registry;
@@ -44,6 +45,11 @@ class TemplateTypeVariance
 		return self::create(self::CONTRAVARIANT);
 	}
 
+	public static function createConstructor(): self
+	{
+		return self::create(self::CONSTRUCTOR);
+	}
+
 	public function invariant(): bool
 	{
 		return $this->value === self::INVARIANT;
@@ -57,6 +63,11 @@ class TemplateTypeVariance
 	public function contravariant(): bool
 	{
 		return $this->value === self::CONTRAVARIANT;
+	}
+
+	public function constructor(): bool
+	{
+		return $this->value === self::CONSTRUCTOR;
 	}
 
 	public function compose(self $other): self
@@ -114,6 +125,13 @@ class TemplateTypeVariance
 		return $other->value === $this->value;
 	}
 
+	public function validPosition(self $other): bool
+	{
+		return $other->value === $this->value
+			|| $other->invariant()
+			|| $this->constructor();
+	}
+
 	public function describe(): string
 	{
 		switch ($this->value) {
@@ -123,6 +141,8 @@ class TemplateTypeVariance
 				return 'covariant';
 			case self::CONTRAVARIANT:
 				return 'contravariant';
+			case self::CONSTRUCTOR:
+				return 'constructor';
 		}
 
 		throw new \PHPStan\ShouldNotHappenException();

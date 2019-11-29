@@ -68,5 +68,10 @@
         "message": "Template type T is declared as covariant, but occurs in invariant position in return type of function PHPStan\\Generics\\Variance\\returnInvariant().",
         "line": 117,
         "ignorable": true
+    },
+    {
+        "message": "Template type T is declared as covariant, but occurs in invariant position in parameter v of method PHPStan\\Generics\\Variance\\Constructor::__construct().",
+        "line": 134,
+        "ignorable": true
     }
 ]

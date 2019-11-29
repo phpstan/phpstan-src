@@ -119,6 +119,24 @@ function returnInvariant() {
 }
 
 /**
+ * @template-covariant T
+ * @template U
+ */
+class Constructor {
+	/** @var mixed */
+	private $data;
+	/**
+	 * @param T $t
+	 * @param U $u
+	 * @param Invariant<T> $v
+	 * @param Out<T> $w
+	 */
+	public function __construct($t, $u, $v, $w) {
+		$this->data = [$t, $u, $v, $w];
+	}
+}
+
+/**
  * @param Iter<\DateTime> $itOfDateTime
  * @param InvariantIter<\DateTime> $invariantItOfDateTime
  */

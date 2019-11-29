@@ -50,6 +50,7 @@ parameters:
 	stubFiles:
 		- ../stubs/ReflectionClass.php
 		- ../stubs/iterable.php
+		- ../stubs/ArrayObject.php
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

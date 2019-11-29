@@ -95,6 +95,16 @@ class SimpleXMLElement
 interface SeekableIterator extends Iterator
 {
 
+	/**
+	 * @return TValue
+	 */
+	public function current();
+
+	/**
+	 * @return TKey
+	 */
+	public function key();
+
 }
 
 /**
@@ -159,5 +169,15 @@ class ArrayIterator implements SeekableIterator, ArrayAccess
 	 * @return void
 	 */
 	public function uksort($cmp_function) { }
+
+	/**
+	 * @return TValue
+	 */
+	public function current();
+
+	/**
+	 * @return TKey
+	 */
+	public function key();
 
 }

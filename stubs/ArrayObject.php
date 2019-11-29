@@ -44,7 +44,7 @@ class ArrayObject implements IteratorAggregate, ArrayAccess
 {
 
 	/**
-	 * @param array<TKey, TValue>|object
+	 * @param array<TKey, TValue>|object $input
 	 * @param int $flags
 	 * @param class-string $iterator_class
 	 */

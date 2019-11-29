@@ -6473,7 +6473,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$fooFromGenerator',
 			],
 			[
-				'ArrayObject&iterable<int, string>',
+				'ArrayObject<int, string>',
 				'$arrayObject',
 			],
 			[

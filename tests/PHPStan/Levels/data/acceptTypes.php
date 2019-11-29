@@ -626,3 +626,30 @@ class RequireClassString
 	}
 
 }
+
+class RequireObjectWithoutClassType
+{
+
+	/**
+	 * @param object $object
+	 */
+	public function doFoo($object): void
+	{
+		$this->requireStdClass($object);
+		$this->requireStatic($object);
+	}
+
+	public function requireStdClass(\stdClass $stdClass): void
+	{
+
+	}
+
+	/**
+	 * @param static $static
+	 */
+	public function requireStatic($static): void
+	{
+
+	}
+
+}

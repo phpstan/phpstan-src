@@ -103,5 +103,15 @@
         "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireGenericClassString() expects class-string<stdClass>, string given.",
         "line": 609,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $stdClass of method Levels\\AcceptTypes\\RequireObjectWithoutClassType::requireStdClass() expects stdClass, object given.",
+        "line": 638,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $static of method Levels\\AcceptTypes\\RequireObjectWithoutClassType::requireStatic() expects Levels\\AcceptTypes\\RequireObjectWithoutClassType, object given.",
+        "line": 639,
+        "ignorable": true
     }
 ]

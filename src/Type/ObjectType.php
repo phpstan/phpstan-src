@@ -116,6 +116,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return $this->isInstanceOf(\Closure::class);
 		}
 
+		if ($type instanceof ObjectWithoutClassType) {
+			return TrinaryLogic::createMaybe();
+		}
+
 		if (!$type instanceof TypeWithClassName) {
 			return TrinaryLogic::createNo();
 		}

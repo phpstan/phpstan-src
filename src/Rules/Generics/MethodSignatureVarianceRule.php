@@ -40,7 +40,8 @@ class MethodSignatureVarianceRule implements Rule
 		return $this->varianceCheck->checkParametersAcceptor(
 			ParametersAcceptorSelector::selectSingle($method->getVariants()),
 			sprintf('in parameter %%s of method %s::%s()', $className, $methodName),
-			sprintf('in return type of method %s::%s()', $className, $methodName)
+			sprintf('in return type of method %s::%s()', $className, $methodName),
+			$methodName === '__construct'
 		);
 	}
 

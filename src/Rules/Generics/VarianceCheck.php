@@ -16,13 +16,16 @@ class VarianceCheck
 	public function checkParametersAcceptor(
 		ParametersAcceptor $parametersAcceptor,
 		string $parameterTypeMessage,
-		string $returnTypeMessage
+		string $returnTypeMessage,
+		bool $isConstructor
 	): array
 	{
 		$errors = [];
 
 		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
-			$variance = TemplateTypeVariance::createContravariant();
+			$variance = $isConstructor
+				? TemplateTypeVariance::createConstructor()
+				: TemplateTypeVariance::createContravariant();
 			$type = $parameterReflection->getType();
 			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());
 			foreach ($this->check($variance, $type, $message) as $error) {
@@ -64,11 +67,7 @@ class VarianceCheck
 
 	private function isTemplateTypeVarianceValid(TemplateTypeVariance $positionVariance, TemplateType $type): bool
 	{
-		if ($type->getVariance()->invariant()) {
-			return true;
-		}
-
-		return $type->getVariance()->equals($positionVariance);
+		return $positionVariance->validPosition($type->getVariance());
 	}
 
 }

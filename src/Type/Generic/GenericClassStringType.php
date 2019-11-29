@@ -60,6 +60,8 @@ class GenericClassStringType extends ClassStringType
 			$objectType = $type->type;
 		} elseif ($type instanceof ClassStringType) {
 			$objectType = new ObjectWithoutClassType();
+		} elseif ($type instanceof StringType) {
+			return TrinaryLogic::createMaybe();
 		} else {
 			return TrinaryLogic::createNo();
 		}

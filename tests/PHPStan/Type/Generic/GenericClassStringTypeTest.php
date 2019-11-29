@@ -176,7 +176,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 			[
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new StringType(),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new GenericClassStringType(new ObjectType(\Exception::class)),

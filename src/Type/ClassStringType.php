@@ -29,6 +29,10 @@ class ClassStringType extends StringType
 			return TrinaryLogic::createYes();
 		}
 
+		if ($type instanceof StringType) {
+			return TrinaryLogic::createMaybe();
+		}
+
 		return TrinaryLogic::createNo();
 	}
 

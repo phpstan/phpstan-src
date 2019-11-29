@@ -60,7 +60,7 @@ class ClassStringTypeTest extends TestCase
 		yield [
 			new ClassStringType(),
 			new StringType(),
-			TrinaryLogic::createNo(),
+			TrinaryLogic::createMaybe(),
 		];
 
 		yield [

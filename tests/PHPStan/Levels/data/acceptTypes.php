@@ -599,3 +599,30 @@ class ArrayShapes
 	}
 
 }
+
+class RequireClassString
+{
+
+	public function doFoo(string $s): void
+	{
+		$this->requireClassString($s);
+		$this->requireGenericClassString($s);
+	}
+
+	/**
+	 * @param class-string $s
+	 */
+	public function requireClassString(string $s): void
+	{
+
+	}
+
+	/**
+	 * @param class-string<\stdClass> $s
+	 */
+	public function requireGenericClassString(string $s): void
+	{
+
+	}
+
+}

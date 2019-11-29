@@ -93,5 +93,15 @@
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), iterable<callable(): mixed> given.",
         "line": 588,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireClassString() expects class-string, string given.",
+        "line": 608,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireGenericClassString() expects class-string<stdClass>, string given.",
+        "line": 609,
+        "ignorable": true
     }
 ]

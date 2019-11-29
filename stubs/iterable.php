@@ -86,3 +86,78 @@ class SimpleXMLElement
 {
 
 }
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @extends Iterator<TKey, TValue>
+ */
+interface SeekableIterator extends Iterator
+{
+
+}
+
+/**
+ * @template TKey
+ * @template TValue
+ * @implements SeekableIterator<TKey, TValue>
+ * @implements ArrayAccess<TKey, TValue>
+ */
+class ArrayIterator implements SeekableIterator, ArrayAccess
+{
+
+	/**
+	 * @param array<TKey, TValue> $array
+	 * @param int $flags
+	 */
+	public function __construct($array = array(), $flags = 0) { }
+
+	/**
+	 * @param TKey $index
+	 * @return bool
+	 */
+	public function offsetExists($index) { }
+
+	/**
+	 * @param TKey $index
+	 * @return TValue
+	 */
+	public function offsetGet($index) { }
+
+	/**
+	 * @param TKey $index
+	 * @param TValue $newval
+	 * @return void
+	 */
+	public function offsetSet($index, $newval) { }
+
+	/**
+	 * @param TKey $index
+	 * @return void
+	 */
+	public function offsetUnset($index) { }
+
+	/**
+	 * @param TValue $value
+	 * @return void
+	 */
+	public function append($value) { }
+
+	/**
+	 * @return array<TKey, TValue>
+	 */
+	public function getArrayCopy() { }
+
+	/**
+	 * @param callable(TValue, TValue): int $cmp_function
+	 * @return void
+	 */
+	public function uasort($cmp_function) { }
+
+	/**
+	 * @param callable(TKey, TKey): int $cmp_function
+	 * @return void
+	 */
+	public function uksort($cmp_function) { }
+
+}

@@ -12,9 +12,7 @@ trait FooTrait
 
 	public function conflictingMethodWithDifferentArgumentNames(string $string): void
 	{
-		if (strpos($string, 'foo') !== false) {
-
-		};
+		strpos($string, 'foo');
 	}
 
 }

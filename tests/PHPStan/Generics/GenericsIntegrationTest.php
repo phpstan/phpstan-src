@@ -17,6 +17,7 @@ class GenericsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 			['bug2577'],
 			['bug2620'],
 			['bug2627'],
+			['bug2622'],
 		];
 	}
 

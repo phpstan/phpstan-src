@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Template type TValue is declared as covariant, but occurs in contravariant position in parameter data of method Generics\\Bug2627\\Collection::setData().",
+        "line": 29,
+        "ignorable": true
+    }
+]

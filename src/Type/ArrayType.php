@@ -328,11 +328,24 @@ class ArrayType implements Type
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
-		$variance = $positionVariance->compose(TemplateTypeVariance::createInvariant());
+		$keyVariance = $positionVariance;
+		$itemVariance = $positionVariance;
+
+		if (!$positionVariance->contravariant()) {
+			$keyType = $this->getKeyType();
+			if ($keyType instanceof TemplateType) {
+				$keyVariance = $keyType->getVariance();
+			}
+
+			$itemType = $this->getItemType();
+			if ($itemType instanceof TemplateType) {
+				$itemVariance = $itemType->getVariance();
+			}
+		}
 
 		return array_merge(
-			$this->getKeyType()->getReferencedTemplateTypes($variance),
-			$this->getItemType()->getReferencedTemplateTypes($variance)
+			$this->getKeyType()->getReferencedTemplateTypes($keyVariance),
+			$this->getItemType()->getReferencedTemplateTypes($itemVariance)
 		);
 	}
 

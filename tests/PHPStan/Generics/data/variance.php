@@ -122,9 +122,11 @@ function returnInvariant() {
  * @template-covariant T
  * @template U
  */
-class Constructor {
+class ConstructorAndStatic {
+
 	/** @var mixed */
 	private $data;
+
 	/**
 	 * @param T $t
 	 * @param U $u
@@ -133,6 +135,17 @@ class Constructor {
 	 */
 	public function __construct($t, $u, $v, $w) {
 		$this->data = [$t, $u, $v, $w];
+	}
+
+	/**
+	 * @param T $t
+	 * @param U $u
+	 * @param Invariant<T> $v
+	 * @param Out<T> $w
+	 * @return Static<T, U>
+	 */
+	public static function create($t, $u, $v, $w) {
+		return new self($t, $u, $v, $w);
 	}
 }
 

@@ -2585,7 +2585,11 @@ class NodeScopeResolver
 			);
 		}
 
-		if (($phpDocBlock !== null && $phpDocBlock->isExplicit()) || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
+		if ($phpDocBlock === null || $phpDocBlock->isExplicit()) {
+			return $phpDocReturnType;
+		}
+
+		if ($nativeReturnType->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocReturnType))->yes()) {
 			return $phpDocReturnType;
 		}
 

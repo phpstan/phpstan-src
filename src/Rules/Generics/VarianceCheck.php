@@ -17,14 +17,14 @@ class VarianceCheck
 		ParametersAcceptor $parametersAcceptor,
 		string $parameterTypeMessage,
 		string $returnTypeMessage,
-		bool $isConstructor
+		bool $isStatic
 	): array
 	{
 		$errors = [];
 
 		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
-			$variance = $isConstructor
-				? TemplateTypeVariance::createConstructor()
+			$variance = $isStatic
+				? TemplateTypeVariance::createStatic()
 				: TemplateTypeVariance::createContravariant();
 			$type = $parameterReflection->getType();
 			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());

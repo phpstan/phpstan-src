@@ -8259,7 +8259,7 @@ return [
 'pcntl_setpriority' => ['bool', 'priority'=>'int', 'pid='=>'int', 'process_identifier='=>'int'],
 'pcntl_signal' => ['bool', 'signo'=>'int', 'handle'=>'callable|int', 'restart_syscalls='=>'bool'],
 'pcntl_signal_dispatch' => ['bool'],
-'pcntl_signal_get_handler' => ['int|string', 'signo'=>'int'],
+'pcntl_signal_get_handler' => ['int|string|false', 'signo'=>'int'],
 'pcntl_sigprocmask' => ['bool', 'how'=>'int', 'set'=>'array', '&w_oldset='=>'array'],
 'pcntl_sigtimedwait' => ['int', 'set'=>'array', '&w_siginfo='=>'array', 'seconds='=>'int', 'nanoseconds='=>'int'],
 'pcntl_sigwaitinfo' => ['int', 'set'=>'array', '&w_siginfo='=>'array'],

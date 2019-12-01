@@ -949,7 +949,7 @@ return [
 'chunk_split' => ['string', 'str'=>'string', 'chunklen='=>'int', 'ending='=>'string'],
 'class_alias' => ['bool', 'user_class_name'=>'string', 'alias_name'=>'string', 'autoload='=>'bool'],
 'class_exists' => ['bool', 'classname'=>'string', 'autoload='=>'bool'],
-'class_implements' => ['array<string,string>', 'what'=>'object|string', 'autoload='=>'bool'],
+'class_implements' => ['array<string,string>|false', 'what'=>'object|string', 'autoload='=>'bool'],
 'class_parents' => ['array<string,class-string>', 'instance'=>'object|string', 'autoload='=>'bool'],
 'class_uses' => ['array<string,string>', 'what'=>'object|string', 'autoload='=>'bool'],
 'classkit_import' => ['array', 'filename'=>'string'],

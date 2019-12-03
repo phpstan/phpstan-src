@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
 
-$stubs = [];
+$stubs = [
+	'../../src/Reflection/SignatureMap/functionMap.php',
+	'../../src/Reflection/SignatureMap/functionMap_php74delta.php',
+	'../../src/Reflection/SignatureMap/functionMetadata.php',
+];
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
 foreach ($stubFinder->files()->name('*.php')->in('../../stubs') as $file) {
 	$stubs[] = $file->getPathName();

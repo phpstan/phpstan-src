@@ -77,6 +77,16 @@ return [
 				$content
 			);
 		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (strpos($filePath, 'src/') !== 0) {
+				return $content;
+			}
+
+			$content = str_replace(sprintf('\'%s\\\\r\\\\n\'', $prefix), '\'\\\\r\\\\n\'', $content);
+			$content = str_replace(sprintf('\'%s\\\\', $prefix), '\'', $content);
+
+			return $content;
+		}
 	],
 	'whitelist' => [
 		'PHPStan\*',

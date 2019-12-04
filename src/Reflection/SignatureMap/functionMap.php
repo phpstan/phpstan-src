@@ -5853,7 +5853,7 @@ return [
 'ldap_8859_to_t61' => ['string', 'value'=>'string'],
 'ldap_add' => ['bool', 'link_identifier'=>'resource', 'dn'=>'string', 'entry'=>'array', 'servercontrols='=>'array'],
 'ldap_add_ext' => ['resource|false', 'link_identifier'=>'resource', 'dn'=>'string', 'entry'=>'array', 'servercontrols='=>'array'],
-'ldap_bind' => ['bool', 'link_identifier'=>'resource', 'bind_rdn='=>'string|null', 'bind_password='=>'string|null', 'serverctrls' => 'array'],
+'ldap_bind' => ['bool', 'link_identifier'=>'resource', 'bind_rdn='=>'string|null', 'bind_password='=>'string|null', 'serverctrls=' => 'array'],
 'ldap_bind_ext' => ['resource|false', 'link_identifier'=>'resource', 'bind_rdn='=>'string|null', 'bind_password='=>'string|null', 'serverctrls' => 'array'],
 'ldap_close' => ['bool', 'link_identifier'=>'resource'],
 'ldap_compare' => ['bool', 'link_identifier'=>'resource', 'dn'=>'string', 'attr'=>'string', 'value'=>'string'],

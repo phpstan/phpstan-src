@@ -201,7 +201,7 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach (['@uses', '@template-use', '@phpstan-uses'] as $tagName) {
+		foreach (['@use', '@template-use', '@phpstan-use'] as $tagName) {
 			foreach ($phpDocNode->getUsesTagValues($tagName) as $tagValue) {
 				$resolved[$tagValue->type->type->name] = new UsesTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)

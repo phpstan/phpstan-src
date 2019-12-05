@@ -20,6 +20,7 @@ namespace InvalidPhpDoc;
  *
  * @param Foo $valid
  * @return Foo
+ * @uses Foo::bar()
  */
 function foo()
 {

@@ -52,8 +52,8 @@ jobs:
           cp tmp/phpstan.phar phpstan-dist/phpstan.phar && \
           cp tmp/phpstan.phar phpstan-dist/phpstan && \
           cd phpstan-dist && \
-          git config user.email "travis@travis-ci.org" && \
-          git config user.name "Travis CI" && \
+          git config user.email "ondrej@mirtes.cz" && \
+          git config user.name "Ondrej Mirtes" && \
           git add phpstan phpstan.phar && \
           git commit -m "Updated PHPStan to commit ${TRAVIS_COMMIT}" && \
           git push --quiet origin master

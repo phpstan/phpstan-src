@@ -12864,7 +12864,7 @@ return [
 'Worker::start' => ['bool', 'options='=>'int'],
 'Worker::synchronized' => ['mixed', 'block'=>'Closure', '_='=>'mixed'],
 'Worker::unlock' => ['bool'],
-'Worker::unstack' => ['int', '&rw_work='=>'Threaded'],
+'Worker::unstack' => ['Collectable|null'],
 'Worker::wait' => ['bool', 'timeout='=>'int'],
 'xattr_get' => ['string', 'filename'=>'string', 'name'=>'string', 'flags='=>'int'],
 'xattr_list' => ['array', 'filename'=>'string', 'flags='=>'int'],

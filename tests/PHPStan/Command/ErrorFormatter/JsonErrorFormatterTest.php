@@ -2,7 +2,9 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-class JsonErrorFormatterTest extends TestBaseFormatter
+use PHPStan\Testing\ErrorFormatterTestCase;
+
+class JsonErrorFormatterTest extends ErrorFormatterTestCase
 {
 
 	public function dataFormatterOutputProvider(): iterable

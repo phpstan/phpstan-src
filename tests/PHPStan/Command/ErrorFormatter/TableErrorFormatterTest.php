@@ -3,8 +3,9 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\Testing\ErrorFormatterTestCase;
 
-class TableErrorFormatterTest extends TestBaseFormatter
+class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
 
 	public function dataFormatterOutputProvider(): iterable

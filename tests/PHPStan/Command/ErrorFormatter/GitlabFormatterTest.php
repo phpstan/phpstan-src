@@ -2,7 +2,9 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-class GitlabFormatterTest extends TestBaseFormatter
+use PHPStan\Testing\ErrorFormatterTestCase;
+
+class GitlabFormatterTest extends ErrorFormatterTestCase
 {
 
 	public function dataFormatterOutputProvider(): iterable

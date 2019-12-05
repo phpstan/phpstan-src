@@ -2,7 +2,9 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-class RawErrorFormatterTest extends TestBaseFormatter
+use PHPStan\Testing\ErrorFormatterTestCase;
+
+class RawErrorFormatterTest extends ErrorFormatterTestCase
 {
 
 	public function dataFormatterOutputProvider(): iterable

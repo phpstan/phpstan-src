@@ -6,8 +6,9 @@ use Nette\Neon\Neon;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\Testing\ErrorFormatterTestCase;
 
-class BaselineNeonErrorFormatterTest extends TestBaseFormatter
+class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 {
 
 	public function dataFormatterOutputProvider(): iterable

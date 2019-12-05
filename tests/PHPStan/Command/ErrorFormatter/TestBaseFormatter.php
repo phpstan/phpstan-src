@@ -16,42 +16,45 @@ abstract class TestBaseFormatter extends \PHPStan\Testing\TestCase
 
 	protected const DIRECTORY_PATH = '/data/folder/with space/and unicode 😃/project';
 
-	/** @var StreamOutput */
+	/** @var StreamOutput|null */
 	private $outputStream;
 
-	/** @var Output */
+	/** @var Output|null */
 	private $output;
 
-	protected function setUp(): void
+	private function getOutputStream(): StreamOutput
 	{
-		parent::setUp();
-
-		$resource = fopen('php://memory', 'w', false);
-		if ($resource === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+		if ($this->outputStream === null) {
+			$resource = fopen('php://memory', 'w', false);
+			if ($resource === false) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			$this->outputStream = new StreamOutput($resource);
 		}
 
-		$this->outputStream = new StreamOutput($resource);
+		return $this->outputStream;
+	}
 
-		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $this->outputStream);
-		$this->output = new SymfonyOutput($this->outputStream, new SymfonyStyle($errorConsoleStyle));
+	protected function getOutput(): Output
+	{
+		if ($this->output === null) {
+			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $this->getOutputStream());
+			$this->output = new SymfonyOutput($this->getOutputStream(), new SymfonyStyle($errorConsoleStyle));
+		}
+
+		return $this->output;
 	}
 
 	protected function getOutputContent(): string
 	{
-		rewind($this->outputStream->getStream());
+		rewind($this->getOutputStream()->getStream());
 
-		$contents = stream_get_contents($this->outputStream->getStream());
+		$contents = stream_get_contents($this->getOutputStream()->getStream());
 		if ($contents === false) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
 		return $this->rtrimMultiline($contents);
-	}
-
-	protected function getOutput(): Output
-	{
-		return $this->output;
 	}
 
 	protected function getAnalysisResult(int $numFileErrors, int $numGenericErrors): AnalysisResult

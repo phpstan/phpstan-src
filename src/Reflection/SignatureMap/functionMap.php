@@ -12142,7 +12142,7 @@ return [
 'Thread::chunk' => ['array', 'size'=>'int', 'preserve'=>'bool'],
 'Thread::count' => ['int'],
 'Thread::getCreatorId' => ['int'],
-'Thread::getCurrentThread' => ['Thread'],
+'Thread::getCurrentThread' => ['Thread|null'],
 'Thread::getCurrentThreadId' => ['int'],
 'Thread::getThreadId' => ['int'],
 'Thread::isJoined' => ['bool'],

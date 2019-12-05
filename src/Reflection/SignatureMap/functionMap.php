@@ -12848,7 +12848,7 @@ return [
 'Worker::run' => ['void'],
 'Worker::shift' => ['bool'],
 'Worker::shutdown' => ['bool'],
-'Worker::stack' => ['int', '&rw_work'=>'Threaded'],
+'Worker::stack' => ['int', 'work'=>'Threaded'],
 'Worker::start' => ['bool', 'options='=>'int'],
 'Worker::synchronized' => ['mixed', 'block'=>'Closure', '_='=>'mixed'],
 'Worker::unstack' => ['Collectable|null'],

@@ -9202,7 +9202,7 @@ return [
 'RecursiveRegexIterator::__construct' => ['void', 'it'=>'recursiveiterator', 'regex='=>'string', 'mode='=>'int', 'flags='=>'int', 'preg_flags='=>'int'],
 'RecursiveRegexIterator::getChildren' => ['RecursiveRegexIterator'],
 'RecursiveRegexIterator::hasChildren' => ['bool'],
-'RecursiveTreeIterator::__construct' => ['void', 'it'=>'recursiveiterator|iteratoraggregate', 'flags'=>'int', 'cit_flags'=>'int', 'mode'=>'int'],
+'RecursiveTreeIterator::__construct' => ['void', 'it'=>'recursiveiterator|iteratoraggregate', 'flags='=>'int', 'cit_flags='=>'int', 'mode='=>'int'],
 'RecursiveTreeIterator::beginChildren' => ['void'],
 'RecursiveTreeIterator::beginIteration' => ['RecursiveIterator'],
 'RecursiveTreeIterator::callGetChildren' => ['RecursiveIterator'],

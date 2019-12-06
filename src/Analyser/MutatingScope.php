@@ -3361,12 +3361,26 @@ class MutatingScope implements Scope
 
 		$calledOnThis = $calledOnType instanceof ThisType && $this->isInClass();
 
-		return TypeTraverser::map($methodReturnType, function (Type $returnType, callable $traverse) use ($calledOnType, $calledOnThis): Type {
+		$transformedCalledOnType = TypeTraverser::map($calledOnType, function (Type $type, callable $traverse) use ($calledOnThis): Type {
+			if ($type instanceof StaticType) {
+				if ($calledOnThis && $this->isInClass()) {
+					return $traverse($type->changeBaseClass($this->getClassReflection()->getName()));
+				}
+				if ($this->isInClass()) {
+					return $traverse($type->changeBaseClass($this->getClassReflection()->getName())->getStaticObjectType());
+				}
+			}
+
+			return $traverse($type);
+		});
+
+		return TypeTraverser::map($methodReturnType, function (Type $returnType, callable $traverse) use ($transformedCalledOnType, $calledOnThis): Type {
 			if ($returnType instanceof StaticType) {
 				if ($calledOnThis && $this->isInClass()) {
 					return $traverse($returnType->changeBaseClass($this->getClassReflection()->getName()));
 				}
-				return $traverse($calledOnType);
+
+				return $traverse($transformedCalledOnType);
 			}
 
 			return $traverse($returnType);
@@ -3389,12 +3403,26 @@ class MutatingScope implements Scope
 
 		$fetchedOnThis = $fetchedOnType instanceof ThisType && $this->isInClass();
 
-		return TypeTraverser::map($propertyType, function (Type $propertyType, callable $traverse) use ($fetchedOnType, $fetchedOnThis): Type {
+		$transformedFetchedOnType = TypeTraverser::map($fetchedOnType, function (Type $type, callable $traverse) use ($fetchedOnThis): Type {
+			if ($type instanceof StaticType) {
+				if ($fetchedOnThis && $this->isInClass()) {
+					return $traverse($type->changeBaseClass($this->getClassReflection()->getName()));
+				}
+				if ($this->isInClass()) {
+					return $traverse($type->changeBaseClass($this->getClassReflection()->getName())->getStaticObjectType());
+				}
+			}
+
+			return $traverse($type);
+		});
+
+		return TypeTraverser::map($propertyType, function (Type $propertyType, callable $traverse) use ($transformedFetchedOnType, $fetchedOnThis): Type {
 			if ($propertyType instanceof StaticType) {
 				if ($fetchedOnThis && $this->isInClass()) {
 					return $traverse($propertyType->changeBaseClass($this->getClassReflection()->getName()));
 				}
-				return $traverse($fetchedOnType);
+
+				return $traverse($transformedFetchedOnType);
 			}
 
 			return $traverse($propertyType);

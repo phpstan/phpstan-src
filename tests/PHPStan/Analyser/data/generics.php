@@ -971,6 +971,18 @@ function testReflectionClass($ref)
 	assertType('ReflectionClass<PHPStan\Generics\FunctionsAssertType\Foo>', new \ReflectionClass(Foo::class));
 }
 
+class CreateClassReflectionOfStaticClass
+{
+
+	public function doFoo()
+	{
+		assertType('PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass', (new \ReflectionClass(self::class))->newInstanceWithoutConstructor());
+		assertType('PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass', (new \ReflectionClass(static::class))->newInstanceWithoutConstructor());
+		assertType('class-string<PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass>', (new \ReflectionClass(static::class))->name);
+	}
+
+}
+
 /**
  * @param \Traversable<int> $t1
  * @param \Traversable<int, \stdClass> $t2

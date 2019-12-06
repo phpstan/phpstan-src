@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
@@ -20,6 +21,9 @@ class TemplateTypeHelper
 
 				if ($newType instanceof ErrorType) {
 					$newType = $type->getBound();
+				}
+				if ($newType instanceof StaticType) {
+					$newType = $newType->getStaticObjectType();
 				}
 
 				return $newType;

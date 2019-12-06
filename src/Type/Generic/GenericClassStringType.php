@@ -127,9 +127,6 @@ class GenericClassStringType extends ClassStringType
 			$typeToInfer = new ObjectType($receivedType->getValue());
 		} elseif ($receivedType instanceof self) {
 			$typeToInfer = $receivedType->type;
-			if ($typeToInfer instanceof StaticType) {
-				$typeToInfer = $typeToInfer->getStaticObjectType();
-			}
 		} else {
 			return TemplateTypeMap::createEmpty();
 		}

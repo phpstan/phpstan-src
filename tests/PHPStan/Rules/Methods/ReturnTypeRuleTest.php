@@ -345,4 +345,9 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug2676(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2676.php'], []);
+	}
+
 }

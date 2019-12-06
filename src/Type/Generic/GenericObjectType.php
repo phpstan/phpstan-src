@@ -121,13 +121,12 @@ final class GenericObjectType extends ObjectType
 		}
 
 		$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
-
 		foreach ($typeList as $i => $templateType) {
 			if (!isset($ancestor->types[$i])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				continue;
 			}
 			if (!isset($this->types[$i])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				continue;
 			}
 			if ($templateType instanceof ErrorType) {
 				continue;

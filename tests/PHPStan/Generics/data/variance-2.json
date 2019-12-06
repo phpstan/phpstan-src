@@ -70,13 +70,18 @@
         "ignorable": true
     },
     {
+        "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter v of method PHPStan\\Generics\\Variance\\CovariantOfOBject::set().",
+        "line": 124,
+        "ignorable": true
+    },
+    {
         "message": "Template type T is declared as covariant, but occurs in invariant position in parameter v of method PHPStan\\Generics\\Variance\\ConstructorAndStatic::__construct().",
-        "line": 136,
+        "line": 142,
         "ignorable": true
     },
     {
         "message": "Template type T is declared as covariant, but occurs in invariant position in parameter v of method PHPStan\\Generics\\Variance\\ConstructorAndStatic::create().",
-        "line": 147,
+        "line": 153,
         "ignorable": true
     }
 ]

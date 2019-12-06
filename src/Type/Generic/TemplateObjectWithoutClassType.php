@@ -223,7 +223,7 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
-		return [];
+		return [new TemplateTypeReference($this, $positionVariance)];
 	}
 
 	public function getVariance(): TemplateTypeVariance

@@ -568,12 +568,12 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 				TypeCombinator::union(
 					new ConstantArrayType([], []),
 					new ConstantArrayType([
-						new ConstantStringType('foo'),
+						new ConstantStringType('foooo'),
 					], [
-						new ConstantStringType('bar'),
+						new ConstantStringType('barrr'),
 					])
 				),
-				'array()|array(\'foo\' => \'bar\')',
+				'array()|array(\'foooo\' => \'barrr\')',
 				'array<string, string>',
 			],
 		];

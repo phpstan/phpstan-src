@@ -253,7 +253,7 @@ class TypeCombinator
 			foreach ($scalarTypeItems as $type) {
 				if (count($scalarTypeItems) > self::CONSTANT_SCALAR_UNION_THRESHOLD) {
 					$types[] = $type->generalize();
-					break;
+					continue;
 				}
 				$types[] = $type;
 			}

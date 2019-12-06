@@ -5087,7 +5087,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'array<int|string, stdClass>',
+				'array<class-string|int, stdClass>',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -9586,6 +9586,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2612.php');
 	}
 
+	public function dataBug2677(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2677.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9598,6 +9603,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataIntersectionStatic
 	 * @dataProvider dataStaticProperties
 	 * @dataProvider dataBug2612
+	 * @dataProvider dataBug2677
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

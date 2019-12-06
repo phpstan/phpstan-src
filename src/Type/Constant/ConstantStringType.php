@@ -262,6 +262,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new self($this->getValue() . $otherString->getValue());
 	}
 
+	public function generalize(): Type
+	{
+		$broker = Broker::getInstance();
+		if ($broker->hasClass($this->getValue())) {
+			return new ClassStringType();
+		}
+		return new StringType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

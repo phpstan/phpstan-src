@@ -118,6 +118,12 @@ function returnInvariant() {
 	throw new \Exception();
 }
 
+/** @template-covariant T of object */
+interface CovariantOfOBject {
+	/** @param T $v */
+	function set($v): void;
+}
+
 /**
  * @template-covariant T
  * @template U

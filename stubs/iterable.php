@@ -181,3 +181,47 @@ class ArrayIterator implements SeekableIterator, ArrayAccess
 	public function key();
 
 }
+
+class DOMDocument
+{
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagName ($name) {}
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
+
+}
+
+class DOMElement
+{
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagName ($name) {}
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
+
+}
+
+/**
+ * @template-covariant TNode as DOMNode
+ * @implements Traversable<int, TNode>
+ */
+class DOMNodeList implements Traversable
+{
+
+	/**
+	 * @return TNode|null
+	 */
+	public function item ($index) {}
+
+}

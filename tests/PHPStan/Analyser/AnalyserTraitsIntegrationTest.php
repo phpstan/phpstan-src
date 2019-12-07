@@ -154,6 +154,15 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertCount(0, $errors);
 	}
 
+	public function testMissingReturnInAbstractTraitMethod(): void
+	{
+		$errors = $this->runAnalyse([
+			__DIR__ . '/traits/TraitWithAbstractMethod.php',
+			__DIR__ . '/traits/ClassImplementingTraitWithAbstractMethod.php',
+		]);
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string[] $files
 	 * @return \PHPStan\Analyser\Error[]

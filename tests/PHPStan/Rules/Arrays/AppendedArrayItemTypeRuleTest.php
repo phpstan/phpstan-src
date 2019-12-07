@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleLevelHelper;
 
 /**
@@ -13,6 +14,7 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new AppendedArrayItemTypeRule(
+			new PropertyReflectionFinder(),
 			new RuleLevelHelper($this->createBroker(), true, false, true)
 		);
 	}
@@ -31,11 +33,11 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 					20,
 				],
 				[
-					'Array (array<array<int, int>|(callable)>) does not accept array<int, string>.',
+					'Array (array<callable>) does not accept array<int, string>.',
 					23,
 				],
 				[
-					'Array (array<array<int, int|string>|(callable)>) does not accept array<int, string>.',
+					'Array (array<callable>) does not accept array<int, string>.',
 					25,
 				],
 				[

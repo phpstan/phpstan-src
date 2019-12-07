@@ -24,42 +24,18 @@ class Foo
 		?string $stringOrNull
 	)
 	{
-		function () {
-			$this->intArray[new \DateTimeImmutable()] = 1;
-		};
-		function () use ($intOrString) {
-			$this->intArray[$intOrString] = 1;
-		};
-		function () use ($int) {
-			$this->intArray[$int] = 1;
-		};
-		function () use ($string) {
-			$this->intArray[$string] = 1;
-		};
-		function () use ($int) {
-			$this->stringArray[$int] = 1;
-		};
-		function () use ($string) {
-			$this->stringArray[$string] = 1;
-		};
-		function () use ($intOrString) {
-			$this->stringArray[$intOrString] = 1;
-		};
-		function () use ($int) {
-			$this->bothArray[$int] = 1;
-		};
-		function () use ($intOrString) {
-			$this->bothArray[$intOrString] = 1;
-		};
-		function () use ($string) {
-			$this->bothArray[$string] = 1;
-		};
-		function () use ($stringOrNull) {
-			$this->stringArray[$stringOrNull] = 1; // will be cast to string
-		};
-		function () {
-			$this->stringArray['0'] = 1;
-		};
+		$this->intArray[new \DateTimeImmutable()] = 1;
+		$this->intArray[$intOrString] = 1;
+		$this->intArray[$int] = 1;
+		$this->intArray[$string] = 1;
+		$this->stringArray[$int] = 1;
+		$this->stringArray[$string] = 1;
+		$this->stringArray[$intOrString] = 1;
+		$this->bothArray[$int] = 1;
+		$this->bothArray[$intOrString] = 1;
+		$this->bothArray[$string] = 1;
+		$this->stringArray[$stringOrNull] = 1; // will be cast to string
+		$this->stringArray['0'] = 1;
 	}
 
 	public function checkRewrittenArray()

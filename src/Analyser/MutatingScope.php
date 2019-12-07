@@ -35,7 +35,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
-use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\TrinaryLogic;
@@ -1711,7 +1710,7 @@ class MutatingScope implements Scope
 			return false;
 		}
 
-		if (!$propertyReflection instanceof PhpPropertyReflection) {
+		if (!$propertyReflection->isNative()) {
 			return false;
 		}
 

@@ -4,7 +4,10 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 
 class PropertyReflectionFinder
 {
@@ -12,16 +15,17 @@ class PropertyReflectionFinder
 	/**
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
 	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Reflection\PropertyReflection|null
+	 * @return FoundPropertyReflection|null
 	 */
-	public function findPropertyReflectionFromNode($propertyFetch, Scope $scope): ?\PHPStan\Reflection\PropertyReflection
+	public function findPropertyReflectionFromNode($propertyFetch, Scope $scope): ?FoundPropertyReflection
 	{
 		if ($propertyFetch instanceof \PhpParser\Node\Expr\PropertyFetch) {
 			if (!$propertyFetch->name instanceof \PhpParser\Node\Identifier) {
 				return null;
 			}
 			$propertyHolderType = $scope->getType($propertyFetch->var);
-			return $this->findPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+			$fetchedOnThis = $propertyHolderType instanceof ThisType && $scope->isInClass();
+			return $this->findPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope, $fetchedOnThis);
 		}
 
 		if (!$propertyFetch->name instanceof \PhpParser\Node\Identifier) {
@@ -34,16 +38,54 @@ class PropertyReflectionFinder
 			$propertyHolderType = $scope->getType($propertyFetch->class);
 		}
 
-		return $this->findPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+		$fetchedOnThis = $propertyHolderType instanceof ThisType && $scope->isInClass();
+
+		return $this->findPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope, $fetchedOnThis);
 	}
 
-	private function findPropertyReflection(Type $propertyHolderType, string $propertyName, Scope $scope): ?\PHPStan\Reflection\PropertyReflection
+	private function findPropertyReflection(Type $propertyHolderType, string $propertyName, Scope $scope, bool $fetchedOnThis): ?FoundPropertyReflection
 	{
 		if (!$propertyHolderType->hasProperty($propertyName)->yes()) {
 			return null;
 		}
 
-		return $propertyHolderType->getProperty($propertyName, $scope);
+		$transformedPropertyHolderType = TypeTraverser::map($propertyHolderType, static function (Type $type, callable $traverse) use ($scope, $fetchedOnThis): Type {
+			if ($type instanceof StaticType) {
+				if ($fetchedOnThis && $scope->isInClass()) {
+					return $traverse($type->changeBaseClass($scope->getClassReflection()->getName()));
+				}
+				if ($scope->isInClass()) {
+					return $traverse($type->changeBaseClass($scope->getClassReflection()->getName())->getStaticObjectType());
+				}
+			}
+
+			return $traverse($type);
+		});
+
+		$originalProperty = $transformedPropertyHolderType->getProperty($propertyName, $scope);
+		$readableType = $this->transformPropertyType($originalProperty->getReadableType(), $transformedPropertyHolderType, $scope, $fetchedOnThis);
+		$writableType = $this->transformPropertyType($originalProperty->getWritableType(), $transformedPropertyHolderType, $scope, $fetchedOnThis);
+
+		return new FoundPropertyReflection(
+			$originalProperty,
+			$readableType,
+			$writableType
+		);
+	}
+
+	private function transformPropertyType(Type $propertyType, Type $transformedPropertyHolderType, Scope $scope, bool $fetchedOnThis): Type
+	{
+		return TypeTraverser::map($propertyType, static function (Type $propertyType, callable $traverse) use ($transformedPropertyHolderType, $scope, $fetchedOnThis): Type {
+			if ($propertyType instanceof StaticType) {
+				if ($fetchedOnThis && $scope->isInClass()) {
+					return $traverse($propertyType->changeBaseClass($scope->getClassReflection()->getName()));
+				}
+
+				return $traverse($transformedPropertyHolderType);
+			}
+
+			return $traverse($propertyType);
+		});
 	}
 
 }

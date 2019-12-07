@@ -2522,6 +2522,22 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				ConstantStringType::class,
 				'\'stdClass\'',
 			],
+			[
+				[
+					new ObjectType(\DateTimeInterface::class),
+					new ObjectType(\Iterator::class),
+				],
+				IntersectionType::class,
+				'DateTimeInterface&Iterator',
+			],
+			[
+				[
+					new ObjectType(\DateTimeInterface::class),
+					new GenericObjectType(\Iterator::class, [new MixedType(), new MixedType()]),
+				],
+				IntersectionType::class,
+				'DateTimeInterface&Iterator<mixed, mixed>',
+			],
 		];
 	}
 

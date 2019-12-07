@@ -49,9 +49,6 @@ class FileTypeMapper
 	/** @var array<string, ResolvedPhpDocBlock> */
 	private $resolvedPhpDocBlockCache = [];
 
-	/** @var array<string, PhpDocNode> */
-	private $phpDocStringCache = [];
-
 	public function __construct(
 		Parser $phpParser,
 		PhpDocStringResolver $phpDocStringResolver,
@@ -149,10 +146,6 @@ class FileTypeMapper
 
 	private function resolvePhpDocStringToDocNode(string $phpDocString): PhpDocNode
 	{
-		if (isset($this->phpDocStringCache[$phpDocString])) {
-			return $this->phpDocStringCache[$phpDocString];
-		}
-
 		$phpDocParserVersion = 'Version unknown';
 		try {
 			$phpDocParserVersion = \Jean85\PrettyVersions::getVersion('phpstan/phpdoc-parser')->getPrettyVersion();
@@ -162,16 +155,13 @@ class FileTypeMapper
 		$cacheKey = sprintf('phpdocstring-%s-%s', $phpDocString, $phpDocParserVersion);
 		$phpDocNodeSerializedString = $this->cache->load($cacheKey);
 		if ($phpDocNodeSerializedString !== null) {
-			$phpDocNode = unserialize($phpDocNodeSerializedString);
-			$this->phpDocStringCache[$phpDocString] = $phpDocNode;
-			return $phpDocNode;
+			return unserialize($phpDocNodeSerializedString);
 		}
 
 		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);
 		if ($this->shouldPhpDocNodeBeCachedToDisk($phpDocNode)) {
 			$this->cache->save($cacheKey, serialize($phpDocNode));
 		}
-		$this->phpDocStringCache[$cacheKey] = $phpDocNode;
 
 		return $phpDocNode;
 	}

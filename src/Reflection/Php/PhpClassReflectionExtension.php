@@ -239,8 +239,11 @@ class PhpClassReflectionExtension
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
-		} elseif (
-			$this->inferPrivatePropertyTypeFromConstructor
+		}
+
+		if (
+			$phpDocType === null
+			&& $this->inferPrivatePropertyTypeFromConstructor
 			&& $declaringClassReflection->getFileName() !== false
 			&& $propertyReflection->isPrivate()
 			&& (!method_exists($propertyReflection, 'hasType') || !$propertyReflection->hasType())

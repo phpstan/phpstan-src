@@ -14,19 +14,29 @@ class Foo
 
 	private $stdClassProp;
 
+	/** @ORM\Column */
+	private $unrelatedDocComment;
+
+	/** @var mixed */
+	private $explicitMixed;
+
 	/**
 	 * @param self|Bar $unionProp
 	 */
 	public function __construct(
 		string $intProp,
 		string $stringProp,
-		$unionProp
+		$unionProp,
+		\stdClass $unrelatedDocComment,
+		\stdClass $explicitMixed
 	)
 	{
 		$this->intProp = $intProp;
 		$this->stringProp = $stringProp;
 		$this->unionProp = $unionProp;
 		$this->stdClassProp = new \stdClass();
+		$this->unrelatedDocComment = $unrelatedDocComment;
+		$this->explicitMixed = $explicitMixed;
 	}
 
 	public function doFoo()

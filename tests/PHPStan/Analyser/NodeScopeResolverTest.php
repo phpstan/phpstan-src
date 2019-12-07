@@ -9687,6 +9687,14 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'stdClass',
 				'$this->stdClassProp',
 			],
+			[
+				'stdClass',
+				'$this->unrelatedDocComment',
+			],
+			[
+				'mixed',
+				'$this->explicitMixed',
+			],
 		];
 	}
 

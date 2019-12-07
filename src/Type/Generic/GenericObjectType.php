@@ -73,7 +73,7 @@ final class GenericObjectType extends ObjectType
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return $this->isSuperTypeOfInternal($type, true);

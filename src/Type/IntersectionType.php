@@ -80,7 +80,16 @@ class IntersectionType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSubTypeOf($acceptingType);
+		if ($acceptingType instanceof self || $acceptingType instanceof UnionType) {
+			return $acceptingType->isSuperTypeOf($this);
+		}
+
+		$results = [];
+		foreach ($this->getTypes() as $innerType) {
+			$results[] = $acceptingType->accepts($innerType, $strictTypes);
+		}
+
+		return TrinaryLogic::maxMin(...$results);
 	}
 
 	public function equals(Type $type): bool

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Test\A;
@@ -142,6 +143,16 @@ class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
 			'generic object accepts normal object of same type' => [
 				new GenericObjectType(\Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
 				new ObjectType(\Traversable::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericObjectType(\Iterator::class, [new MixedType(true), new MixedType(true)]),
+				new ObjectType(\Iterator::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericObjectType(\Iterator::class, [new MixedType(true), new MixedType(true)]),
+				new IntersectionType([new ObjectType(\Iterator::class), new ObjectType(\DateTimeInterface::class)]),
 				TrinaryLogic::createYes(),
 			],
 		];

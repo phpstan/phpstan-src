@@ -11641,7 +11641,7 @@ return [
 'str_rot13' => ['string', 'str'=>'string'],
 'str_shuffle' => ['string', 'str'=>'string'],
 'str_split' => ['array<int,string>|false', 'str'=>'string', 'split_length='=>'int'],
-'str_word_count' => ['array|int', 'string'=>'string', 'format='=>'int', 'charlist='=>'string'],
+'str_word_count' => ['array<int,string>|int|false', 'string'=>'string', 'format='=>'int', 'charlist='=>'string'],
 'strcasecmp' => ['int', 'str1'=>'string', 'str2'=>'string'],
 'strchr' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'before_needle='=>'bool'],
 'strcmp' => ['int', 'str1'=>'string', 'str2'=>'string'],

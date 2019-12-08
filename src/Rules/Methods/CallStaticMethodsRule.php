@@ -15,6 +15,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -155,7 +156,9 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			}
 		}
 
-		if ((new StringType())->isSuperTypeOf($classType)->yes()) {
+		if ($classType instanceof GenericClassStringType) {
+			$classType = $classType->getGenericType();
+		} elseif ((new StringType())->isSuperTypeOf($classType)->yes()) {
 			return [];
 		}
 

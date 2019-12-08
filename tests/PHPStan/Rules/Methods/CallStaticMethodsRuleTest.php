@@ -200,6 +200,22 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Static call to instance method CallStaticMethods\InterfaceWithStaticMethod::doInstanceFoo().',
 				213,
 			],
+			[
+				'Static method CallStaticMethods\Foo::test() invoked with 3 parameters, 0 required.',
+				298,
+			],
+			[
+				'Call to an undefined static method T of CallStaticMethods\Foo::nonexistentMethod().',
+				299,
+			],
+			[
+				'Static method CallStaticMethods\Foo::test() invoked with 3 parameters, 0 required.',
+				302,
+			],
+			[
+				'Call to an undefined static method CallStaticMethods\Foo::nonexistentMethod().',
+				303,
+			],
 		]);
 	}
 

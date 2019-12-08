@@ -276,3 +276,31 @@ class PreserveArrayKeys
 		return new \Exception();
 	}
 }
+
+class ClassStringChecks
+{
+
+	/**
+	 * @template T of Foo
+	 * @param class-string $classString
+	 * @param class-string<T> $anotherClassString
+	 * @param class-string<Foo> $yetAnotherClassString
+	 */
+	public function doFoo(
+		string $classString,
+		string $anotherClassString,
+		string $yetAnotherClassString
+	)
+	{
+		$classString::nonexistentMethod();
+
+		$anotherClassString::test();
+		$anotherClassString::test(1, 2, 3);
+		$anotherClassString::nonexistentMethod();
+
+		$yetAnotherClassString::test();
+		$yetAnotherClassString::test(1, 2, 3);
+		$yetAnotherClassString::nonexistentMethod();
+	}
+
+}

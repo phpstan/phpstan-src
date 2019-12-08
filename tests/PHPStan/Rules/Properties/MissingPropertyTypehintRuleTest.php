@@ -12,7 +12,7 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingPropertyTypehintRule(new MissingTypehintCheck(true));
+		return new MissingPropertyTypehintRule(new MissingTypehintCheck(true, true));
 	}
 
 	public function testRule(): void

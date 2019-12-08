@@ -12,7 +12,7 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck(true));
+		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck(true, true));
 	}
 
 	public function testRule(): void

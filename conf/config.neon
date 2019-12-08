@@ -15,6 +15,7 @@ parameters:
 	checkFunctionArgumentTypes: false
 	checkFunctionNameCase: false
 	checkGenericClassInNonGenericObjectType: false
+	checkMissingIterableValueType: false
 	checkMissingVarTagTypehint: false
 	checkArgumentsPassedByReference: false
 	checkMaybeUndefinedVariables: false
@@ -116,6 +117,7 @@ parametersSchema:
 	checkFunctionArgumentTypes: bool()
 	checkFunctionNameCase: bool()
 	checkGenericClassInNonGenericObjectType: bool()
+	checkMissingIterableValueType: bool()
 	checkMissingVarTagTypehint: bool()
 	checkArgumentsPassedByReference: bool()
 	checkMaybeUndefinedVariables: bool()
@@ -381,6 +383,7 @@ services:
 	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
+			checkMissingIterableValueType: %checkMissingIterableValueType%
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 
 	-

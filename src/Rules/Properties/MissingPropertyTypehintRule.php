@@ -53,7 +53,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->name->name,
 				$iterableType->describe(VerbosityLevel::typeOnly())
-			))->build();
+			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($propertyType) as [$name, $genericTypeNames]) {

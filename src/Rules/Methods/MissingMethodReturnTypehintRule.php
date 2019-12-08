@@ -56,7 +56,7 @@ final class MissingMethodReturnTypehintRule implements \PHPStan\Rules\Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$iterableType->describe(VerbosityLevel::typeOnly())
-			))->build();
+			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($returnType) as [$name, $genericTypeNames]) {

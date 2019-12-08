@@ -114,7 +114,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 						'%s has no value type specified in iterable type %s.',
 						$identifier,
 						$iterableType->describe(VerbosityLevel::typeOnly())
-					))->build();
+					))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 				}
 			}
 

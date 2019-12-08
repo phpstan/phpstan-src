@@ -12,13 +12,22 @@ use PHPStan\Type\TypeTraverser;
 class MissingTypehintCheck
 {
 
+	public const TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP = 'You can turn this off by setting <fg=cyan>checkMissingIterableValueType: false</> in your <fg=cyan>%configurationFile%</>.';
+
 	public const TURN_OFF_NON_GENERIC_CHECK_TIP = 'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.';
+
+	/** @var bool */
+	private $checkMissingIterableValueType;
 
 	/** @var bool */
 	private $checkGenericClassInNonGenericObjectType;
 
-	public function __construct(bool $checkGenericClassInNonGenericObjectType)
+	public function __construct(
+		bool $checkMissingIterableValueType,
+		bool $checkGenericClassInNonGenericObjectType
+	)
 	{
+		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
 	}
 
@@ -28,6 +37,10 @@ class MissingTypehintCheck
 	 */
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
 	{
+		if (!$this->checkMissingIterableValueType) {
+			return [];
+		}
+
 		$iterablesWithMissingValueTypehint = [];
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$iterablesWithMissingValueTypehint): Type {
 			if ($type->isIterable()->yes()) {

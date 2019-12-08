@@ -3,6 +3,7 @@ includes:
 
 parameters:
 	checkGenericClassInNonGenericObjectType: true
+	checkMissingIterableValueType: true
 	checkMissingVarTagTypehint: true
 	checkMissingTypehints: true
 

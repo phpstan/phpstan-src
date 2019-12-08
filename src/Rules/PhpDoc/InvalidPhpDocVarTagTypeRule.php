@@ -110,11 +110,12 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 
 			if ($this->checkMissingVarTagTypehint) {
 				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($varTagType) as $iterableType) {
+					$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'%s has no value type specified in iterable type %s.',
 						$identifier,
-						$iterableType->describe(VerbosityLevel::typeOnly())
-					))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+						$iterableTypeDescription
+					))->tip(sprintf(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP, $iterableTypeDescription))->build();
 				}
 			}
 

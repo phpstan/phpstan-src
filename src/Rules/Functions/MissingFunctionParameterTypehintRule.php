@@ -84,12 +84,13 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 
 		$messages = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableType) {
+			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() has parameter $%s with no value type specified in iterable type %s.',
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
-				$iterableType->describe(VerbosityLevel::typeOnly())
-			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+				$iterableTypeDescription
+			))->tip(sprintf(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP, $iterableTypeDescription))->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {

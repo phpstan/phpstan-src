@@ -51,12 +51,13 @@ final class MissingMethodReturnTypehintRule implements \PHPStan\Rules\Rule
 
 		$messages = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($returnType) as $iterableType) {
+			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() return type has no value type specified in iterable type %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$iterableType->describe(VerbosityLevel::typeOnly())
-			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+				$iterableTypeDescription
+			))->tip(sprintf(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP, $iterableTypeDescription))->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($returnType) as [$name, $genericTypeNames]) {

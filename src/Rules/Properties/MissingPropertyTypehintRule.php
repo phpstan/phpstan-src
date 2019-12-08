@@ -48,12 +48,13 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 
 		$messages = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($propertyType) as $iterableType) {
+			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s type has no value type specified in iterable type %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->name->name,
-				$iterableType->describe(VerbosityLevel::typeOnly())
-			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+				$iterableTypeDescription
+			))->tip(sprintf(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP, $iterableTypeDescription))->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($propertyType) as [$name, $genericTypeNames]) {

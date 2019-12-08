@@ -48,6 +48,7 @@ jobs:
         - |
           composer install --working-dir=compiler && \
           php compiler/bin/compile && \
+          GIT_LOG=$(git log ${TRAVIS_COMMIT_RANGE} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//') && \
           git clone https://${GITHUB_TOKEN}@github.com/phpstan/phpstan.git phpstan-dist > /dev/null 2>&1 && \
           cp tmp/phpstan.phar phpstan-dist/phpstan.phar && \
           cp tmp/phpstan.phar phpstan-dist/phpstan && \
@@ -55,7 +56,7 @@ jobs:
           git config user.email "ondrej@mirtes.cz" && \
           git config user.name "Ondrej Mirtes" && \
           git add phpstan phpstan.phar && \
-          git commit -m "Updated PHPStan to commit ${TRAVIS_COMMIT}" && \
+          git commit -m "Updated PHPStan to commit ${TRAVIS_COMMIT}" -m "${GIT_LOG}" && \
           git push --quiet origin master
     - stage: test
       os: windows

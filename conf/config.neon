@@ -847,3 +847,5 @@ services:
 
 	errorFormatter.gitlab:
 		class: PHPStan\Command\ErrorFormatter\GitlabErrorFormatter
+		arguments:
+			relativePathHelper: @simpleRelativePathHelper

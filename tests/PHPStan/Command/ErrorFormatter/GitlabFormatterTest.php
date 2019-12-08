@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 
 class GitlabFormatterTest extends ErrorFormatterTestCase
@@ -27,7 +28,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Foo",
         "fingerprint": "e82b7e1f1d4255352b19ecefa9116a12f129c7edb4351cf2319285eccdb1565e",
         "location": {
-            "path": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+            "path": "with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
             "lines": {
                 "begin": 4
             }
@@ -65,7 +66,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Bar",
         "fingerprint": "d112f1651daa597592156359ef28c9a4b81a8a96dbded1c0f1009f5bbc2bda97",
         "location": {
-            "path": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+            "path": "with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
             "lines": {
                 "begin": 2
             }
@@ -75,7 +76,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Foo",
         "fingerprint": "e82b7e1f1d4255352b19ecefa9116a12f129c7edb4351cf2319285eccdb1565e",
         "location": {
-            "path": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+            "path": "with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
             "lines": {
                 "begin": 4
             }
@@ -85,7 +86,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Foo",
         "fingerprint": "93c79740ed8c6fbaac2087e54d6f6f67fc0918e3ff77840530f32e19857ef63c",
         "location": {
-            "path": "/data/folder/with space/and unicode \ud83d\ude03/project/foo.php",
+            "path": "with space/and unicode \ud83d\ude03/project/foo.php",
             "lines": {
                 "begin": 1
             }
@@ -95,7 +96,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Bar",
         "fingerprint": "d83022ee5bc7c71b6a4988ec47a377c9998b929d12d86fc71b745ec2b04c81e5",
         "location": {
-            "path": "/data/folder/with space/and unicode \ud83d\ude03/project/foo.php",
+            "path": "with space/and unicode \ud83d\ude03/project/foo.php",
             "lines": {
                 "begin": 5
             }
@@ -143,7 +144,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Bar",
         "fingerprint": "d112f1651daa597592156359ef28c9a4b81a8a96dbded1c0f1009f5bbc2bda97",
         "location": {
-            "path": "/data/folder/with space/and unicode \ud83d\ude03/project/folder with unicode \ud83d\ude03/file name with \"spaces\" and unicode \ud83d\ude03.php",
+            "path": "with space/and unicode \ud83d\ude03/project/folder with unicode \ud83d\ude03/file name with \"spaces\" and unicode \ud83d\ude03.php",
             "lines": {
                 "begin": 2
             }
@@ -153,7 +154,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Foo",
         "fingerprint": "e82b7e1f1d4255352b19ecefa9116a12f129c7edb4351cf2319285eccdb1565e",
         "location": {
-            "path": "/data/folder/with space/and unicode \ud83d\ude03/project/folder with unicode \ud83d\ude03/file name with \"spaces\" and unicode \ud83d\ude03.php",
+            "path": "with space/and unicode \ud83d\ude03/project/folder with unicode \ud83d\ude03/file name with \"spaces\" and unicode \ud83d\ude03.php",
             "lines": {
                 "begin": 4
             }
@@ -163,7 +164,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Foo",
         "fingerprint": "93c79740ed8c6fbaac2087e54d6f6f67fc0918e3ff77840530f32e19857ef63c",
         "location": {
-            "path": "/data/folder/with space/and unicode \ud83d\ude03/project/foo.php",
+            "path": "with space/and unicode \ud83d\ude03/project/foo.php",
             "lines": {
                 "begin": 1
             }
@@ -173,7 +174,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         "description": "Bar",
         "fingerprint": "d83022ee5bc7c71b6a4988ec47a377c9998b929d12d86fc71b745ec2b04c81e5",
         "location": {
-            "path": "/data/folder/with space/and unicode \ud83d\ude03/project/foo.php",
+            "path": "with space/and unicode \ud83d\ude03/project/foo.php",
             "lines": {
                 "begin": 5
             }
@@ -221,7 +222,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 		string $expected
 	): void
 	{
-		$formatter = new GitlabErrorFormatter();
+		$formatter = new GitlabErrorFormatter(new SimpleRelativePathHelper('/data/folder'));
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),

@@ -5,12 +5,21 @@ namespace PHPStan\Command\ErrorFormatter;
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\File\RelativePathHelper;
 
 /**
  * @see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#implementing-a-custom-tool
  */
 class GitlabErrorFormatter implements ErrorFormatter
 {
+
+	/** @var RelativePathHelper */
+	private $relativePathHelper;
+
+	public function __construct(RelativePathHelper $relativePathHelper)
+	{
+		$this->relativePathHelper = $relativePathHelper;
+	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
@@ -30,7 +39,7 @@ class GitlabErrorFormatter implements ErrorFormatter
 					)
 				),
 				'location' => [
-					'path' => $fileSpecificError->getFile(),
+					'path' => $this->relativePathHelper->getRelativePath($fileSpecificError->getFile()),
 					'lines' => [
 						'begin' => $fileSpecificError->getLine(),
 					],

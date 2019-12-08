@@ -5850,6 +5850,42 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'(string|false)',
 				'$base64DecodeBenevolent',
 			],
+			[
+				'*ERROR*',
+				'$strWordCountWithoutParameters',
+			],
+			[
+				'*ERROR*',
+				'$strWordCountWithTooManyParams',
+			],
+			[
+				'int',
+				'$strWordCountStr',
+			],
+			[
+				'int',
+				'$strWordCountStrType0',
+			],
+			[
+				'array<int, string>',
+				'$strWordCountStrType1',
+			],
+			[
+				'array<int, string>',
+				'$strWordCountStrType1Extra',
+			],
+			[
+				'array<int, string>',
+				'$strWordCountStrType2',
+			],
+			[
+				'array<int, string>',
+				'$strWordCountStrType2Extra',
+			],
+			[
+				'array<int, string>|int|false',
+				'$strWordCountStrTypeIndeterminant',
+			],
 		];
 	}
 

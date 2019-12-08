@@ -108,4 +108,19 @@ $base64DecodeWithStrictEnabled = base64_decode('', true);
 $base64DecodeDefault = base64_decode('', null);
 $base64DecodeBenevolent = base64_decode('', $undefined);
 
+
+//str_word_count
+$strWordCountWithoutParameters = str_word_count();
+$strWordCountWithTooManyParams = str_word_count('string', 0, 'string', 'extra');
+$strWordCountStr = str_word_count('string');
+$strWordCountStrType0 = str_word_count('string', 0);
+$strWordCountStrType1 = str_word_count('string', 1);
+$strWordCountStrType1Extra = str_word_count('string', 1, 'string');
+$strWordCountStrType2 = str_word_count('string', 2);
+$strWordCountStrType2Extra = str_word_count('string', 2, 'string');
+
+/** @var int $integer */
+$integer = doFoo();
+$strWordCountStrTypeIndeterminant = str_word_count('string', $integer);
+
 die;

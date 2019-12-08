@@ -1504,76 +1504,51 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Expr\StaticCall && $node->name instanceof Node\Identifier) {
 			if ($node->class instanceof Name) {
-				$calleeType = new ObjectType($this->resolveName($node->class));
+				$staticMethodCalledOnType = new ObjectType($this->resolveName($node->class));
 			} else {
-				$calleeType = $this->getType($node->class);
-			}
-
-			$referencedClasses = TypeUtils::getDirectClassNames($this->getTypeToInstantiateForNew($calleeType));
-			$resolvedTypesFromDynamicReturnTypeExtensions = [];
-			$resolvedTypes = [];
-			foreach ($referencedClasses as $referencedClass) {
-				if (!$this->broker->hasClass($referencedClass)) {
-					continue;
-				}
-
-				$staticMethodClassReflection = $this->broker->getClass($referencedClass);
-				if (!$staticMethodClassReflection->hasMethod($node->name->name)) {
-					continue;
-				}
-
-				$staticMethodReflection = $staticMethodClassReflection->getMethod($node->name->name, $this);
-				$resolvedTypes[] = ParametersAcceptorSelector::selectFromArgs(
-					$this,
-					$node->args,
-					$staticMethodReflection->getVariants()
-				)->getReturnType();
-				foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($staticMethodClassReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
-					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($staticMethodReflection)) {
-						continue;
-					}
-
-					$resolvedTypesFromDynamicReturnTypeExtensions[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($staticMethodReflection, $node, $this);
+				$staticMethodCalledOnType = $this->getType($node->class);
+				if ($staticMethodCalledOnType instanceof GenericClassStringType) {
+					$staticMethodCalledOnType = $staticMethodCalledOnType->getGenericType();
 				}
 			}
-			if (count($resolvedTypesFromDynamicReturnTypeExtensions) > 0) {
-				return TypeCombinator::union(...$resolvedTypesFromDynamicReturnTypeExtensions);
-			}
 
-			if ($calleeType->hasMethod($node->name->name)->yes()) {
-				$staticMethodReflection = $calleeType->getMethod($node->name->name, $this);
-				$staticMethodReturnType = ParametersAcceptorSelector::selectFromArgs(
-					$this,
-					$node->args,
-					$staticMethodReflection->getVariants()
-				)->getReturnType();
-
-				return TypeTraverser::map($staticMethodReturnType, function (Type $type, callable $traverse) use ($node, $calleeType): Type {
-					if ($type instanceof StaticType) {
-						if ($node->class instanceof Name) {
-							$nameNodeClassName = (string) $node->class;
-							$lowercasedNameNodeClassName = strtolower($nameNodeClassName);
-							if (in_array($lowercasedNameNodeClassName, [
-								'self',
-								'static',
-								'parent',
-							], true) && $this->isInClass()) {
-								return $traverse($type->changeBaseClass($this->getClassReflection()->getName()));
-							}
+			$methodName = $node->name->toString();
+			$map = function (Type $type, callable $traverse) use ($methodName, $node): Type {
+				if ($type instanceof UnionType) {
+					return $traverse($type);
+				}
+				if ($type instanceof IntersectionType) {
+					$returnTypes = [];
+					foreach ($type->getTypes() as $innerType) {
+						$returnType = $this->methodCallReturnType(
+							$type,
+							$innerType,
+							$methodName,
+							$node
+						);
+						if ($returnType === null) {
+							continue;
 						}
 
-						return $traverse($calleeType);
+						$returnTypes[] = $returnType;
 					}
-
-					return $traverse($type);
-				});
+					if (count($returnTypes) === 0) {
+						return new NeverType();
+					}
+					return TypeCombinator::intersect(...$returnTypes);
+				}
+				return $this->methodCallReturnType(
+					$type,
+					$type,
+					$methodName,
+					$node
+				) ?? new NeverType();
+			};
+			$returnType = TypeTraverser::map($staticMethodCalledOnType, $map);
+			if ($returnType instanceof NeverType) {
+				return new ErrorType();
 			}
-
-			if (count($resolvedTypes) > 0) {
-				return TypeCombinator::union(...$resolvedTypes);
-			}
-
-			return new ErrorType();
+			return $returnType;
 		}
 
 		if ($node instanceof PropertyFetch && $node->name instanceof Node\Identifier) {
@@ -1621,45 +1596,50 @@ class MutatingScope implements Scope
 			&& $node->name instanceof Node\VarLikeIdentifier
 		) {
 			if ($node->class instanceof Name) {
-				$calleeType = new ObjectType($this->resolveName($node->class));
+				$staticPropertyFetchedOnType = new ObjectType($this->resolveName($node->class));
 			} else {
-				$calleeType = $this->getType($node->class);
-			}
-
-			$referencedClasses = TypeUtils::getDirectClassNames($calleeType);
-			$propertyName = $node->name->toString();
-			$types = [];
-			foreach ($referencedClasses as $referencedClass) {
-				if (!$this->broker->hasClass($referencedClass)) {
-					continue;
-				}
-
-				$propertyClassReflection = $this->broker->getClass($referencedClass);
-				if (!$propertyClassReflection->hasProperty($propertyName)) {
-					continue;
-				}
-
-				$property = $propertyClassReflection->getProperty($propertyName, $this);
-				if ($this->isInExpressionAssign($node)) {
-					$types[] = $property->getWritableType();
-				} else {
-					$types[] = $property->getReadableType();
+				$staticPropertyFetchedOnType = $this->getType($node->class);
+				if ($staticPropertyFetchedOnType instanceof GenericClassStringType) {
+					$staticPropertyFetchedOnType = $staticPropertyFetchedOnType->getGenericType();
 				}
 			}
 
-			if (count($types) > 0) {
-				return TypeCombinator::union(...$types);
-			}
+			$staticPropertyName = $node->name->toString();
+			$map = function (Type $type, callable $traverse) use ($staticPropertyName, $node): Type {
+				if ($type instanceof UnionType) {
+					return $traverse($type);
+				}
+				if ($type instanceof IntersectionType) {
+					$returnTypes = [];
+					foreach ($type->getTypes() as $innerType) {
+						$returnType = $this->propertyFetchType(
+							$innerType,
+							$staticPropertyName,
+							$node
+						);
+						if ($returnType === null) {
+							continue;
+						}
 
-			if (!$calleeType->hasProperty($node->name->name)->yes()) {
+						$returnTypes[] = $returnType;
+					}
+					if (count($returnTypes) === 0) {
+						return new NeverType();
+					}
+					return TypeCombinator::intersect(...$returnTypes);
+				}
+				return $this->propertyFetchType(
+					$type,
+					$staticPropertyName,
+					$node
+				) ?? new NeverType();
+			};
+
+			$returnType = TypeTraverser::map($staticPropertyFetchedOnType, $map);
+			if ($returnType instanceof NeverType) {
 				return new ErrorType();
 			}
-
-			$property = $calleeType->getProperty($node->name->name, $this);
-			if ($this->isInExpressionAssign($node)) {
-				return $property->getWritableType();
-			}
-			return $property->getReadableType();
+			return $returnType;
 		}
 
 		if ($node instanceof FuncCall) {
@@ -3330,7 +3310,14 @@ class MutatingScope implements Scope
 		return $decidedType;
 	}
 
-	private function methodCallReturnType(Type $calledOnType, Type $typeWithMethod, string $methodName, MethodCall $node): ?Type
+	/**
+	 * @param \PHPStan\Type\Type $calledOnType
+	 * @param \PHPStan\Type\Type $typeWithMethod
+	 * @param string $methodName
+	 * @param MethodCall|\PhpParser\Node\Expr\StaticCall $methodCall
+	 * @return \PHPStan\Type\Type|null
+	 */
+	private function methodCallReturnType(Type $calledOnType, Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
 	{
 		if (!$typeWithMethod->hasMethod($methodName)->yes()) {
 			return null;
@@ -3340,12 +3327,23 @@ class MutatingScope implements Scope
 
 		if ($typeWithMethod instanceof TypeWithClassName) {
 			$resolvedTypes = [];
-			foreach ($this->broker->getDynamicMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicMethodReturnTypeExtension) {
-				if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
-					continue;
-				}
 
-				$resolvedTypes[] = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $node, $this);
+			if ($methodCall instanceof MethodCall) {
+				foreach ($this->broker->getDynamicMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicMethodReturnTypeExtension) {
+					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
+						continue;
+					}
+
+					$resolvedTypes[] = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $methodCall, $this);
+				}
+			} else {
+				foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicStaticMethodReturnTypeExtension) {
+					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($methodReflection)) {
+						continue;
+					}
+
+					$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($methodReflection, $methodCall, $this);
+				}
 			}
 			if (count($resolvedTypes) > 0) {
 				return TypeCombinator::union(...$resolvedTypes);
@@ -3354,11 +3352,19 @@ class MutatingScope implements Scope
 
 		$methodReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$this,
-			$node->args,
+			$methodCall->args,
 			$methodReflection->getVariants()
 		)->getReturnType();
 
-		$calledOnThis = $calledOnType instanceof ThisType && $this->isInClass();
+		if ($methodCall instanceof MethodCall) {
+			$calledOnThis = $calledOnType instanceof ThisType && $this->isInClass();
+		} else {
+			if (!$methodCall->class instanceof Name) {
+				$calledOnThis = false;
+			} else {
+				$calledOnThis = in_array(strtolower($methodCall->class->toString()), ['self', 'static', 'parent'], true) && $this->isInClass();
+			}
+		}
 
 		$transformedCalledOnType = TypeTraverser::map($calledOnType, function (Type $type, callable $traverse) use ($calledOnThis): Type {
 			if ($type instanceof StaticType) {
@@ -3386,7 +3392,13 @@ class MutatingScope implements Scope
 		});
 	}
 
-	private function propertyFetchType(Type $fetchedOnType, string $propertyName, PropertyFetch $node): ?Type
+	/**
+	 * @param \PHPStan\Type\Type $fetchedOnType
+	 * @param string $propertyName
+	 * @param PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+	 * @return \PHPStan\Type\Type|null
+	 */
+	private function propertyFetchType(Type $fetchedOnType, string $propertyName, Expr $propertyFetch): ?Type
 	{
 		if (!$fetchedOnType->hasProperty($propertyName)->yes()) {
 			return null;
@@ -3394,13 +3406,21 @@ class MutatingScope implements Scope
 
 		$propertyReflection = $fetchedOnType->getProperty($propertyName, $this);
 
-		if ($this->isInExpressionAssign($node)) {
+		if ($this->isInExpressionAssign($propertyFetch)) {
 			$propertyType = $propertyReflection->getWritableType();
 		} else {
 			$propertyType = $propertyReflection->getReadableType();
 		}
 
-		$fetchedOnThis = $fetchedOnType instanceof ThisType && $this->isInClass();
+		if ($propertyFetch instanceof PropertyFetch) {
+			$fetchedOnThis = $fetchedOnType instanceof ThisType && $this->isInClass();
+		} else {
+			if (!$propertyFetch->class instanceof Name) {
+				$fetchedOnThis = false;
+			} else {
+				$fetchedOnThis = in_array(strtolower($propertyFetch->class->toString()), ['self', 'static', 'parent'], true) && $this->isInClass();
+			}
+		}
 
 		$transformedFetchedOnType = TypeTraverser::map($fetchedOnType, function (Type $type, callable $traverse) use ($fetchedOnThis): Type {
 			if ($type instanceof StaticType) {

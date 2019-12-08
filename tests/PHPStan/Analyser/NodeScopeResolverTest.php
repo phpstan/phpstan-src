@@ -9581,6 +9581,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/static-properties.php');
 	}
 
+	public function dataStaticMethods(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/static-methods.php');
+	}
+
 	public function dataBug2612(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2612.php');
@@ -9607,6 +9612,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataArrayKey
 	 * @dataProvider dataIntersectionStatic
 	 * @dataProvider dataStaticProperties
+	 * @dataProvider dataStaticMethods
 	 * @dataProvider dataBug2612
 	 * @dataProvider dataBug2677
 	 * @dataProvider dataBug2676

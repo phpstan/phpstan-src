@@ -180,6 +180,10 @@ function testG($int)
 
 class Foo
 {
+
+	/** @var static */
+	public static $staticProp;
+
 	/** @return static */
 	public static function returnsStatic()
 	{
@@ -1236,4 +1240,34 @@ function testClassString(
 	assertType('object', acceptsClassString($classString));
 	assertType('Exception', acceptsClassStringUpperBound($classString));
 	assertType('object', acceptsClassStringOfObject($classString));
+}
+
+class Bar extends Foo
+{
+
+}
+
+/**
+ * @template T of Foo
+ * @param class-string<T> $classString
+ * @param class-string<Foo> $anotherClassString
+ * @param class-string<Bar> $yetAnotherClassString
+ */
+function returnStaticOnClassString(
+	string $classString,
+	string $anotherClassString,
+	string $yetAnotherClassString
+)
+{
+	assertType('T of PHPStan\Generics\FunctionsAssertType\Foo (function PHPStan\Generics\FunctionsAssertType\returnStaticOnClassString(), argument)', $classString::returnsStatic());
+	assertType('T of PHPStan\Generics\FunctionsAssertType\Foo (function PHPStan\Generics\FunctionsAssertType\returnStaticOnClassString(), argument)', $classString::instanceReturnsStatic());
+	assertType('T of PHPStan\Generics\FunctionsAssertType\Foo (function PHPStan\Generics\FunctionsAssertType\returnStaticOnClassString(), argument)', $classString::$staticProp);
+
+	assertType('PHPStan\Generics\FunctionsAssertType\Foo', $anotherClassString::instanceReturnsStatic());
+	assertType('PHPStan\Generics\FunctionsAssertType\Foo', $anotherClassString::returnsStatic());
+	assertType('PHPStan\Generics\FunctionsAssertType\Foo', $anotherClassString::$staticProp);
+
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $yetAnotherClassString::instanceReturnsStatic());
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $yetAnotherClassString::returnsStatic());
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $yetAnotherClassString::$staticProp);
 }

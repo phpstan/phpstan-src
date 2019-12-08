@@ -1544,3 +1544,25 @@ class CallableWithMixedArray
 	}
 
 }
+
+class ClassString
+{
+
+	/**
+	 * @param class-string $className
+	 */
+	public function doFoo(string $className)
+	{
+		$this->doBar($className);
+	}
+
+	/**
+	 * @template T
+	 * @param class-string<T> $className
+	 */
+	public function doBar(string $className)
+	{
+		$this->doFoo($className);
+	}
+
+}

@@ -14,6 +14,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -127,6 +128,13 @@ class GenericClassStringType extends ClassStringType
 			$typeToInfer = new ObjectType($receivedType->getValue());
 		} elseif ($receivedType instanceof self) {
 			$typeToInfer = $receivedType->type;
+		} elseif ($receivedType instanceof ClassStringType) {
+			$typeToInfer = $this->type;
+			if ($typeToInfer instanceof TemplateType) {
+				$typeToInfer = $typeToInfer->getBound();
+			}
+
+			$typeToInfer = TypeCombinator::intersect($typeToInfer, new ObjectWithoutClassType());
 		} else {
 			return TemplateTypeMap::createEmpty();
 		}

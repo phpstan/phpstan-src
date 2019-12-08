@@ -1214,3 +1214,26 @@ function testPrefixed(
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $d->name);
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $e->name);
 };
+
+/**
+ * @template T of object
+ * @param class-string<T> $classString
+ * @return T
+ */
+function acceptsClassStringOfObject(string $classString)
+{
+
+}
+
+/**
+ * @param class-string $classString
+ */
+function testClassString(
+	string $classString
+)
+{
+	assertType('class-string', $classString);
+	assertType('object', acceptsClassString($classString));
+	assertType('Exception', acceptsClassStringUpperBound($classString));
+	assertType('object', acceptsClassStringOfObject($classString));
+}

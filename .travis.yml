@@ -61,6 +61,7 @@ jobs:
           git config user.email "ondrej@mirtes.cz" && \
           git config user.name "Ondrej Mirtes" && \
           git config --global user.signingkey CF1A108D0E7AE720 && \
+          rm phpstan.phar.asc && \
           gpg --batch -ab phpstan.phar && \
           gpg --verify phpstan.phar.asc && \
           git add phpstan phpstan.phar phpstan.phar.asc

@@ -5,7 +5,7 @@ language: php
 stages:
   - test
   - name: phar
-    if: branch = master && type = push
+    if: (branch = master OR tag IS present) && type = push
 
 php:
   - 7.1
@@ -63,9 +63,21 @@ jobs:
           git config --global user.signingkey CF1A108D0E7AE720 && \
           gpg --batch -ab phpstan.phar && \
           gpg --verify phpstan.phar.asc && \
-          git add phpstan phpstan.phar phpstan.phar.asc && \
-          git commit -S -m "Updated PHPStan to commit ${TRAVIS_COMMIT}" -m "${GIT_LOG}" && \
+          git add phpstan phpstan.phar phpstan.phar.asc
+
+          if [ "${TRAVIS_TAG}" != "" ]; then
+            COMMIT_MSG="PHPStan ${TRAVIS_TAG}"
+          else
+            COMMIT_MSG="Updated PHPStan to commit ${TRAVIS_COMMIT}"
+          fi
+
+          git commit -S -m "${COMMIT_MSG}" -m "${GIT_LOG}" && \
           git push --quiet origin master
+
+          if [ "${TRAVIS_TAG}" != "" ]; then
+            git tag -s ${TRAVIS_TAG} -m "${TRAVIS_TAG}" && \
+            git push --quiet origin ${TRAVIS_TAG}
+          fi
     - stage: test
       os: windows
       dist: 1803-containers

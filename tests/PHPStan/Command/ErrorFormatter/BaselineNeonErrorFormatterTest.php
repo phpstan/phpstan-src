@@ -149,4 +149,32 @@ class BaselineNeonErrorFormatterTest extends TestBaseFormatter
 		);
 	}
 
+
+	public function testNewlinesInPathAlwaysLinuxEncoded():void {
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+
+		$result  = new AnalysisResult(
+			[new Error('path should be normalized', 'myfolder\\Testfile')],
+			[],
+			false,
+			false,
+			null
+		);
+		$formatter->formatErrors(
+			$result,
+			$this->getErrorConsoleStyle()
+		);
+
+		self::assertSame(
+			trim(Neon::encode(['parameters' => ['ignoreErrors' => [
+				[
+					'message' => "#^path should be normalized$#",
+					'count' => 1,
+					'path' => 'myfolder/Testfile',
+				],
+			]]], Neon::BLOCK)),
+			trim($this->getOutputContent())
+		);
+	}
+
 }

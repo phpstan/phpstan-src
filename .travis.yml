@@ -44,6 +44,11 @@ jobs:
           ../tmp/phpstan.phar
     - stage: phar
       php: 7.3
+      before_install:
+        - |
+          openssl aes-256-cbc -K $encrypted_bd816b4f73f9_key -iv $encrypted_bd816b4f73f9_iv -in build/key.gpg.enc -out build/key.gpg -d && \
+          gpg --batch --import build/key.gpg && \
+          rm build/key.gpg
       script:
         - |
           composer install --working-dir=compiler && \
@@ -55,8 +60,11 @@ jobs:
           cd phpstan-dist && \
           git config user.email "ondrej@mirtes.cz" && \
           git config user.name "Ondrej Mirtes" && \
-          git add phpstan phpstan.phar && \
-          git commit -m "Updated PHPStan to commit ${TRAVIS_COMMIT}" -m "${GIT_LOG}" && \
+          git config --global user.signingkey CF1A108D0E7AE720 && \
+          gpg --batch -ab phpstan.phar && \
+          gpg --verify phpstan.phar.asc && \
+          git add phpstan phpstan.phar phpstan.phar.asc && \
+          git commit -S -m "Updated PHPStan to commit ${TRAVIS_COMMIT}" -m "${GIT_LOG}" && \
           git push --quiet origin master
     - stage: test
       os: windows

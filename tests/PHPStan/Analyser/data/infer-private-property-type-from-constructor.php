@@ -20,6 +20,10 @@ class Foo
 	/** @var mixed */
 	private $explicitMixed;
 
+	private $bool;
+
+	private $array;
+
 	/**
 	 * @param self|Bar $unionProp
 	 */
@@ -37,6 +41,8 @@ class Foo
 		$this->stdClassProp = new \stdClass();
 		$this->unrelatedDocComment = $unrelatedDocComment;
 		$this->explicitMixed = $explicitMixed;
+		$this->bool = false;
+		$this->array = [];
 	}
 
 	public function doFoo()

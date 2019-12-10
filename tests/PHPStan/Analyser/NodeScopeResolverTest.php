@@ -9737,6 +9737,14 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'mixed',
 				'$this->explicitMixed',
 			],
+			[
+				'bool',
+				'$this->bool',
+			],
+			[
+				'array',
+				'$this->array',
+			],
 		];
 	}
 

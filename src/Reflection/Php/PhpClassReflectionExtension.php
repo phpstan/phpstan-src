@@ -39,6 +39,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use PHPStan\Type\TypeUtils;
 
 class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension, BrokerAwareExtension
@@ -764,7 +765,7 @@ class PhpClassReflectionExtension
 				continue;
 			}
 
-			$propertyTypes[$propertyFetch->name->toString()] = $propertyType;
+			$propertyTypes[$propertyFetch->name->toString()] = TypeUtils::generalizeType($propertyType);
 		}
 
 		return $this->propertyTypesCache[$declaringClass->getName()] = $propertyTypes;

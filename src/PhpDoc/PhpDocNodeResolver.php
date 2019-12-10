@@ -21,9 +21,11 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -52,13 +54,15 @@ class PhpDocNodeResolver
 		foreach (['@phpstan-var', '@psalm-var', '@var'] as $tagName) {
 			$resolved = [];
 			foreach ($phpDocNode->getVarTagValues($tagName) as $tagValue) {
+				$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+				if ($this->shouldSkipType($tagName, $type)) {
+					continue;
+				}
 				if ($tagValue->variableName !== '') {
 					$variableName = substr($tagValue->variableName, 1);
-					$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 					$resolved[$variableName] = new VarTag($type);
-
 				} else {
-					$resolved[] = new VarTag($this->typeNodeResolver->resolve($tagValue->type, $nameScope));
+					$resolved[] = new VarTag($type);
 				}
 			}
 
@@ -282,6 +286,9 @@ class PhpDocNodeResolver
 			foreach ($phpDocNode->getParamTagValues($tagName) as $tagValue) {
 				$parameterName = substr($tagValue->parameterName, 1);
 				$parameterType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+				if ($this->shouldSkipType($tagName, $parameterType)) {
+					continue;
+				}
 
 				if ($tagValue->isVariadic) {
 					if (!$parameterType instanceof ArrayType) {
@@ -308,7 +315,11 @@ class PhpDocNodeResolver
 
 		foreach (['@return', '@psalm-return', '@phpstan-return'] as $tagName) {
 			foreach ($phpDocNode->getReturnTagValues($tagName) as $tagValue) {
-				$resolved = new ReturnTag($this->typeNodeResolver->resolve($tagValue->type, $nameScope));
+				$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+				if ($this->shouldSkipType($tagName, $type)) {
+					continue;
+				}
+				$resolved = new ReturnTag($type);
 			}
 		}
 
@@ -357,6 +368,19 @@ class PhpDocNodeResolver
 		$finalTags = $phpDocNode->getTagsByName('@final');
 
 		return count($finalTags) > 0;
+	}
+
+	private function shouldSkipType(string $tagName, Type $type): bool
+	{
+		if (strpos($tagName, '@psalm-') !== 0) {
+			return false;
+		}
+
+		if ($type instanceof ErrorType) {
+			return true;
+		}
+
+		return $type instanceof NeverType && !$type->isExplicit();
 	}
 
 }

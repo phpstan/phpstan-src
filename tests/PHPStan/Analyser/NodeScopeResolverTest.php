@@ -9637,6 +9637,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2676.php');
 	}
 
+	public function dataPsalmPrefixedTagsWithUnresolvableTypes(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/psalm-prefix-unresolvable.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9652,6 +9657,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2612
 	 * @dataProvider dataBug2677
 	 * @dataProvider dataBug2676
+	 * @dataProvider dataPsalmPrefixedTagsWithUnresolvableTypes
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

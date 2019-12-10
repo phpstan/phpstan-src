@@ -187,6 +187,7 @@ class TypeNodeResolver
 				return new ObjectWithoutClassType();
 
 			case 'never':
+			case 'never-return':
 				return new NeverType(true);
 
 			case 'list':

@@ -31,6 +31,8 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -765,7 +767,12 @@ class PhpClassReflectionExtension
 				continue;
 			}
 
-			$propertyTypes[$propertyFetch->name->toString()] = TypeUtils::generalizeType($propertyType);
+			$propertyType = TypeUtils::generalizeType($propertyType);
+			if ($propertyType instanceof ConstantArrayType) {
+				$propertyType = new ArrayType(new MixedType(true), new MixedType(true));
+			}
+
+			$propertyTypes[$propertyFetch->name->toString()] = $propertyType;
 		}
 
 		return $this->propertyTypesCache[$declaringClass->getName()] = $propertyTypes;

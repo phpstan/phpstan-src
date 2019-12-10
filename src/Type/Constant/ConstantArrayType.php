@@ -404,6 +404,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function generalize(): Type
 	{
+		if (count($this->keyTypes) === 0) {
+			return $this;
+		}
+
 		return new ArrayType(
 			TypeUtils::generalizeType($this->getKeyType()),
 			$this->getItemType()

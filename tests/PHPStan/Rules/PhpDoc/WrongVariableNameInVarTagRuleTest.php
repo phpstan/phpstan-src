@@ -70,6 +70,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'Multiple PHPDoc @var tags above single variable assignment are not supported.',
 				125,
 			],
+			[
+				'Variable $b in PHPDoc tag @var does not exist.',
+				134,
+			],
 		]);
 	}
 

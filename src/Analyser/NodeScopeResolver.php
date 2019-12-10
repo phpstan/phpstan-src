@@ -301,6 +301,10 @@ class NodeScopeResolver
 		\Closure $nodeCallback
 	): StatementResult
 	{
+		if ($stmt instanceof Echo_) {
+			$scope = $this->processStmtVarAnnotation($scope, $stmt);
+		}
+
 		$nodeCallback($stmt, $scope);
 
 		if ($stmt instanceof Node\Stmt\Declare_) {
@@ -415,7 +419,6 @@ class NodeScopeResolver
 				), $methodScope);
 			}
 		} elseif ($stmt instanceof Echo_) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 			$hasYield = false;
 			foreach ($stmt->exprs as $echoExpr) {
 				$result = $this->processExprNode($echoExpr, $scope, $nodeCallback, ExpressionContext::createDeep());

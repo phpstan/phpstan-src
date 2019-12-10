@@ -125,4 +125,13 @@ class Foo
 		$test = doFoo(); // error
 	}
 
+	public function testEcho($a)
+	{
+		/** @var string $a */
+		echo $a;
+
+		/** @var string $b */
+		echo $a;
+	}
+
 }

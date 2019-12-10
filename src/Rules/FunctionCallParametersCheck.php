@@ -10,7 +10,6 @@ use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
@@ -194,9 +193,7 @@ class FunctionCallParametersCheck
 				&& !$this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes())
 				&& ($secondAccepts === null || !$secondAccepts)
 			) {
-				$verbosityLevel = TypeUtils::containsCallable($parameterType) || count(TypeUtils::getConstantArrays($parameterType)) > 0
-					? VerbosityLevel::value()
-					: VerbosityLevel::typeOnly();
+				$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType);
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[6],
 					$i + 1,

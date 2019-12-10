@@ -64,17 +64,19 @@ class YieldTypeRule implements Rule
 
 		$messages = [];
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableKeyType(), $keyType, $scope->isDeclareStrictTypes())) {
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableKeyType());
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects key type %s, %s given.',
-				$returnType->getIterableKeyType()->describe(VerbosityLevel::typeOnly()),
-				$keyType->describe(VerbosityLevel::typeOnly())
+				$returnType->getIterableKeyType()->describe($verbosityLevel),
+				$keyType->describe($verbosityLevel)
 			))->build();
 		}
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes())) {
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableValueType());
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
-				$returnType->getIterableValueType()->describe(VerbosityLevel::typeOnly()),
-				$valueType->describe(VerbosityLevel::typeOnly())
+				$returnType->getIterableValueType()->describe($verbosityLevel),
+				$valueType->describe($verbosityLevel)
 			))->build();
 		}
 

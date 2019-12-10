@@ -36,6 +36,10 @@ class YieldFromTypeRuleTest extends RuleTestCase
 				'Generator expects delegated TSend type int, int|null given.',
 				41,
 			],
+			[
+				'Generator expects value type array(DateTime, DateTime, stdClass, DateTimeImmutable), array(0 => DateTime, 1 => DateTime, 2 => stdClass, 4 => DateTimeImmutable) given.',
+				74,
+			],
 		]);
 	}
 

@@ -53,4 +53,25 @@ class Foo
 		yield from $this->generatorAcceptingIntOrNull();
 	}
 
+	/**
+	 * @return \Generator<array{0: \DateTime, 1: \DateTime, 2: \stdClass, 4: \DateTimeImmutable}>
+	 */
+	public function doArrayShape(): \Generator
+	{
+		yield [
+			new \DateTime(),
+			new \DateTime(),
+			new \stdClass,
+			new \DateTimeImmutable('2019-10-26'),
+		];
+	}
+
+	/**
+	 * @return \Generator<array{0: \DateTime, 1: \DateTime, 2: \stdClass, 3: \DateTimeImmutable}>
+	 */
+	public function doArrayShape2(): \Generator
+	{
+		yield from $this->doArrayShape();
+	}
+
 }

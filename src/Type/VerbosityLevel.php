@@ -41,6 +41,15 @@ class VerbosityLevel
 		return self::create(self::PRECISE);
 	}
 
+	public static function getRecommendedLevelByType(Type $type): self
+	{
+		if (TypeUtils::containsCallable($type) || count(TypeUtils::getConstantArrays($type)) > 0) {
+			return self::value();
+		}
+
+		return self::typeOnly();
+	}
+
 	/**
 	 * @param callable(): string $typeOnlyCallback
 	 * @param callable(): string $valueCallback

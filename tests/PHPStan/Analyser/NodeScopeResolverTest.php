@@ -9642,6 +9642,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/psalm-prefix-unresolvable.php');
 	}
 
+	public function dataComplexGenericsExample(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/complex-generics-example.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9658,6 +9663,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2677
 	 * @dataProvider dataBug2676
 	 * @dataProvider dataPsalmPrefixedTagsWithUnresolvableTypes
+	 * @dataProvider dataComplexGenericsExample
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

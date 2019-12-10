@@ -8,7 +8,7 @@ $f = function () {
 	$foo = new Foo();
 	clone $foo;
 	clone new Foo();
-	clone (random_int(0, 1) ? 'foo' : 123);
+	clone (random_int(0, 1) ? 'loremipsum' : 123);
 
 	$stringData = 'abc';
 	clone $stringData;

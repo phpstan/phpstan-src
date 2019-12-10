@@ -246,7 +246,7 @@ class IssueWithEliminatingTypes
 		}
 
 		if (something()) {
-			$date = 'foo';
+			$date = 'loremipsum';
 		} else {
 			$date = 1;
 		}

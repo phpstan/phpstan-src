@@ -105,15 +105,33 @@ class ArrayType implements Type
 		$isMixedKeyType = $this->keyType instanceof MixedType && !$this->keyType instanceof TemplateType;
 		$isMixedItemType = $this->itemType instanceof MixedType && !$this->itemType instanceof TemplateType;
 
-		if ($isMixedKeyType || $this->keyType instanceof NeverType) {
-			if ($isMixedItemType || $this->itemType instanceof NeverType) {
-				return 'array';
+		$valueHandler = function () use ($level, $isMixedKeyType, $isMixedItemType): string {
+			if ($isMixedKeyType || $this->keyType instanceof NeverType) {
+				if ($isMixedItemType || $this->itemType instanceof NeverType) {
+					return 'array';
+				}
+
+				return sprintf('array<%s>', $this->itemType->describe($level));
 			}
 
-			return sprintf('array<%s>', $this->itemType->describe($level));
-		}
+			return sprintf('array<%s, %s>', $this->keyType->describe($level), $this->itemType->describe($level));
+		};
 
-		return sprintf('array<%s, %s>', $this->keyType->describe($level), $this->itemType->describe($level));
+		return $level->handle(
+			$valueHandler,
+			$valueHandler,
+			function () use ($level, $isMixedKeyType, $isMixedItemType): string {
+				if ($isMixedKeyType) {
+					if ($isMixedItemType) {
+						return 'array';
+					}
+
+					return sprintf('array<%s>', $this->itemType->describe($level));
+				}
+
+				return sprintf('array<%s, %s>', $this->keyType->describe($level), $this->itemType->describe($level));
+			}
+		);
 	}
 
 	public function generalizeValues(): self

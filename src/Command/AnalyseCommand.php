@@ -87,6 +87,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		$level = $input->getOption(self::OPTION_LEVEL);
 		$pathsFile = $input->getOption('paths-file');
 		$allowXdebug = $input->getOption('xdebug');
+		$debugEnabled = (bool) $input->getOption('debug');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -121,7 +122,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				$generateBaselineFile,
 				$level,
 				$allowXdebug,
-				true
+				true,
+				$debugEnabled
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

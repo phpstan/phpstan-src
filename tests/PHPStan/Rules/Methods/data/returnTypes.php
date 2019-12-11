@@ -1165,3 +1165,14 @@ class WithIntegerConst
 		return 1 + 1 + static::INTEGER_CONST;
 	}
 }
+
+class VarAnnotationAboveStmtReturn
+{
+
+	public function doFoo(\DateTimeInterface $date): \DateTimeImmutable
+	{
+		/** @var \DateTimeImmutable $date */
+		return $date;
+	}
+
+}

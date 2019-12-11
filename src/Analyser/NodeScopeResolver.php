@@ -311,6 +311,7 @@ class NodeScopeResolver
 			|| $stmt instanceof If_
 			|| $stmt instanceof While_
 			|| $stmt instanceof Switch_
+			|| $stmt instanceof Return_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 		}
@@ -436,7 +437,6 @@ class NodeScopeResolver
 				$hasYield = $hasYield || $result->hasYield();
 			}
 		} elseif ($stmt instanceof Return_) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 			if ($stmt->expr !== null) {
 				$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 				$scope = $result->getScope();

@@ -307,13 +307,16 @@ class NodeScopeResolver
 				$stmt instanceof Node\Stmt\Expression
 				&& !$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef
 			)
-			|| $stmt instanceof Throw_
 			|| $stmt instanceof If_
 			|| $stmt instanceof While_
 			|| $stmt instanceof Switch_
+		) {
+			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
+		} elseif (
+			$stmt instanceof Throw_
 			|| $stmt instanceof Return_
 		) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
+			$scope = $this->processStmtVarAnnotation($scope, $stmt, $stmt->expr);
 		}
 
 		$nodeCallback($stmt, $scope);
@@ -1023,7 +1026,7 @@ class NodeScopeResolver
 				$scope = $scope->specifyExpressionType(new ConstFetch(new Name\FullyQualified($const->name->toString())), $scope->getType($const->value));
 			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
+			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 			$hasYield = false;
 		} else {
 			$hasYield = false;
@@ -1281,7 +1284,7 @@ class NodeScopeResolver
 				if (!$varChangedScope) {
 					$scope = $this->processStmtVarAnnotation($scope, new Node\Stmt\Expression($expr, [
 						'comments' => $expr->getAttribute('comments'),
-					]));
+					]), null);
 				}
 			} else {
 				$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
@@ -1319,7 +1322,7 @@ class NodeScopeResolver
 
 						$scope = $this->processStmtVarAnnotation($scope, new Node\Stmt\Expression($expr, [
 							'comments' => $expr->getAttribute('comments'),
-						]));
+						]), null);
 					}
 				}
 			}
@@ -2332,7 +2335,7 @@ class NodeScopeResolver
 		return new ExpressionResult($scope, $hasYield);
 	}
 
-	private function processStmtVarAnnotation(MutatingScope $scope, Node\Stmt $stmt): MutatingScope
+	private function processStmtVarAnnotation(MutatingScope $scope, Node\Stmt $stmt, ?Expr $defaultExpr): MutatingScope
 	{
 		$comment = CommentHelper::getDocComment($stmt);
 		if ($comment === null) {
@@ -2348,8 +2351,11 @@ class NodeScopeResolver
 			$function !== null ? $function->getName() : null,
 			$comment
 		);
+
+		$variableLessTags = [];
 		foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
 			if (is_int($name)) {
+				$variableLessTags[] = $varTag;
 				continue;
 			}
 
@@ -2359,6 +2365,10 @@ class NodeScopeResolver
 			}
 
 			$scope = $scope->assignVariable($name, $varTag->getType(), $certainty);
+		}
+
+		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
+			$scope = $scope->specifyExpressionType($defaultExpr, $variableLessTags[0]->getType());
 		}
 
 		return $scope;

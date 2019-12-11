@@ -81,7 +81,11 @@ class WrongVariableNameInVarTagRule implements Rule
 			return $this->processExpression($scope, $node->expr, $varTags);
 		}
 
-		return $this->processStmt($scope, $varTags);
+		if ($node instanceof Node\Stmt\Throw_ || $node instanceof Node\Stmt\Return_) {
+			return $this->processStmt($scope, $varTags, $node->expr);
+		}
+
+		return $this->processStmt($scope, $varTags, null);
 	}
 
 	/**
@@ -254,20 +258,23 @@ class WrongVariableNameInVarTagRule implements Rule
 			return [];
 		}
 
-		return $this->processStmt($scope, $varTags);
+		return $this->processStmt($scope, $varTags, null);
 	}
 
 	/**
 	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
+	 * @param Expr|null $defaultExpr
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
-	private function processStmt(Scope $scope, array $varTags): array
+	private function processStmt(Scope $scope, array $varTags, ?Expr $defaultExpr): array
 	{
 		$errors = [];
-		foreach (array_keys($varTags) as $name) {
+
+		$variableLessVarTags = [];
+		foreach ($varTags as $name => $varTag) {
 			if (is_int($name)) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @var does not specify variable name.')->build();
+				$variableLessVarTags[] = $varTag;
 				continue;
 			}
 
@@ -276,6 +283,12 @@ class WrongVariableNameInVarTagRule implements Rule
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf('Variable $%s in PHPDoc tag @var does not exist.', $name))->build();
+		}
+
+		if (count($variableLessVarTags) !== 1 || $defaultExpr === null) {
+			if (count($variableLessVarTags) > 0) {
+				$errors[] = RuleErrorBuilder::message('PHPDoc tag @var does not specify variable name.')->build();
+			}
 		}
 
 		return $errors;

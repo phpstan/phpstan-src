@@ -74,6 +74,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'Variable $b in PHPDoc tag @var does not exist.',
 				134,
 			],
+			[
+				'PHPDoc tag @var does not specify variable name.',
+				155,
+			],
+			[
+				'PHPDoc tag @var does not specify variable name.',
+				176,
+			],
 		]);
 	}
 

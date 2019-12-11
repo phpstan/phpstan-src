@@ -1175,4 +1175,10 @@ class VarAnnotationAboveStmtReturn
 		return $date;
 	}
 
+	public function doBar(\DateTimeInterface $date): \DateTimeImmutable
+	{
+		/** @var \DateTimeImmutable */
+		return $date;
+	}
+
 }

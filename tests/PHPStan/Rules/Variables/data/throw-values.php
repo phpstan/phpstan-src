@@ -44,3 +44,8 @@ function (\stdClass $foo) {
 	/** @var \Exception $foo */
 	throw $foo;
 };
+
+function (\stdClass $foo) {
+	/** @var \Exception */
+	throw $foo;
+};

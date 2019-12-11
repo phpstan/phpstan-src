@@ -134,4 +134,46 @@ class Foo
 		echo $a;
 	}
 
+	public function throwVar($a)
+	{
+		/** @var \Exception $a */
+		throw $a;
+	}
+
+	public function throwVar2($a)
+	{
+		/** @var \Exception */
+		throw $a;
+	}
+
+	public function throwVar3($a)
+	{
+		/**
+		 * @var \Exception
+		 * @var \InvalidArgumentException
+		 */
+		throw $a;
+	}
+
+	public function returnVar($a)
+	{
+		/** @var \stdClass $a */
+		return $a;
+	}
+
+	public function returnVar2($a)
+	{
+		/** @var \stdClass */
+		return $a;
+	}
+
+	public function returnVar3($a)
+	{
+		/**
+		 * @var \stdClass
+		 * @var \DateTime
+		 */
+		return $a;
+	}
+
 }

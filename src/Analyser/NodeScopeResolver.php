@@ -310,6 +310,7 @@ class NodeScopeResolver
 			|| $stmt instanceof Throw_
 			|| $stmt instanceof If_
 			|| $stmt instanceof While_
+			|| $stmt instanceof Switch_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 		}
@@ -841,7 +842,6 @@ class NodeScopeResolver
 
 			return new StatementResult($finalScope, $finalScopeResult->hasYield(), false/* $finalScopeResult->isAlwaysTerminating() && $isAlwaysIterable*/, []);
 		} elseif ($stmt instanceof Switch_) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 			$scope = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep())->getScope();
 			$scopeForBranches = $scope;
 			$finalScope = null;

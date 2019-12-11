@@ -307,6 +307,7 @@ class NodeScopeResolver
 				$stmt instanceof Node\Stmt\Expression
 				&& !$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef
 			)
+			|| $stmt instanceof Throw_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 		}
@@ -509,7 +510,6 @@ class NodeScopeResolver
 				$this->processExprNode($stmt->default, $scope, $nodeCallback, ExpressionContext::createDeep());
 			}
 		} elseif ($stmt instanceof Throw_) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 			$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 			return new StatementResult($result->getScope(), $result->hasYield(), true, [
 				new StatementExitPoint($stmt, $scope),

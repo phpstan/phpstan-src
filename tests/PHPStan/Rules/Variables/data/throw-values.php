@@ -39,3 +39,8 @@ function () {
 		throw new NonexistentClass();
 	}
 };
+
+function (\stdClass $foo) {
+	/** @var \Exception $foo */
+	throw $foo;
+};

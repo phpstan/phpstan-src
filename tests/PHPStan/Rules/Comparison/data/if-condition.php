@@ -263,3 +263,18 @@ class UnsetConstantArrayWithGeneralKey
 	}
 
 }
+
+class VarAnnotationAboveIf
+{
+
+	public function doFoo()
+	{
+		$bool = true;
+
+		/** @var bool $bool */
+		if ($bool) {
+
+		}
+	}
+
+}

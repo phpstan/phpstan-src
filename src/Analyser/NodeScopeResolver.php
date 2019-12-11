@@ -308,6 +308,7 @@ class NodeScopeResolver
 				&& !$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef
 			)
 			|| $stmt instanceof Throw_
+			|| $stmt instanceof If_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 		}
@@ -515,7 +516,6 @@ class NodeScopeResolver
 				new StatementExitPoint($stmt, $scope),
 			]);
 		} elseif ($stmt instanceof If_) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 			$conditionType = $scope->getType($stmt->cond)->toBoolean();
 			$ifAlwaysTrue = $conditionType instanceof ConstantBooleanType && $conditionType->getValue();
 			$condResult = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep());

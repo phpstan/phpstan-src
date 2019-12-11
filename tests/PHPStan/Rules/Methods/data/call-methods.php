@@ -1566,3 +1566,14 @@ class ClassString
 	}
 
 }
+
+class TestVarAnnotationAboveMethodCall
+{
+
+	public function doFoo(Foo $foo)
+	{
+		/** @var Bar $foo */
+		$foo->lorem();
+	}
+
+}

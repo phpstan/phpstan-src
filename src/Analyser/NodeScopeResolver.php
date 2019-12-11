@@ -301,7 +301,13 @@ class NodeScopeResolver
 		\Closure $nodeCallback
 	): StatementResult
 	{
-		if ($stmt instanceof Echo_) {
+		if (
+			$stmt instanceof Echo_
+			|| (
+				$stmt instanceof Node\Stmt\Expression
+				&& !$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef
+			)
+		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 		}
 
@@ -451,9 +457,6 @@ class NodeScopeResolver
 				new StatementExitPoint($stmt, $scope),
 			]);
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
-			if (!$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef) {
-				$scope = $this->processStmtVarAnnotation($scope, $stmt);
-			}
 			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createTopLevel());
 			$scope = $result->getScope();

@@ -42,7 +42,8 @@ class CommandHelper
 		?string $generateBaselineFile,
 		?string $level,
 		bool $allowXdebug,
-		bool $manageMemoryLimitFile = true
+		bool $manageMemoryLimitFile = true,
+		bool $debugEnabled = false
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
@@ -346,7 +347,12 @@ class CommandHelper
 					require_once $file;
 				})($bootstrapFile);
 			} catch (\Throwable $e) {
-				$errorOutput->writeLineFormatted($e->getMessage());
+				$errorOutput->writeLineFormatted(sprintf('%s thrown in %s on line %d while loading bootstrap file %s: %s', get_class($e), $e->getFile(), $e->getLine(), $bootstrapFile, $e->getMessage()));
+
+				if ($debugEnabled) {
+					$errorOutput->writeLineFormatted($e->getTraceAsString());
+				}
+
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
 		}

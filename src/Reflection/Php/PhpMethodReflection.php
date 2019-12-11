@@ -256,6 +256,17 @@ class PhpMethodReflection implements MethodReflection
 	{
 		if ($this->parameters === null) {
 			$this->parameters = array_map(function (\ReflectionParameter $reflection): PhpParameterReflection {
+				/** @var string|null */
+				$parameterName = $reflection->getName();
+				if ($parameterName === null) {
+					$filename = $this->declaringClass->getFileName();
+					throw new \PHPStan\Reflection\BadParameterFromReflectionException(
+						$this->declaringClass->getName(),
+						$this->reflection->getName(),
+						$filename !== false ? $filename : null
+					);
+				}
+
 				return new PhpParameterReflection(
 					$reflection,
 					$this->phpDocParameterTypes[$reflection->getName()] ?? null

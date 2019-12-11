@@ -309,6 +309,7 @@ class NodeScopeResolver
 			)
 			|| $stmt instanceof Throw_
 			|| $stmt instanceof If_
+			|| $stmt instanceof While_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 		}
@@ -652,7 +653,6 @@ class NodeScopeResolver
 				[]
 			);
 		} elseif ($stmt instanceof While_) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt);
 			$condResult = $this->processExprNode($stmt->cond, $scope, static function (): void {
 			}, ExpressionContext::createDeep());
 			$bodyScope = $condResult->getTruthyScope();

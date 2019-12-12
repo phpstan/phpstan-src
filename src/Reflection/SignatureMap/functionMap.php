@@ -8650,7 +8650,7 @@ return [
 'Phar::mount' => ['void', 'pharpath'=>'string', 'externalpath'=>'string'],
 'Phar::mungServer' => ['', 'munglist'=>'array'],
 'Phar::offsetExists' => ['bool', 'offset'=>'string'],
-'Phar::offsetGet' => ['int', 'offset'=>'string'],
+'Phar::offsetGet' => ['PharFileInfo', 'offset'=>'string'],
 'Phar::offsetSet' => ['', 'offset'=>'string', 'value'=>'string'],
 'Phar::offsetUnset' => ['bool', 'offset'=>'string'],
 'Phar::running' => ['string', 'retphar='=>'bool'],

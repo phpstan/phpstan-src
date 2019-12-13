@@ -101,6 +101,11 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			->and(TrinaryLogic::createMaybe());
 	}
 
+	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic
+	{
+		return $this->isSuperTypeOf($type);
+	}
+
 	public function isSubTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {

@@ -234,7 +234,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 					new ObjectWithoutClassType(),
 					TemplateTypeVariance::createInvariant()
 				)),
-				TrinaryLogic::createYes(),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}

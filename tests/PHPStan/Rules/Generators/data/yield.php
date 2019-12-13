@@ -90,4 +90,32 @@ class TestMap
 		}
 	}
 
+	/**
+	 * @template T
+	 * @template K
+	 * @param iterable<K, T> $hash
+	 * @return \Generator<int, K|T, void, void>
+	 */
+	function hash_to_alt_sequence(iterable $hash): iterable
+	{
+		foreach ($hash as $k => $v) {
+			yield $k;
+			yield $v;
+		}
+	}
+
+	/**
+	 * @template T
+	 * @template K
+	 * @param iterable<K, T> $hash
+	 * @return iterable<int, K|T>
+	 */
+	function hash_to_alt_sequence2(iterable $hash): iterable
+	{
+		foreach ($hash as $k => $v) {
+			yield $k;
+			yield $v;
+		}
+	}
+
 }

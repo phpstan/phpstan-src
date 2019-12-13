@@ -1497,6 +1497,60 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				MixedType::class,
 				'mixed=implicit',
 			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						null,
+						TemplateTypeVariance::createInvariant()
+					),
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'K',
+						null,
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+				UnionType::class,
+				'K (function a(), parameter)|T (function a(), parameter)',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'K',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+				UnionType::class,
+				'K of object (function a(), parameter)|T of object (function a(), parameter)',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectType(\Exception::class),
+						TemplateTypeVariance::createInvariant()
+					),
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'K',
+						new ObjectType(\stdClass::class),
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+				UnionType::class,
+				'K of stdClass (function a(), parameter)|T of Exception (function a(), parameter)',
+			],
 		];
 	}
 

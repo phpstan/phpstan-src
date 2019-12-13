@@ -40,6 +40,11 @@ class TemplateTypeMap
 		return count($this->types) === 0;
 	}
 
+	public function count(): int
+	{
+		return count($this->types);
+	}
+
 	/** @return array<string,\PHPStan\Type\Type> */
 	public function getTypes(): array
 	{

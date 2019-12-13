@@ -377,7 +377,17 @@ class TypeNodeResolver
 						]);
 					}
 				}
-				return new GenericObjectType($mainType->getClassName(), $genericTypes);
+
+				if (!$mainType->isIterable()->yes()) {
+					return new GenericObjectType($mainType->getClassName(), $genericTypes);
+				}
+
+				if (
+					count($genericTypes) !== 1
+					|| $classReflection->getTemplateTypeMap()->count() === 1
+				) {
+					return new GenericObjectType($mainType->getClassName(), $genericTypes);
+				}
 			}
 		}
 

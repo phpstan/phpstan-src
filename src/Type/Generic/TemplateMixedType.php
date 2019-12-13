@@ -75,8 +75,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 	{
 		return $type instanceof self
 			&& $type->scope->equals($this->scope)
-			&& $type->name === $this->name
-			&& parent::equals($type);
+			&& $type->name === $this->name;
 	}
 
 	public function getBound(): Type

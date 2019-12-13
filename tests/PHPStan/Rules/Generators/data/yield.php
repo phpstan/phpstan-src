@@ -31,3 +31,63 @@ class Foo
 	}
 
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ */
+final class Map
+{
+	/** @var TKey */
+	private $key;
+	/** @var TValue */
+	private $value;
+
+	/**
+	 * @param TKey $key
+	 * @param TValue $value
+	 */
+	public function __construct($key, $value)
+	{
+		$this->key = $key;
+		$this->value = $value;
+	}
+
+	/** @return TKey */
+	public function key()
+	{
+		return $this->key;
+	}
+
+	/** @return TValue */
+	public function value()
+	{
+		return $this->value;
+	}
+}
+
+class TestMap
+{
+
+	/**
+	 * @template TKey
+	 * @template TValue
+	 *
+	 * @param iterable<TKey, TValue> $iterator
+	 * @param callable(TValue, TKey):(TValue|Map<TKey, TValue>) $callback
+	 *
+	 * @return iterable<TKey, TValue>
+	 */
+	function iterator_map(iterable $iterator, callable $callback): iterable
+	{
+		foreach ($iterator as $key => $value) {
+			$result = $callback($value, $key);
+			if ($result instanceof Map) {
+				yield $result->key() => $result->value();
+				continue;
+			}
+			yield $key => $result;
+		}
+	}
+
+}

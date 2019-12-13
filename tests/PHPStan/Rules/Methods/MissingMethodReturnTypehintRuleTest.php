@@ -12,7 +12,8 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck(true, true));
+		$broker = $this->createBroker([], []);
+		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck($broker, true, true));
 	}
 
 	public function testRule(): void

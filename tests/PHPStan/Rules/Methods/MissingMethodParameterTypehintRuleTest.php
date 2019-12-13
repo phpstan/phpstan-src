@@ -12,7 +12,8 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck(true, true));
+		$broker = $this->createBroker([], []);
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true));
 	}
 
 	public function testRule(): void
@@ -49,6 +50,14 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 			[
 				'Method MissingMethodParameterTypehint\Bar::acceptsGenericClass() has parameter $c with generic class MissingMethodParameterTypehint\GenericClass but does not specify its types: A, B',
 				101,
+			],
+			[
+				'Method MissingMethodParameterTypehint\CollectionIterableAndGeneric::acceptsCollection() has parameter $collection with generic interface DoctrineIntersectionTypeIsSupertypeOf\Collection but does not specify its types: TKey, T',
+				111,
+			],
+			[
+				'Method MissingMethodParameterTypehint\CollectionIterableAndGeneric::acceptsCollection2() has parameter $collection with generic interface DoctrineIntersectionTypeIsSupertypeOf\Collection but does not specify its types: TKey, T',
+				119,
 			],
 		]);
 	}

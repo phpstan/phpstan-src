@@ -104,3 +104,29 @@ class Bar
 	}
 
 }
+
+class CollectionIterableAndGeneric
+{
+
+	public function acceptsCollection(\DoctrineIntersectionTypeIsSupertypeOf\Collection $collection): void
+	{
+
+	}
+
+	/**
+	 * @param \DoctrineIntersectionTypeIsSupertypeOf\Collection<FooInterface> $collection
+	 */
+	public function acceptsCollection2(\DoctrineIntersectionTypeIsSupertypeOf\Collection $collection): void
+	{
+
+	}
+
+	/**
+	 * @param \DoctrineIntersectionTypeIsSupertypeOf\Collection<int, FooInterface> $collection
+	 */
+	public function acceptsCollection3(\DoctrineIntersectionTypeIsSupertypeOf\Collection $collection): void
+	{
+
+	}
+
+}

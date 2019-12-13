@@ -12,7 +12,8 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MissingFunctionParameterTypehintRule($this->createBroker([], []), new MissingTypehintCheck(true, true));
+		$broker = $this->createBroker([], []);
+		return new MissingFunctionParameterTypehintRule($broker, new MissingTypehintCheck($broker, true, true));
 	}
 
 	public function testRule(): void

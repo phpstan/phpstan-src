@@ -2,12 +2,14 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\Broker\Broker;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeWithClassName;
 
 class MissingTypehintCheck
 {
@@ -16,6 +18,16 @@ class MissingTypehintCheck
 
 	public const TURN_OFF_NON_GENERIC_CHECK_TIP = 'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.';
 
+	private const ITERABLE_GENERIC_CLASS_NAMES = [
+		\Traversable::class,
+		\Iterator::class,
+		\IteratorAggregate::class,
+		\Generator::class,
+	];
+
+	/** @var \PHPStan\Broker\Broker */
+	private $broker;
+
 	/** @var bool */
 	private $checkMissingIterableValueType;
 
@@ -23,10 +35,12 @@ class MissingTypehintCheck
 	private $checkGenericClassInNonGenericObjectType;
 
 	public function __construct(
+		Broker $broker,
 		bool $checkMissingIterableValueType,
 		bool $checkGenericClassInNonGenericObjectType
 	)
 	{
+		$this->broker = $broker;
 		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
 	}
@@ -42,10 +56,20 @@ class MissingTypehintCheck
 		}
 
 		$iterablesWithMissingValueTypehint = [];
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$iterablesWithMissingValueTypehint): Type {
+		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$iterablesWithMissingValueTypehint): Type {
 			if ($type->isIterable()->yes()) {
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
+					if (
+						$type instanceof TypeWithClassName
+						&& !in_array($type->getClassName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)
+						&& $this->broker->hasClass($type->getClassName())
+					) {
+						$classReflection = $this->broker->getClass($type->getClassName());
+						if ($classReflection->isGeneric()) {
+							return $type;
+						}
+					}
 					$iterablesWithMissingValueTypehint[] = $type;
 				}
 				return $type;
@@ -76,12 +100,7 @@ class MissingTypehintCheck
 				if ($classReflection === null) {
 					return $type;
 				}
-				if (in_array($classReflection->getName(), [
-					\Traversable::class,
-					\Iterator::class,
-					\IteratorAggregate::class,
-					\Generator::class,
-				], true)) {
+				if (in_array($classReflection->getName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)) {
 					// checked by getIterableTypesWithMissingValueTypehint() already
 					return $type;
 				}

@@ -85,4 +85,9 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testEmptyFileWithVarThis(): void
+	{
+		$this->analyse([__DIR__ . '/data/wrong-variable-name-var-empty-this.php'], []);
+	}
+
 }

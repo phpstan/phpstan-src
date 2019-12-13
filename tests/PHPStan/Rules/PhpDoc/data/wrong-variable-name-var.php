@@ -176,4 +176,16 @@ class Foo
 		return $a;
 	}
 
+	public function thisInVar1()
+	{
+		/** @var Repository $this */
+		$this->demo();
+	}
+
+	public function thisInVar2()
+	{
+		/** @var Repository $this */
+		$demo = $this->demo();
+	}
+
 }

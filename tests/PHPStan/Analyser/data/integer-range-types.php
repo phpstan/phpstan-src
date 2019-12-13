@@ -130,3 +130,28 @@ function (int $j) {
 		assertType('bool', 4 > $j);
 	}
 };
+
+function (int $a, int $b, int $c): void {
+
+	if ($a <= 11) {
+		return;
+	}
+
+	assertType('int<12, max>', $a);
+
+	if ($b <= 12) {
+		return;
+	}
+
+	assertType('int<13, max>', $b);
+
+	if ($c <= 13) {
+		return;
+	}
+
+	assertType('int<14, max>', $c);
+
+	assertType('int', $a * $b);
+	assertType('int', $b * $c);
+	assertType('int', $a * $b * $c);
+};

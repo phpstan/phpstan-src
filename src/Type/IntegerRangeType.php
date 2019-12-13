@@ -149,6 +149,11 @@ class IntegerRangeType extends IntegerType
 		return new parent();
 	}
 
+	public function toNumber(): Type
+	{
+		return new parent();
+	}
+
 
 	/**
 	 * @param mixed[] $properties

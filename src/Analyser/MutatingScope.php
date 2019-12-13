@@ -2482,6 +2482,8 @@ class MutatingScope implements Scope
 					TypeCombinator::union(...$unsetArrays)
 				);
 			}
+
+			return $this->invalidateExpression($expr->var);
 		}
 
 		return $this;
@@ -2554,9 +2556,6 @@ class MutatingScope implements Scope
 			if ($requireMoreCharacters && $exprString === $exprStringToInvalidate) {
 				continue;
 			}
-			if (!Strings::startsWith($exprString, $exprStringToInvalidate)) {
-				continue;
-			}
 
 			if ($exprString === $exprStringToInvalidate) {
 				unset($moreSpecificTypeHolders[$exprString]);
@@ -2564,6 +2563,9 @@ class MutatingScope implements Scope
 			}
 
 			$nextLetter = substr($exprString, strlen($exprStringToInvalidate), 1);
+			if (!is_string($nextLetter)) {
+				continue;
+			}
 			if (Strings::match($nextLetter, '#[a-zA-Z_0-9\x7f-\xff]#') !== null) {
 				continue;
 			}

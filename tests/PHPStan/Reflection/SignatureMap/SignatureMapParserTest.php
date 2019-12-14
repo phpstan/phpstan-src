@@ -6,6 +6,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -395,10 +396,15 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 			}
 
 			try {
-				$parser->getFunctionSignature($map, $className);
+				$signature = $parser->getFunctionSignature($map, $className);
 				$count++;
 			} catch (\PHPStan\PhpDocParser\Parser\ParserException $e) {
 				$this->fail(sprintf('Could not parse %s.', $functionName));
+			}
+
+			self::assertNotInstanceOf(ErrorType::class, $signature->getReturnType(), $functionName);
+			foreach ($signature->getParameters() as $parameter) {
+				self::assertNotInstanceOf(ErrorType::class, $parameter->getType(), sprintf('%s (parameter %s)', $functionName, $parameter->getName()));
 			}
 		}
 

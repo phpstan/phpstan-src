@@ -21,4 +21,16 @@ class Foo
 		assertType('array<int, string>', $this->doFoo());
 	}
 
+	/**
+	 * @param Foo $param
+	 * @param Foo $param2
+	 * @psalm-param foo-bar $param
+	 * @psalm-param foo-bar<Test> $param2
+	 */
+	public function doBaz($param, $param2)
+	{
+		assertType('PsalmPrefixedTagsWithUnresolvableTypes\Foo', $param);
+		assertType('PsalmPrefixedTagsWithUnresolvableTypes\Foo', $param2);
+	}
+
 }

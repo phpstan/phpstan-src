@@ -219,7 +219,12 @@ class TypeNodeResolver
 			return $templateType;
 		}
 
-		return new ObjectType($nameScope->resolveStringName($typeNode->name));
+		$stringName = $nameScope->resolveStringName($typeNode->name);
+		if (strpos($stringName, '-') !== false && strpos($stringName, 'OCI-') !== 0) {
+			return new ErrorType();
+		}
+
+		return new ObjectType($stringName);
 	}
 
 	private function resolveThisTypeNode(ThisTypeNode $typeNode, NameScope $nameScope): Type

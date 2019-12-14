@@ -807,7 +807,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getAncestorWithClassName(string $className): ?ObjectType
 	{
 		$broker = Broker::getInstance();
+		if (!$broker->hasClass($className)) {
+			return null;
+		}
 		$theirReflection = $broker->getClass($className);
+
+		if (!$broker->hasClass($this->getClassName())) {
+			return null;
+		}
 		$thisReflection = $broker->getClass($this->getClassName());
 
 		if ($theirReflection->getName() === $thisReflection->getName()) {

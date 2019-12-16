@@ -390,7 +390,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\TestCase
 			],
 			'constant string arg resolved to constant string' => [
 				[
-					new ConstantStringType('foo'),
+					new ConstantStringType('foooooo'),
 				],
 				new FunctionVariant(
 					new TemplateTypeMap([

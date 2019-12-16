@@ -174,7 +174,7 @@
 	</target>
 
 	<target name="test-configuration-validate" depends="composer-install">
-		<xmllint schema="vendor/phpunit/phpunit/phpunit.xsd" file="tests/phpunit.xml"/>
+		<xmllint schema="tests/phpunit.xsd" file="tests/phpunit.xml"/>
 	</target>
 
 	<target name="tests">

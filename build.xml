@@ -178,17 +178,8 @@
 	</target>
 
 	<target name="tests">
-		<if>
-			<os family="windows"/>
-			<then>
-				<property name="phpunit.executable" value="vendor/bin/phpunit"/>
-			</then>
-			<else>
-				<property name="phpunit.executable" value="vendor/bin/paratest"/>
-			</else>
-		</if>
 		<exec
-				executable="${phpunit.executable}"
+				executable="vendor/bin/phpunit"
 				logoutput="true"
 				passthru="true"
 				checkreturn="true"

@@ -28,7 +28,6 @@
 		"ext-simplexml": "*",
 		"ext-soap": "*",
 		"ext-zip": "*",
-		"brianium/paratest": "^2.0 || ^3.0",
 		"consistence/coding-standard": "^3.5",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.5.0",
 		"irstea/phpunit-shim": "7.5.18",

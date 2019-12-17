@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -23,8 +23,8 @@ use PHPStan\Type\VerbosityLevel;
 class ClassConstantRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\RuleLevelHelper */
 	private $ruleLevelHelper;
@@ -33,12 +33,12 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 	private $classCaseSensitivityCheck;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
@@ -86,7 +86,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				}
 				$className = $currentClassReflection->getParentClass()->getName();
 			} else {
-				if (!$this->broker->hasClass($className)) {
+				if (!$this->reflectionProvider->hasClass($className)) {
 					if (strtolower($constantName) === 'class') {
 						return [
 							RuleErrorBuilder::message(sprintf('Class %s not found.', $className))->build(),
@@ -102,7 +102,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 				}
 
-				$className = $this->broker->getClass($className)->getName();
+				$className = $this->reflectionProvider->getClass($className)->getName();
 			}
 
 			$classType = new ObjectType($className);

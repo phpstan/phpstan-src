@@ -26,8 +26,8 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 	/** @var FileTypeMapper */
 	private $fileTypeMapper;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
@@ -55,7 +55,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
-		$this->broker = $broker;
+		$this->reflectionProvider = $broker;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
 		$this->missingTypehintCheck = $missingTypehintCheck;
@@ -138,8 +138,8 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 
 			$referencedClasses = $varTagType->getReferencedClasses();
 			foreach ($referencedClasses as $referencedClass) {
-				if ($this->broker->hasClass($referencedClass)) {
-					if ($this->broker->getClass($referencedClass)->isTrait()) {
+				if ($this->reflectionProvider->hasClass($referencedClass)) {
+					if ($this->reflectionProvider->getClass($referencedClass)->isTrait()) {
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							sprintf('%s has invalid type %%s.', $identifier),
 							$referencedClass

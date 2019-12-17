@@ -2,20 +2,20 @@
 
 namespace PHPStan\Reflection\Native;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\BuiltinMethodReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
 class NativeMethodReflection implements MethodReflection
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Reflection\ClassReflection */
 	private $declaringClass;
@@ -33,7 +33,7 @@ class NativeMethodReflection implements MethodReflection
 	private $stubPhpDocString;
 
 	/**
-	 * @param \PHPStan\Broker\Broker $broker
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
 	 * @param BuiltinMethodReflection $reflection
 	 * @param \PHPStan\Reflection\ParametersAcceptor[] $variants
@@ -41,7 +41,7 @@ class NativeMethodReflection implements MethodReflection
 	 * @param string|null $stubPhpDocString
 	 */
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassReflection $declaringClass,
 		BuiltinMethodReflection $reflection,
 		array $variants,
@@ -49,7 +49,7 @@ class NativeMethodReflection implements MethodReflection
 		?string $stubPhpDocString
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->declaringClass = $declaringClass;
 		$this->reflection = $reflection;
 		$this->variants = $variants;
@@ -81,7 +81,7 @@ class NativeMethodReflection implements MethodReflection
 	{
 		try {
 			$prototypeMethod = $this->reflection->getPrototype();
-			$prototypeDeclaringClass = $this->broker->getClass($prototypeMethod->getDeclaringClass()->getName());
+			$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
 
 			return new MethodPrototypeReflection(
 				$prototypeDeclaringClass,

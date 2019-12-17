@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Instanceof_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,8 +16,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ExistingClassInInstanceOfRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
@@ -26,12 +26,12 @@ class ExistingClassInInstanceOfRule implements \PHPStan\Rules\Rule
 	private $checkClassCaseSensitivity;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkClassCaseSensitivity
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
@@ -65,7 +65,7 @@ class ExistingClassInInstanceOfRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		if (!$this->broker->hasClass($name)) {
+		if (!$this->reflectionProvider->hasClass($name)) {
 			return [
 				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))->line($class->getLine())->build(),
 			];

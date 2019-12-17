@@ -5,8 +5,8 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -20,8 +20,8 @@ use PHPStan\Type\VerbosityLevel;
 class CallMethodsRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
 	private $check;
@@ -36,14 +36,14 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 	private $reportMagicMethods;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		FunctionCallParametersCheck $check,
 		RuleLevelHelper $ruleLevelHelper,
 		bool $checkFunctionNameCase,
 		bool $reportMagicMethods
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->check = $check;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->checkFunctionNameCase = $checkFunctionNameCase;
@@ -88,11 +88,11 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 			$directClassNames = $typeResult->getReferencedClasses();
 			if (!$this->reportMagicMethods) {
 				foreach ($directClassNames as $className) {
-					if (!$this->broker->hasClass($className)) {
+					if (!$this->reflectionProvider->hasClass($className)) {
 						continue;
 					}
 
-					$classReflection = $this->broker->getClass($className);
+					$classReflection = $this->reflectionProvider->getClass($className);
 					if ($classReflection->hasNativeMethod('__call')) {
 						return [];
 					}
@@ -101,7 +101,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 
 			if (count($directClassNames) === 1) {
 				$referencedClass = $directClassNames[0];
-				$methodClassReflection = $this->broker->getClass($referencedClass);
+				$methodClassReflection = $this->reflectionProvider->getClass($referencedClass);
 				$parentClassReflection = $methodClassReflection->getParentClass();
 				while ($parentClassReflection !== false) {
 					if ($parentClassReflection->hasMethod($name)) {

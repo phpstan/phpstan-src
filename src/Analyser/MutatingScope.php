@@ -36,6 +36,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
@@ -99,6 +100,9 @@ class MutatingScope implements Scope
 	/** @var \PHPStan\Broker\Broker */
 	private $broker;
 
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
+
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
 
@@ -147,6 +151,7 @@ class MutatingScope implements Scope
 	/**
 	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
 	 * @param \PHPStan\Broker\Broker $broker
+	 * @param ReflectionProvider $reflectionProvider
 	 * @param \PhpParser\PrettyPrinter\Standard $printer
 	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder
@@ -165,6 +170,7 @@ class MutatingScope implements Scope
 	public function __construct(
 		ScopeFactory $scopeFactory,
 		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
@@ -187,6 +193,7 @@ class MutatingScope implements Scope
 
 		$this->scopeFactory = $scopeFactory;
 		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
@@ -1383,11 +1390,11 @@ class MutatingScope implements Scope
 			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
 			$types = [];
 			foreach ($referencedClasses as $referencedClass) {
-				if (!$this->broker->hasClass($referencedClass)) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
 					continue;
 				}
 
-				$propertyClassReflection = $this->broker->getClass($referencedClass);
+				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
 				if (!$propertyClassReflection->hasConstant($constantName)) {
 					continue;
 				}
@@ -1656,11 +1663,11 @@ class MutatingScope implements Scope
 				)->getReturnType();
 			}
 
-			if (!$this->broker->hasFunction($node->name, $this)) {
+			if (!$this->reflectionProvider->hasFunction($node->name, $this)) {
 				return new ErrorType();
 			}
 
-			$functionReflection = $this->broker->getFunction($node->name, $this);
+			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
 			foreach ($this->broker->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
 				if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
 					continue;
@@ -3171,8 +3178,8 @@ class MutatingScope implements Scope
 			return true;
 		}
 
-		if ($this->inClosureBindScopeClass !== null && $this->broker->hasClass($this->inClosureBindScopeClass)) {
-			$currentClassReflection = $this->broker->getClass($this->inClosureBindScopeClass);
+		if ($this->inClosureBindScopeClass !== null && $this->reflectionProvider->hasClass($this->inClosureBindScopeClass)) {
+			$currentClassReflection = $this->reflectionProvider->getClass($this->inClosureBindScopeClass);
 		} elseif ($this->isInClass()) {
 			$currentClassReflection = $this->getClassReflection();
 		} else {
@@ -3225,11 +3232,11 @@ class MutatingScope implements Scope
 			return null;
 		}
 
-		if (!$this->broker->hasClass($resolvedClassName)) {
+		if (!$this->reflectionProvider->hasClass($resolvedClassName)) {
 			return null;
 		}
 
-		$classReflection = $this->broker->getClass($resolvedClassName);
+		$classReflection = $this->reflectionProvider->getClass($resolvedClassName);
 		if ($classReflection->hasConstructor()) {
 			$constructorMethod = $classReflection->getConstructor();
 		} else {

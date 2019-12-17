@@ -45,7 +45,6 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
-use PHPStan\Broker\Broker;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
@@ -69,6 +68,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
@@ -102,8 +102,8 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Parser\Parser */
 	private $parser;
@@ -136,7 +136,7 @@ class NodeScopeResolver
 	private $analysedFiles;
 
 	/**
-	 * @param Broker $broker
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param Parser $parser
 	 * @param FileTypeMapper $fileTypeMapper
 	 * @param FileHelper $fileHelper
@@ -148,7 +148,7 @@ class NodeScopeResolver
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
 	 */
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		Parser $parser,
 		FileTypeMapper $fileTypeMapper,
 		FileHelper $fileHelper,
@@ -160,7 +160,7 @@ class NodeScopeResolver
 		array $earlyTerminatingFunctionCalls
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->parser = $parser;
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->fileHelper = $fileHelper;
@@ -490,12 +490,12 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\ClassLike) {
 			$hasYield = false;
 			if (isset($stmt->namespacedName)) {
-				$classScope = $scope->enterClass($this->broker->getClass((string) $stmt->namespacedName));
+				$classScope = $scope->enterClass($this->reflectionProvider->getClass((string) $stmt->namespacedName));
 			} elseif ($stmt instanceof Class_) {
 				if ($stmt->name === null) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
-				$classScope = $scope->enterClass($this->broker->getClass($stmt->name->toString()));
+				$classScope = $scope->enterClass($this->reflectionProvider->getClass($stmt->name->toString()));
 			} else {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
@@ -1188,11 +1188,11 @@ class NodeScopeResolver
 
 			$directClassNames = TypeUtils::getDirectClassNames($methodCalledOnType);
 			foreach ($directClassNames as $referencedClass) {
-				if (!$this->broker->hasClass($referencedClass)) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
 					continue;
 				}
 
-				$classReflection = $this->broker->getClass($referencedClass);
+				$classReflection = $this->reflectionProvider->getClass($referencedClass);
 				foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
 					if (!isset($this->earlyTerminatingMethodCalls[$className])) {
 						continue;
@@ -1345,8 +1345,8 @@ class NodeScopeResolver
 			$functionReflection = null;
 			if ($expr->name instanceof Expr) {
 				$scope = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep())->getScope();
-			} elseif ($this->broker->hasFunction($expr->name, $scope)) {
-				$functionReflection = $this->broker->getFunction($expr->name, $scope);
+			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
+				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 					$scope,
 					$expr->args,
@@ -1509,8 +1509,8 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 			} elseif ($expr->class instanceof Name) {
 				$className = $scope->resolveName($expr->class);
-				if ($this->broker->hasClass($className)) {
-					$classReflection = $this->broker->getClass($className);
+				if ($this->reflectionProvider->hasClass($className)) {
+					$classReflection = $this->reflectionProvider->getClass($className);
 					if (is_string($expr->name)) {
 						$methodName = $expr->name;
 					} else {
@@ -1777,10 +1777,10 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 				$hasYield = $result->hasYield();
 			} elseif ($expr->class instanceof Class_) {
-				$this->broker->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
+				$this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
 				$this->processStmtNode($expr->class, $scope, $nodeCallback);
-			} elseif ($this->broker->hasClass($expr->class->toString())) {
-				$classReflection = $this->broker->getClass($expr->class->toString());
+			} elseif ($this->reflectionProvider->hasClass($expr->class->toString())) {
+				$classReflection = $this->reflectionProvider->getClass($expr->class->toString());
 				if ($classReflection->hasConstructor()) {
 					$constructorReflection = $classReflection->getConstructor();
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -2458,10 +2458,10 @@ class NodeScopeResolver
 	{
 		foreach ($node->traits as $trait) {
 			$traitName = (string) $trait;
-			if (!$this->broker->hasClass($traitName)) {
+			if (!$this->reflectionProvider->hasClass($traitName)) {
 				continue;
 			}
-			$traitReflection = $this->broker->getClass($traitName);
+			$traitReflection = $this->reflectionProvider->getClass($traitName);
 			$traitFileName = $traitReflection->getFileName();
 			if ($traitFileName === false) {
 				continue; // trait from eval or from PHP itself

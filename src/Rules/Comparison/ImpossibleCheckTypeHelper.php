@@ -9,8 +9,8 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
@@ -26,18 +26,18 @@ use PHPStan\Type\VerbosityLevel;
 class ImpossibleCheckTypeHelper
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Analyser\TypeSpecifier */
 	private $typeSpecifier;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		TypeSpecifier $typeSpecifier
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->typeSpecifier = $typeSpecifier;
 	}
 
@@ -126,14 +126,14 @@ class ImpossibleCheckTypeHelper
 						$scope->getType($node->args[0]->value)
 					);
 					foreach ($classNames as $className) {
-						if (!$this->broker->hasClass($className)) {
+						if (!$this->reflectionProvider->hasClass($className)) {
 							continue;
 						}
 
 						if (UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-							$this->broker,
-							$this->broker->getUniversalObjectCratesClasses(),
-							$this->broker->getClass($className)
+							$this->reflectionProvider,
+							$this->reflectionProvider->getUniversalObjectCratesClasses(),
+							$this->reflectionProvider->getClass($className)
 						)) {
 							return null;
 						}
@@ -143,7 +143,7 @@ class ImpossibleCheckTypeHelper
 					$methodType = $scope->getType($node->args[1]->value);
 
 					if ($objectType instanceof ConstantStringType
-						&& !$this->broker->hasClass($objectType->getValue())
+						&& !$this->reflectionProvider->hasClass($objectType->getValue())
 					) {
 						return false;
 					}

@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
@@ -18,12 +18,12 @@ use PHPStan\Type\VerbosityLevel;
 class IncompatibleDefaultParameterTypeRule implements Rule
 {
 
-	/** @var Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
-	public function __construct(Broker $broker)
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -38,11 +38,11 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 		}
 
 		$name = $node->namespacedName;
-		if (!$this->broker->hasFunction($name, $scope)) {
+		if (!$this->reflectionProvider->hasFunction($name, $scope)) {
 			return [];
 		}
 
-		$function = $this->broker->getFunction($name, $scope);
+		$function = $this->reflectionProvider->getFunction($name, $scope);
 		$parameters = ParametersAcceptorSelector::selectSingle($function->getVariants());
 
 		$errors = [];

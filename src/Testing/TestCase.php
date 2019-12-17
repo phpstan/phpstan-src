@@ -283,6 +283,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return new ScopeFactory(
 			MutatingScope::class,
 			$broker,
+			$broker,
 			new \PhpParser\PrettyPrinter\Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),

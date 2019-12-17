@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
 class ScopeFactory
@@ -15,6 +16,9 @@ class ScopeFactory
 
 	/** @var \PHPStan\Broker\Broker */
 	private $broker;
+
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
@@ -31,6 +35,7 @@ class ScopeFactory
 	public function __construct(
 		string $scopeClass,
 		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
@@ -39,6 +44,7 @@ class ScopeFactory
 	{
 		$this->scopeClass = $scopeClass;
 		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
@@ -80,6 +86,7 @@ class ScopeFactory
 		return new $scopeClass(
 			$this,
 			$this->broker,
+			$this->reflectionProvider,
 			$this->printer,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,

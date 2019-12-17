@@ -13,9 +13,16 @@ interface ReflectionProvider
 
 	public function getClassName(string $className): string;
 
+	public function getAnonymousClassReflection(
+		\PhpParser\Node\Stmt\Class_ $classNode,
+		Scope $scope
+	): ClassReflection;
+
 	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool;
 
 	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection;
+
+	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string;
 
 	// helper functions that do not have to do anything with reflection
 

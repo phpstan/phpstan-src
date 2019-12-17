@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -25,8 +25,8 @@ use PHPStan\Type\VerbosityLevel;
 class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\RuleLevelHelper */
 	private $ruleLevelHelper;
@@ -35,12 +35,12 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 	private $classCaseSensitivityCheck;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
@@ -106,7 +106,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 
 				$className = $scope->getClassReflection()->getParentClass()->getName();
 			} else {
-				if (!$this->broker->hasClass($class)) {
+				if (!$this->reflectionProvider->hasClass($class)) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Access to static property $%s on an unknown class %s.',
@@ -117,7 +117,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				} else {
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
 				}
-				$className = $this->broker->getClass($class)->getName();
+				$className = $this->reflectionProvider->getClass($class)->getName();
 			}
 
 			$classType = new ObjectType($className);

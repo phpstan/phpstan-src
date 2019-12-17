@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\PropertyProperty;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,8 +16,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
@@ -29,13 +29,13 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 	private $checkThisOnly;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkClassCaseSensitivity,
 		bool $checkThisOnly
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkThisOnly = $checkThisOnly;
@@ -64,8 +64,8 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 
 		$errors = [];
 		foreach ($referencedClasses as $referencedClass) {
-			if ($this->broker->hasClass($referencedClass)) {
-				if ($this->broker->getClass($referencedClass)->isTrait()) {
+			if ($this->reflectionProvider->hasClass($referencedClass)) {
+				if ($this->reflectionProvider->getClass($referencedClass)->isTrait()) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Property %s::$%s has invalid type %s.',
 						$propertyReflection->getDeclaringClass()->getDisplayName(),

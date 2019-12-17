@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -17,8 +17,8 @@ use function array_map;
 class TemplateTypeCheck
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
@@ -27,12 +27,12 @@ class TemplateTypeCheck
 	private $checkClassCaseSensitivity;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkClassCaseSensitivity
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
@@ -55,7 +55,7 @@ class TemplateTypeCheck
 		$messages = [];
 		foreach ($templateTags as $templateTag) {
 			$templateTagName = $templateTag->getName();
-			if ($this->broker->hasClass($templateTagName)) {
+			if ($this->reflectionProvider->hasClass($templateTagName)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsClassMessage,
 					$templateTagName
@@ -64,8 +64,8 @@ class TemplateTypeCheck
 			$boundType = $templateTag->getBound();
 			foreach ($boundType->getReferencedClasses() as $referencedClass) {
 				if (
-					$this->broker->hasClass($referencedClass)
-					&& !$this->broker->getClass($referencedClass)->isTrait()
+					$this->reflectionProvider->hasClass($referencedClass)
+					&& !$this->reflectionProvider->getClass($referencedClass)->isTrait()
 				) {
 					continue;
 				}

@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node\Name;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -13,8 +13,8 @@ use PHPStan\Type\VerbosityLevel;
 class GenericAncestorsCheck
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
 	private $genericObjectTypeCheck;
@@ -26,13 +26,13 @@ class GenericAncestorsCheck
 	private $checkGenericClassInNonGenericObjectType;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		VarianceCheck $varianceCheck,
 		bool $checkGenericClassInNonGenericObjectType
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
 		$this->varianceCheck = $varianceCheck;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
@@ -95,8 +95,8 @@ class GenericAncestorsCheck
 
 			foreach ($ancestorType->getReferencedClasses() as $referencedClass) {
 				if (
-					$this->broker->hasClass($referencedClass)
-					&& !$this->broker->getClass($referencedClass)->isTrait()
+					$this->reflectionProvider->hasClass($referencedClass)
+					&& !$this->reflectionProvider->getClass($referencedClass)->isTrait()
 				) {
 					continue;
 				}
@@ -116,11 +116,11 @@ class GenericAncestorsCheck
 
 		if ($this->checkGenericClassInNonGenericObjectType) {
 			foreach (array_keys($unusedNames) as $unusedName) {
-				if (!$this->broker->hasClass($unusedName)) {
+				if (!$this->reflectionProvider->hasClass($unusedName)) {
 					continue;
 				}
 
-				$unusedNameClassReflection = $this->broker->getClass($unusedName);
+				$unusedNameClassReflection = $this->reflectionProvider->getClass($unusedName);
 				if (!$unusedNameClassReflection->isGeneric()) {
 					continue;
 				}

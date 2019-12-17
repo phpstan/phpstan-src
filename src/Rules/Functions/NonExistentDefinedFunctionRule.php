@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -15,12 +15,12 @@ use PHPStan\Rules\RuleErrorBuilder;
 class NonExistentDefinedFunctionRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
-	public function __construct(Broker $broker)
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -35,7 +35,7 @@ class NonExistentDefinedFunctionRule implements \PHPStan\Rules\Rule
 			$functionName = (string) $node->namespacedName;
 		}
 		$functionNameName = new Name($functionName);
-		if ($this->broker->hasFunction($functionNameName, null)) {
+		if ($this->reflectionProvider->hasFunction($functionNameName, null)) {
 			return [];
 		}
 

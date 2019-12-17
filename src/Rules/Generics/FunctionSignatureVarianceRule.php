@@ -5,8 +5,8 @@ namespace PHPStan\Rules\Generics;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 
 /**
@@ -15,15 +15,15 @@ use PHPStan\Rules\Rule;
 class FunctionSignatureVarianceRule implements Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\Generics\VarianceCheck */
 	private $varianceCheck;
 
-	public function __construct(Broker $broker, VarianceCheck $varianceCheck)
+	public function __construct(ReflectionProvider $reflectionProvider, VarianceCheck $varianceCheck)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->varianceCheck = $varianceCheck;
 	}
 
@@ -39,10 +39,10 @@ class FunctionSignatureVarianceRule implements Rule
 			$functionName = (string) $node->namespacedName;
 		}
 		$functionNameName = new Name($functionName);
-		if (!$this->broker->hasFunction($functionNameName, null)) {
+		if (!$this->reflectionProvider->hasFunction($functionNameName, null)) {
 			return [];
 		}
-		$functionReflection = $this->broker->getFunction($functionNameName, null);
+		$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
 
 		return $this->varianceCheck->checkParametersAcceptor(
 			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants()),

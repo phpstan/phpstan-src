@@ -8,10 +8,10 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\TypeCombinator;
 
@@ -24,8 +24,8 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 	/** @var string */
 	private $removeNullMethodName;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Analyser\TypeSpecifier */
 	private $typeSpecifier;
@@ -33,12 +33,12 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 	public function __construct(
 		string $isInMethodName,
 		string $removeNullMethodName,
-		Broker $broker
+		ReflectionProvider $reflectionProvider
 	)
 	{
 		$this->isInMethodName = $isInMethodName;
 		$this->removeNullMethodName = $removeNullMethodName;
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
@@ -68,7 +68,7 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		$scopeClass = $this->broker->getClass(Scope::class);
+		$scopeClass = $this->reflectionProvider->getClass(Scope::class);
 		$methodVariants = $scopeClass
 			->getMethod($this->removeNullMethodName, $scope)
 			->getVariants();

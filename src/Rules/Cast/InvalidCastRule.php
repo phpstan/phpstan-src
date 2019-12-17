@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -17,18 +17,18 @@ use PHPStan\Type\VerbosityLevel;
 class InvalidCastRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\RuleLevelHelper */
 	private $ruleLevelHelper;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
@@ -73,7 +73,7 @@ class InvalidCastRule implements \PHPStan\Rules\Rule
 
 		$castType = $castTypeCallback($type);
 		if ($castType instanceof ErrorType) {
-			$classReflection = $this->broker->getClass(get_class($node));
+			$classReflection = $this->reflectionProvider->getClass(get_class($node));
 			$shortName = $classReflection->getNativeReflection()->getShortName();
 			$shortName = strtolower($shortName);
 			if ($shortName === 'double') {

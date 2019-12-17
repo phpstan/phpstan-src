@@ -6,7 +6,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Namespace_;
-use PHPStan\Broker\Broker;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
@@ -17,6 +16,7 @@ use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -41,8 +41,8 @@ class PhpMethodReflection implements MethodReflection
 	/** @var BuiltinMethodReflection */
 	private $reflection;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Parser\Parser */
 	private $parser;
@@ -96,7 +96,7 @@ class PhpMethodReflection implements MethodReflection
 	 * @param ClassReflection $declaringClass
 	 * @param ClassReflection|null $declaringTrait
 	 * @param BuiltinMethodReflection $reflection
-	 * @param Broker $broker
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param Parser $parser
 	 * @param FunctionCallStatementFinder $functionCallStatementFinder
 	 * @param Cache $cache
@@ -113,7 +113,7 @@ class PhpMethodReflection implements MethodReflection
 		ClassReflection $declaringClass,
 		?ClassReflection $declaringTrait,
 		BuiltinMethodReflection $reflection,
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		Parser $parser,
 		FunctionCallStatementFinder $functionCallStatementFinder,
 		Cache $cache,
@@ -131,7 +131,7 @@ class PhpMethodReflection implements MethodReflection
 		$this->declaringClass = $declaringClass;
 		$this->declaringTrait = $declaringTrait;
 		$this->reflection = $reflection;
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->parser = $parser;
 		$this->functionCallStatementFinder = $functionCallStatementFinder;
 		$this->cache = $cache;
@@ -172,7 +172,7 @@ class PhpMethodReflection implements MethodReflection
 	{
 		try {
 			$prototypeMethod = $this->reflection->getPrototype();
-			$prototypeDeclaringClass = $this->broker->getClass($prototypeMethod->getDeclaringClass()->getName());
+			$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
 
 			return new MethodPrototypeReflection(
 				$prototypeDeclaringClass,
@@ -212,7 +212,7 @@ class PhpMethodReflection implements MethodReflection
 	private function getMethodNameWithCorrectCase(string $lowercaseMethodName, string $traitTarget): ?string
 	{
 		$trait = explode('::', $traitTarget)[0];
-		$traitReflection = $this->broker->getClass($trait)->getNativeReflection();
+		$traitReflection = $this->reflectionProvider->getClass($trait)->getNativeReflection();
 		foreach ($traitReflection->getTraitAliases() as $methodAlias => $aliasTraitTarget) {
 			if ($lowercaseMethodName === strtolower($methodAlias)) {
 				return $methodAlias;

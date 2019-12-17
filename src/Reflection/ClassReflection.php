@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Broker\Broker;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
@@ -22,8 +21,8 @@ use PHPStan\Type\VerbosityLevel;
 class ClassReflection implements ReflectionWithFilename
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Type\FileTypeMapper */
 	private $fileTypeMapper;
@@ -83,7 +82,7 @@ class ClassReflection implements ReflectionWithFilename
 	private $cacheKey;
 
 	/**
-	 * @param Broker $broker
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
 	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
 	 * @param \PHPStan\Reflection\MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
@@ -93,7 +92,7 @@ class ClassReflection implements ReflectionWithFilename
 	 * @param ResolvedPhpDocBlock|null $stubPhpDocBlock
 	 */
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		FileTypeMapper $fileTypeMapper,
 		array $propertiesClassReflectionExtensions,
 		array $methodsClassReflectionExtensions,
@@ -104,7 +103,7 @@ class ClassReflection implements ReflectionWithFilename
 		?ResolvedPhpDocBlock $stubPhpDocBlock
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
 		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
@@ -178,13 +177,13 @@ class ClassReflection implements ReflectionWithFilename
 			}
 
 			if (!$extendedType instanceof GenericObjectType) {
-				return $this->broker->getClass($parentClass->getName());
+				return $this->reflectionProvider->getClass($parentClass->getName());
 			}
 
-			return $extendedType->getClassReflection() ?? $this->broker->getClass($parentClass->getName());
+			return $extendedType->getClassReflection() ?? $this->reflectionProvider->getClass($parentClass->getName());
 		}
 
-		$parentReflection = $this->broker->getClass($parentClass->getName());
+		$parentReflection = $this->reflectionProvider->getClass($parentClass->getName());
 		if ($parentReflection->isGeneric()) {
 			return $parentReflection->withTypes(
 				array_values($parentReflection->getTemplateTypeMap()->resolveToBounds()->getTypes())
@@ -440,7 +439,7 @@ class ClassReflection implements ReflectionWithFilename
 
 	public function isSubclassOf(string $className): bool
 	{
-		if (!$this->broker->hasClass($className)) {
+		if (!$this->reflectionProvider->hasClass($className)) {
 			return false;
 		}
 
@@ -524,7 +523,7 @@ class ClassReflection implements ReflectionWithFilename
 				continue;
 			}
 
-			$interfaceReflection = $this->broker->getClass($interfaceName);
+			$interfaceReflection = $this->reflectionProvider->getClass($interfaceName);
 			if (!$interfaceReflection->isGeneric()) {
 				$interfaces[$interfaceName] = $interfaceReflection;
 				continue;
@@ -544,7 +543,7 @@ class ClassReflection implements ReflectionWithFilename
 	public function getTraits(): array
 	{
 		return array_map(function (\ReflectionClass $trait): ClassReflection {
-			return $this->broker->getClass($trait->getName());
+			return $this->reflectionProvider->getClass($trait->getName());
 		}, $this->getNativeReflection()->getTraits());
 	}
 
@@ -592,7 +591,7 @@ class ClassReflection implements ReflectionWithFilename
 			}
 
 			$this->constants[$name] = new ClassConstantReflection(
-				$this->broker->getClass($reflectionConstant->getDeclaringClass()->getName()),
+				$this->reflectionProvider->getClass($reflectionConstant->getDeclaringClass()->getName()),
 				$reflectionConstant,
 				$deprecatedDescription,
 				$isDeprecated,
@@ -742,7 +741,7 @@ class ClassReflection implements ReflectionWithFilename
 	public function withTypes(array $types): self
 	{
 		return new self(
-			$this->broker,
+			$this->reflectionProvider,
 			$this->fileTypeMapper,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,

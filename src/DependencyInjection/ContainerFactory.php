@@ -7,6 +7,7 @@ use Phar;
 use PHPStan\Broker\Broker;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\Reflection\ReflectionProvider;
 
 class ContainerFactory
 {
@@ -76,9 +77,9 @@ class ContainerFactory
 
 		$container = $configurator->createContainer();
 
-		/** @var Broker $broker */
-		$broker = $container->getService('broker');
-		Broker::registerInstance($broker);
+		/** @var ReflectionProvider $reflectionProvider */
+		$reflectionProvider = $container->getByType(ReflectionProvider::class);
+		Broker::registerInstance($reflectionProvider);
 		$container->getService('typeSpecifier');
 
 		return $container->getByType(Container::class);

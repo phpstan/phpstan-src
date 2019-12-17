@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -14,12 +14,12 @@ use PHPStan\Rules\RuleErrorBuilder;
 class CallToFunctionStamentWithoutSideEffectsRule implements Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
-	public function __construct(Broker $broker)
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -38,11 +38,11 @@ class CallToFunctionStamentWithoutSideEffectsRule implements Rule
 			return [];
 		}
 
-		if (!$this->broker->hasFunction($funcCall->name, $scope)) {
+		if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
 			return [];
 		}
 
-		$function = $this->broker->getFunction($funcCall->name, $scope);
+		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
 		if ($function->hasSideEffects()->no()) {
 			return [
 				RuleErrorBuilder::message(sprintf(

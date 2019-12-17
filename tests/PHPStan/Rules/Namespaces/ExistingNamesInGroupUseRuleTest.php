@@ -13,7 +13,7 @@ class ExistingNamesInGroupUseRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createBroker();
-		return new ExistingNamesInGroupUseRule($broker, new ClassCaseSensitivityCheck($broker), true);
+		return new ExistingNamesInGroupUseRule($broker, $broker, new ClassCaseSensitivityCheck($broker), true);
 	}
 
 	public function testRule(): void

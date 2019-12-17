@@ -5,9 +5,9 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
@@ -23,8 +23,8 @@ use PHPStan\Type\TypeWithClassName;
 class InstantiationRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
 	private $check;
@@ -33,12 +33,12 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	private $classCaseSensitivityCheck;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		FunctionCallParametersCheck $check,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->check = $check;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
@@ -117,7 +117,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			}
 			$classReflection = $scope->getClassReflection()->getParentClass();
 		} else {
-			if (!$this->broker->hasClass($class)) {
+			if (!$this->reflectionProvider->hasClass($class)) {
 				return [
 					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))->build(),
 				];
@@ -127,7 +127,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				]);
 			}
 
-			$classReflection = $this->broker->getClass($class);
+			$classReflection = $this->reflectionProvider->getClass($class);
 		}
 
 		if (!$isStatic && $classReflection->isInterface()) {

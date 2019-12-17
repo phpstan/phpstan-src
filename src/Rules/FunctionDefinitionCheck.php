@@ -9,21 +9,21 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\VerbosityLevel;
 
 class FunctionDefinitionCheck
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
@@ -35,13 +35,13 @@ class FunctionDefinitionCheck
 	private $checkThisOnly;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkClassCaseSensitivity,
 		bool $checkThisOnly
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkThisOnly = $checkThisOnly;
@@ -64,11 +64,11 @@ class FunctionDefinitionCheck
 			$functionName = (string) $function->namespacedName;
 		}
 		$functionNameName = new Name($functionName);
-		if (!$this->broker->hasFunction($functionNameName, null)) {
+		if (!$this->reflectionProvider->hasFunction($functionNameName, null)) {
 			return [];
 		}
 
-		$functionReflection = $this->broker->getFunction($functionNameName, null);
+		$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
 		return $this->checkParametersAcceptor(
@@ -102,7 +102,7 @@ class FunctionDefinitionCheck
 			}
 			$type = $scope->getFunctionType($param->type, false, $param->variadic);
 			foreach ($type->getReferencedClasses() as $class) {
-				if (!$this->broker->hasClass($class) || $this->broker->getClass($class)->isTrait()) {
+				if (!$this->reflectionProvider->hasClass($class) || $this->reflectionProvider->getClass($class)->isTrait()) {
 					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 						throw new \PHPStan\ShouldNotHappenException();
 					}
@@ -124,7 +124,7 @@ class FunctionDefinitionCheck
 
 		$returnType = $scope->getFunctionType($returnTypeNode, false, false);
 		foreach ($returnType->getReferencedClasses() as $returnTypeClass) {
-			if (!$this->broker->hasClass($returnTypeClass) || $this->broker->getClass($returnTypeClass)->isTrait()) {
+			if (!$this->reflectionProvider->hasClass($returnTypeClass) || $this->reflectionProvider->getClass($returnTypeClass)->isTrait()) {
 				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $returnTypeClass))->line($returnTypeNode->getLine())->build();
 			} elseif ($this->checkClassCaseSensitivity) {
 				$errors = array_merge(
@@ -192,7 +192,7 @@ class FunctionDefinitionCheck
 				return $parameterNode;
 			};
 			foreach ($referencedClasses as $class) {
-				if ($this->broker->hasClass($class) && !$this->broker->getClass($class)->isTrait()) {
+				if ($this->reflectionProvider->hasClass($class) && !$this->reflectionProvider->getClass($class)->isTrait()) {
 					continue;
 				}
 
@@ -221,7 +221,7 @@ class FunctionDefinitionCheck
 		$returnTypeReferencedClasses = $this->getReturnTypeReferencedClasses($parametersAcceptor);
 
 		foreach ($returnTypeReferencedClasses as $class) {
-			if ($this->broker->hasClass($class) && !$this->broker->getClass($class)->isTrait()) {
+			if ($this->reflectionProvider->hasClass($class) && !$this->reflectionProvider->getClass($class)->isTrait()) {
 				continue;
 			}
 

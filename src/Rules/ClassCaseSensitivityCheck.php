@@ -2,18 +2,18 @@
 
 namespace PHPStan\Rules;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ReflectionProvider;
 
 class ClassCaseSensitivityCheck
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
-	public function __construct(Broker $broker)
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	/**
@@ -25,10 +25,10 @@ class ClassCaseSensitivityCheck
 		$errors = [];
 		foreach ($pairs as $pair) {
 			$className = $pair->getClassName();
-			if (!$this->broker->hasClass($className)) {
+			if (!$this->reflectionProvider->hasClass($className)) {
 				continue;
 			}
-			$classReflection = $this->broker->getClass($className);
+			$classReflection = $this->reflectionProvider->getClass($className);
 			if ($classReflection->getFileName() === false) {
 				continue; // skip built-in classes
 			}

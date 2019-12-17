@@ -18,12 +18,12 @@ use PHPStan\Type\UnionType;
 class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension, \PHPStan\Reflection\BrokerAwareExtension
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	public function setBroker(Broker $broker): void
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $broker;
 	}
 
 	public function isFunctionSupported(
@@ -79,14 +79,14 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\
 
 	private function findParentClassNameType(string $className): Type
 	{
-		if (!$this->broker->hasClass($className)) {
+		if (!$this->reflectionProvider->hasClass($className)) {
 			return new UnionType([
 				new ClassStringType(),
 				new ConstantBooleanType(false),
 			]);
 		}
 
-		return $this->findParentClassType($this->broker->getClass($className));
+		return $this->findParentClassType($this->reflectionProvider->getClass($className));
 	}
 
 	private function findParentClassType(

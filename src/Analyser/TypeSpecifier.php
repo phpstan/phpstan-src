@@ -18,7 +18,7 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -53,8 +53,8 @@ class TypeSpecifier
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Type\FunctionTypeSpecifyingExtension[] */
 	private $functionTypeSpecifyingExtensions = [];
@@ -73,21 +73,21 @@ class TypeSpecifier
 
 	/**
 	 * @param \PhpParser\PrettyPrinter\Standard $printer
-	 * @param \PHPStan\Broker\Broker $broker
+	 * @param ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FunctionTypeSpecifyingExtension[] $functionTypeSpecifyingExtensions
 	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
 	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 */
 	public function __construct(
 		\PhpParser\PrettyPrinter\Standard $printer,
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		array $functionTypeSpecifyingExtensions,
 		array $methodTypeSpecifyingExtensions,
 		array $staticMethodTypeSpecifyingExtensions
 	)
 	{
 		$this->printer = $printer;
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 
 		foreach (array_merge($functionTypeSpecifyingExtensions, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions) as $extension) {
 			if (!($extension instanceof TypeSpecifierAwareExtension)) {
@@ -418,8 +418,8 @@ class TypeSpecifier
 			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\SmallerOrEqual($expr->right, $expr->left), $context, $defaultHandleFunctions);
 
 		} elseif ($expr instanceof FuncCall && $expr->name instanceof Name) {
-			if ($this->broker->hasFunction($expr->name, $scope)) {
-				$functionReflection = $this->broker->getFunction($expr->name, $scope);
+			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
+				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 				foreach ($this->getFunctionTypeSpecifyingExtensions() as $extension) {
 					if (!$extension->isFunctionSupported($functionReflection, $expr, $context)) {
 						continue;
@@ -437,9 +437,9 @@ class TypeSpecifier
 			$referencedClasses = TypeUtils::getDirectClassNames($methodCalledOnType);
 			if (
 				count($referencedClasses) === 1
-				&& $this->broker->hasClass($referencedClasses[0])
+				&& $this->reflectionProvider->hasClass($referencedClasses[0])
 			) {
-				$methodClassReflection = $this->broker->getClass($referencedClasses[0]);
+				$methodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
 				if ($methodClassReflection->hasMethod($expr->name->name)) {
 					$methodReflection = $methodClassReflection->getMethod($expr->name->name, $scope);
 					foreach ($this->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
@@ -467,9 +467,9 @@ class TypeSpecifier
 				$referencedClasses = TypeUtils::getDirectClassNames($calleeType);
 				if (
 					count($referencedClasses) === 1
-					&& $this->broker->hasClass($referencedClasses[0])
+					&& $this->reflectionProvider->hasClass($referencedClasses[0])
 				) {
-					$staticMethodClassReflection = $this->broker->getClass($referencedClasses[0]);
+					$staticMethodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
 					foreach ($this->getStaticMethodTypeSpecifyingExtensionsForClass($staticMethodClassReflection->getName()) as $extension) {
 						if (!$extension->isStaticMethodSupported($staticMethodReflection, $expr, $context)) {
 							continue;
@@ -760,7 +760,7 @@ class TypeSpecifier
 	private function getTypeSpecifyingExtensionsForType(array $extensions, string $className): array
 	{
 		$extensionsForClass = [[]];
-		$class = $this->broker->getClass($className);
+		$class = $this->reflectionProvider->getClass($className);
 		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
 			if (!isset($extensions[$extensionClassName])) {
 				continue;

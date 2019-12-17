@@ -3,9 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\PrettyPrinter\Standard;
-use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Reflection\ReflectionProvider;
 
 class TypeSpecifierFactory
 {
@@ -26,7 +26,7 @@ class TypeSpecifierFactory
 	{
 		$typeSpecifier = new TypeSpecifier(
 			$this->container->getByType(Standard::class),
-			$this->container->getByType(Broker::class),
+			$this->container->getByType(ReflectionProvider::class),
 			$this->container->getServicesByTag(self::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG)

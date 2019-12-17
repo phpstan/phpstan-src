@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleError;
@@ -20,6 +21,9 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 	/** @var \PHPStan\Broker\Broker */
 	private $broker;
 
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
+
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
 
@@ -28,11 +32,13 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 
 	public function __construct(
 		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkFunctionNameCase
 	)
 	{
 		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkFunctionNameCase = $checkFunctionNameCase;
 	}
@@ -87,12 +93,12 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 
 	private function checkFunction(Node\Name $name): ?RuleError
 	{
-		if (!$this->broker->hasFunction($name, null)) {
+		if (!$this->reflectionProvider->hasFunction($name, null)) {
 			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))->line($name->getLine())->build();
 		}
 
 		if ($this->checkFunctionNameCase) {
-			$functionReflection = $this->broker->getFunction($name, null);
+			$functionReflection = $this->reflectionProvider->getFunction($name, null);
 			$realName = $functionReflection->getName();
 			$usedName = (string) $name;
 			if (

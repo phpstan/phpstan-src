@@ -3,7 +3,6 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\NameScope;
-use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
@@ -19,6 +18,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -203,8 +203,8 @@ class TypeNodeResolver
 					return new StaticType($nameScope->getClassName());
 
 				case 'parent':
-					if ($this->getBroker()->hasClass($nameScope->getClassName())) {
-						$classReflection = $this->getBroker()->getClass($nameScope->getClassName());
+					if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
+						$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
 						if ($classReflection->getParentClass() !== false) {
 							return new ObjectType($classReflection->getParentClass()->getName());
 						}
@@ -336,11 +336,11 @@ class TypeNodeResolver
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
 
 		if ($mainType instanceof TypeWithClassName) {
-			if (!$this->getBroker()->hasClass($mainType->getClassName())) {
+			if (!$this->getReflectionProvider()->hasClass($mainType->getClassName())) {
 				return new GenericObjectType($mainType->getClassName(), $genericTypes);
 			}
 
-			$classReflection = $this->getBroker()->getClass($mainType->getClassName());
+			$classReflection = $this->getReflectionProvider()->getClass($mainType->getClassName());
 			if ($classReflection->isGeneric()) {
 				if (in_array($mainType->getClassName(), [
 					\Traversable::class,
@@ -508,9 +508,9 @@ class TypeNodeResolver
 		return $types;
 	}
 
-	private function getBroker(): Broker
+	private function getReflectionProvider(): ReflectionProvider
 	{
-		return $this->container->getByType(Broker::class);
+		return $this->container->getByType(ReflectionProvider::class);
 	}
 
 }

@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -14,18 +14,18 @@ use PHPStan\Rules\RuleErrorBuilder;
 class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var bool */
 	private $checkFunctionNameCase;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		bool $checkFunctionNameCase
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->checkFunctionNameCase = $checkFunctionNameCase;
 	}
 
@@ -40,18 +40,18 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		if (!$this->broker->hasFunction($node->name, $scope)) {
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [
 				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->build(),
 			];
 		}
 
-		$function = $this->broker->getFunction($node->name, $scope);
+		$function = $this->reflectionProvider->getFunction($node->name, $scope);
 		$name = (string) $node->name;
 
 		if ($this->checkFunctionNameCase) {
 			/** @var string $calledFunctionName */
-			$calledFunctionName = $this->broker->resolveFunctionName($node->name, $scope);
+			$calledFunctionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
 			if (
 				strtolower($function->getName()) === strtolower($calledFunctionName)
 				&& $function->getName() !== $calledFunctionName

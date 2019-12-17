@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Catch_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,8 +16,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
@@ -26,12 +26,12 @@ class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 	private $checkClassCaseSensitivity;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkClassCaseSensitivity
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
@@ -46,12 +46,12 @@ class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 		$errors = [];
 		foreach ($node->types as $class) {
 			$className = (string) $class;
-			if (!$this->broker->hasClass($className)) {
+			if (!$this->reflectionProvider->hasClass($className)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))->line($class->getLine())->build();
 				continue;
 			}
 
-			$classReflection = $this->broker->getClass($className);
+			$classReflection = $this->reflectionProvider->getClass($className);
 			if (!$classReflection->isInterface() && !$classReflection->getNativeReflection()->implementsInterface(\Throwable::class)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s is not an exception.', $classReflection->getDisplayName()))->line($class->getLine())->build();
 			}

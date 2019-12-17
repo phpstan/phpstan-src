@@ -4,7 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -22,8 +22,8 @@ use PHPStan\Type\UnionType;
 class RuleLevelHelper
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var bool */
 	private $checkNullables;
@@ -35,13 +35,13 @@ class RuleLevelHelper
 	private $checkUnionTypes;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		bool $checkNullables,
 		bool $checkThisOnly,
 		bool $checkUnionTypes
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->checkNullables = $checkNullables;
 		$this->checkThisOnly = $checkThisOnly;
 		$this->checkUnionTypes = $checkUnionTypes;
@@ -171,7 +171,7 @@ class RuleLevelHelper
 		$errors = [];
 		$directClassNames = TypeUtils::getDirectClassNames($type);
 		foreach ($directClassNames as $referencedClass) {
-			if ($this->broker->hasClass($referencedClass)) {
+			if ($this->reflectionProvider->hasClass($referencedClass)) {
 				continue;
 			}
 

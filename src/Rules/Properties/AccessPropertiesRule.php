@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node\Expr\PropertyFetch;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -17,8 +17,8 @@ use PHPStan\Type\VerbosityLevel;
 class AccessPropertiesRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\RuleLevelHelper */
 	private $ruleLevelHelper;
@@ -27,12 +27,12 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 	private $reportMagicProperties;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
 		bool $reportMagicProperties
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->reportMagicProperties = $reportMagicProperties;
 	}
@@ -84,11 +84,11 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 			$classNames = $typeResult->getReferencedClasses();
 			if (!$this->reportMagicProperties) {
 				foreach ($classNames as $className) {
-					if (!$this->broker->hasClass($className)) {
+					if (!$this->reflectionProvider->hasClass($className)) {
 						continue;
 					}
 
-					$classReflection = $this->broker->getClass($className);
+					$classReflection = $this->reflectionProvider->getClass($className);
 					if (
 						$classReflection->hasNativeMethod('__get')
 						|| $classReflection->hasNativeMethod('__set')
@@ -100,7 +100,7 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 
 			if (count($classNames) === 1) {
 				$referencedClass = $typeResult->getReferencedClasses()[0];
-				$propertyClassReflection = $this->broker->getClass($referencedClass);
+				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
 				$parentClassReflection = $propertyClassReflection->getParentClass();
 				while ($parentClassReflection !== false) {
 					if ($parentClassReflection->hasProperty($name)) {

@@ -10,22 +10,22 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
 use PHPStan\Type\ClosureType;
 
 class DependencyResolver
 {
 
-	/** @var Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
-	public function __construct(Broker $broker)
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	/**
@@ -67,12 +67,14 @@ class DependencyResolver
 				$functionName = (string) $node->namespacedName;
 			}
 			$functionNameName = new Name($functionName);
-			if ($this->broker->hasFunction($functionNameName, null)) {
-				$functionReflection = $this->broker->getFunction($functionNameName, null);
+			if ($this->reflectionProvider->hasFunction($functionNameName, null)) {
+				$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
 
-				/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
 				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
-				$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+
+				if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
+					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+				}
 			}
 		} elseif ($node instanceof Closure) {
 			/** @var ClosureType $closureType */
@@ -194,7 +196,7 @@ class DependencyResolver
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
 	{
 		try {
-			$classReflection = $this->broker->getClass($className);
+			$classReflection = $this->reflectionProvider->getClass($className);
 		} catch (\PHPStan\Broker\ClassNotFoundException $e) {
 			return;
 		}
@@ -216,7 +218,7 @@ class DependencyResolver
 
 	private function getFunctionReflection(\PhpParser\Node\Name $nameNode, ?Scope $scope): ReflectionWithFilename
 	{
-		$reflection = $this->broker->getFunction($nameNode, $scope);
+		$reflection = $this->reflectionProvider->getFunction($nameNode, $scope);
 		if (!$reflection instanceof ReflectionWithFilename) {
 			throw new \PHPStan\Broker\FunctionNotFoundException((string) $nameNode);
 		}

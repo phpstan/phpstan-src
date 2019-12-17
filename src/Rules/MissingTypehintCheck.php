@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules;
 
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\MixedType;
@@ -25,8 +25,8 @@ class MissingTypehintCheck
 		\Generator::class,
 	];
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var bool */
 	private $checkMissingIterableValueType;
@@ -35,12 +35,12 @@ class MissingTypehintCheck
 	private $checkGenericClassInNonGenericObjectType;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		bool $checkMissingIterableValueType,
 		bool $checkGenericClassInNonGenericObjectType
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
 	}
@@ -63,9 +63,9 @@ class MissingTypehintCheck
 					if (
 						$type instanceof TypeWithClassName
 						&& !in_array($type->getClassName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)
-						&& $this->broker->hasClass($type->getClassName())
+						&& $this->reflectionProvider->hasClass($type->getClassName())
 					) {
-						$classReflection = $this->broker->getClass($type->getClassName());
+						$classReflection = $this->reflectionProvider->getClass($type->getClassName());
 						if ($classReflection->isGeneric()) {
 							return $type;
 						}

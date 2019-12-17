@@ -5,8 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
@@ -18,18 +18,18 @@ use PHPStan\Type\VerbosityLevel;
 final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\MissingTypehintCheck */
 	private $missingTypehintCheck;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		MissingTypehintCheck $missingTypehintCheck
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
@@ -45,10 +45,10 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 			$functionName = (string) $node->namespacedName;
 		}
 		$functionNameName = new Name($functionName);
-		if (!$this->broker->hasFunction($functionNameName, null)) {
+		if (!$this->reflectionProvider->hasFunction($functionNameName, null)) {
 			return [];
 		}
-		$functionReflection = $this->broker->getFunction($functionNameName, null);
+		$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
 		if ($returnType instanceof MixedType && !$returnType->isExplicitMixed()) {

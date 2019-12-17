@@ -30,8 +30,8 @@ use PHPStan\Type\VerbosityLevel;
 class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
 	private $check;
@@ -57,7 +57,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 		bool $reportMagicMethods
 	)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $broker;
 		$this->check = $check;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
@@ -123,7 +123,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 
 				$className = $currentClassReflection->getParentClass()->getName();
 			} else {
-				if (!$this->broker->hasClass($className)) {
+				if (!$this->reflectionProvider->hasClass($className)) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Call to static method %s() on an unknown class %s.',
@@ -135,7 +135,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 					$errors = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 				}
 
-				$classReflection = $this->broker->getClass($className);
+				$classReflection = $this->reflectionProvider->getClass($className);
 				$isInterface = $classReflection->isInterface();
 				$className = $classReflection->getName();
 			}
@@ -179,11 +179,11 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			if (!$this->reportMagicMethods) {
 				$directClassNames = TypeUtils::getDirectClassNames($classType);
 				foreach ($directClassNames as $className) {
-					if (!$this->broker->hasClass($className)) {
+					if (!$this->reflectionProvider->hasClass($className)) {
 						continue;
 					}
 
-					$classReflection = $this->broker->getClass($className);
+					$classReflection = $this->reflectionProvider->getClass($className);
 					if ($classReflection->hasNativeMethod('__callStatic')) {
 						return [];
 					}

@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -21,16 +21,16 @@ class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 	/** @var \PHPStan\Rules\RuleLevelHelper */
 	private $ruleLevelHelper;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
-		Broker $broker
+		ReflectionProvider $reflectionProvider
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -52,7 +52,7 @@ class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 		$methodName = $staticCall->name->toString();
 		if ($staticCall->class instanceof Node\Name) {
 			$className = $scope->resolveName($staticCall->class);
-			if (!$this->broker->hasClass($className)) {
+			if (!$this->reflectionProvider->hasClass($className)) {
 				return [];
 			}
 

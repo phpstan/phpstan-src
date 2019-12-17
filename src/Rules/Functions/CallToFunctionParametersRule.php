@@ -5,8 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 
 /**
@@ -15,15 +15,15 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
 	private $check;
 
-	public function __construct(Broker $broker, FunctionCallParametersCheck $check)
+	public function __construct(ReflectionProvider $reflectionProvider, FunctionCallParametersCheck $check)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->check = $check;
 	}
 
@@ -38,11 +38,11 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		if (!$this->broker->hasFunction($node->name, $scope)) {
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
 
-		$function = $this->broker->getFunction($node->name, $scope);
+		$function = $this->reflectionProvider->getFunction($node->name, $scope);
 
 		return $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(

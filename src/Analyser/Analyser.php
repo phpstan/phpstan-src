@@ -131,13 +131,14 @@ class Analyser
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
 		foreach ($files as $file) {
-			try {
-				$fileErrors = [];
-				if ($preFileCallback !== null) {
-					$preFileCallback($file);
-				}
+			if ($preFileCallback !== null) {
+				$preFileCallback($file);
+			}
 
-				if (is_file($file)) {
+			$fileErrors = [];
+
+			if (is_file($file)) {
+				try {
 					$parserNodes = $this->parser->parseFile($file);
 					$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, $file, $outerNodeCallback): void {
 						if ($outerNodeCallback !== null) {
@@ -212,42 +213,42 @@ class Analyser
 						$scope,
 						$nodeCallback
 					);
-				} elseif (is_dir($file)) {
-					$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);
-				} else {
-					$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
+				} catch (\PhpParser\Error $e) {
+					$errors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, false);
+				} catch (\PHPStan\Parser\ParserErrorsException $e) {
+					foreach ($e->getErrors() as $error) {
+						$errors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, false);
+					}
+				} catch (\PHPStan\AnalysedCodeException $e) {
+					$errors[] = new Error($e->getMessage(), $file, null, false);
+				} catch (\Throwable $t) {
+					if ($debug) {
+						throw $t;
+					}
+					$internalErrorsCount++;
+					$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
+					$internalErrorMessage .= sprintf(
+						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
+						"\n",
+						"\n",
+						'https://github.com/phpstan/phpstan/issues/new'
+					);
+					$errors[] = new Error($internalErrorMessage, $file);
+					if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
+						$reachedInternalErrorsCountLimit = true;
+						break;
+					}
 				}
-				if ($postFileCallback !== null) {
-					$postFileCallback($file);
-				}
-
-				$errors = array_merge($errors, $fileErrors);
-			} catch (\PhpParser\Error $e) {
-				$errors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, false);
-			} catch (\PHPStan\Parser\ParserErrorsException $e) {
-				foreach ($e->getErrors() as $error) {
-					$errors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, false);
-				}
-			} catch (\PHPStan\AnalysedCodeException $e) {
-				$errors[] = new Error($e->getMessage(), $file, null, false);
-			} catch (\Throwable $t) {
-				if ($debug) {
-					throw $t;
-				}
-				$internalErrorsCount++;
-				$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
-				$internalErrorMessage .= sprintf(
-					'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
-					"\n",
-					"\n",
-					'https://github.com/phpstan/phpstan/issues/new'
-				);
-				$errors[] = new Error($internalErrorMessage, $file);
-				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
-					$reachedInternalErrorsCountLimit = true;
-					break;
-				}
+			} elseif (is_dir($file)) {
+				$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);
+			} else {
+				$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
 			}
+			if ($postFileCallback !== null) {
+				$postFileCallback($file);
+			}
+
+			$errors = array_merge($errors, $fileErrors);
 		}
 
 		$this->restoreCollectErrorsHandler();

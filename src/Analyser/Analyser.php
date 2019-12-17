@@ -135,120 +135,122 @@ class Analyser
 				$preFileCallback($file);
 			}
 
-			$fileErrors = [];
+			try {
+				$fileErrors = [];
+				if (is_file($file)) {
+					try {
+						$parserNodes = $this->parser->parseFile($file);
+						$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, $file, $outerNodeCallback): void {
+							if ($outerNodeCallback !== null) {
+								$outerNodeCallback($node, $scope);
+							}
+							$uniquedAnalysedCodeExceptionMessages = [];
+							foreach ($this->registry->getRules(get_class($node)) as $rule) {
+								try {
+									$ruleErrors = $rule->processNode($node, $scope);
+								} catch (\PHPStan\AnalysedCodeException $e) {
+									if (isset($uniquedAnalysedCodeExceptionMessages[$e->getMessage()])) {
+										continue;
+									}
 
-			if (is_file($file)) {
-				try {
-					$parserNodes = $this->parser->parseFile($file);
-					$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, $file, $outerNodeCallback): void {
-						if ($outerNodeCallback !== null) {
-							$outerNodeCallback($node, $scope);
-						}
-						$uniquedAnalysedCodeExceptionMessages = [];
-						foreach ($this->registry->getRules(get_class($node)) as $rule) {
-							try {
-								$ruleErrors = $rule->processNode($node, $scope);
-							} catch (\PHPStan\AnalysedCodeException $e) {
-								if (isset($uniquedAnalysedCodeExceptionMessages[$e->getMessage()])) {
+									$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
+									$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), false);
 									continue;
 								}
 
-								$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
-								$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), false);
-								continue;
-							}
+								foreach ($ruleErrors as $ruleError) {
+									$line = $node->getLine();
+									$fileName = $scope->getFileDescription();
+									$filePath = $scope->getFile();
+									$traitFilePath = null;
+									$tip = null;
+									if ($scope->isInTrait()) {
+										$traitReflection = $scope->getTraitReflection();
+										if ($traitReflection->getFileName() !== false) {
+											$traitFilePath = $traitReflection->getFileName();
+										}
+									}
+									if (is_string($ruleError)) {
+										$message = $ruleError;
+									} else {
+										$message = $ruleError->getMessage();
+										if (
+											$ruleError instanceof LineRuleError
+											&& $ruleError->getLine() !== -1
+										) {
+											$line = $ruleError->getLine();
+										}
+										if (
+											$ruleError instanceof FileRuleError
+											&& $ruleError->getFile() !== ''
+										) {
+											$fileName = $ruleError->getFile();
+											$filePath = $ruleError->getFile();
+											$traitFilePath = null;
+										}
 
-							foreach ($ruleErrors as $ruleError) {
-								$line = $node->getLine();
-								$fileName = $scope->getFileDescription();
-								$filePath = $scope->getFile();
-								$traitFilePath = null;
-								$tip = null;
-								if ($scope->isInTrait()) {
-									$traitReflection = $scope->getTraitReflection();
-									if ($traitReflection->getFileName() !== false) {
-										$traitFilePath = $traitReflection->getFileName();
+										if ($ruleError instanceof TipRuleError) {
+											$tip = $ruleError->getTip();
+										}
 									}
+									$fileErrors[] = new Error(
+										$message,
+										$fileName,
+										$line,
+										true,
+										$filePath,
+										$traitFilePath,
+										$tip
+									);
 								}
-								if (is_string($ruleError)) {
-									$message = $ruleError;
-								} else {
-									$message = $ruleError->getMessage();
-									if (
-										$ruleError instanceof LineRuleError
-										&& $ruleError->getLine() !== -1
-									) {
-										$line = $ruleError->getLine();
-									}
-									if (
-										$ruleError instanceof FileRuleError
-										&& $ruleError->getFile() !== ''
-									) {
-										$fileName = $ruleError->getFile();
-										$filePath = $ruleError->getFile();
-										$traitFilePath = null;
-									}
-
-									if ($ruleError instanceof TipRuleError) {
-										$tip = $ruleError->getTip();
-									}
-								}
-								$fileErrors[] = new Error(
-									$message,
-									$fileName,
-									$line,
-									true,
-									$filePath,
-									$traitFilePath,
-									$tip
-								);
 							}
+						};
+
+						$scope = $this->scopeFactory->create(ScopeContext::create($file));
+						$nodeCallback(new FileNode($parserNodes), $scope);
+						$this->nodeScopeResolver->processNodes(
+							$parserNodes,
+							$scope,
+							$nodeCallback
+						);
+					} catch (\PhpParser\Error $e) {
+						$errors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, false);
+					} catch (\PHPStan\Parser\ParserErrorsException $e) {
+						foreach ($e->getErrors() as $error) {
+							$errors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, false);
 						}
-					};
-
-					$scope = $this->scopeFactory->create(ScopeContext::create($file));
-					$nodeCallback(new FileNode($parserNodes), $scope);
-					$this->nodeScopeResolver->processNodes(
-						$parserNodes,
-						$scope,
-						$nodeCallback
-					);
-				} catch (\PhpParser\Error $e) {
-					$errors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, false);
-				} catch (\PHPStan\Parser\ParserErrorsException $e) {
-					foreach ($e->getErrors() as $error) {
-						$errors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, false);
+					} catch (\PHPStan\AnalysedCodeException $e) {
+						$errors[] = new Error($e->getMessage(), $file, null, false);
 					}
-				} catch (\PHPStan\AnalysedCodeException $e) {
-					$errors[] = new Error($e->getMessage(), $file, null, false);
-				} catch (\Throwable $t) {
-					if ($debug) {
-						throw $t;
-					}
-					$internalErrorsCount++;
-					$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
-					$internalErrorMessage .= sprintf(
-						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
-						"\n",
-						"\n",
-						'https://github.com/phpstan/phpstan/issues/new'
-					);
-					$errors[] = new Error($internalErrorMessage, $file);
-					if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
-						$reachedInternalErrorsCountLimit = true;
-						break;
-					}
+				} elseif (is_dir($file)) {
+					$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);
+				} else {
+					$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
 				}
-			} elseif (is_dir($file)) {
-				$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);
-			} else {
-				$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
+
+				$errors = array_merge($errors, $fileErrors);
+			} catch (\Throwable $t) {
+				if ($debug) {
+					throw $t;
+				}
+				$internalErrorsCount++;
+				$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
+				$internalErrorMessage .= sprintf(
+					'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
+					"\n",
+					"\n",
+					'https://github.com/phpstan/phpstan/issues/new'
+				);
+				$errors[] = new Error($internalErrorMessage, $file);
+				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
+					$reachedInternalErrorsCountLimit = true;
+					break;
+				}
 			}
+
 			if ($postFileCallback !== null) {
 				$postFileCallback($file);
 			}
-
-			$errors = array_merge($errors, $fileErrors);
 		}
 
 		$this->restoreCollectErrorsHandler();

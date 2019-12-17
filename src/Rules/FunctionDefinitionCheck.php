@@ -10,6 +10,9 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -61,13 +64,11 @@ class FunctionDefinitionCheck
 			$functionName = (string) $function->namespacedName;
 		}
 		$functionNameName = new Name($functionName);
-		if (!$this->broker->hasCustomFunction($functionNameName, null)) {
+		if (!$this->broker->hasFunction($functionNameName, null)) {
 			return [];
 		}
 
-		$functionReflection = $this->broker->getCustomFunction($functionNameName, null);
-
-		/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
+		$functionReflection = $this->broker->getFunction($functionNameName, null);
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
 		return $this->checkParametersAcceptor(
@@ -164,14 +165,14 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs $parametersAcceptor
+	 * @param ParametersAcceptor $parametersAcceptor
 	 * @param FunctionLike $functionNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @return RuleError[]
 	 */
 	private function checkParametersAcceptor(
-		ParametersAcceptorWithPhpDocs $parametersAcceptor,
+		ParametersAcceptor $parametersAcceptor,
 		FunctionLike $functionNode,
 		string $parameterMessage,
 		string $returnMessage
@@ -181,14 +182,7 @@ class FunctionDefinitionCheck
 		$parameterNodes = $functionNode->getParams();
 		$returnTypeNode = $functionNode->getReturnType() ?? $functionNode;
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
-			if ($this->checkThisOnly) {
-				$referencedClasses = $parameter->getNativeType()->getReferencedClasses();
-			} else {
-				$referencedClasses = array_merge(
-					$parameter->getNativeType()->getReferencedClasses(),
-					$parameter->getPhpDocType()->getReferencedClasses()
-				);
-			}
+			$referencedClasses = $this->getParameterReferencedClasses($parameter);
 			$parameterNode = null;
 			$parameterNodeCallback = function () use ($parameter, $parameterNodes, &$parameterNode): Param {
 				if ($parameterNode === null) {
@@ -224,14 +218,7 @@ class FunctionDefinitionCheck
 			$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly())))->line($parameterNodeCallback()->getLine())->build();
 		}
 
-		if ($this->checkThisOnly) {
-			$returnTypeReferencedClasses = $parametersAcceptor->getNativeReturnType()->getReferencedClasses();
-		} else {
-			$returnTypeReferencedClasses = array_merge(
-				$parametersAcceptor->getNativeReturnType()->getReferencedClasses(),
-				$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses()
-			);
-		}
+		$returnTypeReferencedClasses = $this->getReturnTypeReferencedClasses($parametersAcceptor);
 
 		foreach ($returnTypeReferencedClasses as $class) {
 			if ($this->broker->hasClass($class) && !$this->broker->getClass($class)->isTrait()) {
@@ -281,6 +268,46 @@ class FunctionDefinitionCheck
 		}
 
 		throw new \PHPStan\ShouldNotHappenException(sprintf('Parameter %s not found.', $parameterName));
+	}
+
+	/**
+	 * @param \PHPStan\Reflection\ParameterReflection $parameter
+	 * @return string[]
+	 */
+	private function getParameterReferencedClasses(ParameterReflection $parameter): array
+	{
+		if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+			return $parameter->getType()->getReferencedClasses();
+		}
+
+		if ($this->checkThisOnly) {
+			return $parameter->getNativeType()->getReferencedClasses();
+		}
+
+		return array_merge(
+			$parameter->getNativeType()->getReferencedClasses(),
+			$parameter->getPhpDocType()->getReferencedClasses()
+		);
+	}
+
+	/**
+	 * @param \PHPStan\Reflection\ParametersAcceptor $parametersAcceptor
+	 * @return string[]
+	 */
+	private function getReturnTypeReferencedClasses(ParametersAcceptor $parametersAcceptor): array
+	{
+		if (!$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
+			return $parametersAcceptor->getReturnType()->getReferencedClasses();
+		}
+
+		if ($this->checkThisOnly) {
+			return $parametersAcceptor->getNativeReturnType()->getReferencedClasses();
+		}
+
+		return array_merge(
+			$parametersAcceptor->getNativeReturnType()->getReferencedClasses(),
+			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses()
+		);
 	}
 
 }

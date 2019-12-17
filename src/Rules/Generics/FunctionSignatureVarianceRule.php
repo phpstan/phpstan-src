@@ -39,10 +39,10 @@ class FunctionSignatureVarianceRule implements Rule
 			$functionName = (string) $node->namespacedName;
 		}
 		$functionNameName = new Name($functionName);
-		if (!$this->broker->hasCustomFunction($functionNameName, null)) {
+		if (!$this->broker->hasFunction($functionNameName, null)) {
 			return [];
 		}
-		$functionReflection = $this->broker->getCustomFunction($functionNameName, null);
+		$functionReflection = $this->broker->getFunction($functionNameName, null);
 
 		return $this->varianceCheck->checkParametersAcceptor(
 			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants()),

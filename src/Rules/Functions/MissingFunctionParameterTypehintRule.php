@@ -47,10 +47,10 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 			$functionName = (string) $node->namespacedName;
 		}
 		$functionNameName = new Name($functionName);
-		if (!$this->broker->hasCustomFunction($functionNameName, null)) {
+		if (!$this->broker->hasFunction($functionNameName, null)) {
 			return [];
 		}
-		$functionReflection = $this->broker->getCustomFunction($functionNameName, null);
+		$functionReflection = $this->broker->getFunction($functionNameName, null);
 
 		$messages = [];
 

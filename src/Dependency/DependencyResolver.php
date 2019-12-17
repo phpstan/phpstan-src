@@ -67,8 +67,8 @@ class DependencyResolver
 				$functionName = (string) $node->namespacedName;
 			}
 			$functionNameName = new Name($functionName);
-			if ($this->broker->hasCustomFunction($functionNameName, null)) {
-				$functionReflection = $this->broker->getCustomFunction($functionNameName, null);
+			if ($this->broker->hasFunction($functionNameName, null)) {
+				$functionReflection = $this->broker->getFunction($functionNameName, null);
 
 				/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
 				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());

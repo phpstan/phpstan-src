@@ -56,7 +56,6 @@ parameters:
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
-	benchmarkFile: null
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- PHP_VERSION
@@ -171,7 +170,6 @@ parametersSchema:
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
 	earlyTerminatingFunctionCalls: listOf(string())
 	memoryLimitFile: string()
-	benchmarkFile: schema(string(), nullable())
 	dynamicConstantNames: listOf(string())
 	customRulesetUsed: bool()
 	rootDir: string()
@@ -244,7 +242,6 @@ services:
 			ignoreErrors: %ignoreErrors%
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 			internalErrorsCountLimit: %internalErrorsCountLimit%
-			benchmarkFile: %benchmarkFile%
 
 	-
 		class: PHPStan\Analyser\ScopeFactory

@@ -38,12 +38,6 @@ class Analyser
 	/** @var int */
 	private $internalErrorsCountLimit;
 
-	/** @var string|null */
-	private $benchmarkFile;
-
-	/** @var float[] */
-	private $benchmarkData = [];
-
 	/** @var \PHPStan\Analyser\Error[] */
 	private $collectedErrors = [];
 
@@ -56,7 +50,6 @@ class Analyser
 	 * @param (string|array<string, string>)[] $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param int $internalErrorsCountLimit
-	 * @param string|null $benchmarkFile
 	 */
 	public function __construct(
 		ScopeFactory $scopeFactory,
@@ -66,8 +59,7 @@ class Analyser
 		FileHelper $fileHelper,
 		array $ignoreErrors,
 		bool $reportUnmatchedIgnoredErrors,
-		int $internalErrorsCountLimit,
-		?string $benchmarkFile = null
+		int $internalErrorsCountLimit
 	)
 	{
 		$this->scopeFactory = $scopeFactory;
@@ -78,7 +70,6 @@ class Analyser
 		$this->ignoreErrors = $ignoreErrors;
 		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
-		$this->benchmarkFile = $benchmarkFile;
 	}
 
 	/**
@@ -147,20 +138,15 @@ class Analyser
 				}
 
 				if (is_file($file)) {
-					$parserBenchmarkTime = $this->benchmarkStart();
 					$parserNodes = $this->parser->parseFile($file);
-					$this->benchmarkEnd($parserBenchmarkTime, 'parser');
-					$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, $file, &$scopeBenchmarkTime, $outerNodeCallback): void {
-						$this->benchmarkEnd($scopeBenchmarkTime, 'scope');
+					$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, $file, $outerNodeCallback): void {
 						if ($outerNodeCallback !== null) {
 							$outerNodeCallback($node, $scope);
 						}
 						$uniquedAnalysedCodeExceptionMessages = [];
 						foreach ($this->registry->getRules(get_class($node)) as $rule) {
 							try {
-								$ruleBenchmarkTime = $this->benchmarkStart();
 								$ruleErrors = $rule->processNode($node, $scope);
-								$this->benchmarkEnd($ruleBenchmarkTime, sprintf('rule-%s', get_class($rule)));
 							} catch (\PHPStan\AnalysedCodeException $e) {
 								if (isset($uniquedAnalysedCodeExceptionMessages[$e->getMessage()])) {
 									continue;
@@ -217,11 +203,8 @@ class Analyser
 								);
 							}
 						}
-
-						$scopeBenchmarkTime = $this->benchmarkStart();
 					};
 
-					$scopeBenchmarkTime = $this->benchmarkStart();
 					$scope = $this->scopeFactory->create(ScopeContext::create($file));
 					$nodeCallback(new FileNode($parserNodes), $scope);
 					$this->nodeScopeResolver->processNodes(
@@ -268,13 +251,6 @@ class Analyser
 		}
 
 		$this->restoreCollectErrorsHandler();
-
-		if ($this->benchmarkFile !== null) {
-			uasort($this->benchmarkData, static function (float $a, float $b): int {
-				return $b <=> $a;
-			});
-			file_put_contents($this->benchmarkFile, Json::encode($this->benchmarkData, Json::PRETTY));
-		}
 
 		$errors = array_merge($errors, $this->collectedErrors);
 
@@ -422,32 +398,6 @@ class Analyser
 	private function restoreCollectErrorsHandler(): void
 	{
 		restore_error_handler();
-	}
-
-	private function benchmarkStart(): ?float
-	{
-		if ($this->benchmarkFile === null) {
-			return null;
-		}
-
-		return microtime(true);
-	}
-
-	private function benchmarkEnd(?float $startTime, string $description): void
-	{
-		if ($this->benchmarkFile === null) {
-			return;
-		}
-		if ($startTime === null) {
-			return;
-		}
-		$elapsedTime = microtime(true) - $startTime;
-		if (!isset($this->benchmarkData[$description])) {
-			$this->benchmarkData[$description] = $elapsedTime;
-			return;
-		}
-
-		$this->benchmarkData[$description] += $elapsedTime;
 	}
 
 }

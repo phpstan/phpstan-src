@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
-use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocBlock;
@@ -19,7 +18,6 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
-use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
@@ -28,6 +26,7 @@ use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\TrinaryLogic;
@@ -44,7 +43,7 @@ use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
 
 class PhpClassReflectionExtension
-	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension, BrokerAwareExtension
+	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 
 	/** @var \PHPStan\DependencyInjection\Container */
@@ -74,8 +73,8 @@ class PhpClassReflectionExtension
 	/** @var bool */
 	private $inferPrivatePropertyTypeFromConstructor;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Reflection\PropertyReflection[][] */
 	private $propertiesIncludingAnnotations = [];
@@ -104,6 +103,7 @@ class PhpClassReflectionExtension
 		SignatureMapProvider $signatureMapProvider,
 		Parser $parser,
 		StubPhpDocProvider $stubPhpDocProvider,
+		ReflectionProvider $reflectionProvider,
 		bool $inferPrivatePropertyTypeFromConstructor
 	)
 	{
@@ -115,12 +115,8 @@ class PhpClassReflectionExtension
 		$this->signatureMapProvider = $signatureMapProvider;
 		$this->parser = $parser;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->inferPrivatePropertyTypeFromConstructor = $inferPrivatePropertyTypeFromConstructor;
-	}
-
-	public function setBroker(Broker $broker): void
-	{
-		$this->broker = $broker;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
@@ -266,9 +262,9 @@ class PhpClassReflectionExtension
 
 		$declaringTrait = null;
 		if (
-			$declaringTraitName !== null && $this->broker->hasClass($declaringTraitName)
+			$declaringTraitName !== null && $this->reflectionProvider->hasClass($declaringTraitName)
 		) {
-			$declaringTrait = $this->broker->getClass($declaringTraitName);
+			$declaringTrait = $this->reflectionProvider->getClass($declaringTraitName);
 		}
 
 		return new PhpPropertyReflection(
@@ -315,8 +311,8 @@ class PhpClassReflectionExtension
 		}
 
 		if ($methodName === '__get' && UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-			$this->broker,
-			$this->broker->getUniversalObjectCratesClasses(),
+			$this->reflectionProvider,
+			$this->reflectionProvider->getUniversalObjectCratesClasses(),
 			$classReflection
 		)) {
 			return true;
@@ -339,8 +335,8 @@ class PhpClassReflectionExtension
 			if (
 				$methodName !== '__get'
 				|| !UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-					$this->broker,
-					$this->broker->getUniversalObjectCratesClasses(),
+					$this->reflectionProvider,
+					$this->reflectionProvider->getUniversalObjectCratesClasses(),
 					$classReflection
 				)) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -457,7 +453,7 @@ class PhpClassReflectionExtension
 				$hasSideEffects = TrinaryLogic::createMaybe();
 			}
 			return new NativeMethodReflection(
-				$this->broker,
+				$this->reflectionProvider,
 				$declaringClass,
 				$methodReflection,
 				$variants,
@@ -501,9 +497,9 @@ class PhpClassReflectionExtension
 
 		$declaringTrait = null;
 		if (
-			$declaringTraitName !== null && $this->broker->hasClass($declaringTraitName)
+			$declaringTraitName !== null && $this->reflectionProvider->hasClass($declaringTraitName)
 		) {
-			$declaringTrait = $this->broker->getClass($declaringTraitName);
+			$declaringTrait = $this->reflectionProvider->getClass($declaringTraitName);
 		}
 
 		$templateTypeMap = TemplateTypeMap::createEmpty();

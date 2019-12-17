@@ -4,6 +4,7 @@ namespace PHPStan\Broker;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -34,11 +35,8 @@ use ReflectionClass;
 class Broker implements ReflectionProvider
 {
 
-	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
-	private $propertiesClassReflectionExtensions;
-
-	/** @var \PHPStan\Reflection\MethodsClassReflectionExtension[] */
-	private $methodsClassReflectionExtensions;
+	/** @var ClassReflectionExtensionRegistryProvider */
+	private $classReflectionExtensionRegistryProvider;
 
 	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[] */
 	private $dynamicMethodReturnTypeExtensions = [];
@@ -107,8 +105,7 @@ class Broker implements ReflectionProvider
 	private $operatorTypeSpecifyingExtensions;
 
 	/**
-	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
-	 * @param \PHPStan\Reflection\MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
+	 * @param ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider
 	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
 	 * @param \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
 	 * @param \PHPStan\Type\DynamicFunctionReturnTypeExtension[] $dynamicFunctionReturnTypeExtensions
@@ -124,8 +121,7 @@ class Broker implements ReflectionProvider
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
-		array $propertiesClassReflectionExtensions,
-		array $methodsClassReflectionExtensions,
+		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		array $dynamicMethodReturnTypeExtensions,
 		array $dynamicStaticMethodReturnTypeExtensions,
 		array $dynamicFunctionReturnTypeExtensions,
@@ -141,9 +137,8 @@ class Broker implements ReflectionProvider
 		array $universalObjectCratesClasses
 	)
 	{
-		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
-		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
-		foreach (array_merge($propertiesClassReflectionExtensions, $methodsClassReflectionExtensions, $dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions, $dynamicFunctionReturnTypeExtensions, $operatorTypeSpecifyingExtensions) as $extension) {
+		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
+		foreach (array_merge($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions, $dynamicFunctionReturnTypeExtensions, $operatorTypeSpecifyingExtensions) as $extension) {
 			if (!($extension instanceof BrokerAwareExtension)) {
 				continue;
 			}
@@ -368,8 +363,8 @@ class Broker implements ReflectionProvider
 			$classReflection = new ClassReflection(
 				$this,
 				$this->fileTypeMapper,
-				$this->propertiesClassReflectionExtensions,
-				$this->methodsClassReflectionExtensions,
+				$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
+				$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 				$displayName,
 				$reflectionClass,
 				$anonymousFilename,

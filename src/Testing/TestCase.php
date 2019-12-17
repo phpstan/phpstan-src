@@ -14,6 +14,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\Cache\MemoryCacheStorage;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
+use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\FunctionCallStatementFinder;
@@ -176,7 +177,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension($fileTypeMapper);
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);
 		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
-		$phpExtension = new PhpClassReflectionExtension(self::getContainer(), $methodReflectionFactory, $fileTypeMapper, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), true);
 		$functionReflectionFactory = new class($this->getParser(), $functionCallStatementFinder, $cache) implements FunctionReflectionFactory {
 
 			/** @var \PHPStan\Parser\Parser */
@@ -246,17 +246,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, []));
+		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
 		$broker = new Broker(
-			[
-				$phpExtension,
-				new PhpDefectClassReflectionExtension(self::getContainer()->getByType(TypeStringResolver::class), $annotationsPropertiesClassReflectionExtension),
-				new UniversalObjectCratesClassReflectionExtension([\stdClass::class]),
-				$annotationsPropertiesClassReflectionExtension,
-			],
-			[
-				$phpExtension,
-				$annotationsMethodsClassReflectionExtension,
-			],
+			$classReflectionExtensionRegistryProvider,
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicMethodReturnTypeExtensions, $this->getDynamicMethodReturnTypeExtensions()),
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions()),
@@ -272,6 +264,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			self::getContainer()->getParameter('universalObjectCratesClasses')
 		);
 		$methodReflectionFactory->broker = $broker;
+		$classReflectionExtensionRegistryProvider->setBroker($broker);
+		$phpExtension = new PhpClassReflectionExtension(self::getContainer(), $methodReflectionFactory, $fileTypeMapper, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $broker, true);
+		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($phpExtension);
+		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new PhpDefectClassReflectionExtension(self::getContainer()->getByType(TypeStringResolver::class), $annotationsPropertiesClassReflectionExtension));
+		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new UniversalObjectCratesClassReflectionExtension([\stdClass::class]));
+		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($annotationsPropertiesClassReflectionExtension);
+		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($phpExtension);
+		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
 
 		return $broker;
 	}

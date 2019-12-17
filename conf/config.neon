@@ -281,6 +281,10 @@ services:
 		factory: PHPStan\DependencyInjection\Nette\NetteContainer
 
 	-
+		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider
+		factory: PHPStan\DependencyInjection\Reflection\LazyClassReflectionExtensionRegistryProvider
+
+	-
 		class: PHPStan\File\FileHelper
 		arguments:
 			workingDirectory: %currentWorkingDirectory%

@@ -5,6 +5,7 @@ namespace PHPStan\Broker;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Cache\Cache;
+use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\Parser;
@@ -30,9 +31,10 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 		$relativePathHelper = new FuzzyRelativePathHelper($workingDirectory, DIRECTORY_SEPARATOR, []);
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($workingDirectory), $relativePathHelper);
 
+		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
+
 		$this->broker = new Broker(
-			[],
-			[],
+			$classReflectionExtensionRegistryProvider,
 			[],
 			[],
 			[],
@@ -47,6 +49,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			self::getContainer()->getByType(StubPhpDocProvider::class),
 			[]
 		);
+		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
 	}
 
 	public function testClassNotFound(): void

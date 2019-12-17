@@ -796,6 +796,8 @@ services:
 	broker:
 		class: PHPStan\Broker\Broker
 		factory: @brokerFactory::create
+		autowired:
+			- PHPStan\Broker\Broker
 
 	brokerFactory:
 		class: PHPStan\Broker\BrokerFactory
@@ -813,6 +815,12 @@ services:
 	registry:
 		class: PHPStan\Rules\Registry
 		factory: @PHPStan\Rules\RegistryFactory::create
+
+	reflectionProvider:
+		class: PHPStan\Reflection\ReflectionProvider
+		factory: @broker
+		autowired:
+			- PHPStan\Reflection\ReflectionProvider
 
 	typeNodeResolverFactory:
 		class: PHPStan\PhpDoc\TypeNodeResolverFactory

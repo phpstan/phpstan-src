@@ -14,6 +14,7 @@ use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\TrinaryLogic;
@@ -30,7 +31,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use ReflectionClass;
 
-class Broker
+class Broker implements ReflectionProvider
 {
 
 	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
@@ -90,7 +91,7 @@ class Broker
 	/** @var \PHPStan\Reflection\Php\PhpFunctionReflection[] */
 	private $customFunctionReflections = [];
 
-	/** @var self|null */
+	/** @var ReflectionProvider|null */
 	private static $instance;
 
 	/** @var bool[] */
@@ -169,12 +170,12 @@ class Broker
 		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
-	public static function registerInstance(Broker $broker): void
+	public static function registerInstance(ReflectionProvider $reflectionProvider): void
 	{
-		self::$instance = $broker;
+		self::$instance = $reflectionProvider;
 	}
 
-	public static function getInstance(): self
+	public static function getInstance(): ReflectionProvider
 	{
 		if (self::$instance === null) {
 			throw new \PHPStan\ShouldNotHappenException();

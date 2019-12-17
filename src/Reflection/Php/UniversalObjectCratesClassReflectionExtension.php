@@ -6,6 +6,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\MixedType;
 
 class UniversalObjectCratesClassReflectionExtension
@@ -41,19 +42,19 @@ class UniversalObjectCratesClassReflectionExtension
 	}
 
 	/**
-	 * @param \PHPStan\Broker\Broker $broker
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param string[] $classes
 	 * @param \PHPStan\Reflection\ClassReflection $classReflection
 	 * @return bool
 	 */
 	public static function isUniversalObjectCrate(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		array $classes,
 		ClassReflection $classReflection
 	): bool
 	{
 		foreach ($classes as $className) {
-			if (!$broker->hasClass($className)) {
+			if (!$reflectionProvider->hasClass($className)) {
 				continue;
 			}
 

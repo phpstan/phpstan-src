@@ -244,6 +244,9 @@ services:
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
+		class: PHPStan\Analyser\FileAnalyser
+
+	-
 		class: PHPStan\Analyser\ScopeFactory
 		arguments:
 			scopeClass: %scopeClass%

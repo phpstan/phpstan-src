@@ -359,22 +359,27 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);
-		return new Analyser(
+		$nodeScopeResolver = new NodeScopeResolver(
+			$broker,
+			$this->getParser(),
+			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper)),
+			$fileHelper,
+			$typeSpecifier,
+			false,
+			false,
+			true,
+			[],
+			[]
+		);
+		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($broker, $typeSpecifier),
-			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser),
+			$nodeScopeResolver,
+			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser)
+		);
+		return new Analyser(
+			$fileAnalyser,
 			$registry,
-			new NodeScopeResolver(
-				$broker,
-				$this->getParser(),
-				new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper)),
-				$fileHelper,
-				$typeSpecifier,
-				false,
-				false,
-				true,
-				[],
-				[]
-			),
+			$nodeScopeResolver,
 			$fileHelper,
 			$ignoreErrors,
 			$reportUnmatchedIgnoredErrors,

@@ -4,6 +4,7 @@ namespace PHPStan\Testing;
 
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Broker\AnonymousClassNameHelper;
@@ -58,22 +59,27 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$this->getStaticMethodTypeSpecifyingExtensions()
 			);
 			$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-			$this->analyser = new Analyser(
-				$this->createScopeFactory($broker, $typeSpecifier),
+			$nodeScopeResolver = new NodeScopeResolver(
+				$broker,
 				$this->getParser(),
+				new FileTypeMapper($this->getParser(), self::getContainer()->getByType(PhpDocStringResolver::class), self::getContainer()->getByType(PhpDocNodeResolver::class), $this->createMock(Cache::class), new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, []))),
+				$fileHelper,
+				$typeSpecifier,
+				$this->shouldPolluteScopeWithLoopInitialAssignments(),
+				$this->shouldPolluteCatchScopeWithTryAssignments(),
+				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
+				[],
+				[]
+			);
+			$fileAnalyser = new FileAnalyser(
+				$this->createScopeFactory($broker, $typeSpecifier),
+				$nodeScopeResolver,
+				$this->getParser()
+			);
+			$this->analyser = new Analyser(
+				$fileAnalyser,
 				$registry,
-				new NodeScopeResolver(
-					$broker,
-					$this->getParser(),
-					new FileTypeMapper($this->getParser(), self::getContainer()->getByType(PhpDocStringResolver::class), self::getContainer()->getByType(PhpDocNodeResolver::class), $this->createMock(Cache::class), new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, []))),
-					$fileHelper,
-					$typeSpecifier,
-					$this->shouldPolluteScopeWithLoopInitialAssignments(),
-					$this->shouldPolluteCatchScopeWithTryAssignments(),
-					$this->shouldPolluteScopeWithAlwaysIterableForeach(),
-					[],
-					[]
-				),
+				$nodeScopeResolver,
 				$fileHelper,
 				[],
 				true,

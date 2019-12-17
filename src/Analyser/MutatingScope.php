@@ -1145,7 +1145,7 @@ class MutatingScope implements Scope
 				return new ObjectType($node->class->toString());
 			}
 			if ($node->class instanceof Node\Stmt\Class_) {
-				$anonymousClassReflection = $this->broker->getAnonymousClassReflection($node->class, $this);
+				$anonymousClassReflection = $this->reflectionProvider->getAnonymousClassReflection($node->class, $this);
 
 				return new ObjectType($anonymousClassReflection->getName());
 			}

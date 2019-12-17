@@ -82,7 +82,7 @@ class Generator implements Iterator
 /**
  * @implements Traversable<mixed, mixed>
  */
-class SimpleXMLElement
+class SimpleXMLElement implements Traversable
 {
 
 }
@@ -197,7 +197,12 @@ class DOMDocument
 
 }
 
-class DOMElement
+class DOMNode
+{
+
+}
+
+class DOMElement extends DOMNode
 {
 
 	/**

@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocBlock;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -46,8 +45,11 @@ class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	/** @var ScopeFactory */
+	private $scopeFactory;
+
+	/** @var NodeScopeResolver */
+	private $nodeScopeResolver;
 
 	/** @var \PHPStan\Reflection\Php\PhpMethodReflectionFactory */
 	private $methodReflectionFactory;
@@ -95,7 +97,8 @@ class PhpClassReflectionExtension
 	private $inferClassConstructorPropertyTypesInProcess = [];
 
 	public function __construct(
-		Container $container,
+		ScopeFactory $scopeFactory,
+		NodeScopeResolver $nodeScopeResolver,
 		PhpMethodReflectionFactory $methodReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
 		AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
@@ -107,7 +110,8 @@ class PhpClassReflectionExtension
 		bool $inferPrivatePropertyTypeFromConstructor
 	)
 	{
-		$this->container = $container;
+		$this->scopeFactory = $scopeFactory;
+		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->methodReflectionFactory = $methodReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->annotationsMethodsClassReflectionExtension = $annotationsMethodsClassReflectionExtension;
@@ -703,25 +707,19 @@ class PhpClassReflectionExtension
 			return $this->propertyTypesCache[$declaringClass->getName()] = [];
 		}
 
-		/** @var NodeScopeResolver $nodeScopeResolver */
-		$nodeScopeResolver = $this->container->getByType(NodeScopeResolver::class);
-
-		/** @var \PHPStan\Analyser\ScopeFactory $scopeFactory */
-		$scopeFactory = $this->container->getByType(ScopeFactory::class);
-
 		$classNameParts = explode('\\', $declaringClass->getName());
 		$namespace = null;
 		if (count($classNameParts) > 0) {
 			$namespace = implode('\\', array_slice($classNameParts, 0, -1));
 		}
 
-		$classScope = $scopeFactory->create(
+		$classScope = $this->scopeFactory->create(
 			ScopeContext::create($fileName),
 			false,
 			$constructor,
 			$namespace
 		)->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,

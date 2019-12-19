@@ -13056,7 +13056,7 @@ return [
 'XMLWriter::flush' => ['', 'empty='=>'bool', 'xmlwriter='=>''],
 'XMLWriter::fullEndElement' => ['bool'],
 'XMLWriter::openMemory' => ['bool'],
-'XMLWriter::openURI' => ['resource', 'uri'=>'string'],
+'XMLWriter::openURI' => ['bool', 'uri'=>'string'],
 'XMLWriter::outputMemory' => ['string', 'flush='=>'bool', 'xmlwriter='=>''],
 'XMLWriter::setIndent' => ['bool', 'indent'=>'bool'],
 'XMLWriter::setIndentString' => ['bool', 'indentstring'=>'string'],

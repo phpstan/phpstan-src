@@ -8,7 +8,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\FunctionReflectionFactory;
-use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Type\FileTypeMapper;
 
 class BrokerFactory
@@ -42,7 +42,7 @@ class BrokerFactory
 			$this->container->getServicesByTag(self::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getByType(FunctionReflectionFactory::class),
 			$this->container->getByType(FileTypeMapper::class),
-			$this->container->getByType(SignatureMapProvider::class),
+			$this->container->getByType(NativeFunctionReflectionProvider::class),
 			$this->container->getByType(\PhpParser\PrettyPrinter\Standard::class),
 			$this->container->getByType(AnonymousClassNameHelper::class),
 			$this->container->getByType(Parser::class),

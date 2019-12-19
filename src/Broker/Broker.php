@@ -12,24 +12,12 @@ use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
-use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\Native\NativeFunctionReflection;
-use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Reflection\SignatureMap\ParameterSignature;
-use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
-use PHPStan\TrinaryLogic;
-use PHPStan\Type\BooleanType;
+use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
-use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
 use ReflectionClass;
 
 class Broker implements ReflectionProvider
@@ -62,8 +50,8 @@ class Broker implements ReflectionProvider
 	/** @var \PHPStan\Type\FileTypeMapper */
 	private $fileTypeMapper;
 
-	/** @var \PHPStan\Reflection\SignatureMap\SignatureMapProvider */
-	private $signatureMapProvider;
+	/** @var \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider */
+	private $nativeFunctionReflectionProvider;
 
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
@@ -95,9 +83,6 @@ class Broker implements ReflectionProvider
 	/** @var bool[] */
 	private $hasClassCache;
 
-	/** @var NativeFunctionReflection[] */
-	private static $functionMap = [];
-
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private static $anonymousClasses = [];
 
@@ -112,7 +97,7 @@ class Broker implements ReflectionProvider
 	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtension[] $operatorTypeSpecifyingExtensions
 	 * @param \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
-	 * @param \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider
+	 * @param \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider
 	 * @param \PhpParser\PrettyPrinter\Standard $printer
 	 * @param AnonymousClassNameHelper $anonymousClassNameHelper
 	 * @param Parser $parser
@@ -128,7 +113,7 @@ class Broker implements ReflectionProvider
 		array $operatorTypeSpecifyingExtensions,
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
-		SignatureMapProvider $signatureMapProvider,
+		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		Parser $parser,
@@ -156,7 +141,7 @@ class Broker implements ReflectionProvider
 
 		$this->functionReflectionFactory = $functionReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
-		$this->signatureMapProvider = $signatureMapProvider;
+		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
 		$this->printer = $printer;
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 		$this->parser = $parser;
@@ -413,75 +398,17 @@ class Broker implements ReflectionProvider
 		}
 
 		$lowerCasedFunctionName = strtolower($functionName);
-		if (!isset($this->functionReflections[$lowerCasedFunctionName])) {
-			if (isset(self::$functionMap[$lowerCasedFunctionName])) {
-				return $this->functionReflections[$lowerCasedFunctionName] = self::$functionMap[$lowerCasedFunctionName];
-			}
-
-			if ($this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName)) {
-				$variantName = $lowerCasedFunctionName;
-				$variants = [];
-				$i = 0;
-				while ($this->signatureMapProvider->hasFunctionSignature($variantName)) {
-					$functionSignature = $this->signatureMapProvider->getFunctionSignature($variantName, null);
-					$returnType = $functionSignature->getReturnType();
-					if ($lowerCasedFunctionName === 'pow') {
-						$returnType = TypeUtils::toBenevolentUnion($returnType);
-					}
-					$variants[] = new FunctionVariant(
-						TemplateTypeMap::createEmpty(),
-						null,
-						array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName): NativeParameterReflection {
-							$type = $parameterSignature->getType();
-							if (
-								$parameterSignature->getName() === 'args'
-								&& (
-									$lowerCasedFunctionName === 'printf'
-									|| $lowerCasedFunctionName === 'sprintf'
-								)
-							) {
-								$type = new UnionType([
-									new StringAlwaysAcceptingObjectWithToStringType(),
-									new IntegerType(),
-									new FloatType(),
-									new NullType(),
-									new BooleanType(),
-								]);
-							}
-							return new NativeParameterReflection(
-								$parameterSignature->getName(),
-								$parameterSignature->isOptional(),
-								$type,
-								$parameterSignature->passedByReference(),
-								$parameterSignature->isVariadic(),
-								null
-							);
-						}, $functionSignature->getParameters()),
-						$functionSignature->isVariadic(),
-						$returnType
-					);
-
-					$i++;
-					$variantName = sprintf($lowerCasedFunctionName . '\'' . $i);
-				}
-
-				if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
-					$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName)['hasSideEffects']);
-				} else {
-					$hasSideEffects = TrinaryLogic::createMaybe();
-				}
-				$functionReflection = new NativeFunctionReflection(
-					$lowerCasedFunctionName,
-					$variants,
-					null,
-					$hasSideEffects
-				);
-				self::$functionMap[$lowerCasedFunctionName] = $functionReflection;
-				$this->functionReflections[$lowerCasedFunctionName] = $functionReflection;
-			} else {
-				$this->functionReflections[$lowerCasedFunctionName] = $this->getCustomFunction($nameNode, $scope);
-			}
+		if (isset($this->functionReflections[$lowerCasedFunctionName])) {
+			return $this->functionReflections[$lowerCasedFunctionName];
 		}
+
+		$nativeFunctionReflection = $this->nativeFunctionReflectionProvider->findFunctionReflection($lowerCasedFunctionName);
+		if ($nativeFunctionReflection !== null) {
+			$this->functionReflections[$lowerCasedFunctionName] = $nativeFunctionReflection;
+			return $nativeFunctionReflection;
+		}
+
+		$this->functionReflections[$lowerCasedFunctionName] = $this->getCustomFunction($nameNode, $scope);
 
 		return $this->functionReflections[$lowerCasedFunctionName];
 	}
@@ -498,7 +425,7 @@ class Broker implements ReflectionProvider
 			return false;
 		}
 
-		return !$this->signatureMapProvider->hasFunctionSignature($functionName);
+		return $this->nativeFunctionReflectionProvider->findFunctionReflection($functionName) === null;
 	}
 
 	public function getCustomFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): \PHPStan\Reflection\Php\PhpFunctionReflection
@@ -571,7 +498,7 @@ class Broker implements ReflectionProvider
 				return true;
 			}
 
-			return $this->signatureMapProvider->hasFunctionSignature($name);
+			return $this->nativeFunctionReflectionProvider->findFunctionReflection($name) !== null;
 		}, $scope);
 	}
 

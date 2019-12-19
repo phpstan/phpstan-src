@@ -337,6 +337,9 @@ services:
 			classes: %universalObjectCratesClasses%
 
 	-
+		class: PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider
+
+	-
 		class: PHPStan\Reflection\SignatureMap\SignatureMapParser
 
 	-

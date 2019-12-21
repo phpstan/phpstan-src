@@ -51,7 +51,7 @@ final class CompileCommand extends Command
 		$this->fixComposerJson($this->buildDir);
 		$this->processFactory->create(['composer', 'update', '--no-dev', '--classmap-authoritative'], $this->buildDir);
 
-		$this->processFactory->create(['php', 'box.phar', 'compile'], $this->dataDir);
+		$this->processFactory->create(['php', 'box.phar', 'compile', '--no-parallel'], $this->dataDir);
 
 		return 0;
 	}

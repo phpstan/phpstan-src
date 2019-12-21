@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+require_once __DIR__ . '/../vendor/nette/neon/src/neon.php';
+
 $stubs = [
 	'../../src/Reflection/SignatureMap/functionMap.php',
 	'../../src/Reflection/SignatureMap/functionMap_php74delta.php',
@@ -89,7 +91,49 @@ return [
 			$content = str_replace(sprintf('\'%s\\\\', $prefix), '\'', $content);
 
 			return $content;
-		}
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (strpos($filePath, '.neon') === false) {
+				return $content;
+			}
+
+			if ($content === '') {
+				return $content;
+			}
+
+			$prefixClass = function (string $class) use ($prefix): string {
+				if (strpos($class, 'PHPStan\\') === 0) {
+					return $class;
+				}
+
+				if (strpos($class, 'PhpParser\\') === 0) {
+					return $class;
+				}
+
+				if (strpos($class, '@') === 0) {
+					return $class;
+				}
+
+				return $prefix . '\\' . $class;
+			};
+
+			$neon = \Nette\Neon\Neon::decode($content);
+			$updatedNeon = $neon;
+			if (array_key_exists('services', $neon)) {
+				foreach ($neon['services'] as $key => $service) {
+					if (array_key_exists('class', $service) && is_string($service['class'])) {
+						$service['class'] = $prefixClass($service['class']);
+					}
+					if (array_key_exists('factory', $service) && is_string($service['factory'])) {
+						$service['factory'] = $prefixClass($service['factory']);
+					}
+
+					$updatedNeon['services'][$key] = $service;
+				}
+			}
+
+			return \Nette\Neon\Neon::encode($updatedNeon, \Nette\Neon\Neon::BLOCK);
+		},
 	],
 	'whitelist' => [
 		'PHPStan\*',

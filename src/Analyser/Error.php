@@ -84,4 +84,21 @@ class Error
 		return $this->tip;
 	}
 
+	public function withoutTip(): self
+	{
+		if ($this->tip === null) {
+			return $this;
+		}
+
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			null
+		);
+	}
+
 }

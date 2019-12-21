@@ -7,13 +7,13 @@ interface Parser
 
 	/**
 	 * @param string $file path to a file to parse
-	 * @return \PhpParser\Node[]
+	 * @return \PhpParser\Node\Stmt[]
 	 */
 	public function parseFile(string $file): array;
 
 	/**
 	 * @param string $sourceCode
-	 * @return \PhpParser\Node[]
+	 * @return \PhpParser\Node\Stmt[]
 	 */
 	public function parseString(string $sourceCode): array;
 

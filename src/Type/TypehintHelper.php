@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use ReflectionNamedType;
 
 class TypehintHelper
 {
@@ -57,11 +56,7 @@ class TypehintHelper
 			return $phpDocType ?? new MixedType();
 		}
 
-		if (!$reflectionType instanceof ReflectionNamedType) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
-		}
-
-		$reflectionTypeString = $reflectionType->getName();
+		$reflectionTypeString = (string) $reflectionType;
 		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\object')) {
 			$reflectionTypeString = 'object';
 		}

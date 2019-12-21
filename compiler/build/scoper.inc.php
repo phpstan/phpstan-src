@@ -6,7 +6,10 @@ $stubs = [
 	'../../src/Reflection/SignatureMap/functionMetadata.php',
 ];
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
-foreach ($stubFinder->files()->name('*.php')->in('../../stubs') as $file) {
+foreach ($stubFinder->files()->name('*.php')->in([
+	'../../stubs',
+	'../../vendor/jetbrains/phpstorm-stubs',
+]) as $file) {
 	$stubs[] = $file->getPathName();
 }
 

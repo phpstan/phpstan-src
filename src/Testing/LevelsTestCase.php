@@ -52,7 +52,21 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 				throw new \Nette\Utils\JsonException(sprintf('Cannot decode: %s', $output));
 			}
 			if (count($actualJson['files']) > 0) {
-				$messagesBeforeDiffing = $actualJson['files'][$fileHelper->normalizePath($file)]['messages'];
+				$normalizedFilePath = $fileHelper->normalizePath($file);
+				if (!isset($actualJson['files'][$normalizedFilePath])) {
+					$messagesBeforeDiffing = [];
+				} else {
+					$messagesBeforeDiffing = $actualJson['files'][$normalizedFilePath]['messages'];
+				}
+
+				foreach ($this->getAdditionalAnalysedFiles() as $additionalAnalysedFile) {
+					$normalizedAdditionalFilePath = $fileHelper->normalizePath($additionalAnalysedFile);
+					if (!isset($actualJson['files'][$normalizedAdditionalFilePath])) {
+						continue;
+					}
+
+					$messagesBeforeDiffing = array_merge($messagesBeforeDiffing, $actualJson['files'][$normalizedAdditionalFilePath]['messages']);
+				}
 			} else {
 				$messagesBeforeDiffing = [];
 			}
@@ -105,6 +119,14 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 		if (count($exceptions) > 0) {
 			throw $exceptions[0];
 		}
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getAdditionalAnalysedFiles(): array
+	{
+		return [];
 	}
 
 	/**

@@ -1,0 +1,44 @@
+parameters:
+	checkThisOnly: false
+	checkClassCaseSensitivity: true
+	checkGenericClassInNonGenericObjectType: true
+	checkMissingIterableValueType: true
+	checkMissingTypehints: true
+
+services:
+	-
+		class: PHPStan\PhpDoc\StubSourceLocatorFactory
+		arguments:
+			parser: @phpParserDecorator
+			stubFiles: %stubFiles%
+
+	stubBetterReflectionProvider:
+		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
+		arguments:
+			classReflector: @stubClassReflector
+			functionReflector: @stubFunctionReflector
+			universalObjectCratesClasses: %universalObjectCratesClasses%
+		autowired: false
+
+	stubClassReflector:
+		class: Roave\BetterReflection\Reflector\ClassReflector
+		arguments:
+			sourceLocator: @stubSourceLocator
+		autowired: false
+
+	stubFunctionReflector:
+		class: Roave\BetterReflection\Reflector\FunctionReflector
+		arguments:
+			classReflector: @stubClassReflector
+			sourceLocator: @stubSourceLocator
+		autowired: false
+
+	stubSourceLocator:
+		class: Roave\BetterReflection\SourceLocator\Type\SourceLocator
+		factory: @PHPStan\PhpDoc\StubSourceLocatorFactory::create()
+		autowired: false
+
+	reflectionProvider:
+		factory: @stubBetterReflectionProvider
+		autowired:
+			- PHPStan\Reflection\ReflectionProvider

@@ -113,7 +113,7 @@ interface SeekableIterator extends Iterator
  * @implements SeekableIterator<TKey, TValue>
  * @implements ArrayAccess<TKey, TValue>
  */
-class ArrayIterator implements SeekableIterator, ArrayAccess
+class ArrayIterator implements SeekableIterator, ArrayAccess, Countable, Serializable
 {
 
 	/**

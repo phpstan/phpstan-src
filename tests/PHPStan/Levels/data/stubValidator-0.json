@@ -1,0 +1,32 @@
+[
+    {
+        "message": "Method StubValidator\\Foo::doFoo() has no return typehint specified.",
+        "line": 15,
+        "ignorable": true
+    },
+    {
+        "message": "Method StubValidator\\Foo::doFoo() has parameter $argument with no value type specified in iterable type array.",
+        "line": 15,
+        "ignorable": true
+    },
+    {
+        "message": "Function StubValidator\\someFunction() has no return typehint specified.",
+        "line": 22,
+        "ignorable": true
+    },
+    {
+        "message": "Function StubValidator\\someFunction() has parameter $argument with no value type specified in iterable type array.",
+        "line": 22,
+        "ignorable": true
+    },
+    {
+        "message": "Method class@anonymous/stubValidator/stubs.php:27::doFoo() has no return typehint specified.",
+        "line": 30,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter $foo of method class@anonymous/stubValidator/stubs.php:27::doFoo() has invalid typehint type StubValidator\\Foooooooo.",
+        "line": 30,
+        "ignorable": true
+    }
+]

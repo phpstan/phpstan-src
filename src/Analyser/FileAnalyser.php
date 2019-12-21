@@ -8,6 +8,7 @@ use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\TipRuleError;
+use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 
 class FileAnalyser
 {
@@ -63,6 +64,9 @@ class FileAnalyser
 
 							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
 							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), false);
+							continue;
+						} catch (IdentifierNotFound $e) {
+							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), false);
 							continue;
 						}
 
@@ -129,6 +133,8 @@ class FileAnalyser
 				}
 			} catch (\PHPStan\AnalysedCodeException $e) {
 				$fileErrors[] = new Error($e->getMessage(), $file, null, false);
+			} catch (IdentifierNotFound $e) {
+				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, false);
 			}
 		} elseif (is_dir($file)) {
 			$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);

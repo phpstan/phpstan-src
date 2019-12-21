@@ -182,6 +182,10 @@ parametersSchema:
 	productionMode: bool()
 	tempDir: string()
 
+	# internal parameters only for DerivativeContainerFactory
+	additionalConfigFiles: listOf(string())
+	analysedPaths: listOf(string())
+
 services:
 	-
 		class: PhpParser\BuilderFactory
@@ -237,6 +241,11 @@ services:
 		class: PHPStan\PhpDoc\TypeStringResolver
 
 	-
+		class: PHPStan\PhpDoc\StubValidator
+		arguments:
+			stubFiles: %stubFiles%
+
+	-
 		class: PHPStan\Analyser\Analyser
 		arguments:
 			ignoreErrors: %ignoreErrors%
@@ -279,6 +288,14 @@ services:
 	-
 		class: PHPStan\DependencyInjection\Container
 		factory: PHPStan\DependencyInjection\Nette\NetteContainer
+
+	-
+		class: PHPStan\DependencyInjection\DerivativeContainerFactory
+		arguments:
+			currentWorkingDirectory: %currentWorkingDirectory%
+			tempDirectory: %tempDir%
+			additionalConfigFiles: %additionalConfigFiles%
+			analysedPaths: %analysedPaths%
 
 	-
 		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider
@@ -817,6 +834,12 @@ services:
 
 	directParser:
 		class: PHPStan\Parser\DirectParser
+		autowired: no
+
+	phpParserDecorator:
+		class: PHPStan\Parser\PhpParserDecorator
+		arguments:
+			wrappedParser: @PHPStan\Parser\Parser
 		autowired: no
 
 	registry:

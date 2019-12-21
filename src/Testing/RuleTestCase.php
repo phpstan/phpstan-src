@@ -13,6 +13,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
+use PHPStan\PhpDoc\StubValidator;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -76,11 +77,15 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$nodeScopeResolver,
 				$this->getParser()
 			);
+			$stubValidator = $this->createMock(StubValidator::class);
+			$stubValidator->method('validate')
+				->willReturn([]);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
 				$registry,
 				$nodeScopeResolver,
 				$fileHelper,
+				$stubValidator,
 				[],
 				true,
 				50

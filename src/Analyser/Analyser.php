@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use Nette\Utils\Json;
 use PHPStan\File\FileHelper;
+use PHPStan\PhpDoc\StubValidator;
 use PHPStan\Rules\Registry;
 
 class Analyser
@@ -20,6 +21,9 @@ class Analyser
 
 	/** @var \PHPStan\File\FileHelper */
 	private $fileHelper;
+
+	/** @var \PHPStan\PhpDoc\StubValidator */
+	private $stubValidator;
 
 	/** @var (string|mixed[])[] */
 	private $ignoreErrors;
@@ -38,6 +42,7 @@ class Analyser
 	 * @param \PHPStan\Rules\Registry $registry
 	 * @param \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver
 	 * @param \PHPStan\File\FileHelper $fileHelper
+	 * @param \PHPStan\PhpDoc\StubValidator $stubValidator
 	 * @param (string|array<string, string>)[] $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param int $internalErrorsCountLimit
@@ -47,6 +52,7 @@ class Analyser
 		Registry $registry,
 		NodeScopeResolver $nodeScopeResolver,
 		FileHelper $fileHelper,
+		StubValidator $stubValidator,
 		array $ignoreErrors,
 		bool $reportUnmatchedIgnoredErrors,
 		int $internalErrorsCountLimit
@@ -56,6 +62,7 @@ class Analyser
 		$this->registry = $registry;
 		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->fileHelper = $fileHelper;
+		$this->stubValidator = $stubValidator;
 		$this->ignoreErrors = $ignoreErrors;
 		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
@@ -112,6 +119,8 @@ class Analyser
 		if (count($errors) > 0) {
 			return $errors;
 		}
+
+		$errors = $this->stubValidator->validate();
 
 		$this->nodeScopeResolver->setAnalysedFiles($files);
 

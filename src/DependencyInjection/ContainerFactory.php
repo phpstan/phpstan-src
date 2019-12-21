@@ -65,6 +65,8 @@ class ContainerFactory
 			'currentWorkingDirectory' => $this->currentWorkingDirectory,
 			'cliArgumentsVariablesRegistered' => ini_get('register_argc_argv') === '1',
 			'tmpDir' => $tempDirectory,
+			'additionalConfigFiles' => $additionalConfigFiles,
+			'analysedPaths' => $analysedPaths,
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {

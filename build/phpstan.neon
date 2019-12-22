@@ -36,6 +36,9 @@ parameters:
 		-
 			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php
+		-
+			message: '#Call to deprecated method getCustomFunction#'
+			path: ../src/Broker/Broker.php
 	reportStaticMethodSignatures: true
 	reportUnmatchedIgnoredErrors: false
 	checkPossibleCovariantMethodReturnType: false

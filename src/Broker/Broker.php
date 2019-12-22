@@ -418,6 +418,9 @@ class Broker implements ReflectionProvider
 		return $this->resolveFunctionName($nameNode, $scope) !== null;
 	}
 
+	/**
+	 * @deprecated Use ReflectionProvider::hasFuction() instead.
+	 */
 	public function hasCustomFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
 	{
 		$functionName = $this->resolveFunctionName($nameNode, $scope);
@@ -428,6 +431,9 @@ class Broker implements ReflectionProvider
 		return $this->nativeFunctionReflectionProvider->findFunctionReflection($functionName) === null;
 	}
 
+	/**
+	 * @deprecated Use ReflectionProvider::getFunction() instead.
+	 */
 	public function getCustomFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): \PHPStan\Reflection\Php\PhpFunctionReflection
 	{
 		if (!$this->hasCustomFunction($nameNode, $scope)) {

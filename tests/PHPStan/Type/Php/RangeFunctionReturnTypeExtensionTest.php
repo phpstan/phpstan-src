@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringType;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class RangeFunctionReturnTypeExtensionTest extends \PHPStan\Testing\TestCase
@@ -121,6 +122,12 @@ class RangeFunctionReturnTypeExtensionTest extends \PHPStan\Testing\TestCase
 				'stepType'   => FloatType::class,
 				'returnType' => FloatType::class,
 			],
+			'string,string,int' => [
+				'startType'  => StringType::class,
+				'endType'    => StringType::class,
+				'stepType'   => IntegerType::class,
+				'returnType' => StringType::class,
+			]
 		];
 	}
 

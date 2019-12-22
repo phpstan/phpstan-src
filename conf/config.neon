@@ -847,8 +847,10 @@ services:
 		factory: @PHPStan\Rules\RegistryFactory::create
 
 	reflectionProvider:
-		class: PHPStan\Reflection\ReflectionProvider
-		factory: @broker
+		class: PHPStan\Reflection\ReflectionProvider\ChainReflectionProvider
+		arguments:
+			providers: [@broker]
+			universalObjectCratesClasses: %universalObjectCratesClasses%
 		autowired:
 			- PHPStan\Reflection\ReflectionProvider
 

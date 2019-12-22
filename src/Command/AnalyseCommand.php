@@ -17,6 +17,20 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 	public const DEFAULT_LEVEL = CommandHelper::DEFAULT_LEVEL;
 
+	/** @var string[] */
+	private $composerAutoloaderProjectPaths;
+
+	/**
+	 * @param string[] $composerAutoloaderProjectPaths
+	 */
+	public function __construct(
+		array $composerAutoloaderProjectPaths
+	)
+	{
+		parent::__construct();
+		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
+	}
+
 	protected function configure(): void
 	{
 		$this->setName(self::NAME)
@@ -85,6 +99,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				$pathsFile,
 				$memoryLimit,
 				$autoloadFile,
+				$this->composerAutoloaderProjectPaths,
 				$configuration,
 				$level,
 				$allowXdebug

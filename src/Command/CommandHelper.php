@@ -27,6 +27,7 @@ class CommandHelper
 
 	/**
 	 * @param string[] $paths
+	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public static function begin(
 		InputInterface $input,
@@ -35,6 +36,7 @@ class CommandHelper
 		?string $pathsFile,
 		?string $memoryLimit,
 		?string $autoloadFile,
+		array $composerAutoloaderProjectPaths,
 		?string $projectConfigFile,
 		?string $level,
 		bool $allowXdebug
@@ -207,7 +209,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

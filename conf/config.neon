@@ -185,6 +185,7 @@ parametersSchema:
 	# internal parameters only for DerivativeContainerFactory
 	additionalConfigFiles: listOf(string())
 	analysedPaths: listOf(string())
+	composerAutoloaderProjectPaths: listOf(string())
 
 services:
 	-
@@ -846,14 +847,6 @@ services:
 		class: PHPStan\Rules\Registry
 		factory: @PHPStan\Rules\RegistryFactory::create
 
-	reflectionProvider:
-		class: PHPStan\Reflection\ReflectionProvider\ChainReflectionProvider
-		arguments:
-			providers: [@broker]
-			universalObjectCratesClasses: %universalObjectCratesClasses%
-		autowired:
-			- PHPStan\Reflection\ReflectionProvider
-
 	typeNodeResolverFactory:
 		class: PHPStan\PhpDoc\TypeNodeResolverFactory
 
@@ -861,6 +854,62 @@ services:
 		class: PHPStan\PhpDoc\StubPhpDocProvider
 		arguments:
 			stubFiles: %stubFiles%
+
+	# Reflection providers
+
+	reflectionProvider:
+		class: PHPStan\Reflection\ReflectionProvider\ChainReflectionProvider
+		arguments:
+			#providers: [@phpParserReflectionProvider, @broker]
+			providers: [@broker]
+			universalObjectCratesClasses: %universalObjectCratesClasses%
+		autowired:
+			- PHPStan\Reflection\ReflectionProvider
+
+	phpParserReflectionProvider:
+		class: PHPStan\Reflection\ReflectionProvider\ClassWhitelistReflectionProvider
+		arguments:
+			reflectionProvider: @betterReflectionProvider
+			universalObjectCratesClasses: %universalObjectCratesClasses%
+			patterns:
+				- '#^PhpParser\\#'
+		autowired: false
+
+	betterReflectionSourceLocator:
+		class: Roave\BetterReflection\SourceLocator\Type\SourceLocator
+		factory: @PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory::create
+		autowired: false
+
+	betterReflectionClassReflector:
+		class: Roave\BetterReflection\Reflector\ClassReflector
+		arguments:
+			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
+	betterReflectionFunctionReflector:
+		class: Roave\BetterReflection\Reflector\FunctionReflector
+		arguments:
+			classReflector: @betterReflectionClassReflector
+			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
+	betterReflectionProvider:
+		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
+		arguments:
+			classReflector: @betterReflectionClassReflector
+			functionReflector: @betterReflectionFunctionReflector
+			universalObjectCratesClasses: %universalObjectCratesClasses%
+		autowired: false
+
+	-
+		class: PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory
+		arguments:
+			parser: @phpParserDecorator
+			autoloadDirectories: %autoload_directories%
+			analysedPaths: %analysedPaths%
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+
+	# Error formatters
 
 	errorFormatter.raw:
 		class: PHPStan\Command\ErrorFormatter\RawErrorFormatter

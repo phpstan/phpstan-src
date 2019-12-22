@@ -15,6 +15,20 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 
 	private const NAME = 'dump-deps';
 
+	/** @var string[] */
+	private $composerAutoloaderProjectPaths;
+
+	/**
+	 * @param string[] $composerAutoloaderProjectPaths
+	 */
+	public function __construct(
+		array $composerAutoloaderProjectPaths
+	)
+	{
+		parent::__construct();
+		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
+	}
+
 	protected function configure(): void
 	{
 		$this->setName(self::NAME)
@@ -59,6 +73,7 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 				$pathsFile,
 				$memoryLimit,
 				$autoloadFile,
+				$this->composerAutoloaderProjectPaths,
 				$configurationFile,
 				'0', // irrelevant but prevents an error when a config file is passed
 				$allowXdebug

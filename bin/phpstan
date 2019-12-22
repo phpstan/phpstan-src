@@ -12,25 +12,30 @@ use PHPStan\Command\DumpDependenciesCommand;
 	define('__PHPSTAN_RUNNING__', true);
 
 	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';
+	$composerAutoloaderProjectPaths = [];
 	if (is_file($autoloaderInWorkingDirectory)) {
+		$composerAutoloaderProjectPaths[] = dirname($autoloaderInWorkingDirectory, 2);
 		require_once $autoloaderInWorkingDirectory;
 	}
 
-	$autoloadProjectAutoloaderFile = function (string $file): void {
+	$autoloadProjectAutoloaderFile = function (string $file) use (&$composerAutoloaderProjectPaths): void {
 		$path = dirname(__DIR__) . $file;
 		if (!extension_loaded('phar')) {
 			if (is_file($path)) {
+				//$composerAutoloaderProjectPaths[] = dirname($path, 2);
 				require_once $path;
 			}
 		} else {
 			$pharPath = \Phar::running(false);
 			if ($pharPath === '') {
 				if (is_file($path)) {
+					//$composerAutoloaderProjectPaths[] = dirname($path, 2);
 					require_once $path;
 				}
 			} else {
 				$path = dirname($pharPath) . $file;
 				if (is_file($path)) {
+					//$composerAutoloaderProjectPaths[] = dirname($path, 2);
 					require_once $path;
 				}
 			}
@@ -41,6 +46,7 @@ use PHPStan\Command\DumpDependenciesCommand;
 
 	$devOrPharAutoloadFile = __DIR__ . '/../vendor/autoload.php';
 	if (is_file($devOrPharAutoloadFile)) {
+		//$composerAutoloaderProjectPaths[] = dirname($devOrPharAutoloadFile, 2);
 		require_once $devOrPharAutoloadFile;
 	}
 
@@ -55,7 +61,9 @@ use PHPStan\Command\DumpDependenciesCommand;
 		'PHPStan - PHP Static Analysis Tool',
 		$version
 	);
-	$application->add(new AnalyseCommand());
-	$application->add(new DumpDependenciesCommand());
+
+	$reversedComposerAutoloaderProjectPaths = array_reverse($composerAutoloaderProjectPaths);
+	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths));
+	$application->add(new DumpDependenciesCommand($reversedComposerAutoloaderProjectPaths));
 	$application->run();
 })();

@@ -77,7 +77,7 @@ class AnalyseCommandTest extends \PHPStan\Testing\TestCase
 	 */
 	private function runCommand(int $expectedStatusCode, array $parameters = []): string
 	{
-		$commandTester = new CommandTester(new AnalyseCommand());
+		$commandTester = new CommandTester(new AnalyseCommand([]));
 
 		$commandTester->execute([
 			'paths' => [__DIR__ . DIRECTORY_SEPARATOR . 'test'],

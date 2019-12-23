@@ -57,11 +57,9 @@ class SimpleRelativePathHelper implements RelativePathHelper
 		$commonPrefix = '';
 
 		$i = 0;
-		while (true) {
-			if (isset($path1[$i]) && isset($path2[$i])) {
-				if ($path1[$i] === $path2[$i]) {
-					$commonPrefix .= $path1[$i];
-				}
+		while (isset($path1[$i]) && isset($path2[$i])) {
+			if ($path1[$i] === $path2[$i]) {
+				$commonPrefix .= $path1[$i];
 			}
 
 			$i++;

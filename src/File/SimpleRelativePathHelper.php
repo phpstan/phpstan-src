@@ -39,7 +39,40 @@ class SimpleRelativePathHelper implements RelativePathHelper
 			return substr($filename, strlen($this->currentWorkingDirectory) + 1);
 		}
 
+		$commonPrefix = $this->commonPrefix($filename, $this->currentWorkingDirectory . $this->directorySeparator);
+		if ($commonPrefix) {
+
+			$relativeFilename = str_replace($commonPrefix, '', $filename);
+			$relativeRemaining = str_replace($commonPrefix, '', $this->currentWorkingDirectory);
+
+			$remainingParts = explode($this->directorySeparator, $relativeRemaining);
+			return str_repeat('..' . $this->directorySeparator, count($remainingParts)) . $relativeFilename;
+		}
+
 		return $filename;
 	}
 
+	private function commonPrefix(string $path1, string $path2): ?string {
+		$commonPrefix = '';
+
+		$i = 0;
+		while(true) {
+			if (isset($path1[$i]) && isset($path2[$i])) {
+				if ($path1[$i] === $path2[$i]) {
+					$commonPrefix .= $path1[$i];
+				} else {
+					break;
+				}
+			} else {
+				break;
+			}
+
+			$i++;
+		}
+
+		if ($commonPrefix) {
+			return $commonPrefix;
+		}
+		return null;
+	}
 }

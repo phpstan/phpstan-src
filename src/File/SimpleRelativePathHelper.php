@@ -52,19 +52,16 @@ class SimpleRelativePathHelper implements RelativePathHelper
 		return $filename;
 	}
 
-	private function commonPrefix(string $path1, string $path2): ?string {
+	private function commonPrefix(string $path1, string $path2): ?string
+	{
 		$commonPrefix = '';
 
 		$i = 0;
-		while(true) {
+		while (true) {
 			if (isset($path1[$i]) && isset($path2[$i])) {
 				if ($path1[$i] === $path2[$i]) {
 					$commonPrefix .= $path1[$i];
-				} else {
-					break;
 				}
-			} else {
-				break;
 			}
 
 			$i++;

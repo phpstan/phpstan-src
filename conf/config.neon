@@ -5,7 +5,8 @@ parameters:
 	autoload_files: []
 	level: null
 	paths: []
-	featureToggles: []
+	featureToggles:
+		staticReflectionForPhpParser: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -857,12 +858,15 @@ services:
 
 	# Reflection providers
 
-	reflectionProvider:
-		class: PHPStan\Reflection\ReflectionProvider\ChainReflectionProvider
+	reflectionProviderFactory:
+		class: PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory
 		arguments:
-			#providers: [@phpParserReflectionProvider, @broker]
-			providers: [@broker]
+			phpParserReflectionProvider: @phpParserReflectionProvider
+			enableStaticReflectionForPhpParser: %featureToggles.staticReflectionForPhpParser%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
+
+	reflectionProvider:
+		factory: @PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory::create
 		autowired:
 			- PHPStan\Reflection\ReflectionProvider
 

@@ -2,8 +2,6 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-use DOMDocument;
-use DOMElement;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
@@ -25,48 +23,66 @@ class JunitErrorFormatter implements ErrorFormatter
 		Output $output
 	): int
 	{
-		$dom = new DOMDocument('1.0', 'UTF-8');
-		$dom->formatOutput = true;
-
-		$testsuite = $dom->createElement('testsuite');
-		$testsuite->setAttribute('failures', (string) $analysisResult->getTotalErrorsCount());
-		$testsuite->setAttribute('name', 'phpstan');
-		$testsuite->setAttribute('tests', (string) $analysisResult->getTotalErrorsCount());
-		$testsuite->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
-		$testsuite->setAttribute('xsi:noNamespaceSchemaLocation', 'https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd');
-		$dom->appendChild($testsuite);
+		$result = '<?xml version="1.0" encoding="UTF-8"?>';
+		$result .= sprintf(
+			'<testsuite failures="%d" name="phpstan" tests="%d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">',
+			$analysisResult->getTotalErrorsCount(),
+			$analysisResult->getTotalErrorsCount()
+		);
 
 		foreach ($analysisResult->getFileSpecificErrors() as $error) {
 			$fileName = $this->relativePathHelper->getRelativePath($error->getFile());
-			$this->createTestCase($dom, $testsuite, sprintf('%s:%s', $fileName, (string) $error->getLine()), $error->getMessage());
+			$result .= $this->createTestCase(
+				sprintf('%s:%s', $fileName, (string) $error->getLine()),
+				$this->escape($error->getMessage())
+			);
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $genericError) {
-			$this->createTestCase($dom, $testsuite, 'Generic error', $genericError);
+			$result .= $this->createTestCase('Generic error', $this->escape($genericError));
 		}
 
 		if (!$analysisResult->hasErrors()) {
-			$this->createTestCase($dom, $testsuite, 'phpstan');
+			$result .= $this->createTestCase('phpstan');
 		}
 
-		$output->writeRaw($dom->saveXML());
+		$result .= '</testsuite>';
+
+		$output->writeRaw($result);
 
 		return intval($analysisResult->hasErrors());
 	}
 
-	private function createTestCase(DOMDocument $dom, DOMElement $testsuite, string $reference, ?string $message = null): void
+	/**
+	 * Format a single test case
+	 *
+	 * @param string      $reference
+	 * @param string|null $message
+	 *
+	 * @return string
+	 */
+	private function createTestCase(string $reference, ?string $message = null): string
 	{
-		$testcase = $dom->createElement('testcase');
-		$testcase->setAttribute('name', $reference);
+		$result = sprintf('<testcase name="%s">', $this->escape($reference));
 
 		if ($message !== null) {
-			$failure = $dom->createElement('failure');
-			$failure->setAttribute('message', $message);
-
-			$testcase->appendChild($failure);
+			$result .= sprintf('<failure message="%s" />', $this->escape($message));
 		}
 
-		$testsuite->appendChild($testcase);
+		$result .= '</testcase>';
+
+		return $result;
+	}
+
+	/**
+	 * Escapes values for using in XML
+	 *
+	 * @param string $string
+	 * @return string
+	 */
+	protected function escape(string $string): string
+	{
+		return htmlspecialchars($string, ENT_XML1 | ENT_COMPAT, 'UTF-8');
 	}
 
 }

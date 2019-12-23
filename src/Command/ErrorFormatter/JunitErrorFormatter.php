@@ -30,16 +30,16 @@ class JunitErrorFormatter implements ErrorFormatter
 			$analysisResult->getTotalErrorsCount()
 		);
 
-		foreach ($analysisResult->getFileSpecificErrors() as $error) {
-			$fileName = $this->relativePathHelper->getRelativePath($error->getFile());
+		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			$fileName = $this->relativePathHelper->getRelativePath($fileSpecificError->getFile());
 			$result .= $this->createTestCase(
-				sprintf('%s:%s', $fileName, (string) $error->getLine()),
-				$this->escape($error->getMessage())
+				sprintf('%s:%s', $fileName, (string) $fileSpecificError->getLine()),
+				$this->escape($fileSpecificError->getMessage())
 			);
 		}
 
-		foreach ($analysisResult->getNotFileSpecificErrors() as $genericError) {
-			$result .= $this->createTestCase('Generic error', $this->escape($genericError));
+		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
+			$result .= $this->createTestCase('General error', $this->escape($notFileSpecificError));
 		}
 
 		if (!$analysisResult->hasErrors()) {

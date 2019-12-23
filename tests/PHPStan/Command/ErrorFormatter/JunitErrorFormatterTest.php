@@ -55,7 +55,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			'<?xml version="1.0" encoding="UTF-8"?>
 <testsuite failures="1" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="Generic error">
+  <testcase name="General error">
     <failure message="first generic error" />
   </testcase>
 </testsuite>
@@ -90,10 +90,10 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			2,
 			'<?xml version="1.0" encoding="UTF-8"?>
 <testsuite failures="2" name="phpstan" tests="2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="Generic error">
+  <testcase name="General error">
     <failure message="first generic error" />
   </testcase>
-  <testcase name="Generic error">
+  <testcase name="General error">
     <failure message="second generic error"/>
   </testcase>
 </testsuite>
@@ -118,10 +118,10 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
   <testcase name="foo.php:5">
     <failure message="Bar"/>
   </testcase>
-  <testcase name="Generic error">
+  <testcase name="General error">
     <failure message="first generic error" />
   </testcase>
-  <testcase name="Generic error">
+  <testcase name="General error">
     <failure message="second generic error"/>
   </testcase>
 </testsuite>
@@ -137,14 +137,14 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 	public function testFormatErrors(
 		int $exitCode,
 		int $numFileErrors,
-		int $numGenericErrors,
+		int $numGeneralErrors,
 		string $expected
 	): void
 	{
 		$this->assertSame(
 			$exitCode,
 			$this->formatter->formatErrors(
-				$this->getAnalysisResult($numFileErrors, $numGenericErrors),
+				$this->getAnalysisResult($numFileErrors, $numGeneralErrors),
 				$this->getOutput()
 			),
 			'Response code do not match'

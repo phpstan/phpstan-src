@@ -62,6 +62,12 @@ class SimpleRelativePathHelperTest extends \PHPUnit\Framework\TestCase
 				'C:\\app\\src\\test.php',
 				'src\\test.php',
 			],
+			[
+				'C:\\app\\sub\\subsub',
+				'\\',
+				'C:\\app\\src\\test.php',
+				'..\..\src\\test.php',
+			],
 		];
 	}
 

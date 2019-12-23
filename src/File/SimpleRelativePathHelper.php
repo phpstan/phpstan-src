@@ -72,4 +72,5 @@ class SimpleRelativePathHelper implements RelativePathHelper
 		}
 		return null;
 	}
+
 }

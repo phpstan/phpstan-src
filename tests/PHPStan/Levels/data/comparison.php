@@ -33,4 +33,9 @@ class Foo
         self::FOO_CONST === 'bar';
 	}
 
+	public function doBar(\ffmpeg_movie $movie): void
+	{
+		$movie->getArtist() === 1;
+	}
+
 }

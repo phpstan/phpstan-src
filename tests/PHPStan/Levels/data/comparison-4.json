@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Strict comparison using === between string and 1 will always evaluate to false.",
+        "line": 38,
+        "ignorable": true
+    }
+]

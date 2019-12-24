@@ -17,6 +17,7 @@ use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use Roave\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use Roave\BetterReflection\Reflector\ClassReflector;
@@ -118,6 +119,8 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->classReflector->reflect($className);
 			return true;
 		} catch (IdentifierNotFound $e) {
+			return false;
+		} catch (InvalidIdentifierName $e) {
 			return false;
 		}
 	}
@@ -292,6 +295,8 @@ class BetterReflectionProvider implements ReflectionProvider
 				$this->functionReflector->reflect($name);
 				return true;
 			} catch (\Roave\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+				// pass
+			} catch (InvalidIdentifierName $e) {
 				// pass
 			}
 

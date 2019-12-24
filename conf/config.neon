@@ -7,6 +7,7 @@ parameters:
 	paths: []
 	featureToggles:
 		staticReflectionForPhpParser: false
+		phpStormStubs: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -865,8 +866,10 @@ services:
 	reflectionProviderFactory:
 		class: PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory
 		arguments:
+			parser: @phpParserDecorator
 			phpParserReflectionProvider: @phpParserReflectionProvider
 			enableStaticReflectionForPhpParser: %featureToggles.staticReflectionForPhpParser%
+			enablePhpStormStubs: %featureToggles.phpStormStubs%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	reflectionProvider:
@@ -916,6 +919,11 @@ services:
 			autoloadDirectories: %autoload_directories%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+
+	-
+		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory
+		arguments:
+			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	# Error formatters
 

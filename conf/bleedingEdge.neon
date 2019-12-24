@@ -1,0 +1,4 @@
+parameters:
+	featureToggles:
+		# PHPStan no longer needs loaded PHP extensions with classes
+		phpStormStubs: true

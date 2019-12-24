@@ -6,9 +6,9 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
@@ -49,7 +49,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 	private $reportMagicMethods;
 
 	public function __construct(
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		FunctionCallParametersCheck $check,
 		RuleLevelHelper $ruleLevelHelper,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
@@ -57,7 +57,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 		bool $reportMagicMethods
 	)
 	{
-		$this->reflectionProvider = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->check = $check;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;

@@ -4,7 +4,6 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -15,15 +14,15 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 
-class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension, \PHPStan\Reflection\BrokerAwareExtension
+class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
 
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
 
-	public function setBroker(Broker $broker): void
+	public function __construct(\PHPStan\Reflection\ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function isFunctionSupported(

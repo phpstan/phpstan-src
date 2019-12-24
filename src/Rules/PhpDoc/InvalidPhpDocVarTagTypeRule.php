@@ -4,7 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
@@ -46,7 +46,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		MissingTypehintCheck $missingTypehintCheck,
@@ -55,7 +55,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
-		$this->reflectionProvider = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
 		$this->missingTypehintCheck = $missingTypehintCheck;

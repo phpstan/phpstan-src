@@ -941,6 +941,11 @@ services:
 		arguments:
 			pretty: false
 
+	errorFormatter.junit:
+		class: PHPStan\Command\ErrorFormatter\JunitErrorFormatter
+		arguments:
+			relativePathHelper: @simpleRelativePathHelper
+
 	errorFormatter.prettyJson:
 		class: PHPStan\Command\ErrorFormatter\JsonErrorFormatter
 		arguments:

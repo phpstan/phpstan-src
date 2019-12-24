@@ -24,6 +24,7 @@
 		"phpstan/phpstan": "self.version"
 	},
 	"require-dev": {
+		"ext-dom": "*",
 		"ext-intl": "*",
 		"ext-mysqli": "*",
 		"ext-simplexml": "*",

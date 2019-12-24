@@ -54,6 +54,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -102,6 +103,9 @@ class MutatingScope implements Scope
 
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
+
+	/** @var \PHPStan\Type\DynamicReturnTypeExtensionRegistry */
+	private $dynamicReturnTypeExtensionRegistry;
 
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
@@ -152,6 +156,7 @@ class MutatingScope implements Scope
 	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
 	 * @param \PHPStan\Broker\Broker $broker
 	 * @param ReflectionProvider $reflectionProvider
+	 * @param \PHPStan\Type\DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry
 	 * @param \PhpParser\PrettyPrinter\Standard $printer
 	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder
@@ -171,6 +176,7 @@ class MutatingScope implements Scope
 		ScopeFactory $scopeFactory,
 		Broker $broker,
 		ReflectionProvider $reflectionProvider,
+		DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
@@ -194,6 +200,7 @@ class MutatingScope implements Scope
 		$this->scopeFactory = $scopeFactory;
 		$this->broker = $broker;
 		$this->reflectionProvider = $reflectionProvider;
+		$this->dynamicReturnTypeExtensionRegistry = $dynamicReturnTypeExtensionRegistry;
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
@@ -1668,7 +1675,7 @@ class MutatingScope implements Scope
 			}
 
 			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
-			foreach ($this->broker->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
+			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
 				if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
 					continue;
 				}
@@ -3250,7 +3257,7 @@ class MutatingScope implements Scope
 			$node->args
 		);
 
-		foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
 			if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
 				continue;
 			}
@@ -3338,7 +3345,7 @@ class MutatingScope implements Scope
 			$resolvedTypes = [];
 
 			if ($methodCall instanceof MethodCall) {
-				foreach ($this->broker->getDynamicMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicMethodReturnTypeExtension) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicMethodReturnTypeExtension) {
 					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
 						continue;
 					}
@@ -3346,7 +3353,7 @@ class MutatingScope implements Scope
 					$resolvedTypes[] = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $methodCall, $this);
 				}
 			} else {
-				foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicStaticMethodReturnTypeExtension) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicStaticMethodReturnTypeExtension) {
 					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($methodReflection)) {
 						continue;
 					}

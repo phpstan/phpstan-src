@@ -5,11 +5,11 @@ namespace PHPStan\Broker;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
-use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\ReflectionProvider;
@@ -26,20 +26,8 @@ class Broker implements ReflectionProvider
 	/** @var ClassReflectionExtensionRegistryProvider */
 	private $classReflectionExtensionRegistryProvider;
 
-	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[] */
-	private $dynamicMethodReturnTypeExtensions = [];
-
-	/** @var \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] */
-	private $dynamicStaticMethodReturnTypeExtensions = [];
-
-	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[][]|null */
-	private $dynamicMethodReturnTypeExtensionsByClass;
-
-	/** @var \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[][]|null */
-	private $dynamicStaticMethodReturnTypeExtensionsByClass;
-
-	/** @var \PHPStan\Type\DynamicFunctionReturnTypeExtension[] */
-	private $dynamicFunctionReturnTypeExtensions = [];
+	/** @var DynamicReturnTypeExtensionRegistryProvider */
+	private $dynamicReturnTypeExtensionRegistryProvider;
 
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private $classReflections = [];
@@ -91,9 +79,7 @@ class Broker implements ReflectionProvider
 
 	/**
 	 * @param ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider
-	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
-	 * @param \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
-	 * @param \PHPStan\Type\DynamicFunctionReturnTypeExtension[] $dynamicFunctionReturnTypeExtensions
+	 * @param DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider
 	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtension[] $operatorTypeSpecifyingExtensions
 	 * @param \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
@@ -107,9 +93,7 @@ class Broker implements ReflectionProvider
 	 */
 	public function __construct(
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
-		array $dynamicMethodReturnTypeExtensions,
-		array $dynamicStaticMethodReturnTypeExtensions,
-		array $dynamicFunctionReturnTypeExtensions,
+		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		array $operatorTypeSpecifyingExtensions,
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
@@ -123,21 +107,8 @@ class Broker implements ReflectionProvider
 	)
 	{
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
-		foreach (array_merge($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions, $dynamicFunctionReturnTypeExtensions, $operatorTypeSpecifyingExtensions) as $extension) {
-			if (!($extension instanceof BrokerAwareExtension)) {
-				continue;
-			}
-
-			$extension->setBroker($this);
-		}
-
-		$this->dynamicMethodReturnTypeExtensions = $dynamicMethodReturnTypeExtensions;
-		$this->dynamicStaticMethodReturnTypeExtensions = $dynamicStaticMethodReturnTypeExtensions;
+		$this->dynamicReturnTypeExtensionRegistryProvider = $dynamicReturnTypeExtensionRegistryProvider;
 		$this->operatorTypeSpecifyingExtensions = $operatorTypeSpecifyingExtensions;
-
-		foreach ($dynamicFunctionReturnTypeExtensions as $functionReturnTypeExtension) {
-			$this->dynamicFunctionReturnTypeExtensions[] = $functionReturnTypeExtension;
-		}
 
 		$this->functionReflectionFactory = $functionReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
@@ -177,15 +148,7 @@ class Broker implements ReflectionProvider
 	 */
 	public function getDynamicMethodReturnTypeExtensionsForClass(string $className): array
 	{
-		if ($this->dynamicMethodReturnTypeExtensionsByClass === null) {
-			$byClass = [];
-			foreach ($this->dynamicMethodReturnTypeExtensions as $extension) {
-				$byClass[$extension->getClass()][] = $extension;
-			}
-
-			$this->dynamicMethodReturnTypeExtensionsByClass = $byClass;
-		}
-		return $this->getDynamicExtensionsForType($this->dynamicMethodReturnTypeExtensionsByClass, $className);
+		return $this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicMethodReturnTypeExtensionsForClass($className);
 	}
 
 	/**
@@ -194,15 +157,7 @@ class Broker implements ReflectionProvider
 	 */
 	public function getDynamicStaticMethodReturnTypeExtensionsForClass(string $className): array
 	{
-		if ($this->dynamicStaticMethodReturnTypeExtensionsByClass === null) {
-			$byClass = [];
-			foreach ($this->dynamicStaticMethodReturnTypeExtensions as $extension) {
-				$byClass[$extension->getClass()][] = $extension;
-			}
-
-			$this->dynamicStaticMethodReturnTypeExtensionsByClass = $byClass;
-		}
-		return $this->getDynamicExtensionsForType($this->dynamicStaticMethodReturnTypeExtensionsByClass, $className);
+		return $this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($className);
 	}
 
 	/**
@@ -220,27 +175,16 @@ class Broker implements ReflectionProvider
 	 */
 	public function getDynamicFunctionReturnTypeExtensions(): array
 	{
-		return $this->dynamicFunctionReturnTypeExtensions;
+		return $this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicFunctionReturnTypeExtensions();
 	}
 
 	/**
-	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[][]|\PHPStan\Type\DynamicStaticMethodReturnTypeExtension[][] $extensions
-	 * @param string $className
-	 * @return mixed[]
+	 * @internal
+	 * @return DynamicReturnTypeExtensionRegistryProvider
 	 */
-	private function getDynamicExtensionsForType(array $extensions, string $className): array
+	public function getDynamicReturnTypeExtensionRegistryProvider(): DynamicReturnTypeExtensionRegistryProvider
 	{
-		$extensionsForClass = [[]];
-		$class = $this->getClass($className);
-		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
-			if (!isset($extensions[$extensionClassName])) {
-				continue;
-			}
-
-			$extensionsForClass[] = $extensions[$extensionClassName];
-		}
-
-		return array_merge(...$extensionsForClass);
+		return $this->dynamicReturnTypeExtensionRegistryProvider;
 	}
 
 	public function getClass(string $className): \PHPStan\Reflection\ClassReflection

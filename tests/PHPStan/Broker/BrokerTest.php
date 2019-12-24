@@ -6,6 +6,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\Parser;
@@ -32,12 +33,11 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($workingDirectory), $relativePathHelper);
 
 		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
+		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider([], [], []);
 
 		$this->broker = new Broker(
 			$classReflectionExtensionRegistryProvider,
-			[],
-			[],
-			[],
+			$dynamicReturnTypeExtensionRegistryProvider,
 			[],
 			$this->createMock(FunctionReflectionFactory::class),
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),
@@ -50,6 +50,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			[]
 		);
 		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
+		$dynamicReturnTypeExtensionRegistryProvider->setBroker($this->broker);
 	}
 
 	public function testClassNotFound(): void

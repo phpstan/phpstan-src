@@ -304,6 +304,10 @@ services:
 		factory: PHPStan\DependencyInjection\Reflection\LazyClassReflectionExtensionRegistryProvider
 
 	-
+		class: PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider
+		factory: PHPStan\DependencyInjection\Type\LazyDynamicReturnTypeExtensionRegistryProvider
+
+	-
 		class: PHPStan\File\FileHelper
 		arguments:
 			workingDirectory: %currentWorkingDirectory%

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -19,6 +20,9 @@ class ScopeFactory
 
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
+
+	/** @var \PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider */
+	private $dynamicReturnTypeExtensionRegistryProvider;
 
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
@@ -36,6 +40,7 @@ class ScopeFactory
 		string $scopeClass,
 		Broker $broker,
 		ReflectionProvider $reflectionProvider,
+		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
@@ -45,6 +50,7 @@ class ScopeFactory
 		$this->scopeClass = $scopeClass;
 		$this->broker = $broker;
 		$this->reflectionProvider = $reflectionProvider;
+		$this->dynamicReturnTypeExtensionRegistryProvider = $dynamicReturnTypeExtensionRegistryProvider;
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
@@ -87,6 +93,7 @@ class ScopeFactory
 			$this,
 			$this->broker,
 			$this->reflectionProvider,
+			$this->dynamicReturnTypeExtensionRegistryProvider->getRegistry(),
 			$this->printer,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,

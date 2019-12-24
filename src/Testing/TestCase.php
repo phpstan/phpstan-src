@@ -16,6 +16,7 @@ use PHPStan\Cache\MemoryCacheStorage;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\FunctionCallStatementFinder;
@@ -249,11 +250,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, []));
 		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
-		$broker = new Broker(
-			$classReflectionExtensionRegistryProvider,
+		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider(
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicMethodReturnTypeExtensions, $this->getDynamicMethodReturnTypeExtensions()),
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions())
+		);
+		$broker = new Broker(
+			$classReflectionExtensionRegistryProvider,
+			$dynamicReturnTypeExtensionRegistryProvider,
 			$this->getOperatorTypeSpecifyingExtensions(),
 			$functionReflectionFactory,
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper),
@@ -275,6 +279,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
 
+		$dynamicReturnTypeExtensionRegistryProvider->setBroker($broker);
+		$dynamicReturnTypeExtensionRegistryProvider->setReflectionProvider($broker);
+
 		return $broker;
 	}
 
@@ -286,6 +293,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			MutatingScope::class,
 			$broker,
 			$broker,
+			$broker->getDynamicReturnTypeExtensionRegistryProvider(),
 			new \PhpParser\PrettyPrinter\Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),

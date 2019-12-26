@@ -35,6 +35,7 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflectionFactory;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PhpDefect\PhpDefectClassReflectionExtension;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -340,21 +341,21 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @param \PhpParser\PrettyPrinter\Standard $printer
-	 * @param \PHPStan\Broker\Broker $broker
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
 	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 * @return \PHPStan\Analyser\TypeSpecifier
 	 */
 	public function createTypeSpecifier(
 		Standard $printer,
-		Broker $broker,
+		ReflectionProvider $reflectionProvider,
 		array $methodTypeSpecifyingExtensions = [],
 		array $staticMethodTypeSpecifyingExtensions = []
 	): TypeSpecifier
 	{
 		return new TypeSpecifier(
 			$printer,
-			$broker,
+			$reflectionProvider,
 			self::getContainer()->getServicesByTag(TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$methodTypeSpecifyingExtensions,
 			$staticMethodTypeSpecifyingExtensions

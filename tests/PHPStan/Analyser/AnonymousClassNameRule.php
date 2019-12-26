@@ -4,18 +4,18 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 
 class AnonymousClassNameRule implements Rule
 {
 
-	/** @var Broker */
-	private $broker;
+	/** @var ReflectionProvider */
+	private $reflectionProvider;
 
-	public function __construct(Broker $broker)
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -34,7 +34,7 @@ class AnonymousClassNameRule implements Rule
 			? (string) $node->namespacedName
 			: (string) $node->name;
 		try {
-			$this->broker->getClass($className);
+			$this->reflectionProvider->getClass($className);
 		} catch (\PHPStan\Broker\ClassNotFoundException $e) {
 			return ['not found'];
 		}

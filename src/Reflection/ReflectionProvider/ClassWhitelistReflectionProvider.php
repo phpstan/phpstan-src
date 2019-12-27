@@ -6,6 +6,7 @@ use Nette\Utils\Strings;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 
 class ClassWhitelistReflectionProvider implements ReflectionProvider
@@ -83,6 +84,21 @@ class ClassWhitelistReflectionProvider implements ReflectionProvider
 	}
 
 	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	{
+		return null;
+	}
+
+	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	{
+		return false;
+	}
+
+	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	{
+		throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
+	}
+
+	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return null;
 	}

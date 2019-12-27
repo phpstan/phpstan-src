@@ -7,20 +7,27 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
+use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use Roave\BetterReflection\Identifier\Exception\InvalidIdentifierName;
+use Roave\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use Roave\BetterReflection\Reflector\ClassReflector;
+use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
@@ -36,6 +43,9 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	/** @var \Roave\BetterReflection\Reflector\FunctionReflector */
 	private $functionReflector;
+
+	/** @var \Roave\BetterReflection\Reflector\ConstantReflector */
+	private $constantReflector;
 
 	/** @var \PHPStan\Type\FileTypeMapper */
 	private $fileTypeMapper;
@@ -57,6 +67,9 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
+
+	/** @var Parser */
+	private $parser;
 
 	/** @var string[] */
 	private $universalObjectCratesClasses;
@@ -92,7 +105,9 @@ class BetterReflectionProvider implements ReflectionProvider
 		RelativePathHelper $relativePathHelper,
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		Standard $printer,
+		Parser $parser,
 		FunctionReflector $functionReflector,
+		ConstantReflector $constantReflector,
 		array $universalObjectCratesClasses
 	)
 	{
@@ -105,7 +120,9 @@ class BetterReflectionProvider implements ReflectionProvider
 		$this->relativePathHelper = $relativePathHelper;
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 		$this->printer = $printer;
+		$this->parser = $parser;
 		$this->functionReflector = $functionReflector;
+		$this->constantReflector = $constantReflector;
 		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
@@ -302,6 +319,64 @@ class BetterReflectionProvider implements ReflectionProvider
 
 			return $this->nativeFunctionReflectionProvider->findFunctionReflection($name) !== null;
 		}, $scope);
+	}
+
+	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	{
+		return $this->resolveConstantName($nameNode, $scope) !== null;
+	}
+
+	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	{
+		$constantName = $this->resolveConstantName($nameNode, $scope);
+		if ($constantName === null) {
+			throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
+		}
+
+		$constantReflection = $this->constantReflector->reflect($constantName);
+		try {
+			$constantValue = $constantReflection->getValue();
+			$constantValueType = ConstantTypeHelper::getTypeFromValue($constantValue);
+		} catch (UnableToCompileNode $e) {
+			$constantValueType = new MixedType();
+		}
+
+		return new RuntimeConstantReflection(
+			$constantName,
+			$constantValueType
+		);
+	}
+
+	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	{
+		return $this->resolveName($nameNode, function (string $name) use ($scope): bool {
+			$isCompilerHaltOffset = $name === '__COMPILER_HALT_OFFSET__';
+			if ($isCompilerHaltOffset && $scope !== null && $this->fileHasCompilerHaltStatementCalls($scope->getFile())) {
+				return true;
+			}
+
+			try {
+				$this->constantReflector->reflect($name);
+				return true;
+			} catch (\Roave\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+				// pass
+			} catch (UnableToCompileNode $e) {
+				// pass
+			}
+			return false;
+		}, $scope);
+	}
+
+	private function fileHasCompilerHaltStatementCalls(string $pathToFile): bool
+	{
+		$nodes = $this->parser->parseFile($pathToFile);
+		foreach ($nodes as $node) {
+			if ($node instanceof \PhpParser\Node\Stmt\HaltCompiler) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

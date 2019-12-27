@@ -17,6 +17,7 @@ services:
 		arguments:
 			classReflector: @stubClassReflector
 			functionReflector: @stubFunctionReflector
+			constantReflector: @stubConstantReflector
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 		autowired: false
 
@@ -28,6 +29,13 @@ services:
 
 	stubFunctionReflector:
 		class: Roave\BetterReflection\Reflector\FunctionReflector
+		arguments:
+			classReflector: @stubClassReflector
+			sourceLocator: @stubSourceLocator
+		autowired: false
+
+	stubConstantReflector:
+		class: Roave\BetterReflection\Reflector\ConstantReflector
 		arguments:
 			classReflector: @stubClassReflector
 			sourceLocator: @stubSourceLocator

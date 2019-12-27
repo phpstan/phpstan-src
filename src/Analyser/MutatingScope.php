@@ -354,7 +354,7 @@ class MutatingScope implements Scope
 		if ($this->isSpecified($node)) {
 			return true;
 		}
-		return $this->broker->hasConstant($name, $this);
+		return $this->reflectionProvider->hasConstant($name, $this);
 	}
 
 	public function isInAnonymousFunction(): bool
@@ -1327,9 +1327,9 @@ class MutatingScope implements Scope
 				return new NullType();
 			}
 
-			if ($this->broker->hasConstant($node->name, $this)) {
+			if ($this->reflectionProvider->hasConstant($node->name, $this)) {
 				/** @var string $resolvedConstantName */
-				$resolvedConstantName = $this->broker->resolveConstantName($node->name, $this);
+				$resolvedConstantName = $this->reflectionProvider->resolveConstantName($node->name, $this);
 				if ($resolvedConstantName === 'DIRECTORY_SEPARATOR') {
 					return new UnionType([
 						new ConstantStringType('/'),
@@ -1352,7 +1352,7 @@ class MutatingScope implements Scope
 					return new IntegerType();
 				}
 
-				$constantType = $this->getTypeFromValue(constant($resolvedConstantName));
+				$constantType = $this->reflectionProvider->getConstant($node->name, $this)->getValueType();
 				if ($constantType instanceof ConstantType && in_array($resolvedConstantName, $this->dynamicConstantNames, true)) {
 					return $constantType->generalize();
 				}
@@ -1406,7 +1406,7 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				$constantType = $this->getTypeFromValue($propertyClassReflection->getConstant($constantName)->getValue());
+				$constantType = $propertyClassReflection->getConstant($constantName)->getValueType();
 				if (
 					$constantType instanceof ConstantType
 					&& in_array(sprintf('%s::%s', $propertyClassReflection->getName(), $constantName), $this->dynamicConstantNames, true)
@@ -1424,7 +1424,7 @@ class MutatingScope implements Scope
 				return new ErrorType();
 			}
 
-			return $this->getTypeFromValue($constantClassType->getConstant($constantName)->getValue());
+			return $constantClassType->getConstant($constantName)->getValueType();
 		}
 
 		if ($node instanceof Expr\Ternary) {

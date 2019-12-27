@@ -11,9 +11,12 @@ use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
+use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
@@ -455,6 +458,19 @@ class Broker implements ReflectionProvider
 	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->resolveConstantName($nameNode, $scope) !== null;
+	}
+
+	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	{
+		$constantName = $this->resolveConstantName($nameNode, $scope);
+		if ($constantName === null) {
+			throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
+		}
+
+		return new RuntimeConstantReflection(
+			$constantName,
+			ConstantTypeHelper::getTypeFromValue(constant($constantName))
+		);
 	}
 
 	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string

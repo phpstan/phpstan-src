@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Namespaces;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -18,9 +17,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
-
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
 
@@ -31,13 +27,11 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 	private $checkFunctionNameCase;
 
 	public function __construct(
-		Broker $broker,
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkFunctionNameCase
 	)
 	{
-		$this->broker = $broker;
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkFunctionNameCase = $checkFunctionNameCase;
@@ -84,7 +78,7 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 
 	private function checkConstant(Node\Name $name): ?RuleError
 	{
-		if (!$this->broker->hasConstant($name, null)) {
+		if (!$this->reflectionProvider->hasConstant($name, null)) {
 			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))->line($name->getLine())->build();
 		}
 

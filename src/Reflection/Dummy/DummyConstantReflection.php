@@ -6,6 +6,8 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 
 class DummyConstantReflection implements ConstantReflection
 {
@@ -52,6 +54,11 @@ class DummyConstantReflection implements ConstantReflection
 	{
 		// so that Scope::getTypeFromValue() returns mixed
 		return new \stdClass();
+	}
+
+	public function getValueType(): Type
+	{
+		return new MixedType();
 	}
 
 	public function isDeprecated(): TrinaryLogic

@@ -905,11 +905,19 @@ services:
 			sourceLocator: @betterReflectionSourceLocator
 		autowired: false
 
+	betterReflectionConstantReflector:
+		class: Roave\BetterReflection\Reflector\ConstantReflector
+		arguments:
+			classReflector: @betterReflectionClassReflector
+			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
 	betterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:
 			classReflector: @betterReflectionClassReflector
 			functionReflector: @betterReflectionFunctionReflector
+			constantReflector: @betterReflectionConstantReflector
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 		autowired: false
 

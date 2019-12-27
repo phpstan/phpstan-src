@@ -3,6 +3,8 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\Type;
 
 class ClassConstantReflection implements ConstantReflection
 {
@@ -48,6 +50,11 @@ class ClassConstantReflection implements ConstantReflection
 	public function getValue()
 	{
 		return $this->reflection->getValue();
+	}
+
+	public function getValueType(): Type
+	{
+		return ConstantTypeHelper::getTypeFromValue($this->getValue());
 	}
 
 	public function getDeclaringClass(): ClassReflection

@@ -7,6 +7,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory;
 use PHPStan\Reflection\ReflectionProvider;
 use Roave\BetterReflection\Reflector\ClassReflector;
+use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -98,10 +99,12 @@ class ReflectionProviderFactory
 		);
 		$classReflector = new ClassReflector($sourceLocator);
 		$functionReflector = new FunctionReflector($sourceLocator, $classReflector);
+		$constantReflector = new ConstantReflector($sourceLocator, $classReflector);
 
 		return $this->betterReflectionProviderFactory->create(
 			$functionReflector,
-			$classReflector
+			$classReflector,
+			$constantReflector
 		);
 	}
 

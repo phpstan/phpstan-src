@@ -24,6 +24,12 @@ interface ReflectionProvider
 
 	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string;
 
+	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool;
+
+	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection;
+
+	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string;
+
 	// helper functions that do not have to do anything with reflection
 
 	/**

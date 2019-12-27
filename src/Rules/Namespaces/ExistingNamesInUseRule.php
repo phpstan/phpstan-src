@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Namespaces;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -17,9 +16,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
-
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
 
@@ -30,13 +26,11 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 	private $checkFunctionNameCase;
 
 	public function __construct(
-		Broker $broker,
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkFunctionNameCase
 	)
 	{
-		$this->broker = $broker;
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->checkFunctionNameCase = $checkFunctionNameCase;
@@ -78,7 +72,7 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 	{
 		$errors = [];
 		foreach ($uses as $use) {
-			if ($this->broker->hasConstant($use->name, null)) {
+			if ($this->reflectionProvider->hasConstant($use->name, null)) {
 				continue;
 			}
 

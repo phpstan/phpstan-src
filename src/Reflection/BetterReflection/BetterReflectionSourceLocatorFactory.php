@@ -62,7 +62,7 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = (new MakeLocatorForComposerJsonAndInstalledJson())($composerAutoloaderProjectPath, $astLocator);
 		}
 
-		/*$analysedDirectories = [];
+		$analysedDirectories = [];
 		$analysedFiles = [];
 
 		foreach ($this->analysedPaths as $analysedPath) {
@@ -87,7 +87,7 @@ class BetterReflectionSourceLocatorFactory
 		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories));
 		if (count($directories) > 0) {
 			$locators[] = new \Roave\BetterReflection\SourceLocator\Type\DirectoriesSourceLocator($directories, $astLocator);
-		}*/
+		}
 
 		$locators[] = new PhpInternalSourceLocator($astLocator, new ReflectionSourceStubber());
 

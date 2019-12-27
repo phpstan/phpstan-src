@@ -6,6 +6,7 @@ parameters:
 	level: null
 	paths: []
 	featureToggles:
+		disableRobotLoader: false
 		staticReflectionForPhpParser: false
 		phpStormStubs: false
 	fileExtensions:

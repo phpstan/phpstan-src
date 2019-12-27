@@ -281,7 +281,8 @@ class CommandHelper
 		}
 
 		$autoloadDirectories = $container->getParameter('autoload_directories');
-		if (count($autoloadDirectories) > 0) {
+		$featureToggles = $container->getParameter('featureToggles');
+		if (count($autoloadDirectories) > 0 && !$featureToggles['disableRobotLoader']) {
 			$robotLoader = new \Nette\Loaders\RobotLoader();
 			$robotLoader->acceptFiles = array_map(static function (string $extension): string {
 				return sprintf('*.%s', $extension);

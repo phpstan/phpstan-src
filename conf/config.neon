@@ -917,6 +917,7 @@ services:
 		arguments:
 			parser: @phpParserDecorator
 			autoloadDirectories: %autoload_directories%
+			autoloadFiles: %autoload_files%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 

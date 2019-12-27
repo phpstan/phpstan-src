@@ -25,6 +25,9 @@ class BetterReflectionSourceLocatorFactory
 	private $autoloadDirectories;
 
 	/** @var string[] */
+	private $autoloadFiles;
+
+	/** @var string[] */
 	private $analysedPaths;
 
 	/** @var string[] */
@@ -32,6 +35,7 @@ class BetterReflectionSourceLocatorFactory
 
 	/**
 	 * @param string[] $autoloadDirectories
+	 * @param string[] $autoloadFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
@@ -39,6 +43,7 @@ class BetterReflectionSourceLocatorFactory
 		\PhpParser\Parser $parser,
 		Container $container,
 		array $autoloadDirectories,
+		array $autoloadFiles,
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths
 	)
@@ -46,6 +51,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->parser = $parser;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
+		$this->autoloadFiles = $autoloadFiles;
 		$this->analysedPaths = $analysedPaths;
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
@@ -78,10 +84,9 @@ class BetterReflectionSourceLocatorFactory
 			$analysedDirectories[] = $analysedPath;
 		}
 
-		if (count($analysedFiles) > 0) {
-			foreach ($analysedFiles as $analysedFile) {
-				$locators[] = new \Roave\BetterReflection\SourceLocator\Type\SingleFileSourceLocator($analysedFile, $astLocator);
-			}
+		$analysedFiles = array_unique(array_merge($analysedFiles, $this->autoloadFiles));
+		foreach ($analysedFiles as $analysedFile) {
+			$locators[] = new \Roave\BetterReflection\SourceLocator\Type\SingleFileSourceLocator($analysedFile, $astLocator);
 		}
 
 		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories));

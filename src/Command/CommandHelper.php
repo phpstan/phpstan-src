@@ -124,6 +124,7 @@ class CommandHelper
 			}, $paths);
 		}
 
+		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);
 		if ($projectConfigFile !== null) {
 			if (!is_file($projectConfigFile)) {
@@ -154,7 +155,8 @@ class CommandHelper
 				$level = $projectConfig['parameters']['level'];
 			}
 			if (count($paths) === 0 && isset($projectConfig['parameters']['paths'])) {
-				$paths = Helpers::expand($projectConfig['parameters']['paths'], $defaultParameters);
+				$analysedPathsFromConfig = Helpers::expand($projectConfig['parameters']['paths'], $defaultParameters);
+				$paths = $analysedPathsFromConfig;
 			}
 		}
 
@@ -209,7 +211,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

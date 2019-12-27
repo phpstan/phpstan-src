@@ -43,13 +43,15 @@ class ContainerFactory
 	 * @param string[] $additionalConfigFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string[] $analysedPathsFromConfig
 	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(
 		string $tempDirectory,
 		array $additionalConfigFiles,
 		array $analysedPaths,
-		array $composerAutoloaderProjectPaths = []
+		array $composerAutoloaderProjectPaths = [],
+		array $analysedPathsFromConfig = []
 	): Container
 	{
 		$configurator = new Configurator(new LoaderFactory(
@@ -70,6 +72,7 @@ class ContainerFactory
 			'additionalConfigFiles' => $additionalConfigFiles,
 			'analysedPaths' => $analysedPaths,
 			'composerAutoloaderProjectPaths' => $composerAutoloaderProjectPaths,
+			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {

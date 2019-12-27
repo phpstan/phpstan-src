@@ -33,11 +33,15 @@ class BetterReflectionSourceLocatorFactory
 	/** @var string[] */
 	private $composerAutoloaderProjectPaths;
 
+	/** @var string[] */
+	private $analysedPathsFromConfig;
+
 	/**
 	 * @param string[] $autoloadDirectories
 	 * @param string[] $autoloadFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string[] $analysedPathsFromConfig
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
@@ -45,7 +49,8 @@ class BetterReflectionSourceLocatorFactory
 		array $autoloadDirectories,
 		array $autoloadFiles,
 		array $analysedPaths,
-		array $composerAutoloaderProjectPaths
+		array $composerAutoloaderProjectPaths,
+		array $analysedPathsFromConfig
 	)
 	{
 		$this->parser = $parser;
@@ -54,6 +59,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->autoloadFiles = $autoloadFiles;
 		$this->analysedPaths = $analysedPaths;
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
+		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
 	}
 
 	public function create(): SourceLocator
@@ -71,7 +77,7 @@ class BetterReflectionSourceLocatorFactory
 		$analysedDirectories = [];
 		$analysedFiles = [];
 
-		foreach ($this->analysedPaths as $analysedPath) {
+		foreach (array_merge($this->analysedPaths, $this->analysedPathsFromConfig) as $analysedPath) {
 			if (is_file($analysedPath)) {
 				$analysedFiles[] = $analysedPath;
 				continue;

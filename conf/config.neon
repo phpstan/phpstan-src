@@ -188,6 +188,7 @@ parametersSchema:
 	additionalConfigFiles: listOf(string())
 	analysedPaths: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())
+	analysedPathsFromConfig: listOf(string())
 
 services:
 	-
@@ -920,6 +921,7 @@ services:
 			autoloadFiles: %autoload_files%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			analysedPathsFromConfig: %analysedPathsFromConfig%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

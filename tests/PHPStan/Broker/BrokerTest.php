@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\Parser;
@@ -34,11 +35,12 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 
 		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
 		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider([], [], []);
+		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider([]);
 
 		$this->broker = new Broker(
 			$classReflectionExtensionRegistryProvider,
 			$dynamicReturnTypeExtensionRegistryProvider,
-			[],
+			$operatorTypeSpecifyingExtensionRegistryProvider,
 			$this->createMock(FunctionReflectionFactory::class),
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
@@ -51,6 +53,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 		);
 		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
 		$dynamicReturnTypeExtensionRegistryProvider->setBroker($this->broker);
+		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($this->broker);
 	}
 
 	public function testClassNotFound(): void

@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -77,13 +78,13 @@ class Broker implements ReflectionProvider
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private static $anonymousClasses = [];
 
-	/** @var \PHPStan\Type\OperatorTypeSpecifyingExtension[] */
-	private $operatorTypeSpecifyingExtensions;
+	/** @var \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider */
+	private $operatorTypeSpecifyingExtensionRegistryProvider;
 
 	/**
 	 * @param ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider
 	 * @param DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider
-	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtension[] $operatorTypeSpecifyingExtensions
+	 * @param \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider
 	 * @param \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
 	 * @param \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider
@@ -97,7 +98,7 @@ class Broker implements ReflectionProvider
 	public function __construct(
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
-		array $operatorTypeSpecifyingExtensions,
+		OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
@@ -111,7 +112,7 @@ class Broker implements ReflectionProvider
 	{
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->dynamicReturnTypeExtensionRegistryProvider = $dynamicReturnTypeExtensionRegistryProvider;
-		$this->operatorTypeSpecifyingExtensions = $operatorTypeSpecifyingExtensions;
+		$this->operatorTypeSpecifyingExtensionRegistryProvider = $operatorTypeSpecifyingExtensionRegistryProvider;
 
 		$this->functionReflectionFactory = $functionReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
@@ -168,9 +169,7 @@ class Broker implements ReflectionProvider
 	 */
 	public function getOperatorTypeSpecifyingExtensions(string $operator, Type $leftType, Type $rightType): array
 	{
-		return array_filter($this->operatorTypeSpecifyingExtensions, static function (OperatorTypeSpecifyingExtension $extension) use ($operator, $leftType, $rightType): bool {
-			return $extension->isOperatorSupported($operator, $leftType, $rightType);
-		});
+		return $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->getOperatorTypeSpecifyingExtensions($operator, $leftType, $rightType);
 	}
 
 	/**
@@ -188,6 +187,15 @@ class Broker implements ReflectionProvider
 	public function getDynamicReturnTypeExtensionRegistryProvider(): DynamicReturnTypeExtensionRegistryProvider
 	{
 		return $this->dynamicReturnTypeExtensionRegistryProvider;
+	}
+
+	/**
+	 * @internal
+	 * @return \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider
+	 */
+	public function getOperatorTypeSpecifyingExtensionRegistryProvider(): OperatorTypeSpecifyingExtensionRegistryProvider
+	{
+		return $this->operatorTypeSpecifyingExtensionRegistryProvider;
 	}
 
 	public function getClass(string $className): \PHPStan\Reflection\ClassReflection

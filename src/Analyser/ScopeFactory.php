@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -15,14 +15,14 @@ class ScopeFactory
 	/** @var string */
 	private $scopeClass;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
-
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
 
 	/** @var \PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider */
 	private $dynamicReturnTypeExtensionRegistryProvider;
+
+	/** @var OperatorTypeSpecifyingExtensionRegistryProvider */
+	private $operatorTypeSpecifyingExtensionRegistryProvider;
 
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
@@ -38,9 +38,9 @@ class ScopeFactory
 
 	public function __construct(
 		string $scopeClass,
-		Broker $broker,
 		ReflectionProvider $reflectionProvider,
 		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
@@ -48,9 +48,9 @@ class ScopeFactory
 	)
 	{
 		$this->scopeClass = $scopeClass;
-		$this->broker = $broker;
 		$this->reflectionProvider = $reflectionProvider;
 		$this->dynamicReturnTypeExtensionRegistryProvider = $dynamicReturnTypeExtensionRegistryProvider;
+		$this->operatorTypeSpecifyingExtensionRegistryProvider = $operatorTypeSpecifyingExtensionRegistryProvider;
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
@@ -91,9 +91,9 @@ class ScopeFactory
 
 		return new $scopeClass(
 			$this,
-			$this->broker,
 			$this->reflectionProvider,
 			$this->dynamicReturnTypeExtensionRegistryProvider->getRegistry(),
+			$this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry(),
 			$this->printer,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,

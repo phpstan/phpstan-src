@@ -23,7 +23,6 @@ use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\EncapsedStringPart;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -72,6 +71,7 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
@@ -98,14 +98,14 @@ class MutatingScope implements Scope
 	/** @var \PHPStan\Analyser\ScopeFactory */
 	private $scopeFactory;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
-
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
 
 	/** @var \PHPStan\Type\DynamicReturnTypeExtensionRegistry */
 	private $dynamicReturnTypeExtensionRegistry;
+
+	/** @var OperatorTypeSpecifyingExtensionRegistry */
+	private $operatorTypeSpecifyingExtensionRegistry;
 
 	/** @var \PhpParser\PrettyPrinter\Standard */
 	private $printer;
@@ -154,9 +154,9 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
-	 * @param \PHPStan\Broker\Broker $broker
 	 * @param ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry
+	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry
 	 * @param \PhpParser\PrettyPrinter\Standard $printer
 	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder
@@ -174,9 +174,9 @@ class MutatingScope implements Scope
 	 */
 	public function __construct(
 		ScopeFactory $scopeFactory,
-		Broker $broker,
 		ReflectionProvider $reflectionProvider,
 		DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
+		OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
@@ -198,9 +198,9 @@ class MutatingScope implements Scope
 		}
 
 		$this->scopeFactory = $scopeFactory;
-		$this->broker = $broker;
 		$this->reflectionProvider = $reflectionProvider;
 		$this->dynamicReturnTypeExtensionRegistry = $dynamicReturnTypeExtensionRegistry;
+		$this->operatorTypeSpecifyingExtensionRegistry = $operatorTypeSpecifyingExtensionRegistry;
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
@@ -955,7 +955,7 @@ class MutatingScope implements Scope
 			}
 
 			if ($operatorSigil !== null) {
-				$operatorTypeSpecifyingExtensions = $this->broker->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
+				$operatorTypeSpecifyingExtensions = $this->operatorTypeSpecifyingExtensionRegistry->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
 
 				/** @var Type[] $extensionTypes */
 				$extensionTypes = [];

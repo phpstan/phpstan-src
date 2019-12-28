@@ -17,6 +17,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\Parser\FunctionCallStatementFinder;
@@ -256,10 +257,13 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
 			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions())
 		);
+		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider(
+			$this->getOperatorTypeSpecifyingExtensions()
+		);
 		$broker = new Broker(
 			$classReflectionExtensionRegistryProvider,
 			$dynamicReturnTypeExtensionRegistryProvider,
-			$this->getOperatorTypeSpecifyingExtensions(),
+			$operatorTypeSpecifyingExtensionRegistryProvider,
 			$functionReflectionFactory,
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
@@ -283,6 +287,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$dynamicReturnTypeExtensionRegistryProvider->setBroker($broker);
 		$dynamicReturnTypeExtensionRegistryProvider->setReflectionProvider($broker);
 
+		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($broker);
+
 		return $broker;
 	}
 
@@ -293,8 +299,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return new ScopeFactory(
 			MutatingScope::class,
 			$broker,
-			$broker,
 			$broker->getDynamicReturnTypeExtensionRegistryProvider(),
+			$broker->getOperatorTypeSpecifyingExtensionRegistryProvider(),
 			new \PhpParser\PrettyPrinter\Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),

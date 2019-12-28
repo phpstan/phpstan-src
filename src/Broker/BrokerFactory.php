@@ -5,6 +5,7 @@ namespace PHPStan\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -38,7 +39,7 @@ class BrokerFactory
 		return new Broker(
 			$this->container->getByType(ClassReflectionExtensionRegistryProvider::class),
 			$this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
-			$this->container->getServicesByTag(self::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG),
+			$this->container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 			$this->container->getByType(FunctionReflectionFactory::class),
 			$this->container->getByType(FileTypeMapper::class),
 			$this->container->getByType(NativeFunctionReflectionProvider::class),

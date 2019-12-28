@@ -17,7 +17,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createBroker();
+		$broker = $this->createReflectionProvider();
 		return new InvalidPhpDocVarTagTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			$broker,

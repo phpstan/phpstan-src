@@ -12,7 +12,7 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		$broker = $this->createBroker([], []);
+		$broker = $this->createReflectionProvider([], []);
 		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true));
 	}
 

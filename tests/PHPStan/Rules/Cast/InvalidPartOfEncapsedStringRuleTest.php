@@ -14,7 +14,7 @@ class InvalidPartOfEncapsedStringRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		return new InvalidPartOfEncapsedStringRule(
 			new \PhpParser\PrettyPrinter\Standard(),
-			new RuleLevelHelper($this->createBroker(), true, false, true)
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true)
 		);
 	}
 

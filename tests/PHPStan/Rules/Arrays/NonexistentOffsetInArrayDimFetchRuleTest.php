@@ -13,7 +13,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new NonexistentOffsetInArrayDimFetchRule(
-			new RuleLevelHelper($this->createBroker(), true, false, true),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true),
 			true
 		);
 	}

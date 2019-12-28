@@ -13,7 +13,7 @@ class BooleanNotConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 		return new BooleanNotConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createBroker(),
+					$this->createReflectionProvider(),
 					$this->getTypeSpecifier()
 				)
 			)

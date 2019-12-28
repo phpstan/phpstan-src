@@ -13,7 +13,7 @@ class CallToFunctionStamentWithoutSideEffectsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToFunctionStamentWithoutSideEffectsRule($this->createBroker());
+		return new CallToFunctionStamentWithoutSideEffectsRule($this->createReflectionProvider());
 	}
 
 	public function testRule(): void

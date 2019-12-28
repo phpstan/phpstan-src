@@ -15,7 +15,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 	{
 		return new ImpossibleCheckTypeFunctionCallRule(
 			new ImpossibleCheckTypeHelper(
-				$this->createBroker(),
+				$this->createReflectionProvider(),
 				$this->getTypeSpecifier()
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall

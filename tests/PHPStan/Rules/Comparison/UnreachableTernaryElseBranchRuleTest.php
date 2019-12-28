@@ -16,7 +16,7 @@ class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 		return new UnreachableTernaryElseBranchRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createBroker(),
+					$this->createReflectionProvider(),
 					$this->getTypeSpecifier()
 				)
 			)

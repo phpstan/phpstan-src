@@ -13,7 +13,7 @@ class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTes
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createBroker();
+		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInInterfaceExtendsRule(
 			new ClassCaseSensitivityCheck($broker)
 		);

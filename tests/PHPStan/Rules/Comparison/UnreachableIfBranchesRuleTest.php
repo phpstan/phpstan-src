@@ -16,7 +16,7 @@ class UnreachableIfBranchesRuleTest extends RuleTestCase
 		return new UnreachableIfBranchesRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createBroker(),
+					$this->createReflectionProvider(),
 					$this->getTypeSpecifier()
 				)
 			)

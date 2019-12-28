@@ -13,7 +13,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createBroker(), true, false, true);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true);
 		return new CallCallablesRule(
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,

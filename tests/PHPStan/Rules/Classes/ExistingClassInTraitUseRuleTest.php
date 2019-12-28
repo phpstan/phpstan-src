@@ -13,7 +13,7 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createBroker();
+		$broker = $this->createReflectionProvider();
 		return new ExistingClassInTraitUseRule(
 			new ClassCaseSensitivityCheck($broker)
 		);

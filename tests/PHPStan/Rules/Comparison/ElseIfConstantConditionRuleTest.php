@@ -13,7 +13,7 @@ class ElseIfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 		return new ElseIfConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createBroker(),
+					$this->createReflectionProvider(),
 					$this->getTypeSpecifier()
 				)
 			)

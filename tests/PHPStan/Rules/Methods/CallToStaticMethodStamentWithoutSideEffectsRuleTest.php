@@ -14,7 +14,7 @@ class CallToStaticMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createBroker();
+		$broker = $this->createReflectionProvider();
 		return new CallToStaticMethodStamentWithoutSideEffectsRule(
 			new RuleLevelHelper($broker, true, false, true),
 			$broker

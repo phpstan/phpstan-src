@@ -81,7 +81,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		array $expectedDistances
 	): void
 	{
-		$broker = $this->createBroker();
+		$broker = $this->createReflectionProvider();
 		$fileTypeMapper = $this->createMock(FileTypeMapper::class);
 
 		$classReflection = new ClassReflection(

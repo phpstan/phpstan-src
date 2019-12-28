@@ -17,7 +17,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 		return new InterfaceAncestorsRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericAncestorsCheck(
-				$this->createBroker(),
+				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				true

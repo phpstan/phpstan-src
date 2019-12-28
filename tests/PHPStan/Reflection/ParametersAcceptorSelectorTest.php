@@ -28,7 +28,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 	public function dataSelectFromTypes(): \Generator
 	{
 		require_once __DIR__ . '/data/function-definitions.php';
-		$broker = $this->createBroker();
+		$broker = $this->createReflectionProvider();
 
 		$arrayRandVariants = $broker->getFunction(new Name('array_rand'), null)->getVariants();
 		yield [

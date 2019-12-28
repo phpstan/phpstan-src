@@ -13,7 +13,7 @@ class TernaryOperatorConstantConditionRuleTest extends \PHPStan\Testing\RuleTest
 		return new TernaryOperatorConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createBroker(),
+					$this->createReflectionProvider(),
 					$this->getTypeSpecifier()
 				)
 			)

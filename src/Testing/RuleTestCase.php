@@ -37,7 +37,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	{
 		return $this->createTypeSpecifier(
 			new \PhpParser\PrettyPrinter\Standard(),
-			$this->createBroker(),
+			$this->createReflectionProvider(),
 			$this->getMethodTypeSpecifyingExtensions(),
 			$this->getStaticMethodTypeSpecifyingExtensions()
 		);

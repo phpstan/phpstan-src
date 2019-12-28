@@ -13,7 +13,7 @@ class ExistingClassInInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createBroker();
+		$broker = $this->createReflectionProvider();
 		return new ExistingClassInInstanceOfRule(
 			$broker,
 			new ClassCaseSensitivityCheck($broker),

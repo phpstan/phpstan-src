@@ -96,6 +96,27 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		array $dynamicStaticMethodReturnTypeExtensions = []
 	): Broker
 	{
+		$broker = $this->createReflectionProvider(
+			$dynamicMethodReturnTypeExtensions,
+			$dynamicStaticMethodReturnTypeExtensions
+		);
+		if (!$broker instanceof Broker) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		return $broker;
+	}
+
+	/**
+	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
+	 * @param \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
+	 * @return ReflectionProvider
+	 */
+	public function createReflectionProvider(
+		array $dynamicMethodReturnTypeExtensions = [],
+		array $dynamicStaticMethodReturnTypeExtensions = []
+	): ReflectionProvider
+	{
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
 		$parser = $this->getParser();
 		$cache = new Cache(new MemoryCacheStorage());

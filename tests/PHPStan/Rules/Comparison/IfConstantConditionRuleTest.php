@@ -20,7 +20,7 @@ class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 		return new IfConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createBroker(),
+					$this->createReflectionProvider(),
 					$this->getTypeSpecifier()
 				)
 			)

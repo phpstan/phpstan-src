@@ -5,7 +5,7 @@ namespace PHPStan\Reflection\BetterReflection;
 use PHPStan\DependencyInjection\Container;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\Composer\Factory\MakeLocatorForComposerJsonAndInstalledJson;
 use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
@@ -100,7 +100,7 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = new \Roave\BetterReflection\SourceLocator\Type\DirectoriesSourceLocator($directories, $astLocator);
 		}
 
-		$locators[] = new PhpInternalSourceLocator($astLocator, new ReflectionSourceStubber());
+		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($this->parser));
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

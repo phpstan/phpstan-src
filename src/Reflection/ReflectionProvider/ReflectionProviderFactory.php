@@ -11,6 +11,7 @@ use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 
 class ReflectionProviderFactory
@@ -99,10 +100,10 @@ class ReflectionProviderFactory
 		$astLocator = new Locator($this->parser, static function () use (&$functionReflector): FunctionReflector {
 			return $functionReflector;
 		});
-		$sourceLocator = new PhpInternalSourceLocator(
+		$sourceLocator = new MemoizingSourceLocator(new PhpInternalSourceLocator(
 			$astLocator,
 			$this->phpStormStubsSourceStubber
-		);
+		));
 		$classReflector = new ClassReflector($sourceLocator);
 		$functionReflector = new FunctionReflector($sourceLocator, $classReflector);
 		$constantReflector = new ConstantReflector($sourceLocator, $classReflector);

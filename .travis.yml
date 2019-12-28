@@ -92,10 +92,6 @@ jobs:
         - echo 'extension_dir=ext' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_curl.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_mbstring.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_openssl.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_soap.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_mysqli.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_intl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
       script:
         - vendor/bin/phing tests
@@ -112,11 +108,8 @@ jobs:
         - echo 'memory_limit=1G' >> 'C:\tools\php\php.ini'
         - echo 'date.timezone="UTC"' >> 'C:\tools\php\php.ini'
         - echo 'extension_dir=ext' >> 'C:\tools\php\php.ini'
+        - echo 'extension=php_curl.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_mbstring.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_openssl.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_soap.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_mysqli.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_intl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
       script:
         - vendor/bin/phing tests
@@ -133,11 +126,8 @@ jobs:
         - echo 'memory_limit=1G' >> 'C:\tools\php\php.ini'
         - echo 'date.timezone="UTC"' >> 'C:\tools\php\php.ini'
         - echo 'extension_dir=ext' >> 'C:\tools\php\php.ini'
+        - echo 'extension=php_curl.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_mbstring.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_openssl.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_soap.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_mysqli.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_intl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
       script:
         - vendor/bin/phing tests

@@ -24,12 +24,6 @@
 		"phpstan/phpstan": "self.version"
 	},
 	"require-dev": {
-		"ext-dom": "*",
-		"ext-intl": "*",
-		"ext-mysqli": "*",
-		"ext-simplexml": "*",
-		"ext-soap": "*",
-		"ext-zip": "*",
 		"consistence/coding-standard": "^3.5",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.5.0",
 		"ergebnis/composer-normalize": "^2.0.2",

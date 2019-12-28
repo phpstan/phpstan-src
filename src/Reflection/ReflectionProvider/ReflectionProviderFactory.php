@@ -35,17 +35,13 @@ class ReflectionProviderFactory
 	/** @var bool */
 	private $enableStaticReflectionForPhpParser;
 
-	/** @var bool */
-	private $enablePhpStormStubs;
-
 	public function __construct(
 		RuntimeReflectionProvider $runtimeReflectionProvider,
 		Parser $parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		BetterReflectionProviderFactory $betterReflectionProviderFactory,
 		ReflectionProvider $phpParserReflectionProvider,
-		bool $enableStaticReflectionForPhpParser,
-		bool $enablePhpStormStubs
+		bool $enableStaticReflectionForPhpParser
 	)
 	{
 		$this->runtimeReflectionProvider = $runtimeReflectionProvider;
@@ -54,7 +50,6 @@ class ReflectionProviderFactory
 		$this->betterReflectionProviderFactory = $betterReflectionProviderFactory;
 		$this->phpParserReflectionProvider = $phpParserReflectionProvider;
 		$this->enableStaticReflectionForPhpParser = $enableStaticReflectionForPhpParser;
-		$this->enablePhpStormStubs = $enablePhpStormStubs;
 	}
 
 	public function create(): ReflectionProvider
@@ -66,14 +61,7 @@ class ReflectionProviderFactory
 		}
 
 		$providers[] = $this->runtimeReflectionProvider;
-
-		if ($this->enablePhpStormStubs) {
-			$providers[] = $this->createPhpStormStubsReflectionProvider();
-		}
-
-		if (count($providers) === 1) {
-			return $providers[0];
-		}
+		$providers[] = $this->createPhpStormStubsReflectionProvider();
 
 		return new ChainReflectionProvider($providers);
 	}

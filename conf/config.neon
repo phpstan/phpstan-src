@@ -8,7 +8,6 @@ parameters:
 	featureToggles:
 		disableRobotLoader: false
 		staticReflectionForPhpParser: false
-		phpStormStubs: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -879,7 +878,6 @@ services:
 			parser: @phpParserDecorator
 			phpParserReflectionProvider: @phpParserReflectionProvider
 			enableStaticReflectionForPhpParser: %featureToggles.staticReflectionForPhpParser%
-			enablePhpStormStubs: %featureToggles.phpStormStubs%
 
 	reflectionProvider:
 		factory: @PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory::create

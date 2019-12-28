@@ -22,6 +22,9 @@ class ReflectionProviderFactory
 	/** @var \PhpParser\Parser */
 	private $parser;
 
+	/** @var PhpStormStubsSourceStubber */
+	private $phpStormStubsSourceStubber;
+
 	/** @var \PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory */
 	private $betterReflectionProviderFactory;
 
@@ -40,6 +43,7 @@ class ReflectionProviderFactory
 	/**
 	 * @param RuntimeReflectionProvider $runtimeReflectionProvider
 	 * @param \PhpParser\Parser $parser
+	 * @param PhpStormStubsSourceStubber $phpStormStubsSourceStubber
 	 * @param \PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory $betterReflectionProviderFactory
 	 * @param \PHPStan\Reflection\ReflectionProvider $phpParserReflectionProvider
 	 * @param bool $enableStaticReflectionForPhpParser
@@ -49,6 +53,7 @@ class ReflectionProviderFactory
 	public function __construct(
 		RuntimeReflectionProvider $runtimeReflectionProvider,
 		Parser $parser,
+		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		BetterReflectionProviderFactory $betterReflectionProviderFactory,
 		ReflectionProvider $phpParserReflectionProvider,
 		bool $enableStaticReflectionForPhpParser,
@@ -58,6 +63,7 @@ class ReflectionProviderFactory
 	{
 		$this->runtimeReflectionProvider = $runtimeReflectionProvider;
 		$this->parser = $parser;
+		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->betterReflectionProviderFactory = $betterReflectionProviderFactory;
 		$this->phpParserReflectionProvider = $phpParserReflectionProvider;
 		$this->enableStaticReflectionForPhpParser = $enableStaticReflectionForPhpParser;
@@ -95,7 +101,7 @@ class ReflectionProviderFactory
 		});
 		$sourceLocator = new PhpInternalSourceLocator(
 			$astLocator,
-			new PhpStormStubsSourceStubber($this->parser)
+			$this->phpStormStubsSourceStubber
 		);
 		$classReflector = new ClassReflector($sourceLocator);
 		$functionReflector = new FunctionReflector($sourceLocator, $classReflector);

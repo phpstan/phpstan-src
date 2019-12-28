@@ -18,6 +18,9 @@ class StubSourceLocatorFactory
 	/** @var \PhpParser\Parser */
 	private $parser;
 
+	/** @var PhpStormStubsSourceStubber */
+	private $phpStormStubsSourceStubber;
+
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
 
@@ -29,11 +32,13 @@ class StubSourceLocatorFactory
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
+		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		Container $container,
 		array $stubFiles
 	)
 	{
 		$this->parser = $parser;
+		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->container = $container;
 		$this->stubFiles = $stubFiles;
 	}
@@ -51,7 +56,7 @@ class StubSourceLocatorFactory
 			);
 		}
 
-		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($this->parser));
+		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

@@ -18,6 +18,9 @@ class BetterReflectionSourceLocatorFactory
 	/** @var \PhpParser\Parser */
 	private $parser;
 
+	/** @var PhpStormStubsSourceStubber */
+	private $phpStormStubsSourceStubber;
+
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
 
@@ -45,6 +48,7 @@ class BetterReflectionSourceLocatorFactory
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
+		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		Container $container,
 		array $autoloadDirectories,
 		array $autoloadFiles,
@@ -54,6 +58,7 @@ class BetterReflectionSourceLocatorFactory
 	)
 	{
 		$this->parser = $parser;
+		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
 		$this->autoloadFiles = $autoloadFiles;
@@ -100,7 +105,7 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = new \Roave\BetterReflection\SourceLocator\Type\DirectoriesSourceLocator($directories, $astLocator);
 		}
 
-		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($this->parser));
+		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

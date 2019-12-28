@@ -948,6 +948,11 @@ services:
 		arguments:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 
+	-
+		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
+		arguments:
+			phpParser: @phpParserDecorator
+
 	# Error formatters
 
 	errorFormatter.raw:

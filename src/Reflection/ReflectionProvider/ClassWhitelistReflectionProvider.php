@@ -16,24 +16,18 @@ class ClassWhitelistReflectionProvider implements ReflectionProvider
 	private $reflectionProvider;
 
 	/** @var string[] */
-	private $universalObjectCratesClasses;
-
-	/** @var string[] */
 	private $patterns;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param string[] $universalObjectCratesClasses
 	 * @param string[] $patterns
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		array $universalObjectCratesClasses,
 		array $patterns
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 		$this->patterns = $patterns;
 	}
 
@@ -101,14 +95,6 @@ class ClassWhitelistReflectionProvider implements ReflectionProvider
 	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return null;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	public function getUniversalObjectCratesClasses(): array
-	{
-		return $this->universalObjectCratesClasses;
 	}
 
 }

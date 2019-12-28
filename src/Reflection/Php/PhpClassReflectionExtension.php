@@ -78,6 +78,9 @@ class PhpClassReflectionExtension
 	/** @var \PHPStan\Reflection\ReflectionProvider */
 	private $reflectionProvider;
 
+	/** @var string[] */
+	private $universalObjectCratesClasses;
+
 	/** @var \PHPStan\Reflection\PropertyReflection[][] */
 	private $propertiesIncludingAnnotations = [];
 
@@ -96,6 +99,20 @@ class PhpClassReflectionExtension
 	/** @var array<string, true> */
 	private $inferClassConstructorPropertyTypesInProcess = [];
 
+	/**
+	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
+	 * @param \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver
+	 * @param \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory
+	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
+	 * @param \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension
+	 * @param \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension
+	 * @param \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider
+	 * @param \PHPStan\Parser\Parser $parser
+	 * @param \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
+	 * @param bool $inferPrivatePropertyTypeFromConstructor
+	 * @param string[] $universalObjectCratesClasses
+	 */
 	public function __construct(
 		ScopeFactory $scopeFactory,
 		NodeScopeResolver $nodeScopeResolver,
@@ -107,7 +124,8 @@ class PhpClassReflectionExtension
 		Parser $parser,
 		StubPhpDocProvider $stubPhpDocProvider,
 		ReflectionProvider $reflectionProvider,
-		bool $inferPrivatePropertyTypeFromConstructor
+		bool $inferPrivatePropertyTypeFromConstructor,
+		array $universalObjectCratesClasses
 	)
 	{
 		$this->scopeFactory = $scopeFactory;
@@ -121,6 +139,7 @@ class PhpClassReflectionExtension
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
 		$this->reflectionProvider = $reflectionProvider;
 		$this->inferPrivatePropertyTypeFromConstructor = $inferPrivatePropertyTypeFromConstructor;
+		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
@@ -316,7 +335,7 @@ class PhpClassReflectionExtension
 
 		if ($methodName === '__get' && UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 			$this->reflectionProvider,
-			$this->reflectionProvider->getUniversalObjectCratesClasses(),
+			$this->universalObjectCratesClasses,
 			$classReflection
 		)) {
 			return true;
@@ -340,7 +359,7 @@ class PhpClassReflectionExtension
 				$methodName !== '__get'
 				|| !UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 					$this->reflectionProvider,
-					$this->reflectionProvider->getUniversalObjectCratesClasses(),
+					$this->universalObjectCratesClasses,
 					$classReflection
 				)) {
 				throw new \PHPStan\ShouldNotHappenException();

@@ -30,7 +30,8 @@ class BrokerFactory
 		return new Broker(
 			$this->container->getByType(ReflectionProvider::class),
 			$this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
-			$this->container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class)
+			$this->container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
+			$this->container->getParameter('universalObjectCratesClasses')
 		);
 	}
 

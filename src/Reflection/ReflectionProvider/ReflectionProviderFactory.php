@@ -38,19 +38,6 @@ class ReflectionProviderFactory
 	/** @var bool */
 	private $enablePhpStormStubs;
 
-	/** @var string[] */
-	private $universalObjectCratesClasses;
-
-	/**
-	 * @param RuntimeReflectionProvider $runtimeReflectionProvider
-	 * @param \PhpParser\Parser $parser
-	 * @param PhpStormStubsSourceStubber $phpStormStubsSourceStubber
-	 * @param \PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory $betterReflectionProviderFactory
-	 * @param \PHPStan\Reflection\ReflectionProvider $phpParserReflectionProvider
-	 * @param bool $enableStaticReflectionForPhpParser
-	 * @param bool $enablePhpStormStubs
-	 * @param string[] $universalObjectCratesClasses
-	 */
 	public function __construct(
 		RuntimeReflectionProvider $runtimeReflectionProvider,
 		Parser $parser,
@@ -58,8 +45,7 @@ class ReflectionProviderFactory
 		BetterReflectionProviderFactory $betterReflectionProviderFactory,
 		ReflectionProvider $phpParserReflectionProvider,
 		bool $enableStaticReflectionForPhpParser,
-		bool $enablePhpStormStubs,
-		array $universalObjectCratesClasses
+		bool $enablePhpStormStubs
 	)
 	{
 		$this->runtimeReflectionProvider = $runtimeReflectionProvider;
@@ -69,7 +55,6 @@ class ReflectionProviderFactory
 		$this->phpParserReflectionProvider = $phpParserReflectionProvider;
 		$this->enableStaticReflectionForPhpParser = $enableStaticReflectionForPhpParser;
 		$this->enablePhpStormStubs = $enablePhpStormStubs;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function create(): ReflectionProvider
@@ -90,7 +75,7 @@ class ReflectionProviderFactory
 			return $providers[0];
 		}
 
-		return new ChainReflectionProvider($providers, $this->universalObjectCratesClasses);
+		return new ChainReflectionProvider($providers);
 	}
 
 	private function createPhpStormStubsReflectionProvider(): ReflectionProvider

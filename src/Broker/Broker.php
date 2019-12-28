@@ -24,18 +24,29 @@ class Broker implements ReflectionProvider
 	/** @var \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider */
 	private $operatorTypeSpecifyingExtensionRegistryProvider;
 
+	/** @var string[] */
+	private $universalObjectCratesClasses;
+
 	/** @var \PHPStan\Broker\Broker|null */
 	private static $instance;
 
+	/**
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
+	 * @param \PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider
+	 * @param \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider
+	 * @param string[] $universalObjectCratesClasses
+	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
-		OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider
+		OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
+		array $universalObjectCratesClasses
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->dynamicReturnTypeExtensionRegistryProvider = $dynamicReturnTypeExtensionRegistryProvider;
 		$this->operatorTypeSpecifyingExtensionRegistryProvider = $operatorTypeSpecifyingExtensionRegistryProvider;
+		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public static function registerInstance(Broker $reflectionProvider): void
@@ -106,7 +117,7 @@ class Broker implements ReflectionProvider
 	 */
 	public function getUniversalObjectCratesClasses(): array
 	{
-		return $this->reflectionProvider->getUniversalObjectCratesClasses();
+		return $this->universalObjectCratesClasses;
 	}
 
 	/**

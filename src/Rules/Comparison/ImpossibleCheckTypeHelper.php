@@ -32,13 +32,23 @@ class ImpossibleCheckTypeHelper
 	/** @var \PHPStan\Analyser\TypeSpecifier */
 	private $typeSpecifier;
 
+	/** @var string[] */
+	private $universalObjectCratesClasses;
+
+	/**
+	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
+	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
+	 * @param string[] $universalObjectCratesClasses
+	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		TypeSpecifier $typeSpecifier
+		TypeSpecifier $typeSpecifier,
+		array $universalObjectCratesClasses
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->typeSpecifier = $typeSpecifier;
+		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function findSpecifiedType(
@@ -132,7 +142,7 @@ class ImpossibleCheckTypeHelper
 
 						if (UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 							$this->reflectionProvider,
-							$this->reflectionProvider->getUniversalObjectCratesClasses(),
+							$this->universalObjectCratesClasses,
 							$this->reflectionProvider->getClass($className)
 						)) {
 							return null;

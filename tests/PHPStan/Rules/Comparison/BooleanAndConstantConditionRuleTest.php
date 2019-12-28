@@ -14,7 +14,8 @@ class BooleanAndConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
 					$this->createReflectionProvider(),
-					$this->getTypeSpecifier()
+					$this->getTypeSpecifier(),
+					[]
 				)
 			)
 		);

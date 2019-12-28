@@ -71,9 +71,6 @@ class BetterReflectionProvider implements ReflectionProvider
 	/** @var Parser */
 	private $parser;
 
-	/** @var string[] */
-	private $universalObjectCratesClasses;
-
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
 	private $functionReflections = [];
 
@@ -83,18 +80,6 @@ class BetterReflectionProvider implements ReflectionProvider
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private static $anonymousClasses = [];
 
-	/**
-	 * @param \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider
-	 * @param \Roave\BetterReflection\Reflector\ClassReflector $classReflector
-	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
-	 * @param \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider
-	 * @param StubPhpDocProvider $stubPhpDocProvider
-	 * @param FunctionReflectionFactory $functionReflectionFactory
-	 * @param RelativePathHelper $relativePathHelper
-	 * @param AnonymousClassNameHelper $anonymousClassNameHelper
-	 * @param \Roave\BetterReflection\Reflector\FunctionReflector $functionReflector
-	 * @param string[] $universalObjectCratesClasses
-	 */
 	public function __construct(
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		ClassReflector $classReflector,
@@ -107,8 +92,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		Standard $printer,
 		Parser $parser,
 		FunctionReflector $functionReflector,
-		ConstantReflector $constantReflector,
-		array $universalObjectCratesClasses
+		ConstantReflector $constantReflector
 	)
 	{
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
@@ -123,7 +107,6 @@ class BetterReflectionProvider implements ReflectionProvider
 		$this->parser = $parser;
 		$this->functionReflector = $functionReflector;
 		$this->constantReflector = $constantReflector;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function hasClass(string $className): bool
@@ -404,11 +387,6 @@ class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		return null;
-	}
-
-	public function getUniversalObjectCratesClasses(): array
-	{
-		return $this->universalObjectCratesClasses;
 	}
 
 }

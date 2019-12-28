@@ -352,6 +352,7 @@ services:
 		class: PHPStan\Reflection\Php\PhpClassReflectionExtension
 		arguments:
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%
+			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	-
 		class: PHPStan\Reflection\PhpDefect\PhpDefectClassReflectionExtension
@@ -383,6 +384,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper
+		arguments:
+			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	-
 		class: PHPStan\Rules\FunctionCallParametersCheck
@@ -877,7 +880,6 @@ services:
 			phpParserReflectionProvider: @phpParserReflectionProvider
 			enableStaticReflectionForPhpParser: %featureToggles.staticReflectionForPhpParser%
 			enablePhpStormStubs: %featureToggles.phpStormStubs%
-			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	reflectionProvider:
 		factory: @PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory::create
@@ -888,7 +890,6 @@ services:
 		class: PHPStan\Reflection\ReflectionProvider\ClassWhitelistReflectionProvider
 		arguments:
 			reflectionProvider: @betterReflectionProvider
-			universalObjectCratesClasses: %universalObjectCratesClasses%
 			patterns:
 				- '#^PhpParser\\#'
 		autowired: false
@@ -924,13 +925,10 @@ services:
 			classReflector: @betterReflectionClassReflector
 			functionReflector: @betterReflectionFunctionReflector
 			constantReflector: @betterReflectionConstantReflector
-			universalObjectCratesClasses: %universalObjectCratesClasses%
 		autowired: false
 
 	runtimeReflectionProvider:
 		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider
-		arguments:
-			universalObjectCratesClasses: %universalObjectCratesClasses%
 		autowired: false
 
 	-
@@ -945,8 +943,6 @@ services:
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory
-		arguments:
-			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	-
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber

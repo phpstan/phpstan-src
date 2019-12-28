@@ -55,9 +55,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	/** @var StubPhpDocProvider */
 	private $stubPhpDocProvider;
 
-	/** @var string[] */
-	private $universalObjectCratesClasses;
-
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
 	private $functionReflections = [];
 
@@ -70,18 +67,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private static $anonymousClasses = [];
 
-	/**
-	 * @param \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider
-	 * @param \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory
-	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
-	 * @param \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider
-	 * @param \PhpParser\PrettyPrinter\Standard $printer
-	 * @param \PHPStan\Broker\AnonymousClassNameHelper $anonymousClassNameHelper
-	 * @param \PHPStan\Parser\Parser $parser
-	 * @param \PHPStan\File\RelativePathHelper $relativePathHelper
-	 * @param \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider
-	 * @param string[] $universalObjectCratesClasses
-	 */
 	public function __construct(
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		FunctionReflectionFactory $functionReflectionFactory,
@@ -91,8 +76,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		Parser $parser,
 		RelativePathHelper $relativePathHelper,
-		StubPhpDocProvider $stubPhpDocProvider,
-		array $universalObjectCratesClasses
+		StubPhpDocProvider $stubPhpDocProvider
 	)
 	{
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
@@ -104,7 +88,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->parser = $parser;
 		$this->relativePathHelper = $relativePathHelper;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function getClass(string $className): \PHPStan\Reflection\ClassReflection
@@ -460,14 +443,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		}
 
 		return false;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	public function getUniversalObjectCratesClasses(): array
-	{
-		return $this->universalObjectCratesClasses;
 	}
 
 }

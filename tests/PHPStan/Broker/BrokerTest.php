@@ -47,13 +47,13 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			$anonymousClassNameHelper,
 			self::getContainer()->getByType(Parser::class),
 			$relativePathHelper,
-			self::getContainer()->getByType(StubPhpDocProvider::class),
-			[]
+			self::getContainer()->getByType(StubPhpDocProvider::class)
 		);
 		$this->broker = new Broker(
 			$reflectionProvider,
 			$dynamicReturnTypeExtensionRegistryProvider,
-			$operatorTypeSpecifyingExtensionRegistryProvider
+			$operatorTypeSpecifyingExtensionRegistryProvider,
+			[]
 		);
 		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
 		$dynamicReturnTypeExtensionRegistryProvider->setBroker($this->broker);

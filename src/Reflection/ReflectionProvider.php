@@ -30,11 +30,4 @@ interface ReflectionProvider
 
 	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string;
 
-	// helper functions that do not have to do anything with reflection
-
-	/**
-	 * @return string[]
-	 */
-	public function getUniversalObjectCratesClasses(): array;
-
 }

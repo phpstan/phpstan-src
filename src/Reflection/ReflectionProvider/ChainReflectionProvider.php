@@ -14,20 +14,14 @@ class ChainReflectionProvider implements ReflectionProvider
 	/** @var \PHPStan\Reflection\ReflectionProvider[] */
 	private $providers;
 
-	/** @var string[] */
-	private $universalObjectCratesClasses;
-
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider[] $providers
-	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
-		array $providers,
-		array $universalObjectCratesClasses
+		array $providers
 	)
 	{
 		$this->providers = $providers;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function hasClass(string $className): bool
@@ -152,14 +146,6 @@ class ChainReflectionProvider implements ReflectionProvider
 		}
 
 		return null;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	public function getUniversalObjectCratesClasses(): array
-	{
-		return $this->universalObjectCratesClasses;
 	}
 
 }

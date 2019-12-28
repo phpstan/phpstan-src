@@ -3,9 +3,9 @@
 namespace PHPStan\Reflection\ReflectionProvider;
 
 use PhpParser\Parser;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
@@ -16,8 +16,8 @@ use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 class ReflectionProviderFactory
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	/** @var \PHPStan\Reflection\Runtime\RuntimeReflectionProvider */
+	private $runtimeReflectionProvider;
 
 	/** @var \PhpParser\Parser */
 	private $parser;
@@ -38,7 +38,7 @@ class ReflectionProviderFactory
 	private $universalObjectCratesClasses;
 
 	/**
-	 * @param \PHPStan\Broker\Broker $broker
+	 * @param RuntimeReflectionProvider $runtimeReflectionProvider
 	 * @param \PhpParser\Parser $parser
 	 * @param \PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory $betterReflectionProviderFactory
 	 * @param \PHPStan\Reflection\ReflectionProvider $phpParserReflectionProvider
@@ -47,7 +47,7 @@ class ReflectionProviderFactory
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
-		Broker $broker,
+		RuntimeReflectionProvider $runtimeReflectionProvider,
 		Parser $parser,
 		BetterReflectionProviderFactory $betterReflectionProviderFactory,
 		ReflectionProvider $phpParserReflectionProvider,
@@ -56,7 +56,7 @@ class ReflectionProviderFactory
 		array $universalObjectCratesClasses
 	)
 	{
-		$this->broker = $broker;
+		$this->runtimeReflectionProvider = $runtimeReflectionProvider;
 		$this->parser = $parser;
 		$this->betterReflectionProviderFactory = $betterReflectionProviderFactory;
 		$this->phpParserReflectionProvider = $phpParserReflectionProvider;
@@ -73,7 +73,7 @@ class ReflectionProviderFactory
 			$providers[] = $this->phpParserReflectionProvider;
 		}
 
-		$providers[] = $this->broker;
+		$providers[] = $this->runtimeReflectionProvider;
 
 		if ($this->enablePhpStormStubs) {
 			$providers[] = $this->createPhpStormStubsReflectionProvider();

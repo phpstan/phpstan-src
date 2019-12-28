@@ -872,6 +872,7 @@ services:
 	reflectionProviderFactory:
 		class: PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory
 		arguments:
+			runtimeReflectionProvider: @runtimeReflectionProvider
 			parser: @phpParserDecorator
 			phpParserReflectionProvider: @phpParserReflectionProvider
 			enableStaticReflectionForPhpParser: %featureToggles.staticReflectionForPhpParser%
@@ -923,6 +924,12 @@ services:
 			classReflector: @betterReflectionClassReflector
 			functionReflector: @betterReflectionFunctionReflector
 			constantReflector: @betterReflectionConstantReflector
+			universalObjectCratesClasses: %universalObjectCratesClasses%
+		autowired: false
+
+	runtimeReflectionProvider:
+		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider
+		arguments:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 		autowired: false
 

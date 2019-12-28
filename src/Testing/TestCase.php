@@ -37,6 +37,7 @@ use PHPStan\Reflection\Php\PhpMethodReflectionFactory;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PhpDefect\PhpDefectClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -49,6 +50,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 	/** @var array<string, Container> */
 	private static $containers = [];
+
+	/** @var DirectClassReflectionExtensionRegistryProvider|null */
+	private $classReflectionExtensionRegistryProvider;
 
 	public static function getContainer(): Container
 	{
@@ -96,26 +100,29 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		array $dynamicStaticMethodReturnTypeExtensions = []
 	): Broker
 	{
-		$broker = $this->createReflectionProvider(
-			$dynamicMethodReturnTypeExtensions,
-			$dynamicStaticMethodReturnTypeExtensions
+		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider(
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicMethodReturnTypeExtensions, $this->getDynamicMethodReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions())
 		);
-		if (!$broker instanceof Broker) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
+		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider(
+			$this->getOperatorTypeSpecifyingExtensions()
+		);
+		$reflectionProvider = $this->createReflectionProvider();
+		$broker = new Broker(
+			$reflectionProvider,
+			$dynamicReturnTypeExtensionRegistryProvider,
+			$operatorTypeSpecifyingExtensionRegistryProvider
+		);
+		$dynamicReturnTypeExtensionRegistryProvider->setBroker($broker);
+		$dynamicReturnTypeExtensionRegistryProvider->setReflectionProvider($reflectionProvider);
+		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($broker);
+		$this->getClassReflectionExtensionRegistryProvider()->setBroker($broker);
 
 		return $broker;
 	}
 
-	/**
-	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
-	 * @param \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
-	 * @return ReflectionProvider
-	 */
-	public function createReflectionProvider(
-		array $dynamicMethodReturnTypeExtensions = [],
-		array $dynamicStaticMethodReturnTypeExtensions = []
-	): ReflectionProvider
+	public function createReflectionProvider(): ReflectionProvider
 	{
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
 		$parser = $this->getParser();
@@ -131,8 +138,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			/** @var \PHPStan\Cache\Cache */
 			private $cache;
 
-			/** @var \PHPStan\Broker\Broker */
-			public $broker;
+			/** @var ReflectionProvider */
+			public $reflectionProvider;
 
 			public function __construct(
 				Parser $parser,
@@ -179,7 +186,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$declaringClass,
 					$declaringTrait,
 					$reflection,
-					$this->broker,
+					$this->reflectionProvider,
 					$this->parser,
 					$this->functionCallStatementFinder,
 					$this->cache,
@@ -272,19 +279,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, []));
-		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
-		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider(
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicMethodReturnTypeExtensions, $this->getDynamicMethodReturnTypeExtensions()),
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions())
-		);
-		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider(
-			$this->getOperatorTypeSpecifyingExtensions()
-		);
-		$broker = new Broker(
+		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
+		$reflectionProvider = new RuntimeReflectionProvider(
 			$classReflectionExtensionRegistryProvider,
-			$dynamicReturnTypeExtensionRegistryProvider,
-			$operatorTypeSpecifyingExtensionRegistryProvider,
 			$functionReflectionFactory,
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
@@ -295,9 +292,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			self::getContainer()->getByType(StubPhpDocProvider::class),
 			self::getContainer()->getParameter('universalObjectCratesClasses')
 		);
-		$methodReflectionFactory->broker = $broker;
-		$classReflectionExtensionRegistryProvider->setBroker($broker);
-		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $fileTypeMapper, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $broker, true);
+		$methodReflectionFactory->reflectionProvider = $reflectionProvider;
+		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $fileTypeMapper, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $reflectionProvider, true);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new PhpDefectClassReflectionExtension(self::getContainer()->getByType(TypeStringResolver::class), $annotationsPropertiesClassReflectionExtension));
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new UniversalObjectCratesClassReflectionExtension([\stdClass::class]));
@@ -305,12 +301,16 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
 
-		$dynamicReturnTypeExtensionRegistryProvider->setBroker($broker);
-		$dynamicReturnTypeExtensionRegistryProvider->setReflectionProvider($broker);
+		return $reflectionProvider;
+	}
 
-		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($broker);
+	private function getClassReflectionExtensionRegistryProvider(): DirectClassReflectionExtensionRegistryProvider
+	{
+		if ($this->classReflectionExtensionRegistryProvider === null) {
+			$this->classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
+		}
 
-		return $broker;
+		return $this->classReflectionExtensionRegistryProvider;
 	}
 
 	public function createScopeFactory(Broker $broker, TypeSpecifier $typeSpecifier): ScopeFactory

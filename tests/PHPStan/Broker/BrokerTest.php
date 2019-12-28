@@ -15,6 +15,7 @@ use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\FunctionReflectionFactory;
+use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Type\FileTypeMapper;
 
@@ -37,10 +38,8 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider([], [], []);
 		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider([]);
 
-		$this->broker = new Broker(
+		$reflectionProvider = new RuntimeReflectionProvider(
 			$classReflectionExtensionRegistryProvider,
-			$dynamicReturnTypeExtensionRegistryProvider,
-			$operatorTypeSpecifyingExtensionRegistryProvider,
 			$this->createMock(FunctionReflectionFactory::class),
 			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
@@ -50,6 +49,11 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			$relativePathHelper,
 			self::getContainer()->getByType(StubPhpDocProvider::class),
 			[]
+		);
+		$this->broker = new Broker(
+			$reflectionProvider,
+			$dynamicReturnTypeExtensionRegistryProvider,
+			$operatorTypeSpecifyingExtensionRegistryProvider
 		);
 		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
 		$dynamicReturnTypeExtensionRegistryProvider->setBroker($this->broker);

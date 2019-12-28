@@ -92,6 +92,7 @@ jobs:
         - echo 'extension_dir=ext' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_curl.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_mbstring.dll' >> 'C:\tools\php\php.ini'
+        -- echo 'extension=php_openssl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
       script:
         - vendor/bin/phing tests
@@ -110,6 +111,7 @@ jobs:
         - echo 'extension_dir=ext' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_curl.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_mbstring.dll' >> 'C:\tools\php\php.ini'
+        - echo 'extension=php_openssl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
       script:
         - vendor/bin/phing tests
@@ -128,6 +130,7 @@ jobs:
         - echo 'extension_dir=ext' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_curl.dll' >> 'C:\tools\php\php.ini'
         - echo 'extension=php_mbstring.dll' >> 'C:\tools\php\php.ini'
+        - echo 'extension=php_openssl.dll' >> 'C:\tools\php\php.ini'
         - export PATH=/c/tools/php:$PATH
       script:
         - vendor/bin/phing tests

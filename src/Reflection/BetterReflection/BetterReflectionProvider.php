@@ -334,8 +334,8 @@ class BetterReflectionProvider implements ReflectionProvider
 	{
 		return $this->resolveName($nameNode, function (string $name) use ($scope): bool {
 			$isCompilerHaltOffset = $name === '__COMPILER_HALT_OFFSET__';
-			if ($isCompilerHaltOffset && $scope !== null && $this->fileHasCompilerHaltStatementCalls($scope->getFile())) {
-				return true;
+			if ($isCompilerHaltOffset && $scope !== null) {
+				return $this->fileHasCompilerHaltStatementCalls($scope->getFile());
 			}
 
 			try {

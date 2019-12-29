@@ -348,6 +348,17 @@ services:
 		class: PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
 
 	-
+		class: PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor
+
+	-
+		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
+		arguments:
+			phpParser: @phpParserDecorator
+
+	-
+		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory
+
+	-
 		class: PHPStan\Reflection\Php\PhpClassReflectionExtension
 		arguments:
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%

@@ -80,8 +80,7 @@ jobs:
           fi
     - stage: test
       os: windows
-      dist: 1803-containers
-      language: sh # No PHP currently
+      language: shell # No PHP currently
       env: PHP_VERSION=7.1.32
       install:
         - choco install php --version=${PHP_VERSION} --package-parameters="/InstallDir:c:\tools\php"
@@ -99,8 +98,7 @@ jobs:
         - vendor/bin/phing phpstan
     - stage: test
       os: windows
-      dist: 1803-containers
-      language: sh # No PHP currently
+      language: shell # No PHP currently
       env: PHP_VERSION=7.2.23
       install:
         - choco install php --version=${PHP_VERSION} --package-parameters="/InstallDir:c:\tools\php"
@@ -118,8 +116,7 @@ jobs:
         - vendor/bin/phing phpstan
     - stage: test
       os: windows
-      dist: 1803-containers
-      language: sh # No PHP currently
+      language: shell # No PHP currently
       env: PHP_VERSION=7.3.10
       install:
         - choco install php --version=${PHP_VERSION} --package-parameters="/InstallDir:c:\tools\php"

@@ -8,6 +8,7 @@ parameters:
 	featureToggles:
 		disableRobotLoader: false
 		staticReflectionForPhpParser: false
+		disableRuntimeReflectionProvider: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -895,6 +896,7 @@ services:
 			parser: @phpParserDecorator
 			phpParserReflectionProvider: @phpParserReflectionProvider
 			enableStaticReflectionForPhpParser: %featureToggles.staticReflectionForPhpParser%
+			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	reflectionProvider:
 		factory: @PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory::create

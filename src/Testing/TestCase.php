@@ -228,6 +228,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			},
 			$this->createMock(ReflectionProvider::class),
+			false,
 			false
 		);
 

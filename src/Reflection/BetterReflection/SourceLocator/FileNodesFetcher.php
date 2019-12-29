@@ -36,7 +36,7 @@ class FileNodesFetcher
 
 		/** @var \PhpParser\Node[] $ast */
 		$ast = $this->phpParser->parse($contents);
-		$this->cachingVisitor->reset();
+		$this->cachingVisitor->reset($fileName);
 		$nodeTraverser->traverse($ast);
 
 		$classNodes = [];

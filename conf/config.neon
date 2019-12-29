@@ -356,6 +356,9 @@ services:
 			phpParser: @phpParserDecorator
 
 	-
+		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectoriesSourceLocatorFactory
+
+	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory
 
 	-

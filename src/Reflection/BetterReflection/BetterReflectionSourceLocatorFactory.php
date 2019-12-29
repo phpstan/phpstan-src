@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectoriesSourceLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
@@ -24,6 +25,9 @@ class BetterReflectionSourceLocatorFactory
 
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
 	private $optimizedSingleFileSourceLocatorRepository;
+
+	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectoriesSourceLocatorFactory */
+	private $optimizedDirectoriesSourceLocatorFactory;
 
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
@@ -54,6 +58,7 @@ class BetterReflectionSourceLocatorFactory
 		\PhpParser\Parser $parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
+		OptimizedDirectoriesSourceLocatorFactory $optimizedDirectoriesSourceLocatorFactory,
 		Container $container,
 		array $autoloadDirectories,
 		array $autoloadFiles,
@@ -65,6 +70,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->parser = $parser;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
+		$this->optimizedDirectoriesSourceLocatorFactory = $optimizedDirectoriesSourceLocatorFactory;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
 		$this->autoloadFiles = $autoloadFiles;
@@ -108,7 +114,7 @@ class BetterReflectionSourceLocatorFactory
 
 		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories));
 		if (count($directories) > 0) {
-			$locators[] = new \Roave\BetterReflection\SourceLocator\Type\DirectoriesSourceLocator($directories, $astLocator);
+			$locators[] = $this->optimizedDirectoriesSourceLocatorFactory->create($directories);
 		}
 
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);

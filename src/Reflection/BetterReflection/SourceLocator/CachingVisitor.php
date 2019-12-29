@@ -11,6 +11,9 @@ use Roave\BetterReflection\Util\ConstantNodeChecker;
 class CachingVisitor extends NodeVisitorAbstract
 {
 
+	/** @var string */
+	private $fileName;
+
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
 	private $classNodes;
 
@@ -33,7 +36,8 @@ class CachingVisitor extends NodeVisitorAbstract
 			if ($node->name !== null) {
 				$this->classNodes[$node->namespacedName->toString()] = new FetchedNode(
 					$node,
-					$this->currentNamespaceNode
+					$this->currentNamespaceNode,
+					$this->fileName
 				);
 			}
 
@@ -43,7 +47,8 @@ class CachingVisitor extends NodeVisitorAbstract
 		if ($node instanceof \PhpParser\Node\Stmt\Function_) {
 			$this->functionNodes[$node->namespacedName->toString()] = new FetchedNode(
 				$node,
-				$this->currentNamespaceNode
+				$this->currentNamespaceNode,
+				$this->fileName
 			);
 
 			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
@@ -53,7 +58,8 @@ class CachingVisitor extends NodeVisitorAbstract
 			foreach ($node->consts as $constNode) {
 				$this->constantNodes[$constNode->namespacedName->toString()] = new FetchedNode(
 					$constNode,
-					$this->currentNamespaceNode
+					$this->currentNamespaceNode,
+					$this->fileName
 				);
 			}
 
@@ -78,7 +84,8 @@ class CachingVisitor extends NodeVisitorAbstract
 
 			$constantNode = new FetchedNode(
 				$node,
-				$this->currentNamespaceNode
+				$this->currentNamespaceNode,
+				$this->fileName
 			);
 			$this->constantNodes[$constantName] = $constantNode;
 
@@ -133,11 +140,12 @@ class CachingVisitor extends NodeVisitorAbstract
 		return $this->constantNodes;
 	}
 
-	public function reset(): void
+	public function reset(string $fileName): void
 	{
 		$this->classNodes = [];
 		$this->functionNodes = [];
 		$this->constantNodes = [];
+		$this->fileName = $fileName;
 	}
 
 }

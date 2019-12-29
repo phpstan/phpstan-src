@@ -935,3 +935,17 @@ class InvalidateAfterCallingSideEffectsUserlandMethod
 	}
 
 }
+
+abstract class RandomAbstractClass {}
+
+class AvoidRegressionBecauseThisWasReturningAnErrorInPhpstan11_5
+{
+	private const MAPPING = [\stdClass::class, RandomAbstractClass::class];
+
+	public function test(int $key)
+	{
+		if (is_subclass_of(self::MAPPING[$key], RandomAbstractClass::class) === false) {
+			return;
+		}
+	}
+}

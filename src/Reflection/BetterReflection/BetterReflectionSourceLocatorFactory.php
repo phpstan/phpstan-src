@@ -3,7 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use PHPStan\DependencyInjection\Container;
-use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -22,8 +22,8 @@ class BetterReflectionSourceLocatorFactory
 	/** @var PhpStormStubsSourceStubber */
 	private $phpStormStubsSourceStubber;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory */
-	private $optimizedSingleFileSourceLocatorFactory;
+	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
+	private $optimizedSingleFileSourceLocatorRepository;
 
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
@@ -53,7 +53,7 @@ class BetterReflectionSourceLocatorFactory
 	public function __construct(
 		\PhpParser\Parser $parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
-		OptimizedSingleFileSourceLocatorFactory $optimizedSingleFileSourceLocatorFactory,
+		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		Container $container,
 		array $autoloadDirectories,
 		array $autoloadFiles,
@@ -64,7 +64,7 @@ class BetterReflectionSourceLocatorFactory
 	{
 		$this->parser = $parser;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
-		$this->optimizedSingleFileSourceLocatorFactory = $optimizedSingleFileSourceLocatorFactory;
+		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
 		$this->autoloadFiles = $autoloadFiles;
@@ -103,7 +103,7 @@ class BetterReflectionSourceLocatorFactory
 
 		$analysedFiles = array_unique(array_merge($analysedFiles, $this->autoloadFiles));
 		foreach ($analysedFiles as $analysedFile) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorFactory->create($analysedFile);
+			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
 		}
 
 		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories));

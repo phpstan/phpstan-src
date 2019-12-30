@@ -3,7 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use PHPStan\DependencyInjection\Container;
-use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectoriesSourceLocatorFactory;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
@@ -26,8 +26,8 @@ class BetterReflectionSourceLocatorFactory
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
 	private $optimizedSingleFileSourceLocatorRepository;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectoriesSourceLocatorFactory */
-	private $optimizedDirectoriesSourceLocatorFactory;
+	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory */
+	private $optimizedDirectorySourceLocatorFactory;
 
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
@@ -58,7 +58,7 @@ class BetterReflectionSourceLocatorFactory
 		\PhpParser\Parser $parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
-		OptimizedDirectoriesSourceLocatorFactory $optimizedDirectoriesSourceLocatorFactory,
+		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
 		Container $container,
 		array $autoloadDirectories,
 		array $autoloadFiles,
@@ -70,7 +70,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->parser = $parser;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
-		$this->optimizedDirectoriesSourceLocatorFactory = $optimizedDirectoriesSourceLocatorFactory;
+		$this->optimizedDirectorySourceLocatorFactory = $optimizedDirectorySourceLocatorFactory;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
 		$this->autoloadFiles = $autoloadFiles;
@@ -113,8 +113,8 @@ class BetterReflectionSourceLocatorFactory
 		}
 
 		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories));
-		if (count($directories) > 0) {
-			$locators[] = $this->optimizedDirectoriesSourceLocatorFactory->create($directories);
+		foreach ($directories as $directory) {
+			$locators[] = $this->optimizedDirectorySourceLocatorFactory->create($directory);
 		}
 
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);

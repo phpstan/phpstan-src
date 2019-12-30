@@ -12,7 +12,7 @@ use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 use function array_key_exists;
 
-class OptimizedDirectoriesSourceLocator implements SourceLocator
+class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher */
@@ -21,8 +21,8 @@ class OptimizedDirectoriesSourceLocator implements SourceLocator
 	/** @var \PHPStan\File\FileFinder */
 	private $fileFinder;
 
-	/** @var string[] */
-	private $directories;
+	/** @var string */
+	private $directory;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
 	private $classNodes = [];
@@ -39,21 +39,15 @@ class OptimizedDirectoriesSourceLocator implements SourceLocator
 	/** @var bool */
 	private $initialized = false;
 
-	/**
-	 * OptimizedDirectoriesSourceLocator constructor.
-	 *
-	 * @param \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher $fileNodesFetcher
-	 * @param string[] $directories
-	 */
 	public function __construct(
 		FileNodesFetcher $fileNodesFetcher,
 		FileFinder $fileFinder,
-		array $directories
+		string $directory
 	)
 	{
 		$this->fileNodesFetcher = $fileNodesFetcher;
 		$this->fileFinder = $fileFinder;
-		$this->directories = $directories;
+		$this->directory = $directory;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
@@ -90,7 +84,7 @@ class OptimizedDirectoriesSourceLocator implements SourceLocator
 			return;
 		}
 
-		$fileFinderResult = $this->fileFinder->findFiles($this->directories);
+		$fileFinderResult = $this->fileFinder->findFiles([$this->directory]);
 		foreach ($fileFinderResult->getFiles() as $file) {
 			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 			$locatedSource = $fetchedNodesResult->getLocatedSource();

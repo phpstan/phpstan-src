@@ -1,0 +1,12 @@
+# WARNING - This isn't ready for use
+
+parameters:
+	featureToggles:
+		disableRobotLoader: true
+		staticReflectionForPhpParser: true
+		disableRuntimeReflectionProvider: true
+
+services:
+	phpParserReflectionProvider:
+		factory: @betterReflectionProvider
+		arguments!: []

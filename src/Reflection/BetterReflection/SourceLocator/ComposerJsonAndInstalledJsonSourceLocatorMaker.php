@@ -37,7 +37,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$installedJsonPath = $installationPath . '/vendor/composer/installed.json';
 
 		$composerJsonContents = file_get_contents($composerJsonPath);
-		if ($composerJsonContents === null) {
+		if ($composerJsonContents === false) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 

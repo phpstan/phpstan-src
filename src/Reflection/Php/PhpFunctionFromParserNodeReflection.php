@@ -134,7 +134,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->phpDocReturnType ?? new MixedType(),
-					$this->realReturnType ?? new MixedType()
+					$this->realReturnType
 				),
 			];
 		}

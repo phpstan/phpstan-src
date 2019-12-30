@@ -15,7 +15,7 @@
 		"nette/schema": "^1.0",
 		"nette/utils": "^3.0",
 		"nikic/php-parser": "^4.3.0",
-		"ondrejmirtes/better-reflection": "^3.5.2",
+		"ondrejmirtes/better-reflection": "^3.5.3",
 		"phpstan/phpdoc-parser": "^0.4.2",
 		"symfony/console": "^4.3",
 		"symfony/finder": "^4.3"

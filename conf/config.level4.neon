@@ -8,6 +8,7 @@ rules:
 	- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
 	- PHPStan\Rules\Comparison\ElseIfConstantConditionRule
 	- PHPStan\Rules\Comparison\IfConstantConditionRule
+	- PHPStan\Rules\Comparison\InvalidNullCoalesce
 	- PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule
 	- PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
 	- PHPStan\Rules\Comparison\UnreachableIfBranchesRule

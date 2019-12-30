@@ -3,14 +3,13 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use PHPStan\DependencyInjection\Container;
-use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory;
+use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\Composer\Factory\MakeLocatorForComposerJsonAndInstalledJson;
 use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
@@ -29,6 +28,9 @@ class BetterReflectionSourceLocatorFactory
 
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository */
 	private $optimizedDirectorySourceLocatorRepository;
+
+	/** @var ComposerJsonAndInstalledJsonSourceLocatorMaker */
+	private $composerJsonAndInstalledJsonSourceLocatorMaker;
 
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
@@ -60,6 +62,7 @@ class BetterReflectionSourceLocatorFactory
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
+		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		Container $container,
 		array $autoloadDirectories,
 		array $autoloadFiles,
@@ -72,6 +75,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
+		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
 		$this->autoloadFiles = $autoloadFiles;
@@ -82,14 +86,10 @@ class BetterReflectionSourceLocatorFactory
 
 	public function create(): SourceLocator
 	{
-		$astLocator = new Locator($this->parser, function (): FunctionReflector {
-			return $this->container->getService('betterReflectionFunctionReflector');
-		});
-
 		$locators = [];
 
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
-			$locators[] = (new MakeLocatorForComposerJsonAndInstalledJson())($composerAutoloaderProjectPath, $astLocator);
+			$locators[] = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
 		}
 
 		$analysedDirectories = [];
@@ -118,6 +118,9 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
 		}
 
+		$astLocator = new Locator($this->parser, function (): FunctionReflector {
+			return $this->container->getService('betterReflectionFunctionReflector');
+		});
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));

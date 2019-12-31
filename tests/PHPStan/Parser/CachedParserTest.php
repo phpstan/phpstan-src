@@ -32,7 +32,7 @@ class CachedParserTest extends \PHPUnit\Framework\TestCase
 
 		$this->assertEquals(
 			$cachedNodesByStringCountMax,
-			$parser->getCachedNodesByStingCountMax()
+			$parser->getCachedNodesByStringCountMax()
 		);
 
 		// Add files to cache

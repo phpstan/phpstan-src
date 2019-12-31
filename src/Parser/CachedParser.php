@@ -102,7 +102,7 @@ class CachedParser implements Parser
 		return $this->cachedNodesByStringCount;
 	}
 
-	public function getCachedNodesByStingCountMax(): int
+	public function getCachedNodesByStringCountMax(): int
 	{
 		return $this->cachedNodesByStringCountMax;
 	}

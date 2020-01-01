@@ -31,7 +31,7 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 		string $topic
 	): void
 	{
-		$file = sprintf('%s/%s.php', $this->getDataPath(), $topic);
+		$file = sprintf('%s' . DIRECTORY_SEPARATOR . '%s.php', $this->getDataPath(), $topic);
 		$command = escapeshellcmd($this->getPhpStanExecutablePath());
 		$configPath = $this->getPhpStanConfigPath();
 		$fileHelper = new FileHelper(__DIR__ . '/../..');

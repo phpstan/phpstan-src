@@ -29,7 +29,7 @@ class FileNodeTest extends RuleTestCase
 			public function processNode(Node $node, Scope $scope): array
 			{
 				$nodes = $node->getNodes();
-				$pathHelper = new SimpleRelativePathHelper(__DIR__ . '/data');
+				$pathHelper = new SimpleRelativePathHelper(__DIR__ . DIRECTORY_SEPARATOR . 'data');
 				if (!isset($nodes[0])) {
 					return [
 						RuleErrorBuilder::message(sprintf('File %s is empty.', $pathHelper->getRelativePath($scope->getFile())))->line(1)->build(),

@@ -50,12 +50,16 @@ class BetterReflectionSourceLocatorFactory
 	/** @var string[] */
 	private $analysedPathsFromConfig;
 
+	/** @var bool */
+	private $enableScanningPaths;
+
 	/**
 	 * @param string[] $autoloadDirectories
 	 * @param string[] $autoloadFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
+	 * @param bool $enableScanningPaths
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
@@ -68,7 +72,8 @@ class BetterReflectionSourceLocatorFactory
 		array $autoloadFiles,
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths,
-		array $analysedPathsFromConfig
+		array $analysedPathsFromConfig,
+		bool $enableScanningPaths
 	)
 	{
 		$this->parser = $parser;
@@ -82,6 +87,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->analysedPaths = $analysedPaths;
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
+		$this->enableScanningPaths = $enableScanningPaths;
 	}
 
 	public function create(): SourceLocator
@@ -92,30 +98,32 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
 		}
 
-		$analysedDirectories = [];
-		$analysedFiles = [];
+		if ($this->enableScanningPaths) {
+			$analysedDirectories = [];
+			$analysedFiles = [];
 
-		foreach (array_merge($this->analysedPaths, $this->analysedPathsFromConfig) as $analysedPath) {
-			if (is_file($analysedPath)) {
-				$analysedFiles[] = $analysedPath;
-				continue;
+			foreach (array_merge($this->analysedPaths, $this->analysedPathsFromConfig) as $analysedPath) {
+				if (is_file($analysedPath)) {
+					$analysedFiles[] = $analysedPath;
+					continue;
+				}
+
+				if (!is_dir($analysedPath)) {
+					continue;
+				}
+
+				$analysedDirectories[] = $analysedPath;
 			}
 
-			if (!is_dir($analysedPath)) {
-				continue;
+			$analysedFiles = array_unique(array_merge($analysedFiles, $this->autoloadFiles));
+			foreach ($analysedFiles as $analysedFile) {
+				$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
 			}
 
-			$analysedDirectories[] = $analysedPath;
-		}
-
-		$analysedFiles = array_unique(array_merge($analysedFiles, $this->autoloadFiles));
-		foreach ($analysedFiles as $analysedFile) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
-		}
-
-		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories));
-		foreach ($directories as $directory) {
-			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
+			$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories));
+			foreach ($directories as $directory) {
+				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
+			}
 		}
 
 		$astLocator = new Locator($this->parser, function (): FunctionReflector {

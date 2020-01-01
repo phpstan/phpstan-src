@@ -4,6 +4,7 @@ parameters:
 	featureToggles:
 		disableRobotLoader: true
 		disableRuntimeReflectionProvider: true
+		enableScanningPaths: true
 
 services:
 	phpParserReflectionProvider:

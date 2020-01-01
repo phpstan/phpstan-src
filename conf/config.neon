@@ -9,6 +9,7 @@ parameters:
 		disableRobotLoader: false
 		staticReflectionForPhpParser: true
 		disableRuntimeReflectionProvider: false
+		enableScanningPaths: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -358,6 +359,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
+		arguments:
+			enableScanningPaths: %featureToggles.enableScanningPaths%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory
@@ -966,6 +969,7 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
+			enableScanningPaths: %featureToggles.enableScanningPaths%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

@@ -20,15 +20,20 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory */
 	private $optimizedPsrAutoloaderLocatorFactory;
 
+	/** @var bool */
+	private $enableScanningPaths;
+
 	public function __construct(
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
-		OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory
+		OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
+		bool $enableScanningPaths
 	)
 	{
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->optimizedPsrAutoloaderLocatorFactory = $optimizedPsrAutoloaderLocatorFactory;
+		$this->enableScanningPaths = $enableScanningPaths;
 	}
 
 	public function create(string $installationPath): SourceLocator
@@ -98,12 +103,14 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			))
 		);
 
-		foreach ($classMapDirectories as $classMapDirectory) {
-			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
-		}
+		if ($this->enableScanningPaths) {
+			foreach ($classMapDirectories as $classMapDirectory) {
+				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
+			}
 
-		foreach (array_merge($classMapFiles, $filePaths) as $file) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($file);
+			foreach (array_merge($classMapFiles, $filePaths) as $file) {
+				$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($file);
+			}
 		}
 
 		return new AggregateSourceLocator($locators);

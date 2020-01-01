@@ -21,6 +21,8 @@ env:
 before_script:
   - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
   - composer update --no-interaction
+
+before_install:
   - git config --global core.autocrlf false
 
 script:

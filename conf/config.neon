@@ -7,7 +7,7 @@ parameters:
 	paths: []
 	featureToggles:
 		disableRobotLoader: false
-		staticReflectionForPhpParser: false
+		staticReflectionForPhpParser: true
 		disableRuntimeReflectionProvider: false
 	fileExtensions:
 		- php

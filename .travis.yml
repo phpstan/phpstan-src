@@ -2,6 +2,9 @@ os: linux
 dist: xenial
 language: php
 
+git:
+  autocrlf: false
+
 stages:
   - test
   - name: phar
@@ -48,7 +51,6 @@ jobs:
           openssl aes-256-cbc -K $encrypted_bd816b4f73f9_key -iv $encrypted_bd816b4f73f9_iv -in build/key.gpg.enc -out build/key.gpg -d && \
           gpg --batch --import build/key.gpg && \
           rm build/key.gpg
-        - git config --global core.autocrlf false
       script:
         - |
           composer install --working-dir=compiler && \

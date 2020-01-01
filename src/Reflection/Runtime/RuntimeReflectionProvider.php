@@ -142,6 +142,11 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		return $realName;
 	}
 
+	public function supportsAnonymousClasses(): bool
+	{
+		return true;
+	}
+
 	public function getAnonymousClassReflection(
 		\PhpParser\Node\Stmt\Class_ $classNode,
 		Scope $scope

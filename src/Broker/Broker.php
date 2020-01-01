@@ -77,6 +77,11 @@ class Broker implements ReflectionProvider
 		return $this->reflectionProvider->getClassName($className);
 	}
 
+	public function supportsAnonymousClasses(): bool
+	{
+		return true;
+	}
+
 	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		return $this->reflectionProvider->getAnonymousClassReflection($classNode, $scope);

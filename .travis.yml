@@ -21,6 +21,7 @@ env:
 before_script:
   - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
   - composer update --no-interaction
+  - git config --global core.autocrlf false
 
 script:
   - vendor/bin/phing

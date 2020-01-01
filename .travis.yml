@@ -41,6 +41,11 @@ jobs:
           ../bin/phpstan analyse -l 8 src tests && \
           php bin/compile && \
           ../tmp/phpstan.phar
+    - stage: test
+      php: 7.3
+      name: PHPStan with static reflection for PHP-Parser
+      script:
+        - vendor/bin/phing phpstan-static-php-parser
     - stage: phar
       php: 7.3
       before_install:

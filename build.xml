@@ -241,4 +241,25 @@
 		</exec>
 	</target>
 
+	<target name="phpstan-static-php-parser">
+		<exec
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg value="-d"/>
+			<arg value="memory_limit=1024M"/>
+			<arg path="bin/phpstan"/>
+			<arg value="analyse"/>
+			<arg value="-c"/>
+			<arg path="build/phpstan.static-php-parser.neon"/>
+			<arg value="-l"/>
+			<arg value="8"/>
+			<arg path="build/PHPStan"/>
+			<arg path="src"/>
+			<arg path="tests"/>
+		</exec>
+	</target>
+
 </project>

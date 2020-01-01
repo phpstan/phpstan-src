@@ -1,0 +1,6 @@
+includes:
+	- phpstan.neon
+
+parameters:
+	featureToggles:
+		staticReflectionForPhpParser: true

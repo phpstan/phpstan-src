@@ -82,7 +82,7 @@ class StubValidator
 		$errors = [];
 		foreach ($this->stubFiles as $stubFile) {
 			$tmpErrors = $fileAnalyser->analyseFile(
-				$stubFile,
+				str_replace(DIRECTORY_SEPARATOR, '/', $stubFile),
 				$ruleRegistry,
 				static function (): void {
 				}

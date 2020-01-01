@@ -160,24 +160,24 @@ class CommandHelperTest extends TestCase
 			[
 				__DIR__ . '/relative-paths/root.neon',
 				[
-					'bootstrap' => __DIR__ . '/relative-paths/here.php',
+					'bootstrap' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 					'autoload_files' => [
-						__DIR__ . '/relative-paths/here.php',
-						__DIR__ . '/relative-paths/test/there.php',
-						__DIR__ . '/up.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'up.php',
 					],
 					'autoload_directories' => [
-						__DIR__ . '/relative-paths/src',
-						__DIR__ . '/relative-paths',
-						realpath(__DIR__ . '/../../../conf'),
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths',
+						realpath(__DIR__ . '/../../../') . '/conf',
 					],
 					'paths' => [
-						__DIR__ . '/relative-paths/src',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
 					],
-					'memoryLimitFile' => __DIR__ . '/relative-paths/.memory_limit',
+					'memoryLimitFile' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . '.memory_limit',
 					'excludes_analyse' => [
-						__DIR__ . '/relative-paths/src',
-						__DIR__ . '/relative-paths/src/*/data',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'data',
 						'*/src/*/data',
 					],
 				],
@@ -186,20 +186,20 @@ class CommandHelperTest extends TestCase
 				__DIR__ . '/relative-paths/nested/nested.neon',
 				[
 					'autoload_files' => [
-						__DIR__ . '/relative-paths/nested/here.php',
-						__DIR__ . '/relative-paths/nested/test/there.php',
-						__DIR__ . '/relative-paths/up.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'here.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'up.php',
 					],
 					'ignoreErrors' => [
 						[
 							'message' => '#aaa#',
-							'path' => __DIR__ . '/relative-paths/nested/src/aaa.php',
+							'path' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'aaa.php',
 						],
 						[
 							'message' => '#bbb#',
 							'paths' => [
-								__DIR__ . '/relative-paths/src/aaa.php',
-								__DIR__ . '/relative-paths/nested/src/bbb.php',
+								__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'aaa.php',
+								__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'bbb.php',
 							],
 						],
 					],

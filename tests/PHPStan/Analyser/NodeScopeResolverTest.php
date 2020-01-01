@@ -8039,16 +8039,48 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'filter_var($mixed, FILTER_VALIDATE_BOOLEAN)',
 			],
 			[
+				'bool|null',
+				'filter_var($mixed, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'bool|null',
+				'filter_var($mixed, FILTER_VALIDATE_BOOLEAN ,["flags" => FILTER_NULL_ON_FAILURE])',
+			],
+			[
 				'string|false',
 				'filter_var($mixed, FILTER_VALIDATE_EMAIL)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_EMAIL, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_EMAIL ,["flags" => FILTER_NULL_ON_FAILURE])',
 			],
 			[
 				'float|false',
 				'filter_var($mixed, FILTER_VALIDATE_FLOAT)',
 			],
 			[
+				'float|null',
+				'filter_var($mixed, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'float|null',
+				'filter_var($mixed, FILTER_VALIDATE_FLOAT ,["flags" => FILTER_NULL_ON_FAILURE])',
+			],
+			[
 				'int|false',
 				'filter_var($mixed, FILTER_VALIDATE_INT)',
+			],
+			[
+				'int|null',
+				'filter_var($mixed, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'int|null',
+				'filter_var($mixed, FILTER_VALIDATE_INT ,["flags" => FILTER_NULL_ON_FAILURE])',
 			],
 			[
 				'string|false',
@@ -8056,15 +8088,51 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				'string|false',
+				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_IP ,["flags" => FILTER_NULL_ON_FAILURE])',
+			],
+			[
+				'string|false',
 				'filter_var($mixed, FILTER_VALIDATE_MAC)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_MAC, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_MAC ,["flags" => FILTER_NULL_ON_FAILURE])',
 			],
 			[
 				'string|false',
 				'filter_var($mixed, FILTER_VALIDATE_REGEXP)',
 			],
 			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_REGEXP, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_REGEXP ,["flags" => FILTER_NULL_ON_FAILURE])',
+			],
+			[
 				'string|false',
 				'filter_var($mixed, FILTER_VALIDATE_URL)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_URL, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_URL ,["flags" => FILTER_NULL_ON_FAILURE])',
 			],
 		];
 	}

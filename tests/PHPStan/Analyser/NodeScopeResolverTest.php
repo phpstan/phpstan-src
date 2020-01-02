@@ -8007,6 +8007,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'filter_var($mixed, FILTER_SANITIZE_EMAIL)',
 			],
 			[
+				'array<string|false>',
+				'filter_var($mixed, FILTER_SANITIZE_EMAIL, FILTER_FORCE_ARRAY)',
+			],
+			[
 				'string|false',
 				'filter_var($mixed, FILTER_SANITIZE_ENCODED)',
 			],
@@ -8066,6 +8070,19 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'float|null',
 				'filter_var($mixed, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE)',
 			],
+
+			[
+				'array<float|false>',
+				'filter_var($mixed, FILTER_VALIDATE_FLOAT, FILTER_FORCE_ARRAY)',
+			],
+			[
+				'array<float|null>',
+				'filter_var($mixed, FILTER_VALIDATE_FLOAT, FILTER_FORCE_ARRAY | FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'array<float|null>',
+				'filter_var($mixed, FILTER_VALIDATE_FLOAT, $forceArrayFilter | $nullFilter)',
+			],
 			[
 				'float|null',
 				'filter_var($mixed, FILTER_VALIDATE_FLOAT ,["flags" => FILTER_NULL_ON_FAILURE])',
@@ -8088,11 +8105,23 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				'string|false',
+				'filter_var($mixed, $filterIp)',
+			],
+			[
+				'string|false',
 				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)',
 			],
 			[
 				'string|null',
 				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4)',
+			],
+			[
+				'array<string|null>',
+				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4 | FILTER_FORCE_ARRAY)',
 			],
 			[
 				'string|null',
@@ -8115,6 +8144,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'filter_var($mixed, FILTER_VALIDATE_REGEXP)',
 			],
 			[
+				'string|false',
+				'filter_var($mixed, FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/match/"]])',
+			],
+			[
 				'string|null',
 				'filter_var($mixed, FILTER_VALIDATE_REGEXP, FILTER_NULL_ON_FAILURE)',
 			],
@@ -8123,8 +8156,20 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'filter_var($mixed, FILTER_VALIDATE_REGEXP ,["flags" => FILTER_NULL_ON_FAILURE])',
 			],
 			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_REGEXP ,["flags" => FILTER_NULL_ON_FAILURE, "options" => ["regexp" => "/match/"]])',
+			],
+			[
 				'string|false',
 				'filter_var($mixed, FILTER_VALIDATE_URL)',
+			],
+			[
+				'string|false',
+				'filter_var($mixed, FILTER_VALIDATE_URL, $mixed)',
+			],
+			[
+				'string|false',
+				'filter_var($mixed, FILTER_VALIDATE_URL ,["flags" => $mixed])',
 			],
 			[
 				'string|null',
@@ -8132,7 +8177,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_URL, $nullFilter)',
+			],
+			[
+				'string|null',
 				'filter_var($mixed, FILTER_VALIDATE_URL ,["flags" => FILTER_NULL_ON_FAILURE])',
+			],
+			[
+				'string|null',
+				'filter_var($mixed, FILTER_VALIDATE_URL ,["flags" => $nullFilter])',
 			],
 		];
 	}

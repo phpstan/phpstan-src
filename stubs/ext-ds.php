@@ -29,7 +29,7 @@ interface Collection extends Traversable, Countable, JsonSerializable
 }
 
 /**
- * @template-covariant TValue
+ * @template TValue
  * @implements Sequence<TValue>
  * @implements ArrayAccess<int, TValue>
  * @implements IteratorAggregate<int, TValue>
@@ -67,7 +67,7 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 	}
 
 	/**
-	 * @template-covariant TNewValue
+	 * @template TNewValue
 	 * @param callable(TValue): TNewValue $callback
 	 * @return Deque<TNewValue>
 	 */
@@ -91,8 +91,8 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 }
 
 /**
- * @template-covariant TKey
- * @template-covariant TValue
+ * @template TKey
+ * @template TValue
  * @implements Collection<TValue>
  * @implements ArrayAccess<TKey, TValue>
  * @implements IteratorAggregate<TKey, TValue>
@@ -191,7 +191,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template-covariant TDefault
+	 * @template TDefault
 	 * @param TKey $key
 	 * @param TDefault $default
 	 * @return TValue|TDefault
@@ -209,7 +209,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template-covariant TNewValue
+	 * @template TNewValue
 	 * @param callable(TKey, TValue): TNewValue $callback
 	 * @return Map<TKey, TNewValue>
 	 */
@@ -240,7 +240,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template-covariant TCarry
+	 * @template TCarry
 	 * @param callable(TCarry, TKey, TValue): TCarry $callback
 	 * @param TCarry $initial
 	 * @return TCarry
@@ -250,7 +250,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template-covariant TDefault
+	 * @template TDefault
 	 * @param TKey $key
 	 * @param TDefault $default
 	 * @return TValue|TDefault
@@ -368,7 +368,7 @@ final class Pair implements JsonSerializable
 }
 
 /**
- * @template-covariant TValue
+ * @template TValue
  * @extends Collection<TValue>
  */
 interface Sequence extends Collection
@@ -426,7 +426,7 @@ interface Sequence extends Collection
 	public function last();
 
 	/**
-	 * @template-covariant TNewValue
+	 * @template TNewValue
 	 * @param callable(TValue): TNewValue $callback
 	 * @return Sequence<TNewValue>
 	 */
@@ -450,7 +450,7 @@ interface Sequence extends Collection
 	public function push(...$values);
 
 	/**
-	 * @template-covariant TCarry
+	 * @template TCarry
 	 * @param callable(TCarry, TValue): TCarry $callback
 	 * @param TCarry $initial
 	 * @return TCarry
@@ -504,7 +504,7 @@ interface Sequence extends Collection
 
 
 /**
- * @template-covariant TValue
+ * @template TValue
  * @implements Sequence<TValue>
  * @implements ArrayAccess<int, TValue>
  * @implements IteratorAggregate<int, TValue>
@@ -549,7 +549,7 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 }
 
 /**
- * @template-covariant TValue
+ * @template TValue
  * @implements Collection<TValue>
  * @implements ArrayAccess<int, TValue>
  * @implements Traversable<int, TValue>

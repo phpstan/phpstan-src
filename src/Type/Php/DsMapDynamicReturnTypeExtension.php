@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use Ds\Map;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
@@ -15,7 +14,7 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 
 	public function getClass(): string
 	{
-		return Map::class;
+		return 'Ds\Map';
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool

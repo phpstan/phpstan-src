@@ -32,7 +32,8 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 
 		$workingDirectory = __DIR__;
 		$relativePathHelper = new FuzzyRelativePathHelper($workingDirectory, DIRECTORY_SEPARATOR, []);
-		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($workingDirectory), $relativePathHelper);
+		$fileHelper = new FileHelper($workingDirectory);
+		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
 
 		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
 		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider([], [], []);
@@ -46,6 +47,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			self::getContainer()->getByType(\PhpParser\PrettyPrinter\Standard::class),
 			$anonymousClassNameHelper,
 			self::getContainer()->getByType(Parser::class),
+			$fileHelper,
 			$relativePathHelper,
 			self::getContainer()->getByType(StubPhpDocProvider::class)
 		);

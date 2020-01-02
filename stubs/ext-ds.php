@@ -12,8 +12,7 @@ use Traversable;
 use UnderflowException;
 
 /**
- * @template TValue
- *
+ * @template-covariant TValue
  * @extends Traversable<mixed, TValue>
  */
 interface Collection extends Traversable, Countable, JsonSerializable
@@ -30,7 +29,7 @@ interface Collection extends Traversable, Countable, JsonSerializable
 }
 
 /**
- * @template TValue
+ * @template-covariant TValue
  * @implements Sequence<TValue>
  * @implements ArrayAccess<int, TValue>
  * @implements IteratorAggregate<int, TValue>
@@ -68,7 +67,7 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 	}
 
 	/**
-	 * @template TNewValue
+	 * @template-covariant TNewValue
 	 * @param callable(TValue): TNewValue $callback
 	 * @return Deque<TNewValue>
 	 */
@@ -92,9 +91,8 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 }
 
 /**
- * @template TKey
- * @template TValue
- *
+ * @template-covariant TKey
+ * @template-covariant TValue
  * @implements Collection<TValue>
  * @implements ArrayAccess<TKey, TValue>
  * @implements IteratorAggregate<TKey, TValue>
@@ -193,7 +191,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template TDefault
+	 * @template-covariant TDefault
 	 * @param TKey $key
 	 * @param TDefault $default
 	 * @return TValue|TDefault
@@ -211,7 +209,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template TNewValue
+	 * @template-covariant TNewValue
 	 * @param callable(TKey, TValue): TNewValue $callback
 	 * @return Map<TKey, TNewValue>
 	 */
@@ -242,7 +240,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template TCarry
+	 * @template-covariant TCarry
 	 * @param callable(TCarry, TKey, TValue): TCarry $callback
 	 * @param TCarry $initial
 	 * @return TCarry
@@ -252,7 +250,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @template TDefault
+	 * @template-covariant TDefault
 	 * @param TKey $key
 	 * @param TDefault $default
 	 * @return TValue|TDefault
@@ -338,8 +336,8 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 }
 
 /**
- * @template TKey
- * @template TValue
+ * @template-covariant TKey
+ * @template-covariant TValue
  */
 final class Pair implements JsonSerializable
 {
@@ -370,7 +368,7 @@ final class Pair implements JsonSerializable
 }
 
 /**
- * @template TValue
+ * @template-covariant TValue
  * @extends Collection<TValue>
  */
 interface Sequence extends Collection
@@ -428,7 +426,7 @@ interface Sequence extends Collection
 	public function last();
 
 	/**
-	 * @template TNewValue
+	 * @template-covariant TNewValue
 	 * @param callable(TValue): TNewValue $callback
 	 * @return Sequence<TNewValue>
 	 */
@@ -452,7 +450,7 @@ interface Sequence extends Collection
 	public function push(...$values);
 
 	/**
-	 * @template TCarry
+	 * @template-covariant TCarry
 	 * @param callable(TCarry, TValue): TCarry $callback
 	 * @param TCarry $initial
 	 * @return TCarry
@@ -506,7 +504,7 @@ interface Sequence extends Collection
 
 
 /**
- * @template TValue
+ * @template-covariant TValue
  * @implements Sequence<TValue>
  * @implements ArrayAccess<int, TValue>
  * @implements IteratorAggregate<int, TValue>
@@ -551,7 +549,7 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 }
 
 /**
- * @template TValue
+ * @template-covariant TValue
  * @implements Collection<TValue>
  * @implements ArrayAccess<int, TValue>
  * @implements Traversable<int, TValue>

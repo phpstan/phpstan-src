@@ -35,6 +35,10 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	public function __construct()
 	{
+		if (!defined('FILTER_SANITIZE_EMAIL')) {
+			return;
+		}
+
 		$booleanType = new BooleanType();
 		$floatType = new FloatType();
 		$intType = new IntegerType();
@@ -86,7 +90,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return strtolower($functionReflection->getName()) === 'filter_var';
+		return defined('FILTER_SANITIZE_EMAIL') && strtolower($functionReflection->getName()) === 'filter_var';
 	}
 
 	public function getTypeFromFunctionCall(

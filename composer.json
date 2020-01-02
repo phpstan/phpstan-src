@@ -35,8 +35,8 @@
 		"phpstan/phpstan-php-parser": "^0.12",
 		"phpstan/phpstan-phpunit": "^0.12",
 		"phpstan/phpstan-strict-rules": "^0.12",
-		"slevomat/coding-standard": "^4.7.2",
-		"squizlabs/php_codesniffer": "^3.3.2"
+		"slevomat/coding-standard": "^4.7.2||^5.0||^6.0",
+		"squizlabs/php_codesniffer": "^3.5.3"
 	},
 	"config": {
 		"platform": {

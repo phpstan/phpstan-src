@@ -32,6 +32,8 @@ interface Collection extends Traversable, Countable, JsonSerializable
 /**
  * @template TValue
  * @implements Sequence<TValue>
+ * @implements ArrayAccess<int, TValue>
+ * @implements IteratorAggregate<int, TValue>
  */
 final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 {
@@ -218,7 +220,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @return Sequence<Pair<Tkey, TValue>>
+	 * @return Sequence<Pair<TKey, TValue>>
 	 */
 	public function pairs(): Sequence
 	{
@@ -250,6 +252,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
+	 * @template TDefault
 	 * @param TKey $key
 	 * @param TDefault $default
 	 * @return TValue|TDefault
@@ -341,12 +344,12 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 final class Pair implements JsonSerializable
 {
 	/**
-	 * @param TKey $key
+	 * @var TKey
 	 */
 	public $key;
 
 	/**
-	 * @param TValue $value
+	 * @var TValue
 	 */
 	public $value;
 
@@ -505,6 +508,7 @@ interface Sequence extends Collection
 /**
  * @template TValue
  * @implements Sequence<TValue>
+ * @implements ArrayAccess<int, TValue>
  * @implements IteratorAggregate<int, TValue>
  */
 final class Vector implements IteratorAggregate, ArrayAccess, Sequence

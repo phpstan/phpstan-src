@@ -57,6 +57,7 @@ parameters:
 		- ../stubs/iterable.php
 		- ../stubs/ArrayObject.php
 		- ../stubs/WeakReference.php
+		- ../stubs/ext-ds.php
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
@@ -596,6 +597,11 @@ services:
 		class: PHPStan\Type\Php\CurlInitReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\DsMapDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
 
 	-
 		class: PHPStan\Type\Php\DioStatDynamicFunctionReturnTypeExtension

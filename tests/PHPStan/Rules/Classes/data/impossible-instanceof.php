@@ -375,3 +375,13 @@ class InvalidTypeTest
 		}
 	}
 }
+
+class InstanceofBenevolentUnionType
+{
+	public function doFoo(\SimpleXMLElement $xml)
+	{
+		echo $xml->branch1 instanceof \SimpleXMLElement;
+		echo $xml->branch2->branch3 instanceof \SimpleXMLElement;
+	}
+
+}

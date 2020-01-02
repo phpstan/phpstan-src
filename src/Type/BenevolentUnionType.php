@@ -42,4 +42,12 @@ class BenevolentUnionType extends UnionType
 		return TrinaryLogic::createNo();
 	}
 
+	/**
+	 * @param callable(Type $type): TrinaryLogic $getResult
+	 * @return TrinaryLogic
+	 */
+	protected function unionResults(callable $getResult): TrinaryLogic
+	{
+		return TrinaryLogic::maxMin(...array_map($getResult, $this->getTypes()));
+	}
 }

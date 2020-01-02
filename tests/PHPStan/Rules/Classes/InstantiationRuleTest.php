@@ -147,7 +147,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 					127,
 				],
 				[
-					DIRECTORY_SEPARATOR === '/' ? 'Class class@anonymous/tests/PHPStan/Rules/Classes/data/instantiation.php:137 constructor invoked with 3 parameters, 1 required.' : 'Class class@anonymous/tests\PHPStan\Rules\Classes\data\instantiation.php:137 constructor invoked with 3 parameters, 1 required.',
+					'Class class@anonymous/tests/PHPStan/Rules/Classes/data/instantiation.php:137 constructor invoked with 3 parameters, 1 required.',
 					137,
 				],
 				[

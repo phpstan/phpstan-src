@@ -8936,12 +8936,12 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				DIRECTORY_SEPARATOR === '/' ? '$this(AnonymousClass3301acd9e9d13ba9bbce9581cdb00699)' : '$this(AnonymousClass5052ee7b82e2136e86bd50a2b9fee7e0)',
+				'$this(AnonymousClass3301acd9e9d13ba9bbce9581cdb00699)',
 				'$this',
 				"'inside'",
 			],
 			[
-				DIRECTORY_SEPARATOR === '/' ? 'AnonymousClass3301acd9e9d13ba9bbce9581cdb00699' : 'AnonymousClass5052ee7b82e2136e86bd50a2b9fee7e0',
+				'AnonymousClass3301acd9e9d13ba9bbce9581cdb00699',
 				'$foo',
 				"'outside'",
 			],
@@ -8996,7 +8996,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				DIRECTORY_SEPARATOR === '/' ? '$this(AnonymousClass3de0a9734314db9dec21ba308363ff9a)' : '$this(AnonymousClass3ea972e5426463fa167b4e456b7d6202)',
+				'$this(AnonymousClass3de0a9734314db9dec21ba308363ff9a)',
 				'$this',
 			],
 		];

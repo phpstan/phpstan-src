@@ -33,7 +33,7 @@ class AnonymousClassNameHelper
 		}
 
 		$filename = $this->relativePathHelper->getRelativePath(
-			$this->fileHelper->normalizePath($filename)
+			$this->fileHelper->normalizePath($filename, '/')
 		);
 
 		return sprintf(

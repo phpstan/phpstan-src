@@ -38,7 +38,7 @@ class FileHelper
 		return rtrim($this->getWorkingDirectory(), '/\\') . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
 	}
 
-	public function normalizePath(string $originalPath): string
+	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
 		$matches = \Nette\Utils\Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');
 		if ($matches !== null) {
@@ -51,7 +51,7 @@ class FileHelper
 		$path = str_replace('\\', '/', $path);
 		$path = Strings::replace($path, '~/{2,}~', '/');
 
-		$pathRoot = strpos($path, '/') === 0 ? DIRECTORY_SEPARATOR : '';
+		$pathRoot = strpos($path, '/') === 0 ? $directorySeparator : '';
 		$pathParts = explode('/', trim($path, '/'));
 
 		$normalizedPathParts = [];
@@ -71,7 +71,7 @@ class FileHelper
 			}
 		}
 
-		return ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode(DIRECTORY_SEPARATOR, $normalizedPathParts);
+		return ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
 	}
 
 }

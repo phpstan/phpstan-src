@@ -40,9 +40,9 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			4,
 			0,
 			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . PHP_EOL .
-'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . PHP_EOL .
-'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . PHP_EOL .
-'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . PHP_EOL,
+			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . PHP_EOL .
+			'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . PHP_EOL .
+			'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . PHP_EOL,
 		];
 
 		yield [
@@ -51,7 +51,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			2,
 			'?:?:first generic error' . PHP_EOL .
-'?:?:second generic error' . PHP_EOL,
+			'?:?:second generic error' . PHP_EOL,
 		];
 
 		yield [
@@ -60,11 +60,11 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			4,
 			2,
 			'?:?:first generic error' . PHP_EOL .
-'?:?:second generic error' . PHP_EOL .
-'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . PHP_EOL .
-'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . PHP_EOL .
-'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . PHP_EOL .
-'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . PHP_EOL,
+		'?:?:second generic error' . PHP_EOL .
+		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . PHP_EOL .
+		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . PHP_EOL .
+		'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . PHP_EOL .
+		'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . PHP_EOL,
 		];
 	}
 

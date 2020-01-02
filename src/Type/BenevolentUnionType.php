@@ -50,4 +50,5 @@ class BenevolentUnionType extends UnionType
 	{
 		return TrinaryLogic::maxMin(...array_map($getResult, $this->getTypes()));
 	}
+
 }

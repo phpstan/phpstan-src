@@ -929,20 +929,20 @@ services:
 		autowired: false
 
 	betterReflectionClassReflector:
-		class: Roave\BetterReflection\Reflector\ClassReflector
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector
 		arguments:
 			sourceLocator: @betterReflectionSourceLocator
 		autowired: false
 
 	betterReflectionFunctionReflector:
-		class: Roave\BetterReflection\Reflector\FunctionReflector
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector
 		arguments:
 			classReflector: @betterReflectionClassReflector
 			sourceLocator: @betterReflectionSourceLocator
 		autowired: false
 
 	betterReflectionConstantReflector:
-		class: Roave\BetterReflection\Reflector\ConstantReflector
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector
 		arguments:
 			classReflector: @betterReflectionClassReflector
 			sourceLocator: @betterReflectionSourceLocator

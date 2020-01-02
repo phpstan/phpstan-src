@@ -4,10 +4,11 @@ namespace PHPStan\Reflection\ReflectionProvider;
 
 use PhpParser\Parser;
 use PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory;
+use PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector;
+use PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector;
+use PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
-use Roave\BetterReflection\Reflector\ClassReflector;
-use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -85,9 +86,9 @@ class ReflectionProviderFactory
 			$astLocator,
 			$this->phpStormStubsSourceStubber
 		));
-		$classReflector = new ClassReflector($sourceLocator);
-		$functionReflector = new FunctionReflector($sourceLocator, $classReflector);
-		$constantReflector = new ConstantReflector($sourceLocator, $classReflector);
+		$classReflector = new MemoizingClassReflector($sourceLocator);
+		$functionReflector = new MemoizingFunctionReflector($sourceLocator, $classReflector);
+		$constantReflector = new MemoizingConstantReflector($sourceLocator, $classReflector);
 
 		return $this->betterReflectionProviderFactory->create(
 			$functionReflector,

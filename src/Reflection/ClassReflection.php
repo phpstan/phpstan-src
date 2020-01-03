@@ -81,6 +81,9 @@ class ClassReflection implements ReflectionWithFilename
 	/** @var string|null */
 	private $cacheKey;
 
+	/** @var array<string, bool> */
+	private $subclasses = [];
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
@@ -439,11 +442,15 @@ class ClassReflection implements ReflectionWithFilename
 
 	public function isSubclassOf(string $className): bool
 	{
-		if (!$this->reflectionProvider->hasClass($className)) {
-			return false;
+		if (isset($this->subclasses[$className])) {
+			return $this->subclasses[$className];
 		}
 
-		return $this->reflection->isSubclassOf($className);
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return $this->subclasses[$className] = false;
+		}
+
+		return $this->subclasses[$className] = $this->reflection->isSubclassOf($className);
 	}
 
 	/**

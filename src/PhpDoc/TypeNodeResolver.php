@@ -191,7 +191,7 @@ class TypeNodeResolver
 				return new NeverType(true);
 
 			case 'list':
-				return new ErrorType();
+				return new ArrayType(new IntegerType(), new MixedType());
 		}
 
 		if ($nameScope->getClassName() !== null) {
@@ -313,6 +313,12 @@ class TypeNodeResolver
 				return new ArrayType($genericTypes[0], $genericTypes[1]);
 			}
 
+		} elseif ($mainTypeName === 'list') {
+			if (count($genericTypes) === 1) { // list<ValueType>
+				return new ArrayType(new IntegerType(), $genericTypes[0]);
+			}
+
+			return new ErrorType();
 		} elseif ($mainTypeName === 'iterable') {
 			if (count($genericTypes) === 1) { // iterable<ValueType>
 				return new IterableType(new MixedType(true), $genericTypes[0]);

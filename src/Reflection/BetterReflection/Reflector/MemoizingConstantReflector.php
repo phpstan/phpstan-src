@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\BetterReflection\Reflector;
 
 use Roave\BetterReflection\Reflection\Reflection;
 use Roave\BetterReflection\Reflector\ConstantReflector;
-use Throwable;
 
 final class MemoizingConstantReflector extends ConstantReflector
 {
@@ -22,7 +21,7 @@ final class MemoizingConstantReflector extends ConstantReflector
 	public function reflect(string $constantName): Reflection
 	{
 		if (isset($this->reflections[$constantName])) {
-			if ($this->reflections[$constantName] instanceof Throwable) {
+			if ($this->reflections[$constantName] instanceof \Throwable) {
 				throw $this->reflections[$constantName];
 			}
 			return $this->reflections[$constantName];
@@ -30,7 +29,7 @@ final class MemoizingConstantReflector extends ConstantReflector
 
 		try {
 			return $this->reflections[$constantName] = parent::reflect($constantName);
-		} catch (Throwable $e) {
+		} catch (\Throwable $e) {
 			$this->reflections[$constantName] = $e;
 			throw $e;
 		}

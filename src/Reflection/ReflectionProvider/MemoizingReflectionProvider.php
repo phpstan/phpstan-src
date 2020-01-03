@@ -23,9 +23,6 @@ class MemoizingReflectionProvider implements ReflectionProvider
 	/** @var array<string, string> */
 	private $classNames = [];
 
-	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $provider
-	 */
 	public function __construct(ReflectionProvider $provider)
 	{
 		$this->provider = $provider;

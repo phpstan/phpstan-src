@@ -127,3 +127,51 @@ function (YetAnotherClassExtendingInterfaceWithStubPhpDoc $stub): int
 {
 	return $stub->doFoo(); // implementation wins - string -> int mismatch reported
 };
+
+class YetYetAnotherClassExtendingInterfaceWithStubPhpDoc implements InterfaceWithStubPhpDoc
+{
+
+	public function doFoo()
+	{
+		throw new \Exception();
+	}
+
+}
+
+function (YetYetAnotherClassExtendingInterfaceWithStubPhpDoc $stub): int
+{
+	// return int should be inherited
+	$stub->doFoo() === [];
+	return $stub->doFoo(); // stub wins
+};
+
+interface InterfaceWithStubPhpDoc2
+{
+
+	public function doFoo();
+
+}
+
+function (InterfaceWithStubPhpDoc2 $stub): int
+{
+	// return int should be inherited
+	$stub->doFoo() === [];
+	return $stub->doFoo(); // stub wins
+};
+
+class YetYetAnotherClassExtendingInterfaceWithStubPhpDoc2 implements InterfaceWithStubPhpDoc2
+{
+
+	public function doFoo()
+	{
+		throw new \Exception();
+	}
+
+}
+
+function (YetYetAnotherClassExtendingInterfaceWithStubPhpDoc2 $stub): int
+{
+	// return int should be inherited
+	$stub->doFoo() === [];
+	return $stub->doFoo(); // stub wins
+};

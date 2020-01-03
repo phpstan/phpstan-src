@@ -52,3 +52,13 @@ class AnotherClassExtendingInterfaceWithStubPhpDoc implements InterfaceWithStubP
 {
 
 }
+
+interface InterfaceWithStubPhpDoc2
+{
+
+	/**
+	 * @return int
+	 */
+	public function doFoo();
+
+}

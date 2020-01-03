@@ -9801,7 +9801,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataPsalmPrefixedTagsWithUnresolvableTypes
 	 * @dataProvider dataComplexGenericsExample
 	 * @dataProvider dataBug2648
-     * @dataProvider dataBug2740s
+     * @dataProvider dataBug2740
      * @dataProvider dataListType
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType

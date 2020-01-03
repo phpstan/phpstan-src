@@ -817,7 +817,7 @@ class ClassReflection implements ReflectionWithFilename
 	/**
 	 * @return array<string,ClassReflection>
 	 */
-	private function getAncestors(): array
+	public function getAncestors(): array
 	{
 		$ancestors = $this->ancestors;
 

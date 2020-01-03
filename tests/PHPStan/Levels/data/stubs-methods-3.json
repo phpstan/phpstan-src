@@ -1,0 +1,22 @@
+[
+    {
+        "message": "Return type (string) of method StubsIntegrationTest\\AnotherInterfaceExtendingInterfaceWithStubPhpDoc::doFoo() should be compatible with return type (int) of method StubsIntegrationTest\\InterfaceWithStubPhpDoc::doFoo()",
+        "line": 68,
+        "ignorable": true
+    },
+    {
+        "message": "Anonymous function should return int but returns string.",
+        "line": 74,
+        "ignorable": true
+    },
+    {
+        "message": "Return type (string) of method StubsIntegrationTest\\YetAnotherClassExtendingInterfaceWithStubPhpDoc::doFoo() should be compatible with return type (int) of method StubsIntegrationTest\\InterfaceWithStubPhpDoc::doFoo()",
+        "line": 119,
+        "ignorable": true
+    },
+    {
+        "message": "Anonymous function should return int but returns string.",
+        "line": 128,
+        "ignorable": true
+    }
+]

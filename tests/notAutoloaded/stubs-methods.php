@@ -32,3 +32,23 @@ class Bar
 	}
 
 }
+
+interface InterfaceWithStubPhpDoc
+{
+
+	/**
+	 * @return int
+	 */
+	public function doFoo();
+
+}
+
+class ClassExtendingInterfaceWithStubPhpDoc implements InterfaceWithStubPhpDoc
+{
+
+}
+
+class AnotherClassExtendingInterfaceWithStubPhpDoc implements InterfaceWithStubPhpDoc
+{
+
+}

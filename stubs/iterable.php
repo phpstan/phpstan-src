@@ -57,16 +57,6 @@ class Generator implements Iterator
 {
 
 	/**
-	 * @return TValue
-	 */
-	public function current() {}
-
-	/**
-	 * @return TKey
-	 */
-	public function key() {}
-
-	/**
 	 * @return TReturn
 	 */
 	public function getReturn() {}
@@ -95,16 +85,6 @@ class SimpleXMLElement implements Traversable
 interface SeekableIterator extends Iterator
 {
 
-	/**
-	 * @return TValue
-	 */
-	public function current();
-
-	/**
-	 * @return TKey
-	 */
-	public function key();
-
 }
 
 /**
@@ -121,31 +101,6 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable, Seriali
 	 * @param int $flags
 	 */
 	public function __construct($array = array(), $flags = 0) { }
-
-	/**
-	 * @param TKey $index
-	 * @return bool
-	 */
-	public function offsetExists($index) { }
-
-	/**
-	 * @param TKey $index
-	 * @return TValue
-	 */
-	public function offsetGet($index) { }
-
-	/**
-	 * @param TKey $index
-	 * @param TValue $newval
-	 * @return void
-	 */
-	public function offsetSet($index, $newval) { }
-
-	/**
-	 * @param TKey $index
-	 * @return void
-	 */
-	public function offsetUnset($index) { }
 
 	/**
 	 * @param TValue $value
@@ -169,16 +124,6 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable, Seriali
 	 * @return void
 	 */
 	public function uksort($cmp_function) { }
-
-	/**
-	 * @return TValue
-	 */
-	public function current();
-
-	/**
-	 * @return TKey
-	 */
-	public function key();
 
 }
 

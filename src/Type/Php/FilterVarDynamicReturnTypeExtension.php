@@ -43,6 +43,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$stringType = new StringType();
 
 		$this->filterTypeMap = [
+			FILTER_UNSAFE_RAW => $stringType,
 			FILTER_SANITIZE_EMAIL => $stringType,
 			FILTER_SANITIZE_ENCODED => $stringType,
 			FILTER_SANITIZE_NUMBER_FLOAT => $stringType,
@@ -86,15 +87,14 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$filterArg = $functionCall->args[1] ?? null;
 		if ($filterArg === null) {
-			return $mixedType;
+			$filterValue = FILTER_DEFAULT;
+		} else {
+			$filterType = $scope->getType($filterArg->value);
+			if (!$filterType instanceof ConstantIntegerType) {
+				return $mixedType;
+			}
+			$filterValue = $filterType->getValue();
 		}
-
-		$filterType = $scope->getType($filterArg->value);
-		if (!$filterType instanceof ConstantIntegerType) {
-			return $mixedType;
-		}
-
-		$filterValue = $filterType->getValue();
 
 		$flagsArg = $functionCall->args[2] ?? null;
 		$inputType = $scope->getType($functionCall->args[0]->value);

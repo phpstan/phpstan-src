@@ -8004,6 +8004,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		$typesAndFilters = [
 			'string' => [
+				'FILTER_DEFAULT',
+				'FILTER_UNSAFE_RAW',
 				'FILTER_SANITIZE_EMAIL',
 				'FILTER_SANITIZE_ENCODED',
 				'FILTER_SANITIZE_NUMBER_FLOAT',
@@ -8095,6 +8097,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		yield 'default that is the same type as result' => [
 			'string',
 			'filter_var($mixed, FILTER_SANITIZE_URL, ["options" => ["default" => "foo"]])',
+		];
+
+		yield 'no second variable' => [
+			'string|false',
+			'filter_var($mixed)',
 		];
 	}
 

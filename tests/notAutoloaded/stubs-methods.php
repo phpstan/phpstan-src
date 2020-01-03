@@ -32,3 +32,61 @@ class Bar
 	}
 
 }
+
+interface InterfaceWithStubPhpDoc
+{
+
+	/**
+	 * @return int
+	 */
+	public function doFoo();
+
+}
+
+class ClassExtendingInterfaceWithStubPhpDoc implements InterfaceWithStubPhpDoc
+{
+
+}
+
+class AnotherClassExtendingInterfaceWithStubPhpDoc implements InterfaceWithStubPhpDoc
+{
+
+}
+
+interface InterfaceWithStubPhpDoc2
+{
+
+	/**
+	 * @return int
+	 */
+	public function doFoo();
+
+}
+
+class YetAnotherFoo
+{
+
+	/**
+	 * @param int $i
+	 * @return string
+	 */
+	public function doFoo($i)
+	{
+		return '';
+	}
+
+}
+
+class YetYetAnotherFoo
+{
+
+	/**
+	 * @param int $i
+	 * @return string
+	 */
+	public function doFoo($i)
+	{
+		return '';
+	}
+
+}

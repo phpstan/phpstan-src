@@ -81,6 +81,9 @@ class ClassReflection implements ReflectionWithFilename
 	/** @var string|null */
 	private $cacheKey;
 
+	/** @var array<string, bool> */
+	private $subclasses = [];
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
@@ -439,11 +442,15 @@ class ClassReflection implements ReflectionWithFilename
 
 	public function isSubclassOf(string $className): bool
 	{
-		if (!$this->reflectionProvider->hasClass($className)) {
-			return false;
+		if (isset($this->subclasses[$className])) {
+			return $this->subclasses[$className];
 		}
 
-		return $this->reflection->isSubclassOf($className);
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return $this->subclasses[$className] = false;
+		}
+
+		return $this->subclasses[$className] = $this->reflection->isSubclassOf($className);
 	}
 
 	/**
@@ -817,7 +824,7 @@ class ClassReflection implements ReflectionWithFilename
 	/**
 	 * @return array<string,ClassReflection>
 	 */
-	private function getAncestors(): array
+	public function getAncestors(): array
 	{
 		$ancestors = $this->ancestors;
 
@@ -826,25 +833,33 @@ class ClassReflection implements ReflectionWithFilename
 				$this->getName() => $this,
 			];
 
+			$addToAncestors = static function (string $name, ClassReflection $classReflection) use (&$ancestors): void {
+				if (array_key_exists($name, $ancestors)) {
+					return;
+				}
+
+				$ancestors[$name] = $classReflection;
+			};
+
 			foreach ($this->getInterfaces() as $interface) {
-				$ancestors[$interface->getName()] = $interface;
+				$addToAncestors($interface->getName(), $interface);
 				foreach ($interface->getAncestors() as $name => $ancestor) {
-					$ancestors[$name] = $ancestor;
+					$addToAncestors($name, $ancestor);
 				}
 			}
 
 			foreach ($this->getTraits() as $trait) {
-				$ancestors[$trait->getName()] = $trait;
+				$addToAncestors($trait->getName(), $trait);
 				foreach ($trait->getAncestors() as $name => $ancestor) {
-					$ancestors[$name] = $ancestor;
+					$addToAncestors($name, $ancestor);
 				}
 			}
 
 			$parent = $this->getParentClass();
 			if ($parent !== false) {
-				$ancestors[$parent->getName()] = $parent;
+				$addToAncestors($parent->getName(), $parent);
 				foreach ($parent->getAncestors() as $name => $ancestor) {
-					$ancestors[$name] = $ancestor;
+					$addToAncestors($name, $ancestor);
 				}
 			}
 

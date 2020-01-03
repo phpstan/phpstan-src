@@ -130,6 +130,47 @@ class ResolvedPhpDocBlock
 		return $self;
 	}
 
+	/**
+	 * @param array<string, string> $parameterNameMapping
+	 * @return self
+	 */
+	public function changeParameterNamesByMapping(array $parameterNameMapping): self
+	{
+		$paramTags = $this->getParamTags();
+
+		$newParamTags = [];
+		foreach ($paramTags as $key => $paramTag) {
+			if (!array_key_exists($key, $parameterNameMapping)) {
+				continue;
+			}
+			$newParamTags[$parameterNameMapping[$key]] = $paramTag;
+		}
+
+		$self = new self();
+		$self->phpDocNode = $this->phpDocNode;
+		$self->phpDocString = $this->phpDocString;
+		$self->filename = $this->filename;
+		$self->nameScope = $this->nameScope;
+		$self->templateTypeMap = $this->templateTypeMap;
+		$self->templateTags = $this->templateTags;
+		$self->phpDocNodeResolver = $this->phpDocNodeResolver;
+		$self->varTags = $this->varTags;
+		$self->methodTags = $this->methodTags;
+		$self->propertyTags = $this->propertyTags;
+		$self->extendsTags = $this->extendsTags;
+		$self->implementsTags = $this->implementsTags;
+		$self->usesTags = $this->usesTags;
+		$self->paramTags = $newParamTags;
+		$self->returnTag = $this->returnTag;
+		$self->throwsTag = $this->throwsTag;
+		$self->deprecatedTag = $this->deprecatedTag;
+		$self->isDeprecated = $this->isDeprecated;
+		$self->isInternal = $this->isInternal;
+		$self->isFinal = $this->isFinal;
+
+		return $self;
+	}
+
 	public function getPhpDocNode(): PhpDocNode
 	{
 		return $this->phpDocNode;

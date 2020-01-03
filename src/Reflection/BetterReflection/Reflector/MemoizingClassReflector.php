@@ -8,7 +8,7 @@ use Roave\BetterReflection\Reflector\ClassReflector;
 final class MemoizingClassReflector extends ClassReflector
 {
 
-	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionClass> */
+	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionClass|\Throwable> */
 	private $reflections = [];
 
 	/**
@@ -21,9 +21,18 @@ final class MemoizingClassReflector extends ClassReflector
 	public function reflect(string $className): Reflection
 	{
 		if (isset($this->reflections[$className])) {
+			if ($this->reflections[$className] instanceof \Throwable) {
+				throw $this->reflections[$className];
+			}
 			return $this->reflections[$className];
 		}
-		return $this->reflections[$className] = parent::reflect($className);
+
+		try {
+			return $this->reflections[$className] = parent::reflect($className);
+		} catch (\Throwable $e) {
+			$this->reflections[$className] = $e;
+			throw $e;
+		}
 	}
 
 }

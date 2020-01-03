@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
@@ -51,6 +52,9 @@ class StubPhpDocProvider
 
 	/** @var array<string, array<string, array{string, string}>> */
 	private $knownMethodsDocComments = [];
+
+	/** @var array<string, array<string, array<string>>> */
+	private $knownMethodsParameterNames = [];
 
 	/**
 	 * @param \PHPStan\Parser\Parser $parser
@@ -119,7 +123,13 @@ class StubPhpDocProvider
 		return null;
 	}
 
-	public function findMethodPhpDoc(string $className, string $methodName): ?ResolvedPhpDocBlock
+	/**
+	 * @param string $className
+	 * @param string $methodName
+	 * @param array<int, string> $positionalParameterNames
+	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock|null
+	 */
+	public function findMethodPhpDoc(string $className, string $methodName, array $positionalParameterNames): ?ResolvedPhpDocBlock
 	{
 		if (!$this->isKnownClass($className)) {
 			return null;
@@ -131,7 +141,7 @@ class StubPhpDocProvider
 
 		if (array_key_exists($methodName, $this->knownMethodsDocComments[$className])) {
 			[$file, $docComment] = $this->knownMethodsDocComments[$className][$methodName];
-			$this->methodMap[$className][$methodName] = $this->fileTypeMapper->getResolvedPhpDoc(
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$file,
 				$className,
 				null,
@@ -139,7 +149,20 @@ class StubPhpDocProvider
 				$docComment
 			);
 
-			return $this->methodMap[$className][$methodName];
+			if (!isset($this->knownMethodsParameterNames[$className][$methodName])) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$methodParameterNames = $this->knownMethodsParameterNames[$className][$methodName];
+			$parameterNameMapping = [];
+			foreach ($positionalParameterNames as $i => $parameterName) {
+				if (!array_key_exists($i, $methodParameterNames)) {
+					continue;
+				}
+				$parameterNameMapping[$methodParameterNames[$i]] = $parameterName;
+			}
+
+			return $this->methodMap[$className][$methodName] = $resolvedPhpDoc->changeParameterNamesByMapping($parameterNameMapping);
 		}
 
 		return null;
@@ -171,7 +194,7 @@ class StubPhpDocProvider
 		return null;
 	}
 
-	private function isKnownClass(string $className): bool
+	public function isKnownClass(string $className): bool
 	{
 		$this->initializeKnownElements();
 
@@ -271,7 +294,16 @@ class StubPhpDocProvider
 					$this->methodMap[$className][$stmt->name->toString()] = null;
 					continue;
 				}
-				$this->knownMethodsDocComments[$className][$stmt->name->toString()] = [$stubFile, $docComment->getText()];
+
+				$methodName = $stmt->name->toString();
+				$this->knownMethodsDocComments[$className][$methodName] = [$stubFile, $docComment->getText()];
+				$this->knownMethodsParameterNames[$className][$methodName] = array_map(static function (Node\Param $param): string {
+					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+
+					return $param->var->name;
+				}, $stmt->getParams());
 			}
 		}
 	}

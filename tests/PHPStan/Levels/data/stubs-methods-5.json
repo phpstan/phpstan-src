@@ -9,14 +9,44 @@
         "line": 17,
         "ignorable": true
     },
-	{
-		"message": "Parameter #1 $i of method StubsIntegrationTest\\FooChild::doFoo() expects int, string given.",
-		"line": 31,
-		"ignorable": true
-	},
-	{
-		"message": "Parameter #1 $i of method StubsIntegrationTest\\FooChild::doFoo() expects int, string given.",
-		"line": 32,
-		"ignorable": true
-	}
+    {
+        "message": "Parameter #1 $i of method StubsIntegrationTest\\FooChild::doFoo() expects int, string given.",
+        "line": 31,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $i of method StubsIntegrationTest\\FooChild::doFoo() expects int, string given.",
+        "line": 32,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $j of method StubsIntegrationTest\\AnotherFooChild::doFoo() expects int, string given.",
+        "line": 190,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $j of method StubsIntegrationTest\\AnotherFooChild::doFoo() expects int, string given.",
+        "line": 191,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $j of method StubsIntegrationTest\\YetAnotherFoo::doFoo() expects int, string given.",
+        "line": 205,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $j of method StubsIntegrationTest\\YetAnotherFoo::doFoo() expects int, string given.",
+        "line": 206,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $j of method StubsIntegrationTest\\YetYetAnotherFoo::doFoo() expects int, string given.",
+        "line": 225,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $j of method StubsIntegrationTest\\YetYetAnotherFoo::doFoo() expects int, string given.",
+        "line": 226,
+        "ignorable": true
+    }
 ]

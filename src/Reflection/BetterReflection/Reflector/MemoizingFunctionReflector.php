@@ -8,7 +8,7 @@ use Roave\BetterReflection\Reflector\FunctionReflector;
 final class MemoizingFunctionReflector extends FunctionReflector
 {
 
-	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionFunction> */
+	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionFunction|\Throwable> */
 	private $reflections = [];
 
 	/**
@@ -21,9 +21,18 @@ final class MemoizingFunctionReflector extends FunctionReflector
 	public function reflect(string $functionName): Reflection
 	{
 		if (isset($this->reflections[$functionName])) {
+			if ($this->reflections[$functionName] instanceof \Throwable) {
+				throw $this->reflections[$functionName];
+			}
 			return $this->reflections[$functionName];
 		}
-		return $this->reflections[$functionName] = parent::reflect($functionName);
+
+		try {
+			return $this->reflections[$functionName] = parent::reflect($functionName);
+		} catch (\Throwable $e) {
+			$this->reflections[$functionName] = $e;
+			throw $e;
+		}
 	}
 
 }

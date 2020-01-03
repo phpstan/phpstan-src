@@ -222,7 +222,10 @@ class PhpClassReflectionExtension
 					$declaringClassReflection,
 					null,
 					$propertyName,
-					$declaringClassReflection->getFileName()
+					$declaringClassReflection->getFileName(),
+					null,
+					[],
+					[]
 				);
 				if ($phpDocBlock !== null) {
 					$declaringTraitName = $this->findPropertyTrait(
@@ -429,7 +432,9 @@ class PhpClassReflectionExtension
 				$stubPhpDocParameterTypes = [];
 				$stubPhpDocParameterVariadicity = [];
 				if (count($variantNames) === 1) {
-					$stubPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
+					$stubPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
+						return $parameterSignature->getName();
+					}, $methodSignature->getParameters()));
 					if ($stubPhpDoc !== null) {
 						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
 						$templateTypeMap = $declaringClass->getActiveTemplateTypeMap();
@@ -486,18 +491,26 @@ class PhpClassReflectionExtension
 		}
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
+		$resolvedPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName(), array_map(static function (\ReflectionParameter $parameter): string {
+			return $parameter->getName();
+		}, $methodReflection->getParameters()));
 		$stubPhpDocString = null;
+		$phpDocBlock = null;
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== false) {
 				$docComment = $methodReflection->getDocComment();
-
+				$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
+					return $parameter->getName();
+				}, $methodReflection->getParameters());
 				$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
 					$docComment,
 					$declaringClass,
 					$declaringTraitName,
 					$methodReflection->getName(),
-					$declaringClass->getFileName()
+					$declaringClass->getFileName(),
+					null,
+					$positionalParameterNames,
+					$positionalParameterNames
 				);
 
 				if ($phpDocBlock !== null) {
@@ -544,6 +557,9 @@ class PhpClassReflectionExtension
 					$phpDocBlockClassReflection->getActiveTemplateTypeMap()
 				);
 			}, $resolvedPhpDoc->getParamTags());
+			if ($phpDocBlock !== null) {
+				$phpDocParameterTypes = $phpDocBlock->transformArrayKeysWithParameterNameMapping($phpDocParameterTypes);
+			}
 			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$methodReflection->getReturnType(),
 				null,
@@ -861,6 +877,45 @@ class PhpClassReflectionExtension
 
 		if ($isPhpDocBlockExplicit || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
 			return $phpDocReturnType;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param string $declaringClassName
+	 * @param string $methodName
+	 * @param array<int, string> $positionalParameterNames
+	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock|null
+	 */
+	private function findMethodPhpDocIncludingAncestors(string $declaringClassName, string $methodName, array $positionalParameterNames): ?ResolvedPhpDocBlock
+	{
+		$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodName, $positionalParameterNames);
+		if ($resolved !== null) {
+			return $resolved;
+		}
+		if (!$this->stubPhpDocProvider->isKnownClass($declaringClassName)) {
+			return null;
+		}
+		if (!$this->reflectionProvider->hasClass($declaringClassName)) {
+			return null;
+		}
+
+		$ancestors = $this->reflectionProvider->getClass($declaringClassName)->getAncestors();
+		foreach ($ancestors as $ancestor) {
+			if ($ancestor->getName() === $declaringClassName) {
+				continue;
+			}
+			if (!$ancestor->hasNativeMethod($methodName)) {
+				continue;
+			}
+
+			$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($ancestor->getName(), $methodName, $positionalParameterNames);
+			if ($resolved === null) {
+				continue;
+			}
+
+			return $resolved;
 		}
 
 		return null;

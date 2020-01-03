@@ -8,7 +8,7 @@ use Roave\BetterReflection\Reflector\ConstantReflector;
 final class MemoizingConstantReflector extends ConstantReflector
 {
 
-	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionConstant> */
+	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionConstant|\Throwable> */
 	private $reflections = [];
 
 	/**
@@ -21,9 +21,18 @@ final class MemoizingConstantReflector extends ConstantReflector
 	public function reflect(string $constantName): Reflection
 	{
 		if (isset($this->reflections[$constantName])) {
+			if ($this->reflections[$constantName] instanceof \Throwable) {
+				throw $this->reflections[$constantName];
+			}
 			return $this->reflections[$constantName];
 		}
-		return $this->reflections[$constantName] = parent::reflect($constantName);
+
+		try {
+			return $this->reflections[$constantName] = parent::reflect($constantName);
+		} catch (\Throwable $e) {
+			$this->reflections[$constantName] = $e;
+			throw $e;
+		}
 	}
 
 }

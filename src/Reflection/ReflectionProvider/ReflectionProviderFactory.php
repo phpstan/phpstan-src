@@ -72,7 +72,7 @@ class ReflectionProviderFactory
 
 		$providers[] = $this->createPhpStormStubsReflectionProvider();
 
-		return new ChainReflectionProvider($providers);
+		return new MemoizingReflectionProvider(new ChainReflectionProvider($providers));
 	}
 
 	private function createPhpStormStubsReflectionProvider(): ReflectionProvider

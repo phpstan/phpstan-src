@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -49,6 +50,9 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	/** @var Parser */
 	private $parser;
 
+	/** @var \PHPStan\File\FileHelper */
+	private $fileHelper;
+
 	/** @var RelativePathHelper */
 	private $relativePathHelper;
 
@@ -75,6 +79,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		\PhpParser\PrettyPrinter\Standard $printer,
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		Parser $parser,
+		FileHelper $fileHelper,
 		RelativePathHelper $relativePathHelper,
 		StubPhpDocProvider $stubPhpDocProvider
 	)
@@ -86,6 +91,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->printer = $printer;
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 		$this->parser = $parser;
+		$this->fileHelper = $fileHelper;
 		$this->relativePathHelper = $relativePathHelper;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
 	}
@@ -165,7 +171,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			}
 		}
 
-		$filename = $this->relativePathHelper->getRelativePath($scopeFile);
+		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile), '/');
 
 		$className = $this->anonymousClassNameHelper->getAnonymousClassName(
 			$classNode,

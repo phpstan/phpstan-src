@@ -958,6 +958,50 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $str of method MethodWithPhpDocsImplicitInheritance\Foo::doBar() expects string, int given.',
 				58,
 			],
+			[
+				'Parameter #1 $x of method MethodWithPhpDocsImplicitInheritance\Ipsum::doLorem() expects MethodWithPhpDocsImplicitInheritance\A, int given.',
+				89,
+			],
+			[
+				'Parameter #2 $y of method MethodWithPhpDocsImplicitInheritance\Ipsum::doLorem() expects MethodWithPhpDocsImplicitInheritance\B, int given.',
+				89,
+			],
+			[
+				'Parameter #3 $z of method MethodWithPhpDocsImplicitInheritance\Ipsum::doLorem() expects MethodWithPhpDocsImplicitInheritance\C, int given.',
+				89,
+			],
+			[
+				'Parameter #4 $d of method MethodWithPhpDocsImplicitInheritance\Ipsum::doLorem() expects MethodWithPhpDocsImplicitInheritance\D, int given.',
+				89,
+			],
+			[
+				'Parameter #1 $g of method MethodWithPhpDocsImplicitInheritance\Dolor::doLorem() expects MethodWithPhpDocsImplicitInheritance\A, int given.',
+				104,
+			],
+			[
+				'Parameter #2 $h of method MethodWithPhpDocsImplicitInheritance\Dolor::doLorem() expects MethodWithPhpDocsImplicitInheritance\B, int given.',
+				104,
+			],
+			[
+				'Parameter #3 $i of method MethodWithPhpDocsImplicitInheritance\Dolor::doLorem() expects MethodWithPhpDocsImplicitInheritance\C, int given.',
+				104,
+			],
+			[
+				'Parameter #4 $d of method MethodWithPhpDocsImplicitInheritance\Dolor::doLorem() expects MethodWithPhpDocsImplicitInheritance\D, int given.',
+				104,
+			],
+			[
+				'Parameter #1 $value of method ArrayObject<int,stdClass>::append() expects stdClass, Exception given.',
+				115,
+			],
+			[
+				'Parameter #1 $value of method ArrayObject<int,stdClass>::append() expects stdClass, Exception given.',
+				129,
+			],
+			[
+				'Parameter #1 $someValue of method MethodWithPhpDocsImplicitInheritance\TestArrayObject3::append() expects stdClass, Exception given.',
+				146,
+			],
 		]);
 	}
 

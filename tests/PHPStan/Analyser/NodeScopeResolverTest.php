@@ -8016,10 +8016,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_MAGIC_QUOTES)',
-			],
-			[
-				'string|false',
 				'filter_var($mixed, FILTER_SANITIZE_NUMBER_FLOAT)',
 			],
 			[
@@ -8190,8 +8186,30 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		];
 	}
 
+	public function dataFilterVarAdditional():array
+	{
+		$return = [];
+
+		if (defined('FILTER_SANITIZE_MAGIC_QUOTES')) {
+			$return[] = [
+				'string|false',
+				'filter_var($mixed, FILTER_SANITIZE_MAGIC_QUOTES)',
+			];
+		}
+
+		if (defined('FILTER_SANITIZE_ADD_SLASHES')) {
+			$return[] = [
+				'string|false',
+				'filter_var($mixed, FILTER_SANITIZE_ADD_SLASHES)',
+			];
+		}
+
+		return $return;
+	}
+
 	/**
 	 * @dataProvider dataFilterVar
+	 * @dataProvider dataFilterVarAdditional
 	 * @param string $description
 	 * @param string $expression
 	 */

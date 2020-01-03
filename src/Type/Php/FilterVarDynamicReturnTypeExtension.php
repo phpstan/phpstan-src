@@ -58,7 +58,6 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$this->filterTypesHashMaps = [
 			FILTER_SANITIZE_EMAIL => $stringOrFalseType,
 			FILTER_SANITIZE_ENCODED => $stringOrFalseType,
-			FILTER_SANITIZE_MAGIC_QUOTES => $stringOrFalseType,
 			FILTER_SANITIZE_NUMBER_FLOAT => $stringOrFalseType,
 			FILTER_SANITIZE_NUMBER_INT => $stringOrFalseType,
 			FILTER_SANITIZE_SPECIAL_CHARS => $stringOrFalseType,
@@ -73,6 +72,14 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			FILTER_VALIDATE_REGEXP => $stringOrFalseType,
 			FILTER_VALIDATE_URL => $stringOrFalseType,
 		];
+
+		if (defined('FILTER_SANITIZE_MAGIC_QUOTES')) {
+			$this->filterTypesHashMaps[FILTER_SANITIZE_MAGIC_QUOTES] = $stringOrFalseType;
+		}
+
+		if (defined('FILTER_SANITIZE_ADD_SLASHES')) {
+			$this->filterTypesHashMaps[FILTER_SANITIZE_ADD_SLASHES] = $stringOrFalseType;
+		}
 
 		$this->nullableTypes = [
 			FILTER_VALIDATE_BOOLEAN => $nullableBooleanType,

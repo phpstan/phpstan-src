@@ -21,7 +21,7 @@ class Foo
 	/** @param list $list */
 	public function directAssertionNullableParamHint(array $list = null): void
 	{
-		assertType('?array<int, mixed>', $list);
+		assertType('array<int, mixed>|null', $list);
 	}
 
 	/** @param list<\DateTime> $list */

@@ -36,6 +36,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var GenericObjectType|null */
 	private $genericObjectType;
 
+	/** @var array<string, \PHPStan\TrinaryLogic> */
+	private $superTypes = [];
+
 	public function __construct(
 		string $className,
 		?Type $subtractedType = null
@@ -129,28 +132,33 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		$description = $type->describe(VerbosityLevel::precise());
+		if (isset($this->superTypes[$description])) {
+			return $this->superTypes[$description];
+		}
+
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $this->superTypes[$description] = $type->isSubTypeOf($this);
 		}
 
 		if ($type instanceof ObjectWithoutClassType) {
 			if ($type->getSubtractedType() !== null) {
 				$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
 				if ($isSuperType->yes()) {
-					return TrinaryLogic::createNo();
+					return $this->superTypes[$description] = TrinaryLogic::createNo();
 				}
 			}
-			return TrinaryLogic::createMaybe();
+			return $this->superTypes[$description] = TrinaryLogic::createMaybe();
 		}
 
 		if (!$type instanceof TypeWithClassName) {
-			return TrinaryLogic::createNo();
+			return $this->superTypes[$description] = TrinaryLogic::createNo();
 		}
 
 		if ($this->subtractedType !== null) {
 			$isSuperType = $this->subtractedType->isSuperTypeOf($type);
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createNo();
+				return $this->superTypes[$description] = TrinaryLogic::createNo();
 			}
 		}
 
@@ -160,7 +168,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		) {
 			$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createNo();
+				return $this->superTypes[$description] = TrinaryLogic::createNo();
 			}
 		}
 
@@ -168,39 +176,39 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$thatClassName = $type->getClassName();
 
 		if ($thatClassName === $thisClassName) {
-			return TrinaryLogic::createYes();
+			return $this->superTypes[$description] = TrinaryLogic::createYes();
 		}
 
 		$broker = Broker::getInstance();
 
 		if (!$broker->hasClass($thisClassName) || !$broker->hasClass($thatClassName)) {
-			return TrinaryLogic::createMaybe();
+			return $this->superTypes[$description] = TrinaryLogic::createMaybe();
 		}
 
 		$thisClassReflection = $broker->getClass($thisClassName);
 		$thatClassReflection = $broker->getClass($thatClassName);
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
-			return TrinaryLogic::createYes();
+			return $this->superTypes[$description] = TrinaryLogic::createYes();
 		}
 
 		if ($thatClassReflection->isSubclassOf($thisClassName)) {
-			return TrinaryLogic::createYes();
+			return $this->superTypes[$description] = TrinaryLogic::createYes();
 		}
 
 		if ($thisClassReflection->isSubclassOf($thatClassName)) {
-			return TrinaryLogic::createMaybe();
+			return $this->superTypes[$description] = TrinaryLogic::createMaybe();
 		}
 
 		if ($thisClassReflection->isInterface() && !$thatClassReflection->getNativeReflection()->isFinal()) {
-			return TrinaryLogic::createMaybe();
+			return $this->superTypes[$description] = TrinaryLogic::createMaybe();
 		}
 
 		if ($thatClassReflection->isInterface() && !$thisClassReflection->getNativeReflection()->isFinal()) {
-			return TrinaryLogic::createMaybe();
+			return $this->superTypes[$description] = TrinaryLogic::createMaybe();
 		}
 
-		return TrinaryLogic::createNo();
+		return $this->superTypes[$description] = TrinaryLogic::createNo();
 	}
 
 	public function equals(Type $type): bool

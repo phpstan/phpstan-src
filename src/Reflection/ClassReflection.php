@@ -826,25 +826,33 @@ class ClassReflection implements ReflectionWithFilename
 				$this->getName() => $this,
 			];
 
+			$addToAncestors = static function (string $name, ClassReflection $classReflection) use (&$ancestors): void {
+				if (array_key_exists($name, $ancestors)) {
+					return;
+				}
+
+				$ancestors[$name] = $classReflection;
+			};
+
 			foreach ($this->getInterfaces() as $interface) {
-				$ancestors[$interface->getName()] = $interface;
+				$addToAncestors($interface->getName(), $interface);
 				foreach ($interface->getAncestors() as $name => $ancestor) {
-					$ancestors[$name] = $ancestor;
+					$addToAncestors($name, $ancestor);
 				}
 			}
 
 			foreach ($this->getTraits() as $trait) {
-				$ancestors[$trait->getName()] = $trait;
+				$addToAncestors($trait->getName(), $trait);
 				foreach ($trait->getAncestors() as $name => $ancestor) {
-					$ancestors[$name] = $ancestor;
+					$addToAncestors($name, $ancestor);
 				}
 			}
 
 			$parent = $this->getParentClass();
 			if ($parent !== false) {
-				$ancestors[$parent->getName()] = $parent;
+				$addToAncestors($parent->getName(), $parent);
 				foreach ($parent->getAncestors() as $name => $ancestor) {
-					$ancestors[$name] = $ancestor;
+					$addToAncestors($name, $ancestor);
 				}
 			}
 

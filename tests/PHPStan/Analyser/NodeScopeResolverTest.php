@@ -9777,11 +9777,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2740.php');
 	}
-  
-  public function dataListType(): array
+
+    public function dataListType(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/list-type.php');
-  }
+    }
 
 	/**
 	 * @dataProvider dataBug2574
@@ -9801,8 +9801,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataPsalmPrefixedTagsWithUnresolvableTypes
 	 * @dataProvider dataComplexGenericsExample
 	 * @dataProvider dataBug2648
-   * @dataProvider dataBug2740
-   * @dataProvider dataListType
+     * @dataProvider dataBug2740s
+     * @dataProvider dataListType
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

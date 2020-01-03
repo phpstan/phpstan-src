@@ -283,6 +283,14 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Method ReturnTypes\ReturnStaticGeneric::instanceReturnsStatic() should return static(ReturnTypes\ReturnStaticGeneric) but returns ReturnTypes\ReturnStaticGeneric.',
 				1064,
 			],
+			[
+				'Method ReturnTypes\returnList::withWrongReturnHint() should return int but returns array<int, stdClass|string|true>.',
+				1214,
+			],
+			[
+				'Method ReturnTypes\returnList::withScalarWrong() should return array<int, bool|float|int|string> but returns array<int, stdClass|string|true>.',
+				1250,
+			],
 		]);
 	}
 

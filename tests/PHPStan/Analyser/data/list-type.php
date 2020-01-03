@@ -6,6 +6,30 @@ use function PHPStan\Analyser\assertType;
 
 class Foo
 {
+	/** @var list $list */
+	public function directAssertion($list): void
+	{
+		assertType('array<int, mixed>', $list);
+	}
+
+	/** @var list $list */
+	public function directAssertionParamHint(array $list): void
+	{
+		assertType('array<int, mixed>', $list);
+	}
+
+	/** @var list $list */
+	public function directAssertionNullableParamHint(array $list = null): void
+	{
+		assertType('?array<int, mixed>', $list);
+	}
+
+	/** @var list<\DateTime> $list */
+	public function directAssertionObjectParamHint($list): void
+	{
+		assertType('array<int, DateTime>', $list);
+	}
+
 	public function withoutGenerics(): void
 	{
 		/** @var list $list */

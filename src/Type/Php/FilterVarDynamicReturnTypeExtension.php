@@ -94,12 +94,20 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			return $mixedType;
 		}
 
-		$type = $this->filterTypeMap[$filterType->getValue()] ?? $mixedType;
-		$flagsArg = $functionCall->args[2] ?? null;
-		$otherType = $this->getOtherType($flagsArg, $scope);
+		$filterValue = $filterType->getValue();
 
-		if ($otherType->isSuperTypeOf($type)->no()) {
-			$type = new UnionType([$type, $otherType]);
+		$flagsArg = $functionCall->args[2] ?? null;
+		$inputType = $scope->getType($functionCall->args[0]->value);
+		$exactType = $this->determineExactType($inputType, $filterValue);
+		if ($exactType !== null) {
+			$type = $exactType;
+		} else {
+			$type = $this->filterTypeMap[$filterValue] ?? $mixedType;
+			$otherType = $this->getOtherType($flagsArg, $scope);
+
+			if ($otherType->isSuperTypeOf($type)->no()) {
+				$type = new UnionType([$type, $otherType]);
+			}
 		}
 
 		if ($this->hasFlag(FILTER_FORCE_ARRAY, $flagsArg, $scope)) {
@@ -107,6 +115,22 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		return $type;
+	}
+
+
+	private function determineExactType(Type $in, int $filterValue): ?Type
+	{
+		if (($filterValue === FILTER_VALIDATE_BOOLEAN && $in instanceof BooleanType)
+			|| ($filterValue === FILTER_VALIDATE_INT && $in instanceof IntegerType)
+			|| ($filterValue === FILTER_VALIDATE_FLOAT && $in instanceof FloatType)) {
+			return $in;
+		}
+
+		if ($filterValue === FILTER_VALIDATE_FLOAT && $in instanceof IntegerType) {
+			return $in->toFloat();
+		}
+
+		return null;
 	}
 
 	private function getOtherType(?Node\Arg $flagsArg, Scope $scope): Type

@@ -8051,10 +8051,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 		foreach ($typesAndFilters as $filterType => $filters) {
 			foreach ($filters as $filter) {
-				foreach($typeAndFlags as [$type, $flag]) {
+				foreach ($typeAndFlags as [$type, $flag]) {
 					yield [
 						sprintf($type, $filterType),
-						sprintf('filter_var($mixed, %s %s)',$filter, $flag)
+						sprintf('filter_var($mixed, %s %s)', $filter, $flag),
 					];
 				}
 			}
@@ -8094,12 +8094,51 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 		yield 'default that is the same type as result' => [
 			'string',
-			'filter_var($mixed, FILTER_SANITIZE_URL, ["options" => ["default" => "foo"]])'
+			'filter_var($mixed, FILTER_SANITIZE_URL, ["options" => ["default" => "foo"]])',
+		];
+	}
+
+	public function dataFilterVarUnchanged(): array
+	{
+		return [
+			[
+				'12',
+				'filter_var(12, FILTER_VALIDATE_INT)',
+			],
+			[
+				'false',
+				'filter_var(false, FILTER_VALIDATE_BOOLEAN)',
+			],
+			[
+				'array<false>',
+				'filter_var(false, FILTER_VALIDATE_BOOLEAN, FILTER_FORCE_ARRAY)',
+			],
+			[
+				'array<false>',
+				'filter_var(false, FILTER_VALIDATE_BOOLEAN, FILTER_FORCE_ARRAY | FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'3.27',
+				'filter_var(3.27, FILTER_VALIDATE_FLOAT)',
+			],
+			[
+				'3.27',
+				'filter_var(3.27, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE)',
+			],
+			[
+				'int',
+				'filter_var(rand(), FILTER_VALIDATE_INT)',
+			],
+			[
+				'12.0',
+				'filter_var(12, FILTER_VALIDATE_FLOAT)',
+			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataFilterVar
+	 * @dataProvider dataFilterVarUnchanged
 	 * @param string $description
 	 * @param string $expression
 	 */

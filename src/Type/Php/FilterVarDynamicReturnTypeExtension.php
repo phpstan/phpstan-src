@@ -24,6 +24,7 @@ use PHPStan\Type\UnionType;
 
 class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
 	/** @var ConstantStringType */
 	private $flagsString;
 

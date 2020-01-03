@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\MethodCall;
@@ -7999,199 +8000,152 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
-	public function dataFilterVar(): array
+	public function dataFilterVar(): Generator
+	{
+		$typesAndFilters = [
+			'string' => [
+				'FILTER_DEFAULT',
+				'FILTER_UNSAFE_RAW',
+				'FILTER_SANITIZE_EMAIL',
+				'FILTER_SANITIZE_ENCODED',
+				'FILTER_SANITIZE_NUMBER_FLOAT',
+				'FILTER_SANITIZE_NUMBER_INT',
+				'FILTER_SANITIZE_SPECIAL_CHARS',
+				'FILTER_SANITIZE_STRING',
+				'FILTER_SANITIZE_URL',
+				'FILTER_VALIDATE_EMAIL',
+				'FILTER_VALIDATE_IP',
+				'$filterIp',
+				'FILTER_VALIDATE_MAC',
+				'FILTER_VALIDATE_REGEXP',
+				'FILTER_VALIDATE_URL',
+			],
+			'int' => ['FILTER_VALIDATE_INT'],
+			'float' => ['FILTER_VALIDATE_FLOAT'],
+		];
+
+		if (defined('FILTER_SANITIZE_MAGIC_QUOTES')) {
+			$typesAndFilters['string'][] = 'FILTER_SANITIZE_MAGIC_QUOTES';
+		}
+
+		if (defined('FILTER_SANITIZE_ADD_SLASHES')) {
+			$typesAndFilters['string'][] = 'FILTER_SANITIZE_ADD_SLASHES';
+		}
+
+		$typeAndFlags = [
+			['%s|false', ''],
+			['%s|false', ', $mixed'],
+			['%s|false', ', ["flags" => $mixed]'],
+			['%s|null', ', FILTER_NULL_ON_FAILURE'],
+			['%s|null', ', ["flags" => FILTER_NULL_ON_FAILURE]'],
+			['%s|null', ', ["flags" => FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4]'],
+			['%s|null', ', ["flags" => $nullFilter]'],
+			['Analyser|%s', ', ["options" => ["default" => new Analyser]]'],
+			['array<%s|null>', ', FILTER_NULL_ON_FAILURE | FILTER_FORCE_ARRAY'],
+			['array<%s|null>', ', FILTER_NULL_ON_FAILURE | FILTER_FORCE_ARRAY | FILTER_FLAG_IPV4'],
+			['array<%s|false>', ', FILTER_FORCE_ARRAY'],
+			['array<%s|null>', ', ["flags" => FILTER_NULL_ON_FAILURE | FILTER_FORCE_ARRAY]'],
+			['array<%s|false>', ', ["flags" => FILTER_FORCE_ARRAY | FILTER_FLAG_IPV4]'],
+			['array<%s|false>', ', ["flags" => $forceArrayFilter]'],
+			['array<Analyser|%s>',', ["options" => ["default" => new Analyser], "flags" => FILTER_FORCE_ARRAY]'],
+			['array<Analyser|%s>',', ["options" => ["default" => new Analyser], "flags" => FILTER_NULL_ON_FAILURE | FILTER_FORCE_ARRAY]'],
+		];
+
+		foreach ($typesAndFilters as $filterType => $filters) {
+			foreach ($filters as $filter) {
+				foreach ($typeAndFlags as [$type, $flag]) {
+					yield [
+						sprintf($type, $filterType),
+						sprintf('filter_var($mixed, %s %s)', $filter, $flag),
+					];
+				}
+			}
+		}
+
+		$boolFlags = [
+			['bool', ''],
+			['bool', ', $mixed'],
+			['bool', ', ["flags" => $mixed]'],
+			['bool|null', ', FILTER_NULL_ON_FAILURE'],
+			['bool|null', ', ["flags" => FILTER_NULL_ON_FAILURE]'],
+			['bool|null', ', ["flags" => FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4]'],
+			['bool|null', ', ["flags" => $nullFilter]'],
+			['Analyser|bool', ', ["options" => ["default" => new Analyser]]'],
+			['bool', ', ["options" => ["default" => true]]'],
+			['array<bool|null>', ', FILTER_NULL_ON_FAILURE | FILTER_FORCE_ARRAY'],
+			['array<bool>', ', FILTER_FORCE_ARRAY'],
+			['array<bool|null>', ', ["flags" => FILTER_NULL_ON_FAILURE | FILTER_FORCE_ARRAY]'],
+			['array<bool>', ', ["flags" => $forceArrayFilter]'],
+			['array<Analyser|bool>',', ["options" => ["default" => new Analyser], "flags" => FILTER_FORCE_ARRAY]'],
+			['array<bool>',', ["options" => ["default" => false], "flags" => FILTER_FORCE_ARRAY]'],
+			['array<Analyser|bool>',', ["options" => ["default" => new Analyser], "flags" => FILTER_NULL_ON_FAILURE | FILTER_FORCE_ARRAY]'],
+		];
+
+		foreach ($boolFlags as [$type, $flags]) {
+			yield [
+				$type,
+				sprintf('filter_var($mixed, FILTER_VALIDATE_BOOLEAN %s)', $flags),
+			];
+		}
+
+		//edge cases
+		yield 'unknown filter' => [
+			'mixed',
+			'filter_var($mixed, $mixed)',
+		];
+
+		yield 'default that is the same type as result' => [
+			'string',
+			'filter_var($mixed, FILTER_SANITIZE_URL, ["options" => ["default" => "foo"]])',
+		];
+
+		yield 'no second variable' => [
+			'string|false',
+			'filter_var($mixed)',
+		];
+	}
+
+	public function dataFilterVarUnchanged(): array
 	{
 		return [
 			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_EMAIL)',
+				'12',
+				'filter_var(12, FILTER_VALIDATE_INT)',
 			],
 			[
-				'array<string|false>',
-				'filter_var($mixed, FILTER_SANITIZE_EMAIL, FILTER_FORCE_ARRAY)',
+				'false',
+				'filter_var(false, FILTER_VALIDATE_BOOLEAN)',
 			],
 			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_ENCODED)',
+				'array<false>',
+				'filter_var(false, FILTER_VALIDATE_BOOLEAN, FILTER_FORCE_ARRAY)',
 			],
 			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_MAGIC_QUOTES)',
+				'array<false>',
+				'filter_var(false, FILTER_VALIDATE_BOOLEAN, FILTER_FORCE_ARRAY | FILTER_NULL_ON_FAILURE)',
 			],
 			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_NUMBER_FLOAT)',
+				'3.27',
+				'filter_var(3.27, FILTER_VALIDATE_FLOAT)',
 			],
 			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_NUMBER_INT)',
+				'3.27',
+				'filter_var(3.27, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE)',
 			],
 			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_SPECIAL_CHARS)',
+				'int',
+				'filter_var(rand(), FILTER_VALIDATE_INT)',
 			],
 			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_STRING)',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_SANITIZE_URL)',
-			],
-			[
-				'bool',
-				'filter_var($mixed, FILTER_VALIDATE_BOOLEAN)',
-			],
-			[
-				'bool|null',
-				'filter_var($mixed, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'bool|null',
-				'filter_var($mixed, FILTER_VALIDATE_BOOLEAN ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_EMAIL)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_EMAIL, FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_EMAIL ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'float|false',
-				'filter_var($mixed, FILTER_VALIDATE_FLOAT)',
-			],
-			[
-				'float|null',
-				'filter_var($mixed, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE)',
-			],
-
-			[
-				'array<float|false>',
-				'filter_var($mixed, FILTER_VALIDATE_FLOAT, FILTER_FORCE_ARRAY)',
-			],
-			[
-				'array<float|null>',
-				'filter_var($mixed, FILTER_VALIDATE_FLOAT, FILTER_FORCE_ARRAY | FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'array<float|null>',
-				'filter_var($mixed, FILTER_VALIDATE_FLOAT, $forceArrayFilter | $nullFilter)',
-			],
-			[
-				'float|null',
-				'filter_var($mixed, FILTER_VALIDATE_FLOAT ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'int|false',
-				'filter_var($mixed, FILTER_VALIDATE_INT)',
-			],
-			[
-				'int|null',
-				'filter_var($mixed, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'int|null',
-				'filter_var($mixed, FILTER_VALIDATE_INT ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_IP)',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, $filterIp)',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4)',
-			],
-			[
-				'array<string|null>',
-				'filter_var($mixed, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4 | FILTER_FORCE_ARRAY)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_IP ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_MAC)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_MAC, FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_MAC ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_REGEXP)',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/match/"]])',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_REGEXP, FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_REGEXP ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_REGEXP ,["flags" => FILTER_NULL_ON_FAILURE, "options" => ["regexp" => "/match/"]])',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_URL)',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_URL, $mixed)',
-			],
-			[
-				'string|false',
-				'filter_var($mixed, FILTER_VALIDATE_URL ,["flags" => $mixed])',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_URL, FILTER_NULL_ON_FAILURE)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_URL, $nullFilter)',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_URL ,["flags" => FILTER_NULL_ON_FAILURE])',
-			],
-			[
-				'string|null',
-				'filter_var($mixed, FILTER_VALIDATE_URL ,["flags" => $nullFilter])',
+				'12.0',
+				'filter_var(12, FILTER_VALIDATE_FLOAT)',
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataFilterVar
+	 * @dataProvider dataFilterVarUnchanged
 	 * @param string $description
 	 * @param string $expression
 	 */

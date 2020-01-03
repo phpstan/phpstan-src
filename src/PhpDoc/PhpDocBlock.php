@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ResolvedMethodReflection;
@@ -338,8 +339,11 @@ class PhpDocBlock
 			if ($parentReflection instanceof PhpPropertyReflection || $parentReflection instanceof ResolvedPropertyReflection) {
 				$traitReflection = $parentReflection->getDeclaringTrait();
 				$positionalMethodParameterNames = [];
-			} elseif ($parentReflection instanceof PhpMethodReflection || $parentReflection instanceof ResolvedMethodReflection) {
-				$traitReflection = $parentReflection->getDeclaringTrait();
+			} elseif ($parentReflection instanceof MethodReflection) {
+				$traitReflection = null;
+				if ($parentReflection instanceof PhpMethodReflection || $parentReflection instanceof ResolvedMethodReflection) {
+					$traitReflection = $parentReflection->getDeclaringTrait();
+				}
 				$methodVariants = $parentReflection->getVariants();
 				$positionalMethodParameterNames = [];
 				if (count($methodVariants) === 1) {

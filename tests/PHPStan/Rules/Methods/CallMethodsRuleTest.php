@@ -990,6 +990,18 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #4 $d of method MethodWithPhpDocsImplicitInheritance\Dolor::doLorem() expects MethodWithPhpDocsImplicitInheritance\D, int given.',
 				104,
 			],
+			[
+				'Parameter #1 $value of method ArrayObject<int,stdClass>::append() expects stdClass, Exception given.',
+				115,
+			],
+			[
+				'Parameter #1 $value of method ArrayObject<int,stdClass>::append() expects stdClass, Exception given.',
+				129,
+			],
+			[
+				'Parameter #1 $someValue of method MethodWithPhpDocsImplicitInheritance\TestArrayObject3::append() expects stdClass, Exception given.',
+				146,
+			],
 		]);
 	}
 

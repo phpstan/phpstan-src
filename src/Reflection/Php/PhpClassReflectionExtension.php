@@ -432,7 +432,9 @@ class PhpClassReflectionExtension
 				$stubPhpDocParameterTypes = [];
 				$stubPhpDocParameterVariadicity = [];
 				if (count($variantNames) === 1) {
-					$stubPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName());
+					$stubPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
+						return $parameterSignature->getName();
+					}, $methodSignature->getParameters()));
 					if ($stubPhpDoc !== null) {
 						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
 						$templateTypeMap = $declaringClass->getActiveTemplateTypeMap();
@@ -489,7 +491,9 @@ class PhpClassReflectionExtension
 		}
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
-		$resolvedPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName());
+		$resolvedPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName(), array_map(static function (\ReflectionParameter $parameter): string {
+			return $parameter->getName();
+		}, $methodReflection->getParameters()));
 		$stubPhpDocString = null;
 		$phpDocBlock = null;
 		if ($resolvedPhpDoc === null) {
@@ -878,9 +882,15 @@ class PhpClassReflectionExtension
 		return null;
 	}
 
-	private function findMethodPhpDocIncludingAncestors(string $declaringClassName, string $methodName): ?ResolvedPhpDocBlock
+	/**
+	 * @param string $declaringClassName
+	 * @param string $methodName
+	 * @param array<int, string> $positionalParameterNames
+	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock|null
+	 */
+	private function findMethodPhpDocIncludingAncestors(string $declaringClassName, string $methodName, array $positionalParameterNames): ?ResolvedPhpDocBlock
 	{
-		$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodName);
+		$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodName, $positionalParameterNames);
 		if ($resolved !== null) {
 			return $resolved;
 		}
@@ -900,7 +910,7 @@ class PhpClassReflectionExtension
 				continue;
 			}
 
-			$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($ancestor->getName(), $methodName);
+			$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($ancestor->getName(), $methodName, $positionalParameterNames);
 			if ($resolved === null) {
 				continue;
 			}

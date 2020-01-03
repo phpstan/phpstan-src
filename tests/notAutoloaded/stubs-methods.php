@@ -62,3 +62,31 @@ interface InterfaceWithStubPhpDoc2
 	public function doFoo();
 
 }
+
+class YetAnotherFoo
+{
+
+	/**
+	 * @param int $i
+	 * @return string
+	 */
+	public function doFoo($i)
+	{
+		return '';
+	}
+
+}
+
+class YetYetAnotherFoo
+{
+
+	/**
+	 * @param int $i
+	 * @return string
+	 */
+	public function doFoo($i)
+	{
+		return '';
+	}
+
+}

@@ -175,3 +175,53 @@ function (YetYetAnotherClassExtendingInterfaceWithStubPhpDoc2 $stub): int
 	$stub->doFoo() === [];
 	return $stub->doFoo(); // stub wins
 };
+
+class AnotherFooChild extends Foo
+{
+
+	public function doFoo($j)
+	{
+		return '';
+	}
+
+}
+
+function (AnotherFooChild $foo): void {
+	$string = $foo->doFoo('test');
+	$foo->doFoo($string);
+};
+
+class YetAnotherFoo
+{
+
+	public function doFoo($j)
+	{
+		return '';
+	}
+
+}
+
+function (YetAnotherFoo $foo): void {
+	$string = $foo->doFoo('test');
+	$foo->doFoo($string);
+};
+
+class YetYetAnotherFoo
+{
+
+	/**
+	 * Deliberately wrong phpDoc
+	 * @param \stdClass $j
+	 * @return \stdClass
+	 */
+	public function doFoo($j)
+	{
+		return '';
+	}
+
+}
+
+function (YetYetAnotherFoo $foo): void {
+	$string = $foo->doFoo('test');
+	$foo->doFoo($string);
+};

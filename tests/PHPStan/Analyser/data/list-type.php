@@ -42,7 +42,7 @@ class Foo
 		$list = [];
 		$list[] = '1';
 		$list[] = true;
-		assertType('array<int, scalar>', $list);
+		assertType('array<int, bool|float|int|string>', $list);
 	}
 
 	public function withNumericKey(): void
@@ -51,7 +51,7 @@ class Foo
 		$list = [];
 		$list[] = '1';
 		$list['1'] = true;
-		assertType('array<int, scalar>', $list);
+		assertType('array<int, mixed>', $list);
 	}
 
 	public function withFullListFunctionality(): void

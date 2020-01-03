@@ -57,3 +57,49 @@ function () {
 	$baz->doBar('1');
 	$baz->doBar(1);
 };
+
+class Lorem
+{
+
+	/**
+	 * @param B $b
+	 * @param C $c
+	 * @param A $a
+	 * @param D $d
+	 */
+	public function doLorem($a, $b, $c, $d)
+	{
+
+	}
+
+}
+
+class Ipsum extends Lorem
+{
+
+	public function doLorem($x, $y, $z, $d)
+	{
+
+	}
+
+}
+
+function (Ipsum $ipsum, A $a, B $b, C $c, D $d): void {
+	$ipsum->doLorem($a, $b, $c, $d);
+	$ipsum->doLorem(1, 1, 1, 1);
+};
+
+class Dolor extends Ipsum
+{
+
+	public function doLorem($g, $h, $i, $d)
+	{
+
+	}
+
+}
+
+function (Dolor $ipsum, A $a, B $b, C $c, D $d): void {
+	$ipsum->doLorem($a, $b, $c, $d);
+	$ipsum->doLorem(1, 1, 1, 1);
+};

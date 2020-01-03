@@ -2535,12 +2535,22 @@ class NodeScopeResolver
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 			$functionName = $functionLike->name->name;
+			$positionalParameterNames = array_map(static function (Node\Param $param): string {
+				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+
+				return $param->var->name;
+			}, $functionLike->getParams());
 			$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
 				$docComment,
 				$scope->getClassReflection(),
 				$trait,
 				$functionLike->name->name,
-				$file
+				$file,
+				null,
+				$positionalParameterNames,
+				$positionalParameterNames
 			);
 
 			if ($phpDocBlock !== null) {
@@ -2572,6 +2582,9 @@ class NodeScopeResolver
 				}
 				return $tag->getType();
 			}, $resolvedPhpDoc->getParamTags());
+			if ($phpDocBlock !== null) {
+				$phpDocParameterTypes = $phpDocBlock->transformArrayKeysWithParameterNameMapping($phpDocParameterTypes);
+			}
 			$nativeReturnType = $scope->getFunctionType($functionLike->getReturnType(), false, false);
 			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlock, $resolvedPhpDoc, $nativeReturnType);
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;

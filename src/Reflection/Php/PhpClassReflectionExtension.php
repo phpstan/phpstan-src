@@ -222,7 +222,10 @@ class PhpClassReflectionExtension
 					$declaringClassReflection,
 					null,
 					$propertyName,
-					$declaringClassReflection->getFileName()
+					$declaringClassReflection->getFileName(),
+					null,
+					[],
+					[]
 				);
 				if ($phpDocBlock !== null) {
 					$declaringTraitName = $this->findPropertyTrait(
@@ -488,16 +491,22 @@ class PhpClassReflectionExtension
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
 		$resolvedPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName());
 		$stubPhpDocString = null;
+		$phpDocBlock = null;
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== false) {
 				$docComment = $methodReflection->getDocComment();
-
+				$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
+					return $parameter->getName();
+				}, $methodReflection->getParameters());
 				$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
 					$docComment,
 					$declaringClass,
 					$declaringTraitName,
 					$methodReflection->getName(),
-					$declaringClass->getFileName()
+					$declaringClass->getFileName(),
+					null,
+					$positionalParameterNames,
+					$positionalParameterNames
 				);
 
 				if ($phpDocBlock !== null) {
@@ -544,6 +553,9 @@ class PhpClassReflectionExtension
 					$phpDocBlockClassReflection->getActiveTemplateTypeMap()
 				);
 			}, $resolvedPhpDoc->getParamTags());
+			if ($phpDocBlock !== null) {
+				$phpDocParameterTypes = $phpDocBlock->transformArrayKeysWithParameterNameMapping($phpDocParameterTypes);
+			}
 			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$methodReflection->getReturnType(),
 				null,

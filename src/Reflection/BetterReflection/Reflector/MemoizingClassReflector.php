@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\BetterReflection\Reflector;
 
 use Roave\BetterReflection\Reflection\Reflection;
 use Roave\BetterReflection\Reflector\ClassReflector;
-use Throwable;
 
 final class MemoizingClassReflector extends ClassReflector
 {
@@ -22,7 +21,7 @@ final class MemoizingClassReflector extends ClassReflector
 	public function reflect(string $className): Reflection
 	{
 		if (isset($this->reflections[$className])) {
-			if ($this->reflections[$className] instanceof Throwable) {
+			if ($this->reflections[$className] instanceof \Throwable) {
 				throw $this->reflections[$className];
 			}
 			return $this->reflections[$className];
@@ -30,7 +29,7 @@ final class MemoizingClassReflector extends ClassReflector
 
 		try {
 			return $this->reflections[$className] = parent::reflect($className);
-		} catch (Throwable $e) {
+		} catch (\Throwable $e) {
 			$this->reflections[$className] = $e;
 			throw $e;
 		}

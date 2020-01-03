@@ -9737,6 +9737,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/inheritdoc-parameter-remapping.php');
 	}
 
+	public function dataListType(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/list-type.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9757,6 +9762,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2648
 	 * @dataProvider dataBug2740
 	 * @dataProvider dataPhpDocInheritanceParameterRemapping
+	 * @dataProvider dataListType
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

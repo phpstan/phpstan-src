@@ -1,0 +1,37 @@
+[
+    {
+        "message": "Strict comparison using === between int and array() will always evaluate to false.",
+        "line": 47,
+        "ignorable": true
+    },
+    {
+        "message": "Strict comparison using === between int and array() will always evaluate to false.",
+        "line": 58,
+        "ignorable": true
+    },
+    {
+        "message": "Strict comparison using === between int and array() will always evaluate to false.",
+        "line": 89,
+        "ignorable": true
+    },
+    {
+        "message": "Strict comparison using === between int and array() will always evaluate to false.",
+        "line": 108,
+        "ignorable": true
+    },
+    {
+        "message": "Strict comparison using === between int and array() will always evaluate to false.",
+        "line": 144,
+        "ignorable": true
+    },
+    {
+        "message": "Strict comparison using === between int and array() will always evaluate to false.",
+        "line": 158,
+        "ignorable": true
+    },
+    {
+        "message": "Strict comparison using === between int and array() will always evaluate to false.",
+        "line": 175,
+        "ignorable": true
+    }
+]

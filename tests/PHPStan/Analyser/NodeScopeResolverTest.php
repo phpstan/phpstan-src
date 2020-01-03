@@ -8936,12 +8936,12 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				DIRECTORY_SEPARATOR === '/' ? '$this(AnonymousClass3301acd9e9d13ba9bbce9581cdb00699)' : '$this(AnonymousClass5052ee7b82e2136e86bd50a2b9fee7e0)',
+				'$this(AnonymousClass3301acd9e9d13ba9bbce9581cdb00699)',
 				'$this',
 				"'inside'",
 			],
 			[
-				DIRECTORY_SEPARATOR === '/' ? 'AnonymousClass3301acd9e9d13ba9bbce9581cdb00699' : 'AnonymousClass5052ee7b82e2136e86bd50a2b9fee7e0',
+				'AnonymousClass3301acd9e9d13ba9bbce9581cdb00699',
 				'$foo',
 				"'outside'",
 			],
@@ -8996,7 +8996,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				DIRECTORY_SEPARATOR === '/' ? '$this(AnonymousClass3de0a9734314db9dec21ba308363ff9a)' : '$this(AnonymousClass3ea972e5426463fa167b4e456b7d6202)',
+				'$this(AnonymousClass3de0a9734314db9dec21ba308363ff9a)',
 				'$this',
 			],
 		];
@@ -9773,10 +9773,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2648.php');
 	}
 
-	public function dataListType(): array
+	public function dataBug2740(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2740.php');
+	}
+  
+  public function dataListType(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/list-type.php');
-	}
+  }
 
 	/**
 	 * @dataProvider dataBug2574
@@ -9796,7 +9801,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataPsalmPrefixedTagsWithUnresolvableTypes
 	 * @dataProvider dataComplexGenericsExample
 	 * @dataProvider dataBug2648
-	 * @dataProvider dataListType
+   * @dataProvider dataBug2740
+   * @dataProvider dataListType
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

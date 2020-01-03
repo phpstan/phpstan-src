@@ -171,7 +171,7 @@ class StubPhpDocProvider
 		return null;
 	}
 
-	private function isKnownClass(string $className): bool
+	public function isKnownClass(string $className): bool
 	{
 		$this->initializeKnownElements();
 

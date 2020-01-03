@@ -3,7 +3,6 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Testing\ErrorFormatterTestCase;
-use const PHP_EOL;
 
 class RawErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -23,7 +22,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			1,
 			0,
-			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . PHP_EOL,
+			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n",
 		];
 
 		yield [
@@ -31,7 +30,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			1,
-			'?:?:first generic error' . PHP_EOL,
+			'?:?:first generic error' . "\n",
 		];
 
 		yield [
@@ -39,10 +38,10 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			0,
-			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . PHP_EOL .
-			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . PHP_EOL .
-			'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . PHP_EOL .
-			'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . PHP_EOL,
+			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . "\n" .
+			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n" .
+			'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . "\n" .
+			'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . "\n",
 		];
 
 		yield [
@@ -50,8 +49,8 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			2,
-			'?:?:first generic error' . PHP_EOL .
-			'?:?:second generic error' . PHP_EOL,
+			'?:?:first generic error' . "\n" .
+			'?:?:second generic error' . "\n",
 		];
 
 		yield [
@@ -59,12 +58,12 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			2,
-			'?:?:first generic error' . PHP_EOL .
-		'?:?:second generic error' . PHP_EOL .
-		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . PHP_EOL .
-		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . PHP_EOL .
-		'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . PHP_EOL .
-		'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . PHP_EOL,
+			'?:?:first generic error' . "\n" .
+		'?:?:second generic error' . "\n" .
+		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . "\n" .
+		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n" .
+		'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . "\n" .
+		'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . "\n",
 		];
 	}
 

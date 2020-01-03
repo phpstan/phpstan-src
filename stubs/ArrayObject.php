@@ -51,31 +51,6 @@ class ArrayObject implements IteratorAggregate, ArrayAccess
 	public function __construct($input = null, $flags = 0, $iterator_class = "ArrayIterator") { }
 
 	/**
-	 * @param TKey $index
-	 * @return bool
-	 */
-	public function offsetExists($index) { }
-
-	/**
-	 * @param TKey $index
-	 * @return TValue
-	 */
-	public function offsetGet($index) { }
-
-	/**
-	 * @param TKey $index
-	 * @param TValue $newval
-	 * @return void
-	 */
-	public function offsetSet($index, $newval) { }
-
-	/**
-	 * @param TKey $index
-	 * @return void
-	 */
-	public function offsetUnset($index) { }
-
-	/**
 	 * @param TValue $value
 	 * @return void
 	 */

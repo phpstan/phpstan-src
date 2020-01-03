@@ -50,4 +50,9 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testIndirectInheritanceBug2740(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug2740.php'], []);
+	}
+
 }

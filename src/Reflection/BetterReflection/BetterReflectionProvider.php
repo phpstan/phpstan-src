@@ -6,6 +6,7 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -71,6 +72,9 @@ class BetterReflectionProvider implements ReflectionProvider
 	/** @var Parser */
 	private $parser;
 
+	/** @var \PHPStan\File\FileHelper */
+	private $fileHelper;
+
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
 	private $functionReflections = [];
 
@@ -91,6 +95,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		Standard $printer,
 		Parser $parser,
+		FileHelper $fileHelper,
 		FunctionReflector $functionReflector,
 		ConstantReflector $constantReflector
 	)
@@ -105,6 +110,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 		$this->printer = $printer;
 		$this->parser = $parser;
+		$this->fileHelper = $fileHelper;
 		$this->functionReflector = $functionReflector;
 		$this->constantReflector = $constantReflector;
 	}
@@ -185,7 +191,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			}
 		}
 
-		$filename = $this->relativePathHelper->getRelativePath($scopeFile);
+		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile));
 		$className = $this->anonymousClassNameHelper->getAnonymousClassName(
 			$classNode,
 			$scopeFile

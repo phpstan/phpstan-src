@@ -143,7 +143,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$cache = new Cache(new MemoryCacheStorage());
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$relativePathHelper = new FuzzyRelativePathHelper($currentWorkingDirectory, DIRECTORY_SEPARATOR, []);
-		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), $relativePathHelper));
+		$fileHelper = new FileHelper($currentWorkingDirectory);
+		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper($fileHelper, $relativePathHelper));
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
 		$functionReflectionFactory = $this->getFunctionReflectionFactory(
 			$functionCallStatementFinder,
@@ -161,7 +162,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$functionReflectionFactory,
 				$relativePathHelper,
 				$anonymousClassNameHelper,
-				$parser
+				$parser,
+				$fileHelper
 			) implements BetterReflectionProviderFactory {
 
 				/** @var \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider */
@@ -185,6 +187,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				/** @var Parser */
 				private $parser;
 
+				/** @var \PHPStan\File\FileHelper */
+				private $fileHelper;
+
 				public function __construct(
 					ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 					Container $container,
@@ -192,7 +197,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					FunctionReflectionFactory $functionReflectionFactory,
 					RelativePathHelper $relativePathHelper,
 					AnonymousClassNameHelper $anonymousClassNameHelper,
-					Parser $parser
+					Parser $parser,
+					FileHelper $fileHelper
 				)
 				{
 					$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
@@ -202,6 +208,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$this->relativePathHelper = $relativePathHelper;
 					$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 					$this->parser = $parser;
+					$this->fileHelper = $fileHelper;
 				}
 
 				public function create(
@@ -221,6 +228,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 						$this->anonymousClassNameHelper,
 						$this->container->getByType(Standard::class),
 						$this->parser,
+						$this->fileHelper,
 						$functionReflector,
 						$constantReflector
 					);
@@ -325,7 +333,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);
 		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), $relativePathHelper);
+		$fileHelper = new FileHelper($currentWorkingDirectory);
+		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
 		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
 		$functionReflectionFactory = $this->getFunctionReflectionFactory(
 			$functionCallStatementFinder,
@@ -339,6 +348,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			self::getContainer()->getByType(Standard::class),
 			$anonymousClassNameHelper,
 			self::getContainer()->getByType(Parser::class),
+			$fileHelper,
 			$relativePathHelper,
 			self::getContainer()->getByType(StubPhpDocProvider::class)
 		);

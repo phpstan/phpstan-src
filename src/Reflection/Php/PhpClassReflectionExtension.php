@@ -429,7 +429,7 @@ class PhpClassReflectionExtension
 				$stubPhpDocParameterTypes = [];
 				$stubPhpDocParameterVariadicity = [];
 				if (count($variantNames) === 1) {
-					$stubPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
+					$stubPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName());
 					if ($stubPhpDoc !== null) {
 						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
 						$templateTypeMap = $declaringClass->getActiveTemplateTypeMap();
@@ -486,7 +486,7 @@ class PhpClassReflectionExtension
 		}
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodReflection->getName());
+		$resolvedPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName());
 		$stubPhpDocString = null;
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== false) {
@@ -861,6 +861,39 @@ class PhpClassReflectionExtension
 
 		if ($isPhpDocBlockExplicit || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
 			return $phpDocReturnType;
+		}
+
+		return null;
+	}
+
+	private function findMethodPhpDocIncludingAncestors(string $declaringClassName, string $methodName): ?ResolvedPhpDocBlock
+	{
+		$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodName);
+		if ($resolved !== null) {
+			return $resolved;
+		}
+		if (!$this->stubPhpDocProvider->isKnownClass($declaringClassName)) {
+			return null;
+		}
+		if (!$this->reflectionProvider->hasClass($declaringClassName)) {
+			return null;
+		}
+
+		$ancestors = $this->reflectionProvider->getClass($declaringClassName)->getAncestors();
+		foreach ($ancestors as $ancestor) {
+			if ($ancestor->getName() === $declaringClassName) {
+				continue;
+			}
+			if (!$ancestor->hasNativeMethod($methodName)) {
+				continue;
+			}
+
+			$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($ancestor->getName(), $methodName);
+			if ($resolved === null) {
+				continue;
+			}
+
+			return $resolved;
 		}
 
 		return null;

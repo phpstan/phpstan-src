@@ -301,6 +301,12 @@ class CommandHelper
 				$robotLoader->excludeDirectory($directory);
 			}
 
+			$ignoreDirs = $robotLoader->ignoreDirs;
+			foreach ($container->getParameter('stubFiles') as $stubFile) {
+				$ignoreDirs[] = $stubFile;
+			}
+			$robotLoader->ignoreDirs = $ignoreDirs;
+
 			$robotLoader->register();
 		}
 

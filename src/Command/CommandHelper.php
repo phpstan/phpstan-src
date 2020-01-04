@@ -16,6 +16,7 @@ use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileReader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -109,9 +110,11 @@ class CommandHelper
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
 
-			$pathsString = file_get_contents($pathsFile);
-			if ($pathsString === false) {
-				throw new \PHPStan\ShouldNotHappenException();
+			try {
+				$pathsString = FileReader::read($pathsFile);
+			} catch (\PHPStan\File\CouldNotReadFileException $e) {
+				$errorOutput->writeLineFormatted($e->getMessage());
+				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
 
 			$paths = array_values(array_filter(explode("\n", $pathsString), static function (string $path): bool {
@@ -225,10 +228,7 @@ class CommandHelper
 
 		$memoryLimitFile = $container->getParameter('memoryLimitFile');
 		if (file_exists($memoryLimitFile)) {
-			$memoryLimitFileContents = file_get_contents($memoryLimitFile);
-			if ($memoryLimitFileContents === false) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
+			$memoryLimitFileContents = FileReader::read($memoryLimitFile);
 			$errorOutput->writeLineFormatted('PHPStan crashed in the previous run probably because of excessive memory consumption.');
 			$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
 			$errorOutput->writeLineFormatted('');

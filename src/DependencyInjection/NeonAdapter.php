@@ -9,6 +9,7 @@ use Nette\DI\Definitions\Statement;
 use Nette\Neon\Entity;
 use Nette\Neon\Neon;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileReader;
 
 class NeonAdapter implements Adapter
 {
@@ -26,10 +27,8 @@ class NeonAdapter implements Adapter
 	 */
 	public function load(string $file): array
 	{
-		$contents = file_get_contents($file);
-		if ($contents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
+		$contents = FileReader::read($file);
+
 		return $this->process((array) Neon::decode($contents), '', $file);
 	}
 

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use Nette\Utils\Json;
+use PHPStan\File\FileReader;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\Composer\Psr\Psr0Mapping;
 use Roave\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
@@ -41,18 +42,10 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$composerJsonPath = $installationPath . '/composer.json';
 		$installedJsonPath = $installationPath . '/vendor/composer/installed.json';
 
-		$composerJsonContents = file_get_contents($composerJsonPath);
-		if ($composerJsonContents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
+		$composerJsonContents = FileReader::read($composerJsonPath);
 		$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
 
-		$installedJsonContents = file_get_contents($installedJsonPath);
-		if ($installedJsonContents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
+		$installedJsonContents = FileReader::read($installedJsonPath);
 		$installed = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
 
 		$classMapPaths = array_merge(

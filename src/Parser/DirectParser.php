@@ -4,6 +4,7 @@ namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
 use PhpParser\NodeTraverser;
+use PHPStan\File\FileReader;
 
 class DirectParser implements Parser
 {
@@ -26,11 +27,7 @@ class DirectParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		$contents = file_get_contents($file);
-		if ($contents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-		return $this->parseString($contents);
+		return $this->parseString(FileReader::read($file));
 	}
 
 	/**

@@ -326,10 +326,13 @@ class IntersectionType implements CompoundType
 
 	public function toBoolean(): BooleanType
 	{
-		/** @var BooleanType $type */
 		$type = $this->intersectTypes(static function (Type $type): BooleanType {
 			return $type->toBoolean();
 		});
+
+		if (!$type instanceof BooleanType) {
+			return new BooleanType();
+		}
 
 		return $type;
 	}

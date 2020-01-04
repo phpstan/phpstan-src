@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -418,6 +419,12 @@ class IntersectionTypeTest extends \PHPStan\Testing\TestCase
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
 		);
+	}
+
+	public function testToBooleanCrash(): void
+	{
+		$type = new IntersectionType([new NeverType(), new NonEmptyArrayType()]);
+		$this->assertSame('bool', $type->toBoolean()->describe(VerbosityLevel::precise()));
 	}
 
 }

@@ -13,6 +13,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -65,7 +66,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	{
 		if ($type instanceof GenericClassStringType) {
 			$genericType = $type->getGenericType();
-			if ($genericType instanceof MixedType) {
+			if ($genericType instanceof MixedType && !$genericType instanceof TemplateMixedType) {
 				return TrinaryLogic::createMaybe();
 			}
 			if ($genericType instanceof StaticType) {

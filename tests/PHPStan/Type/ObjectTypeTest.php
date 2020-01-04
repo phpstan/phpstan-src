@@ -7,6 +7,9 @@ use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class ObjectTypeTest extends \PHPStan\Testing\TestCase
 {
@@ -311,6 +314,36 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				new ObjectType(\Throwable::class, new ObjectType('Exception')),
 				TrinaryLogic::createNo(),
 			],
+			[
+				new ObjectType(\DateTimeInterface::class),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass(\DateTimeInterface::class),
+					'T',
+					new ObjectType(\DateTimeInterface::class),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new ObjectType(\DateTimeInterface::class),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass(\DateTime::class),
+					'T',
+					new ObjectType(\DateTime::class),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new ObjectType(\DateTime::class),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass(\DateTimeInterface::class),
+					'T',
+					new ObjectType(\DateTimeInterface::class),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createMaybe(),
+			],
 		];
 	}
 
@@ -347,6 +380,26 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				new ObjectType(\Traversable::class),
 				new GenericObjectType(\Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
 				TrinaryLogic::createYes(),
+			],
+			[
+				new ObjectType(\DateTimeInterface::class),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass(\DateTimeInterface::class),
+					'T',
+					new ObjectType(\DateTimeInterface::class),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new ObjectType(\DateTime::class),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass(\DateTimeInterface::class),
+					'T',
+					new ObjectType(\DateTimeInterface::class),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}

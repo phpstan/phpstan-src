@@ -13,6 +13,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\Generic\TemplateObjectWithoutClassType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -1125,8 +1126,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					),
 					new ObjectType('DateTime'),
 				],
-				UnionType::class,
-				'DateTime|T of DateTime (function a(), parameter)',
+				ObjectType::class,
+				'DateTime',
 			],
 			[
 				[
@@ -2244,8 +2245,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					),
 					new ObjectType('DateTime'),
 				],
-				IntersectionType::class,
-				'DateTime&T of DateTime (function a(), parameter)',
+				TemplateObjectType::class,
+				'T of DateTime (function a(), parameter)',
 			],
 			[
 				[

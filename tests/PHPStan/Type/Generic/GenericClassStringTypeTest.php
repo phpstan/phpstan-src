@@ -122,7 +122,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 					TemplateTypeVariance::createInvariant()
 				)),
 				new ConstantStringType(\Throwable::class),
-				TrinaryLogic::createYes(), // should be no
+				TrinaryLogic::createNo(),
 			],
 			[
 				new GenericClassStringType(new StaticType(\Exception::class)),

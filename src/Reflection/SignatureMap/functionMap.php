@@ -11419,7 +11419,7 @@ return [
 'SQLite3Result::__construct' => ['void'],
 'SQLite3Result::columnName' => ['string', 'column_number'=>'int'],
 'SQLite3Result::columnType' => ['int', 'column_number'=>'int'],
-'SQLite3Result::fetchArray' => ['array', 'mode='=>'int'],
+'SQLite3Result::fetchArray' => ['array|false', 'mode='=>'int'],
 'SQLite3Result::finalize' => ['bool'],
 'SQLite3Result::numColumns' => ['int'],
 'SQLite3Result::reset' => ['bool'],

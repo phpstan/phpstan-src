@@ -97,7 +97,7 @@ class ConstantStringTypeTest extends TestCase
 					new ObjectType(\Exception::class),
 					TemplateTypeVariance::createInvariant()
 				)),
-				TrinaryLogic::createMaybe(), // should be no
+				TrinaryLogic::createNo(),
 			],
 			[
 				new ConstantStringType(\stdClass::class),

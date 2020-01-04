@@ -78,6 +78,13 @@ class GenericClassStringType extends ClassStringType
 
 		if ($type instanceof ConstantStringType) {
 			$genericType = $this->type;
+			if ($genericType instanceof TemplateType) {
+				$isSuperTypeOf = $genericType->isSuperTypeOf(new ObjectType($type->getValue()));
+				if ($isSuperTypeOf->maybe()) {
+					return TrinaryLogic::createYes();
+				}
+				return $isSuperTypeOf;
+			}
 			if ($genericType instanceof MixedType) {
 				return TrinaryLogic::createYes();
 			}
@@ -86,14 +93,6 @@ class GenericClassStringType extends ClassStringType
 			}
 
 			$isSuperType = $genericType->isSuperTypeOf(new ObjectType($type->getValue()));
-			if ($genericType instanceof TemplateType) {
-				if ($isSuperType->maybe()) {
-					return TrinaryLogic::createYes();
-				}
-
-				return $isSuperType;
-			}
-
 			if ($isSuperType->maybe()) {
 				return TrinaryLogic::createNo();
 			}

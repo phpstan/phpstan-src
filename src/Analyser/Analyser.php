@@ -88,7 +88,9 @@ class Analyser
 	{
 		$errors = [];
 
-		foreach ($this->ignoreErrors as $ignoreError) {
+		$otherIgnoreErrors = [];
+		$ignoreErrorsByFile = [];
+		foreach ($this->ignoreErrors as $i => $ignoreError) {
 			try {
 				if (is_array($ignoreError)) {
 					if (!isset($ignoreError['message'])) {
@@ -98,15 +100,36 @@ class Analyser
 						);
 						continue;
 					}
-					if (!isset($ignoreError['path']) && !isset($ignoreError['paths'])) {
-						$errors[] = sprintf(
-							'Ignored error %s is missing a path.',
-							Json::encode($ignoreError)
-						);
+					if (!isset($ignoreError['path'])) {
+						if (!isset($ignoreError['paths'])) {
+							$errors[] = sprintf(
+								'Ignored error %s is missing a path.',
+								Json::encode($ignoreError)
+							);
+						}
+
+						$otherIgnoreErrors[] = [
+							'index' => $i,
+							'ignoreError' => $ignoreError,
+						];
+					} elseif (is_file($ignoreError['path'])) {
+						$ignoreErrorsByFile[$ignoreError['path']][] = [
+							'index' => $i,
+							'ignoreError' => $ignoreError,
+						];
+					} else {
+						$otherIgnoreErrors[] = [
+							'index' => $i,
+							'ignoreError' => $ignoreError,
+						];
 					}
 
 					$ignoreMessage = $ignoreError['message'];
 				} else {
+					$otherIgnoreErrors[] = [
+						'index' => $i,
+						'ignoreError' => $ignoreError,
+					];
 					$ignoreMessage = $ignoreError;
 				}
 
@@ -171,63 +194,98 @@ class Analyser
 
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
 		$addErrors = [];
-		$errors = array_values(array_filter($errors, function (Error $error) use (&$unmatchedIgnoredErrors, &$addErrors): bool {
-			foreach ($this->ignoreErrors as $i => $ignore) {
-				$shouldBeIgnored = false;
-				if (is_string($ignore)) {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null);
+
+		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$addErrors): bool {
+			$shouldBeIgnored = false;
+			if (is_string($ignore)) {
+				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null);
+				if ($shouldBeIgnored) {
+					unset($unmatchedIgnoredErrors[$i]);
+				}
+			} else {
+				if (isset($ignore['path'])) {
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['path']);
 					if ($shouldBeIgnored) {
-						unset($unmatchedIgnoredErrors[$i]);
+						if (isset($ignore['count'])) {
+							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
+							$realCount++;
+							$unmatchedIgnoredErrors[$i]['realCount'] = $realCount;
+
+							if ($realCount > $ignore['count']) {
+								$shouldBeIgnored = false;
+								if (!isset($unmatchedIgnoredErrors[$i]['file'])) {
+									$unmatchedIgnoredErrors[$i]['file'] = $error->getFile();
+									$unmatchedIgnoredErrors[$i]['line'] = $error->getLine();
+								}
+							}
+						} else {
+							unset($unmatchedIgnoredErrors[$i]);
+						}
+					}
+				} elseif (isset($ignore['paths'])) {
+					foreach ($ignore['paths'] as $j => $ignorePath) {
+						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignorePath);
+						if ($shouldBeIgnored) {
+							if (isset($unmatchedIgnoredErrors[$i])) {
+								if (!is_array($unmatchedIgnoredErrors[$i])) {
+									throw new \PHPStan\ShouldNotHappenException();
+								}
+								unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
+								if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
+									unset($unmatchedIgnoredErrors[$i]);
+								}
+							}
+							break;
+						}
 					}
 				} else {
-					if (isset($ignore['path'])) {
-						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['path']);
-						if ($shouldBeIgnored) {
-							if (isset($ignore['count'])) {
-								$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
-								$realCount++;
-								$unmatchedIgnoredErrors[$i]['realCount'] = $realCount;
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+			}
 
-								if ($realCount > $ignore['count']) {
-									$shouldBeIgnored = false;
-									if (!isset($unmatchedIgnoredErrors[$i]['file'])) {
-										$unmatchedIgnoredErrors[$i]['file'] = $error->getFile();
-										$unmatchedIgnoredErrors[$i]['line'] = $error->getLine();
-									}
-								}
-							} else {
-								unset($unmatchedIgnoredErrors[$i]);
-							}
-						}
-					} elseif (isset($ignore['paths'])) {
-						foreach ($ignore['paths'] as $j => $ignorePath) {
-							$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignorePath);
-							if ($shouldBeIgnored) {
-								if (isset($unmatchedIgnoredErrors[$i])) {
-									if (!is_array($unmatchedIgnoredErrors[$i])) {
-										throw new \PHPStan\ShouldNotHappenException();
-									}
-									unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
-									if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
-										unset($unmatchedIgnoredErrors[$i]);
-									}
-								}
-								break;
-							}
-						}
-					} else {
-						throw new \PHPStan\ShouldNotHappenException();
+			if ($shouldBeIgnored) {
+				if (!$error->canBeIgnored()) {
+					$addErrors[] = sprintf(
+						'Error message "%s" cannot be ignored, use excludes_analyse instead.',
+						$error->getMessage()
+					);
+					return true;
+				}
+				return false;
+			}
+
+			return true;
+		};
+
+		$errors = array_values(array_filter($errors, static function (Error $error) use ($otherIgnoreErrors, $ignoreErrorsByFile, $processIgnoreError): bool {
+			if (isset($ignoreErrorsByFile[$error->getFilePath()])) {
+				foreach ($ignoreErrorsByFile[$error->getFilePath()] as $ignoreError) {
+					$i = $ignoreError['index'];
+					$ignore = $ignoreError['ignoreError'];
+					$result = $processIgnoreError($error, $i, $ignore);
+					if (!$result) {
+						return false;
 					}
 				}
+			}
 
-				if ($shouldBeIgnored) {
-					if (!$error->canBeIgnored()) {
-						$addErrors[] = sprintf(
-							'Error message "%s" cannot be ignored, use excludes_analyse instead.',
-							$error->getMessage()
-						);
-						return true;
+			if (isset($ignoreErrorsByFile[$error->getTraitFilePath()])) {
+				foreach ($ignoreErrorsByFile[$error->getTraitFilePath()] as $ignoreError) {
+					$i = $ignoreError['index'];
+					$ignore = $ignoreError['ignoreError'];
+					$result = $processIgnoreError($error, $i, $ignore);
+					if (!$result) {
+						return false;
 					}
+				}
+			}
+
+			foreach ($otherIgnoreErrors as $ignoreError) {
+				$i = $ignoreError['index'];
+				$ignore = $ignoreError['ignoreError'];
+
+				$result = $processIgnoreError($error, $i, $ignore);
+				if (!$result) {
 					return false;
 				}
 			}

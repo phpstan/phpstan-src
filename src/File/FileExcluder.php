@@ -15,10 +15,12 @@ class FileExcluder
 	/**
 	 * @param FileHelper $fileHelper
 	 * @param string[] $analyseExcludes
+	 * @param string[] $stubFiles
 	 */
 	public function __construct(
 		FileHelper $fileHelper,
-		array $analyseExcludes
+		array $analyseExcludes,
+		array $stubFiles
 	)
 	{
 		$this->analyseExcludes = array_map(function (string $exclude) use ($fileHelper): string {
@@ -36,7 +38,7 @@ class FileExcluder
 			}
 
 			return $fileHelper->absolutizePath($normalized);
-		}, $analyseExcludes);
+		}, array_merge($analyseExcludes, $stubFiles));
 	}
 
 	public function isExcludedFromAnalysing(string $file): bool

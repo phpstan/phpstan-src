@@ -19,7 +19,7 @@ class FileExcluderTest extends \PHPStan\Testing\TestCase
 	{
 		$this->skipIfNotOnWindows();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, []);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
@@ -129,7 +129,7 @@ class FileExcluderTest extends \PHPStan\Testing\TestCase
 	{
 		$this->skipIfNotOnUnix();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, []);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}

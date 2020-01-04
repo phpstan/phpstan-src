@@ -325,6 +325,7 @@ services:
 		class: PHPStan\File\FileExcluder
 		arguments:
 			analyseExcludes: %excludes_analyse%
+			stubFiles: %stubFiles%
 
 	-
 		class: PHPStan\File\FileFinder

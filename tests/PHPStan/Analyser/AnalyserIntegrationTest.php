@@ -189,6 +189,12 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertSame(PHP_VERSION_ID >= 70400 ? 22 : 27, $errors[0]->getLine());
 	}
 
+	public function testPropertyAssignIntersectionStaticTypeBug(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/property-assign-intersection-static-type-bug.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

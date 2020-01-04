@@ -45,10 +45,6 @@ class PropertyReflectionFinder
 
 	private function findPropertyReflection(Type $propertyHolderType, string $propertyName, Scope $scope, bool $fetchedOnThis): ?FoundPropertyReflection
 	{
-		if (!$propertyHolderType->hasProperty($propertyName)->yes()) {
-			return null;
-		}
-
 		$transformedPropertyHolderType = TypeTraverser::map($propertyHolderType, static function (Type $type, callable $traverse) use ($scope, $fetchedOnThis): Type {
 			if ($type instanceof StaticType) {
 				if ($fetchedOnThis && $scope->isInClass()) {
@@ -61,6 +57,10 @@ class PropertyReflectionFinder
 
 			return $traverse($type);
 		});
+
+		if (!$transformedPropertyHolderType->hasProperty($propertyName)->yes()) {
+			return null;
+		}
 
 		$originalProperty = $transformedPropertyHolderType->getProperty($propertyName, $scope);
 		$readableType = $this->transformPropertyType($originalProperty->getReadableType(), $transformedPropertyHolderType, $scope, $fetchedOnThis);

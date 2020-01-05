@@ -31,9 +31,14 @@ class FileNodesFetcher
 		$nodeTraverser->addVisitor($this->cachingVisitor);
 
 		$contents = FileReader::read($fileName);
+		$locatedSource = new LocatedSource($contents, $fileName);
 
-		/** @var \PhpParser\Node[] $ast */
-		$ast = $this->phpParser->parse($contents);
+		try {
+			/** @var \PhpParser\Node[] $ast */
+			$ast = $this->phpParser->parse($contents);
+		} catch (\PhpParser\Error $e) {
+			return new FetchedNodesResult([], [], [], $locatedSource);
+		}
 		$this->cachingVisitor->reset($fileName);
 		$nodeTraverser->traverse($ast);
 
@@ -56,7 +61,7 @@ class FileNodesFetcher
 			$classNodes,
 			$functionNodes,
 			$constantNodes,
-			new LocatedSource($contents, $fileName)
+			$locatedSource
 		);
 	}
 

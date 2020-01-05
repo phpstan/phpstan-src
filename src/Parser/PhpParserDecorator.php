@@ -22,7 +22,11 @@ class PhpParserDecorator implements \PhpParser\Parser
 	 */
 	public function parse(string $code, ?ErrorHandler $errorHandler = null): array
 	{
-		return $this->wrappedParser->parseString($code);
+		try {
+			return $this->wrappedParser->parseString($code);
+		} catch (\PHPStan\Parser\ParserErrorsException $e) {
+			throw new \PhpParser\Error($e->getMessage());
+		}
 	}
 
 }

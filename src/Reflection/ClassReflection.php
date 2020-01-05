@@ -84,6 +84,9 @@ class ClassReflection implements ReflectionWithFilename
 	/** @var array<string, bool> */
 	private $subclasses = [];
 
+	/** @var string|false|null */
+	private $filename;
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
@@ -127,19 +130,23 @@ class ClassReflection implements ReflectionWithFilename
 	 */
 	public function getFileName()
 	{
+		if (isset($this->filename)) {
+			return $this->filename;
+		}
+
 		if ($this->anonymousFilename !== null) {
-			return $this->anonymousFilename;
+			return $this->filename = $this->anonymousFilename;
 		}
 		$fileName = $this->reflection->getFileName();
 		if ($fileName === false) {
-			return false;
+			return $this->filename = false;
 		}
 
 		if (!file_exists($fileName)) {
-			return false;
+			return $this->filename = false;
 		}
 
-		return $fileName;
+		return $this->filename = $fileName;
 	}
 
 	public function getFileNameWithPhpDocs(): ?string

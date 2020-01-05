@@ -48,4 +48,9 @@ class UnsetRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug2752(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2752.php'], []);
+	}
+
 }

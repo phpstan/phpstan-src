@@ -191,7 +191,7 @@ class StaticType implements TypeWithClassName
 
 	public function isOffsetAccessible(): TrinaryLogic
 	{
-		return $this->getStaticObjectType()->isInstanceOf(\ArrayAccess::class);
+		return $this->getStaticObjectType()->isOffsetAccessible();
 	}
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic

@@ -2503,7 +2503,11 @@ class MutatingScope implements Scope
 				);
 			}
 
-			return $this->invalidateExpression($expr->var)->invalidateExpression(new FuncCall(new Name('count'), [new Node\Arg($expr->var)]));
+			$args = [new Node\Arg($expr->var)];
+
+			return $this->invalidateExpression($expr->var)
+				->invalidateExpression(new FuncCall(new Name\FullyQualified('count'), $args))
+				->invalidateExpression(new FuncCall(new Name('count'), $args));
 		}
 
 		return $this;

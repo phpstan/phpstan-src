@@ -34,6 +34,8 @@ class Foo
 					assertType('int', count($list));
 				}
 
+				assertType('int', count($list));
+
 				if (count($list) === 1) {
 					assertType('int', count($list));
 					break;

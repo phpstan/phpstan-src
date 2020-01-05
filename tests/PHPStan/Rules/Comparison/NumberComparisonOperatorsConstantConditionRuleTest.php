@@ -34,4 +34,14 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2648(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2648-rule.php'], []);
+	}
+
+	public function testBug2648Namespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2648-namespace-rule.php'], []);
+	}
+
 }

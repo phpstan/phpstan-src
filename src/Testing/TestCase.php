@@ -3,6 +3,7 @@
 namespace PHPStan\Testing;
 
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
@@ -450,7 +451,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	{
 		$container = self::getContainer();
 
-		return new ScopeFactory(
+		return new DirectScopeFactory(
 			MutatingScope::class,
 			$broker,
 			$broker->getDynamicReturnTypeExtensionRegistryProvider(),
@@ -458,7 +459,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			new \PhpParser\PrettyPrinter\Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
-			$container->getByType(Container::class)
+			$container
 		);
 	}
 

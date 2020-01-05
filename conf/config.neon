@@ -263,9 +263,11 @@ services:
 		class: PHPStan\Analyser\FileAnalyser
 
 	-
-		class: PHPStan\Analyser\ScopeFactory
+		class: PHPStan\Analyser\LazyScopeFactory
 		arguments:
 			scopeClass: %scopeClass%
+		autowired:
+			- PHPStan\Analyser\ScopeFactory
 
 	-
 		class: PHPStan\Analyser\NodeScopeResolver

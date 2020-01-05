@@ -10342,7 +10342,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 		$scopeFactory = $this->createScopeFactory($broker, $typeSpecifier);
 		if (count($dynamicConstantNames) > 0) {
-			$reflectionProperty = new \ReflectionProperty(ScopeFactory::class, 'dynamicConstantNames');
+			$reflectionProperty = new \ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
 			$reflectionProperty->setAccessible(true);
 			$reflectionProperty->setValue($scopeFactory, $dynamicConstantNames);
 		}

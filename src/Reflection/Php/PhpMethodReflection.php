@@ -281,12 +281,13 @@ class PhpMethodReflection implements MethodReflection
 			if ($modifiedTime === false) {
 				$modifiedTime = time();
 			}
-			$key = sprintf('variadic-method-%s-%s-%s-%d-v2', $declaringClass->getName(), $this->reflection->getName(), $filename, $modifiedTime);
-			$cachedResult = $this->cache->load($key);
+			$key = sprintf('variadic-method-%s-%s-%s', $declaringClass->getName(), $this->reflection->getName(), $filename);
+			$variableCacheKey = sprintf('%d-v2', $modifiedTime);
+			$cachedResult = $this->cache->load($key, $variableCacheKey);
 			if ($cachedResult === null || !is_bool($cachedResult)) {
 				$nodes = $this->parser->parseFile($filename);
 				$result = $this->callsFuncGetArgs($declaringClass, $nodes);
-				$this->cache->save($key, $result);
+				$this->cache->save($key, $variableCacheKey, $result);
 				return $result;
 			}
 

@@ -17,19 +17,20 @@ class Cache
 	 * @param string $key
 	 * @return mixed|null
 	 */
-	public function load(string $key)
+	public function load(string $key, string $variableKey)
 	{
-		return $this->storage->load($key);
+		return $this->storage->load($key, $variableKey);
 	}
 
 	/**
 	 * @param string $key
+	 * @param string $variableKey
 	 * @param mixed $data
 	 * @return void
 	 */
-	public function save(string $key, $data): void
+	public function save(string $key, string $variableKey, $data): void
 	{
-		$this->storage->save($key, $data);
+		$this->storage->save($key, $variableKey, $data);
 	}
 
 }

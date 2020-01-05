@@ -23,22 +23,36 @@ class FileCacheStorage implements CacheStorage
 
 	/**
 	 * @param string $key
+	 * @param string $variableKey
 	 * @return mixed|null
 	 */
-	public function load(string $key)
+	public function load(string $key, string $variableKey)
 	{
-		return (function (string $key) {
+		return (function (string $key, string $variableKey) {
 			$filePath = $this->getFilePath($key);
-			return is_file($filePath) ? require $filePath : null;
-		})($key);
+			if (!is_file($filePath)) {
+				return null;
+			}
+
+			$cacheItem = require $filePath;
+			if (!$cacheItem instanceof CacheItem) {
+				return null;
+			}
+			if (!$cacheItem->isVariableKeyValid($variableKey)) {
+				return null;
+			}
+
+			return $cacheItem->getData();
+		})($key, $variableKey);
 	}
 
 	/**
 	 * @param string $key
+	 * @param string $variableKey
 	 * @param mixed $data
 	 * @return void
 	 */
-	public function save(string $key, $data): void
+	public function save(string $key, string $variableKey, $data): void
 	{
 		$path = $this->getFilePath($key);
 		$this->makeDir(dirname($path));
@@ -46,7 +60,7 @@ class FileCacheStorage implements CacheStorage
 			$path,
 			sprintf(
 				"<?php declare(strict_types = 1);\n\nreturn %s;",
-				var_export($data, true)
+				var_export(new CacheItem($variableKey, $data), true)
 			)
 		);
 		if ($success === false) {

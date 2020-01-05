@@ -152,15 +152,15 @@ class FileTypeMapper
 		} catch (\OutOfBoundsException $e) {
 			// skip
 		}
-		$cacheKey = sprintf('phpdocstring-%s-%s', $phpDocString, $phpDocParserVersion);
-		$phpDocNodeSerializedString = $this->cache->load($cacheKey);
+		$cacheKey = sprintf('phpdocstring-%s', $phpDocString);
+		$phpDocNodeSerializedString = $this->cache->load($cacheKey, $phpDocParserVersion);
 		if ($phpDocNodeSerializedString !== null) {
 			return unserialize($phpDocNodeSerializedString);
 		}
 
 		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);
 		if ($this->shouldPhpDocNodeBeCachedToDisk($phpDocNode)) {
-			$this->cache->save($cacheKey, serialize($phpDocNode));
+			$this->cache->save($cacheKey, $phpDocParserVersion, serialize($phpDocNode));
 		}
 
 		return $phpDocNode;
@@ -190,12 +190,13 @@ class FileTypeMapper
 			if ($modifiedTime === false) {
 				$modifiedTime = time();
 			}
-			$cacheKey = sprintf('%s-phpdocstring-%d', $fileName, $modifiedTime);
-			$map = $this->cache->load($cacheKey);
+			$cacheKey = sprintf('%s-phpdocstring', $fileName);
+			$modifiedTimeString = sprintf('%d', $modifiedTime);
+			$map = $this->cache->load($cacheKey, $modifiedTimeString);
 
 			if ($map === null) {
 				$map = $this->createResolvedPhpDocMap($fileName);
-				$this->cache->save($cacheKey, $map);
+				$this->cache->save($cacheKey, $modifiedTimeString, $map);
 			}
 
 			$this->memoryCache[$fileName] = $map;

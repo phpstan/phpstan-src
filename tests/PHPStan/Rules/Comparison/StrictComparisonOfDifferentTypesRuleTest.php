@@ -163,11 +163,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					438,
 				],
 				[
-					'Strict comparison using === between int|string and 1.0 will always evaluate to false.',
+					'Strict comparison using === between int<2, max>|int<min, 0>|string and 1.0 will always evaluate to false.',
 					464,
 				],
 				[
-					'Strict comparison using === between int|string and stdClass will always evaluate to false.',
+					'Strict comparison using === between int<2, max>|int<min, 0>|string and stdClass will always evaluate to false.',
 					466,
 				],
 				[
@@ -341,11 +341,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					438,
 				],
 				[
-					'Strict comparison using === between int|string and 1.0 will always evaluate to false.',
+					'Strict comparison using === between int<2, max>|int<min, 0>|string and 1.0 will always evaluate to false.',
 					464,
 				],
 				[
-					'Strict comparison using === between int|string and stdClass will always evaluate to false.',
+					'Strict comparison using === between int<2, max>|int<min, 0>|string and stdClass will always evaluate to false.',
 					466,
 				],
 				[

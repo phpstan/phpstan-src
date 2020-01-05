@@ -1368,6 +1368,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
+					IntegerRangeType::fromInterval(1, 2),
+					IntegerRangeType::fromInterval(3, 5),
+				],
+				IntegerRangeType::class,
+				'int<1, 5>',
+			],
+			[
+				[
 					IntegerRangeType::fromInterval(1, 3),
 					IntegerRangeType::fromInterval(7, 9),
 				],
@@ -1395,8 +1403,19 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					IntegerRangeType::fromInterval(1, 3),
 					new ConstantIntegerType(5),
 				],
-				IntegerRangeType::class,
-				'int<1, 5>',
+				UnionType::class,
+				'5|int<1, 3>',
+			],
+			[
+				[
+					new UnionType([
+						IntegerRangeType::fromInterval(null, 1),
+						IntegerRangeType::fromInterval(3, null),
+					]),
+					new ConstantIntegerType(2),
+				],
+				IntegerType::class,
+				'int',
 			],
 			[
 				[
@@ -2823,7 +2842,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new ConstantIntegerType(1),
 				UnionType::class,
-				'int|string',
+				'int<2, max>|int<min, 0>|string',
 			],
 			[
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
@@ -2969,6 +2988,51 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				IntegerRangeType::fromInterval(null, 7),
 				IntegerRangeType::class,
 				'int<8, max>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 2),
+				IntegerRangeType::fromInterval(-1, 3),
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 2),
+				IntegerRangeType::fromInterval(0, 3),
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 2),
+				IntegerRangeType::fromInterval(-1, 2),
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 2),
+				new IntegerType(),
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				IntegerRangeType::fromInterval(null, 1),
+				IntegerRangeType::fromInterval(4, null),
+				IntegerRangeType::class,
+				'int<min, 1>',
+			],
+			[
+				IntegerRangeType::fromInterval(1, null),
+				IntegerRangeType::fromInterval(null, -4),
+				IntegerRangeType::class,
+				'int<1, max>',
+			],
+			[
+				new UnionType([
+					IntegerRangeType::fromInterval(3, null),
+					IntegerRangeType::fromInterval(null, 1),
+				]),
+				IntegerRangeType::fromInterval(4, null),
+				UnionType::class,
+				'3|int<min, 1>',
 			],
 		];
 	}

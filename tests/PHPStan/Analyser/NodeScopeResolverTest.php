@@ -2339,7 +2339,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'@$stringOrNull ?: 12',
 			],
 			[
-				'int',
+				'int<1, max>|int<min, -1>',
 				'$integer ?: 12',
 			],
 			[
@@ -5236,7 +5236,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_filter($union)',
 			],
 			[
-				'array<int, int|true>',
+				'array<int, int<1, max>|int<min, -1>|true>',
 				'array_filter($withPossiblyFalsey)',
 			],
 			[

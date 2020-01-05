@@ -10,16 +10,16 @@ class Foo
 	 */
 	public function doFoo(array $integers, string $string, $mixedIsset, $mixedArrayKeyExists)
 	{
-		if (rand(0, 1) === 0) {
+		if (rand(0, 10) === 0) {
 			$array = [
 				'a' => 1,
 				'b' => 2,
 			];
-		} elseif (rand(0, 1) === 0) {
+		} elseif (rand(0, 11) === 0) {
 			$array = [
 				'a' => 2,
 			];
-		} elseif (rand(0, 1) === 0) {
+		} elseif (rand(0, 12) === 0) {
 			$array = [
 				'a' => 3,
 				'b' => 3,

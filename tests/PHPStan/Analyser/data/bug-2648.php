@@ -28,7 +28,7 @@ class Foo
 		if (count($list) > 1) {
 			assertType('int<2, max>', count($list));
 			foreach ($list as $key => $item) {
-				assertType('int', count($list));
+				assertType('int<2, max>|int<min, 0>', count($list));
 				if ($item === false) {
 					unset($list[$key]);
 					assertType('int', count($list));

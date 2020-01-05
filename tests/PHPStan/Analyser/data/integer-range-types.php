@@ -21,6 +21,8 @@ function (int $i) {
 		assertType('int<min, 1>', $i);
 	}
 
+	assertType('int<3, max>|int<min, 1>', $i);
+
 	if ($i < 3 && $i > 5) {
 		assertType('*NEVER*', $i);
 	} else {
@@ -29,9 +31,8 @@ function (int $i) {
 
 	if ($i > 3 && $i < 5) {
 		assertType('4', $i);
-
 	} else {
-		assertType('int<3, max>|int<min, 1>', $i);
+		assertType('3|int<5, max>|int<min, 1>', $i);
 	}
 
 	if ($i >= 3 && $i <= 5) {
@@ -65,7 +66,7 @@ function () {
 
 	$i = 0;
 	while ($i++ < 5) {
-		assertType('int<min, 5>', $i); // should improved to be int<0, 4>
+		assertType('int<min, 5>', $i); // should improved to be int<1, 5>
 	}
 
 	$i = 0;

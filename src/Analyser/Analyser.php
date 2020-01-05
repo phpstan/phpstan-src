@@ -113,7 +113,8 @@ class Analyser
 							'ignoreError' => $ignoreError,
 						];
 					} elseif (is_file($ignoreError['path'])) {
-						$ignoreErrorsByFile[$ignoreError['path']][] = [
+						$normalizedPath = $this->fileHelper->normalizePath($ignoreError['path']);
+						$ignoreErrorsByFile[$normalizedPath][] = [
 							'index' => $i,
 							'ignoreError' => $ignoreError,
 						];
@@ -257,9 +258,10 @@ class Analyser
 			return true;
 		};
 
-		$errors = array_values(array_filter($errors, static function (Error $error) use ($otherIgnoreErrors, $ignoreErrorsByFile, $processIgnoreError): bool {
-			if (isset($ignoreErrorsByFile[$error->getFilePath()])) {
-				foreach ($ignoreErrorsByFile[$error->getFilePath()] as $ignoreError) {
+		$errors = array_values(array_filter($errors, function (Error $error) use ($otherIgnoreErrors, $ignoreErrorsByFile, $processIgnoreError): bool {
+			$filePath = $this->fileHelper->normalizePath($error->getFilePath());
+			if (isset($ignoreErrorsByFile[$filePath])) {
+				foreach ($ignoreErrorsByFile[$filePath] as $ignoreError) {
 					$i = $ignoreError['index'];
 					$ignore = $ignoreError['ignoreError'];
 					$result = $processIgnoreError($error, $i, $ignore);
@@ -269,13 +271,17 @@ class Analyser
 				}
 			}
 
-			if (isset($ignoreErrorsByFile[$error->getTraitFilePath()])) {
-				foreach ($ignoreErrorsByFile[$error->getTraitFilePath()] as $ignoreError) {
-					$i = $ignoreError['index'];
-					$ignore = $ignoreError['ignoreError'];
-					$result = $processIgnoreError($error, $i, $ignore);
-					if (!$result) {
-						return false;
+			$traitFilePath = $error->getTraitFilePath();
+			if ($traitFilePath !== null) {
+				$normalizedTraitFilePath = $this->fileHelper->normalizePath($traitFilePath);
+				if (isset($ignoreErrorsByFile[$normalizedTraitFilePath])) {
+					foreach ($ignoreErrorsByFile[$normalizedTraitFilePath] as $ignoreError) {
+						$i = $ignoreError['index'];
+						$ignore = $ignoreError['ignoreError'];
+						$result = $processIgnoreError($error, $i, $ignore);
+						if (!$result) {
+							return false;
+						}
 					}
 				}
 			}

@@ -378,7 +378,7 @@ class MutatingScope implements Scope
 
 	public function getType(Expr $node): Type
 	{
-		$key = $this->printer->prettyPrintExpr($node);
+		$key = spl_object_hash($node);
 		if (!array_key_exists($key, $this->resolvedTypes)) {
 			$this->resolvedTypes[$key] = $this->resolveType($node);
 		}

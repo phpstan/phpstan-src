@@ -1182,3 +1182,33 @@ class VarAnnotationAboveStmtReturn
 	}
 
 }
+
+/**
+ * @template CollectionKey
+ * @template CollectionValue
+ * @implements \Iterator<CollectionKey, CollectionValue>
+ */
+abstract class CollectionWithArrayKey implements \Iterator
+{
+
+	/** @var array<CollectionKey, CollectionValue> */
+	private $data = [];
+
+	/**
+	 * @param CollectionValue $value
+	 * @param CollectionKey
+	 */
+	public function add($value, $key = null): void
+	{
+		$this->data[$key] = $value;
+	}
+
+	/**
+	 * @return CollectionKey|null
+	 */
+	public function key()
+	{
+		return key($this->data);
+	}
+
+}

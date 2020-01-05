@@ -8,6 +8,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -162,7 +163,7 @@ class ArrayType implements Type
 	public function getIterableKeyType(): Type
 	{
 		$keyType = $this->keyType;
-		if ($keyType instanceof MixedType) {
+		if ($keyType instanceof MixedType && !$keyType instanceof TemplateMixedType) {
 			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 

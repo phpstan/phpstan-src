@@ -167,4 +167,10 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 		);
 	}
 
+	public function testInheritDocTemplateTypeResolution(): void
+	{
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/inherit-doc-template-type-resolution.php'], []);
+	}
+
 }

@@ -432,12 +432,13 @@ class PhpClassReflectionExtension
 				$stubPhpDocParameterTypes = [];
 				$stubPhpDocParameterVariadicity = [];
 				if (count($variantNames) === 1) {
-					$stubPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
+					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
 						return $parameterSignature->getName();
 					}, $methodSignature->getParameters()));
-					if ($stubPhpDoc !== null) {
+					if ($stubPhpDocPair !== null) {
+						[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
 						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
-						$templateTypeMap = $declaringClass->getActiveTemplateTypeMap();
+						$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
 						$returnTag = $stubPhpDoc->getReturnTag();
 						if ($returnTag !== null) {
 							$stubPhpDocReturnType = $returnTag->getType();
@@ -491,9 +492,14 @@ class PhpClassReflectionExtension
 		}
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
-		$resolvedPhpDoc = $this->findMethodPhpDocIncludingAncestors($declaringClassName, $methodReflection->getName(), array_map(static function (\ReflectionParameter $parameter): string {
+		$resolvedPhpDoc = null;
+		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (\ReflectionParameter $parameter): string {
 			return $parameter->getName();
 		}, $methodReflection->getParameters()));
+		$phpDocBlockClassReflection = $declaringClass;
+		if ($stubPhpDocPair !== null) {
+			[$resolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
+		}
 		$stubPhpDocString = null;
 		$phpDocBlock = null;
 		if ($resolvedPhpDoc === null) {
@@ -526,7 +532,6 @@ class PhpClassReflectionExtension
 				}
 			}
 		} else {
-			$phpDocBlockClassReflection = $declaringClass;
 			$isPhpDocBlockExplicit = true;
 			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
@@ -547,7 +552,7 @@ class PhpClassReflectionExtension
 		$isInternal = false;
 		$isFinal = false;
 		if ($resolvedPhpDoc !== null) {
-			if (!isset($phpDocBlockClassReflection) || !isset($isPhpDocBlockExplicit)) {
+			if (!isset($isPhpDocBlockExplicit)) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
@@ -883,25 +888,23 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param string $declaringClassName
+	 * @param ClassReflection $declaringClass
 	 * @param string $methodName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock|null
+	 * @return array{\PHPStan\PhpDoc\ResolvedPhpDocBlock, ClassReflection}|null
 	 */
-	private function findMethodPhpDocIncludingAncestors(string $declaringClassName, string $methodName, array $positionalParameterNames): ?ResolvedPhpDocBlock
+	private function findMethodPhpDocIncludingAncestors(ClassReflection $declaringClass, string $methodName, array $positionalParameterNames): ?array
 	{
+		$declaringClassName = $declaringClass->getName();
 		$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodName, $positionalParameterNames);
 		if ($resolved !== null) {
-			return $resolved;
+			return [$resolved, $declaringClass];
 		}
 		if (!$this->stubPhpDocProvider->isKnownClass($declaringClassName)) {
 			return null;
 		}
-		if (!$this->reflectionProvider->hasClass($declaringClassName)) {
-			return null;
-		}
 
-		$ancestors = $this->reflectionProvider->getClass($declaringClassName)->getAncestors();
+		$ancestors = $declaringClass->getAncestors();
 		foreach ($ancestors as $ancestor) {
 			if ($ancestor->getName() === $declaringClassName) {
 				continue;
@@ -915,7 +918,7 @@ class PhpClassReflectionExtension
 				continue;
 			}
 
-			return $resolved;
+			return [$resolved, $ancestor];
 		}
 
 		return null;

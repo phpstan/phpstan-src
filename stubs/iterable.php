@@ -71,8 +71,9 @@ class Generator implements Iterator
 
 /**
  * @implements Traversable<mixed, mixed>
+ * @implements ArrayAccess<mixed, mixed>
  */
-class SimpleXMLElement implements Traversable
+class SimpleXMLElement implements Traversable, ArrayAccess
 {
 
 }

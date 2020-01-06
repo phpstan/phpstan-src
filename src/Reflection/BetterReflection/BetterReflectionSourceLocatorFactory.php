@@ -95,7 +95,11 @@ class BetterReflectionSourceLocatorFactory
 		$locators = [];
 
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
-			$locators[] = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
+			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
+			if ($locator === null) {
+				continue;
+			}
+			$locators[] =  $locator;
 		}
 
 		if ($this->enableScanningPaths) {

@@ -37,10 +37,16 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$this->enableScanningPaths = $enableScanningPaths;
 	}
 
-	public function create(string $installationPath): SourceLocator
+	public function create(string $installationPath): ?SourceLocator
 	{
 		$composerJsonPath = $installationPath . '/composer.json';
+		if (!is_file($composerJsonPath)) {
+			return null;
+		}
 		$installedJsonPath = $installationPath . '/vendor/composer/installed.json';
+		if (!is_file($installedJsonPath)) {
+			return null;
+		}
 
 		$composerJsonContents = FileReader::read($composerJsonPath);
 		$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);

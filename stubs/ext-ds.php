@@ -546,6 +546,14 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 	public function sorted(callable $comparator = null): Vector
 	{
 	}
+	
+	/**
+	 * @param (callable(TValue): bool)|null $callback
+	 * @return Vector<TValue>
+	 */
+	public function filter(callable $callback = null): Vector
+	{
+	}
 }
 
 /**

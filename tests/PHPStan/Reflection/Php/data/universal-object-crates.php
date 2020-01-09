@@ -8,7 +8,7 @@ class DifferentGetSetTypes
 
 	public function __get($name): DifferentGetSetTypesValue
 	{
-		$this->values[$name] ?: new DifferentGetSetTypesValue();
+		return $this->values[$name] ?: new DifferentGetSetTypesValue();
 	}
 
 	public function __set($name, string $value): void

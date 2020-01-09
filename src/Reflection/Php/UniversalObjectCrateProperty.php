@@ -13,15 +13,20 @@ class UniversalObjectCrateProperty implements \PHPStan\Reflection\PropertyReflec
 	private $declaringClass;
 
 	/** @var \PHPStan\Type\Type */
-	private $type;
+	private $readableType;
+
+	/** @var \PHPStan\Type\Type */
+	private $writableType;
 
 	public function __construct(
 		ClassReflection $declaringClass,
-		Type $type
+		Type $readableType,
+		Type $writableType
 	)
 	{
 		$this->declaringClass = $declaringClass;
-		$this->type = $type;
+		$this->readableType = $readableType;
+		$this->writableType = $writableType;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -46,12 +51,12 @@ class UniversalObjectCrateProperty implements \PHPStan\Reflection\PropertyReflec
 
 	public function getReadableType(): Type
 	{
-		return $this->type;
+		return $this->readableType;
 	}
 
 	public function getWritableType(): Type
 	{
-		return $this->type;
+		return $this->writableType;
 	}
 
 	public function canChangeTypeAfterAssignment(): bool

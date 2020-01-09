@@ -34,6 +34,10 @@ class UniversalObjectCratesClassReflectionExtension
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
+		if ($classReflection->hasNativeProperty($propertyName)) {
+			return false;
+		}
+
 		return self::isUniversalObjectCrate(
 			$this->broker,
 			$this->classes,

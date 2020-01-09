@@ -33,5 +33,5 @@ class Foo extends \stdClass
 
 function () {
 	$foo = new Foo('foo');
-	$foo->doBaz($foo->name); // not reported, is mixed here
+	$foo->doBaz($foo->name); // reported, private property
 };

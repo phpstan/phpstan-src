@@ -72,11 +72,18 @@ class UniversalObjectCratesClassReflectionExtension
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
 		if ($classReflection->hasNativeMethod('__get')) {
-			$type = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__get')->getVariants())->getReturnType();
+			$readableType = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__get')->getVariants())->getReturnType();
 		} else {
-			$type = new MixedType();
+			$readableType = new MixedType();
 		}
-		return new UniversalObjectCrateProperty($classReflection, $type);
+
+		if ($classReflection->hasNativeMethod('__set')) {
+			$writableType = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__set')->getVariants())->getParameters()[1]->getType();
+		} else {
+			$writableType = new MixedType();
+		}
+
+		return new UniversalObjectCrateProperty($classReflection, $readableType, $writableType);
 	}
 
 }

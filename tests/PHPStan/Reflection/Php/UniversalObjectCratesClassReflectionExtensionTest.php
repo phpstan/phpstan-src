@@ -3,6 +3,8 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\Broker\Broker;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 
@@ -40,6 +42,30 @@ class UniversalObjectCratesClassReflectionExtensionTest extends \PHPStan\Testing
 			new StringType(),
 			$extension
 				->getProperty($broker->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
+				->getWritableType()
+		);
+	}
+
+	public function testNativeProperty(): void
+	{
+		require_once __DIR__ . '/data/universal-object-crates.php';
+
+		$broker = self::getContainer()->getByType(Broker::class);
+		$extension = new UniversalObjectCratesClassReflectionExtension([
+			'UniversalObjectCreates\NativeProperty',
+		]);
+		$extension->setBroker($broker);
+
+		$this->assertEquals(
+			new ArrayType(new MixedType(), new MixedType()),
+			$extension
+				->getProperty($broker->getClass('UniversalObjectCreates\NativeProperty'), 'nativeProperty')
+				->getReadableType()
+		);
+		$this->assertEquals(
+			new ArrayType(new MixedType(), new MixedType()),
+			$extension
+				->getProperty($broker->getClass('UniversalObjectCreates\NativeProperty'), 'nativeProperty')
 				->getWritableType()
 		);
 	}

@@ -116,9 +116,11 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testUniversalObjectCrateIssue(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/universal-object-crate.php');
-		$this->assertCount(1, $errors);
+		$this->assertCount(2, $errors);
 		$this->assertSame('Parameter #1 $i of method UniversalObjectCrate\Foo::doBaz() expects int, string given.', $errors[0]->getMessage());
 		$this->assertSame(19, $errors[0]->getLine());
+		$this->assertSame('Parameter #1 $i of method UniversalObjectCrate\Foo::doBaz() expects int, string given.', $errors[1]->getMessage());
+		$this->assertSame(36, $errors[1]->getLine());
 	}
 
 	public function testCustomFunctionWithNameEquivalentInSignatureMap(): void

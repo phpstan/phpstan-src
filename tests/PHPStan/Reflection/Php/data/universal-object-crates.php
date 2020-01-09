@@ -24,3 +24,14 @@ class DifferentGetSetTypesValue
 {
 	public $value = null;
 }
+
+class NativeProperty
+{
+	/** @var array */
+	public $nativeProperty;
+
+	public function __get($name): int
+	{
+		return 42;
+	}
+}

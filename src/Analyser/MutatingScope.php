@@ -2443,12 +2443,15 @@ class MutatingScope implements Scope
 		$variableString = $this->printer->prettyPrintExpr(new Variable($variableName));
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		foreach (array_keys($moreSpecificTypeHolders) as $key) {
-			$matches = \Nette\Utils\Strings::match((string) $key, '#(\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
-			if ($matches === null) {
+			$matches = \Nette\Utils\Strings::matchAll((string) $key, '#\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*#');
+
+			if ($matches === []) {
 				continue;
 			}
 
-			if ($matches[1] !== $variableString) {
+			$matches = array_column($matches, 0);
+
+			if (!in_array($variableString, $matches, true)) {
 				continue;
 			}
 

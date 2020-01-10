@@ -53,11 +53,11 @@ parameters:
 	universalObjectCratesClasses:
 		- stdClass
 	stubFiles:
-		- ../stubs/ReflectionClass.php
-		- ../stubs/iterable.php
-		- ../stubs/ArrayObject.php
-		- ../stubs/WeakReference.php
-		- ../stubs/ext-ds.php
+		- ../stubs/ReflectionClass.stub
+		- ../stubs/iterable.stub
+		- ../stubs/ArrayObject.stub
+		- ../stubs/WeakReference.stub
+		- ../stubs/ext-ds.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

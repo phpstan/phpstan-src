@@ -182,6 +182,12 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createMaybe(), // T isSuperTypeTo mixed
 				TrinaryLogic::createYes(), // mixed isSuperTypeTo T
 			],
+			[
+				$templateType('T', new ObjectWithoutClassType()),
+				new ObjectWithoutClassType(),
+				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createYes(),
+			],
 		];
 	}
 

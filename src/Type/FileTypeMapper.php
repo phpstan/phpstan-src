@@ -18,6 +18,8 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function array_key_exists;
+use function file_exists;
+use function filemtime;
 
 class FileTypeMapper
 {
@@ -189,16 +191,10 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$now = time();
 			$cacheKey = sprintf('%s-phpdocstring', $fileName);
-			$variableCacheKey = implode(',', array_map(static function (string $fileName) use ($now): string {
-				$modifiedTime = filemtime($fileName);
-				if ($modifiedTime === false) {
-					$modifiedTime = $now;
-				}
-
-				return sprintf('%s-%d', $fileName, $modifiedTime);
-			}, $this->getDependentFiles($fileName)));
+			$variableCacheKey = implode(',', array_map(static function (array $file): string {
+				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
+			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
 			if ($map === null) {
@@ -513,6 +509,66 @@ class FileTypeMapper
 		$docComment = \Nette\Utils\Strings::replace($docComment, '#\s+#', ' ');
 
 		return md5(sprintf('%s-%s-%s-%s', $class, $trait, $function, $docComment));
+	}
+
+	/**
+	 * @param string $fileName
+	 * @return array<array{filename: string, modifiedTime: int}>
+	 */
+	private function getCachedDependentFilesWithTimestamps(string $fileName): array
+	{
+		$cacheKey = sprintf('dependentFilesTimestamps-%s', $fileName);
+		$fileModifiedTime = filemtime($fileName);
+		if ($fileModifiedTime === false) {
+			$fileModifiedTime = time();
+		}
+		$variableCacheKey = sprintf('%d', $fileModifiedTime);
+		/** @var array<array{filename: string, modifiedTime: int}>|null $cachedFilesTimestamps */
+		$cachedFilesTimestamps = $this->cache->load($cacheKey, $variableCacheKey);
+		if ($cachedFilesTimestamps !== null) {
+			$useCached = true;
+			foreach ($cachedFilesTimestamps as $cachedFile) {
+				$cachedFilename = $cachedFile['filename'];
+				$cachedTimestamp = $cachedFile['modifiedTime'];
+
+				if (!file_exists($cachedFilename)) {
+					$useCached = false;
+					break;
+				}
+
+				$currentTimestamp = filemtime($cachedFilename);
+				if ($currentTimestamp === false) {
+					$useCached = false;
+					break;
+				}
+
+				if ($currentTimestamp !== $cachedTimestamp) {
+					$useCached = false;
+					break;
+				}
+			}
+
+			if ($useCached) {
+				return $cachedFilesTimestamps;
+			}
+		}
+
+		$filesTimestamps = [];
+		foreach ($this->getDependentFiles($fileName) as $dependentFile) {
+			$dependentFileModifiedTime = filemtime($dependentFile);
+			if ($dependentFileModifiedTime === false) {
+				$dependentFileModifiedTime = time();
+			}
+
+			$filesTimestamps[] = [
+				'filename' => $dependentFile,
+				'modifiedTime' => $dependentFileModifiedTime,
+			];
+		}
+
+		$this->cache->save($cacheKey, $variableCacheKey, $filesTimestamps);
+
+		return $filesTimestamps;
 	}
 
 	/**

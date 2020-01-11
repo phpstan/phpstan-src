@@ -6,6 +6,7 @@ use PHPStan\File\FileReader;
 use PHPStan\Testing\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use function file_exists;
 
 class TraitsCachingIssueIntegrationTest extends TestCase
 {
@@ -129,6 +130,11 @@ class TraitsCachingIssueIntegrationTest extends TestCase
 
 	private function deleteCache(): void
 	{
+		$dir = __DIR__ . '/tmp/cache';
+		if (!file_exists($dir)) {
+			return;
+		}
+
 		$files = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator(__DIR__ . '/tmp/cache', RecursiveDirectoryIterator::SKIP_DOTS),
 			RecursiveIteratorIterator::CHILD_FIRST

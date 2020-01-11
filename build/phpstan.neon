@@ -14,6 +14,7 @@ parameters:
 		- %rootDir%/src/Reflection/SignatureMap/functionMap.php
 		- %rootDir%/src/Reflection/SignatureMap/functionMetadata.php
 		- %rootDir%/tests/*/data/*
+		- %rootDir%/tests/tmp/*
 		- %rootDir%/tests/PHPStan/Analyser/traits/*
 		- %rootDir%/tests/notAutoloaded/*
 		- %rootDir%/tests/PHPStan/Generics/functions.php

@@ -70,6 +70,7 @@
 	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>
 	<exclude-pattern>tests/*/traits</exclude-pattern>
+	<exclude-pattern>tests/tmp</exclude-pattern>
 	<exclude-pattern>tests/notAutoloaded</exclude-pattern>
 	<exclude-pattern>src/Reflection/BetterReflection/BetterReflectionSourceLocatorFactory.php</exclude-pattern>
 	<exclude-pattern>src/Reflection/SignatureMap/functionMap.php</exclude-pattern>

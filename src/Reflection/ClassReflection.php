@@ -773,7 +773,7 @@ class ClassReflection implements ReflectionWithFilename
 			return $this->stubPhpDocBlock;
 		}
 
-		$fileName = $this->reflection->getFileName();
+		$fileName = $this->getFileName();
 		if ($fileName === false) {
 			return null;
 		}

@@ -49,6 +49,9 @@ class FileTypeMapper
 	/** @var array<string, ResolvedPhpDocBlock> */
 	private $resolvedPhpDocBlockCache = [];
 
+	/** @var array<string, bool> */
+	private $alreadyProcessedDependentFiles = [];
+
 	public function __construct(
 		Parser $phpParser,
 		PhpDocStringResolver $phpDocStringResolver,
@@ -186,17 +189,21 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$modifiedTime = filemtime($fileName);
-			if ($modifiedTime === false) {
-				$modifiedTime = time();
-			}
+			$now = time();
 			$cacheKey = sprintf('%s-phpdocstring', $fileName);
-			$modifiedTimeString = sprintf('%d', $modifiedTime);
-			$map = $this->cache->load($cacheKey, $modifiedTimeString);
+			$variableCacheKey = implode(',', array_map(static function (string $fileName) use ($now): string {
+				$modifiedTime = filemtime($fileName);
+				if ($modifiedTime === false) {
+					$modifiedTime = $now;
+				}
+
+				return sprintf('%s-%d', $fileName, $modifiedTime);
+			}, $this->getDependentFiles($fileName)));
+			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
 			if ($map === null) {
 				$map = $this->createResolvedPhpDocMap($fileName);
-				$this->cache->save($cacheKey, $modifiedTimeString, $map);
+				$this->cache->save($cacheKey, $variableCacheKey, $map);
 			}
 
 			$this->memoryCache[$fileName] = $map;
@@ -506,6 +513,68 @@ class FileTypeMapper
 		$docComment = \Nette\Utils\Strings::replace($docComment, '#\s+#', ' ');
 
 		return md5(sprintf('%s-%s-%s-%s', $class, $trait, $function, $docComment));
+	}
+
+	/**
+	 * @param string $fileName
+	 * @return string[]
+	 */
+	private function getDependentFiles(string $fileName): array
+	{
+		$dependentFiles = [$fileName];
+
+		if (isset($this->alreadyProcessedDependentFiles[$fileName])) {
+			return $dependentFiles;
+		}
+
+		$this->alreadyProcessedDependentFiles[$fileName] = true;
+
+		$this->processNodes(
+			$this->phpParser->parseFile($fileName),
+			function (Node $node) use (&$dependentFiles) {
+				if ($node instanceof Node\Stmt\Declare_) {
+					return null;
+				}
+				if ($node instanceof Node\Stmt\Namespace_) {
+					return null;
+				}
+
+				if (!$node instanceof Node\Stmt\Class_ && !$node instanceof Node\Stmt\Trait_) {
+					return null;
+				}
+
+				foreach ($node->stmts as $stmt) {
+					if (!$stmt instanceof Node\Stmt\TraitUse) {
+						continue;
+					}
+
+					foreach ($stmt->traits as $traitName) {
+						$traitName = (string) $traitName;
+						if (!trait_exists($traitName)) {
+							continue;
+						}
+
+						$traitReflection = new \ReflectionClass($traitName);
+						if ($traitReflection->getFileName() === false) {
+							continue;
+						}
+						if (!file_exists($traitReflection->getFileName())) {
+							continue;
+						}
+
+						foreach ($this->getDependentFiles($traitReflection->getFileName()) as $traitFileName) {
+							$dependentFiles[] = $traitFileName;
+						}
+					}
+				}
+			},
+			static function (): void {
+			}
+		);
+
+		unset($this->alreadyProcessedDependentFiles[$fileName]);
+
+		return $dependentFiles;
 	}
 
 }

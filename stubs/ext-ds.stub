@@ -51,8 +51,9 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 	}
 
 	/**
-	 * @param iterable<TValue> $values
-	 * @return Deque<TValue>
+	 * @template TValue2
+	 * @param iterable<TValue2> $values
+	 * @return Deque<TValue|TValue2>
 	 */
 	public function merge($values): Deque
 	{
@@ -145,15 +146,17 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @param iterable<TKey, TValue> $values
-	 * @return Map<TKey, TValue>
+	 * @template TValue2
+	 * @param iterable<TKey, TValue2> $values
+	 * @return Map<TKey, TValue|TValue2>
 	 */
 	public function merge($values): Map
 	{
 	}
 
 	/**
-	 * @param Map<TKey, TValue> $map
+	 * @template TValue2
+	 * @param Map<TKey, TValue2> $map
 	 * @return Map<TKey, TValue>
 	 */
 	public function intersect(Map $map): Map
@@ -161,7 +164,8 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @param Map<TKey, TValue> $map
+	 * @template TValue2
+	 * @param Map<TKey, TValue2> $map
 	 * @return Map<TKey, TValue>
 	 */
 	public function diff(Map $map): Map
@@ -319,16 +323,18 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
-	 * @param Map<TKey, TValue> $map
-	 * @return Map<TKey, TValue>
+	 * @template TValue2
+	 * @param Map<TKey, TValue2> $map
+	 * @return Map<TKey, TValue|TValue2>
 	 */
 	public function union(Map $map): Map
 	{
 	}
 
 	/**
+	 * @template TValue2
 	 * @param Map<TKey, TValue> $map
-	 * @return Map<TKey, TValue>
+	 * @return Map<TKey, TValue|TValue2>
 	 */
 	public function xor(Map $map): Map
 	{
@@ -433,8 +439,9 @@ interface Sequence extends Collection
 	public function map(callable $callback): Sequence;
 
 	/**
-	 * @param iterable<TValue> $values
-	 * @return Sequence<TValue>
+	 * @template TValue2
+	 * @param iterable<TValue2> $values
+	 * @return Sequence<TValue|TValue2>
 	 */
 	public function merge($values): Sequence;
 
@@ -546,7 +553,7 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 	public function sorted(callable $comparator = null): Vector
 	{
 	}
-	
+
 	/**
 	 * @param (callable(TValue): bool)|null $callback
 	 * @return Vector<TValue>
@@ -593,7 +600,8 @@ final class Set implements ArrayAccess, Collection, Traversable
 	}
 
 	/**
-	 * @param Set<TValue> $set
+	 * @template TValue2
+	 * @param Set<TValue2> $set
 	 * @return Set<TValue>
 	 */
 	public function diff(Set $set): Set
@@ -625,7 +633,8 @@ final class Set implements ArrayAccess, Collection, Traversable
 	}
 
 	/**
-	 * @param Set<TValue> $set
+	 * @template TValue2
+	 * @param Set<TValue2> $set
 	 * @return Set<TValue>
 	 */
 	public function intersect(Set $set): Set
@@ -641,8 +650,9 @@ final class Set implements ArrayAccess, Collection, Traversable
 	}
 
 	/**
-	 * @param iterable<TValue> $values
-	 * @return Set<TValue>
+	 * @template TValue2
+	 * @param iterable<TValue2> $values
+	 * @return Set<TValue|TValue2>
 	 */
 	public function merge($values): Set
 	{
@@ -692,16 +702,18 @@ final class Set implements ArrayAccess, Collection, Traversable
 	}
 
 	/**
-	 * @param Set<TValue> $set
-	 * @return Set<TValue>
+	 * @template TValue2
+	 * @param Set<TValue2> $set
+	 * @return Set<TValue|TValue2>
 	 */
 	public function union(Set $set): Set
 	{
 	}
 
 	/**
-	 * @param Set<TValue> $set
-	 * @return Set<TValue>
+	 * @template TValue2
+	 * @param Set<TValue2> $set
+	 * @return Set<TValue|TValue2>
 	 */
 	public function xor(Set $set): Set
 	{

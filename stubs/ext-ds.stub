@@ -146,9 +146,10 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
+	 * @template TKey2
 	 * @template TValue2
-	 * @param iterable<TKey, TValue2> $values
-	 * @return Map<TKey, TValue|TValue2>
+	 * @param iterable<TKey2, TValue2> $values
+	 * @return Map<TKey|TKey2, TValue|TValue2>
 	 */
 	public function merge($values): Map
 	{
@@ -323,18 +324,20 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
+	 * @template TKey2
 	 * @template TValue2
-	 * @param Map<TKey, TValue2> $map
-	 * @return Map<TKey, TValue|TValue2>
+	 * @param Map<TKey2, TValue2> $map
+	 * @return Map<TKey|TKey2, TValue|TValue2>
 	 */
 	public function union(Map $map): Map
 	{
 	}
 
 	/**
+	 * @template TKey2
 	 * @template TValue2
-	 * @param Map<TKey, TValue> $map
-	 * @return Map<TKey, TValue|TValue2>
+	 * @param Map<TKey2, TValue2> $map
+	 * @return Map<TKey|TKey2, TValue|TValue2>
 	 */
 	public function xor(Map $map): Map
 	{

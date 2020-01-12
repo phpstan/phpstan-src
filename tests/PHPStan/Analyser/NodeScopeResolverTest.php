@@ -9672,6 +9672,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/integer-range-types.php');
 	}
 
+	public function dataRandomInt(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/random-int.php');
+	}
+
 	public function dataClosureReturnTypes(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type-extensions.php');
@@ -9769,6 +9774,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataGenericClassStringType
 	 * @dataProvider dataInstanceOf
 	 * @dataProvider dataIntegerRangeTypes
+	 * @dataProvider dataRandomInt
 	 * @dataProvider dataClosureReturnTypes
 	 * @dataProvider dataArrayKey
 	 * @dataProvider dataIntersectionStatic

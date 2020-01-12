@@ -4,7 +4,10 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -47,6 +50,23 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				new ArrayType(new IntegerType(), new StringType()),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new ArrayType(new MixedType(), new MixedType(false, new UnionType([
+					new NullType(),
+					new ConstantBooleanType(false),
+					new ConstantIntegerType(0),
+					new ConstantFloatType(0.0),
+					new ConstantStringType(''),
+					new ConstantArrayType([], []),
+				]))),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new ArrayType(new MixedType(), new MixedType(false, new NullType())),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
 			],

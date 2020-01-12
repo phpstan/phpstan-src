@@ -65,7 +65,8 @@ class MissingReturnRule implements Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		if ($returnType instanceof VoidType) {
+		$isVoidSuperType = $returnType->isSuperTypeOf(new VoidType());
+		if ($isVoidSuperType->yes()) {
 			return [];
 		}
 

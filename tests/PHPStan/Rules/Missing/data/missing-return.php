@@ -397,3 +397,16 @@ class MissingReturnGenerators
 	}
 
 }
+
+class VoidUnion
+{
+
+	/**
+	 * @return int|void
+	 */
+	public function doFoo()
+	{
+		echo 'test';
+	}
+
+}

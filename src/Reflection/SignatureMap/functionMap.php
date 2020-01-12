@@ -1513,7 +1513,7 @@ return [
 'curl_share_close' => ['void', 'sh'=>'resource'],
 'curl_share_errno' => ['int', 'sh'=>'resource'],
 'curl_share_init' => ['resource'],
-'curl_share_setopt' => ['bool', 'sh'=>'resource', 'option'=>'int', 'value'=>'string'],
+'curl_share_setopt' => ['bool', 'sh'=>'resource', 'option'=>'int', 'value'=>'mixed'],
 'curl_share_strerror' => ['string', 'code'=>'int'],
 'curl_strerror' => ['string', 'code'=>'int'],
 'curl_unescape' => ['string', 'ch'=>'resource', 'str'=>'string'],

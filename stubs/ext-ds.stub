@@ -156,9 +156,10 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	}
 
 	/**
+	 * @template TKey2
 	 * @template TValue2
-	 * @param Map<TKey, TValue2> $map
-	 * @return Map<TKey, TValue>
+	 * @param Map<TKey2, TValue2> $map
+	 * @return Map<TKey&TKey2, TValue>
 	 */
 	public function intersect(Map $map): Map
 	{

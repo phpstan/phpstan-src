@@ -346,11 +346,18 @@ class PhpDocBlock
 				}
 				$methodVariants = $parentReflection->getVariants();
 				$positionalMethodParameterNames = [];
-				if (count($methodVariants) === 1) {
+				$lowercaseMethodName = strtolower($parentReflection->getName());
+				if (
+					count($methodVariants) === 1
+					&& $lowercaseMethodName !== '__construct'
+					&& $lowercaseMethodName !== strtolower($parentReflection->getDeclaringClass()->getName())
+				) {
 					$methodParameters = $methodVariants[0]->getParameters();
 					foreach ($methodParameters as $methodParameter) {
 						$positionalMethodParameterNames[] = $methodParameter->getName();
 					}
+				} else {
+					$positionalMethodParameterNames = $positionalParameterNames;
 				}
 			} else {
 				$traitReflection = null;

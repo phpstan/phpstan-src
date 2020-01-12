@@ -83,11 +83,6 @@ class ArrayType implements Type
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
-			// Any array is always a super type of an empty array.
-			if ($type->keyType->equals(new NeverType())) {
-				return TrinaryLogic::createYes();
-			}
-
 			return $this->getItemType()->isSuperTypeOf($type->getItemType())
 				->and($this->keyType->isSuperTypeOf($type->keyType));
 		}

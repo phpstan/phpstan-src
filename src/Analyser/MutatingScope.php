@@ -2574,26 +2574,31 @@ class MutatingScope implements Scope
 		return $scope->specifyExpressionType($expr, $type);
 	}
 
-	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
+	public function invalidateExpression(Expr $expressionToInvalidate): self
 	{
 		$exprStringToInvalidate = $this->printer->prettyPrintExpr($expressionToInvalidate);
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;
-			if ($requireMoreCharacters && $exprString === $exprStringToInvalidate) {
-				continue;
+			if (Strings::startsWith($exprString, $exprStringToInvalidate)) {
+				if ($exprString === $exprStringToInvalidate) {
+					unset($moreSpecificTypeHolders[$exprString]);
+					continue;
+				}
+				$nextLetter = substr($exprString, strlen($exprStringToInvalidate), 1);
+				if (Strings::match($nextLetter, '#[a-zA-Z_0-9\x7f-\xff]#') === null) {
+					unset($moreSpecificTypeHolders[$exprString]);
+					continue;
+				}
 			}
-			if (!Strings::startsWith($exprString, $exprStringToInvalidate)) {
+			$matches = \Nette\Utils\Strings::matchAll($exprString, '#\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*#');
+			if ($matches === []) {
 				continue;
 			}
 
-			if ($exprString === $exprStringToInvalidate) {
-				unset($moreSpecificTypeHolders[$exprString]);
-				continue;
-			}
+			$matches = array_column($matches, 0);
 
-			$nextLetter = substr($exprString, strlen($exprStringToInvalidate), 1);
-			if (Strings::match($nextLetter, '#[a-zA-Z_0-9\x7f-\xff]#') !== null) {
+			if (!in_array($exprStringToInvalidate, $matches, true)) {
 				continue;
 			}
 

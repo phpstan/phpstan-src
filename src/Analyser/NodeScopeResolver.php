@@ -1492,7 +1492,7 @@ class NodeScopeResolver
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			if ($methodReflection !== null && $methodReflection->hasSideEffects()->yes()) {
-				$scope = $scope->invalidateExpression($expr->var, true);
+				$scope = $scope->invalidateExpression($expr->var);
 			}
 			$hasYield = $hasYield || $result->hasYield();
 		} elseif ($expr instanceof StaticCall) {
@@ -1829,6 +1829,8 @@ class NodeScopeResolver
 						},
 						false
 					)->getScope();
+				} else {
+					$scope = $scope->invalidateExpression($expr->var);
 				}
 			}
 		} elseif ($expr instanceof Ternary) {

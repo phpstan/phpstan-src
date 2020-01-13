@@ -10,7 +10,7 @@ class RandomIntParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new RandomIntParametersRule();
+		return new RandomIntParametersRule($this->createReflectionProvider());
 	}
 
 	public function testFile(): void

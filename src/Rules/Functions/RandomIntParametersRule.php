@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
@@ -15,6 +16,14 @@ use PHPStan\Type\VerbosityLevel;
  */
 class RandomIntParametersRule implements \PHPStan\Rules\Rule
 {
+
+	/** @var ReflectionProvider */
+	private $reflectionProvider;
+
+	public function __construct(ReflectionProvider $reflectionProvider)
+	{
+		$this->reflectionProvider = $reflectionProvider;
+	}
 
 	public function getNodeType(): string
 	{
@@ -27,7 +36,7 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		if (strtolower((string) $node->name) !== 'random_int') {
+		if ($this->reflectionProvider->resolveFunctionName($node->name, $scope) !== 'random_int') {
 			return [];
 		}
 

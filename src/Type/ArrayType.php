@@ -103,8 +103,8 @@ class ArrayType implements Type
 
 	public function describe(VerbosityLevel $level): string
 	{
-		$isMixedKeyType = $this->keyType instanceof MixedType && !$this->keyType instanceof TemplateType;
-		$isMixedItemType = $this->itemType instanceof MixedType && !$this->itemType instanceof TemplateType;
+		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed';
+		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed';
 
 		$valueHandler = function () use ($level, $isMixedKeyType, $isMixedItemType): string {
 			if ($isMixedKeyType || $this->keyType instanceof NeverType) {

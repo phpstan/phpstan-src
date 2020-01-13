@@ -10,7 +10,7 @@ class PrintfParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new PrintfParametersRule();
+		return new PrintfParametersRule(true);
 	}
 
 	public function testFile(): void
@@ -27,6 +27,10 @@ class PrintfParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to sprintf contains 1 placeholder, 2 values given.',
 				8,
+			],
+			[
+				'Call to sprintf with invalid format string, `%2$s %1$s %% %1$s %%%`, contains invalid placeholder, `%`.',
+				9,
 			],
 			[
 				'Call to sprintf contains 2 placeholders, 1 value given.',
@@ -61,14 +65,6 @@ class PrintfParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				18,
 			],
 			[
-				'Call to sscanf contains 2 placeholders, 1 value given.',
-				21,
-			],
-			[
-				'Call to fscanf contains 2 placeholders, 1 value given.',
-				25,
-			],
-			[
 				'Call to sprintf contains 2 placeholders, 1 value given.',
 				27,
 			],
@@ -87,6 +83,42 @@ class PrintfParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to sprintf contains 2 placeholders, 3 values given.',
 				54,
+			],
+			[
+				'Call to sprintf with invalid format string, `%`, contains invalid placeholder, `%`.',
+				57,
+			],
+			[
+				'Call to sprintf contains 1 placeholder, 0 values given.',
+				57,
+			],
+			[
+				'Call to sprintf contains 4 placeholders, 2 values given.',
+				59,
+			],
+			[
+				'Call to sprintf with invalid format string, `%2$s %1$s %% %s %s %s %s %%% %%%%`, contains invalid placeholder, `% %`.',
+				60,
+			],
+			[
+				'Call to sprintf with invalid format string, `%2$s %1$s %% %s %s %s %s %%% %%%%`, contains invalid placeholder, `%`.',
+				60,
+			],
+			[
+				'Call to sprintf contains 6 placeholders, 4 values given.',
+				60,
+			],
+			[
+				'Call to sprintf with invalid format string, `%s foo %%%`, contains invalid placeholder, `%`.',
+				65,
+			],
+			[
+				'Call to sprintf with invalid format string, `how %s many %?`, contains invalid placeholder, `%?`.',
+				65,
+			],
+			[
+				'Call to sprintf contains 2 placeholders, 1 value given.',
+				65,
 			],
 		]);
 	}

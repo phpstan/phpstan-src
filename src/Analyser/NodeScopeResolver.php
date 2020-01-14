@@ -1374,14 +1374,14 @@ class NodeScopeResolver
 						}
 					}
 
-					$scope = $scope->specifyExpressionType(
+					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
 						$arrayArg,
 						TypeCombinator::union(...$resultArrayTypes)
 					);
 				} else {
 					$arrays = TypeUtils::getAnyArrays($scope->getType($arrayArg));
 					if (count($arrays) > 0) {
-						$scope = $scope->specifyExpressionType($arrayArg, TypeCombinator::union(...$arrays));
+						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, TypeCombinator::union(...$arrays));
 					}
 				}
 			}
@@ -1421,7 +1421,7 @@ class NodeScopeResolver
 						$arrayType = $arrayType->setOffsetValueType(null, $argType);
 					}
 
-					$scope = $scope->specifyExpressionType($arrayArg, TypeCombinator::intersect($arrayType, new NonEmptyArrayType()));
+					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, TypeCombinator::intersect($arrayType, new NonEmptyArrayType()));
 				} elseif (count($constantArrays) > 0) {
 					$defaultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($argumentTypes as $argType) {
@@ -1443,7 +1443,7 @@ class NodeScopeResolver
 						$arrayTypes[] = $arrayType;
 					}
 
-					$scope = $scope->specifyExpressionType(
+					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
 						$arrayArg,
 						TypeCombinator::union(...$arrayTypes)
 					);

@@ -28,5 +28,6 @@ random_int($x, $y);
 random_int(0, $x);
 random_int($x, random_int(0, PHP_INT_MAX));
 random_int(random_int(PHP_INT_MIN, 0), $x);
+random_int(random_int(0, 10), random_int(0, 10)); // Equal args are okay except ranges.
 
 random_int(PHP_INT_MAX, PHP_INT_MIN); // @todo this should error

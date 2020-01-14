@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -43,64 +44,32 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 		$minType = $scope->getType($node->args[0]->value)->toInteger();
 		$maxType = $scope->getType($node->args[1]->value)->toInteger();
 
-		if ($minType instanceof ConstantIntegerType
-			&& $maxType instanceof ConstantIntegerType
-			&& $minType->getValue() > $maxType->getValue()
-		) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Cannot call random_int() with $min parameter (%d) greater than $max parameter (%d).',
-					$minType->getValue(),
-					$maxType->getValue()
-				))->build(),
-			];
+		if ($minType->equals(new IntegerType()) || $maxType->equals(new IntegerType())) {
+			return [];
 		}
 
-		if ($minType instanceof IntegerRangeType
-			&& $maxType instanceof ConstantIntegerType
-			&& $minType->getMax() > $maxType->getValue()
-		) {
-			$message = $minType->getMin() > $maxType->getValue()
-				? 'Cannot call random_int() with $min parameter (%s) greater than $max parameter (%d).'
-				: 'Cannot call random_int() when $min parameter (%s) can be greater than $max parameter (%d).';
+		if ($minType instanceof ConstantIntegerType || $minType instanceof IntegerRangeType) {
+			if ($minType instanceof ConstantIntegerType) {
+				$maxPermittedType = IntegerRangeType::fromInterval($minType->getValue(), PHP_INT_MAX);
+			} else {
+				$maxPermittedType = IntegerRangeType::fromInterval($minType->getMax(), PHP_INT_MAX);
+			}
 
-			return [
-				RuleErrorBuilder::message(sprintf(
-					$message,
-					$minType->describe(VerbosityLevel::value()),
-					$maxType->getValue()
-				))->build(),
-			];
-		}
+			if (!$maxPermittedType->isSuperTypeOf($maxType)->yes()) {
+				$message = 'Cannot call random_int() when $min parameter (%s) can be greater than $max parameter (%s).';
 
-		if ($minType instanceof ConstantIntegerType
-			&& $maxType instanceof IntegerRangeType
-			&& $minType->getValue() > $maxType->getMin()
-		) {
-			$message = $minType->getValue() > $maxType->getMax()
-				? 'Cannot call random_int() with $max parameter (%s) less than $min parameter (%d).'
-				: 'Cannot call random_int() when $max parameter (%s) can be less than $min parameter (%d).';
+				if ($maxType->isSuperTypeOf($minType)->no()) {
+					$message = 'Cannot call random_int() when $min parameter (%s) is greater than $max parameter (%s).';
+				}
 
-			return [
-				RuleErrorBuilder::message(sprintf(
-					$message,
-					$maxType->describe(VerbosityLevel::value()),
-					$minType->getValue()
-				))->build(),
-			];
-		}
-
-		if ($minType instanceof IntegerRangeType
-			&& $maxType instanceof IntegerRangeType
-			&& $minType->getMax() > $maxType->getMin()
-		) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Cannot call random_int() with intersecting $min (%s) and $max (%s) parameters.',
-					$minType->describe(VerbosityLevel::value()),
-					$maxType->describe(VerbosityLevel::value())
-				))->build(),
-			];
+				return [
+					RuleErrorBuilder::message(sprintf(
+						$message,
+						$minType->describe(VerbosityLevel::value()),
+						$maxType->describe(VerbosityLevel::value())
+					))->build(),
+				];
+			}
 		}
 
 		return [];

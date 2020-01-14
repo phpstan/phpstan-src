@@ -10,6 +10,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\Php\ClosureCallMethodReflection;
+use PHPStan\Reflection\Php\ClosureInvokeMethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -162,6 +163,13 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	{
 		if ($methodName === 'call') {
 			return new ClosureCallMethodReflection(
+				$this->objectType->getMethod($methodName, $scope),
+				$this
+			);
+		}
+
+		if ($methodName === '__invoke') {
+			return new ClosureInvokeMethodReflection(
 				$this->objectType->getMethod($methodName, $scope),
 				$this
 			);

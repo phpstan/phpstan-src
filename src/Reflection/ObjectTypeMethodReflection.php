@@ -108,7 +108,8 @@ class ObjectTypeMethodReflection implements MethodReflection
 				);
 			}, $acceptor->getParameters()),
 			$acceptor->isVariadic(),
-			$acceptor->getReturnType()
+			$acceptor->getReturnType(),
+			$this->isReturnByReference()
 		);
 	}
 
@@ -140,6 +141,11 @@ class ObjectTypeMethodReflection implements MethodReflection
 	public function hasSideEffects(): TrinaryLogic
 	{
 		return $this->reflection->hasSideEffects();
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return $this->reflection->isReturnByReference();
 	}
 
 }

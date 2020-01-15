@@ -4,7 +4,10 @@ namespace PHPStan\Rules;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
@@ -15,6 +18,9 @@ use PHPStan\Type\VoidType;
 
 class FunctionCallParametersCheck
 {
+
+	/** @var ReflectionProvider */
+	private $reflectionProvider;
 
 	/** @var \PHPStan\Rules\RuleLevelHelper */
 	private $ruleLevelHelper;
@@ -32,6 +38,7 @@ class FunctionCallParametersCheck
 	private $checkMissingTypehints;
 
 	public function __construct(
+		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
 		bool $checkArgumentTypes,
 		bool $checkArgumentsPassedByReference,
@@ -39,6 +46,7 @@ class FunctionCallParametersCheck
 		bool $checkMissingTypehints
 	)
 	{
+		$this->reflectionProvider = $reflectionProvider;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->checkArgumentTypes = $checkArgumentTypes;
 		$this->checkArgumentsPassedByReference = $checkArgumentsPassedByReference;
@@ -212,6 +220,67 @@ class FunctionCallParametersCheck
 				|| $argument->value instanceof \PhpParser\Node\Expr\StaticPropertyFetch
 			) {
 				continue;
+			}
+
+			if ($argument->value instanceof \PhpParser\Node\Expr\FuncCall) {
+				if (
+					$argument->value->name instanceof \PhpParser\Node\Name
+					&& $this->reflectionProvider->getFunction($argument->value->name, $scope)->isReturnByReference()
+				) {
+					continue;
+				}
+
+				if ($argument->value->name instanceof \PhpParser\Node\Expr) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectSingle($scope->getType($argument->value->name)->getCallableParametersAcceptors($scope));
+
+					if ($parametersAcceptor->isReturnByReference()) {
+						continue;
+					}
+				}
+			}
+
+			if (
+				$argument->value instanceof \PhpParser\Node\Expr\MethodCall
+				|| $argument->value instanceof \PhpParser\Node\Expr\StaticCall
+			) {
+				if ($argument->value instanceof \PhpParser\Node\Expr\StaticCall) {
+					if ($argument->value->class instanceof \PhpParser\Node\Name) {
+						$class = $this->reflectionProvider->getClass($scope->resolveName($argument->value->class));
+					} else {
+						$class = $scope->getType($argument->value->class);
+					}
+				} else {
+					$class = $scope->getType($argument->value->var);
+				}
+
+				if ($class instanceof Type) {
+					$hasMethod = function (string $methodName) use ($class) {
+						return $class->hasMethod($methodName)->yes();
+					};
+				} else {
+					$hasMethod = \Closure::fromCallable([$class, 'hasMethod']);
+				}
+
+				if ($argument->value->name instanceof \PhpParser\Node\Expr) {
+					$methodType = $scope->getType($argument->value->name);
+
+					if ($methodType instanceof ConstantStringType) {
+						$methodName = $methodType->getValue();
+					}
+				} else {
+					$methodName = $argument->value->name->toString();
+				}
+
+				if (isset($methodName) && $hasMethod($methodName)) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectSingle($class->getMethod(
+						$methodName,
+						$scope
+					)->getVariants());
+
+					if ($parametersAcceptor->isReturnByReference()) {
+						continue;
+					}
+				}
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(

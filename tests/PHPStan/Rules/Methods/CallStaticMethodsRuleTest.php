@@ -21,7 +21,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($broker, true, $this->checkThisOnly, true);
 		return new CallStaticMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, true, true, true, true),
+			new FunctionCallParametersCheck($broker, $ruleLevelHelper, true, true, true, true),
 			$ruleLevelHelper,
 			new ClassCaseSensitivityCheck($broker),
 			true,

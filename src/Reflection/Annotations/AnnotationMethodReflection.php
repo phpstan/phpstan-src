@@ -101,7 +101,8 @@ class AnnotationMethodReflection implements MethodReflection
 					null,
 					$this->parameters,
 					$this->isVariadic,
-					$this->returnType
+					$this->returnType,
+					false // @todo
 				),
 			];
 		}
@@ -141,6 +142,11 @@ class AnnotationMethodReflection implements MethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return false;
 	}
 
 }

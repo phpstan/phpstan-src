@@ -423,13 +423,13 @@ class TypeNodeResolver
 		$returnType = $this->resolve($typeNode->returnType, $nameScope);
 
 		if ($mainType instanceof CallableType) {
-			return new CallableType($parameters, $returnType, $isVariadic);
+			return new CallableType($parameters, $returnType, $isVariadic, false); // @todo
 
 		} elseif (
 			$mainType instanceof ObjectType
 			&& $mainType->getClassName() === \Closure::class
 		) {
-			return new ClosureType($parameters, $returnType, $isVariadic);
+			return new ClosureType($parameters, $returnType, $isVariadic, false); // @todo
 		}
 
 		return new ErrorType();

@@ -89,7 +89,8 @@ final class ClosureCallMethodReflection implements MethodReflection
 				$this->closureType->getResolvedTemplateTypeMap(),
 				$parameters,
 				$this->closureType->isVariadic(),
-				$this->closureType->getReturnType()
+				$this->closureType->getReturnType(),
+				$this->closureType->isReturnByReference()
 			),
 		];
 	}
@@ -122,6 +123,11 @@ final class ClosureCallMethodReflection implements MethodReflection
 	public function hasSideEffects(): TrinaryLogic
 	{
 		return $this->nativeMethodReflection->hasSideEffects();
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return $this->nativeMethodReflection->isReturnByReference();
 	}
 
 }

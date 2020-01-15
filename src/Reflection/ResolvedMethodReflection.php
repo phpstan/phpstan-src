@@ -122,4 +122,9 @@ class ResolvedMethodReflection implements MethodReflection
 		return $this->reflection->hasSideEffects();
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return $this->reflection->isReturnByReference();
+	}
+
 }

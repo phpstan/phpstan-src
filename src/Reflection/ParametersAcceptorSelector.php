@@ -254,7 +254,8 @@ class ParametersAcceptorSelector
 			null,
 			$parameters,
 			$isVariadic,
-			$returnType
+			$returnType,
+			false // @todo
 		);
 	}
 

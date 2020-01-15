@@ -16,7 +16,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true), true, true, true, true)
+			new FunctionCallParametersCheck($broker, new RuleLevelHelper($broker, true, false, true), true, true, true, true)
 		);
 	}
 
@@ -213,15 +213,15 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/passed-by-reference.php'], [
 			[
 				'Parameter #1 $foo of function PassedByReference\foo is passed by reference, so it expects variables only.',
-				32,
+				60,
 			],
 			[
 				'Parameter #1 $foo of function PassedByReference\foo is passed by reference, so it expects variables only.',
-				33,
+				61,
 			],
 			[
 				'Parameter #1 $array_arg of function reset expects array, null given.',
-				39,
+				67,
 			],
 		]);
 	}

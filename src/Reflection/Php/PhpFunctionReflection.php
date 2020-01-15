@@ -139,6 +139,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 					$this->getParameters(),
 					$this->isVariadic(),
 					$this->getReturnType(),
+					$this->isReturnByReference(),
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType()
 				),
@@ -289,6 +290,11 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 			return TrinaryLogic::createYes();
 		}
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return $this->reflection->returnsReference();
 	}
 
 }

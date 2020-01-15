@@ -100,4 +100,9 @@ class DummyConstructorReflection implements MethodReflection
 		return null;
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return false;
+	}
+
 }

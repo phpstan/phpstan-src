@@ -93,7 +93,8 @@ class UnionTypeMethodReflection implements MethodReflection
 				$acceptor->getResolvedTemplateTypeMap(),
 				$acceptor->getParameters(),
 				$acceptor->isVariadic(),
-				$returnType
+				$returnType,
+				$acceptor->isReturnByReference()
 			);
 		}, $variants);
 	}
@@ -171,6 +172,17 @@ class UnionTypeMethodReflection implements MethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function isReturnByReference(): bool
+	{
+		foreach ($this->methods as $method) {
+			if (!$method->isReturnByReference()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

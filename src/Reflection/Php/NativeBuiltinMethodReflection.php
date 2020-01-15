@@ -117,4 +117,9 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->getParameters();
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return $this->reflection->returnsReference();
+	}
+
 }

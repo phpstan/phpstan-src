@@ -240,6 +240,7 @@ class PhpMethodReflection implements MethodReflection
 					$this->getParameters(),
 					$this->isVariadic(),
 					$this->getReturnType(),
+					$this->isReturnByReference(),
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType()
 				),
@@ -464,6 +465,11 @@ class PhpMethodReflection implements MethodReflection
 			return TrinaryLogic::createYes();
 		}
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return $this->reflection->isReturnByReference();
 	}
 
 }

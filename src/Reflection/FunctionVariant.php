@@ -23,6 +23,9 @@ class FunctionVariant implements ParametersAcceptor
 	/** @var Type */
 	private $returnType;
 
+	/** @var bool */
+	private $isReturnByReference;
+
 	/**
 	 * @param array<int, ParameterReflection> $parameters
 	 * @param bool $isVariadic
@@ -33,7 +36,8 @@ class FunctionVariant implements ParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap,
 		array $parameters,
 		bool $isVariadic,
-		Type $returnType
+		Type $returnType,
+		bool $isReturnByReference
 	)
 	{
 		$this->templateTypeMap = $templateTypeMap;
@@ -41,6 +45,7 @@ class FunctionVariant implements ParametersAcceptor
 		$this->parameters = $parameters;
 		$this->isVariadic = $isVariadic;
 		$this->returnType = $returnType;
+		$this->isReturnByReference = $isReturnByReference;
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap
@@ -69,6 +74,11 @@ class FunctionVariant implements ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return $this->isReturnByReference;
 	}
 
 }

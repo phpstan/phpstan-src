@@ -37,4 +37,9 @@ class TrivialParametersAcceptor implements ParametersAcceptor
 		return new MixedType();
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return false;
+	}
+
 }

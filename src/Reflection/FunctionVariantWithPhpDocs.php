@@ -28,6 +28,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 		array $parameters,
 		bool $isVariadic,
 		Type $returnType,
+		bool $isReturnByReference = null, // @todo
 		Type $phpDocReturnType,
 		Type $nativeReturnType
 	)
@@ -37,7 +38,8 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 			$resolvedTemplateTypeMap,
 			$parameters,
 			$isVariadic,
-			$returnType
+			$returnType,
+			$isReturnByReference
 		);
 		$this->phpDocReturnType = $phpDocReturnType;
 		$this->nativeReturnType = $nativeReturnType;

@@ -17,7 +17,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true), true, true, true, true),
+			new FunctionCallParametersCheck($broker, new RuleLevelHelper($broker, true, false, true), true, true, true, true),
 			new ClassCaseSensitivityCheck($broker)
 		);
 	}

@@ -472,7 +472,8 @@ class PhpClassReflectionExtension
 						);
 					}, $methodSignature->getParameters()),
 					$methodSignature->isVariadic(),
-					$phpDocReturnType ?? $methodSignature->getReturnType()
+					$phpDocReturnType ?? $methodSignature->getReturnType(),
+					false // @todo isReturnByReference
 				);
 			}
 

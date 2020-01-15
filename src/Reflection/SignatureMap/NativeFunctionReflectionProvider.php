@@ -79,7 +79,8 @@ class NativeFunctionReflectionProvider
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				$returnType
+				$returnType,
+				false // @todo
 			);
 
 			$i++;

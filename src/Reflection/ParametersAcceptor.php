@@ -27,4 +27,6 @@ interface ParametersAcceptor
 
 	public function getReturnType(): Type;
 
+	public function isReturnByReference(): bool;
+
 }

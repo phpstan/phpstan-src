@@ -119,4 +119,9 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return [];
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return false;
+	}
+
 }

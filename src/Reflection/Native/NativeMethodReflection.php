@@ -152,4 +152,9 @@ class NativeMethodReflection implements MethodReflection
 		return $this->reflection->getDocComment();
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return $this->reflection->isReturnByReference();
+	}
+
 }

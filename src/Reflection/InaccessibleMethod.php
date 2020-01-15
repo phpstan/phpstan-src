@@ -50,4 +50,9 @@ class InaccessibleMethod implements ParametersAcceptor
 		return new MixedType();
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return false; // @todo Correct default?
+	}
+
 }

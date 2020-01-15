@@ -32,6 +32,9 @@ class CallableType implements CompoundType, ParametersAcceptor
 	private $variadic;
 
 	/** @var bool */
+	private $returnByReference;
+
+	/** @var bool */
 	private $isCommonCallable;
 
 	/**
@@ -42,12 +45,14 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function __construct(
 		?array $parameters = null,
 		?Type $returnType = null,
-		bool $variadic = true
+		bool $variadic = true,
+		bool $returnByReference = false // @todo
 	)
 	{
 		$this->parameters = $parameters ?? [];
 		$this->returnType = $returnType ?? new MixedType();
 		$this->variadic = $variadic;
+		$this->returnByReference = $returnByReference;
 		$this->isCommonCallable = $parameters === null && $returnType === null;
 	}
 
@@ -208,6 +213,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return $this->returnByReference;
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

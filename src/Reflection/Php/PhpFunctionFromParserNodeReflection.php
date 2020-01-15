@@ -133,6 +133,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 					$this->getParameters(),
 					$this->isVariadic(),
 					$this->getReturnType(),
+					$this->isReturnByReference(),
 					$this->phpDocReturnType ?? new MixedType(),
 					$this->realReturnType
 				),
@@ -234,6 +235,11 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 			return TrinaryLogic::createYes();
 		}
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return false;
 	}
 
 }

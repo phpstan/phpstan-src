@@ -93,7 +93,8 @@ class IntersectionTypeMethodReflection implements MethodReflection
 				$acceptor->getResolvedTemplateTypeMap(),
 				$acceptor->getParameters(),
 				$acceptor->isVariadic(),
-				$returnType
+				$returnType,
+				$acceptor->isReturnByReference()
 			);
 		}, $variants);
 	}
@@ -171,6 +172,11 @@ class IntersectionTypeMethodReflection implements MethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function isReturnByReference(): bool
+	{
+		return false; // @todo ???
 	}
 
 }

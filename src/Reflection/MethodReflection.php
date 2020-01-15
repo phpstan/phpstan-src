@@ -29,4 +29,6 @@ interface MethodReflection extends ClassMemberReflection
 
 	public function hasSideEffects(): TrinaryLogic;
 
+	public function isReturnByReference(): bool;
+
 }

@@ -82,4 +82,9 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 		return $this->hasSideEffects;
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return false;
+	}
+
 }

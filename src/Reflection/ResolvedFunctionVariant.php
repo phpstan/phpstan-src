@@ -84,4 +84,9 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		return $type;
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return $this->parametersAcceptor->isReturnByReference();
+	}
+
 }

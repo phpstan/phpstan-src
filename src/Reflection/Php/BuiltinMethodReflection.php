@@ -53,4 +53,6 @@ interface BuiltinMethodReflection
 
 	public function isAbstract(): bool;
 
+	public function isReturnByReference(): bool;
+
 }

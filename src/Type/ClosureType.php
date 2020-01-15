@@ -35,6 +35,9 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	/** @var bool */
 	private $variadic;
 
+	/** @var bool */
+	private $returnByReference;
+
 	/**
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
 	 * @param Type $returnType
@@ -43,13 +46,15 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function __construct(
 		array $parameters,
 		Type $returnType,
-		bool $variadic
+		bool $variadic,
+		bool $returnByReference
 	)
 	{
 		$this->objectType = new ObjectType(\Closure::class);
 		$this->parameters = $parameters;
 		$this->returnType = $returnType;
 		$this->variadic = $variadic;
+		$this->returnByReference = $returnByReference;
 	}
 
 	public function getClassName(): string
@@ -306,6 +311,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->returnType;
 	}
 
+	public function isReturnByReference(): bool
+	{
+		return $this->returnByReference;
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
@@ -357,7 +367,8 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 				);
 			}, $this->getParameters()),
 			$cb($this->getReturnType()),
-			$this->isVariadic()
+			$this->isVariadic(),
+			$this->isReturnByReference()
 		);
 	}
 
@@ -375,7 +386,8 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return new self(
 			$properties['parameters'],
 			$properties['returnType'],
-			$properties['variadic']
+			$properties['variadic'],
+			$properties['returnByReference']
 		);
 	}
 

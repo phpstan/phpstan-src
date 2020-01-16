@@ -57,11 +57,7 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 			}
 
 			if (!$maxPermittedType->isSuperTypeOf($maxType)->yes()) {
-				$message = 'Cannot call random_int() when $min parameter (%s) can be greater than $max parameter (%s).';
-
-				if ($maxType->isSuperTypeOf($minType)->no()) {
-					$message = 'Cannot call random_int() when $min parameter (%s) is greater than $max parameter (%s).';
-				}
+				$message = 'Parameter #1 $min (%s) of function random_int expects lower number than parameter #2 $max (%s).';
 
 				return [
 					RuleErrorBuilder::message(sprintf(

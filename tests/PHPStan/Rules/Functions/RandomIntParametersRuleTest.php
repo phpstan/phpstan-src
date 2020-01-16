@@ -10,46 +10,46 @@ class RandomIntParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new RandomIntParametersRule($this->createReflectionProvider());
+		return new RandomIntParametersRule($this->createReflectionProvider(), true);
 	}
 
 	public function testFile(): void
 	{
 		$this->analyse([__DIR__ . '/data/random-int.php'], [
 			[
-				'Cannot call random_int() when $min parameter (1) is greater than $max parameter (0).',
+				'Parameter #1 $min (1) of function random_int expects lower number than parameter #2 $max (0).',
 				8,
 			],
 			[
-				'Cannot call random_int() when $min parameter (0) is greater than $max parameter (-1).',
+				'Parameter #1 $min (0) of function random_int expects lower number than parameter #2 $max (-1).',
 				9,
 			],
 			[
-				'Cannot call random_int() when $min parameter (0) is greater than $max parameter (int<-10, -1>).',
+				'Parameter #1 $min (0) of function random_int expects lower number than parameter #2 $max (int<-10, -1>).',
 				11,
 			],
 			[
-				'Cannot call random_int() when $min parameter (0) can be greater than $max parameter (int<-10, 10>).',
+				'Parameter #1 $min (0) of function random_int expects lower number than parameter #2 $max (int<-10, 10>).',
 				12,
 			],
 			[
-				'Cannot call random_int() when $min parameter (int<1, 10>) is greater than $max parameter (0).',
+				'Parameter #1 $min (int<1, 10>) of function random_int expects lower number than parameter #2 $max (0).',
 				15,
 			],
 			[
-				'Cannot call random_int() when $min parameter (int<-10, 10>) can be greater than $max parameter (0).',
+				'Parameter #1 $min (int<-10, 10>) of function random_int expects lower number than parameter #2 $max (0).',
 				16,
 			],
 			[
-				'Cannot call random_int() when $min parameter (int<-5, 1>) can be greater than $max parameter (int<0, 5>).',
+				'Parameter #1 $min (int<-5, 1>) of function random_int expects lower number than parameter #2 $max (int<0, 5>).',
 				19,
 			],
 			[
-				'Cannot call random_int() when $min parameter (int<-5, 0>) can be greater than $max parameter (int<-1, 5>).',
+				'Parameter #1 $min (int<-5, 0>) of function random_int expects lower number than parameter #2 $max (int<-1, 5>).',
 				20,
 			],
 			[
-				'Cannot call random_int() when $min parameter (int<0, 10>) can be greater than $max parameter (int<0, 10>).',
+				'Parameter #1 $min (int<0, 10>) of function random_int expects lower number than parameter #2 $max (int<0, 10>).',
 				31,
 			],
 		]);

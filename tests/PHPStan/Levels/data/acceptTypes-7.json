@@ -113,5 +113,20 @@
         "message": "Parameter #1 $static of method Levels\\AcceptTypes\\RequireObjectWithoutClassType::requireStatic() expects Levels\\AcceptTypes\\RequireObjectWithoutClassType, object given.",
         "line": 639,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<0, 1>).",
+        "line": 681,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $min (int<-1, 0>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
+        "line": 682,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
+        "line": 683,
+        "ignorable": true
     }
 ]

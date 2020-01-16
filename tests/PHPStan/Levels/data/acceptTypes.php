@@ -653,3 +653,34 @@ class RequireObjectWithoutClassType
 	}
 
 }
+
+class RandomInt
+{
+
+	public function doThings(): int
+	{
+		return random_int(0, -1);
+	}
+
+	public function doInputMin(int $input): int
+	{
+		assert($input > 10);
+
+		return random_int($input, 10);
+	}
+
+	public function doInputMax(int $input): int
+	{
+		assert($input < 340);
+
+		return random_int(340, $input);
+	}
+
+	public function doStuff(): void
+	{
+		random_int(random_int(-1, 1), random_int(0, 1));
+		random_int(random_int(-1, 0), random_int(-1, 1));
+		random_int(random_int(-1, 1), random_int(-1, 1));
+	}
+
+}

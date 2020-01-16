@@ -183,5 +183,20 @@
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array('bar' => 'date') given.",
         "line": 576,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $min (0) of function random_int expects lower number than parameter #2 $max (-1).",
+        "line": 662,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $min (int<11, max>) of function random_int expects lower number than parameter #2 $max (10).",
+        "line": 669,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $min (340) of function random_int expects lower number than parameter #2 $max (int<min, 339>).",
+        "line": 676,
+        "ignorable": true
     }
 ]

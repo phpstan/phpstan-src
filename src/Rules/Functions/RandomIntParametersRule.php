@@ -21,9 +21,13 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 	/** @var ReflectionProvider */
 	private $reflectionProvider;
 
-	public function __construct(ReflectionProvider $reflectionProvider)
+	/** @var bool */
+	private $reportMaybes;
+
+	public function __construct(ReflectionProvider $reflectionProvider, bool $reportMaybes)
 	{
 		$this->reflectionProvider = $reflectionProvider;
+		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
@@ -59,13 +63,18 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 			if (!$maxPermittedType->isSuperTypeOf($maxType)->yes()) {
 				$message = 'Parameter #1 $min (%s) of function random_int expects lower number than parameter #2 $max (%s).';
 
-				return [
-					RuleErrorBuilder::message(sprintf(
-						$message,
-						$minType->describe(VerbosityLevel::value()),
-						$maxType->describe(VerbosityLevel::value())
-					))->build(),
-				];
+				// True if sometimes the parameters conflict.
+				$isMaybe = !$maxType->isSuperTypeOf($minType)->no();
+
+				if (!$isMaybe || $this->reportMaybes) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							$message,
+							$minType->describe(VerbosityLevel::value()),
+							$maxType->describe(VerbosityLevel::value())
+						))->build(),
+					];
+				}
 			}
 		}
 

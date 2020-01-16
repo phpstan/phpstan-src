@@ -160,7 +160,13 @@ class FileTypeMapper
 		$cacheKey = sprintf('phpdocstring-%s', $phpDocString);
 		$phpDocNodeSerializedString = $this->cache->load($cacheKey, $phpDocParserVersion);
 		if ($phpDocNodeSerializedString !== null) {
-			return unserialize($phpDocNodeSerializedString);
+			$phpDocNodeUnserialized = unserialize($phpDocNodeSerializedString);
+
+			if ($phpDocNodeUnserialized instanceof PhpDocNode) {
+				return $phpDocNodeUnserialized;
+			}
+
+			unset($phpDocNodeUnserialized);
 		}
 
 		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);

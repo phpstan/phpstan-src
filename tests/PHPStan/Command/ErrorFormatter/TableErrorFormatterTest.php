@@ -42,11 +42,11 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			1,
-			' ---------------------
-  Error
- ---------------------
-  first generic error
- ---------------------
+			' -- ---------------------
+     Error
+ -- ---------------------
+     first generic error
+ -- ---------------------
 
  [ERROR] Found 1 error
 
@@ -82,12 +82,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			2,
-			' ----------------------
-  Error
- ----------------------
-  first generic error
-  second generic error
- ----------------------
+			' -- ----------------------
+     Error
+ -- ----------------------
+     first generic error
+     second generic error
+ -- ----------------------
 
  [ERROR] Found 2 errors
 
@@ -113,12 +113,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   5      Bar
  ------ ---------
 
- ----------------------
-  Error
- ----------------------
-  first generic error
-  second generic error
- ----------------------
+ -- ----------------------
+     Error
+ -- ----------------------
+     first generic error
+     second generic error
+ -- ----------------------
 
  [ERROR] Found 6 errors
 

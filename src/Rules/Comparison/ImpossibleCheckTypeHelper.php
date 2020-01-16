@@ -189,7 +189,7 @@ class ImpossibleCheckTypeHelper
 			) && $scope->isSpecified($expr);
 		};
 
-		if (count($sureTypes) === 1) {
+		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {
 			$sureType = reset($sureTypes);
 			if ($isSpecified($sureType[0])) {
 				return null;
@@ -208,7 +208,7 @@ class ImpossibleCheckTypeHelper
 			}
 
 			return null;
-		} elseif (count($sureNotTypes) === 1) {
+		} elseif (count($sureNotTypes) === 1 && count($sureTypes) === 0) {
 			$sureNotType = reset($sureNotTypes);
 			if ($isSpecified($sureNotType[0])) {
 				return null;
@@ -227,7 +227,9 @@ class ImpossibleCheckTypeHelper
 			}
 
 			return null;
-		} elseif (count($sureTypes) > 0) {
+		}
+
+		if (count($sureTypes) > 0) {
 			foreach ($sureTypes as $sureType) {
 				if ($isSpecified($sureType[0])) {
 					return null;
@@ -239,7 +241,9 @@ class ImpossibleCheckTypeHelper
 			if ($types instanceof NeverType) {
 				return false;
 			}
-		} elseif (count($sureNotTypes) > 0) {
+		}
+
+		if (count($sureNotTypes) > 0) {
 			foreach ($sureNotTypes as $sureNotType) {
 				if ($isSpecified($sureNotType[0])) {
 					return null;

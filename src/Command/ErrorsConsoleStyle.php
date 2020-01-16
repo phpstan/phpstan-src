@@ -30,7 +30,7 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 	public function table(array $headers, array $rows): void
 	{
 		/** @var int $terminalWidth */
-		$terminalWidth = (new \Symfony\Component\Console\Terminal())->getWidth();
+		$terminalWidth = (new \Symfony\Component\Console\Terminal())->getWidth() - 2;
 		$maxHeaderWidth = strlen($headers[0]);
 		foreach ($rows as $row) {
 			$length = strlen($row[0]);

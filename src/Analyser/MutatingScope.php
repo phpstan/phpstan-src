@@ -2574,15 +2574,14 @@ class MutatingScope implements Scope
 		return $scope->specifyExpressionType($expr, $type);
 	}
 
-	public function invalidateExpression(Expr $expressionToInvalidate): self
+	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
 	{
 		$exprStringToInvalidate = $this->printer->prettyPrintExpr($expressionToInvalidate);
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;
 			if (Strings::startsWith($exprString, $exprStringToInvalidate)) {
-				if ($exprString === $exprStringToInvalidate) {
-					unset($moreSpecificTypeHolders[$exprString]);
+				if ($exprString === $exprStringToInvalidate && $requireMoreCharacters) {
 					continue;
 				}
 				$nextLetter = substr($exprString, strlen($exprStringToInvalidate), 1);

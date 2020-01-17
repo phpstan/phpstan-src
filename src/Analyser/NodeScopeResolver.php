@@ -1492,7 +1492,7 @@ class NodeScopeResolver
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			if ($methodReflection !== null && $methodReflection->hasSideEffects()->yes()) {
-				$scope = $scope->invalidateExpression($expr->var);
+				$scope = $scope->invalidateExpression($expr->var, true);
 			}
 			$hasYield = $hasYield || $result->hasYield();
 		} elseif ($expr instanceof StaticCall) {

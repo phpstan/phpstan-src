@@ -18,14 +18,17 @@ class NewStaticRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testRule(): void
 	{
 		$error = 'Unsafe usage of new static().';
+		$tipText = 'Consider making the class or the constructor final.';
 		$this->analyse([__DIR__ . '/data/new-static.php'], [
 			[
 				$error,
 				10,
+				$tipText,
 			],
 			[
 				$error,
 				25,
+				$tipText,
 			],
 		]);
 	}

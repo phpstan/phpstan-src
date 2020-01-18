@@ -128,8 +128,13 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 		$files = array_map([$this->getFileHelper(), 'normalizePath'], $files);
 		$actualErrors = $this->getAnalyser()->analyse($files, false);
 
-		$strictlyTypedSprintf = static function (int $line, string $message): string {
-			return sprintf('%02d: %s', $line, $message);
+		$strictlyTypedSprintf = static function (int $line, string $message, ?string $tip): string {
+			$message = sprintf('%02d: %s', $line, $message);
+			if ($tip !== null) {
+				$message .= "\n    💡 " . $tip;
+			}
+
+			return $message;
 		};
 
 		$expectedErrors = array_map(
@@ -140,14 +145,18 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				if (!isset($error[1])) {
 					throw new \InvalidArgumentException('Missing expected file line.');
 				}
-				return $strictlyTypedSprintf($error[1], $error[0]);
+				return $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null);
 			},
 			$expectedErrors
 		);
 
 		$actualErrors = array_map(
-			static function (Error $error): string {
-				return sprintf('%02d: %s', $error->getLine(), $error->getMessage());
+			static function (Error $error) use ($strictlyTypedSprintf): string {
+				$line = $error->getLine();
+				if ($line === null) {
+					throw new \PHPStan\ShouldNotHappenException(sprintf('Error (%s) line should not be null.', $error->getMessage()));
+				}
+				return $strictlyTypedSprintf($line, $error->getMessage(), $error->getTip());
 			},
 			$actualErrors
 		);

@@ -43,6 +43,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Class ClassAncestorsExtends\FooWrongClassExtended extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				43,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Class ClassAncestorsExtends\FooWrongTypeInExtendsTag @extends tag contains incompatible type class-string<ClassAncestorsExtends\T>.',
@@ -51,6 +52,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Class ClassAncestorsExtends\FooWrongTypeInExtendsTag extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				51,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Generic type ClassAncestorsExtends\FooGeneric<int> in PHPDoc tag @extends does not specify all template types of class ClassAncestorsExtends\FooGeneric: T, U',
@@ -87,6 +89,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Class ClassAncestorsExtends\FooExtendsGenericClass extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				174,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Template type T is declared as covariant, but occurs in invariant position in extended type ClassAncestorsExtends\FooGeneric8<T, T> of class ClassAncestorsExtends\FooGeneric9.',
@@ -113,10 +116,12 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Class ClassAncestorsImplements\FooWrongClassImplemented implements generic interface ClassAncestorsImplements\FooGeneric but does not specify its types: T, U',
 				52,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Class ClassAncestorsImplements\FooWrongClassImplemented implements generic interface ClassAncestorsImplements\FooGeneric3 but does not specify its types: T, W',
 				52,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Class ClassAncestorsImplements\FooWrongTypeInImplementsTag @implements tag contains incompatible type class-string<ClassAncestorsImplements\T>.',
@@ -125,6 +130,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Class ClassAncestorsImplements\FooWrongTypeInImplementsTag implements generic interface ClassAncestorsImplements\FooGeneric but does not specify its types: T, U',
 				60,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Generic type ClassAncestorsImplements\FooGeneric<int> in PHPDoc tag @implements does not specify all template types of interface ClassAncestorsImplements\FooGeneric: T, U',
@@ -169,6 +175,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Class ClassAncestorsImplements\FooImplementsGenericInterface implements generic interface ClassAncestorsImplements\FooGeneric but does not specify its types: T, U',
 				198,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Template type T is declared as covariant, but occurs in invariant position in implemented type ClassAncestorsImplements\FooGeneric9<T, T> of class ClassAncestorsImplements\FooGeneric10.',

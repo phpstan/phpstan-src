@@ -9777,6 +9777,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2850.php');
 	}
 
+	public function dataNativeTypes(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/native-types.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9805,6 +9810,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2443
 	 * @dataProvider dataBug2750
 	 * @dataProvider dataBug2850
+	 * @dataProvider dataNativeTypes
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */
@@ -9841,8 +9847,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				return;
 			}
 
-			$assertTypeFunctionName = 'PHPStan\\Analyser\\assertType';
-			if ((string) $nameNode !== $assertTypeFunctionName) {
+			$functionName = $nameNode->toString();
+			if ($functionName === 'PHPStan\\Analyser\\assertType') {
+				$assertTypeFunctionName = 'PHPStan\\Analyser\\assertType';
+				$expectedType = $scope->getType($node->args[0]->value);
+				$actualType = $scope->getType($node->args[1]->value);
+			} elseif ($functionName === 'PHPStan\\Analyser\\assertNativeType') {
+				$assertTypeFunctionName = 'PHPStan\\Analyser\\assertNativeType';
+				$expectedType = $scope->getNativeType($node->args[0]->value);
+				$actualType = $scope->getNativeType($node->args[1]->value);
+			} else {
 				return;
 			}
 
@@ -9853,9 +9867,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 					$node->getLine()
 				));
 			}
-
-			$expectedType = $scope->getType($node->args[0]->value);
-			$actualType = $scope->getType($node->args[1]->value);
 
 			$types[$file . ':' . $node->getLine()] = [$file, $expectedType, $actualType, $node->getLine()];
 		});

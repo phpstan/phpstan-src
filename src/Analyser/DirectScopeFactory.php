@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProv
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Type\Type;
 
 /**
  * @internal
@@ -71,6 +72,7 @@ class DirectScopeFactory implements ScopeFactory
 	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
 	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, Type> $nativeExpressionTypes
 	 *
 	 * @return MutatingScope
 	 */
@@ -84,7 +86,8 @@ class DirectScopeFactory implements ScopeFactory
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
-		array $currentlyAssignedExpressions = []
+		array $currentlyAssignedExpressions = [],
+		array $nativeExpressionTypes = []
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;
@@ -110,6 +113,7 @@ class DirectScopeFactory implements ScopeFactory
 			$anonymousFunctionReflection,
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
+			$nativeExpressionTypes,
 			$this->dynamicConstantNames
 		);
 	}

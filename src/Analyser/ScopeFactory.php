@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Type\Type;
 
 interface ScopeFactory
 {
@@ -18,6 +19,7 @@ interface ScopeFactory
 	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
 	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, Type> $nativeExpressionTypes
 	 *
 	 * @return MutatingScope
 	 */
@@ -31,7 +33,8 @@ interface ScopeFactory
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
-		array $currentlyAssignedExpressions = []
+		array $currentlyAssignedExpressions = [],
+		array $nativeExpressionTypes = []
 	): MutatingScope;
 
 }

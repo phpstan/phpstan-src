@@ -13,8 +13,9 @@ class ParametersAcceptorSelector
 {
 
 	/**
-	 * @param ParametersAcceptor[] $parametersAcceptors
-	 * @return ParametersAcceptor
+	 * @template T of ParametersAcceptor
+	 * @param T[] $parametersAcceptors
+	 * @return T
 	 */
 	public static function selectSingle(
 		array $parametersAcceptors

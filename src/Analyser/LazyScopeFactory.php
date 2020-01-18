@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProv
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Type\Type;
 
 class LazyScopeFactory implements ScopeFactory
 {
@@ -43,6 +44,7 @@ class LazyScopeFactory implements ScopeFactory
 	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
 	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, Type> $nativeExpressionTypes
 	 *
 	 * @return MutatingScope
 	 */
@@ -56,7 +58,8 @@ class LazyScopeFactory implements ScopeFactory
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
-		array $currentlyAssignedExpressions = []
+		array $currentlyAssignedExpressions = [],
+		array $nativeExpressionTypes = []
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;
@@ -82,6 +85,7 @@ class LazyScopeFactory implements ScopeFactory
 			$anonymousFunctionReflection,
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
+			$nativeExpressionTypes,
 			$this->dynamicConstantNames
 		);
 	}

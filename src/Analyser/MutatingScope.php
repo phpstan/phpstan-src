@@ -149,6 +149,9 @@ class MutatingScope implements Scope
 	/** @var array<string, true> */
 	private $currentlyAssignedExpressions = [];
 
+	/** @var array<string, Type> */
+	private $nativeExpressionTypes;
+
 	/** @var string[] */
 	private $dynamicConstantNames;
 
@@ -170,6 +173,7 @@ class MutatingScope implements Scope
 	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
 	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param string[] $dynamicConstantNames
 	 */
 	public function __construct(
@@ -190,6 +194,7 @@ class MutatingScope implements Scope
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
+		array $nativeExpressionTypes = [],
 		array $dynamicConstantNames = []
 	)
 	{
@@ -214,6 +219,7 @@ class MutatingScope implements Scope
 		$this->anonymousFunctionReflection = $anonymousFunctionReflection;
 		$this->inFirstLevelStatement = $inFirstLevelStatement;
 		$this->currentlyAssignedExpressions = $currentlyAssignedExpressions;
+		$this->nativeExpressionTypes = $nativeExpressionTypes;
 		$this->dynamicConstantNames = $dynamicConstantNames;
 	}
 
@@ -1699,6 +1705,22 @@ class MutatingScope implements Scope
 		return new MixedType();
 	}
 
+	public function getNativeType(Expr $expr): Type
+	{
+		/** @var string|null $key */
+		$key = $expr->getAttribute('phpstan_cache_printer');
+		if ($key === null) {
+			$key = $this->printer->prettyPrintExpr($expr);
+			$expr->setAttribute('phpstan_cache_printer', $key);
+		}
+
+		if (array_key_exists($key, $this->nativeExpressionTypes)) {
+			return $this->nativeExpressionTypes[$key];
+		}
+
+		return $this->getType($expr);
+	}
+
 	/**
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
 	 * @return bool
@@ -2063,8 +2085,12 @@ class MutatingScope implements Scope
 	): self
 	{
 		$variableTypes = $this->getVariableTypes();
+		$nativeExpressionTypes = array_map(static function (VariableTypeHolder $holder): Type {
+			return $holder->getType();
+		}, $variableTypes);
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
 			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameter->getType());
+			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
 		}
 
 		return $this->scopeFactory->create(
@@ -2075,7 +2101,10 @@ class MutatingScope implements Scope
 			$variableTypes,
 			[],
 			null,
-			null
+			null,
+			true,
+			[],
+			$nativeExpressionTypes
 		);
 	}
 
@@ -2198,6 +2227,7 @@ class MutatingScope implements Scope
 			);
 		}
 
+		$nativeTypes = [];
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -2209,6 +2239,7 @@ class MutatingScope implements Scope
 				$variableType = new ErrorType();
 			} else {
 				$variableType = $this->getVariableType($use->var->name);
+				$nativeTypes[sprintf('$%s', $use->var->name)] = $this->getNativeType($use->var);
 			}
 			$variableTypes[$use->var->name] = VariableTypeHolder::createYes($variableType);
 		}
@@ -2230,7 +2261,10 @@ class MutatingScope implements Scope
 			$variableTypes,
 			[],
 			$this->inClosureBindScopeClass,
-			$anonymousFunctionReflection
+			$anonymousFunctionReflection,
+			true,
+			[],
+			$nativeTypes
 		);
 	}
 
@@ -2358,10 +2392,13 @@ class MutatingScope implements Scope
 	public function enterForeach(Expr $iteratee, string $valueName, ?string $keyName): self
 	{
 		$iterateeType = $this->getType($iteratee);
+		$nativeIterateeType = $this->getNativeType($iteratee);
 		$scope = $this->assignVariable($valueName, $iterateeType->getIterableValueType());
+		$scope->nativeExpressionTypes[sprintf('$%s', $valueName)] = $nativeIterateeType->getIterableValueType();
 
 		if ($keyName !== null) {
 			$scope = $scope->assignVariable($keyName, $iterateeType->getIterableKeyType());
+			$scope->nativeExpressionTypes[sprintf('$%s', $keyName)] = $nativeIterateeType->getIterableKeyType();
 		}
 
 		return $scope;
@@ -2400,7 +2437,8 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
-			$currentlyAssignedExpressions
+			$currentlyAssignedExpressions,
+			$this->nativeExpressionTypes
 		);
 	}
 
@@ -2420,7 +2458,8 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
-			$currentlyAssignedExpressions
+			$currentlyAssignedExpressions,
+			$this->nativeExpressionTypes
 		);
 	}
 
@@ -2439,6 +2478,9 @@ class MutatingScope implements Scope
 		}
 		$variableTypes = $this->getVariableTypes();
 		$variableTypes[$variableName] = new VariableTypeHolder($type, $certainty);
+
+		$nativeTypes = $this->nativeExpressionTypes;
+		$nativeTypes[sprintf('$%s', $variableName)] = $type;
 
 		$variableString = $this->printer->prettyPrintExpr(new Variable($variableName));
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
@@ -2468,7 +2510,8 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions
+			$this->currentlyAssignedExpressions,
+			$nativeTypes
 		);
 	}
 
@@ -2480,6 +2523,8 @@ class MutatingScope implements Scope
 			}
 			$variableTypes = $this->getVariableTypes();
 			unset($variableTypes[$expr->name]);
+			$nativeTypes = $this->nativeExpressionTypes;
+			unset($nativeTypes[sprintf('$%s', $expr->name)]);
 
 			return $this->scopeFactory->create(
 				$this->context,
@@ -2490,7 +2535,9 @@ class MutatingScope implements Scope
 				$this->moreSpecificTypes,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
-				$this->inFirstLevelStatement
+				$this->inFirstLevelStatement,
+				[],
+				$nativeTypes
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$constantArrays = TypeUtils::getConstantArrays($this->getType($expr->var));
@@ -2532,6 +2579,9 @@ class MutatingScope implements Scope
 			$variableTypes = $this->getVariableTypes();
 			$variableTypes[$variableName] = VariableTypeHolder::createYes($type);
 
+			$nativeTypes = $this->nativeExpressionTypes;
+			$nativeTypes[sprintf('$%s', $variableName)] = $type;
+
 			return $this->scopeFactory->create(
 				$this->context,
 				$this->isDeclareStrictTypes(),
@@ -2542,7 +2592,8 @@ class MutatingScope implements Scope
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
 				$this->inFirstLevelStatement,
-				$this->currentlyAssignedExpressions
+				$this->currentlyAssignedExpressions,
+				$nativeTypes
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$constantArrays = TypeUtils::getConstantArrays($this->getType($expr->var));
@@ -2706,7 +2757,8 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			false,
-			$this->currentlyAssignedExpressions
+			$this->currentlyAssignedExpressions,
+			$this->nativeExpressionTypes
 		);
 	}
 
@@ -2737,7 +2789,8 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions
+			$this->currentlyAssignedExpressions,
+			$this->nativeExpressionTypes
 		);
 	}
 
@@ -2746,6 +2799,13 @@ class MutatingScope implements Scope
 		if ($otherScope === null) {
 			return $this;
 		}
+
+		$variableHolderToType = static function (VariableTypeHolder $holder): Type {
+			return $holder->getType();
+		};
+		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
+			return new VariableTypeHolder($type, TrinaryLogic::createYes());
+		};
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -2756,7 +2816,12 @@ class MutatingScope implements Scope
 			$this->mergeVariableHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes),
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement
+			$this->inFirstLevelStatement,
+			[],
+			array_map($variableHolderToType, $this->mergeVariableHolders(
+				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
+				array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
+			))
 		);
 	}
 
@@ -2789,6 +2854,13 @@ class MutatingScope implements Scope
 
 	public function processFinallyScope(self $finallyScope, self $originalFinallyScope): self
 	{
+		$variableHolderToType = static function (VariableTypeHolder $holder): Type {
+			return $holder->getType();
+		};
+		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
+			return new VariableTypeHolder($type, TrinaryLogic::createYes());
+		};
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -2806,7 +2878,13 @@ class MutatingScope implements Scope
 			),
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement
+			$this->inFirstLevelStatement,
+			[],
+			array_map($variableHolderToType, $this->processFinallyScopeVariableTypeHolders(
+				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
+				array_map($typeToVariableHolder, $finallyScope->nativeExpressionTypes),
+				array_map($typeToVariableHolder, $originalFinallyScope->nativeExpressionTypes)
+			))
 		);
 	}
 
@@ -2854,6 +2932,10 @@ class MutatingScope implements Scope
 	): self
 	{
 		$variableTypes = $this->variableTypes;
+		if (count($byRefUses) === 0) {
+			return $this;
+		}
+
 		foreach ($byRefUses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -2888,14 +2970,18 @@ class MutatingScope implements Scope
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement
+			$this->inFirstLevelStatement,
+			[],
+			$this->nativeExpressionTypes
 		);
 	}
 
 	public function processAlwaysIterableForeachScopeWithoutPollute(self $finalScope): self
 	{
 		$variableTypeHolders = $this->variableTypes;
+		$nativeTypes = $this->nativeExpressionTypes;
 		foreach ($finalScope->variableTypes as $name => $variableTypeHolder) {
+			$nativeTypes[sprintf('$%s', $name)] = $variableTypeHolder->getType();
 			if (!isset($variableTypeHolders[$name])) {
 				$variableTypeHolders[$name] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
 				continue;
@@ -2929,7 +3015,9 @@ class MutatingScope implements Scope
 			$moreSpecificTypes,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement
+			$this->inFirstLevelStatement,
+			[],
+			$nativeTypes
 		);
 	}
 
@@ -2945,6 +3033,17 @@ class MutatingScope implements Scope
 			$otherScope->moreSpecificTypes
 		);
 
+		$variableHolderToType = static function (VariableTypeHolder $holder): Type {
+			return $holder->getType();
+		};
+		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
+			return new VariableTypeHolder($type, TrinaryLogic::createYes());
+		};
+		$nativeTypes = array_map($variableHolderToType, $this->generalizeVariableTypeHolders(
+			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
+			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
+		));
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -2954,7 +3053,9 @@ class MutatingScope implements Scope
 			$moreSpecificTypes,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement
+			$this->inFirstLevelStatement,
+			[],
+			$nativeTypes
 		);
 	}
 
@@ -3148,7 +3249,18 @@ class MutatingScope implements Scope
 			return false;
 		}
 
-		return $this->compareVariableTypeHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes);
+		if (!$this->compareVariableTypeHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes)) {
+			return false;
+		}
+
+		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
+			return new VariableTypeHolder($type, TrinaryLogic::createYes());
+		};
+
+		return $this->compareVariableTypeHolders(
+			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
+			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
+		);
 	}
 
 	/**

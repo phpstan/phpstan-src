@@ -18,6 +18,9 @@ use PHPStan\Type\Type;
 class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension, BrokerAwareExtension
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	/** @var \PHPStan\Broker\Broker */
 	private $broker;
 
@@ -26,6 +29,11 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 
 	/** @var \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper|null */
 	private $helper;
+
+	public function __construct(bool $treatPhpDocTypesAsCertain)
+	{
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+	}
 
 	public function setBroker(Broker $broker): void
 	{
@@ -84,7 +92,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 	private function getHelper(): ImpossibleCheckTypeHelper
 	{
 		if ($this->helper === null) {
-			$this->helper = new ImpossibleCheckTypeHelper($this->broker, $this->typeSpecifier, $this->broker->getUniversalObjectCratesClasses());
+			$this->helper = new ImpossibleCheckTypeHelper($this->broker, $this->typeSpecifier, $this->broker->getUniversalObjectCratesClasses(), $this->treatPhpDocTypesAsCertain);
 		}
 
 		return $this->helper;

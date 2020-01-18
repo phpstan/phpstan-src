@@ -37,6 +37,9 @@ class DirectScopeFactory implements ScopeFactory
 	/** @var \PHPStan\Rules\Properties\PropertyReflectionFinder */
 	private $propertyReflectionFinder;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	/** @var string[] */
 	private $dynamicConstantNames;
 
@@ -48,6 +51,7 @@ class DirectScopeFactory implements ScopeFactory
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
+		bool $treatPhpDocTypesAsCertain,
 		Container $container
 	)
 	{
@@ -58,6 +62,7 @@ class DirectScopeFactory implements ScopeFactory
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 	}
 
@@ -114,7 +119,8 @@ class DirectScopeFactory implements ScopeFactory
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
 			$nativeExpressionTypes,
-			$this->dynamicConstantNames
+			$this->dynamicConstantNames,
+			$this->treatPhpDocTypesAsCertain
 		);
 	}
 

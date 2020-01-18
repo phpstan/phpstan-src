@@ -14,9 +14,16 @@ class ConstantConditionRuleHelper
 	/** @var ImpossibleCheckTypeHelper */
 	private $impossibleCheckTypeHelper;
 
-	public function __construct(ImpossibleCheckTypeHelper $impossibleCheckTypeHelper)
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
+	public function __construct(
+		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		bool $treatPhpDocTypesAsCertain
+	)
 	{
 		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function shouldReportAlwaysTrueByDefault(Expr $expr): bool
@@ -68,7 +75,20 @@ class ConstantConditionRuleHelper
 			return new BooleanType();
 		}
 
-		return $scope->getType($expr)->toBoolean();
+		if ($this->treatPhpDocTypesAsCertain) {
+			return $scope->getType($expr)->toBoolean();
+		}
+
+		return $scope->getNativeType($expr)->toBoolean();
+	}
+
+	public function getNativeBooleanType(Scope $scope, Expr $expr): BooleanType
+	{
+		if ($this->shouldSkip($scope, $expr)) {
+			return new BooleanType();
+		}
+
+		return $scope->getNativeType($expr)->toBoolean();
 	}
 
 }

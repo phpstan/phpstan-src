@@ -155,6 +155,9 @@ class MutatingScope implements Scope
 	/** @var string[] */
 	private $dynamicConstantNames;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	/**
 	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
 	 * @param ReflectionProvider $reflectionProvider
@@ -175,6 +178,7 @@ class MutatingScope implements Scope
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param string[] $dynamicConstantNames
+	 * @paarm bool $treatPhpDocTypesAsCertain
 	 */
 	public function __construct(
 		ScopeFactory $scopeFactory,
@@ -195,7 +199,8 @@ class MutatingScope implements Scope
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
 		array $nativeExpressionTypes = [],
-		array $dynamicConstantNames = []
+		array $dynamicConstantNames = [],
+		bool $treatPhpDocTypesAsCertain = true
 	)
 	{
 		if ($namespace === '') {
@@ -221,6 +226,7 @@ class MutatingScope implements Scope
 		$this->currentlyAssignedExpressions = $currentlyAssignedExpressions;
 		$this->nativeExpressionTypes = $nativeExpressionTypes;
 		$this->dynamicConstantNames = $dynamicConstantNames;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getFile(): string
@@ -505,7 +511,12 @@ class MutatingScope implements Scope
 			$node instanceof \PhpParser\Node\Expr\BinaryOp\BooleanAnd
 			|| $node instanceof \PhpParser\Node\Expr\BinaryOp\LogicalAnd
 		) {
-			$leftBooleanType = $this->getType($node->left)->toBoolean();
+			if ($this->treatPhpDocTypesAsCertain) {
+				$leftBooleanType = $this->getType($node->left)->toBoolean();
+			} else {
+				$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
+			}
+
 			if (
 				$leftBooleanType instanceof ConstantBooleanType
 				&& !$leftBooleanType->getValue()
@@ -513,7 +524,12 @@ class MutatingScope implements Scope
 				return new ConstantBooleanType(false);
 			}
 
-			$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
+			if ($this->treatPhpDocTypesAsCertain) {
+				$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
+			} else {
+				$rightBooleanType = $this->promoteNativeTypes()->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
+			}
+
 			if (
 				$rightBooleanType instanceof ConstantBooleanType
 				&& !$rightBooleanType->getValue()
@@ -537,7 +553,11 @@ class MutatingScope implements Scope
 			$node instanceof \PhpParser\Node\Expr\BinaryOp\BooleanOr
 			|| $node instanceof \PhpParser\Node\Expr\BinaryOp\LogicalOr
 		) {
-			$leftBooleanType = $this->getType($node->left)->toBoolean();
+			if ($this->treatPhpDocTypesAsCertain) {
+				$leftBooleanType = $this->getType($node->left)->toBoolean();
+			} else {
+				$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
+			}
 			if (
 				$leftBooleanType instanceof ConstantBooleanType
 				&& $leftBooleanType->getValue()
@@ -545,7 +565,12 @@ class MutatingScope implements Scope
 				return new ConstantBooleanType(true);
 			}
 
-			$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
+			if ($this->treatPhpDocTypesAsCertain) {
+				$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
+			} else {
+				$rightBooleanType = $this->promoteNativeTypes()->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
+			}
+
 			if (
 				$rightBooleanType instanceof ConstantBooleanType
 				&& $rightBooleanType->getValue()
@@ -663,7 +688,11 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\Instanceof_) {
-			$expressionType = $this->getType($node->expr);
+			if ($this->treatPhpDocTypesAsCertain) {
+				$expressionType = $this->getType($node->expr);
+			} else {
+				$expressionType = $this->getNativeType($node->expr);
+			}
 			if (
 				$this->isInTrait()
 				&& TypeUtils::findThisType($expressionType) !== null
@@ -1721,6 +1750,69 @@ class MutatingScope implements Scope
 		return $this->getType($expr);
 	}
 
+	public function doNotTreatPhpDocTypesAsCertain(): Scope
+	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			return $this;
+		}
+
+		return new self(
+			$this->scopeFactory,
+			$this->reflectionProvider,
+			$this->dynamicReturnTypeExtensionRegistry,
+			$this->operatorTypeSpecifyingExtensionRegistry,
+			$this->printer,
+			$this->typeSpecifier,
+			$this->propertyReflectionFinder,
+			$this->context,
+			$this->declareStrictTypes,
+			$this->function,
+			$this->namespace,
+			$this->variableTypes,
+			$this->moreSpecificTypes,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->nativeExpressionTypes,
+			$this->dynamicConstantNames,
+			false
+		);
+	}
+
+	private function promoteNativeTypes(): self
+	{
+		$variableTypes = $this->variableTypes;
+		foreach ($this->nativeExpressionTypes as $expressionType => $type) {
+			if (substr($expressionType, 0, 1) !== '$') {
+				var_dump($expressionType);
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$variableName = substr($expressionType, 1);
+			$has = $this->hasVariableType($variableName);
+			if ($has->no()) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$variableTypes[$variableName] = new VariableTypeHolder($type, $has);
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->declareStrictTypes,
+			$this->function,
+			$this->namespace,
+			$variableTypes,
+			$this->moreSpecificTypes,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			[]
+		);
+	}
+
 	/**
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
 	 * @return bool
@@ -2085,9 +2177,7 @@ class MutatingScope implements Scope
 	): self
 	{
 		$variableTypes = $this->getVariableTypes();
-		$nativeExpressionTypes = array_map(static function (VariableTypeHolder $holder): Type {
-			return $holder->getType();
-		}, $variableTypes);
+		$nativeExpressionTypes = [];
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
 			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameter->getType());
 			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();

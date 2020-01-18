@@ -459,8 +459,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			new \PhpParser\PrettyPrinter\Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
+			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container
 		);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return true;
 	}
 
 	public function getCurrentWorkingDirectory(): string

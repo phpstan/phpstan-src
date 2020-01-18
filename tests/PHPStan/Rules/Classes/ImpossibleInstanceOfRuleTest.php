@@ -11,14 +11,24 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var bool */
 	private $checkAlwaysTrueInstanceOf;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new ImpossibleInstanceOfRule($this->checkAlwaysTrueInstanceOf);
+		return new ImpossibleInstanceOfRule($this->checkAlwaysTrueInstanceOf, $this->treatPhpDocTypesAsCertain);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testInstanceof(): void
 	{
 		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse(
 			[__DIR__ . '/data/impossible-instanceof.php'],
 			[
@@ -89,6 +99,7 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instanceof between ImpossibleInstanceOf\Dolor and ImpossibleInstanceOf\Dolor will always evaluate to true.',
 					226,
+					$tipText,
 				],
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Lorem will always evaluate to false.',
@@ -97,22 +108,27 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instanceof between ImpossibleInstanceOf\Bar&ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
 					232,
+					$tipText,
 				],
 				[
 					'Instanceof between ImpossibleInstanceOf\Bar&ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Bar will always evaluate to true.',
 					232,
+					$tipText,
 				],
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Foo will always evaluate to false.',
 					234,
+					$tipText,
 				],
 				[
 					'Instanceof between ImpossibleInstanceOf\Bar&ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
 					238,
+					$tipText,
 				],
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Bar will always evaluate to false.',
 					240,
+					$tipText,
 				],
 				[
 					'Instanceof between object and Exception will always evaluate to false.',
@@ -138,6 +154,11 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
 					362,
 				],
+				[
+					'Instanceof between ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
+					388,
+					$tipText,
+				],
 			]
 		);
 	}
@@ -145,6 +166,9 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testInstanceofWithoutAlwaysTrue(): void
 	{
 		$this->checkAlwaysTrueInstanceOf = false;
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse(
 			[__DIR__ . '/data/impossible-instanceof.php'],
 			[
@@ -183,10 +207,12 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Foo will always evaluate to false.',
 					234,
+					$tipText,
 				],
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Bar will always evaluate to false.',
 					240,
+					$tipText,
 				],
 				[
 					'Instanceof between object and Exception will always evaluate to false.',
@@ -214,6 +240,62 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				],
 			]
 		);
+	}
+
+	public function testDoNotReportTypesFromPhpDocs(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/impossible-instanceof-not-phpdoc.php'], [
+			[
+				'Instanceof between stdClass and stdClass will always evaluate to true.',
+				12,
+			],
+			[
+				'Instanceof between stdClass and Exception will always evaluate to false.',
+				15,
+			],
+			[
+				'Instanceof between DateTimeImmutable and DateTimeInterface will always evaluate to true.',
+				27,
+			],
+			[
+				'Instanceof between DateTimeImmutable and ImpossibleInstanceofNotPhpDoc\SomeFinalClass will always evaluate to false.',
+				30,
+			],
+		]);
+	}
+
+	public function testReportTypesFromPhpDocs(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/impossible-instanceof-not-phpdoc.php'], [
+			[
+				'Instanceof between stdClass and stdClass will always evaluate to true.',
+				12,
+			],
+			[
+				'Instanceof between stdClass and Exception will always evaluate to false.',
+				15,
+			],
+			[
+				'Instanceof between DateTimeImmutable and DateTimeInterface will always evaluate to true.',
+				27,
+			],
+			[
+				'Instanceof between DateTimeImmutable and ImpossibleInstanceofNotPhpDoc\SomeFinalClass will always evaluate to false.',
+				30,
+			],
+			[
+				'Instanceof between DateTimeImmutable and DateTimeImmutable will always evaluate to true.',
+				33,
+			],
+			[
+				'Instanceof between DateTimeImmutable and DateTime will always evaluate to false.',
+				36,
+			],
+		]);
 	}
 
 }

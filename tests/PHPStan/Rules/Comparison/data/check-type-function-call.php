@@ -663,3 +663,22 @@ final class MethodExistsWithTrait
 		$this->test();
 	}
 }
+
+class CheckIsStringInElseIf
+{
+
+	/**
+	 * @param Foo|string $a
+	 */
+	public function doFoo($a): bool
+	{
+		if ($a instanceof Foo) {
+			return true;
+		} elseif (!is_string($a)) {
+			throw new \Exception('Not Bar or string');
+		}
+
+		return false;
+	}
+
+}

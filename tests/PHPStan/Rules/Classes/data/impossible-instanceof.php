@@ -375,3 +375,20 @@ class InvalidTypeTest
 		}
 	}
 }
+
+class CheckInstanceofInIterableForeach
+{
+
+	/**
+	 * @param iterable<Foo> $items
+	 */
+	public function test(iterable $items): void
+	{
+		foreach ($items as $item) {
+			if (!$item instanceof Foo) {
+				throw new \Exception('Unsupported');
+			}
+		}
+	}
+
+}

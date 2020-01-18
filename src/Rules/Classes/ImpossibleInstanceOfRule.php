@@ -21,9 +21,16 @@ class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
 	/** @var bool */
 	private $checkAlwaysTrueInstanceof;
 
-	public function __construct(bool $checkAlwaysTrueInstanceof)
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
+	public function __construct(
+		bool $checkAlwaysTrueInstanceof,
+		bool $treatPhpDocTypesAsCertain
+	)
 	{
 		$this->checkAlwaysTrueInstanceof = $checkAlwaysTrueInstanceof;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -60,21 +67,34 @@ class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+			if (!$this->treatPhpDocTypesAsCertain) {
+				return $ruleErrorBuilder;
+			}
+
+			$instanceofTypeWithoutPhpDocs = $scope->doNotTreatPhpDocTypesAsCertain()->getType($node);
+			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
+				return $ruleErrorBuilder;
+			}
+
+			return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+		};
+
 		if (!$instanceofType->getValue()) {
 			return [
-				RuleErrorBuilder::message(sprintf(
+				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to false.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
 					$classType->describe(VerbosityLevel::typeOnly())
-				))->build(),
+				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
 			return [
-				RuleErrorBuilder::message(sprintf(
+				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
 					$classType->describe(VerbosityLevel::typeOnly())
-				))->build(),
+				)))->build(),
 			];
 		}
 

@@ -17,11 +17,16 @@ class UnreachableTernaryElseBranchRule implements Rule
 	/** @var ConstantConditionRuleHelper */
 	private $helper;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	public function __construct(
-		ConstantConditionRuleHelper $helper
+		ConstantConditionRuleHelper $helper,
+		bool $treatPhpDocTypesAsCertain
 	)
 	{
 		$this->helper = $helper;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -38,8 +43,20 @@ class UnreachableTernaryElseBranchRule implements Rule
 			&& $this->helper->shouldSkip($scope, $node->cond)
 			&& !$this->helper->shouldReportAlwaysTrueByDefault($node->cond)
 		) {
+			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+				if (!$this->treatPhpDocTypesAsCertain) {
+					return $ruleErrorBuilder;
+				}
+
+				$booleanNativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getType($node->cond);
+				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+
+				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+			};
 			return [
-				RuleErrorBuilder::message('Else branch is unreachable because ternary operator condition is always true.')->line($node->else->getLine())->build(),
+				$addTip(RuleErrorBuilder::message('Else branch is unreachable because ternary operator condition is always true.'))->line($node->else->getLine())->build(),
 			];
 		}
 

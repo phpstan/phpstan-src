@@ -18,16 +18,26 @@ use PHPStan\Type\MethodTypeSpecifyingExtension;
 class ImpossibleCheckTypeMethodCallRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	public function getRule(): \PHPStan\Rules\Rule
 	{
 		return new ImpossibleCheckTypeMethodCallRule(
 			new ImpossibleCheckTypeHelper(
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[]
+				[],
+				$this->treatPhpDocTypesAsCertain
 			),
-			true
+			true,
+			$this->treatPhpDocTypesAsCertain
 		);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	/**
@@ -178,6 +188,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends \PHPStan\Testing\RuleTestCas
 
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/impossible-method-call.php'], [
 			[
 				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
@@ -214,6 +225,41 @@ class ImpossibleCheckTypeMethodCallRuleTest extends \PHPStan\Testing\RuleTestCas
 			[
 				'Call to method ImpossibleMethodCall\Foo::isSame() with stdClass and stdClass will always evaluate to true.',
 				78,
+			],
+		]);
+	}
+
+	public function testDoNotReportPhpDoc(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/impossible-method-call-not-phpdoc.php'], [
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				17,
+			],
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				19,
+			],
+		]);
+	}
+
+	public function testReportPhpDoc(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/impossible-method-call-not-phpdoc.php'], [
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				17,
+			],
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				18,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				19,
 			],
 		]);
 	}

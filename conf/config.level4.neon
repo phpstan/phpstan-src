@@ -3,15 +3,7 @@ includes:
 
 rules:
 	- PHPStan\Rules\Arrays\DeadForeachRule
-	- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
-	- PHPStan\Rules\Comparison\BooleanNotConstantConditionRule
-	- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
-	- PHPStan\Rules\Comparison\ElseIfConstantConditionRule
-	- PHPStan\Rules\Comparison\IfConstantConditionRule
-	- PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule
 	- PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
-	- PHPStan\Rules\Comparison\UnreachableIfBranchesRule
-	- PHPStan\Rules\Comparison\UnreachableTernaryElseBranchRule
 	- PHPStan\Rules\DeadCode\NoopRule
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\Exceptions\DeadCatchRule
@@ -27,6 +19,42 @@ services:
 		class: PHPStan\Rules\Classes\ImpossibleInstanceOfRule
 		arguments:
 			checkAlwaysTrueInstanceof: %checkAlwaysTrueInstanceof%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\BooleanNotConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\ElseIfConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\IfConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 
@@ -34,6 +62,7 @@ services:
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeFunctionCallRule
 		arguments:
 			checkAlwaysTrueCheckTypeFunctionCall: %checkAlwaysTrueCheckTypeFunctionCall%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 
@@ -41,6 +70,7 @@ services:
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeMethodCallRule
 		arguments:
 			checkAlwaysTrueCheckTypeFunctionCall: %checkAlwaysTrueCheckTypeFunctionCall%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 
@@ -48,6 +78,7 @@ services:
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeStaticMethodCallRule
 		arguments:
 			checkAlwaysTrueCheckTypeFunctionCall: %checkAlwaysTrueCheckTypeFunctionCall%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 
@@ -55,6 +86,27 @@ services:
 		class: PHPStan\Rules\Comparison\StrictComparisonOfDifferentTypesRule
 		arguments:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\UnreachableIfBranchesRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\UnreachableTernaryElseBranchRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 

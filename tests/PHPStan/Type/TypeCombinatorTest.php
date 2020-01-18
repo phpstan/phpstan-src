@@ -1571,6 +1571,22 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				UnionType::class,
 				'K of stdClass (function a(), parameter)|T of Exception (function a(), parameter)',
 			],
+			[
+				[
+					new ObjectType(\DateTimeImmutable::class),
+					new ObjectType(\DateTimeInterface::class, new ObjectType(\DateTimeImmutable::class)),
+				],
+				ObjectType::class,
+				\DateTimeInterface::class,
+			],
+			[
+				[
+					new StringType(),
+					new MixedType(false, new StringType()),
+				],
+				MixedType::class,
+				'mixed=implicit',
+			],
 		];
 	}
 

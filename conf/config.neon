@@ -40,6 +40,7 @@ parameters:
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	polluteCatchScopeWithTryAssignments: false
+	treatPhpDocTypesAsCertain: true
 	tipsOfTheDay: true
 	reportMagicMethods: false
 	reportMagicProperties: false
@@ -143,6 +144,7 @@ parametersSchema:
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
 	polluteCatchScopeWithTryAssignments: bool()
+	treatPhpDocTypesAsCertain: bool()
 	reportMagicMethods: bool()
 	reportMagicProperties: bool()
 	ignoreErrors: listOf(
@@ -414,11 +416,14 @@ services:
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper
 		arguments:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
 		class: PHPStan\Rules\FunctionCallParametersCheck
@@ -834,6 +839,8 @@ services:
 
 	-
 		class: PHPStan\Type\Php\TypeSpecifyingFunctionsDynamicReturnTypeExtension
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

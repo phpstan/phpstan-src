@@ -15,6 +15,9 @@ use PHPStan\Type\Type;
 class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new IfConstantConditionRule(
@@ -22,10 +25,18 @@ class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 				new ImpossibleCheckTypeHelper(
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
-					[]
-				)
-			)
+					[],
+					$this->treatPhpDocTypesAsCertain
+				),
+				$this->treatPhpDocTypesAsCertain
+			),
+			$this->treatPhpDocTypesAsCertain
 		);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	/**
@@ -52,6 +63,7 @@ class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		require_once __DIR__ . '/data/function-definition.php';
 		$this->analyse([__DIR__ . '/data/if-condition.php'], [
 			[
@@ -77,6 +89,33 @@ class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'If condition is always true.',
 				127,
+			],
+		]);
+	}
+
+	public function testDoNotReportPhpDoc(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/if-condition-not-phpdoc.php'], [
+			[
+				'If condition is always true.',
+				16,
+			],
+		]);
+	}
+
+	public function testReportPhpDoc(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/if-condition-not-phpdoc.php'], [
+			[
+				'If condition is always true.',
+				16,
+			],
+			[
+				'If condition is always true.',
+				20,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

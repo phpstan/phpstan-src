@@ -11,6 +11,9 @@ use PHPStan\Testing\RuleTestCase;
 class UnreachableIfBranchesRuleTest extends RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): Rule
 	{
 		return new UnreachableIfBranchesRule(
@@ -18,14 +21,23 @@ class UnreachableIfBranchesRuleTest extends RuleTestCase
 				new ImpossibleCheckTypeHelper(
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
-					[]
-				)
-			)
+					[],
+					$this->treatPhpDocTypesAsCertain
+				),
+				$this->treatPhpDocTypesAsCertain
+			),
+			$this->treatPhpDocTypesAsCertain
 		);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/unreachable-if-branches.php'], [
 			[
 				'Else branch is unreachable because previous condition is always true.',
@@ -46,6 +58,60 @@ class UnreachableIfBranchesRuleTest extends RuleTestCase
 			[
 				'Else branch is unreachable because previous condition is always true.',
 				41,
+			],
+		]);
+	}
+
+	public function testDoNotReportPhpDoc(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/unreachable-if-branches-not-phpdoc.php'], [
+			[
+				'Elseif branch is unreachable because previous condition is always true.',
+				18,
+			],
+			[
+				'Else branch is unreachable because previous condition is always true.',
+				28,
+			],
+			[
+				'Elseif branch is unreachable because previous condition is always true.',
+				38,
+			],
+		]);
+	}
+
+	public function testReportPhpDoc(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		$this->analyse([__DIR__ . '/data/unreachable-if-branches-not-phpdoc.php'], [
+			[
+				'Elseif branch is unreachable because previous condition is always true.',
+				18,
+			],
+			[
+				'Else branch is unreachable because previous condition is always true.',
+				28,
+			],
+			[
+				'Elseif branch is unreachable because previous condition is always true.',
+				38,
+			],
+			[
+				'Elseif branch is unreachable because previous condition is always true.',
+				44,
+				$tipText,
+			],
+			[
+				'Else branch is unreachable because previous condition is always true.',
+				54,
+				$tipText,
+			],
+			[
+				'Elseif branch is unreachable because previous condition is always true.',
+				64,
+				$tipText,
 			],
 		]);
 	}

@@ -20,13 +20,18 @@ class ImpossibleCheckTypeMethodCallRule implements \PHPStan\Rules\Rule
 	/** @var bool */
 	private $checkAlwaysTrueCheckTypeFunctionCall;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	public function __construct(
 		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		bool $checkAlwaysTrueCheckTypeFunctionCall
+		bool $checkAlwaysTrueCheckTypeFunctionCall,
+		bool $treatPhpDocTypesAsCertain
 	)
 	{
 		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;
 		$this->checkAlwaysTrueCheckTypeFunctionCall = $checkAlwaysTrueCheckTypeFunctionCall;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -45,25 +50,38 @@ class ImpossibleCheckTypeMethodCallRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+			if (!$this->treatPhpDocTypesAsCertain) {
+				return $ruleErrorBuilder;
+			}
+
+			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
+			if ($isAlways !== null) {
+				return $ruleErrorBuilder;
+			}
+
+			return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+		};
+
 		if (!$isAlways) {
 			$method = $this->getMethod($node->var, $node->name->name, $scope);
 			return [
-				RuleErrorBuilder::message(sprintf(
+				$addTip(RuleErrorBuilder::message(sprintf(
 					'Call to method %s::%s()%s will always evaluate to false.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
-				))->build(),
+				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
 			$method = $this->getMethod($node->var, $node->name->name, $scope);
 			return [
-				RuleErrorBuilder::message(sprintf(
+				$addTip(RuleErrorBuilder::message(sprintf(
 					'Call to method %s::%s()%s will always evaluate to true.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
-				))->build(),
+				)))->build(),
 			];
 		}
 

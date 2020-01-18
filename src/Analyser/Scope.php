@@ -57,6 +57,8 @@ interface Scope extends ClassMemberAccessAnswerer
 	 */
 	public function getNativeType(Expr $expr): Type;
 
+	public function doNotTreatPhpDocTypesAsCertain(): self;
+
 	public function resolveName(Name $name): string;
 
 	/**

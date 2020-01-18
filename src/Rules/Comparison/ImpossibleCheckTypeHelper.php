@@ -35,20 +35,26 @@ class ImpossibleCheckTypeHelper
 	/** @var string[] */
 	private $universalObjectCratesClasses;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param string[] $universalObjectCratesClasses
+	 * @param bool $treatPhpDocTypesAsCertain
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		TypeSpecifier $typeSpecifier,
-		array $universalObjectCratesClasses
+		array $universalObjectCratesClasses,
+		bool $treatPhpDocTypesAsCertain
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function findSpecifiedType(
@@ -195,7 +201,11 @@ class ImpossibleCheckTypeHelper
 				return null;
 			}
 
-			$argumentType = $scope->getType($sureType[0]);
+			if ($this->treatPhpDocTypesAsCertain) {
+				$argumentType = $scope->getType($sureType[0]);
+			} else {
+				$argumentType = $scope->getNativeType($sureType[0]);
+			}
 
 			/** @var \PHPStan\Type\Type $resultType */
 			$resultType = $sureType[1];
@@ -214,7 +224,11 @@ class ImpossibleCheckTypeHelper
 				return null;
 			}
 
-			$argumentType = $scope->getType($sureNotType[0]);
+			if ($this->treatPhpDocTypesAsCertain) {
+				$argumentType = $scope->getType($sureNotType[0]);
+			} else {
+				$argumentType = $scope->getNativeType($sureNotType[0]);
+			}
 
 			/** @var \PHPStan\Type\Type $resultType */
 			$resultType = $sureNotType[1];
@@ -288,6 +302,20 @@ class ImpossibleCheckTypeHelper
 			' with arguments %s and %s',
 			implode(', ', $descriptions),
 			$lastDescription
+		);
+	}
+
+	public function doNotTreatPhpDocTypesAsCertain(): self
+	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			return $this;
+		}
+
+		return new self(
+			$this->reflectionProvider,
+			$this->typeSpecifier,
+			$this->universalObjectCratesClasses,
+			false
 		);
 	}
 

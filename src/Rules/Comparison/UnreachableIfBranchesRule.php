@@ -16,11 +16,16 @@ class UnreachableIfBranchesRule implements \PHPStan\Rules\Rule
 	/** @var ConstantConditionRuleHelper */
 	private $helper;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	public function __construct(
-		ConstantConditionRuleHelper $helper
+		ConstantConditionRuleHelper $helper,
+		bool $treatPhpDocTypesAsCertain
 	)
 	{
 		$this->helper = $helper;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -31,21 +36,35 @@ class UnreachableIfBranchesRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];
-		$conditionType = $scope->getType($node->cond)->toBoolean();
+		$condition = $node->cond;
+		$conditionType = $scope->getType($condition)->toBoolean();
 		$nextBranchIsDead = $conditionType instanceof ConstantBooleanType && $conditionType->getValue() && $this->helper->shouldSkip($scope, $node->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($node->cond);
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, &$condition): RuleErrorBuilder {
+			if (!$this->treatPhpDocTypesAsCertain) {
+				return $ruleErrorBuilder;
+			}
+
+			$booleanNativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getType($condition)->toBoolean();
+			if ($booleanNativeType instanceof ConstantBooleanType) {
+				return $ruleErrorBuilder;
+			}
+
+			return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+		};
 
 		foreach ($node->elseifs as $elseif) {
 			if ($nextBranchIsDead) {
-				$errors[] = RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.')->line($elseif->getLine())->build();
+				$errors[] = $addTip(RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.')->line($elseif->getLine()))->build();
 				continue;
 			}
 
-			$elseIfConditionType = $scope->getType($elseif->cond)->toBoolean();
-			$nextBranchIsDead = $elseIfConditionType instanceof ConstantBooleanType && $elseIfConditionType->getValue() && $this->helper->shouldSkip($scope, $elseif->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($elseif->cond);
+			$condition = $elseif->cond;
+			$conditionType = $scope->getType($condition)->toBoolean();
+			$nextBranchIsDead = $conditionType instanceof ConstantBooleanType && $conditionType->getValue() && $this->helper->shouldSkip($scope, $elseif->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($elseif->cond);
 		}
 
 		if ($node->else !== null && $nextBranchIsDead) {
-			$errors[] = RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.')->line($node->else->getLine())->build();
+			$errors[] = $addTip(RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.'))->line($node->else->getLine())->build();
 		}
 
 		return $errors;

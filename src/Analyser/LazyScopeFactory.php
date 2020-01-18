@@ -23,6 +23,9 @@ class LazyScopeFactory implements ScopeFactory
 	/** @var string[] */
 	private $dynamicConstantNames;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	public function __construct(
 		string $scopeClass,
 		Container $container
@@ -31,6 +34,7 @@ class LazyScopeFactory implements ScopeFactory
 		$this->scopeClass = $scopeClass;
 		$this->container = $container;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
+		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
 	}
 
 	/**
@@ -86,7 +90,8 @@ class LazyScopeFactory implements ScopeFactory
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
 			$nativeExpressionTypes,
-			$this->dynamicConstantNames
+			$this->dynamicConstantNames,
+			$this->treatPhpDocTypesAsCertain
 		);
 	}
 

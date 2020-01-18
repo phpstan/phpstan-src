@@ -11,21 +11,32 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 	/** @var bool */
 	private $checkAlwaysTrueCheckTypeFunctionCall;
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new ImpossibleCheckTypeFunctionCallRule(
 			new ImpossibleCheckTypeHelper(
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[\stdClass::class]
+				[\stdClass::class],
+				$this->treatPhpDocTypesAsCertain
 			),
-			$this->checkAlwaysTrueCheckTypeFunctionCall
+			$this->checkAlwaysTrueCheckTypeFunctionCall,
+			$this->treatPhpDocTypesAsCertain
 		);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testImpossibleCheckTypeFunctionCall(): void
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse(
 			[__DIR__ . '/data/check-type-function-call.php'],
 			[
@@ -40,6 +51,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				[
 					'Call to function is_callable() with array<int> will always evaluate to false.',
 					44,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
 					'Call to function assert() with false will always evaluate to false.',
@@ -189,6 +201,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
 					648,
 				],
+				[
+					'Call to function is_string() with string will always evaluate to true.',
+					677,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
 			]
 		);
 	}
@@ -196,6 +213,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 	public function testImpossibleCheckTypeFunctionCallWithoutAlwaysTrue(): void
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = false;
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse(
 			[__DIR__ . '/data/check-type-function-call.php'],
 			[
@@ -206,6 +224,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				[
 					'Call to function is_callable() with array<int> will always evaluate to false.',
 					44,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
 					'Call to function assert() with false will always evaluate to false.',
@@ -281,6 +300,35 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				],
 			]
 		);
+	}
+
+	public function testDoNotReportTypesFromPhpDocs(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/check-type-function-call-not-phpdoc.php'], [
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				16,
+			],
+		]);
+	}
+
+	public function testReportTypesFromPhpDocs(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/check-type-function-call-not-phpdoc.php'], [
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				16,
+			],
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				19,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
 	}
 
 }

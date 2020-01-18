@@ -2680,10 +2680,15 @@ class MutatingScope implements Scope
 
 	public function removeTypeFromExpression(Expr $expr, Type $type): self
 	{
-		return $this->specifyExpressionType(
+		$scope = $this->specifyExpressionType(
 			$expr,
 			TypeCombinator::remove($this->getType($expr), $type)
 		);
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = TypeCombinator::remove($this->getNativeType($expr), $type);
+		}
+
+		return $scope;
 	}
 
 	/**
@@ -2742,10 +2747,11 @@ class MutatingScope implements Scope
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
-				if (!$specifiedTypes->shouldOverwrite()) {
-					$type = TypeCombinator::intersect($type, $this->getType($expr));
+				$scope = $scope->specifyExpressionType($expr, $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getType($expr)));
+
+				if ($expr instanceof Variable && is_string($expr->name)) {
+					$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getNativeType($expr));
 				}
-				$scope = $scope->specifyExpressionType($expr, $type);
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}

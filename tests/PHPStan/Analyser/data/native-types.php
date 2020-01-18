@@ -138,6 +138,40 @@ class Foo
 		}
 	}
 
+	/**
+	 * @param \DateTimeImmutable $date
+	 */
+	public function doIfElse(\DateTimeInterface $date): void
+	{
+		if ($date instanceof \DateTimeInterface) {
+			assertType(\DateTimeImmutable::class, $date);
+			assertNativeType(\DateTimeInterface::class, $date);
+		} else {
+			assertType('*NEVER*', $date);
+			assertNativeType('*NEVER*', $date);
+		}
+
+		assertType(\DateTimeImmutable::class, $date);
+		assertNativeType(\DateTimeInterface::class, $date);
+
+		if ($date instanceof \DateTimeImmutable) {
+			assertType(\DateTimeImmutable::class, $date);
+			assertNativeType(\DateTimeImmutable::class, $date);
+		} else {
+			assertType('*NEVER*', $date);
+			assertNativeType('DateTimeInterface~DateTimeImmutable', $date);
+		}
+
+		assertType(\DateTimeImmutable::class, $date);
+
+		// in reality it works but here the analyser is ran with treatPhpDocTypesAsCertain=true
+		// assertNativeType(\DateTimeInterface::class, $date);
+
+		if ($date instanceof \DateTime) {
+
+		}
+	}
+
 }
 
 /**

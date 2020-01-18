@@ -2397,9 +2397,18 @@ class MutatingScope implements Scope
 		$scope->nativeExpressionTypes[sprintf('$%s', $valueName)] = $nativeIterateeType->getIterableValueType();
 
 		if ($keyName !== null) {
-			$scope = $scope->assignVariable($keyName, $iterateeType->getIterableKeyType());
-			$scope->nativeExpressionTypes[sprintf('$%s', $keyName)] = $nativeIterateeType->getIterableKeyType();
+			$scope = $scope->enterForeachKey($iteratee, $keyName);
 		}
+
+		return $scope;
+	}
+
+	public function enterForeachKey(Expr $iteratee, string $keyName): self
+	{
+		$iterateeType = $this->getType($iteratee);
+		$nativeIterateeType = $this->getNativeType($iteratee);
+		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType());
+		$scope->nativeExpressionTypes[sprintf('$%s', $keyName)] = $nativeIterateeType->getIterableKeyType();
 
 		return $scope;
 	}

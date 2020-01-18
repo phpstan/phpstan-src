@@ -116,6 +116,28 @@ class Foo
 		}
 	}
 
+	/**
+	 * @param array<string, array{int, string}> $array
+	 */
+	public function doForeachArrayDestructuring(array $array)
+	{
+		assertType('array<string, array(int, string)>', $array);
+		assertNativeType('array', $array);
+		foreach ($array as $key => [$i, $s]) {
+			assertType('array<string, array(int, string)>', $array);
+			assertNativeType('array', $array);
+
+			assertType('string', $key);
+			assertNativeType('(int|string)', $key);
+
+			assertType('int', $i);
+			// assertNativeType('mixed', $i);
+
+			assertType('string', $s);
+			// assertNativeType('mixed', $s);
+		}
+	}
+
 }
 
 /**

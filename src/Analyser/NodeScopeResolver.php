@@ -2407,10 +2407,6 @@ class NodeScopeResolver
 
 	private function enterForeach(MutatingScope $scope, Foreach_ $stmt): MutatingScope
 	{
-		if ($stmt->keyVar !== null && $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)) {
-			$scope = $scope->assignVariable($stmt->keyVar->name, new MixedType());
-		}
-
 		$comment = CommentHelper::getDocComment($stmt);
 		if ($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)) {
 			$scope = $scope->enterForeach(
@@ -2429,9 +2425,12 @@ class NodeScopeResolver
 
 		if (
 			$stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
-			&& $comment !== null
 		) {
-			$scope = $this->processVarAnnotation($scope, $stmt->keyVar->name, $comment, true);
+			$scope = $scope->enterForeachKey($stmt->expr, $stmt->keyVar->name);
+
+			if ($comment !== null) {
+				$scope = $this->processVarAnnotation($scope, $stmt->keyVar->name, $comment, true);
+			}
 		}
 
 		if ($stmt->valueVar instanceof List_ || $stmt->valueVar instanceof Array_) {

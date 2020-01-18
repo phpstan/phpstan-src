@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="PHPStan">
-	<rule ref="vendor/consistence/coding-standard/Consistence/ruleset.xml">
+	<rule ref="build-cs/vendor/consistence/coding-standard/Consistence/ruleset.xml">
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat"/>
 		<exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameAfterKeyword"/>
 		<exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameInAnnotation"/>
@@ -19,16 +19,23 @@
 			<property name="newlinesCountBetweenOpenTagAndDeclare" value="0"/>
 		</properties>
 	</rule>
-	<rule ref="SlevomatCodingStandard.TypeHints.TypeHintDeclaration">
+	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint">
 		<properties>
-			<property name="usefulAnnotations" type="array" value="
-				@dataProvider,
-				@requires
-			"/>
 			<property name="enableObjectTypeHint" value="false"/>
 		</properties>
-		<exclude name="SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableParameterTypeHintSpecification"/>
-		<exclude name="SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableReturnTypeHintSpecification"/>
+		<exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint">
+		<properties>
+			<property name="enableNativeTypeHint" value="false"/>
+		</properties>
+		<exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
+		<properties>
+			<property name="enableObjectTypeHint" value="false"/>
+		</properties>
+		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Functions.UnusedInheritedVariablePassedToClosure.UnusedInheritedVariable">
 		<exclude-pattern>src/Command/CommandHelper.php</exclude-pattern>
@@ -37,9 +44,10 @@
 		<exclude-pattern>tests</exclude-pattern>
 	</rule>
 	<rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition"/>
-	<rule ref="SlevomatCodingStandard.ControlStructures.DisallowEqualOperators"/>
 	<rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator"/>
-	<rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit"/>
+	<rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit">
+		<exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit.UselessElseIf"/>
+	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousAbstractClassNaming"/>
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
 	<rule ref="SlevomatCodingStandard.ControlStructures.DisallowShortTernaryOperator"/>
@@ -50,6 +58,7 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>
 	<rule ref="SlevomatCodingStandard.Functions.StaticClosure"/>
+	<rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators"/>
 	<rule ref="SlevomatCodingStandard.Operators.RequireCombinedAssignmentOperator"/>
 	<rule ref="SlevomatCodingStandard.TypeHints.NullTypeHintOnLastPosition"/>
 	<rule ref="SlevomatCodingStandard.Classes.TraitUseDeclaration"/>

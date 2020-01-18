@@ -290,10 +290,12 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Instanceof between DateTimeImmutable and DateTimeImmutable will always evaluate to true.',
 				33,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Instanceof between DateTimeImmutable and DateTime will always evaluate to false.',
 				36,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

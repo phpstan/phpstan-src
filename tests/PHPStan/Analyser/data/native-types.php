@@ -163,9 +163,7 @@ class Foo
 		}
 
 		assertType(\DateTimeImmutable::class, $date);
-
-		// in reality it works but here the analyser is ran with treatPhpDocTypesAsCertain=true
-		// assertNativeType(\DateTimeInterface::class, $date);
+		assertNativeType(\DateTimeInterface::class, $date);
 
 		if ($date instanceof \DateTime) {
 

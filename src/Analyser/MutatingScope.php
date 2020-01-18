@@ -499,7 +499,11 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof \PhpParser\Node\Expr\BooleanNot) {
-			$exprBooleanType = $this->getType($node->expr)->toBoolean();
+			if ($this->treatPhpDocTypesAsCertain) {
+				$exprBooleanType = $this->getType($node->expr)->toBoolean();
+			} else {
+				$exprBooleanType = $this->getNativeType($node->expr)->toBoolean();
+			}
 			if ($exprBooleanType instanceof ConstantBooleanType) {
 				return new ConstantBooleanType(!$exprBooleanType->getValue());
 			}
@@ -591,8 +595,14 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof \PhpParser\Node\Expr\BinaryOp\LogicalXor) {
-			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			$rightBooleanType = $this->getType($node->right)->toBoolean();
+			if ($this->treatPhpDocTypesAsCertain) {
+				$leftBooleanType = $this->getType($node->left)->toBoolean();
+				$rightBooleanType = $this->getType($node->right)->toBoolean();
+			} else {
+				$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
+				$rightBooleanType = $this->getNativeType($node->right)->toBoolean();
+			}
+
 			if (
 				$leftBooleanType instanceof ConstantBooleanType
 				&& $rightBooleanType instanceof ConstantBooleanType

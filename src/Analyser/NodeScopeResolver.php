@@ -521,7 +521,7 @@ class NodeScopeResolver
 				new StatementExitPoint($stmt, $scope),
 			]);
 		} elseif ($stmt instanceof If_) {
-			$conditionType = $scope->getType($stmt->cond)->toBoolean();
+			$conditionType = $scope->doNotTreatPhpDocTypesAsCertain()->getType($stmt->cond)->toBoolean();
 			$ifAlwaysTrue = $conditionType instanceof ConstantBooleanType && $conditionType->getValue();
 			$condResult = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$exitPoints = [];
@@ -545,7 +545,7 @@ class NodeScopeResolver
 			$condScope = $scope;
 			foreach ($stmt->elseifs as $elseif) {
 				$nodeCallback($elseif, $scope);
-				$elseIfConditionType = $condScope->getType($elseif->cond)->toBoolean();
+				$elseIfConditionType = $condScope->doNotTreatPhpDocTypesAsCertain()->getType($elseif->cond)->toBoolean();
 				$condResult = $this->processExprNode($elseif->cond, $condScope, $nodeCallback, ExpressionContext::createDeep());
 				$condScope = $condResult->getScope();
 				$branchScopeStatementResult = $this->processStmtNodes($elseif, $elseif->stmts, $condResult->getTruthyScope(), $nodeCallback);

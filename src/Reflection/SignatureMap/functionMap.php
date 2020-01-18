@@ -7363,7 +7363,7 @@ return [
 'mysqli_thread_safe' => ['bool'],
 'mysqli_use_result' => ['mysqli_result|false', 'link'=>'mysqli'],
 'mysqli_warning::__construct' => ['void'],
-'mysqli_warning::next' => ['void'],
+'mysqli_warning::next' => ['bool'],
 'mysqli_warning_count' => ['int', 'link'=>'mysqli'],
 'mysqlnd_memcache_get_config' => ['array', 'connection'=>'mixed'],
 'mysqlnd_memcache_set' => ['bool', 'mysql_connection'=>'mixed', 'memcache_connection='=>'Memcached', 'pattern='=>'string', 'callback='=>'callable'],

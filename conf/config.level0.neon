@@ -1,8 +1,12 @@
 parameters:
 	customRulesetUsed: false
 	missingClosureNativeReturnCheckObjectTypehint: false
+	featureToggles:
+		closureUsesThis: false
 
 conditionalTags:
+	PHPStan\Rules\Functions\ClosureUsesThisRule:
+		phpstan.rules.rule: %featureToggles.closureUsesThis%
 	PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule:
 		phpstan.rules.rule: %checkMissingClosureNativeReturnTypehintRule%
 
@@ -54,6 +58,9 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
+
+	-
+		class: PHPStan\Rules\Functions\ClosureUsesThisRule
 
 	-
 		class: PHPStan\Rules\Methods\CallMethodsRule

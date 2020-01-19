@@ -639,7 +639,7 @@ final class Set implements ArrayAccess, Collection, Traversable
 	/**
 	 * @template TValue2
 	 * @param Set<TValue2> $set
-	 * @return Set<TValue>
+	 * @return Set<TValue&TValue2>
 	 */
 	public function intersect(Set $set): Set
 	{

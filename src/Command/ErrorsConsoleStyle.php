@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use OndraM\CiDetector\CiDetector;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,10 +18,23 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 	/** @var \Symfony\Component\Console\Helper\ProgressBar */
 	private $progressBar;
 
+	/** @var bool|null */
+	private $isCiDetected;
+
 	public function __construct(InputInterface $input, OutputInterface $output)
 	{
 		parent::__construct($input, $output);
 		$this->showProgress = $input->hasOption(self::OPTION_NO_PROGRESS) && !(bool) $input->getOption(self::OPTION_NO_PROGRESS);
+	}
+
+	private function isCiDetected(): bool
+	{
+		if ($this->isCiDetected === null) {
+			$ciDetector = new CiDetector();
+			$this->isCiDetected = $ciDetector->isCiDetected();
+		}
+
+		return $this->isCiDetected;
 	}
 
 	/**
@@ -68,7 +82,7 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 	public function createProgressBar($max = 0): ProgressBar
 	{
 		$this->progressBar = parent::createProgressBar($max);
-		$this->progressBar->setOverwrite(true);
+		$this->progressBar->setOverwrite(!$this->isCiDetected());
 		return $this->progressBar;
 	}
 
@@ -93,7 +107,8 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 		if (!$this->showProgress) {
 			return;
 		}
-		if ($step > 0) {
+
+		if (!$this->isCiDetected() && $step > 0) {
 			$stepTime = (time() - $this->progressBar->getStartTime()) / $step;
 			if ($stepTime > 0 && $stepTime < 1) {
 				$this->progressBar->setRedrawFrequency((int) (1 / $stepTime));
@@ -102,7 +117,7 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 			}
 		}
 
-		$this->progressBar->setProgress($this->progressBar->getProgress() + $step);
+		parent::progressAdvance($step);
 	}
 
 	public function progressFinish(): void

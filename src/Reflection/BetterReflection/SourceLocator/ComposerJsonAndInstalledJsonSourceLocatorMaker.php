@@ -52,7 +52,8 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
 
 		$installedJsonContents = FileReader::read($installedJsonPath);
-		$installed = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
+		$installedJson = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
+		$installed = $installedJson['packages'] ?? $installedJson;
 
 		$classMapPaths = array_merge(
 			$this->prefixPaths($this->packageToClassMapPaths($composer), $installationPath . '/'),

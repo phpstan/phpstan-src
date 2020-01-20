@@ -48,4 +48,9 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBugWithoutGitHubIssue1(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-without-issue-1.php'], []);
+	}
+
 }

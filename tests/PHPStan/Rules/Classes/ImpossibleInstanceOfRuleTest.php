@@ -123,12 +123,12 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instanceof between ImpossibleInstanceOf\Bar&ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
 					238,
-					$tipText,
+					//$tipText,
 				],
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Bar will always evaluate to false.',
 					240,
-					$tipText,
+					//$tipText,
 				],
 				[
 					'Instanceof between object and Exception will always evaluate to false.',
@@ -212,7 +212,7 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Bar will always evaluate to false.',
 					240,
-					$tipText,
+					//$tipText,
 				],
 				[
 					'Instanceof between object and Exception will always evaluate to false.',
@@ -295,7 +295,7 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Instanceof between DateTimeImmutable and DateTime will always evaluate to false.',
 				36,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				//'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

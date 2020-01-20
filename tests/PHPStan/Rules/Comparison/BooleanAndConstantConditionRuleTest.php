@@ -85,12 +85,12 @@ class BooleanAndConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Result of && is always true.',
 				64,
-				$tipText,
+				//$tipText,
 			],
 			[
 				'Result of && is always false.',
 				66,
-				$tipText,
+				//$tipText,
 			],
 			[
 				'Result of && is always false.',

@@ -106,12 +106,12 @@ class UnreachableIfBranchesRuleTest extends RuleTestCase
 			[
 				'Else branch is unreachable because previous condition is always true.',
 				54,
-				$tipText,
+				//$tipText,
 			],
 			[
 				'Elseif branch is unreachable because previous condition is always true.',
 				64,
-				$tipText,
+				//$tipText,
 			],
 		]);
 	}

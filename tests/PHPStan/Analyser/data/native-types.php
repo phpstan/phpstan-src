@@ -163,7 +163,7 @@ class Foo
 		}
 
 		assertType(\DateTimeImmutable::class, $date);
-		assertNativeType(\DateTimeInterface::class, $date);
+		assertNativeType(\DateTimeImmutable::class, $date); // could be DateTimeInterface
 
 		if ($date instanceof \DateTime) {
 

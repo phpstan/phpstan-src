@@ -12,6 +12,9 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	'../../stubs',
 	'../../vendor/jetbrains/phpstorm-stubs',
 ]) as $file) {
+	if ($file->getPathName() === '../../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
+		continue;
+	}
 	$stubs[] = $file->getPathName();
 }
 

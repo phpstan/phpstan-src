@@ -10159,7 +10159,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'*ERROR*',
+				'mixed',
 				'password_algos()',
 			],
 		];

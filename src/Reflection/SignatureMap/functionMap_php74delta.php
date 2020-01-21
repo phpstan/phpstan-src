@@ -43,6 +43,7 @@ return [
 		'password_algos' => ['array<int, string>'],
 		'password_hash' => ['string|false', 'password'=>'string', 'algo'=>'string|null', 'options='=>'array'],
 		'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'string|null', 'options='=>'array'],
+		'sapi_windows_set_ctrl_handler' => ['bool', 'callable'=>'callable', 'add'=>'bool'],
 		'ReflectionProperty::getType' => ['?ReflectionType'],
 		'ReflectionProperty::hasType' => ['bool'],
 		'ReflectionProperty::isInitialized' => ['bool'],

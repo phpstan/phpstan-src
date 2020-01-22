@@ -35,9 +35,8 @@ EOT
 
 		$processFactory = $this->createMock(ProcessFactory::class);
 		$processFactory->expects(self::at(0))->method('setOutput');
-		$processFactory->expects(self::at(1))->method('create')->with(['composer', 'require', '--no-update', 'dg/composer-cleaner:^2.0'], 'bar')->willReturn($process);
-		$processFactory->expects(self::at(2))->method('create')->with(['composer', 'update', '--no-dev', '--classmap-authoritative'], 'bar')->willReturn($process);
-		$processFactory->expects(self::at(3))->method('create')->with(['php', 'box.phar', 'compile', '--no-parallel'], 'foo')->willReturn($process);
+		$processFactory->expects(self::at(1))->method('create')->with(['composer', 'update', '--no-dev', '--classmap-authoritative'], 'bar')->willReturn($process);
+		$processFactory->expects(self::at(2))->method('create')->with(['php', 'box.phar', 'compile', '--no-parallel'], 'foo')->willReturn($process);
 
 		$application = new Application();
 		$application->add(new CompileCommand($filesystem, $processFactory, 'foo', 'bar'));

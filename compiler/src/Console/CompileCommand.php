@@ -47,7 +47,6 @@ final class CompileCommand extends Command
 	{
 		$this->processFactory->setOutput($output);
 
-		$this->processFactory->create(['composer', 'require', '--no-update', 'dg/composer-cleaner:^2.0'], $this->buildDir);
 		$this->fixComposerJson($this->buildDir);
 		$this->processFactory->create(['composer', 'update', '--no-dev', '--classmap-authoritative'], $this->buildDir);
 

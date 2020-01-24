@@ -86,7 +86,7 @@ class PhpParameterFromParserNodeReflection implements \PHPStan\Reflection\Parame
 
 	public function getNativeType(): Type
 	{
-		return $this->realType ?? new MixedType();
+		return $this->realType;
 	}
 
 	public function passedByReference(): PassedByReference

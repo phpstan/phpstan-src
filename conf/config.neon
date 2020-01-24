@@ -291,6 +291,11 @@ services:
 			memoryLimitFile: %memoryLimitFile%
 
 	-
+		class: PHPStan\Command\IgnoredRegexValidator
+		arguments:
+			parser: @regexParser
+
+	-
 		class: PHPStan\Dependency\DependencyDumper
 
 	-
@@ -976,6 +981,16 @@ services:
 			functionReflector: @betterReflectionFunctionReflector
 			constantReflector: @betterReflectionConstantReflector
 		autowired: false
+
+	regexParser:
+		class: Hoa\Compiler\Llk\Parser
+		factory: Hoa\Compiler\Llk\Llk::load(@regexGrammarStream)
+
+	regexGrammarStream:
+		class: Hoa\File\Read
+		arguments:
+			streamName: 'hoa://Library/Regex/Grammar.pp'
+			mode: rb
 
 	runtimeReflectionProvider:
 		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider

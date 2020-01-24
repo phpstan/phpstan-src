@@ -37,6 +37,7 @@ final class AnalysisResultTest extends TestCase
 					new Error('aa4', 'aaa', 16),
 				],
 				[],
+				[],
 				false,
 				false,
 				null

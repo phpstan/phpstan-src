@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
+use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\DirectParser;
@@ -386,6 +387,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$nodeScopeResolver,
 			$fileHelper,
 			$stubValidator,
+			self::getContainer()->getByType(IgnoredRegexValidator::class),
 			$ignoreErrors,
 			$reportUnmatchedIgnoredErrors,
 			50

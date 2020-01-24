@@ -78,6 +78,7 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\TestCase
 		return new AnalysisResult(
 			$fileErrors,
 			$genericErrors,
+			[],
 			false,
 			false,
 			null

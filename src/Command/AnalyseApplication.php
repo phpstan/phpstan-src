@@ -136,10 +136,15 @@ class AnalyseApplication
 
 		$fileSpecificErrors = [];
 		$notFileSpecificErrors = [];
+		$warnings = [];
 		foreach ($errors as $error) {
 			if (is_string($error)) {
 				$notFileSpecificErrors[] = $error;
 			} else {
+				if ($error->isWarning()) {
+					$warnings[] = $error->getMessage();
+					continue;
+				}
 				$fileSpecificErrors[] = $error;
 			}
 		}
@@ -148,6 +153,7 @@ class AnalyseApplication
 			new AnalysisResult(
 				$fileSpecificErrors,
 				$notFileSpecificErrors,
+				$warnings,
 				$defaultLevelUsed,
 				$hasInferrablePropertyTypesFromConstructor,
 				$projectConfigFile

@@ -129,6 +129,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$result = new AnalysisResult(
 			[new Error('Escape Regex with file # ~ \' ()', 'Testfile')],
 			['Escape Regex without file # ~ <> \' ()'],
+			[],
 			false,
 			false,
 			null

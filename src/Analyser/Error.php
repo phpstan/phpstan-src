@@ -26,6 +26,9 @@ class Error
 	/** @var string|null */
 	private $tip;
 
+	/** @var bool */
+	private $warning;
+
 	public function __construct(
 		string $message,
 		string $file,
@@ -33,7 +36,8 @@ class Error
 		bool $canBeIgnored = true,
 		?string $filePath = null,
 		?string $traitFilePath = null,
-		?string $tip = null
+		?string $tip = null,
+		bool $warning = false
 	)
 	{
 		$this->message = $message;
@@ -43,6 +47,7 @@ class Error
 		$this->filePath = $filePath;
 		$this->traitFilePath = $traitFilePath;
 		$this->tip = $tip;
+		$this->warning = $warning;
 	}
 
 	public function getMessage(): string
@@ -99,6 +104,11 @@ class Error
 			$this->traitFilePath,
 			null
 		);
+	}
+
+	public function isWarning(): bool
+	{
+		return $this->warning;
 	}
 
 }

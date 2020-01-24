@@ -67,7 +67,7 @@ class TableErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 		};
 
-		if (!$analysisResult->hasErrors()) {
+		if (!$analysisResult->hasErrors() && !$analysisResult->hasWarnings()) {
 			$style->success('No errors');
 			if ($this->showTipsOfTheDay) {
 				if ($analysisResult->isDefaultLevelUsed()) {
@@ -122,13 +122,29 @@ class TableErrorFormatter implements ErrorFormatter
 			}, $analysisResult->getNotFileSpecificErrors()));
 		}
 
-		$style->error(sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount()));
+		$warningsCount = count($analysisResult->getWarnings());
+		if ($warningsCount > 0) {
+			$style->table(['', 'Warning'], array_map(static function (string $warning): array {
+				return ['', $warning];
+			}, $analysisResult->getWarnings()));
+		}
+
+		$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());
+		if ($warningsCount > 0) {
+			$finalMessage .= sprintf($warningsCount === 1 ? ' and %d warning' : ' and %d warnings', $warningsCount);
+		}
+
+		if ($analysisResult->getTotalErrorsCount() > 0) {
+			$style->error($finalMessage);
+		} else {
+			$style->warning($finalMessage);
+		}
 
 		if ($this->checkMissingTypehints && $this->showTipsOfTheDay) {
 			$showInferPropertiesTip();
 		}
 
-		return 1;
+		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;
 	}
 
 }

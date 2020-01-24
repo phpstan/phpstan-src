@@ -13,6 +13,9 @@ class AnalysisResult
 	/** @var string[] */
 	private $notFileSpecificErrors;
 
+	/** @var string[] */
+	private $warnings;
+
 	/** @var bool */
 	private $defaultLevelUsed;
 
@@ -25,6 +28,7 @@ class AnalysisResult
 	/**
 	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
+	 * @param string[] $warnings
 	 * @param bool $defaultLevelUsed
 	 * @param bool $hasInferrablePropertyTypesFromConstructor
 	 * @param string|null $projectConfigFile
@@ -32,6 +36,7 @@ class AnalysisResult
 	public function __construct(
 		array $fileSpecificErrors,
 		array $notFileSpecificErrors,
+		array $warnings,
 		bool $defaultLevelUsed,
 		bool $hasInferrablePropertyTypesFromConstructor,
 		?string $projectConfigFile
@@ -54,6 +59,7 @@ class AnalysisResult
 
 		$this->fileSpecificErrors = $fileSpecificErrors;
 		$this->notFileSpecificErrors = $notFileSpecificErrors;
+		$this->warnings = $warnings;
 		$this->defaultLevelUsed = $defaultLevelUsed;
 		$this->hasInferrablePropertyTypesFromConstructor = $hasInferrablePropertyTypesFromConstructor;
 		$this->projectConfigFile = $projectConfigFile;
@@ -83,6 +89,19 @@ class AnalysisResult
 	public function getNotFileSpecificErrors(): array
 	{
 		return $this->notFileSpecificErrors;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getWarnings(): array
+	{
+		return $this->warnings;
+	}
+
+	public function hasWarnings(): bool
+	{
+		return count($this->warnings) > 0;
 	}
 
 	public function isDefaultLevelUsed(): bool

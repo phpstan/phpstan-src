@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use Nette\Utils\Json;
+use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileHelper;
 use PHPStan\PhpDoc\StubValidator;
 use PHPStan\Rules\Registry;
@@ -25,6 +26,9 @@ class Analyser
 	/** @var \PHPStan\PhpDoc\StubValidator */
 	private $stubValidator;
 
+	/** @var \PHPStan\Command\IgnoredRegexValidator */
+	private $ignoredRegexValidator;
+
 	/** @var (string|mixed[])[] */
 	private $ignoreErrors;
 
@@ -43,6 +47,7 @@ class Analyser
 	 * @param \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver
 	 * @param \PHPStan\File\FileHelper $fileHelper
 	 * @param \PHPStan\PhpDoc\StubValidator $stubValidator
+	 * @param \PHPStan\Command\IgnoredRegexValidator $ignoredRegexValidator
 	 * @param (string|array<string, string>)[] $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param int $internalErrorsCountLimit
@@ -53,6 +58,7 @@ class Analyser
 		NodeScopeResolver $nodeScopeResolver,
 		FileHelper $fileHelper,
 		StubValidator $stubValidator,
+		IgnoredRegexValidator $ignoredRegexValidator,
 		array $ignoreErrors,
 		bool $reportUnmatchedIgnoredErrors,
 		int $internalErrorsCountLimit
@@ -63,6 +69,7 @@ class Analyser
 		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->fileHelper = $fileHelper;
 		$this->stubValidator = $stubValidator;
+		$this->ignoredRegexValidator = $ignoredRegexValidator;
 		$this->ignoreErrors = $ignoreErrors;
 		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
@@ -87,9 +94,9 @@ class Analyser
 	): array
 	{
 		$errors = [];
-
 		$otherIgnoreErrors = [];
 		$ignoreErrorsByFile = [];
+		$warnings = [];
 		foreach ($this->ignoreErrors as $i => $ignoreError) {
 			try {
 				if (is_array($ignoreError)) {
@@ -126,12 +133,23 @@ class Analyser
 					}
 
 					$ignoreMessage = $ignoreError['message'];
+					if (isset($ignoreError['count'])) {
+						continue; // ignoreError coming from baseline will be correct
+					}
+					$ignoredTypes = $this->ignoredRegexValidator->getIgnoredTypes($ignoreMessage);
+					if (count($ignoredTypes) > 0) {
+						$warnings[] = $this->createIgnoredTypesWarning($ignoreMessage, $ignoredTypes);
+					}
 				} else {
 					$otherIgnoreErrors[] = [
 						'index' => $i,
 						'ignoreError' => $ignoreError,
 					];
 					$ignoreMessage = $ignoreError;
+					$ignoredTypes = $this->ignoredRegexValidator->getIgnoredTypes($ignoreMessage);
+					if (count($ignoredTypes) > 0) {
+						$warnings[] = $this->createIgnoredTypesWarning($ignoreMessage, $ignoredTypes);
+					}
 				}
 
 				\Nette\Utils\Strings::match('', $ignoreMessage);
@@ -349,7 +367,28 @@ class Analyser
 			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 		}
 
-		return $errors;
+		return array_merge($errors, $warnings);
+	}
+
+	/**
+	 * @param string $regex
+	 * @param array<string, string> $ignoredTypes
+	 * @return Error
+	 */
+	private function createIgnoredTypesWarning(string $regex, array $ignoredTypes): Error
+	{
+		return new Error(
+			sprintf("Ignored error %s has an unescaped '|' which leads to ignoring more errors than intended. Use '\\|' instead.\n%s", $regex, sprintf("It ignores all errors containing the following types:\n%s", implode("\n", array_map(static function (string $typeDescription): string {
+				return sprintf('* %s', $typeDescription);
+			}, array_keys($ignoredTypes))))),
+			'placeholder', // this value will never get used
+			null,
+			false,
+			null,
+			null,
+			null,
+			true
+		);
 	}
 
 	/**

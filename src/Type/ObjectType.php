@@ -596,8 +596,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createNo();
 		}
 
+		if ($this->isInstanceOf(\ArrayAccess::class)->yes()) {
+			$tKey = GenericTypeVariableResolver::getType($this, \ArrayAccess::class, 'TKey');
+			if ($tKey !== null && $tKey->isSuperTypeOf($offsetType)->no()) {
+				return TrinaryLogic::createNo();
+			}
+
+			return TrinaryLogic::createMaybe();
+		}
+
 		return $this->isExtraOffsetAccessibleClass()
-			->or($this->isInstanceOf(\ArrayAccess::class))
 			->and(TrinaryLogic::createMaybe());
 	}
 

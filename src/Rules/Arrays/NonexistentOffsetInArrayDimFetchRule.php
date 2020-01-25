@@ -62,7 +62,7 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 
 		$isOffsetAccessible = $isOffsetAccessibleType->isOffsetAccessible();
 
-		if ($scope->isInExpressionAssign($node) && !$isOffsetAccessible->no()) {
+		if ($scope->isInExpressionAssign($node) && $isOffsetAccessible->yes()) {
 			return [];
 		}
 

@@ -50,34 +50,6 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 					38,
 				],
 				[
-					'Cannot assign offset \'foo\' to stdClass.',
-					41,
-				],
-				[
-					'Cannot assign offset \'foo\' to true.',
-					44,
-				],
-				[
-					'Cannot assign offset \'foo\' to false.',
-					47,
-				],
-				[
-					'Cannot assign offset \'foo\' to resource.',
-					51,
-				],
-				[
-					'Cannot assign offset \'foo\' to int.',
-					54,
-				],
-				[
-					'Cannot assign offset \'foo\' to float.',
-					57,
-				],
-				[
-					'Cannot assign offset \'foo\' to array|int.',
-					61,
-				],
-				[
 					'Cannot assign offset false to string.',
 					66,
 				],
@@ -118,30 +90,6 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Cannot assign offset 12.34 to string.',
 					20,
-				],
-				[
-					'Cannot assign offset \'foo\' to stdClass.',
-					41,
-				],
-				[
-					'Cannot assign offset \'foo\' to true.',
-					44,
-				],
-				[
-					'Cannot assign offset \'foo\' to false.',
-					47,
-				],
-				[
-					'Cannot assign offset \'foo\' to resource.',
-					51,
-				],
-				[
-					'Cannot assign offset \'foo\' to int.',
-					54,
-				],
-				[
-					'Cannot assign offset \'foo\' to float.',
-					57,
 				],
 				[
 					'Cannot assign offset false to string.',

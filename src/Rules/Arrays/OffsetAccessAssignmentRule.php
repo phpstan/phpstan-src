@@ -50,6 +50,12 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 			}
 		);
 		$varType = $varTypeResult->getType();
+		if ($varType instanceof ErrorType) {
+			return [];
+		}
+		if (!$varType->isOffsetAccessible()->yes()) {
+			return [];
+		}
 
 		if ($node->dim !== null) {
 			$dimTypeResult = $this->ruleLevelHelper->findTypeToCheck(

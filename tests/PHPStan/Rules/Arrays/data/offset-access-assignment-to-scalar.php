@@ -122,3 +122,13 @@ class ObjectWithOffsetAccess implements \ArrayAccess
 	}
 
 }
+
+class AssignOnInt
+{
+
+	public function doFoo(int $i)
+	{
+		$i['foo'] = 'bar';
+	}
+
+}

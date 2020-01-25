@@ -16,6 +16,7 @@ class ParametersSchemaExtension extends \Nette\DI\CompilerExtension
 
 	public function loadConfiguration(): void
 	{
+		/** @var mixed[] $config */
 		$config = $this->config;
 		$config['__parametersSchema'] = new Statement(Schema::class);
 		$builder = $this->getContainerBuilder();

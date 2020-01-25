@@ -102,6 +102,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				253,
 			],
 			[
+				'Cannot access offset \'a\' on array(\'a\' => 1, \'b\' => 1)|(Closure(): mixed).',
+				258,
+			],
+			[
 				'Offset string does not exist on array<int, string>.',
 				308,
 			],
@@ -120,6 +124,34 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 			[
 				'Offset \'foo\' does not exist on ArrayAccess<int, stdClass>.',
 				411,
+			],
+			[
+				'Cannot access offset \'foo\' on stdClass.',
+				423,
+			],
+			[
+				'Cannot access offset \'foo\' on true.',
+				426,
+			],
+			[
+				'Cannot access offset \'foo\' on false.',
+				429,
+			],
+			[
+				'Cannot access offset \'foo\' on resource.',
+				433,
+			],
+			[
+				'Cannot access offset \'foo\' on 42.',
+				436,
+			],
+			[
+				'Cannot access offset \'foo\' on 4.141.',
+				439,
+			],
+			[
+				'Cannot access offset \'foo\' on array|int.',
+				443,
 			],
 		]);
 	}

@@ -591,13 +591,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$broker = Broker::getInstance();
-		if (!$broker->hasClass($this->className)) {
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
 			return TrinaryLogic::createNo();
 		}
 
 		if ($this->isInstanceOf(\ArrayAccess::class)->yes()) {
-			$classReflection = $this->getClassReflection();
 			$acceptedOffsetType = RecursionGuard::run($this, function () use ($classReflection): Type {
 				$parameters = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('offsetSet')->getVariants())->getParameters();
 				if (count($parameters) < 2) {

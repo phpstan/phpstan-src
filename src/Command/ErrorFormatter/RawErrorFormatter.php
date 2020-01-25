@@ -13,10 +13,6 @@ class RawErrorFormatter implements ErrorFormatter
 		Output $output
 	): int
 	{
-		if (!$analysisResult->hasErrors()) {
-			return 0;
-		}
-
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
 			$output->writeRaw(sprintf('?:?:%s', $notFileSpecificError));
 			$output->writeLineFormatted('');
@@ -34,7 +30,12 @@ class RawErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 		}
 
-		return 1;
+		foreach ($analysisResult->getWarnings() as $warning) {
+			$output->writeRaw(sprintf('?:?:%s', $warning));
+			$output->writeLineFormatted('');
+		}
+
+		return $analysisResult->hasErrors() ? 1 : 0;
 	}
 
 }

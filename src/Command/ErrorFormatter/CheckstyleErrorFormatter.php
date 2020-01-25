@@ -61,6 +61,19 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 		}
 
+		if ($analysisResult->hasWarnings()) {
+			$output->writeRaw('<file>');
+			$output->writeLineFormatted('');
+
+			foreach ($analysisResult->getWarnings() as $warning) {
+				$output->writeRaw(sprintf('  <error severity="warning" message="%s" />', $this->escape($warning)));
+				$output->writeLineFormatted('');
+			}
+
+			$output->writeRaw('</file>');
+			$output->writeLineFormatted('');
+		}
+
 		$output->writeRaw('</checkstyle>');
 		$output->writeLineFormatted('');
 

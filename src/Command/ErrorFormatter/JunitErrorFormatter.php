@@ -34,23 +34,28 @@ class JunitErrorFormatter implements ErrorFormatter
 			$fileName = $this->relativePathHelper->getRelativePath($fileSpecificError->getFile());
 			$result .= $this->createTestCase(
 				sprintf('%s:%s', $fileName, (string) $fileSpecificError->getLine()),
+				'ERROR',
 				$this->escape($fileSpecificError->getMessage())
 			);
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
-			$result .= $this->createTestCase('General error', $this->escape($notFileSpecificError));
+			$result .= $this->createTestCase('General error', 'ERROR', $this->escape($notFileSpecificError));
+		}
+
+		foreach ($analysisResult->getWarnings() as $warning) {
+			$result .= $this->createTestCase('Warning', 'WARNING', $this->escape($warning));
 		}
 
 		if (!$analysisResult->hasErrors()) {
-			$result .= $this->createTestCase('phpstan');
+			$result .= $this->createTestCase('phpstan', null);
 		}
 
 		$result .= '</testsuite>';
 
 		$output->writeRaw($result);
 
-		return intval($analysisResult->hasErrors());
+		return $analysisResult->hasErrors() ? 1 : 0;
 	}
 
 	/**
@@ -61,12 +66,12 @@ class JunitErrorFormatter implements ErrorFormatter
 	 *
 	 * @return string
 	 */
-	private function createTestCase(string $reference, ?string $message = null): string
+	private function createTestCase(string $reference, ?string $type, ?string $message = null): string
 	{
 		$result = sprintf('<testcase name="%s">', $this->escape($reference));
 
 		if ($message !== null) {
-			$result .= sprintf('<failure message="%s" />', $this->escape($message));
+			$result .= sprintf('<failure type="%s" message="%s" />', $this->escape($type), $this->escape($message));
 		}
 
 		$result .= '</testcase>';

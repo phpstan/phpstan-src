@@ -991,7 +991,6 @@ services:
 		class: Hoa\File\Read
 		arguments:
 			streamName: 'hoa://Library/Regex/Grammar.pp'
-			mode: rb
 
 	runtimeReflectionProvider:
 		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider

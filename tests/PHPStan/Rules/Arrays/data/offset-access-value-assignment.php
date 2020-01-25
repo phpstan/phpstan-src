@@ -10,30 +10,15 @@ class Foo
 	 */
 	public function doFoo(\ArrayAccess $arrayAccess): void
 	{
-		function () use ($arrayAccess) {
-			$arrayAccess[] = 'foo';
-		};
+		$arrayAccess[] = 'foo';
+		$arrayAccess[] = 1;
+		$arrayAccess[2] = 'bar';
 
-		function () use ($arrayAccess) {
-			$arrayAccess[] = 1;
-		};
+		$i = 1;
+		$arrayAccess[] = $i;
 
-		function () use ($arrayAccess) {
-			$arrayAccess[2] = 'bar';
-		};
-
-		function () use ($arrayAccess) {
-			$i = 1;
-			$arrayAccess[] = $i;
-		};
-
-		function () use ($arrayAccess) {
-			$arrayAccess[] = 'baz';
-		};
-
-		function () use ($arrayAccess) {
-			$arrayAccess[] = ['foo'];
-		};
+		$arrayAccess[] = 'baz';
+		$arrayAccess[] = ['foo'];
 	}
 
 	public function doBar(int $test): void
@@ -46,13 +31,8 @@ class Foo
 	 */
 	public function doBaz(\ArrayAccess $arrayAccess): void
 	{
-		function () use ($arrayAccess) {
-			$arrayAccess[1] += 1;
-		};
-
-		function () use ($arrayAccess) {
-			$arrayAccess[1] += 2.5;
-		};
+		$arrayAccess[1] += 1;
+		$arrayAccess[1] += 2.5;
 	}
 
 	public function doLorem(string $str): void

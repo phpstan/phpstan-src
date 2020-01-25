@@ -22,23 +22,23 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/offset-access-value-assignment.php'], [
 			[
 				'ArrayAccess<int, int> does not accept string.',
-				14,
+				13,
 			],
 			[
 				'ArrayAccess<int, int> does not accept string.',
-				22,
+				15,
 			],
 			[
 				'ArrayAccess<int, int> does not accept string.',
-				31,
+				20,
 			],
 			[
 				'ArrayAccess<int, int> does not accept array<int, string>.',
-				35,
+				21,
 			],
 			[
 				'ArrayAccess<int, int> does not accept float.',
-				54,
+				35,
 			],
 		]);
 	}

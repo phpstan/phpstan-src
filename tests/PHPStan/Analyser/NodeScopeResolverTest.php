@@ -9782,6 +9782,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/native-types.php');
 	}
 
+	public function dataTypeChangeAfterArrayAccessAssignment(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/type-change-after-array-access-assignment.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9811,6 +9816,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2750
 	 * @dataProvider dataBug2850
 	 * @dataProvider dataNativeTypes
+	 * @dataProvider dataTypeChangeAfterArrayAccessAssignment
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

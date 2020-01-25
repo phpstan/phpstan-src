@@ -2254,40 +2254,42 @@ class NodeScopeResolver
 			$hasYield = $hasYield || $result->hasYield();
 			$scope = $result->getScope();
 
-			// 4. compose types
 			$varType = $scope->getType($var);
-			if ($varType instanceof ErrorType) {
-				$varType = new ConstantArrayType([], []);
-			}
-			$offsetValueType = $varType;
-			$offsetValueTypeStack = [$offsetValueType];
-			foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
-				if ($offsetType === null) {
-					$offsetValueType = new ConstantArrayType([], []);
-
-				} else {
-					$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-					if ($offsetValueType instanceof ErrorType) {
+			if (!(new ObjectType(\ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
+				// 4. compose types
+				if ($varType instanceof ErrorType) {
+					$varType = new ConstantArrayType([], []);
+				}
+				$offsetValueType = $varType;
+				$offsetValueTypeStack = [$offsetValueType];
+				foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+					if ($offsetType === null) {
 						$offsetValueType = new ConstantArrayType([], []);
+
+					} else {
+						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+						if ($offsetValueType instanceof ErrorType) {
+							$offsetValueType = new ConstantArrayType([], []);
+						}
 					}
+
+					$offsetValueTypeStack[] = $offsetValueType;
 				}
 
-				$offsetValueTypeStack[] = $offsetValueType;
-			}
+				foreach (array_reverse($offsetTypes) as $offsetType) {
+					/** @var Type $offsetValueType */
+					$offsetValueType = array_pop($offsetValueTypeStack);
+					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite);
+				}
 
-			foreach (array_reverse($offsetTypes) as $offsetType) {
-				/** @var Type $offsetValueType */
-				$offsetValueType = array_pop($offsetValueTypeStack);
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite);
-			}
-
-			if ($var instanceof Variable && is_string($var->name)) {
-				$scope = $scope->assignVariable($var->name, $valueToWrite);
-			} else {
-				$scope = $scope->assignExpression(
-					$var,
-					$valueToWrite
-				);
+				if ($var instanceof Variable && is_string($var->name)) {
+					$scope = $scope->assignVariable($var->name, $valueToWrite);
+				} else {
+					$scope = $scope->assignExpression(
+						$var,
+						$valueToWrite
+					);
+				}
 			}
 		} elseif ($var instanceof PropertyFetch) {
 			$result = $processExprCallback($scope);

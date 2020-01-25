@@ -55,4 +55,9 @@ class Foo
 		};
 	}
 
+	public function doLorem(string $str): void
+	{
+		$str[3] = 'bar';
+	}
+
 }

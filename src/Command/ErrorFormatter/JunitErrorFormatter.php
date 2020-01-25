@@ -48,7 +48,7 @@ class JunitErrorFormatter implements ErrorFormatter
 		}
 
 		if (!$analysisResult->hasErrors()) {
-			$result .= $this->createTestCase('phpstan', null);
+			$result .= $this->createTestCase('phpstan', '');
 		}
 
 		$result .= '</testsuite>';
@@ -66,7 +66,7 @@ class JunitErrorFormatter implements ErrorFormatter
 	 *
 	 * @return string
 	 */
-	private function createTestCase(string $reference, ?string $type, ?string $message = null): string
+	private function createTestCase(string $reference, string $type, ?string $message = null): string
 	{
 		$result = sprintf('<testcase name="%s">', $this->escape($reference));
 

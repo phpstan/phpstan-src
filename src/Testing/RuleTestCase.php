@@ -10,6 +10,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
+use PHPStan\Command\IgnoredRegexValidatorResult;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -82,8 +83,8 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 			$stubValidator->method('validate')
 				->willReturn([]);
 			$ignoredRegexValidator = $this->createMock(IgnoredRegexValidator::class);
-			$ignoredRegexValidator->method('getIgnoredTypes')
-				->willReturn([]);
+			$ignoredRegexValidator->method('validate')
+				->willReturn(new IgnoredRegexValidatorResult([], false));
 			$this->analyser = new Analyser(
 				$fileAnalyser,
 				$registry,

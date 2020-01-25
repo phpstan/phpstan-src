@@ -1272,3 +1272,11 @@ function returnStaticOnClassString(
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $yetAnotherClassString::returnsStatic());
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $yetAnotherClassString::$staticProp);
 }
+
+/**
+ * @param class-string<Foo>[] $a
+ */
+function arrayOfGenericClassStrings(array $a): void
+{
+	assertType('array<class-string<PHPStan\Generics\FunctionsAssertType\Foo>>', $a);
+}

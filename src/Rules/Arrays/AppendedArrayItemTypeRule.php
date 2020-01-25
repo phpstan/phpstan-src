@@ -5,11 +5,17 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
+use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\GenericTypeVariableResolver;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -51,6 +57,64 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
+		if ($node instanceof Assign) {
+			$assignedValueType = $scope->getType($node->expr);
+		} else {
+			$assignedValueType = $scope->getType($node);
+		}
+
+		if ($node->var->var instanceof Variable) {
+			$varTypeResult = $this->ruleLevelHelper->findTypeToCheck(
+				$scope,
+				$node->var->var,
+				'',
+				static function (Type $varType): bool {
+					return $varType instanceof ObjectType && $varType->isInstanceOf(\ArrayAccess::class)->yes();
+				}
+			);
+			$varType = $varTypeResult->getType();
+			if ($varType instanceof ErrorType) {
+				return [];
+			}
+
+			if (!$varType instanceof ObjectType || !$varType->isInstanceOf(\ArrayAccess::class)->yes()) {
+				return [];
+			}
+
+			$tValue = GenericTypeVariableResolver::getType($varType, \ArrayAccess::class, 'TValue');
+			if ($tValue === null) {
+				return [];
+			}
+
+			if (!$this->ruleLevelHelper->accepts($tValue, $assignedValueType, $scope->isDeclareStrictTypes())) {
+				$verbosityLevel = VerbosityLevel::typeOnly();
+				if ($varType->getClassName() == \ArrayAccess::class) {
+					$varName = $varType->describe($verbosityLevel);
+				} else {
+					$tKey = GenericTypeVariableResolver::getType($varType, \ArrayAccess::class, 'TKey');
+					if ($tKey === null) {
+						$tKey = new MixedType();
+					}
+					$varName = sprintf(
+						'%s implements ArrayAccess<%s,%s>',
+						$varType->describe($verbosityLevel),
+						$tKey->describe($verbosityLevel),
+						$tValue->describe($verbosityLevel)
+					);
+				}
+
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'%s does not accept %s.',
+						$varName,
+						$assignedValueType->describe($verbosityLevel)
+					))->build(),
+				];
+			}
+
+			return [];
+		}
+
 		if (
 			!$node->var->var instanceof \PhpParser\Node\Expr\PropertyFetch
 			&& !$node->var->var instanceof \PhpParser\Node\Expr\StaticPropertyFetch
@@ -66,12 +130,6 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 		$assignedToType = $propertyReflection->getWritableType();
 		if (!($assignedToType instanceof ArrayType)) {
 			return [];
-		}
-
-		if ($node instanceof Assign) {
-			$assignedValueType = $scope->getType($node->expr);
-		} else {
-			$assignedValueType = $scope->getType($node);
 		}
 
 		$itemType = $assignedToType->getItemType();

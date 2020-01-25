@@ -76,3 +76,17 @@ function (Lorem $lorem)
 {
 	$lorem->staticProperty[] = new Baz();
 };
+
+function()
+{
+	/** @var \ArrayAccess<int,int> $arrayAccess */
+	$arrayAccess = [];
+
+	$arrayAccess[] = 'foo';
+	$arrayAccess[] = 1;
+	$arrayAccess[2] = 'bar';
+	$i = 1;
+	$arrayAccess[] = $i;
+	$arrayAccess[] = 'baz';
+	$arrayAccess[] = ['foo'];
+};

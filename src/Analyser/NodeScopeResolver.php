@@ -2202,11 +2202,18 @@ class NodeScopeResolver
 	{
 		$nodeCallback($var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope);
 		$hasYield = false;
+		$arrayDimFetchVarTypeType = $var instanceof ArrayDimFetch ? $scope->getType($var->var) : null;
 		if ($var instanceof Variable && is_string($var->name)) {
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$scope = $result->getScope();
 			$scope = $scope->assignVariable($var->name, $scope->getType($assignedExpr));
+		} elseif ($arrayDimFetchVarTypeType instanceof ObjectType && $arrayDimFetchVarTypeType->isInstanceOf(\ArrayAccess::class)->yes()) {
+			$result = $processExprCallback($scope);
+			$hasYield = $result->hasYield();
+			$scope = $result->getScope();
+			$scope = $scope->assignExpression($var, $scope->getType($assignedExpr));
+
 		} elseif ($var instanceof ArrayDimFetch) {
 			$dimExprStack = [];
 			while ($var instanceof ArrayDimFetch) {

@@ -52,6 +52,22 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Array (array<AppendedArrayItem\Lorem>) does not accept AppendedArrayItem\Baz.',
 					77,
 				],
+				[
+					'ArrayAccess<int, int> does not accept string.',
+					85,
+				],
+				[
+					'ArrayAccess<int, int> does not accept string.',
+					87,
+				],
+				[
+					'ArrayAccess<int, int> does not accept string.',
+					90,
+				],
+				[
+					'ArrayAccess<int, int> does not accept array<int, string>.',
+					91,
+				],
 			]
 		);
 	}

@@ -431,4 +431,69 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('Traversable<mixed,mixed>', $classReflection->getDisplayName());
 	}
 
+	public function dataHasOffsetValueType(): array
+	{
+		return [
+			[
+				new ObjectType(\stdClass::class),
+				new IntegerType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new ObjectType(\ArrayAccess::class),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new GenericObjectType(\ArrayAccess::class, [new IntegerType(), new MixedType()]),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new GenericObjectType(\ArrayAccess::class, [new IntegerType(), new MixedType()]),
+				new MixedType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new GenericObjectType(\ArrayAccess::class, [new IntegerType(), new MixedType()]),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new GenericObjectType(\ArrayAccess::class, [new ObjectType(\DateTimeInterface::class), new MixedType()]),
+				new ObjectType(\DateTime::class),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new GenericObjectType(\ArrayAccess::class, [new ObjectType(\DateTime::class), new MixedType()]),
+				new ObjectType(\DateTimeInterface::class),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new GenericObjectType(\ArrayAccess::class, [new ObjectType(\DateTime::class), new MixedType()]),
+				new ObjectType(\stdClass::class),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataHasOffsetValueType
+	 * @param \PHPStan\Type\ObjectType $type
+	 * @param Type $offsetType
+	 * @param TrinaryLogic $expectedResult
+	 */
+	public function testHasOffsetValueType(
+		ObjectType $type,
+		Type $offsetType,
+		TrinaryLogic $expectedResult
+	): void
+	{
+		$this->assertSame(
+			$expectedResult->describe(),
+			$type->hasOffsetValueType($offsetType)->describe(),
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise()))
+		);
+	}
+
 }

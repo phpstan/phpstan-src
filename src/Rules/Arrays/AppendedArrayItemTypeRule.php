@@ -88,7 +88,7 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 
 			if (!$this->ruleLevelHelper->accepts($tValue, $assignedValueType, $scope->isDeclareStrictTypes())) {
 				$verbosityLevel = VerbosityLevel::typeOnly();
-				if ($varType->getClassName() == \ArrayAccess::class) {
+				if ($varType->getClassName() === \ArrayAccess::class) {
 					$varName = $varType->describe($verbosityLevel);
 				} else {
 					$tKey = GenericTypeVariableResolver::getType($varType, \ArrayAccess::class, 'TKey');

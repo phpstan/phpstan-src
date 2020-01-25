@@ -3617,7 +3617,7 @@ class MutatingScope implements Scope
 		)->getReturnType();
 
 		if ($methodCall instanceof MethodCall) {
-			$calledOnThis = $calledOnType instanceof ThisType && $this->isInClass();
+			$calledOnThis = $calledOnType instanceof StaticType && $this->isInClass();
 		} else {
 			if (!$methodCall->class instanceof Name) {
 				$calledOnThis = false;
@@ -3673,7 +3673,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($propertyFetch instanceof PropertyFetch) {
-			$fetchedOnThis = $fetchedOnType instanceof ThisType && $this->isInClass();
+			$fetchedOnThis = $fetchedOnType instanceof StaticType && $this->isInClass();
 		} else {
 			if (!$propertyFetch->class instanceof Name) {
 				$fetchedOnThis = false;

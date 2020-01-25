@@ -16,6 +16,7 @@ class Foo
 	public function doFoo()
 	{
 		assertType('array<static(StaticProperties\Foo)>', $this->prop);
+		assertType('array<static(StaticProperties\Foo)>', $this->prop[0]->prop);
 		assertType('array<static(StaticProperties\Foo)>', self::$staticProp);
 		assertType('array<static(StaticProperties\Foo)>', static::$staticProp);
 	}
@@ -28,6 +29,7 @@ class Bar extends Foo
 	public function doFoo()
 	{
 		assertType('array<static(StaticProperties\Bar)>', $this->prop);
+		assertType('array<static(StaticProperties\Bar)>', $this->prop[0]->prop);
 		assertType('array<static(StaticProperties\Bar)>', self::$staticProp);
 		assertType('array<static(StaticProperties\Bar)>', static::$staticProp);
 	}

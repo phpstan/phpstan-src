@@ -399,3 +399,17 @@ class Coalesce
 	}
 
 }
+
+class GenericArrayAccess
+{
+
+	/**
+	 * @param \ArrayAccess<int, \stdClass> $ac
+	 */
+	public function doFoo(\ArrayAccess $ac): void
+	{
+		$ac['foo'];
+		$ac[1];
+	}
+
+}

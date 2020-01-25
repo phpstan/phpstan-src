@@ -597,8 +597,23 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\ArrayAccess::class)->yes()) {
-			$tKey = GenericTypeVariableResolver::getType($this, \ArrayAccess::class, 'TKey');
-			if ($tKey !== null && $tKey->isSuperTypeOf($offsetType)->no()) {
+			$classReflection = $this->getClassReflection();
+			$acceptedOffsetType = RecursionGuard::run($this, function () use ($classReflection): Type {
+				$parameters = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('offsetSet')->getVariants())->getParameters();
+				if (count($parameters) < 2) {
+					throw new \PHPStan\ShouldNotHappenException(sprintf(
+						'Method %s::%s() has less than 2 parameters.',
+						$this->className,
+						'offsetSet'
+					));
+				}
+
+				$offsetParameter = $parameters[0];
+
+				return $offsetParameter->getType();
+			});
+
+			if ($acceptedOffsetType->isSuperTypeOf($offsetType)->no()) {
 				return TrinaryLogic::createNo();
 			}
 

@@ -117,6 +117,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				'Offset \'baz\' does not exist on array(\'bar\' => 1, ?\'baz\' => 2).',
 				344,
 			],
+			[
+				'Offset \'foo\' does not exist on ArrayAccess<int, stdClass>.',
+				411,
+			],
 		]);
 	}
 

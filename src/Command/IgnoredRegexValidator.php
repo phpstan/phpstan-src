@@ -28,11 +28,7 @@ class IgnoredRegexValidator
 		$this->typeStringResolver = $typeStringResolver;
 	}
 
-	/**
-	 * @param string $regex
-	 * @return string[]
-	 */
-	public function getIgnoredTypes(string $regex): array
+	public function validate(string $regex): IgnoredRegexValidatorResult
 	{
 		$regex = $this->removeDelimiters($regex);
 
@@ -40,9 +36,21 @@ class IgnoredRegexValidator
 			/** @var TreeNode $ast */
 			$ast = $this->parser->parse($regex);
 		} catch (\Hoa\Exception\Exception $e) {
-			return [];
+			return new IgnoredRegexValidatorResult([], false);
 		}
 
+		return new IgnoredRegexValidatorResult(
+			$this->getIgnoredTypes($ast),
+			$this->hasAnchorsInTheMiddle($ast)
+		);
+	}
+
+	/**
+	 * @param TreeNode $ast
+	 * @return array<string, string>
+	 */
+	private function getIgnoredTypes(TreeNode $ast): array
+	{
 		/** @var TreeNode|null $alternation */
 		$alternation = $ast->getChild(0);
 		if ($alternation === null) {
@@ -121,6 +129,27 @@ class IgnoredRegexValidator
 		}
 
 		return null;
+	}
+
+	private function hasAnchorsInTheMiddle(TreeNode $ast): bool
+	{
+		if ($ast->getId() === 'token') {
+			$valueArray = $ast->getValue();
+
+			return $valueArray['token'] === 'anchor' && $valueArray['value'] === '$';
+		}
+		$childrenCount = count($ast->getChildren());
+		foreach ($ast->getChildren() as $i => $child) {
+			$has = $this->hasAnchorsInTheMiddle($child);
+			if (
+				$has
+				&& ($ast->getId() !== '#concatenation' || $i !== $childrenCount - 1)
+			) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

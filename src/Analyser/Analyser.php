@@ -136,9 +136,14 @@ class Analyser
 					if (isset($ignoreError['count'])) {
 						continue; // ignoreError coming from baseline will be correct
 					}
-					$ignoredTypes = $this->ignoredRegexValidator->getIgnoredTypes($ignoreMessage);
+					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
+					$ignoredTypes = $validationResult->getIgnoredTypes();
 					if (count($ignoredTypes) > 0) {
 						$warnings[] = $this->createIgnoredTypesWarning($ignoreMessage, $ignoredTypes);
+					}
+
+					if ($validationResult->hasAnchorsInTheMiddle()) {
+						$warnings[] = $this->createAnchorInTheMiddleWarning($ignoreMessage);
 					}
 				} else {
 					$otherIgnoreErrors[] = [
@@ -146,9 +151,14 @@ class Analyser
 						'ignoreError' => $ignoreError,
 					];
 					$ignoreMessage = $ignoreError;
-					$ignoredTypes = $this->ignoredRegexValidator->getIgnoredTypes($ignoreMessage);
+					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
+					$ignoredTypes = $validationResult->getIgnoredTypes();
 					if (count($ignoredTypes) > 0) {
 						$warnings[] = $this->createIgnoredTypesWarning($ignoreMessage, $ignoredTypes);
+					}
+
+					if ($validationResult->hasAnchorsInTheMiddle()) {
+						$warnings[] = $this->createAnchorInTheMiddleWarning($ignoreMessage);
 					}
 				}
 
@@ -381,6 +391,20 @@ class Analyser
 			sprintf("Ignored error %s has an unescaped '|' which leads to ignoring more errors than intended. Use '\\|' instead.\n%s", $regex, sprintf("It ignores all errors containing the following types:\n%s", implode("\n", array_map(static function (string $typeDescription): string {
 				return sprintf('* %s', $typeDescription);
 			}, array_keys($ignoredTypes))))),
+			'placeholder', // this value will never get used
+			null,
+			false,
+			null,
+			null,
+			null,
+			true
+		);
+	}
+
+	private function createAnchorInTheMiddleWarning(string $regex): Error
+	{
+		return new Error(
+			sprintf("Ignored error %s has an unescaped anchor '$' in the middle. This leads to unintended behavior. Use '\\$' instead.", $regex),
 			'placeholder', // this value will never get used
 			null,
 			false,

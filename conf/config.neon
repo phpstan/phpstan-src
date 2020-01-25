@@ -947,6 +947,7 @@ services:
 			reflectionProvider: @betterReflectionProvider
 			patterns:
 				- '#^PhpParser\\#'
+				- '#^Hoa\\#'
 		autowired: false
 
 	betterReflectionSourceLocator:

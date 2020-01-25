@@ -113,6 +113,10 @@ return [
 					return $class;
 				}
 
+				if (strpos($class, 'Hoa\\') === 0) {
+					return $class;
+				}
+
 				if (strpos($class, '@') === 0) {
 					return $class;
 				}
@@ -141,5 +145,6 @@ return [
 	'whitelist' => [
 		'PHPStan\*',
 		'PhpParser\*',
+		'Hoa\*',
 	],
 ];

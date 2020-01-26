@@ -201,6 +201,34 @@
 		</exec>
 	</target>
 
+	<target name="tests-rules">
+		<exec
+			executable="vendor/bin/phpunit"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg value="-c"/>
+			<arg value="tests/phpunit.xml"/>
+			<arg path="tests/PHPStan/Rules"/>
+		</exec>
+	</target>
+
+	<target name="tests-type-inference">
+		<exec
+			executable="vendor/bin/phpunit"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg value="-c"/>
+			<arg value="tests/phpunit.xml"/>
+			<arg path="tests/PHPStan/Analyser/NodeScopeResolverTest.php"/>
+		</exec>
+	</target>
+
+	<target name="tests-fast" depends="tests-type-inference, tests-rules" />
+
 	<target name="phpstan">
 		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<php expression="PHP_VERSION_ID &gt;= 70300 ?'true':'false'" returnProperty="isPHP73" level="verbose" />

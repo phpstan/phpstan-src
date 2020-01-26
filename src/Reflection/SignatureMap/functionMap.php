@@ -9846,6 +9846,7 @@ return [
 'ReflectionProperty::setValue\'1' => ['void', 'value'=>''],
 'ReflectionType::__toString' => ['string'],
 'ReflectionType::allowsNull' => ['bool'],
+'ReflectionType::isBuiltin' => ['bool'],
 'ReflectionZendExtension::__clone' => ['void'],
 'ReflectionZendExtension::__construct' => ['void', 'name'=>'string'],
 'ReflectionZendExtension::__toString' => ['string'],

@@ -2933,10 +2933,12 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
-			array_map($variableHolderToType, $this->mergeVariableHolders(
+			array_map($variableHolderToType, array_filter($this->mergeVariableHolders(
 				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 				array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
-			))
+			), static function (VariableTypeHolder $holder): bool {
+				return $holder->getCertainty()->yes();
+			}))
 		);
 	}
 

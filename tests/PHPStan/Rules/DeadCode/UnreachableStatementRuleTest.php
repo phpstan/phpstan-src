@@ -11,13 +11,22 @@ use PHPStan\Testing\RuleTestCase;
 class UnreachableStatementRuleTest extends RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): Rule
 	{
 		return new UnreachableStatementRule();
 	}
 
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
+	}
+
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/unreachable.php'], [
 			[
 				'Unreachable statement - code above always terminates.',
@@ -40,6 +49,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 
 	public function testRuleTopLevel(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/unreachable-top-level.php'], [
 			[
 				'Unreachable statement - code above always terminates.',
@@ -48,8 +58,25 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBugWithoutGitHubIssue1(): void
+	public function dataBugWithoutGitHubIssue1(): array
 	{
+		return [
+			[
+				true,
+			],
+			[
+				false,
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataBugWithoutGitHubIssue1
+	 * @param bool $treatPhpDocTypesAsCertain
+	 */
+	public function testBugWithoutGitHubIssue1(bool $treatPhpDocTypesAsCertain): void
+	{
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->analyse([__DIR__ . '/data/bug-without-issue-1.php'], []);
 	}
 

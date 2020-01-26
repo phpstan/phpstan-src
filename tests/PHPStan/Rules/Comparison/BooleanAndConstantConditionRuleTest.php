@@ -145,4 +145,26 @@ class BooleanAndConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function dataTreatPhpDocTypesAsCertainRegression(): array
+	{
+		return [
+			[
+				true,
+			],
+			[
+				false,
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataTreatPhpDocTypesAsCertainRegression
+	 * @param bool $treatPhpDocTypesAsCertain
+	 */
+	public function testTreatPhpDocTypesAsCertainRegression(bool $treatPhpDocTypesAsCertain): void
+	{
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->analyse([__DIR__ . '/data/boolean-and-treat-phpdoc-types-regression.php'], []);
+	}
+
 }

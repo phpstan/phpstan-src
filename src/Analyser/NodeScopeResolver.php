@@ -2291,6 +2291,7 @@ class NodeScopeResolver
 				}
 			}
 		} elseif ($var instanceof PropertyFetch) {
+			$this->processExprNode($var->var, $scope, $nodeCallback, $context);
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$scope = $result->getScope();
@@ -2311,15 +2312,17 @@ class NodeScopeResolver
 			}
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
+			if ($var->class instanceof \PhpParser\Node\Name) {
+				$propertyHolderType = new ObjectType($scope->resolveName($var->class));
+			} else {
+				$this->processExprNode($var->class, $scope, $nodeCallback, $context);
+				$propertyHolderType = $scope->getType($var->class);
+			}
+
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$scope = $result->getScope();
 
-			if ($var->class instanceof \PhpParser\Node\Name) {
-				$propertyHolderType = new ObjectType($scope->resolveName($var->class));
-			} else {
-				$propertyHolderType = $scope->getType($var->class);
-			}
 			$propertyName = null;
 			if ($var->name instanceof Node\Identifier) {
 				$propertyName = $var->name->name;

@@ -21,12 +21,16 @@ class ThisVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 				16,
 			],
 			[
-				'Using $this outside a class.',
-				24,
+				'Using $this in static method ThisVariable\Foo::doBar().',
+				20,
 			],
 			[
-				'Using $this in static method class@anonymous/tests/PHPStan/Rules/Variables/data/this.php:27::doBar().',
-				36,
+				'Using $this outside a class.',
+				26,
+			],
+			[
+				'Using $this in static method class@anonymous/tests/PHPStan/Rules/Variables/data/this.php:29::doBar().',
+				38,
 			],
 		]);
 	}

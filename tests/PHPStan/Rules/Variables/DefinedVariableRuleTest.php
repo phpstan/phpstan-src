@@ -705,4 +705,23 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug2748(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteCatchScopeWithTryAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-2748.php'], [
+			[
+				'Undefined variable: $foo',
+				10,
+			],
+			[
+				'Undefined variable: $foo',
+				15,
+			],
+		]);
+	}
+
 }

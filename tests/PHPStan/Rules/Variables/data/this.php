@@ -16,6 +16,8 @@ class Foo
 		$this->test;
 		$foo->test;
 		$$bar->test;
+
+		$this->blabla = 'fooo';
 	}
 
 }

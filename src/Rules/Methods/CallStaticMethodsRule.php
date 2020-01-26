@@ -7,7 +7,9 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -79,7 +81,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 
 		$class = $node->class;
 		$errors = [];
-		$isInterface = false;
+		$isAbstract = false;
 		if ($class instanceof Name) {
 			$className = (string) $class;
 			$lowercasedClassName = strtolower($className);
@@ -93,7 +95,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 						))->build(),
 					];
 				}
-				$className = $scope->getClassReflection()->getName();
+				$classReflection = $scope->getClassReflection();
 			} elseif ($lowercasedClassName === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
@@ -121,7 +123,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 
-				$className = $currentClassReflection->getParentClass()->getName();
+				$classReflection = $currentClassReflection->getParentClass();
 			} else {
 				if (!$this->reflectionProvider->hasClass($className)) {
 					return [
@@ -136,11 +138,17 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 				}
 
 				$classReflection = $this->reflectionProvider->getClass($className);
-				$isInterface = $classReflection->isInterface();
-				$className = $classReflection->getName();
 			}
 
+			$className = $classReflection->getName();
 			$classType = new ObjectType($className);
+
+			if ($classReflection->hasNativeMethod($methodName)) {
+				$nativeMethodReflection = $classReflection->getNativeMethod($methodName);
+				if ($nativeMethodReflection instanceof PhpMethodReflection || $nativeMethodReflection instanceof NativeMethodReflection) {
+					$isAbstract = $nativeMethodReflection->isAbstract();
+				}
+			}
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
@@ -234,12 +242,13 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			]);
 		}
 
-		if ($isInterface && $method->isStatic()) {
+		if ($isAbstract) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Cannot call static method %s() on interface %s.',
-					$method->getName(),
-					$classType->describe(VerbosityLevel::typeOnly())
+					'Cannot call abstract%s method %s::%s().',
+					$method->isStatic() ? ' static' : '',
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName()
 				))->build(),
 			];
 		}

@@ -185,7 +185,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				173,
 			],
 			[
-				'Cannot call static method doFoo() on interface CallStaticMethods\InterfaceWithStaticMethod.',
+				'Cannot call abstract static method CallStaticMethods\InterfaceWithStaticMethod::doFoo().',
 				208,
 			],
 			[
@@ -223,6 +223,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/call-interface-methods.php'], [
+			[
+				'Cannot call abstract static method InterfaceMethods\Foo::fooStaticMethod().',
+				26,
+			],
 			[
 				'Call to an undefined static method InterfaceMethods\Baz::barStaticMethod().',
 				27,
@@ -300,6 +304,29 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to an undefined static method ReturnStaticStaticMethod\Bar::doBaz().',
 				24,
+			],
+		]);
+	}
+
+	public function testCallParentAbstractMethod(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/call-parent-abstract-method.php'], [
+			[
+				'Cannot call abstract method CallParentAbstractMethod\Baz::uninstall().',
+				21,
+			],
+			[
+				'Cannot call abstract method CallParentAbstractMethod\Lorem::doFoo().',
+				38,
+			],
+			[
+				'Cannot call abstract method CallParentAbstractMethod\Lorem::doFoo().',
+				48,
+			],
+			[
+				'Cannot call abstract static method CallParentAbstractMethod\SitAmet::doFoo().',
+				61,
 			],
 		]);
 	}

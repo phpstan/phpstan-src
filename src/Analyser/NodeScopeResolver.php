@@ -1247,7 +1247,6 @@ class NodeScopeResolver
 					$nodeCallback,
 					$context,
 					function (MutatingScope $scope) use ($expr, $nodeCallback, $context): ExpressionResult {
-						$hasYield = false;
 						if ($expr instanceof AssignRef) {
 							$scope = $scope->enterExpressionAssign($expr->expr);
 						}

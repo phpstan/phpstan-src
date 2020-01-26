@@ -60,3 +60,15 @@ abstract class SitAmet
 function (): void {
 	SitAmet::doFoo();
 };
+
+abstract class Consecteur
+{
+
+	public function doFoo()
+	{
+		static::doBar();
+	}
+
+	abstract public function doBar(): void;
+
+}

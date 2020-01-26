@@ -143,7 +143,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			$className = $classReflection->getName();
 			$classType = new ObjectType($className);
 
-			if ($classReflection->hasNativeMethod($methodName)) {
+			if ($classReflection->hasNativeMethod($methodName) && $lowercasedClassName !== 'static') {
 				$nativeMethodReflection = $classReflection->getNativeMethod($methodName);
 				if ($nativeMethodReflection instanceof PhpMethodReflection || $nativeMethodReflection instanceof NativeMethodReflection) {
 					$isAbstract = $nativeMethodReflection->isAbstract();

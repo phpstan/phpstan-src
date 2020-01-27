@@ -67,22 +67,26 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 		}
 
 		if (!$isOffsetAccessible->yes()) {
-			if ($dimType !== null) {
+			if ($isOffsetAccessible->no() || $this->reportMaybes) {
+				if ($dimType !== null) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Cannot access offset %s on %s.',
+							$dimType->describe(VerbosityLevel::value()),
+							$isOffsetAccessibleType->describe(VerbosityLevel::value())
+						))->build(),
+					];
+				}
+
 				return [
 					RuleErrorBuilder::message(sprintf(
-						'Cannot access offset %s on %s.',
-						$dimType->describe(VerbosityLevel::value()),
-						$isOffsetAccessibleType->describe(VerbosityLevel::value())
+						'Cannot access an offset on %s.',
+						$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly())
 					))->build(),
 				];
 			}
 
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Cannot access an offset on %s.',
-					$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly())
-				))->build(),
-			];
+			return [];
 		}
 
 		if ($dimType === null) {

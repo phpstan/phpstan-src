@@ -50,4 +50,12 @@ class Foo
 		echo $b[0];
 	}
 
+	/**
+	 * @param iterable<int|string, object> $iterable
+	 */
+	public function iterableOffset($iterable): void
+	{
+		unset($iterable['foo']);
+	}
+
 }

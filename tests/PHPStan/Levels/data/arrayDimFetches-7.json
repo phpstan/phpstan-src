@@ -18,5 +18,10 @@
         "message": "Cannot access offset 0 on array<int, string>|false.",
         "line": 49,
         "ignorable": true
+    },
+    {
+        "message": "Cannot access offset 'foo' on iterable<int|string, object>.",
+        "line": 58,
+        "ignorable": true
     }
 ]

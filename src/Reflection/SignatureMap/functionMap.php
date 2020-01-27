@@ -13759,7 +13759,7 @@ return [
 'ZipArchive::unchangeArchive' => ['bool'],
 'ZipArchive::unchangeIndex' => ['bool', 'index'=>'int'],
 'ZipArchive::unchangeName' => ['bool', 'name'=>'string'],
-'zlib_decode' => ['string', 'data'=>'string', 'max_decoded_len='=>'int'],
+'zlib_decode' => ['string|false', 'data'=>'string', 'max_decoded_len='=>'int'],
 'zlib_encode' => ['string', 'data'=>'string', 'encoding'=>'int', 'level='=>'string|int'],
 'zlib_get_coding_type' => ['string|false'],
 'ZMQ::__construct' => ['void'],

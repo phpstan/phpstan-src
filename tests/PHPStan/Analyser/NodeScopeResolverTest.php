@@ -9789,6 +9789,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	public function dataExtDs(): array
 	{
+		if (!extension_loaded('ds')) {
+			return [];
+		}
+
 		return $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');
 	}
 

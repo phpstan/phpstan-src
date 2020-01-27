@@ -9787,6 +9787,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/type-change-after-array-access-assignment.php');
 	}
 
+	public function dataExtDs(): array
+	{
+		if (!extension_loaded('ds')) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9817,6 +9826,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2850
 	 * @dataProvider dataNativeTypes
 	 * @dataProvider dataTypeChangeAfterArrayAccessAssignment
+	 * @dataProvider dataExtDs
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

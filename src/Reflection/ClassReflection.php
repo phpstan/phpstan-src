@@ -61,6 +61,9 @@ class ClassReflection implements ReflectionWithFilename
 	private $isDeprecated;
 
 	/** @var bool|null */
+	private $isGeneric;
+
+	/** @var bool|null */
 	private $isInternal;
 
 	/** @var bool|null */
@@ -709,7 +712,11 @@ class ClassReflection implements ReflectionWithFilename
 
 	public function isGeneric(): bool
 	{
-		return count($this->getTemplateTags()) > 0;
+		if ($this->isGeneric === null) {
+			$this->isGeneric = count($this->getTemplateTags()) > 0;
+		}
+
+		return $this->isGeneric;
 	}
 
 	/**

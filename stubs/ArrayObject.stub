@@ -94,8 +94,9 @@ class ArrayObject implements IteratorAggregate, ArrayAccess
 class SplFixedArray implements Iterator, ArrayAccess, Countable
 {
 	/**
-	 * @param array<int, TValue> $array
-	 * @return SplFixedArray<TValue>
+	 * @template TInput
+	 * @param array<int, TInput> $array
+	 * @return SplFixedArray<TInput>
 	 */
 	public static function fromArray(array $array, bool $save_indexes = true): SplFixedArray { }
 

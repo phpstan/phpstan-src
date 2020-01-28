@@ -25,7 +25,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 
-	private const EXTRA_OFFSET_CLASSES = ['SimpleXMLElement', 'DOMNodeList'];
+	private const EXTRA_OFFSET_CLASSES = ['SimpleXMLElement', 'DOMNodeList', 'Threaded'];
 
 	/** @var string */
 	private $className;

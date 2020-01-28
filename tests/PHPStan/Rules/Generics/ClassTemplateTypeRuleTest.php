@@ -19,7 +19,7 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 
 		return new ClassTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
 		);
 	}
 
@@ -41,6 +41,10 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 			[
 				'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',
 				32,
+			],
+			[
+				'PHPDoc tag @template for class ClassTemplateType\Ipsum cannot have existing type alias TypeAlias as its name.',
+				40,
 			],
 		]);
 	}

@@ -49,7 +49,6 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
-use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 
 class TypeNodeResolver
@@ -145,20 +144,6 @@ class TypeNodeResolver
 
 			case 'array':
 				return new ArrayType(new MixedType(), new MixedType());
-
-			case 'scalar':
-				return new UnionType([
-					new IntegerType(),
-					new FloatType(),
-					new StringType(),
-					new BooleanType(),
-				]);
-
-			case 'number':
-				return new UnionType([
-					new IntegerType(),
-					new FloatType(),
-				]);
 
 			case 'iterable':
 				return new IterableType(new MixedType(), new MixedType());

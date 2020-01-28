@@ -51,6 +51,9 @@ parameters:
 	    nodesByStringCountMax: 512
 	reportUnmatchedIgnoredErrors: true
 	scopeClass: PHPStan\Analyser\MutatingScope
+	typeAliases:
+		scalar: 'int|float|string|bool'
+		number: 'int|float'
 	universalObjectCratesClasses:
 		- stdClass
 	stubFiles:
@@ -172,6 +175,7 @@ parametersSchema:
 	])
 	reportUnmatchedIgnoredErrors: bool()
 	scopeClass: string()
+	typeAliases: arrayOf(string())
 	universalObjectCratesClasses: listOf(string())
 	stubFiles: listOf(string())
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
@@ -241,6 +245,13 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\ConstExprNodeResolver
+
+	-
+		class: PHPStan\PhpDoc\TypeAlias\TypeAliasesTypeNodeResolverExtension
+		arguments:
+			aliases: %typeAliases%
+		tags:
+			- phpstan.phpDoc.typeNodeResolverExtension
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
@@ -462,6 +473,7 @@ services:
 		class: PHPStan\Rules\Generics\TemplateTypeCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			typeAliases: %typeAliases%
 
 	-
 		class: PHPStan\Rules\Generics\VarianceCheck

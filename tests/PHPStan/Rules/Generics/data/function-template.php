@@ -25,3 +25,11 @@ function baz()
 {
 
 }
+
+/**
+ * @template TypeAlias
+ */
+function lorem()
+{
+
+}

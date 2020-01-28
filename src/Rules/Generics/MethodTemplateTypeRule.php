@@ -64,6 +64,7 @@ class MethodTemplateTypeRule implements Rule
 			TemplateTypeScope::createWithMethod($className, $methodName),
 			$methodTemplateTags,
 			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing class %%s as its name.', $className, $methodName),
+			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing type alias %%s as its name.', $className, $methodName),
 			sprintf('PHPDoc tag @template %%s for method %s::%s() has invalid bound type %%s.', $className, $methodName),
 			sprintf('PHPDoc tag @template %%s for method %s::%s() with bound type %%s is not supported.', $className, $methodName)
 		);

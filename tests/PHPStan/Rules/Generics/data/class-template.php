@@ -33,3 +33,11 @@ class Lorem
 {
 
 }
+
+/**
+ * @template TypeAlias
+ */
+class Ipsum
+{
+
+}

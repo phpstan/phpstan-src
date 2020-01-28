@@ -18,7 +18,7 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new InterfaceTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
 		);
 	}
 
@@ -36,6 +36,10 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template T for interface InterfaceTemplateType\Baz with bound type int is not supported.',
 				24,
+			],
+			[
+				'PHPDoc tag @template for interface InterfaceTemplateType\Lorem cannot have existing type alias TypeAlias as its name.',
+				32,
 			],
 		]);
 	}

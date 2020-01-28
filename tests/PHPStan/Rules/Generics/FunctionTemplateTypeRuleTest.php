@@ -18,7 +18,7 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new FunctionTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
 		);
 	}
 
@@ -36,6 +36,10 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template T for function FunctionTemplateType\baz() with bound type int is not supported.',
 				24,
+			],
+			[
+				'PHPDoc tag @template for function FunctionTemplateType\lorem() cannot have existing type alias TypeAlias as its name.',
+				32,
 			],
 		]);
 	}

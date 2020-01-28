@@ -25,3 +25,11 @@ trait Baz
 {
 
 }
+
+/**
+ * @template TypeAlias
+ */
+trait Lorem
+{
+
+}

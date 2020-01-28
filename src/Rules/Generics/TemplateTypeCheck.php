@@ -12,6 +12,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
 use function array_map;
 
 class TemplateTypeCheck
@@ -23,17 +24,28 @@ class TemplateTypeCheck
 	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
 	private $classCaseSensitivityCheck;
 
+	/** @var array<string, string> */
+	private $typeAliases;
+
 	/** @var bool */
 	private $checkClassCaseSensitivity;
 
+	/**
+	 * @param ReflectionProvider $reflectionProvider
+	 * @param ClassCaseSensitivityCheck $classCaseSensitivityCheck
+	 * @param array<string, string> $typeAliases
+	 * @param bool $checkClassCaseSensitivity
+	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		array $typeAliases,
 		bool $checkClassCaseSensitivity
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
+		$this->typeAliases = $typeAliases;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
 
@@ -48,6 +60,7 @@ class TemplateTypeCheck
 		TemplateTypeScope $templateTypeScope,
 		array $templateTags,
 		string $sameTemplateTypeNameAsClassMessage,
+		string $sameTemplateTypeNameAsTypeMessage,
 		string $invalidBoundTypeMessage,
 		string $notSupportedBoundMessage
 	): array
@@ -58,6 +71,12 @@ class TemplateTypeCheck
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsClassMessage,
+					$templateTagName
+				))->build();
+			}
+			if (array_key_exists($templateTagName, $this->typeAliases)) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					$sameTemplateTypeNameAsTypeMessage,
 					$templateTagName
 				))->build();
 			}

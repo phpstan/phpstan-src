@@ -25,3 +25,11 @@ interface Baz
 {
 
 }
+
+/**
+ * @template TypeAlias
+ */
+interface Lorem
+{
+
+}

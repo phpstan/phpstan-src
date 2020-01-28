@@ -18,7 +18,7 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new MethodTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
 		);
 	}
 
@@ -40,6 +40,10 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template T for method MethodTemplateType\Baz::doFoo() with bound type int is not supported.',
 				50,
+			],
+			[
+				'PHPDoc tag @template for method MethodTemplateType\Lorem::doFoo() cannot have existing type alias TypeAlias as its name.',
+				63,
 			],
 		]);
 	}

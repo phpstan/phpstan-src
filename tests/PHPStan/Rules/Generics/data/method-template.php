@@ -53,3 +53,16 @@ class Baz
 	}
 
 }
+
+class Lorem
+{
+
+	/**
+	 * @template TypeAlias
+	 */
+	public function doFoo()
+	{
+
+	}
+
+}

@@ -59,6 +59,7 @@ class ClassTemplateTypeRule implements Rule
 			TemplateTypeScope::createWithClass($className),
 			$resolvedPhpDoc->getTemplateTags(),
 			sprintf('PHPDoc tag @template for class %s cannot have existing class %%s as its name.', $className),
+			sprintf('PHPDoc tag @template for class %s cannot have existing type alias %%s as its name.', $className),
 			sprintf('PHPDoc tag @template %%s for class %s has invalid bound type %%s.', $className),
 			sprintf('PHPDoc tag @template %%s for class %s with bound type %%s is not supported.', $className)
 		);

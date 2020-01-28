@@ -18,7 +18,7 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new TraitTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
 		);
 	}
 
@@ -36,6 +36,10 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template T for trait TraitTemplateType\Baz with bound type int is not supported.',
 				24,
+			],
+			[
+				'PHPDoc tag @template for trait TraitTemplateType\Lorem cannot have existing type alias TypeAlias as its name.',
+				32,
 			],
 		]);
 	}

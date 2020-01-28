@@ -317,7 +317,14 @@ services:
 
 	-
 		class: PHPStan\DependencyInjection\Container
-		factory: PHPStan\DependencyInjection\Nette\NetteContainer
+		factory: PHPStan\DependencyInjection\MemoizingContainer
+		arguments:
+			originalContainer: @PHPStan\DependencyInjection\Nette\NetteContainer
+
+	-
+		class: PHPStan\DependencyInjection\Nette\NetteContainer
+		autowired:
+			- PHPStan\DependencyInjection\Nette\NetteContainer
 
 	-
 		class: PHPStan\DependencyInjection\DerivativeContainerFactory

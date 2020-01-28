@@ -118,14 +118,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	}
 
 	/**
-	 * @return \PHPStan\PhpDoc\TypeNodeResolverExtension[]
-	 */
-	protected function getTypeNodeResolverExtensions(): array
-	{
-		return [];
-	}
-
-	/**
 	 * @param string[] $files
 	 * @param mixed[] $expectedErrors
 	 */

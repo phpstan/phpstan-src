@@ -6,7 +6,7 @@ use Nette;
 use Nette\Schema\Expect;
 use PHPStan\Analyser\TypeSpecifierFactory;
 use PHPStan\Broker\BrokerFactory;
-use PHPStan\PhpDoc\TypeNodeResolverFactory;
+use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Rules\RegistryFactory;
 
 class ConditionalTagsExtension extends \Nette\DI\CompilerExtension
@@ -23,7 +23,7 @@ class ConditionalTagsExtension extends \Nette\DI\CompilerExtension
 			BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			RegistryFactory::RULE_TAG => $bool,
-			TypeNodeResolverFactory::EXTENSION_TAG => $bool,
+			TypeNodeResolverExtension::EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,

@@ -55,32 +55,24 @@ use PHPStan\Type\VoidType;
 class TypeNodeResolver
 {
 
-	/** @var TypeNodeResolverExtension[] */
-	private $extensions;
+	/** @var TypeNodeResolverExtensionRegistryProvider */
+	private $extensionRegistryProvider;
 
 	/** @var Container */
 	private $container;
 
-	/**
-	 * @param TypeNodeResolverExtension[] $extensions
-	 */
-	public function __construct(array $extensions, Container $container)
+	public function __construct(
+		TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
+		Container $container
+	)
 	{
-		foreach ($extensions as $extension) {
-			if (!$extension instanceof TypeNodeResolverAwareExtension) {
-				continue;
-			}
-
-			$extension->setTypeNodeResolver($this);
-		}
-
-		$this->extensions = $extensions;
+		$this->extensionRegistryProvider = $extensionRegistryProvider;
 		$this->container = $container;
 	}
 
 	public function resolve(TypeNode $typeNode, NameScope $nameScope): Type
 	{
-		foreach ($this->extensions as $extension) {
+		foreach ($this->extensionRegistryProvider->getRegistry()->getExtensions() as $extension) {
 			$type = $extension->resolve($typeNode, $nameScope);
 			if ($type !== null) {
 				return $type;

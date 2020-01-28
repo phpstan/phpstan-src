@@ -244,7 +244,10 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
-		factory: @typeNodeResolverFactory::create
+
+	-
+		class: PHPStan\PhpDoc\TypeNodeResolverExtensionRegistryProvider
+		factory: PHPStan\PhpDoc\LazyTypeNodeResolverExtensionRegistryProvider
 
 	-
 		class: PHPStan\PhpDoc\TypeStringResolver
@@ -916,9 +919,6 @@ services:
 	registry:
 		class: PHPStan\Rules\Registry
 		factory: @PHPStan\Rules\RegistryFactory::create
-
-	typeNodeResolverFactory:
-		class: PHPStan\PhpDoc\TypeNodeResolverFactory
 
 	stubPhpDocProvider:
 		class: PHPStan\PhpDoc\StubPhpDocProvider

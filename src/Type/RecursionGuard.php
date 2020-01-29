@@ -8,6 +8,12 @@ class RecursionGuard
 	/** @var true[] */
 	private static $context = [];
 
+	/**
+	 * @param Type $type
+	 * @param callable(): Type $callback
+	 *
+	 * @return Type
+	 */
 	public static function run(Type $type, callable $callback): Type
 	{
 		$key = $type->describe(VerbosityLevel::value());

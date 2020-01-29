@@ -45,7 +45,7 @@ class FileTypeMapper
 	/** @var \PHPStan\PhpDoc\NameScopedPhpDocString[][] */
 	private $memoryCache = [];
 
-	/** @var (false|callable|\PHPStan\PhpDoc\NameScopedPhpDocString)[][] */
+	/** @var (false|(callable(): \PHPStan\PhpDoc\NameScopedPhpDocString)|\PHPStan\PhpDoc\NameScopedPhpDocString)[][] */
 	private $inProcess = [];
 
 	/** @var array<string, ResolvedPhpDocBlock> */
@@ -237,7 +237,7 @@ class FileTypeMapper
 	 * @param string|null $lookForTrait
 	 * @param string|null $traitUseClass
 	 * @param array<string, string> $traitMethodAliases
-	 * @return callable[]
+	 * @return (callable(): \PHPStan\PhpDoc\NameScopedPhpDocString)[]
 	 */
 	private function createFilePhpDocMap(
 		string $fileName,
@@ -246,7 +246,7 @@ class FileTypeMapper
 		array $traitMethodAliases = []
 	): array
 	{
-		/** @var callable[] $phpDocMap */
+		/** @var (callable(): \PHPStan\PhpDoc\NameScopedPhpDocString)[] $phpDocMap */
 		$phpDocMap = [];
 
 		/** @var (callable(): TemplateTypeMap)[] $typeMapStack */

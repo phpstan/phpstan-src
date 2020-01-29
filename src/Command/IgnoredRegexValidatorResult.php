@@ -11,17 +11,23 @@ class IgnoredRegexValidatorResult
 	/** @var bool */
 	private $anchorsInTheMiddle;
 
+	/** @var bool */
+	private $allErrorsIgnored;
+
 	/**
 	 * @param array<string, string> $ignoredTypes
 	 * @param bool $anchorsInTheMiddle
+	 * @param bool $allErrorsIgnored
 	 */
 	public function __construct(
 		array $ignoredTypes,
-		bool $anchorsInTheMiddle
+		bool $anchorsInTheMiddle,
+		bool $allErrorsIgnored
 	)
 	{
 		$this->ignoredTypes = $ignoredTypes;
 		$this->anchorsInTheMiddle = $anchorsInTheMiddle;
+		$this->allErrorsIgnored = $allErrorsIgnored;
 	}
 
 	/**
@@ -35,6 +41,11 @@ class IgnoredRegexValidatorResult
 	public function hasAnchorsInTheMiddle(): bool
 	{
 		return $this->anchorsInTheMiddle;
+	}
+
+	public function areAllErrorsIgnored(): bool
+	{
+		return $this->allErrorsIgnored;
 	}
 
 }

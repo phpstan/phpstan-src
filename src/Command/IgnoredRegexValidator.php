@@ -36,12 +36,16 @@ class IgnoredRegexValidator
 			/** @var TreeNode $ast */
 			$ast = $this->parser->parse($regex);
 		} catch (\Hoa\Exception\Exception $e) {
-			return new IgnoredRegexValidatorResult([], false);
+			if (strpos($e->getMessage(), 'Unexpected token "|" (alternation) at line 1') === 0) {
+				return new IgnoredRegexValidatorResult([], false, true);
+			}
+			return new IgnoredRegexValidatorResult([], false, false);
 		}
 
 		return new IgnoredRegexValidatorResult(
 			$this->getIgnoredTypes($ast),
-			$this->hasAnchorsInTheMiddle($ast)
+			$this->hasAnchorsInTheMiddle($ast),
+			false
 		);
 	}
 

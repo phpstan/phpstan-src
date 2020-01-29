@@ -145,6 +145,10 @@ class Analyser
 					if ($validationResult->hasAnchorsInTheMiddle()) {
 						$warnings[] = $this->createAnchorInTheMiddleWarning($ignoreMessage);
 					}
+
+					if ($validationResult->areAllErrorsIgnored()) {
+						$errors[] = sprintf("Ignored error %s has an unescaped '||' which leads to ignoring all errors. Use '\\|\\|' instead.", $ignoreMessage);
+					}
 				} else {
 					$otherIgnoreErrors[] = [
 						'index' => $i,
@@ -159,6 +163,10 @@ class Analyser
 
 					if ($validationResult->hasAnchorsInTheMiddle()) {
 						$warnings[] = $this->createAnchorInTheMiddleWarning($ignoreMessage);
+					}
+
+					if ($validationResult->areAllErrorsIgnored()) {
+						$errors[] = sprintf("Ignored error %s has an unescaped '||' which leads to ignoring all errors. Use '\\|\\|' instead.", $ignoreMessage);
 					}
 				}
 

@@ -84,7 +84,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				->willReturn([]);
 			$ignoredRegexValidator = $this->createMock(IgnoredRegexValidator::class);
 			$ignoredRegexValidator->method('validate')
-				->willReturn(new IgnoredRegexValidatorResult([], false));
+				->willReturn(new IgnoredRegexValidatorResult([], false, false));
 			$this->analyser = new Analyser(
 				$fileAnalyser,
 				$registry,

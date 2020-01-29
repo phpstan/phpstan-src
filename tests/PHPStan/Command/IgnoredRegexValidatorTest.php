@@ -8,7 +8,7 @@ use PHPStan\Testing\TestCase;
 class IgnoredRegexValidatorTest extends TestCase
 {
 
-	public function dataGetIgnoredTypes(): array
+	public function dataValidate(): array
 	{
 		return [
 			[
@@ -90,12 +90,12 @@ class IgnoredRegexValidatorTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider dataGetIgnoredTypes
+	 * @dataProvider dataValidate
 	 * @param string $regex
 	 * @param string[] $expectedTypes
 	 * @param bool $expectedHasAnchors
 	 */
-	public function testGetIgnoredTypes(string $regex, array $expectedTypes, bool $expectedHasAnchors): void
+	public function testValidate(string $regex, array $expectedTypes, bool $expectedHasAnchors): void
 	{
 		$grammar = new \Hoa\File\Read('hoa://Library/Regex/Grammar.pp');
 		$parser = \Hoa\Compiler\Llk\Llk::load($grammar);

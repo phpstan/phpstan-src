@@ -215,6 +215,7 @@ class FileTypeMapper
 	private function createResolvedPhpDocMap(string $fileName): array
 	{
 		$phpDocMap = $this->createFilePhpDocMap($fileName, null, null);
+		$resolvedPhpDocMap = [];
 
 		try {
 			$this->inProcess[$fileName] = $phpDocMap;
@@ -222,14 +223,14 @@ class FileTypeMapper
 			foreach ($phpDocMap as $phpDocKey => $resolveCallback) {
 				$this->inProcess[$fileName][$phpDocKey] = false;
 				$this->inProcess[$fileName][$phpDocKey] = $data = $resolveCallback();
-				$phpDocMap[$phpDocKey] = $data;
+				$resolvedPhpDocMap[$phpDocKey] = $data;
 			}
 
 		} finally {
 			unset($this->inProcess[$fileName]);
 		}
 
-		return $phpDocMap;
+		return $resolvedPhpDocMap;
 	}
 
 	/**

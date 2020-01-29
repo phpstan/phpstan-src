@@ -2459,6 +2459,11 @@ class NodeScopeResolver
 		return $scope;
 	}
 
+	/**
+	 * @param \PhpParser\Node\Stmt\TraitUse $node
+	 * @param MutatingScope $classScope
+	 * @param \Closure(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 */
 	private function processTraitUse(Node\Stmt\TraitUse $node, MutatingScope $classScope, \Closure $nodeCallback): void
 	{
 		foreach ($node->traits as $trait) {
@@ -2484,7 +2489,7 @@ class NodeScopeResolver
 	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
 	 * @param ClassReflection $traitReflection
 	 * @param \PHPStan\Analyser\MutatingScope $scope
-	 * @param \Closure(\PhpParser\Node $node): void $nodeCallback
+	 * @param \Closure(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processNodesForTraitUse($node, ClassReflection $traitReflection, MutatingScope $scope, \Closure $nodeCallback): void
 	{

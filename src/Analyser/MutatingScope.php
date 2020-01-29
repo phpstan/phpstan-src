@@ -390,6 +390,16 @@ class MutatingScope implements Scope
 
 	public function getType(Expr $node): Type
 	{
+		$key = $this->getNodeKey($node);
+
+		if (!array_key_exists($key, $this->resolvedTypes)) {
+			$this->resolvedTypes[$key] = $this->resolveType($node);
+		}
+		return $this->resolvedTypes[$key];
+	}
+
+	private function getNodeKey(Expr $node): string
+	{
 		/** @var string|null $key */
 		$key = $node->getAttribute('phpstan_cache_printer');
 		if ($key === null) {
@@ -397,10 +407,7 @@ class MutatingScope implements Scope
 			$node->setAttribute('phpstan_cache_printer', $key);
 		}
 
-		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = $this->resolveType($node);
-		}
-		return $this->resolvedTypes[$key];
+		return $key;
 	}
 
 	private function resolveType(Expr $node): Type
@@ -1363,7 +1370,7 @@ class MutatingScope implements Scope
 			return new NullType();
 		}
 
-		$exprString = $this->printer->prettyPrintExpr($node);
+		$exprString = $this->getNodeKey($node);
 		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
 			return $this->moreSpecificTypes[$exprString]->getType();
 		}
@@ -1746,12 +1753,7 @@ class MutatingScope implements Scope
 
 	public function getNativeType(Expr $expr): Type
 	{
-		/** @var string|null $key */
-		$key = $expr->getAttribute('phpstan_cache_printer');
-		if ($key === null) {
-			$key = $this->printer->prettyPrintExpr($expr);
-			$expr->setAttribute('phpstan_cache_printer', $key);
-		}
+		$key = $this->getNodeKey($expr);
 
 		if (array_key_exists($key, $this->nativeExpressionTypes)) {
 			return $this->nativeExpressionTypes[$key];
@@ -2013,7 +2015,7 @@ class MutatingScope implements Scope
 
 	public function isSpecified(Expr $node): bool
 	{
-		$exprString = $this->printer->prettyPrintExpr($node);
+		$exprString = $this->getNodeKey($node);
 
 		return isset($this->moreSpecificTypes[$exprString])
 			&& $this->moreSpecificTypes[$exprString]->getCertainty()->yes();
@@ -2532,7 +2534,7 @@ class MutatingScope implements Scope
 
 	public function enterExpressionAssign(Expr $expr): self
 	{
-		$exprString = $this->printer->prettyPrintExpr($expr);
+		$exprString = $this->getNodeKey($expr);
 		$currentlyAssignedExpressions = $this->currentlyAssignedExpressions;
 		$currentlyAssignedExpressions[$exprString] = true;
 
@@ -2553,7 +2555,7 @@ class MutatingScope implements Scope
 
 	public function exitExpressionAssign(Expr $expr): self
 	{
-		$exprString = $this->printer->prettyPrintExpr($expr);
+		$exprString = $this->getNodeKey($expr);
 		$currentlyAssignedExpressions = $this->currentlyAssignedExpressions;
 		unset($currentlyAssignedExpressions[$exprString]);
 
@@ -2574,7 +2576,7 @@ class MutatingScope implements Scope
 
 	public function isInExpressionAssign(Expr $expr): bool
 	{
-		$exprString = $this->printer->prettyPrintExpr($expr);
+		$exprString = $this->getNodeKey($expr);
 		return array_key_exists($exprString, $this->currentlyAssignedExpressions);
 	}
 
@@ -2678,7 +2680,7 @@ class MutatingScope implements Scope
 			return $this;
 		}
 
-		$exprString = $this->printer->prettyPrintExpr($expr);
+		$exprString = $this->getNodeKey($expr);
 
 		$scope = $this;
 
@@ -2736,7 +2738,7 @@ class MutatingScope implements Scope
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
 	{
-		$exprStringToInvalidate = $this->printer->prettyPrintExpr($expressionToInvalidate);
+		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;

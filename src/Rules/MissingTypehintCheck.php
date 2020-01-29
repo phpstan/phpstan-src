@@ -6,6 +6,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -32,15 +33,20 @@ class MissingTypehintCheck
 
 	private bool $checkGenericClassInNonGenericObjectType;
 
+	/** @var bool */
+	private $checkMissingCallablePrototype;
+
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		bool $checkMissingIterableValueType,
-		bool $checkGenericClassInNonGenericObjectType
+		bool $checkGenericClassInNonGenericObjectType,
+		bool $checkMissingCallablePrototype
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
+		$this->checkMissingCallablePrototype = $checkMissingCallablePrototype;
 	}
 
 	/**
@@ -131,6 +137,28 @@ class MissingTypehintCheck
 		});
 
 		return $objectTypes;
+	}
+
+	/**
+	 * @param \PHPStan\Type\Type $type
+	 * @return \PHPStan\Type\Type[]
+	 */
+	public function getCallablesWithMissingPrototype(Type $type): array{
+		if (!$this->checkMissingCallablePrototype) {
+			return [];
+		}
+
+		$result = [];
+		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$result): Type {
+			if(
+				($type instanceof CallableType && $type->isCommonCallable()) ||
+				($type instanceof ObjectType && $type->getClassName() === \Closure::class)) {
+				$result[] = $type;
+			}
+			return $traverse($type);
+		});
+
+		return $result;
 	}
 
 }

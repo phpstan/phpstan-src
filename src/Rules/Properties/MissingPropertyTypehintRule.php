@@ -67,6 +67,15 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
+		foreach ($this->missingTypehintCheck->getCallablesWithMissingPrototype($propertyType) as $callableType) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Property %s::$%s type has no prototype specified for callable type %s.',
+				$propertyReflection->getDeclaringClass()->getDisplayName(),
+				$node->name->name,
+				$callableType->describe(VerbosityLevel::typeOnly())
+			))->build();
+		}
+
 		return $messages;
 	}
 

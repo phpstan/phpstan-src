@@ -1355,6 +1355,17 @@ class NodeScopeResolver
 			$result = $this->processArgs($functionReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
+
+			if (
+				isset($functionReflection)
+				&& in_array($functionReflection->getName(), ['json_encode', 'json_decode'], true)
+			) {
+				$scope = $scope->invalidateExpression(new FuncCall(new Name('json_last_error'), []))
+					->invalidateExpression(new FuncCall(new Name\FullyQualified('json_last_error'), []))
+					->invalidateExpression(new FuncCall(new Name('json_last_error_msg'), []))
+					->invalidateExpression(new FuncCall(new Name\FullyQualified('json_last_error_msg'), []));
+			}
+
 			if (
 				isset($functionReflection)
 				&& in_array($functionReflection->getName(), ['array_pop', 'array_shift'], true)

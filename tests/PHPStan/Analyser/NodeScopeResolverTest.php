@@ -9777,6 +9777,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2850.php');
 	}
 
+	public function dataBug2863(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2863.php');
+	}
+
 	public function dataNativeTypes(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/native-types.php');
@@ -9824,6 +9829,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2443
 	 * @dataProvider dataBug2750
 	 * @dataProvider dataBug2850
+	 * @dataProvider dataBug2863
 	 * @dataProvider dataNativeTypes
 	 * @dataProvider dataTypeChangeAfterArrayAccessAssignment
 	 * @dataProvider dataExtDs

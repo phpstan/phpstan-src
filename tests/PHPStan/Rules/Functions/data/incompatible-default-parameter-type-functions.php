@@ -15,3 +15,10 @@ function takesInt($int = 10): void
 function takesString($string = false): void
 {
 }
+
+/**
+ * @param float $float
+ */
+function takesFloatWithIntDefault($float = 1) : void
+{
+}

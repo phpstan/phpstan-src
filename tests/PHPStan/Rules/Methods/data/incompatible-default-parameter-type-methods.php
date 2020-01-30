@@ -9,6 +9,7 @@ class FooParent
 	 * @param int $int
 	 * @param string $string
 	 * @param ?float $float
+	 * @param float $floatWithIntDefault
 	 * @param \stdClass|false $object
 	 * @param bool $bool
 	 * @param resource $resource
@@ -17,6 +18,7 @@ class FooParent
 		$int,
 		$string,
 		$float,
+		$floatWithIntDefault,
 		$object,
 		$bool,
 		$resource
@@ -32,6 +34,7 @@ class Foo extends FooParent
 	 * @param int $int
 	 * @param string $string
 	 * @param ?float $float
+	 * @param float $floatWithIntDefault
 	 * @param \stdClass|false $object
 	 * @param bool $bool
 	 * @param resource $resource
@@ -40,6 +43,7 @@ class Foo extends FooParent
 		$int = 10,
 		$string = 'string',
 		$float = null,
+		$floatWithIntDefault = 1,
 		$object = false,
 		$bool = null,
 		$resource = false
@@ -50,6 +54,7 @@ class Foo extends FooParent
 		$int = 10,
 		$string = 'string',
 		$float = null,
+		$floatWithIntDefault = 1,
 		$object = false,
 		$bool = null,
 		$resource = false

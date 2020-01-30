@@ -33,7 +33,7 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 			],
 			[
 				'Default value of the parameter #8 $templateWithIntDefault (1) of method IncompatibleDefaultParameter\Foo::bar() is incompatible with type T.',
-				77,
+				67,
 			],
 		]);
 	}

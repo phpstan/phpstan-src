@@ -10,6 +10,9 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -59,8 +62,11 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 
 			$defaultValueType = $scope->getType($param->default);
 			$parameterType = $parameters->getParameters()[$paramI]->getType();
+			if ($parameterType->isSuperTypeOf(new FloatType())->yes()) {
+				$parameterType = TypeCombinator::union($parameterType, new IntegerType());
+			}
 
-			if ($parameterType->accepts($defaultValueType, true)->yes()) {
+			if ($parameterType->isSuperTypeOf($defaultValueType)->yes()) {
 				continue;
 			}
 

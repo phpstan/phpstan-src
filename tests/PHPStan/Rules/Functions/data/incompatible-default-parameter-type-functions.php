@@ -22,3 +22,11 @@ function takesString($string = false): void
 function takesFloatWithIntDefault($float = 1) : void
 {
 }
+
+/**
+ * @template T
+ * @param T $x
+ */
+function takesTemplateWithIntDefault($x = 1) : void
+{
+}

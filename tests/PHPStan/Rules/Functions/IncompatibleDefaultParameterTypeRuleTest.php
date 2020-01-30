@@ -24,6 +24,10 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 				'Default value of the parameter #1 $string (false) of function IncompatibleDefaultParameter\takesString() is incompatible with type string.',
 				15,
 			],
+			[
+				'Default value of the parameter #1 $x (1) of function IncompatibleDefaultParameter\takesTemplateWithIntDefault() is incompatible with type T.',
+				30,
+			],
 		]);
 	}
 

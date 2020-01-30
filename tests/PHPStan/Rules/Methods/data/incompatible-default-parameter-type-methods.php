@@ -6,6 +6,7 @@ class FooParent
 {
 
 	/**
+	 * @template T
 	 * @param int $int
 	 * @param string $string
 	 * @param ?float $float
@@ -13,6 +14,7 @@ class FooParent
 	 * @param \stdClass|false $object
 	 * @param bool $bool
 	 * @param resource $resource
+	 * @param T $templateWithIntDefault
 	 */
 	public function bar(
 		$int,
@@ -21,7 +23,8 @@ class FooParent
 		$floatWithIntDefault,
 		$object,
 		$bool,
-		$resource
+		$resource,
+		$templateWithIntDefault
 	): void {
 	}
 
@@ -31,6 +34,7 @@ class Foo extends FooParent
 {
 
 	/**
+	 * @template T
 	 * @param int $int
 	 * @param string $string
 	 * @param ?float $float
@@ -38,6 +42,7 @@ class Foo extends FooParent
 	 * @param \stdClass|false $object
 	 * @param bool $bool
 	 * @param resource $resource
+	 * @param T $templateWithIntDefault
 	 */
 	public function baz(
 		$int = 10,
@@ -46,7 +51,8 @@ class Foo extends FooParent
 		$floatWithIntDefault = 1,
 		$object = false,
 		$bool = null,
-		$resource = false
+		$resource = false,
+		$templateWithIntDefault = 1
 	): void {
 	}
 
@@ -57,7 +63,8 @@ class Foo extends FooParent
 		$floatWithIntDefault = 1,
 		$object = false,
 		$bool = null,
-		$resource = false
+		$resource = false,
+		$templateWithIntDefault = 1
 	): void {
 	}
 

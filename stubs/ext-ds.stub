@@ -723,3 +723,155 @@ final class Set implements ArrayAccess, Collection, Traversable
 	{
 	}
 }
+
+/**
+ * @template TValue
+ * @implements Collection<TValue>
+ * @implements ArrayAccess<null, TValue>
+ * @implements IteratorAggregate<int, TValue>
+ */
+final class Stack implements IteratorAggregate, ArrayAccess, Collection
+{
+	/**
+	 * @param iterable<TValue>|null $values
+	 */
+	public function __construct($values = null)
+	{
+	}
+
+	/**
+	 * @return Stack<TValue>
+	 */
+	public function copy(): Stack
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function peek()
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function pop()
+	{
+	}
+
+	/**
+	 * @param TValue ...$values
+	 */
+	public function push(...$values): void
+	{
+	}
+
+	/**
+	 * @return array<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+}
+
+/**
+ * @template TValue
+ * @implements Collection<TValue>
+ * @implements ArrayAccess<null, TValue>
+ * @implements IteratorAggregate<int, TValue>
+ */
+final class Queue implements IteratorAggregate, ArrayAccess, Collection
+{
+	/**
+	 * @param iterable<TValue>|null $values
+	 */
+	public function __construct($values = null)
+	{
+	}
+
+	/**
+	 * @return Queue<TValue>
+	 */
+	public function copy(): Queue
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function peek()
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function pop()
+	{
+	}
+
+	/**
+	 * @param TValue ...$values
+	 */
+	public function push(...$values): void
+	{
+	}
+
+	/**
+	 * @return array<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+}
+
+/**
+ * @template TValue
+ * @implements Collection<TValue>
+ * @implements ArrayAccess<null, TValue>
+ * @implements IteratorAggregate<int, TValue>
+ */
+final class PriorityQueue implements IteratorAggregate, ArrayAccess, Collection
+{
+	/**
+	 * @return PriorityQueue<TValue>
+	 */
+	public function copy(): PriorityQueue
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function peek()
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function pop()
+	{
+	}
+
+	/**
+	 * @param TValue $value
+	 */
+	public function push($value, int $priority): void
+	{
+	}
+
+	/**
+	 * @return array<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+}

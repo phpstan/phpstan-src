@@ -133,6 +133,7 @@ class Analyser
 					}
 
 					$ignoreMessage = $ignoreError['message'];
+					\Nette\Utils\Strings::match('', $ignoreMessage);
 					if (isset($ignoreError['count'])) {
 						continue; // ignoreError coming from baseline will be correct
 					}
@@ -155,6 +156,7 @@ class Analyser
 						'ignoreError' => $ignoreError,
 					];
 					$ignoreMessage = $ignoreError;
+					\Nette\Utils\Strings::match('', $ignoreMessage);
 					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
 					$ignoredTypes = $validationResult->getIgnoredTypes();
 					if (count($ignoredTypes) > 0) {
@@ -169,8 +171,6 @@ class Analyser
 						$errors[] = sprintf("Ignored error %s has an unescaped '||' which leads to ignoring all errors. Use '\\|\\|' instead.", $ignoreMessage);
 					}
 				}
-
-				\Nette\Utils\Strings::match('', $ignoreMessage);
 			} catch (\Nette\Utils\RegexpException $e) {
 				$errors[] = $e->getMessage();
 			}

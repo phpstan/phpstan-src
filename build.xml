@@ -4,6 +4,15 @@
 			  value="tmp/composer-require-checker-2.0.0.phar"/>
 	<property name="url.composer-require-checker"
 			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.0.0/composer-require-checker.phar"/>
+	<if>
+		<os family="windows"/>
+		<then>
+			<property name="phpunit.executable" value="vendor/bin/phpunit"/>
+		</then>
+		<else>
+			<property name="phpunit.executable" value="vendor/bin/paratest"/>
+		</else>
+	</if>
 	<target name="check" depends="
 		composer-validate,
 		composer-install,
@@ -190,7 +199,7 @@
 
 	<target name="tests">
 		<exec
-				executable="vendor/bin/phpunit"
+				executable="${phpunit.executable}"
 				logoutput="true"
 				passthru="true"
 				checkreturn="true"
@@ -203,7 +212,7 @@
 
 	<target name="tests-rules">
 		<exec
-			executable="vendor/bin/phpunit"
+			executable="${phpunit.executable}"
 			logoutput="true"
 			passthru="true"
 			checkreturn="true"
@@ -216,7 +225,7 @@
 
 	<target name="tests-type-inference">
 		<exec
-			executable="vendor/bin/phpunit"
+			executable="${phpunit.executable}"
 			logoutput="true"
 			passthru="true"
 			checkreturn="true"

@@ -7,8 +7,6 @@ includes:
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
 parameters:
-	autoload_files:
-		- ../vendor/irstea/phpunit-shim/phpunit
 	bootstrap: %rootDir%/tests/phpstan-bootstrap.php
 	excludes_analyse:
 		- %rootDir%/src/Reflection/SignatureMap/functionMap.php

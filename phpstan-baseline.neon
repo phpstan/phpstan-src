@@ -18,11 +18,6 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: "#^Method PHPStan\\\\Broker\\\\Broker\\:\\:getClassFromReflection\\(\\) has parameter \\$reflectionClass with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Broker/Broker.php
-
-		-
 			message: "#^Access to constant EXTENSIONS on an unknown class PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\.$#"
 			count: 1
 			path: src/Command/CommandHelper.php
@@ -149,11 +144,6 @@ parameters:
 
 		-
 			message: "#^Method PHPStan\\\\Testing\\\\RuleTestCase\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: src/Testing/RuleTestCase.php
-
-		-
-			message: "#^Parameter \\#1 \\$rules of class PHPStan\\\\Rules\\\\Registry constructor expects array\\<PHPStan\\\\Rules\\\\Rule\\>, array\\<int, TRule of PHPStan\\\\Rules\\\\Rule\\> given\\.$#"
 			count: 1
 			path: src/Testing/RuleTestCase.php
 

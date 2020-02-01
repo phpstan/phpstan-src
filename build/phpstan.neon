@@ -36,7 +36,6 @@ parameters:
 			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php
 	reportStaticMethodSignatures: true
-	reportUnmatchedIgnoredErrors: false
 	checkPossibleCovariantMethodReturnType: false
 	tmpDir: %rootDir%/tmp
 services:

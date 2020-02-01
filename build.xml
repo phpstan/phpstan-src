@@ -13,6 +13,7 @@
 			<property name="phpunit.executable" value="vendor/bin/paratest"/>
 		</else>
 	</if>
+	<php expression="PHP_VERSION_ID &gt;= 70400 ?'true':'false'" returnProperty="isPHP74" level="verbose" />
 	<target name="check" depends="
 		composer-validate,
 		composer-install,
@@ -139,7 +140,6 @@
 	</target>
 
 	<target name="cs">
-		<php expression="PHP_VERSION_ID &gt;= 70400 ?'true':'false'" returnProperty="isPHP74" level="verbose" />
 		<if>
 			<equals arg1="${isPHP74}" arg2="true" />
 			<then>
@@ -240,7 +240,6 @@
 
 	<target name="phpstan">
 		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
-		<php expression="PHP_VERSION_ID &gt;= 70300 ?'true':'false'" returnProperty="isPHP73" level="verbose" />
 		<touch file="${phpstan.config}"/>
 		<append
 			destFile="${phpstan.config}"
@@ -257,11 +256,11 @@
 			</then>
 		</if>
 		<if>
-			<equals arg1="${isPHP73}" arg2="false" />
+			<equals arg1="${isPHP74}" arg2="true" />
 			<then>
 				<append
-						destFile="${phpstan.config}"
-						text=", ignore-lt-php7.3-errors.neon"
+					destFile="${phpstan.config}"
+					text=", ignore-gte-php7.4-errors.neon"
 				></append>
 			</then>
 		</if>

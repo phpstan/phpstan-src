@@ -6,6 +6,8 @@
 	],
 	"require": {
 		"php": "^7.1",
+		"ext-filter": "*",
+		"ext-posix": "*",
 		"composer/xdebug-handler": "^1.3.0",
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",

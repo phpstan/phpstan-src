@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use Nette\Utils\Json;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileHelper;
+use PHPStan\Fork\Pool;
 use PHPStan\PhpDoc\StubValidator;
 use PHPStan\Rules\Registry;
 
@@ -82,6 +83,7 @@ class Analyser
 	 * @param \Closure(string $file): void|null $postFileCallback
 	 * @param bool $debug
 	 * @param \Closure(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
+	 * @param int $threads
 	 * @return string[]|\PHPStan\Analyser\Error[] errors
 	 */
 	public function analyse(
@@ -90,7 +92,8 @@ class Analyser
 		?\Closure $preFileCallback = null,
 		?\Closure $postFileCallback = null,
 		bool $debug = false,
-		?\Closure $outerNodeCallback = null
+		?\Closure $outerNodeCallback = null,
+		int $threads = 1
 	): array
 	{
 		$errors = [];
@@ -186,48 +189,87 @@ class Analyser
 
 		$this->collectErrors($files);
 
-		$internalErrorsCount = 0;
-		$reachedInternalErrorsCountLimit = false;
-		foreach ($files as $file) {
+		//$internalErrorsCount = 0;
+		//$reachedInternalErrorsCountLimit = false;
+
+		$startupClosure = static function (): void {};
+
+		$taskClosure = function ($i, $file) use ($preFileCallback) {
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
 			}
 
 			try {
-				$errors = array_merge($errors, $this->fileAnalyser->analyseFile(
+				return $this->fileAnalyser->analyseFile(
 					$file,
 					$this->registry,
-					$outerNodeCallback
-				));
+					null
+				);
 			} catch (\Throwable $t) {
+				return $t;
+			}
+		};
+
+		$taskDoneClosure = static function ($file, $taskResult) use ($postFileCallback, $debug, &$errors): void {
+			if ($postFileCallback !== null) {
+				$postFileCallback($file);
+			}
+
+			if ($taskResult instanceof \Throwable) {
 				if ($debug) {
-					throw $t;
+					throw $taskResult;
 				}
-				$internalErrorsCount++;
-				$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
+
+				//$internalErrorsCount++;
+				$internalErrorMessage = sprintf('Internal error: %s', $taskResult->getMessage());
 				$internalErrorMessage .= sprintf(
 					'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
 					"\n",
 					"\n",
 					'https://github.com/phpstan/phpstan/issues/new'
 				);
-				$errors[] = new Error($internalErrorMessage, $file);
-				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
-					$reachedInternalErrorsCountLimit = true;
-					break;
-				}
+				$taskResult = [new Error($internalErrorMessage, $file)];
+				//if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
+				//	$reachedInternalErrorsCountLimit = true;
+				//	break;
+				//}
 			}
 
-			if ($postFileCallback === null) {
-				continue;
+			$errors = array_merge($errors, $taskResult);
+		};
+
+		$shutdownClosure = function (): array {
+			return $this->collectedErrors;
+		};
+
+		if ($threads <= 1 || count($files) <= 1) {
+			$startupClosure();
+
+			foreach ($files as $i => $file) {
+				$taskResult = $taskClosure($i, $file);
+				$taskDoneClosure($file, $taskResult);
 			}
 
-			$postFileCallback($file);
+			$processErrors = $shutdownClosure();
+			$errors = array_merge($errors, $processErrors);
+		} else {
+			$numberOfFilesPerThread = (int) ceil(count($files) / $threads);
+			/** @var array<int, array<int, string>> $filesGroupedByThread */
+			$filesGroupedByThread = array_chunk($files, $numberOfFilesPerThread);
+
+			$pool = new Pool(
+				$filesGroupedByThread,
+				$startupClosure,
+				$taskClosure,
+				$shutdownClosure,
+				$taskDoneClosure
+			);
+
+			$processErrors = array_merge(...$pool->wait());
+			$errors = array_merge($errors, $processErrors);
 		}
 
 		$this->restoreCollectErrorsHandler();
-
-		$errors = array_merge($errors, $this->collectedErrors);
 
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
 		$addErrors = [];
@@ -356,7 +398,7 @@ class Analyser
 
 		$errors = array_merge($errors, $addErrors);
 
-		if (!$onlyFiles && $this->reportUnmatchedIgnoredErrors && !$reachedInternalErrorsCountLimit) {
+		if (!$onlyFiles && $this->reportUnmatchedIgnoredErrors/* && !$reachedInternalErrorsCountLimit*/) {
 			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
 				if (
 					isset($unmatchedIgnoredError['count'])
@@ -381,9 +423,9 @@ class Analyser
 			}
 		}
 
-		if ($reachedInternalErrorsCountLimit) {
-			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
-		}
+		//if ($reachedInternalErrorsCountLimit) {
+		//	$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
+		//}
 
 		return array_merge($errors, $warnings);
 	}

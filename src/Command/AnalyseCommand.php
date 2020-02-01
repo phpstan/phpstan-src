@@ -46,6 +46,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				new InputOption('error-format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result of the analysis', 'table'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
+				new InputOption('threads', null, InputOption::VALUE_REQUIRED, 'Number of parallel threads used for analysis'),
 			]);
 	}
 
@@ -139,6 +140,12 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		$threads = filter_var($input->getOption('threads'), FILTER_VALIDATE_INT);
+		if ($threads === false || $threads < 1) {
+			$errorOutput->writeLineFormatted('The number of threads must be an integer and greater than or equal to 1');
+			return 1;
+		}
+
 		return $inceptionResult->handleReturn(
 			$application->analyse(
 				$inceptionResult->getFiles(),
@@ -148,7 +155,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				$errorFormatter,
 				$inceptionResult->isDefaultLevelUsed(),
 				$debug,
-				$inceptionResult->getProjectConfigFile()
+				$inceptionResult->getProjectConfigFile(),
+				$threads
 			)
 		);
 	}

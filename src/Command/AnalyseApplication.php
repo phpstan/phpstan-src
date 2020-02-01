@@ -35,6 +35,7 @@ class AnalyseApplication
 	 * @param bool $defaultLevelUsed
 	 * @param bool $debug
 	 * @param string|null $projectConfigFile
+	 * @param int $threads
 	 * @return int Error code.
 	 */
 	public function analyse(
@@ -45,7 +46,8 @@ class AnalyseApplication
 		ErrorFormatter $errorFormatter,
 		bool $defaultLevelUsed,
 		bool $debug,
-		?string $projectConfigFile
+		?string $projectConfigFile,
+		int $threads = 1
 	): int
 	{
 		$this->updateMemoryLimitFile();
@@ -127,7 +129,8 @@ class AnalyseApplication
 				}
 
 				$hasInferrablePropertyTypesFromConstructor = true;
-			}
+			},
+			$threads
 		));
 
 		if (isset($progressStarted) && $progressStarted) {

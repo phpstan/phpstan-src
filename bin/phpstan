@@ -54,6 +54,8 @@ use PHPStan\Command\DumpDependenciesCommand;
 		require_once $devOrPharAutoloadFile;
 	}
 
+	require_once __DIR__ . '/../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php';
+
 	$version = 'Version unknown';
 	try {
 		$version = \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();

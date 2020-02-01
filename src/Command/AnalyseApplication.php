@@ -5,7 +5,11 @@ namespace PHPStan\Command;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\InferrablePropertyTypesFromConstructorHelper;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
+use PHPStan\Parallel\ParallelAnalyser;
+use PHPStan\Parallel\Scheduler;
 use PHPStan\PhpDoc\StubValidator;
+use Symfony\Component\Console\Input\InputInterface;
+use function file_exists;
 
 class AnalyseApplication
 {
@@ -16,18 +20,33 @@ class AnalyseApplication
 	/** @var \PHPStan\PhpDoc\StubValidator */
 	private $stubValidator;
 
+	/** @var ParallelAnalyser */
+	private $parallelAnalyser;
+
+	/** @var Scheduler */
+	private $scheduler;
+
 	/** @var string */
 	private $memoryLimitFile;
+
+	/** @var bool */
+	private $runParallel;
 
 	public function __construct(
 		Analyser $analyser,
 		StubValidator $stubValidator,
-		string $memoryLimitFile
+		ParallelAnalyser $parallelAnalyser,
+		Scheduler $scheduler,
+		string $memoryLimitFile,
+		bool $runParallel
 	)
 	{
 		$this->analyser = $analyser;
 		$this->stubValidator = $stubValidator;
+		$this->parallelAnalyser = $parallelAnalyser;
+		$this->scheduler = $scheduler;
 		$this->memoryLimitFile = $memoryLimitFile;
+		$this->runParallel = $runParallel;
 	}
 
 	/**
@@ -49,7 +68,8 @@ class AnalyseApplication
 		ErrorFormatter $errorFormatter,
 		bool $defaultLevelUsed,
 		bool $debug,
-		?string $projectConfigFile
+		?string $projectConfigFile,
+		InputInterface $input
 	): int
 	{
 		$this->updateMemoryLimitFile();
@@ -71,20 +91,29 @@ class AnalyseApplication
 			@unlink($this->memoryLimitFile);
 		});
 
+		/** @var bool $runningInParallel */
+		$runningInParallel = false;
+
 		if (!$debug) {
 			$progressStarted = false;
 			$fileOrder = 0;
 			$preFileCallback = null;
-			$postFileCallback = function () use ($errorOutput, &$progressStarted, $files, &$fileOrder): void {
+			$postFileCallback = function (int $step) use ($errorOutput, &$progressStarted, $files, &$fileOrder, &$runningInParallel): void {
 				if (!$progressStarted) {
 					$errorOutput->getStyle()->progressStart(count($files));
 					$progressStarted = true;
 				}
-				$errorOutput->getStyle()->progressAdvance();
-				if ($fileOrder % 100 === 0) {
-					$this->updateMemoryLimitFile();
+				$errorOutput->getStyle()->progressAdvance($step);
+
+				if ($runningInParallel) {
+					return;
 				}
-				$fileOrder++;
+
+				if ($fileOrder >= 100) {
+					$this->updateMemoryLimitFile();
+					$fileOrder = 0;
+				}
+				$fileOrder += $step;
 			};
 		} else {
 			$preFileCallback = static function (string $file) use ($stdOutput): void {
@@ -93,15 +122,35 @@ class AnalyseApplication
 			$postFileCallback = null;
 		}
 
-		$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
-		$errors = array_merge($errors, $this->analyser->analyse(
-			$files,
-			$onlyFiles,
-			$preFileCallback,
-			$postFileCallback,
-			$debug,
-			$inferrablePropertyTypesFromConstructorHelper
-		));
+		$schedule = $this->scheduler->scheduleWork($this->getNumberOfCpuCores(), 20, $files);
+		$mainScript = null;
+		if (isset($_SERVER['argv'][0]) && file_exists($_SERVER['argv'][0])) {
+			$mainScript = $_SERVER['argv'][0];
+		}
+
+		if (
+			$this->runParallel
+			&& !$debug
+			&& $mainScript !== null
+			&& DIRECTORY_SEPARATOR === '/'
+			&& $schedule->getNumberOfProcesses() > 1
+		) {
+			$runningInParallel = true;
+			$parallelAnalyserResult = $this->parallelAnalyser->analyse($schedule, $mainScript, $onlyFiles, $postFileCallback, $projectConfigFile, $input);
+			$errors = array_merge($errors, $parallelAnalyserResult['errors']);
+			$hasInferrablePropertyTypesFromConstructor = $parallelAnalyserResult['hasInferrablePropertyTypesFromConstructor'];
+		} else {
+			$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
+			$errors = array_merge($errors, $this->analyser->analyse(
+				$files,
+				$onlyFiles,
+				$preFileCallback,
+				$postFileCallback,
+				$debug,
+				$inferrablePropertyTypesFromConstructorHelper
+			));
+			$hasInferrablePropertyTypesFromConstructor = $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor();
+		}
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();
@@ -128,7 +177,7 @@ class AnalyseApplication
 				$notFileSpecificErrors,
 				$warnings,
 				$defaultLevelUsed,
-				$inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
+				$hasInferrablePropertyTypesFromConstructor,
 				$projectConfigFile
 			),
 			$stdOutput
@@ -140,6 +189,41 @@ class AnalyseApplication
 		$bytes = memory_get_peak_usage(true);
 		$megabytes = ceil($bytes / 1024 / 1024);
 		file_put_contents($this->memoryLimitFile, sprintf('%d MB', $megabytes));
+	}
+
+	private function getNumberOfCpuCores(): int
+	{
+		// from brianium/paratest
+		$cores = 2;
+		if (is_file('/proc/cpuinfo')) {
+			// Linux (and potentially Windows with linux sub systems)
+			$cpuinfo = file_get_contents('/proc/cpuinfo');
+			if ($cpuinfo !== false) {
+				preg_match_all('/^processor/m', $cpuinfo, $matches);
+				return count($matches[0]);
+			}
+		}
+
+		if (\DIRECTORY_SEPARATOR === '\\') {
+			// Windows
+			$process = @popen('wmic cpu get NumberOfCores', 'rb');
+			if ($process !== false) {
+				fgets($process);
+				$cores = (int) fgets($process);
+				pclose($process);
+			}
+
+			return $cores;
+		}
+
+		$process = @\popen('sysctl -n hw.ncpu', 'rb');
+		if ($process !== false) {
+			// *nix (Linux, BSD and Mac)
+			$cores = (int) fgets($process);
+			pclose($process);
+		}
+
+		return $cores;
 	}
 
 }

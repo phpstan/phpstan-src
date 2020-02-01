@@ -60,7 +60,8 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 			new TableErrorFormatter($relativePathHelper, false, false, false, true),
 			false,
 			false,
-			null
+			null,
+			$this->createMock(InputInterface::class)
 		);
 		if (file_exists($memoryLimitFile)) {
 			unlink($memoryLimitFile);

@@ -44,7 +44,7 @@ class Analyser
 	 * @param string[] $files
 	 * @param bool $onlyFiles
 	 * @param \Closure(string $file): void|null $preFileCallback
-	 * @param \Closure(string $file): void|null $postFileCallback
+	 * @param \Closure(int): void|null $postFileCallback
 	 * @param bool $debug
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @return string[]|\PHPStan\Analyser\Error[] errors
@@ -93,7 +93,7 @@ class Analyser
 					"\n",
 					'https://github.com/phpstan/phpstan/issues/new'
 				);
-				$errors[] = new Error($internalErrorMessage, $file);
+				$errors[] = new Error($internalErrorMessage, $file, null, false);
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
 					break;
@@ -104,7 +104,7 @@ class Analyser
 				continue;
 			}
 
-			$postFileCallback($file);
+			$postFileCallback(1);
 		}
 
 		$this->restoreCollectErrorsHandler();

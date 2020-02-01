@@ -35,6 +35,9 @@ parameters:
 	reportStaticMethodSignatures: true
 	checkPossibleCovariantMethodReturnType: false
 	tmpDir: %rootDir%/tmp
+	stubFiles:
+		- stubs/ReactChildProcess.php
+		- stubs/ReactStreams.php
 services:
 	-
 		class: PHPStan\Build\ServiceLocatorDynamicReturnTypeExtension

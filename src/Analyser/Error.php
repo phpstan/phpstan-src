@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-class Error
+class Error implements \JsonSerializable
 {
 
 	/** @var string */
@@ -109,6 +109,41 @@ class Error
 	public function isWarning(): bool
 	{
 		return $this->warning;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function jsonSerialize()
+	{
+		return [
+			'message' => $this->message,
+			'file' => $this->file,
+			'line' => $this->line,
+			'canBeIgnored' => $this->canBeIgnored,
+			'filePath' => $this->filePath,
+			'traitFilePath' => $this->traitFilePath,
+			'tip' => $this->tip,
+			'warning' => $this->warning,
+		];
+	}
+
+	/**
+	 * @param mixed[] $json
+	 * @return self
+	 */
+	public static function decode(array $json): self
+	{
+		return new self(
+			$json['message'],
+			$json['file'],
+			$json['line'],
+			$json['canBeIgnored'],
+			$json['filePath'],
+			$json['traitFilePath'],
+			$json['tip'],
+			$json['warning']
+		);
 	}
 
 }

@@ -34,16 +34,16 @@ interface Collection extends Traversable, Countable, JsonSerializable
 final class Deque implements Sequence
 {
 	/**
-	 * @return Deque<TValue>
+	 * @param iterable<TValue>|null $values
 	 */
-	public function copy(): Deque
+	public function __construct(?iterable $values = null)
 	{
 	}
 
 	/**
-	 * @param iterable<TValue>|null $values
+	 * @return Deque<TValue>
 	 */
-	public function __construct(?iterable $values = null)
+	public function copy(): Deque
 	{
 	}
 
@@ -96,16 +96,16 @@ final class Deque implements Sequence
 final class Map implements Collection
 {
 	/**
-	 * @return Map<TKey, TValue>
+	 * @param iterable<TKey, TValue>|null $values
 	 */
-	public function copy(): Map
+	public function __construct(?iterable $values = null)
 	{
 	}
 
 	/**
-	 * @param iterable<TKey, TValue>|null $values
+	 * @return Map<TKey, TValue>
 	 */
-	public function __construct(?iterable $values = null)
+	public function copy(): Map
 	{
 	}
 
@@ -516,16 +516,16 @@ interface Sequence extends Collection
 final class Vector implements Sequence
 {
 	/**
-	 * @return Vector<TValue>
+	 * @param iterable<TValue>|null $values
 	 */
-	public function copy(): Vector
+	public function __construct(?iterable $values = null)
 	{
 	}
 
 	/**
-	 * @param iterable<TValue>|null $values
+	 * @return Vector<TValue>
 	 */
-	public function __construct(?iterable $values = null)
+	public function copy(): Vector
 	{
 	}
 
@@ -567,16 +567,16 @@ final class Vector implements Sequence
 final class Set implements Collection
 {
 	/**
-	 * @param TValue ...$values
+	 * @param iterable<TValue>|null $values
 	 */
-	public function add(...$values): void
+	public function __construct(?iterable $values = null)
 	{
 	}
 
 	/**
-	 * @param iterable<TValue>|null $values
+	 * @param TValue ...$values
 	 */
-	public function __construct(?iterable $values = null)
+	public function add(...$values): void
 	{
 	}
 

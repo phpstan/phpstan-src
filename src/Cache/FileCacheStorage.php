@@ -2,6 +2,8 @@
 
 namespace PHPStan\Cache;
 
+use Nette\Utils\Random;
+
 class FileCacheStorage implements CacheStorage
 {
 
@@ -54,18 +56,21 @@ class FileCacheStorage implements CacheStorage
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{
-		$path = $this->getFilePath($key);
-		$this->makeDir(dirname($path));
-		$success = @file_put_contents(
-			$path,
+		$tmpPath = sprintf('%s/%s.tmp', $this->directory, Random::generate());
+		$tmpSuccess = @file_put_contents(
+			$tmpPath,
 			sprintf(
 				"<?php declare(strict_types = 1);\n\nreturn %s;",
 				var_export(new CacheItem($variableKey, $data), true)
 			)
 		);
-		if ($success === false) {
-			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
+		if ($tmpSuccess === false) {
+			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $tmpPath));
 		}
+
+		$path = $this->getFilePath($key);
+		$this->makeDir(dirname($path));
+		@rename($tmpPath, $path);
 	}
 
 	private function getFilePath(string $key): string

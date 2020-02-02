@@ -247,15 +247,6 @@
 			append="false"
 		></append>
 		<if>
-			<os family="windows" />
-			<then>
-				<append
-						destFile="${phpstan.config}"
-						text=", ignore-windows-errors.neon"
-				></append>
-			</then>
-		</if>
-		<if>
 			<equals arg1="${isPHP74}" arg2="true" />
 			<then>
 				<append

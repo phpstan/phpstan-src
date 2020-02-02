@@ -58,6 +58,7 @@ class ParallelAnalyser
 		$jobs = array_reverse($schedule->getJobs());
 		$loop = new StreamSelectLoop();
 
+		/** @var Process[] $processes */
 		$processes = [];
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 		$errors = [];
@@ -73,11 +74,23 @@ class ParallelAnalyser
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
 
-		$handleError = static function (\Throwable $error) use ($loop, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {
+		$quitAll = static function () use (&$processes): void {
+			foreach ($processes as $process) {
+				if (!$process->isRunning()) {
+					continue;
+				}
+
+				foreach ($process->pipes as $pipe) {
+					$pipe->close();
+				}
+				$process->terminate();
+			}
+		};
+		$handleError = static function (\Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $quitAll): void {
 			$internalErrors[] = sprintf('Internal error: ' . $error->getMessage());
 			$internalErrorsCount++;
 			$reachedInternalErrorsCountLimit = true;
-			$loop->stop();
+			$quitAll();
 		};
 
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
@@ -90,7 +103,7 @@ class ParallelAnalyser
 			$processStdIn = new Encoder($process->stdin);
 			$processStdIn->on('error', $handleError);
 			$processStdOut = new Decoder($process->stdout, true, 512, 0, 4 * 1024 * 1024);
-			$processStdOut->on('data', function (array $json) use ($process, &$internalErrors, &$errors, &$jobs, $processStdIn, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $loop): void {
+			$processStdOut->on('data', function (array $json) use ($process, &$internalErrors, &$errors, &$jobs, $processStdIn, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $quitAll): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -108,15 +121,14 @@ class ParallelAnalyser
 				$internalErrorsCount += $json['internalErrorsCount'];
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
-					$loop->stop();
+					$quitAll();
 				}
 
 				if (count($jobs) === 0) {
 					foreach ($process->pipes as $pipe) {
 						$pipe->close();
 					}
-
-					$processStdIn->write(['action' => 'quit']);
+					$process->terminate();
 					return;
 				}
 
@@ -128,6 +140,9 @@ class ParallelAnalyser
 			$stdErrBuffer = new StreamBuffer($process->stderr);
 			$process->on('exit', static function ($exitCode) use (&$internalErrors, $stdErrBuffer): void {
 				if ($exitCode === 0) {
+					return;
+				}
+				if ($exitCode === null) {
 					return;
 				}
 

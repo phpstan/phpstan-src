@@ -119,40 +119,40 @@ class WorkerCommand extends Command
 		$stdin = new Decoder(new ReadableResourceStream(STDIN, $loop), true);
 		$stdin->on('data', static function (array $json) use ($fileAnalyser, $registry, $nodeScopeResolver, $stdout): void {
 			$action = $json['action'];
-			if ($action === 'analyse') {
-				$internalErrorsCount = 0;
-				$files = $json['files'];
-				$nodeScopeResolver->setAnalysedFiles($files);
-				$errors = [];
-				$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
-				foreach ($files as $file) {
-					try {
-						$fileErrors = $fileAnalyser->analyseFile($file, $registry, $inferrablePropertyTypesFromConstructorHelper);
-						foreach ($fileErrors as $fileError) {
-							$errors[] = $fileError;
-						}
-					} catch (\Throwable $t) {
-						$internalErrorsCount++;
-						$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
-						$internalErrorMessage .= sprintf(
-							'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
-							"\n",
-							"\n",
-							'https://github.com/phpstan/phpstan/issues/new'
-						);
-						$errors[] = new Error($internalErrorMessage, $file, null, false);
-					}
-				}
-
-				$stdout->write([
-					'errors' => $errors,
-					'filesCount' => count($files),
-					'hasInferrablePropertyTypesFromConstructor' => $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
-					'internalErrorsCount' => $internalErrorsCount,
-				]);
-			} elseif ($action === 'quit') {
-				$stdout->end();
+			if ($action !== 'analyse') {
+				return;
 			}
+
+			$internalErrorsCount = 0;
+			$files = $json['files'];
+			$nodeScopeResolver->setAnalysedFiles($files);
+			$errors = [];
+			$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
+			foreach ($files as $file) {
+				try {
+					$fileErrors = $fileAnalyser->analyseFile($file, $registry, $inferrablePropertyTypesFromConstructorHelper);
+					foreach ($fileErrors as $fileError) {
+						$errors[] = $fileError;
+					}
+				} catch (\Throwable $t) {
+					$internalErrorsCount++;
+					$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
+					$internalErrorMessage .= sprintf(
+						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
+						"\n",
+						"\n",
+						'https://github.com/phpstan/phpstan/issues/new'
+					);
+					$errors[] = new Error($internalErrorMessage, $file, null, false);
+				}
+			}
+
+			$stdout->write([
+				'errors' => $errors,
+				'filesCount' => count($files),
+				'hasInferrablePropertyTypesFromConstructor' => $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
+				'internalErrorsCount' => $internalErrorsCount,
+			]);
 		});
 		$stdin->on('error', $handleError);
 		$loop->run();

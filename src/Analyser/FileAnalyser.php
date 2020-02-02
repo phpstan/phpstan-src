@@ -36,13 +36,13 @@ class FileAnalyser
 	/**
 	 * @param string $file
 	 * @param Registry $registry
-	 * @param \Closure(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
+	 * @param callable(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @return \PHPStan\Analyser\Error[]
 	 */
 	public function analyseFile(
 		string $file,
 		Registry $registry,
-		?\Closure $outerNodeCallback
+		?callable $outerNodeCallback
 	): array
 	{
 		$fileErrors = [];

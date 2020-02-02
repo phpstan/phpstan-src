@@ -2,12 +2,10 @@
 
 namespace PHPStan\Command;
 
-use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
-use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\InferrablePropertyTypesFromConstructorHelper;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\PhpDoc\StubValidator;
-use PHPStan\Type\MixedType;
 
 class AnalyseApplication
 {
@@ -95,45 +93,14 @@ class AnalyseApplication
 			$postFileCallback = null;
 		}
 
-		$hasInferrablePropertyTypesFromConstructor = false;
+		$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
 		$errors = array_merge($errors, $this->analyser->analyse(
 			$files,
 			$onlyFiles,
 			$preFileCallback,
 			$postFileCallback,
 			$debug,
-			static function (Node $node, Scope $scope) use (&$hasInferrablePropertyTypesFromConstructor): void {
-				if ($hasInferrablePropertyTypesFromConstructor) {
-					return;
-				}
-
-				if (!$node instanceof Node\Stmt\PropertyProperty) {
-					return;
-				}
-
-				if (!$scope->isInClass()) {
-					return;
-				}
-
-				$classReflection = $scope->getClassReflection();
-				if (!$classReflection->hasConstructor() || $classReflection->getConstructor()->getDeclaringClass()->getName() !== $classReflection->getName()) {
-					return;
-				}
-				$propertyName = $node->name->toString();
-				if (!$classReflection->hasNativeProperty($propertyName)) {
-					return;
-				}
-				$propertyReflection = $classReflection->getNativeProperty($propertyName);
-				if (!$propertyReflection->isPrivate()) {
-					return;
-				}
-				$propertyType = $propertyReflection->getReadableType();
-				if (!$propertyType instanceof MixedType || $propertyType->isExplicitMixed()) {
-					return;
-				}
-
-				$hasInferrablePropertyTypesFromConstructor = true;
-			}
+			$inferrablePropertyTypesFromConstructorHelper
 		));
 
 		if (isset($progressStarted) && $progressStarted) {
@@ -161,7 +128,7 @@ class AnalyseApplication
 				$notFileSpecificErrors,
 				$warnings,
 				$defaultLevelUsed,
-				$hasInferrablePropertyTypesFromConstructor,
+				$inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
 				$projectConfigFile
 			),
 			$stdOutput

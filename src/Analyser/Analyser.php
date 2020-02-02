@@ -46,7 +46,7 @@ class Analyser
 	 * @param \Closure(string $file): void|null $preFileCallback
 	 * @param \Closure(string $file): void|null $postFileCallback
 	 * @param bool $debug
-	 * @param \Closure(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
+	 * @param callable(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @return string[]|\PHPStan\Analyser\Error[] errors
 	 */
 	public function analyse(
@@ -55,7 +55,7 @@ class Analyser
 		?\Closure $preFileCallback = null,
 		?\Closure $postFileCallback = null,
 		bool $debug = false,
-		?\Closure $outerNodeCallback = null
+		?callable $outerNodeCallback = null
 	): array
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();

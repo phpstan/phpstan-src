@@ -10,7 +10,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\DirectParser;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
-use PHPStan\PhpDoc\StubValidator;
+
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Type\FileTypeMapper;
@@ -378,15 +378,11 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$nodeScopeResolver,
 			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser)
 		);
-		$stubValidator = $this->createMock(StubValidator::class);
-		$stubValidator->method('validate')
-			->willReturn([]);
 		return new Analyser(
 			$fileAnalyser,
 			$registry,
 			$nodeScopeResolver,
 			$fileHelper,
-			$stubValidator,
 			self::getContainer()->getByType(IgnoredRegexValidator::class),
 			$ignoreErrors,
 			$reportUnmatchedIgnoredErrors,

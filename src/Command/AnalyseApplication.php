@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Scope;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
+use PHPStan\PhpDoc\StubValidator;
 use PHPStan\Type\MixedType;
 
 class AnalyseApplication
@@ -14,15 +15,20 @@ class AnalyseApplication
 	/** @var \PHPStan\Analyser\Analyser */
 	private $analyser;
 
+	/** @var \PHPStan\PhpDoc\StubValidator */
+	private $stubValidator;
+
 	/** @var string */
 	private $memoryLimitFile;
 
 	public function __construct(
 		Analyser $analyser,
+		StubValidator $stubValidator,
 		string $memoryLimitFile
 	)
 	{
 		$this->analyser = $analyser;
+		$this->stubValidator = $stubValidator;
 		$this->memoryLimitFile = $memoryLimitFile;
 	}
 
@@ -49,7 +55,7 @@ class AnalyseApplication
 	): int
 	{
 		$this->updateMemoryLimitFile();
-		$errors = [];
+		$errors = $this->stubValidator->validate();
 
 		register_shutdown_function(function (): void {
 			$error = error_get_last();

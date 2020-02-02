@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use Nette\Utils\Json;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileHelper;
-use PHPStan\PhpDoc\StubValidator;
 use PHPStan\Rules\Registry;
 
 class Analyser
@@ -22,9 +21,6 @@ class Analyser
 
 	/** @var \PHPStan\File\FileHelper */
 	private $fileHelper;
-
-	/** @var \PHPStan\PhpDoc\StubValidator */
-	private $stubValidator;
 
 	/** @var \PHPStan\Command\IgnoredRegexValidator */
 	private $ignoredRegexValidator;
@@ -46,7 +42,6 @@ class Analyser
 	 * @param \PHPStan\Rules\Registry $registry
 	 * @param \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver
 	 * @param \PHPStan\File\FileHelper $fileHelper
-	 * @param \PHPStan\PhpDoc\StubValidator $stubValidator
 	 * @param \PHPStan\Command\IgnoredRegexValidator $ignoredRegexValidator
 	 * @param (string|array<string, string>)[] $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors
@@ -57,7 +52,6 @@ class Analyser
 		Registry $registry,
 		NodeScopeResolver $nodeScopeResolver,
 		FileHelper $fileHelper,
-		StubValidator $stubValidator,
 		IgnoredRegexValidator $ignoredRegexValidator,
 		array $ignoreErrors,
 		bool $reportUnmatchedIgnoredErrors,
@@ -68,7 +62,6 @@ class Analyser
 		$this->registry = $registry;
 		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->fileHelper = $fileHelper;
-		$this->stubValidator = $stubValidator;
 		$this->ignoredRegexValidator = $ignoredRegexValidator;
 		$this->ignoreErrors = $ignoreErrors;
 		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
@@ -179,8 +172,6 @@ class Analyser
 		if (count($errors) > 0) {
 			return $errors;
 		}
-
-		$errors = $this->stubValidator->validate();
 
 		$this->nodeScopeResolver->setAnalysedFiles($files);
 

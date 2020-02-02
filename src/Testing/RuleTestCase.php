@@ -15,7 +15,6 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
-use PHPStan\PhpDoc\StubValidator;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -79,9 +78,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$nodeScopeResolver,
 				$this->getParser()
 			);
-			$stubValidator = $this->createMock(StubValidator::class);
-			$stubValidator->method('validate')
-				->willReturn([]);
 			$ignoredRegexValidator = $this->createMock(IgnoredRegexValidator::class);
 			$ignoredRegexValidator->method('validate')
 				->willReturn(new IgnoredRegexValidatorResult([], false, false));
@@ -90,7 +86,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$registry,
 				$nodeScopeResolver,
 				$fileHelper,
-				$stubValidator,
 				$ignoredRegexValidator,
 				[],
 				true,

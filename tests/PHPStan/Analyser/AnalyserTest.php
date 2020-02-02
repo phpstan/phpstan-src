@@ -378,14 +378,17 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$nodeScopeResolver,
 			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser)
 		);
+		$ignoredErrorHelper = new IgnoredErrorHelper(
+			self::getContainer()->getByType(IgnoredRegexValidator::class),
+			$fileHelper,
+			$ignoreErrors,
+			$reportUnmatchedIgnoredErrors
+		);
 		return new Analyser(
 			$fileAnalyser,
 			$registry,
 			$nodeScopeResolver,
-			$fileHelper,
-			self::getContainer()->getByType(IgnoredRegexValidator::class),
-			$ignoreErrors,
-			$reportUnmatchedIgnoredErrors,
+			$ignoredErrorHelper,
 			50
 		);
 	}

@@ -1,0 +1,236 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Analyser;
+
+use PHPStan\File\FileHelper;
+
+class IgnoredErrorHelperResult
+{
+
+	/** @var FileHelper */
+	private $fileHelper;
+
+	/** @var string[] */
+	private $errors;
+
+	/** @var Error[] */
+	private $warnings;
+
+	/** @var array<array<mixed>> */
+	private $otherIgnoreErrors;
+
+	/** @var array<string, array<array<mixed>>> */
+	private $ignoreErrorsByFile;
+
+	/** @var (string|mixed[])[] */
+	private $ignoreErrors;
+
+	/** @var bool */
+	private $reportUnmatchedIgnoredErrors;
+
+	/**
+	 * @param FileHelper $fileHelper
+	 * @param string[] $errors
+	 * @param Error[] $warnings
+	 * @param array<array<mixed>> $otherIgnoreErrors
+	 * @param array<string, array<array<mixed>>> $ignoreErrorsByFile
+	 * @param (string|mixed[])[] $ignoreErrors
+	 * @param bool $reportUnmatchedIgnoredErrors
+	 */
+	public function __construct(
+		FileHelper $fileHelper,
+		array $errors,
+		array $warnings,
+		array $otherIgnoreErrors,
+		array $ignoreErrorsByFile,
+		array $ignoreErrors,
+		bool $reportUnmatchedIgnoredErrors
+	)
+	{
+		$this->fileHelper = $fileHelper;
+		$this->errors = $errors;
+		$this->warnings = $warnings;
+		$this->otherIgnoreErrors = $otherIgnoreErrors;
+		$this->ignoreErrorsByFile = $ignoreErrorsByFile;
+		$this->ignoreErrors = $ignoreErrors;
+		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getErrors(): array
+	{
+		return $this->errors;
+	}
+
+	/**
+	 * @return Error[]
+	 */
+	public function getWarnings(): array
+	{
+		return $this->warnings;
+	}
+
+	/**
+	 * @param Error[] $errors
+	 * @return string[]|Error[]
+	 */
+	public function process(array $errors, bool $onlyFiles, bool $reachedInternalErrorsCountLimit): array
+	{
+		$unmatchedIgnoredErrors = $this->ignoreErrors;
+		$addErrors = [];
+
+		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$addErrors): bool {
+			$shouldBeIgnored = false;
+			if (is_string($ignore)) {
+				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null);
+				if ($shouldBeIgnored) {
+					unset($unmatchedIgnoredErrors[$i]);
+				}
+			} else {
+				if (isset($ignore['path'])) {
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['path']);
+					if ($shouldBeIgnored) {
+						if (isset($ignore['count'])) {
+							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
+							$realCount++;
+							$unmatchedIgnoredErrors[$i]['realCount'] = $realCount;
+
+							if ($realCount > $ignore['count']) {
+								$shouldBeIgnored = false;
+								if (!isset($unmatchedIgnoredErrors[$i]['file'])) {
+									$unmatchedIgnoredErrors[$i]['file'] = $error->getFile();
+									$unmatchedIgnoredErrors[$i]['line'] = $error->getLine();
+								}
+							}
+						} else {
+							unset($unmatchedIgnoredErrors[$i]);
+						}
+					}
+				} elseif (isset($ignore['paths'])) {
+					foreach ($ignore['paths'] as $j => $ignorePath) {
+						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignorePath);
+						if ($shouldBeIgnored) {
+							if (isset($unmatchedIgnoredErrors[$i])) {
+								if (!is_array($unmatchedIgnoredErrors[$i])) {
+									throw new \PHPStan\ShouldNotHappenException();
+								}
+								unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
+								if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
+									unset($unmatchedIgnoredErrors[$i]);
+								}
+							}
+							break;
+						}
+					}
+				} else {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+			}
+
+			if ($shouldBeIgnored) {
+				if (!$error->canBeIgnored()) {
+					$addErrors[] = sprintf(
+						'Error message "%s" cannot be ignored, use excludes_analyse instead.',
+						$error->getMessage()
+					);
+					return true;
+				}
+				return false;
+			}
+
+			return true;
+		};
+
+		$errors = array_values(array_filter($errors, function (Error $error) use ($processIgnoreError): bool {
+			$filePath = $this->fileHelper->normalizePath($error->getFilePath());
+			if (isset($this->ignoreErrorsByFile[$filePath])) {
+				foreach ($this->ignoreErrorsByFile[$filePath] as $ignoreError) {
+					$i = $ignoreError['index'];
+					$ignore = $ignoreError['ignoreError'];
+					$result = $processIgnoreError($error, $i, $ignore);
+					if (!$result) {
+						return false;
+					}
+				}
+			}
+
+			$traitFilePath = $error->getTraitFilePath();
+			if ($traitFilePath !== null) {
+				$normalizedTraitFilePath = $this->fileHelper->normalizePath($traitFilePath);
+				if (isset($this->ignoreErrorsByFile[$normalizedTraitFilePath])) {
+					foreach ($this->ignoreErrorsByFile[$normalizedTraitFilePath] as $ignoreError) {
+						$i = $ignoreError['index'];
+						$ignore = $ignoreError['ignoreError'];
+						$result = $processIgnoreError($error, $i, $ignore);
+						if (!$result) {
+							return false;
+						}
+					}
+				}
+			}
+
+			foreach ($this->otherIgnoreErrors as $ignoreError) {
+				$i = $ignoreError['index'];
+				$ignore = $ignoreError['ignoreError'];
+
+				$result = $processIgnoreError($error, $i, $ignore);
+				if (!$result) {
+					return false;
+				}
+			}
+
+			return true;
+		}));
+
+		foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
+			if (!isset($unmatchedIgnoredError['count']) || !isset($unmatchedIgnoredError['realCount'])) {
+				continue;
+			}
+
+			if ($unmatchedIgnoredError['realCount'] <= $unmatchedIgnoredError['count']) {
+				continue;
+			}
+
+			$addErrors[] = new Error(sprintf(
+				'Ignored error pattern %s is expected to occur %d %s, but occured %d %s.',
+				IgnoredError::stringifyPattern($unmatchedIgnoredError),
+				$unmatchedIgnoredError['count'],
+				$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
+				$unmatchedIgnoredError['realCount'],
+				$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
+			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line']);
+		}
+
+		$errors = array_merge($errors, $addErrors);
+
+		if (!$onlyFiles && $this->reportUnmatchedIgnoredErrors && !$reachedInternalErrorsCountLimit) {
+			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
+				if (
+					isset($unmatchedIgnoredError['count'])
+					&& isset($unmatchedIgnoredError['realCount'])
+				) {
+					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
+						$errors[] = sprintf(
+							'Ignored error pattern %s is expected to occur %d %s, but occured only %d %s.',
+							IgnoredError::stringifyPattern($unmatchedIgnoredError),
+							$unmatchedIgnoredError['count'],
+							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
+							$unmatchedIgnoredError['realCount'],
+							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
+						);
+					}
+				} else {
+					$errors[] = sprintf(
+						'Ignored error pattern %s was not matched in reported errors.',
+						IgnoredError::stringifyPattern($unmatchedIgnoredError)
+					);
+				}
+			}
+		}
+
+		return $errors;
+	}
+
+}

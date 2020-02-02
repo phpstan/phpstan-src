@@ -271,12 +271,16 @@ services:
 	-
 		class: PHPStan\Analyser\Analyser
 		arguments:
-			ignoreErrors: %ignoreErrors%
-			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
 		class: PHPStan\Analyser\FileAnalyser
+
+	-
+		class: PHPStan\Analyser\IgnoredErrorHelper
+		arguments:
+			ignoreErrors: %ignoreErrors%
+			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
 		class: PHPStan\Analyser\LazyScopeFactory

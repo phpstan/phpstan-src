@@ -5,6 +5,7 @@ namespace PHPStan\Testing;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Broker\AnonymousClassNameHelper;
@@ -81,14 +82,17 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 			$ignoredRegexValidator = $this->createMock(IgnoredRegexValidator::class);
 			$ignoredRegexValidator->method('validate')
 				->willReturn(new IgnoredRegexValidatorResult([], false, false));
+			$ignoredErrorHelper = new IgnoredErrorHelper(
+				$ignoredRegexValidator,
+				$fileHelper,
+				[],
+				true
+			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
 				$registry,
 				$nodeScopeResolver,
-				$fileHelper,
-				$ignoredRegexValidator,
-				[],
-				true,
+				$ignoredErrorHelper,
 				50
 			);
 		}

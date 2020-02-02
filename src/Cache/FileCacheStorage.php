@@ -56,6 +56,9 @@ class FileCacheStorage implements CacheStorage
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{
+		$path = $this->getFilePath($key);
+		$this->makeDir(dirname($path));
+
 		$tmpPath = sprintf('%s/%s.tmp', $this->directory, Random::generate());
 		$tmpSuccess = @file_put_contents(
 			$tmpPath,
@@ -68,8 +71,6 @@ class FileCacheStorage implements CacheStorage
 			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $tmpPath));
 		}
 
-		$path = $this->getFilePath($key);
-		$this->makeDir(dirname($path));
 		@rename($tmpPath, $path);
 	}
 

@@ -2,9 +2,7 @@
 
 namespace Ds;
 
-use ArrayAccess;
 use Countable;
-use IteratorAggregate;
 use JsonSerializable;
 use OutOfBoundsException;
 use OutOfRangeException;
@@ -12,18 +10,19 @@ use Traversable;
 use UnderflowException;
 
 /**
+ * @template-covariant TKey
  * @template-covariant TValue
- * @extends Traversable<mixed, TValue>
+ * @extends Traversable<TKey, TValue>
  */
 interface Collection extends Traversable, Countable, JsonSerializable
 {
 	/**
-	 * @return Collection<TValue>
+	 * @return Collection<TKey, TValue>
 	 */
 	public function copy(): Collection;
 
 	/**
-	 * @return array<TValue>
+	 * @return array<TKey, TValue>
 	 */
 	public function toArray(): array;
 }
@@ -31,10 +30,8 @@ interface Collection extends Traversable, Countable, JsonSerializable
 /**
  * @template TValue
  * @implements Sequence<TValue>
- * @implements ArrayAccess<int, TValue>
- * @implements IteratorAggregate<int, TValue>
  */
-final class Deque implements IteratorAggregate, ArrayAccess, Sequence
+final class Deque implements Sequence
 {
 	/**
 	 * @return Deque<TValue>
@@ -94,11 +91,9 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 /**
  * @template TKey
  * @template TValue
- * @implements Collection<TValue>
- * @implements ArrayAccess<TKey, TValue>
- * @implements IteratorAggregate<TKey, TValue>
+ * @implements Collection<TKey, TValue>
  */
-final class Map implements IteratorAggregate, ArrayAccess, Collection
+final class Map implements Collection
 {
 	/**
 	 * @return Map<TKey, TValue>
@@ -379,7 +374,7 @@ final class Pair implements JsonSerializable
 
 /**
  * @template TValue
- * @extends Collection<TValue>
+ * @extends Collection<int, TValue>
  */
 interface Sequence extends Collection
 {
@@ -517,10 +512,8 @@ interface Sequence extends Collection
 /**
  * @template TValue
  * @implements Sequence<TValue>
- * @implements ArrayAccess<int, TValue>
- * @implements IteratorAggregate<int, TValue>
  */
-final class Vector implements IteratorAggregate, ArrayAccess, Sequence
+final class Vector implements Sequence
 {
 	/**
 	 * @return Vector<TValue>
@@ -546,7 +539,7 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 	/**
 	 * @return Vector<TValue>
 	 */
-	public function slice(int $offset, ?int $length = null): Sequence
+	public function slice(int $offset, ?int $length = null): Vector
 	{
 	}
 
@@ -569,11 +562,9 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 
 /**
  * @template TValue
- * @implements Collection<TValue>
- * @implements ArrayAccess<int, TValue>
- * @implements Traversable<int, TValue>
+ * @implements Collection<int, TValue>
  */
-final class Set implements ArrayAccess, Collection, Traversable
+final class Set implements Collection
 {
 	/**
 	 * @param TValue ...$values
@@ -726,11 +717,9 @@ final class Set implements ArrayAccess, Collection, Traversable
 
 /**
  * @template TValue
- * @implements Collection<TValue>
- * @implements ArrayAccess<null, TValue>
- * @implements IteratorAggregate<int, TValue>
+ * @implements Collection<int, TValue>
  */
-final class Stack implements IteratorAggregate, ArrayAccess, Collection
+final class Stack implements Collection
 {
 	/**
 	 * @param iterable<TValue>|null $values
@@ -779,11 +768,9 @@ final class Stack implements IteratorAggregate, ArrayAccess, Collection
 
 /**
  * @template TValue
- * @implements Collection<TValue>
- * @implements ArrayAccess<null, TValue>
- * @implements IteratorAggregate<int, TValue>
+ * @implements Collection<int, TValue>
  */
-final class Queue implements IteratorAggregate, ArrayAccess, Collection
+final class Queue implements Collection
 {
 	/**
 	 * @param iterable<TValue>|null $values
@@ -832,11 +819,9 @@ final class Queue implements IteratorAggregate, ArrayAccess, Collection
 
 /**
  * @template TValue
- * @implements Collection<TValue>
- * @implements ArrayAccess<null, TValue>
- * @implements IteratorAggregate<int, TValue>
+ * @implements Collection<int, TValue>
  */
-final class PriorityQueue implements IteratorAggregate, ArrayAccess, Collection
+final class PriorityQueue implements Collection
 {
 	/**
 	 * @return PriorityQueue<TValue>

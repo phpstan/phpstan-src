@@ -43,7 +43,7 @@ final class Deque implements Sequence
 	/**
 	 * @param iterable<TValue>|null $values
 	 */
-	public function __construct($values = null)
+	public function __construct(?iterable $values = null)
 	{
 	}
 
@@ -52,7 +52,7 @@ final class Deque implements Sequence
 	 * @param iterable<TValue2> $values
 	 * @return Deque<TValue|TValue2>
 	 */
-	public function merge($values): Deque
+	public function merge(iterable $values): Deque
 	{
 	}
 
@@ -105,7 +105,7 @@ final class Map implements Collection
 	/**
 	 * @param iterable<TKey, TValue>|null $values
 	 */
-	public function __construct($values = null)
+	public function __construct(?iterable $values = null)
 	{
 	}
 
@@ -146,7 +146,7 @@ final class Map implements Collection
 	 * @param iterable<TKey2, TValue2> $values
 	 * @return Map<TKey|TKey2, TValue|TValue2>
 	 */
-	public function merge($values): Map
+	public function merge(iterable $values): Map
 	{
 	}
 
@@ -236,7 +236,7 @@ final class Map implements Collection
 	/**
 	 * @param iterable<TKey, TValue> $values
 	 */
-	public function putAll($values)
+	public function putAll(iterable $values)
 	{
 	}
 
@@ -442,7 +442,7 @@ interface Sequence extends Collection
 	 * @param iterable<TValue2> $values
 	 * @return Sequence<TValue|TValue2>
 	 */
-	public function merge($values): Sequence;
+	public function merge(iterable $values): Sequence;
 
 	/**
 	 * @return TValue
@@ -525,7 +525,7 @@ final class Vector implements Sequence
 	/**
 	 * @param iterable<TValue>|null $values
 	 */
-	public function __construct($values = null)
+	public function __construct(?iterable $values = null)
 	{
 	}
 
@@ -576,7 +576,7 @@ final class Set implements Collection
 	/**
 	 * @param iterable<TValue>|null $values
 	 */
-	public function __construct($values = null)
+	public function __construct(?iterable $values = null)
 	{
 	}
 
@@ -649,7 +649,7 @@ final class Set implements Collection
 	 * @param iterable<TValue2> $values
 	 * @return Set<TValue|TValue2>
 	 */
-	public function merge($values): Set
+	public function merge(iterable $values): Set
 	{
 	}
 
@@ -724,7 +724,7 @@ final class Stack implements Collection
 	/**
 	 * @param iterable<TValue>|null $values
 	 */
-	public function __construct($values = null)
+	public function __construct(?iterable $values = null)
 	{
 	}
 
@@ -775,7 +775,7 @@ final class Queue implements Collection
 	/**
 	 * @param iterable<TValue>|null $values
 	 */
-	public function __construct($values = null)
+	public function __construct(?iterable $values = null)
 	{
 	}
 

@@ -119,7 +119,8 @@ class CommandHelperTest extends TestCase
 				[],
 				$projectConfigFile,
 				$level,
-				false
+				false,
+				true
 			);
 			if ($expectException) {
 				$this->fail();
@@ -228,7 +229,8 @@ class CommandHelperTest extends TestCase
 			[],
 			$configFile,
 			'0',
-			false
+			false,
+			true
 		);
 		$parameters = $result->getContainer()->getParameters();
 		foreach ($expectedParameters as $name => $expectedValue) {

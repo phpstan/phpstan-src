@@ -76,7 +76,8 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 				$this->composerAutoloaderProjectPaths,
 				$configurationFile,
 				'0', // irrelevant but prevents an error when a config file is passed
-				$allowXdebug
+				$allowXdebug,
+				true
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

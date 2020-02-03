@@ -40,7 +40,8 @@ class CommandHelper
 		array $composerAutoloaderProjectPaths,
 		?string $projectConfigFile,
 		?string $level,
-		bool $allowXdebug
+		bool $allowXdebug,
+		bool $manageMemoryLimitFile = true
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
@@ -227,7 +228,7 @@ class CommandHelper
 		}
 
 		$memoryLimitFile = $container->getParameter('memoryLimitFile');
-		if (file_exists($memoryLimitFile)) {
+		if ($manageMemoryLimitFile && file_exists($memoryLimitFile)) {
 			$memoryLimitFileContents = FileReader::read($memoryLimitFile);
 			$errorOutput->writeLineFormatted('PHPStan crashed in the previous run probably because of excessive memory consumption.');
 			$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
@@ -237,7 +238,7 @@ class CommandHelper
 			@unlink($memoryLimitFile);
 		}
 
-		self::setUpSignalHandler($errorOutput, $memoryLimitFile);
+		self::setUpSignalHandler($errorOutput, $manageMemoryLimitFile ? $memoryLimitFile : null);
 		if (!$container->hasParameter('customRulesetUsed')) {
 			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted('<comment>No rules detected</comment>');
@@ -348,7 +349,7 @@ class CommandHelper
 		);
 	}
 
-	private static function setUpSignalHandler(Output $output, string $memoryLimitFile): void
+	private static function setUpSignalHandler(Output $output, ?string $memoryLimitFile): void
 	{
 		if (!function_exists('pcntl_signal')) {
 			return;
@@ -356,7 +357,7 @@ class CommandHelper
 
 		pcntl_async_signals(true);
 		pcntl_signal(SIGINT, static function () use ($output, $memoryLimitFile): void {
-			if (file_exists($memoryLimitFile)) {
+			if ($memoryLimitFile !== null && file_exists($memoryLimitFile)) {
 				@unlink($memoryLimitFile);
 			}
 			$output->writeLineFormatted('');

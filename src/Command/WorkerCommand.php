@@ -85,7 +85,8 @@ class WorkerCommand extends Command
 				$this->composerAutoloaderProjectPaths,
 				$configuration,
 				$level,
-				$allowXdebug
+				$allowXdebug,
+				false
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

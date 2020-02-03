@@ -44,7 +44,7 @@ class CommandHelper
 		bool $manageMemoryLimitFile = true
 	): InceptionResult
 	{
-		if (!$allowXdebug) {
+		if (!$allowXdebug && $manageMemoryLimitFile) {
 			$xdebug = new XdebugHandler('phpstan', '--ansi');
 			$xdebug->check();
 			unset($xdebug);

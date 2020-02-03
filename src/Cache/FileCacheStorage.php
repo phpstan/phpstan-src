@@ -71,7 +71,11 @@ class FileCacheStorage implements CacheStorage
 			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $tmpPath));
 		}
 
-		@rename($tmpPath, $path);
+		$renameSuccess = @rename($tmpPath, $path);
+		if ($renameSuccess === false) {
+			@unlink($tmpPath);
+			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
+		}
 	}
 
 	private function getFilePath(string $key): string

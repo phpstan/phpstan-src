@@ -2,9 +2,7 @@
 
 namespace Ds;
 
-use ArrayAccess;
 use Countable;
-use IteratorAggregate;
 use JsonSerializable;
 use OutOfBoundsException;
 use OutOfRangeException;
@@ -12,18 +10,19 @@ use Traversable;
 use UnderflowException;
 
 /**
+ * @template-covariant TKey
  * @template-covariant TValue
- * @extends Traversable<mixed, TValue>
+ * @extends Traversable<TKey, TValue>
  */
 interface Collection extends Traversable, Countable, JsonSerializable
 {
 	/**
-	 * @return Collection<TValue>
+	 * @return Collection<TKey, TValue>
 	 */
 	public function copy(): Collection;
 
 	/**
-	 * @return array<TValue>
+	 * @return array<TKey, TValue>
 	 */
 	public function toArray(): array;
 }
@@ -31,11 +30,16 @@ interface Collection extends Traversable, Countable, JsonSerializable
 /**
  * @template TValue
  * @implements Sequence<TValue>
- * @implements ArrayAccess<int, TValue>
- * @implements IteratorAggregate<int, TValue>
  */
-final class Deque implements IteratorAggregate, ArrayAccess, Sequence
+final class Deque implements Sequence
 {
+	/**
+	 * @param iterable<TValue>|null $values
+	 */
+	public function __construct(?iterable $values = null)
+	{
+	}
+
 	/**
 	 * @return Deque<TValue>
 	 */
@@ -44,18 +48,11 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 	}
 
 	/**
-	 * @param iterable<TValue>|null $values
-	 */
-	public function __construct($values = null)
-	{
-	}
-
-	/**
 	 * @template TValue2
 	 * @param iterable<TValue2> $values
 	 * @return Deque<TValue|TValue2>
 	 */
-	public function merge($values): Deque
+	public function merge(iterable $values): Deque
 	{
 	}
 
@@ -94,23 +91,21 @@ final class Deque implements IteratorAggregate, ArrayAccess, Sequence
 /**
  * @template TKey
  * @template TValue
- * @implements Collection<TValue>
- * @implements ArrayAccess<TKey, TValue>
- * @implements IteratorAggregate<TKey, TValue>
+ * @implements Collection<TKey, TValue>
  */
-final class Map implements IteratorAggregate, ArrayAccess, Collection
+final class Map implements Collection
 {
 	/**
-	 * @return Map<TKey, TValue>
+	 * @param iterable<TKey, TValue>|null $values
 	 */
-	public function copy(): Map
+	public function __construct(?iterable $values = null)
 	{
 	}
 
 	/**
-	 * @param iterable<TKey, TValue>|null $values
+	 * @return Map<TKey, TValue>
 	 */
-	public function __construct($values = null)
+	public function copy(): Map
 	{
 	}
 
@@ -151,7 +146,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	 * @param iterable<TKey2, TValue2> $values
 	 * @return Map<TKey|TKey2, TValue|TValue2>
 	 */
-	public function merge($values): Map
+	public function merge(iterable $values): Map
 	{
 	}
 
@@ -241,7 +236,7 @@ final class Map implements IteratorAggregate, ArrayAccess, Collection
 	/**
 	 * @param iterable<TKey, TValue> $values
 	 */
-	public function putAll($values)
+	public function putAll(iterable $values)
 	{
 	}
 
@@ -379,7 +374,7 @@ final class Pair implements JsonSerializable
 
 /**
  * @template TValue
- * @extends Collection<TValue>
+ * @extends Collection<int, TValue>
  */
 interface Sequence extends Collection
 {
@@ -447,7 +442,7 @@ interface Sequence extends Collection
 	 * @param iterable<TValue2> $values
 	 * @return Sequence<TValue|TValue2>
 	 */
-	public function merge($values): Sequence;
+	public function merge(iterable $values): Sequence;
 
 	/**
 	 * @return TValue
@@ -517,22 +512,20 @@ interface Sequence extends Collection
 /**
  * @template TValue
  * @implements Sequence<TValue>
- * @implements ArrayAccess<int, TValue>
- * @implements IteratorAggregate<int, TValue>
  */
-final class Vector implements IteratorAggregate, ArrayAccess, Sequence
+final class Vector implements Sequence
 {
 	/**
-	 * @return Vector<TValue>
+	 * @param iterable<TValue>|null $values
 	 */
-	public function copy(): Vector
+	public function __construct(?iterable $values = null)
 	{
 	}
 
 	/**
-	 * @param iterable<TValue>|null $values
+	 * @return Vector<TValue>
 	 */
-	public function __construct($values = null)
+	public function copy(): Vector
 	{
 	}
 
@@ -546,7 +539,7 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 	/**
 	 * @return Vector<TValue>
 	 */
-	public function slice(int $offset, ?int $length = null): Sequence
+	public function slice(int $offset, ?int $length = null): Vector
 	{
 	}
 
@@ -569,23 +562,21 @@ final class Vector implements IteratorAggregate, ArrayAccess, Sequence
 
 /**
  * @template TValue
- * @implements Collection<TValue>
- * @implements ArrayAccess<int, TValue>
- * @implements Traversable<int, TValue>
+ * @implements Collection<int, TValue>
  */
-final class Set implements ArrayAccess, Collection, Traversable
+final class Set implements Collection
 {
 	/**
-	 * @param TValue ...$values
+	 * @param iterable<TValue>|null $values
 	 */
-	public function add(...$values): void
+	public function __construct(?iterable $values = null)
 	{
 	}
 
 	/**
-	 * @param iterable<TValue>|null $values
+	 * @param TValue ...$values
 	 */
-	public function __construct($values = null)
+	public function add(...$values): void
 	{
 	}
 
@@ -658,7 +649,7 @@ final class Set implements ArrayAccess, Collection, Traversable
 	 * @param iterable<TValue2> $values
 	 * @return Set<TValue|TValue2>
 	 */
-	public function merge($values): Set
+	public function merge(iterable $values): Set
 	{
 	}
 
@@ -720,6 +711,152 @@ final class Set implements ArrayAccess, Collection, Traversable
 	 * @return Set<TValue|TValue2>
 	 */
 	public function xor(Set $set): Set
+	{
+	}
+}
+
+/**
+ * @template TValue
+ * @implements Collection<int, TValue>
+ */
+final class Stack implements Collection
+{
+	/**
+	 * @param iterable<TValue>|null $values
+	 */
+	public function __construct(?iterable $values = null)
+	{
+	}
+
+	/**
+	 * @return Stack<TValue>
+	 */
+	public function copy(): Stack
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function peek()
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function pop()
+	{
+	}
+
+	/**
+	 * @param TValue ...$values
+	 */
+	public function push(...$values): void
+	{
+	}
+
+	/**
+	 * @return array<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+}
+
+/**
+ * @template TValue
+ * @implements Collection<int, TValue>
+ */
+final class Queue implements Collection
+{
+	/**
+	 * @param iterable<TValue>|null $values
+	 */
+	public function __construct(?iterable $values = null)
+	{
+	}
+
+	/**
+	 * @return Queue<TValue>
+	 */
+	public function copy(): Queue
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function peek()
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function pop()
+	{
+	}
+
+	/**
+	 * @param TValue ...$values
+	 */
+	public function push(...$values): void
+	{
+	}
+
+	/**
+	 * @return array<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+}
+
+/**
+ * @template TValue
+ * @implements Collection<int, TValue>
+ */
+final class PriorityQueue implements Collection
+{
+	/**
+	 * @return PriorityQueue<TValue>
+	 */
+	public function copy(): PriorityQueue
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function peek()
+	{
+	}
+
+	/**
+	 * @return TValue
+	 * @throws UnderflowException
+	 */
+	public function pop()
+	{
+	}
+
+	/**
+	 * @param TValue $value
+	 */
+	public function push($value, int $priority): void
+	{
+	}
+
+	/**
+	 * @return array<TValue>
+	 */
+	public function toArray(): array
 	{
 	}
 }

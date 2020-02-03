@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -27,7 +28,11 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 		$returnType = $methodReflection->getVariants()[0]->getReturnType();
 
 		if (count($methodCall->args) > 1) {
-			return $returnType;
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->args,
+				$methodReflection->getVariants()
+			)->getReturnType();
 		}
 
 		if (! $returnType instanceof UnionType) {

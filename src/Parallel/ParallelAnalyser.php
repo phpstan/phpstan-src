@@ -2,12 +2,9 @@
 
 namespace PHPStan\Parallel;
 
-use Clue\React\NDJson\Decoder;
-use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Command\AnalyseCommand;
-use React\ChildProcess\Process;
 use React\EventLoop\StreamSelectLoop;
 use Symfony\Component\Console\Input\InputInterface;
 use function escapeshellarg;
@@ -20,6 +17,9 @@ class ParallelAnalyser
 
 	/** @var int */
 	private $internalErrorsCountLimit;
+
+	/** @var \PHPStan\Parallel\Process[] */
+	private $processes = [];
 
 	public function __construct(
 		IgnoredErrorHelper $ignoredErrorHelper,
@@ -58,8 +58,6 @@ class ParallelAnalyser
 		$jobs = array_reverse($schedule->getJobs());
 		$loop = new StreamSelectLoop();
 
-		/** @var Process[] $processes */
-		$processes = [];
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 		$errors = [];
 		$internalErrors = [];
@@ -74,23 +72,11 @@ class ParallelAnalyser
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
 
-		$quitAll = static function () use (&$processes): void {
-			foreach ($processes as $process) {
-				if (!$process->isRunning()) {
-					continue;
-				}
-
-				foreach ($process->pipes as $pipe) {
-					$pipe->close();
-				}
-				$process->terminate();
-			}
-		};
-		$handleError = static function (\Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $quitAll): void {
+		$handleError = function (\Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {
 			$internalErrors[] = sprintf('Internal error: ' . $error->getMessage());
 			$internalErrorsCount++;
 			$reachedInternalErrorsCountLimit = true;
-			$quitAll();
+			$this->quitAllProcesses();
 		};
 
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
@@ -98,12 +84,8 @@ class ParallelAnalyser
 				break;
 			}
 
-			$process = new Process($command);
-			$process->start($loop);
-			$processStdIn = new Encoder($process->stdin);
-			$processStdIn->on('error', $handleError);
-			$processStdOut = new Decoder($process->stdout, true, 512, 0, 4 * 1024 * 1024);
-			$processStdOut->on('data', function (array $json) use ($process, &$internalErrors, &$errors, &$jobs, $processStdIn, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $quitAll): void {
+			$process = new Process(new \React\ChildProcess\Process($command), $loop);
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$jobs, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -121,24 +103,17 @@ class ParallelAnalyser
 				$internalErrorsCount += $json['internalErrorsCount'];
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
-					$quitAll();
+					$this->quitAllProcesses();
 				}
 
 				if (count($jobs) === 0) {
-					foreach ($process->pipes as $pipe) {
-						$pipe->close();
-					}
-					$process->terminate();
+					$process->quit();
 					return;
 				}
 
 				$job = array_pop($jobs);
-				$processStdIn->write(['action' => 'analyse', 'files' => $job]);
-			});
-			$processStdOut->on('error', $handleError);
-
-			$stdErrBuffer = new StreamBuffer($process->stderr);
-			$process->on('exit', static function ($exitCode) use (&$internalErrors, $stdErrBuffer): void {
+				$process->request(['action' => 'analyse', 'files' => $job]);
+			}, $handleError, static function ($exitCode, string $stdErr) use (&$internalErrors): void {
 				if ($exitCode === 0) {
 					return;
 				}
@@ -146,12 +121,12 @@ class ParallelAnalyser
 					return;
 				}
 
-				$internalErrors[] = sprintf('Child process error: %s', $stdErrBuffer->getBuffer());
+				$internalErrors[] = sprintf('Child process error: %s', $stdErr);
 			});
 
 			$job = array_pop($jobs);
-			$processStdIn->write(['action' => 'analyse', 'files' => $job]);
-			$processes[] = $process;
+			$process->request(['action' => 'analyse', 'files' => $job]);
+			$this->processes[] = $process;
 		}
 
 		$loop->run();
@@ -219,6 +194,13 @@ class ParallelAnalyser
 		}
 
 		return implode(' ', $processCommandArray);
+	}
+
+	private function quitAllProcesses(): void
+	{
+		foreach ($this->processes as $process) {
+			$process->quit();
+		}
 	}
 
 }

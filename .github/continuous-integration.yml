@@ -1,0 +1,40 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Continuous Integration"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  lint:
+    name: "Lint"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-binary:
+          - "php7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Validate composer.json and composer.lock"
+        run: "composer validate --strict"
+
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v1.0.3"
+        with:
+          path: "~/.composer/cache"
+          key: "${{ matrix.php-binary }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "${{ matrix.php-binary }}-composer-"
+
+      - name: "Install highest dependencies with composer"
+        run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Run lint target with phing/phing"
+        run: "vendor/bin/phing"

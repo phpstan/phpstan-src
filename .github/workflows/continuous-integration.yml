@@ -9,8 +9,8 @@ on:
       - "master"
 
 jobs:
-  lint:
-    name: "Lint"
+  coding-standards:
+    name: "coding standards"
 
     runs-on: "ubuntu-latest"
 
@@ -42,17 +42,119 @@ jobs:
       - name: "Composer Normalize"
         run: "vendor/bin/phing composer-normalize-check"
 
+      - name: "Lint & Coding Standard"
+        run: "vendor/bin/phing lint && vendor/bin/phing cs"
+
+  dependency-analysis:
+    name: "dependency analysis"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-binary:
+          - "php7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.0.3"
+        with:
+          path: "~/.composer/cache"
+          key: "${{ matrix.php-binary }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "${{ matrix.php-binary }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
+
       - name: "Composer Require Checker"
         run: "vendor/bin/phing composer-require-checker"
 
-      - name: "Lint & Coding Standard"
-        run: "vendor/bin/phing lint && vendor/bin/phing cs"
+  tests:
+    name: "tests"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-binary:
+          - "php7.1"
+          - "php7.2"
+          - "php7.3"
+          - "php7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.0.3"
+        with:
+          path: "~/.composer/cache"
+          key: "${{ matrix.php-binary }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "${{ matrix.php-binary }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Tests"
         run: "vendor/bin/phing tests"
 
+  static-analysis:
+    name: "static analysis"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-binary:
+          - "php7.1"
+          - "php7.2"
+          - "php7.3"
+          - "php7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.0.3"
+        with:
+          path: "~/.composer/cache"
+          key: "${{ matrix.php-binary }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "${{ matrix.php-binary }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
+
       - name: "PHPStan"
         run: "vendor/bin/phing phpstan"
+
+  static-analysis-with-static-php-parser:
+    name: "static analysis with static PHP parser"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-binary:
+          - "php7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.0.3"
+        with:
+          path: "~/.composer/cache"
+          key: "${{ matrix.php-binary }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "${{ matrix.php-binary }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "PHPStan with static PHP-Parser"
         run: "vendor/bin/phing phpstan-static-php-parser"

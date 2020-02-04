@@ -45,8 +45,11 @@ jobs:
       - name: "Composer Normalize"
         run: "vendor/bin/phing composer-normalize-check"
 
-      - name: "Lint & Coding Standard"
-        run: "vendor/bin/phing lint && vendor/bin/phing cs"
+      - name: "Lint"
+        run: "vendor/bin/phing lint"
+
+      - name: "Coding Standard"
+        run: "vendor/bin/phing cs"
 
   dependency-analysis:
     name: "Dependency Analysis"

@@ -36,5 +36,20 @@ jobs:
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
-      - name: "Lint"
-        run: "vendor/bin/phing"
+      - name: "Composer Normalize"
+        run: "vendor/bin/phing composer-normalize-check"
+
+      - name: "Composer Require Checker"
+        run: "vendor/bin/phing composer-require-checker"
+
+      - name: "Lint & Coding Standard"
+        run: "vendor/bin/phing lint && vendor/bin/phing cs"
+
+      - name: "Tests"
+        run: "vendor/bin/phing tests"
+
+      - name: "PHPStan"
+        run: "vendor/bin/phing phpstan"
+
+      - name: "PHPStan with static PHP-Parser"
+        run: "vendor/bin/phing phpstan-static-php-parser"

@@ -23,18 +23,18 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v2.0.0"
 
-      - name: "Validate composer.json and composer.lock"
+      - name: "Validate Composer"
         run: "composer validate --strict"
 
-      - name: "Cache dependencies installed with composer"
+      - name: "Cache dependencies"
         uses: "actions/cache@v1.0.3"
         with:
           path: "~/.composer/cache"
           key: "${{ matrix.php-binary }}-composer-${{ hashFiles('**/composer.json') }}"
           restore-keys: "${{ matrix.php-binary }}-composer-"
 
-      - name: "Install highest dependencies with composer"
+      - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
-      - name: "Run lint target with phing/phing"
+      - name: "Lint"
         run: "vendor/bin/phing"

@@ -42,8 +42,8 @@ class AutoloadFilesTest extends TestCase
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-ctype/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-mbstring/bootstrap.php', // afaik polyfills aren't necessary
-			'react/promise-timer/src/functions_include.php',
-			'react/promise/src/functions_include.php',
+			'react/promise-timer/src/functions_include.php', // added to bin/phpstan
+			'react/promise/src/functions_include.php', // added to bin/phpstan
 		], $autoloadFiles);
 	}
 

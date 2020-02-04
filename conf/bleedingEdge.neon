@@ -2,4 +2,3 @@ parameters:
 	featureToggles:
 		closureUsesThis: true
 		randomIntParameters: true
-		parallel: true

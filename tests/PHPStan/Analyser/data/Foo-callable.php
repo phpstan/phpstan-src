@@ -7,7 +7,7 @@ namespace RecursionCallable;
 class Foo
 {
 	/**
-	 * @param Foo|callable $xxx
+	 * @param Foo|(callable(): mixed) $xxx
 	 */
 	public function abc($xxx): void
 	{

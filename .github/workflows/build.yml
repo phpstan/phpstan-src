@@ -3,10 +3,8 @@
 name: "Build"
 
 on:
-  pull_request:
-  push:
-    branches:
-      - "master"
+  - "pull_request"
+  - "push"
 
 jobs:
   coding-standards:

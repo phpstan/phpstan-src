@@ -66,7 +66,7 @@ class YieldTypeRule implements Rule
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableKeyType(), $keyType, $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableKeyType());
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Generator expects key type %s, %s given.',
+				'Generator expects key type %s but %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
 				$keyType->describe($verbosityLevel)
 			))->build();
@@ -74,7 +74,7 @@ class YieldTypeRule implements Rule
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableValueType());
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Generator expects value type %s, %s given.',
+				'Generator expects value type %s but %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
 				$valueType->describe($verbosityLevel)
 			))->build();

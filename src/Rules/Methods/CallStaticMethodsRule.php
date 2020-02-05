@@ -279,7 +279,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 				$displayMethodName . ' invoked with %d parameters, at least %d required.',
 				$displayMethodName . ' invoked with %d parameter, %d-%d required.',
 				$displayMethodName . ' invoked with %d parameters, %d-%d required.',
-				'Parameter #%d %s of ' . $lowercasedMethodName . ' expects %s, %s given.',
+				'Parameter #%d %s of ' . $lowercasedMethodName . ' expects %s but %s given.',
 				'Result of ' . $lowercasedMethodName . ' (void) is used.',
 				'Parameter #%d %s of ' . $lowercasedMethodName . ' is passed by reference, so it expects variables only.',
 				'Unable to resolve the template type %s in call to method ' . $lowercasedMethodName,

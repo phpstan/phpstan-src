@@ -123,7 +123,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 					ucfirst($callableDescription) . ' invoked with %d parameters, at least %d required.',
 					ucfirst($callableDescription) . ' invoked with %d parameter, %d-%d required.',
 					ucfirst($callableDescription) . ' invoked with %d parameters, %d-%d required.',
-					'Parameter #%d %s of ' . $callableDescription . ' expects %s, %s given.',
+					'Parameter #%d %s of ' . $callableDescription . ' expects %s but %s given.',
 					'Result of ' . $callableDescription . ' (void) is used.',
 					'Parameter #%d %s of ' . $callableDescription . ' is passed by reference, so it expects variables only.',
 					'Unable to resolve the template type %s in call to ' . $callableDescription,

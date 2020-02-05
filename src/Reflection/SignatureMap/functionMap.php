@@ -9124,7 +9124,7 @@ return [
 'readdir' => ['string|false', 'dir_handle='=>'resource'],
 'readfile' => ['int|false', 'filename'=>'string', 'use_include_path='=>'bool', 'context='=>'resource'],
 'readgzfile' => ['int|false', 'filename'=>'string', 'use_include_path='=>'int'],
-'readline' => ['string', 'prompt='=>'?string'],
+'readline' => ['string|false', 'prompt='=>'?string'],
 'readline_add_history' => ['bool', 'prompt'=>'string'],
 'readline_callback_handler_install' => ['bool', 'prompt'=>'string', 'callback'=>'callable'],
 'readline_callback_handler_remove' => ['bool'],

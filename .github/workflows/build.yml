@@ -8,9 +8,6 @@ on:
     branches:
       - "master"
 
-env:
-  COMPOSER_ROOT_VERSION: "0.12.x-dev"
-
 jobs:
   coding-standards:
     name: "Coding Standard"
@@ -41,6 +38,9 @@ jobs:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
           restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Set COMPOSER_ROOT_VERSION environment variable"
+        run: "echo \"::set-env name=COMPOSER_ROOT_VERSION::$(jq --raw-output '.extra.\"branch-alias\".\"dev-master\"' composer.json)\""
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -81,6 +81,9 @@ jobs:
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
+      - name: "Set COMPOSER_ROOT_VERSION environment variable"
+        run: "echo \"::set-env name=COMPOSER_ROOT_VERSION::$(jq --raw-output '.extra.\"branch-alias\".\"dev-master\"' composer.json)\""
+
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -116,6 +119,9 @@ jobs:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
           restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Set COMPOSER_ROOT_VERSION environment variable"
+        run: "echo \"::set-env name=COMPOSER_ROOT_VERSION::$(jq --raw-output '.extra.\"branch-alias\".\"dev-master\"' composer.json)\""
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -153,6 +159,9 @@ jobs:
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
+      - name: "Set COMPOSER_ROOT_VERSION environment variable"
+        run: "echo \"::set-env name=COMPOSER_ROOT_VERSION::$(jq --raw-output '.extra.\"branch-alias\".\"dev-master\"' composer.json)\""
+
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -188,6 +197,9 @@ jobs:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
           restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Set COMPOSER_ROOT_VERSION environment variable"
+        run: "echo \"::set-env name=COMPOSER_ROOT_VERSION::$(jq --raw-output '.extra.\"branch-alias\".\"dev-master\"' composer.json)\""
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"

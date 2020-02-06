@@ -1,18 +1,9 @@
-os: linux
-dist: xenial
 language: php
 
 stages:
   - test
   - name: phar
     if: (branch = master OR tag IS present) && type = push
-
-php:
-  - 7.1
-  - 7.2
-  - 7.3
-  - 7.4
-  - master
 
 env:
   global:
@@ -22,9 +13,6 @@ before_script:
   - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
   - composer update --no-interaction
 
-script:
-  - vendor/bin/phing
-
 jobs:
   allow_failures:
     - php: master
@@ -33,6 +21,8 @@ jobs:
     - stage: test
       php: 7.3
       name: Compiler tests
+      os: linux
+      dist: xenial
       script:
         - |
           cd compiler && \
@@ -41,13 +31,10 @@ jobs:
           ../bin/phpstan analyse -l 8 src tests && \
           php bin/compile && \
           ../tmp/phpstan.phar
-    - stage: test
-      php: 7.3
-      name: PHPStan with static reflection for PHP-Parser
-      script:
-        - vendor/bin/phing phpstan-static-php-parser
     - stage: phar
       php: 7.3
+      os: linux
+      dist: xenial
       before_install:
         - |
           openssl aes-256-cbc -K $encrypted_bd816b4f73f9_key -iv $encrypted_bd816b4f73f9_iv -in build/key.gpg.enc -out build/key.gpg -d && \

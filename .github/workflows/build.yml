@@ -40,7 +40,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "COMPOSER_ROOT_VERSION=0.12.x-dev composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Composer Normalize"
         run: "vendor/bin/phing composer-normalize-check"
@@ -79,7 +79,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "COMPOSER_ROOT_VERSION=0.12.x-dev composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Composer Require Checker"
         run: "vendor/bin/phing composer-require-checker"
@@ -115,7 +115,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "COMPOSER_ROOT_VERSION=0.12.x-dev composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Tests"
         run: "vendor/bin/phing tests"
@@ -151,7 +151,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "COMPOSER_ROOT_VERSION=0.12.x-dev composer update --no-interaction --no-progress --no-suggest"
 
       - name: "PHPStan"
         run: "vendor/bin/phing phpstan"
@@ -187,7 +187,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "COMPOSER_ROOT_VERSION=0.12.x-dev composer update --no-interaction --no-progress --no-suggest"
 
       - name: "PHPStan with static PHP-Parser"
         run: "vendor/bin/phing phpstan-static-php-parser"

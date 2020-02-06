@@ -40,7 +40,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Set COMPOSER_ROOT_VERSION environment variable"
-        uses: "ergebnis/composer-root-version-action@0.1.2"
+        uses: "docker://ergebnis/composer-root-version-action:0.1.3"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -82,7 +82,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Set COMPOSER_ROOT_VERSION environment variable"
-        uses: "ergebnis/composer-root-version-action@0.1.2"
+        uses: "docker://ergebnis/composer-root-version-action:0.1.3"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -121,7 +121,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Set COMPOSER_ROOT_VERSION environment variable"
-        uses: "ergebnis/composer-root-version-action@0.1.2"
+        uses: "docker://ergebnis/composer-root-version-action:0.1.3"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -160,7 +160,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Set COMPOSER_ROOT_VERSION environment variable"
-        uses: "ergebnis/composer-root-version-action@0.1.2"
+        uses: "docker://ergebnis/composer-root-version-action:0.1.3"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -199,7 +199,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Set COMPOSER_ROOT_VERSION environment variable"
-        uses: "ergebnis/composer-root-version-action@0.1.2"
+        uses: "docker://ergebnis/composer-root-version-action:0.1.3"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"

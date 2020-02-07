@@ -32,7 +32,7 @@ class NeonAdapter implements Adapter
 		try {
 			return $this->process((array) Neon::decode($contents), '', $file);
 		} catch (NeonExcepton $e) {
-			throw new \Nette\DI\InvalidConfigurationException(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
+			throw new NeonExcepton(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
 		}
 	}
 

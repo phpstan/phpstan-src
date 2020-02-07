@@ -19,7 +19,7 @@ Any contributions are welcome.
 
 ### Building
 
-Initially you need to run `composer install`, or `composer update` in case you are working in a folder which was build before.
+Initially you need to run `composer install`, or `composer update` in case you are working in a folder which was built before.
 
 Afterwards you can either run the whole build including linting and coding standards using
 

@@ -8,7 +8,6 @@ use Nette\DI\Definitions\Reference;
 use Nette\DI\Definitions\Statement;
 use Nette\Neon\Entity;
 use Nette\Neon\Neon;
-use Nette\Neon\Exception as NeonExcepton;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 
@@ -31,8 +30,8 @@ class NeonAdapter implements Adapter
 		$contents = FileReader::read($file);
 		try {
 			return $this->process((array) Neon::decode($contents), '', $file);
-		} catch (NeonExcepton $e) {
-			throw new NeonExcepton(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
+		} catch (Nette\Neon\Exception $e) {
+			throw new Nette\Neon\Exception(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
 		}
 	}
 

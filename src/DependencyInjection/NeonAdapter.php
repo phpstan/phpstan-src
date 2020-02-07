@@ -30,8 +30,8 @@ class NeonAdapter implements Adapter
 		$contents = FileReader::read($file);
 		try {
 			return $this->process((array) Neon::decode($contents), '', $file);
-		} catch (Nette\Neon\Exception $e) {
-			throw new Nette\Neon\Exception(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
+		} catch (\Nette\Neon\Exception $e) {
+			throw new \Nette\Neon\Exception(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
 		}
 	}
 

@@ -23,13 +23,13 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/../../notAutoloaded/Foo.php');
 		$this->assertCount(4, $errors);
-		$this->assertStringContainsString('Constant FOO_CONST was not found in reflection of class PHPStan\Tests\Foo - probably the wrong version of class is autoloaded. The currently loaded version is at', $errors[0]->getMessage());
+		$this->assertStringContainsString('Constant FOO_CONST was not found in reflection of class SomeOtherNamespace\Tests\Foo - probably the wrong version of class is autoloaded. The currently loaded version is at', $errors[0]->getMessage());
 		$this->assertSame(8, $errors[0]->getLine());
-		$this->assertStringContainsString('Property $fooProperty was not found in reflection of class PHPStan\Tests\Foo - probably the wrong version of class is autoloaded. The currently loaded version is at', $errors[1]->getMessage());
+		$this->assertStringContainsString('Property $fooProperty was not found in reflection of class SomeOtherNamespace\Tests\Foo - probably the wrong version of class is autoloaded. The currently loaded version is at', $errors[1]->getMessage());
 		$this->assertSame(11, $errors[1]->getLine());
-		$this->assertStringContainsString('Method doFoo() was not found in reflection of class PHPStan\Tests\Foo - probably the wrong version of class is autoloaded. The currently loaded version is at', $errors[2]->getMessage());
+		$this->assertStringContainsString('Method doFoo() was not found in reflection of class SomeOtherNamespace\Tests\Foo - probably the wrong version of class is autoloaded. The currently loaded version is at', $errors[2]->getMessage());
 		$this->assertSame(13, $errors[2]->getLine());
-		$this->assertStringContainsString('Access to an undefined property PHPStan\Tests\Foo::$fooProperty.', $errors[3]->getMessage());
+		$this->assertStringContainsString('Access to an undefined property SomeOtherNamespace\Tests\Foo::$fooProperty.', $errors[3]->getMessage());
 		$this->assertSame(15, $errors[3]->getLine());
 	}
 

@@ -4,3 +4,5 @@ includes:
 parameters:
 	featureToggles:
 		staticReflectionForPhpParser: true
+	excludes_analyse:
+		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php

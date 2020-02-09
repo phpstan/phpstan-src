@@ -980,7 +980,6 @@ services:
 			reflectionProvider: @betterReflectionProvider
 			patterns:
 				- '#^PhpParser\\#'
-				- '#^PHPStan\\#'
 				- '#^Hoa\\#'
 		autowired: false
 

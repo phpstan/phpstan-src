@@ -65,6 +65,7 @@ class TraitsCachingIssueIntegrationTest extends TestCase
 
 	/**
 	 * @dataProvider dataCachingIssue
+	 * @group slow
 	 * @param bool $changeOne
 	 * @param bool $changeTwo
 	 * @param string[] $expectedErrors

@@ -25,6 +25,7 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataTopics
+	 * @group slow
 	 * @param string $topic
 	 */
 	public function testLevels(

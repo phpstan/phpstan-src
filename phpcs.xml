@@ -80,6 +80,12 @@
 			<property name="spacingAfterLast" value="1"/>
 		</properties>
 	</rule>
+	<rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+		<exclude-pattern>src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php</exclude-pattern>
+	</rule>
+	<rule ref="Consistence.NamingConventions.ValidVariableName.NotCamelCaps">
+		<exclude-pattern>src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php</exclude-pattern>
+	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>
 	<exclude-pattern>tests/*/traits</exclude-pattern>
 	<exclude-pattern>tests/tmp</exclude-pattern>

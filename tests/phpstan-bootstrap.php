@@ -4,3 +4,4 @@ require_once __DIR__ . '/PHPStan/Analyser/functions.php';
 
 class_alias(\ReturnTypes\Foo::class, \ReturnTypes\FooAlias::class, true);
 class_alias(\TestAccessProperties\FooAccessProperties::class, \TestAccessProperties\FooAccessPropertiesAlias::class, true);
+class_exists(\Hoa\Stream::class);

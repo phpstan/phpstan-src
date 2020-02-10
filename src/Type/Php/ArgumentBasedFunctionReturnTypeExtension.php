@@ -34,6 +34,7 @@ class ArgumentBasedFunctionReturnTypeExtension implements \PHPStan\Type\DynamicF
 		'array_uintersect_assoc' => 0,
 		'array_uintersect_uassoc' => 0,
 		'array_uintersect' => 0,
+		'iterator_to_array' => 0,
 	];
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

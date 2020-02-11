@@ -1,0 +1,13 @@
+<?php
+
+namespace ParallelAnalyserIntegrationTest;
+
+trait FooTrait
+{
+
+	public function doFoo()
+	{
+		$this->test = 1;
+	}
+
+}

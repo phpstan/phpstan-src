@@ -1,0 +1,5 @@
+parameters:
+	featureToggles:
+		parallel: true
+	parallel:
+		jobSize: 1

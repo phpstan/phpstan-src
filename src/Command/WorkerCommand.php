@@ -103,6 +103,11 @@ class WorkerCommand extends Command
 		$loop = new StreamSelectLoop();
 
 		$container = $inceptionResult->getContainer();
+
+		/** @var NodeScopeResolver $nodeScopeResolver */
+		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
+		$nodeScopeResolver->setAnalysedFiles($inceptionResult->getFiles());
+
 		$tcpConector = new TcpConnector($loop);
 		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->then(function (ConnectionInterface $connection) use ($container, $identifier): void {
 			$out = new Encoder($connection);
@@ -138,11 +143,8 @@ class WorkerCommand extends Command
 		/** @var Registry $registry */
 		$registry = $container->getByType(Registry::class);
 
-		/** @var NodeScopeResolver $nodeScopeResolver */
-		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
-
 		// todo collectErrors (from Analyser)
-		$in->on('data', static function (array $json) use ($fileAnalyser, $registry, $nodeScopeResolver, $out): void {
+		$in->on('data', static function (array $json) use ($fileAnalyser, $registry, $out): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -150,7 +152,6 @@ class WorkerCommand extends Command
 
 			$internalErrorsCount = 0;
 			$files = $json['files'];
-			$nodeScopeResolver->setAnalysedFiles($files);
 			$errors = [];
 			$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
 			foreach ($files as $file) {

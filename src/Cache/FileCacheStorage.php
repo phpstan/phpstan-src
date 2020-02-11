@@ -17,9 +17,14 @@ class FileCacheStorage implements CacheStorage
 
 	private function makeDir(string $directory): void
 	{
+		if (is_dir($directory)) {
+			return;
+		}
+
 		$result = @mkdir($directory, 0777, true);
 		if ($result === false && !is_dir($directory)) {
-			throw new \InvalidArgumentException(sprintf('Directory "%s" doesn\'t exist.', $this->directory));
+			$error = error_get_last();
+			throw new \InvalidArgumentException(sprintf('Failed to create directory "%s" (%s).', $this->directory, $error !== null ? $error['message'] : 'unknown cause'));
 		}
 	}
 

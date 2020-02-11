@@ -149,7 +149,7 @@ class ParallelAnalyser
 
 				$job = array_pop($jobs);
 				$process->request(['action' => 'analyse', 'files' => $job]);
-			}, $handleError, function ($exitCode, string $stdErr) use (&$internalErrors, $processIdentifier): void {
+			}, $handleError, function ($exitCode, string $output) use (&$internalErrors, $processIdentifier): void {
 				$this->processPool->tryQuitProcess($processIdentifier);
 				if ($exitCode === 0) {
 					return;
@@ -158,7 +158,7 @@ class ParallelAnalyser
 					return;
 				}
 
-				$internalErrors[] = sprintf('Child process error: %s', $stdErr);
+				$internalErrors[] = sprintf('Child process error (exit code %d): %s', $exitCode, $output);
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);
 		}

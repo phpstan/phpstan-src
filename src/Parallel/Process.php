@@ -23,6 +23,9 @@ class Process
 	private $in;
 
 	/** @var resource */
+	private $stdOut;
+
+	/** @var resource */
 	private $stdErr;
 
 	/** @var callable */
@@ -45,21 +48,40 @@ class Process
 
 	public function start(callable $onData, callable $onError, callable $onExit): void
 	{
-		$tmp = tmpfile(); // todo should I unlink this file after?
-		if ($tmp === false) {
-			throw new \PHPStan\ShouldNotHappenException('Failed creating temp file.');
+		$tmpStdOut = tmpfile();
+		if ($tmpStdOut === false) {
+			throw new \PHPStan\ShouldNotHappenException('Failed creating temp file for stdout.');
 		}
-		$this->stdErr = $tmp;
+		$tmpStdErr = tmpfile();
+		if ($tmpStdErr === false) {
+			throw new \PHPStan\ShouldNotHappenException('Failed creating temp file for stderr.');
+		}
+		$this->stdOut = $tmpStdOut;
+		$this->stdErr = $tmpStdErr;
 		$this->process = new \React\ChildProcess\Process($this->command, null, null, [
-			2 => $this->stdErr, // todo is it fine to not have 0 and 1 FD?
+			1 => $this->stdOut,
+			2 => $this->stdErr,
 		]);
 		$this->process->start($this->loop);
 		$this->onData = $onData;
 		$this->onError = $onError;
 		$this->process->on('exit', function ($exitCode) use ($onExit): void {
 			$this->cancelTimer();
+
+			$output = '';
+			rewind($this->stdOut);
+			$stdOut = stream_get_contents($this->stdOut);
+			if (is_string($stdOut)) {
+				$output .= $stdOut;
+			}
+
 			rewind($this->stdErr);
-			$onExit($exitCode, stream_get_contents($this->stdErr));
+			$stdErr = stream_get_contents($this->stdErr);
+			if (is_string($stdErr)) {
+				$output .= $stdErr;
+			}
+			$onExit($exitCode, $output);
+			fclose($this->stdOut);
 			fclose($this->stdErr);
 		});
 	}

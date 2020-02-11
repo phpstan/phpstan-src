@@ -51,8 +51,8 @@ class SchedulerTest extends TestCase
 	): void
 	{
 		$files = array_fill(0, $numberOfFiles, 'file.php');
-		$scheduler = new Scheduler();
-		$schedule = $scheduler->scheduleWork($cpuCores, $jobSize, $files);
+		$scheduler = new Scheduler($jobSize);
+		$schedule = $scheduler->scheduleWork($cpuCores, $files);
 
 		$this->assertSame($expectedNumberOfProcesses, $schedule->getNumberOfProcesses());
 		$this->assertCount(count($expectedJobSizes), $schedule->getJobs());

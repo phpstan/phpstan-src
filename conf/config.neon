@@ -38,6 +38,8 @@ parameters:
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
 	reportStaticMethodSignatures: false
+	parallel:
+		jobSize: 20
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	polluteCatchScopeWithTryAssignments: false
@@ -145,6 +147,9 @@ parametersSchema:
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()
 	reportStaticMethodSignatures: bool()
+	parallel: structure([
+		jobSize: int()
+	])
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
 	polluteCatchScopeWithTryAssignments: bool()
@@ -375,6 +380,8 @@ services:
 
 	-
 		class: PHPStan\Parallel\Scheduler
+		arguments:
+			jobSize: %parallel.jobSize%
 
 	-
 		class: PHPStan\Parser\CachedParser

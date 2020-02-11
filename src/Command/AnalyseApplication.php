@@ -123,7 +123,7 @@ class AnalyseApplication
 		}
 
 		// todo what about hyperthreading? should I divide CPU cores by 2?
-		$schedule = $this->scheduler->scheduleWork($this->getNumberOfCpuCores(), 20, $files);
+		$schedule = $this->scheduler->scheduleWork($this->getNumberOfCpuCores(), $files);
 		$mainScript = null;
 		if (isset($_SERVER['argv'][0]) && file_exists($_SERVER['argv'][0])) {
 			$mainScript = $_SERVER['argv'][0];

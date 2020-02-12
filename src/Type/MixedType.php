@@ -245,6 +245,20 @@ class MixedType implements CompoundType, SubtractableType
 				}
 
 				return $description;
+			},
+			function () use ($level): string {
+				$description = 'mixed';
+				if ($this->subtractedType !== null) {
+					$description .= sprintf('~%s', $this->subtractedType->describe($level));
+				}
+
+				if ($this->isExplicitMixed) {
+					$description .= '=explicit';
+				} else {
+					$description .= '=implicit';
+				}
+
+				return $description;
 			}
 		);
 	}

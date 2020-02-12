@@ -239,7 +239,7 @@ class ClassReflection implements ReflectionWithFilename
 
 		if ($this->resolvedTemplateTypeMap !== null) {
 			$cacheKey .= '<' . implode(',', array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
+				return $type->describe(VerbosityLevel::cache());
 			}, $this->resolvedTemplateTypeMap->getTypes())) . '>';
 		}
 

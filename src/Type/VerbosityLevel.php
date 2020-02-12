@@ -8,6 +8,7 @@ class VerbosityLevel
 	private const TYPE_ONLY = 1;
 	private const VALUE = 2;
 	private const PRECISE = 3;
+	private const CACHE = 4;
 
 	/** @var self[] */
 	private static $registry;
@@ -41,6 +42,11 @@ class VerbosityLevel
 		return self::create(self::PRECISE);
 	}
 
+	public static function cache(): self
+	{
+		return self::create(self::CACHE);
+	}
+
 	public static function getRecommendedLevelByType(Type $type): self
 	{
 		if (TypeUtils::containsCallable($type) || count(TypeUtils::getConstantArrays($type)) > 0) {
@@ -54,23 +60,45 @@ class VerbosityLevel
 	 * @param callable(): string $typeOnlyCallback
 	 * @param callable(): string $valueCallback
 	 * @param callable(): string|null $preciseCallback
+	 * @param callable(): string|null $cacheCallback
 	 * @return string
 	 */
 	public function handle(
 		callable $typeOnlyCallback,
 		callable $valueCallback,
-		?callable $preciseCallback = null
+		?callable $preciseCallback = null,
+		?callable $cacheCallback = null
 	): string
 	{
 		if ($this->value === self::TYPE_ONLY) {
 			return $typeOnlyCallback();
 		}
 
-		if ($this->value === self::VALUE || $preciseCallback === null) {
+		if ($this->value === self::VALUE) {
 			return $valueCallback();
 		}
 
-		return $preciseCallback();
+		if ($this->value === self::PRECISE) {
+			if ($preciseCallback !== null) {
+				return $preciseCallback();
+			}
+
+			return $valueCallback();
+		}
+
+		if ($this->value === self::CACHE) {
+			if ($cacheCallback !== null) {
+				return $cacheCallback();
+			}
+
+			if ($preciseCallback !== null) {
+				return $preciseCallback();
+			}
+
+			return $valueCallback();
+		}
+
+		throw new \PHPStan\ShouldNotHappenException();
 	}
 
 }

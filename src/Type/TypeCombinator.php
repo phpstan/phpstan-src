@@ -181,7 +181,7 @@ class TypeCombinator
 			}
 			if ($types[$i] instanceof ConstantScalarType) {
 				$type = $types[$i];
-				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::precise()))] = $type;
+				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
 				unset($types[$i]);
 				continue;
 			}
@@ -206,7 +206,7 @@ class TypeCombinator
 						continue;
 					}
 					if ($innerType instanceof AccessoryType || $innerType instanceof CallableType) {
-						$intermediateAccessoryTypes[$innerType->describe(VerbosityLevel::precise())] = $innerType;
+						$intermediateAccessoryTypes[$innerType->describe(VerbosityLevel::cache())] = $innerType;
 						continue;
 					}
 				}

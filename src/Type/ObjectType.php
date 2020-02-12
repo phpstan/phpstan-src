@@ -132,7 +132,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		$description = $type->describe(VerbosityLevel::precise());
+		$description = $type->describe(VerbosityLevel::cache());
 		if (isset($this->superTypes[$description])) {
 			return $this->superTypes[$description];
 		}

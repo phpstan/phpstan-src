@@ -197,7 +197,7 @@ class AnalyseApplication
 		$cores = 2;
 		if (is_file('/proc/cpuinfo')) {
 			// Linux (and potentially Windows with linux sub systems)
-			$cpuinfo = file_get_contents('/proc/cpuinfo');
+			$cpuinfo = @file_get_contents('/proc/cpuinfo');
 			if ($cpuinfo !== false) {
 				preg_match_all('/^processor/m', $cpuinfo, $matches);
 				return count($matches[0]);

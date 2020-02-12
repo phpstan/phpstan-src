@@ -219,8 +219,7 @@ class ParallelAnalyser
 				continue;
 			}
 
-			$processCommandArray[] = sprintf('--%s', $optionName);
-			$processCommandArray[] = escapeshellarg($optionValue);
+			$processCommandArray[] = sprintf('--%s=%s', $optionName, escapeshellarg($optionValue));
 		}
 
 		$processCommandArray[] = sprintf('--port');

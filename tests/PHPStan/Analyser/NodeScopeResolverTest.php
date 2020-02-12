@@ -6012,6 +6012,18 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array<int, int>',
 				'range(0, 50)',
 			],
+			[
+				'array<int, string>',
+				'range("a", "d")',
+			],
+			[
+				'array<int, float>',
+				'range("a", "d", 1.1)',
+			],
+			[
+				'array<int, float>',
+				'range("a", 2, 1.1)',
+			],
 		];
 	}
 

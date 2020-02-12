@@ -83,7 +83,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -1818,15 +1817,14 @@ class NodeScopeResolver
 				|| $expr->var instanceof PropertyFetch
 				|| $expr->var instanceof StaticPropertyFetch
 			) {
-				$expressionType = $scope->getType($expr);
-				if (count(TypeUtils::getConstantScalars($expressionType)) > 0 || $expressionType instanceof IntegerRangeType) {
-					$newExpr = $expr;
-					if ($expr instanceof Expr\PostInc) {
-						$newExpr = new Expr\PreInc($expr->var);
-					} elseif ($expr instanceof Expr\PostDec) {
-						$newExpr = new Expr\PreDec($expr->var);
-					}
+				$newExpr = $expr;
+				if ($expr instanceof Expr\PostInc) {
+					$newExpr = new Expr\PreInc($expr->var);
+				} elseif ($expr instanceof Expr\PostDec) {
+					$newExpr = new Expr\PreDec($expr->var);
+				}
 
+				if (!$scope->getType($expr->var)->equals($scope->getType($newExpr))) {
 					$scope = $this->processAssignVar(
 						$scope,
 						$expr->var,

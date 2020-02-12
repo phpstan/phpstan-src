@@ -4,6 +4,7 @@ namespace PHPStan\RobotLoader;
 
 use Nette;
 use SplFileInfo;
+use const DIRECTORY_SEPARATOR;
 
 class RobotLoader
 {
@@ -410,7 +411,10 @@ class RobotLoader
 		$code = "<?php\nreturn " . var_export([$this->classes, $this->missing], true) . ";\n";
 		if (file_put_contents($tempFile, $code) !== strlen($code) || !rename($tempFile, $file)) {
 			@unlink($tempFile); // @ - file may not exist
-			throw new \RuntimeException(sprintf('Unable to create %s.', $file));
+
+			if (DIRECTORY_SEPARATOR === '/') {
+				throw new \RuntimeException(sprintf('Unable to create %s.', $file));
+			}
 		}
 		if (!function_exists('opcache_invalidate')) {
 			return;

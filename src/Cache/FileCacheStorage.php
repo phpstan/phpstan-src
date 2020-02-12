@@ -22,7 +22,12 @@ class FileCacheStorage implements CacheStorage
 		}
 
 		$result = @mkdir($directory, 0777, true);
-		if ($result === false && !is_dir($directory)) {
+		if ($result === false) {
+			clearstatcache();
+			if (is_dir($directory)) {
+				return;
+			}
+
 			$error = error_get_last();
 			throw new \InvalidArgumentException(sprintf('Failed to create directory "%s" (%s).', $this->directory, $error !== null ? $error['message'] : 'unknown cause'));
 		}

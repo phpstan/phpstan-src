@@ -86,6 +86,9 @@
 	<rule ref="Consistence.NamingConventions.ValidVariableName.NotCamelCaps">
 		<exclude-pattern>src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php</exclude-pattern>
 	</rule>
+	<rule ref="SlevomatCodingStandard.ControlStructures.DisallowEmpty.DisallowedEmpty">
+		<exclude-pattern>src/RobotLoader/RobotLoader.php</exclude-pattern>
+	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>
 	<exclude-pattern>tests/*/traits</exclude-pattern>
 	<exclude-pattern>tests/tmp</exclude-pattern>

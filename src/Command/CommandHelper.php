@@ -17,7 +17,6 @@ use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
-use PHPStan\RobotLoader\RobotLoader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -285,7 +284,7 @@ class CommandHelper
 		$autoloadDirectories = $container->getParameter('autoload_directories');
 		$featureToggles = $container->getParameter('featureToggles');
 		if (count($autoloadDirectories) > 0 && !$featureToggles['disableRobotLoader']) {
-			$robotLoader = new RobotLoader();
+			$robotLoader = new \Nette\Loaders\RobotLoader();
 			$robotLoader->acceptFiles = array_map(static function (string $extension): string {
 				return sprintf('*.%s', $extension);
 			}, $container->getParameter('fileExtensions'));

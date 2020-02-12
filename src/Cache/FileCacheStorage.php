@@ -82,8 +82,12 @@ class FileCacheStorage implements CacheStorage
 		}
 
 		$renameSuccess = @rename($tmpPath, $path);
-		if ($renameSuccess === false) {
-			@unlink($tmpPath);
+		if ($renameSuccess) {
+			return;
+		}
+
+		@unlink($tmpPath);
+		if (DIRECTORY_SEPARATOR === '/' || !file_exists($path)) {
 			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
 		}
 	}

@@ -7,8 +7,16 @@ parameters:
 	reportMagicMethods: true
 	reportMagicProperties: true
 
+conditionalTags:
+	PHPStan\Rules\Variables\NullCoalesceRule:
+		phpstan.rules.rule: %featureToggles.nullCoalesce%
+
 rules:
 	- PHPStan\Rules\Classes\UnusedConstructorParametersRule
 	- PHPStan\Rules\Constants\ConstantRule
 	- PHPStan\Rules\Functions\UnusedClosureUsesRule
 	- PHPStan\Rules\Variables\VariableCertaintyInIssetRule
+
+services:
+	-
+		class: PHPStan\Rules\Variables\NullCoalesceRule

@@ -3,3 +3,4 @@ parameters:
 		closureUsesThis: true
 		randomIntParameters: true
 		resultCache: true
+		nullCoalesce: true

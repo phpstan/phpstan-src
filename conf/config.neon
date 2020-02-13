@@ -13,6 +13,7 @@ parameters:
 		resultCache: false
 		closureUsesThis: false
 		randomIntParameters: false
+		nullCoalesce: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -134,7 +135,8 @@ parametersSchema:
 		enableScanningPaths: bool(),
 		resultCache: bool(),
 		closureUsesThis: bool(),
-		randomIntParameters: bool()
+		randomIntParameters: bool(),
+		nullCoalesce: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

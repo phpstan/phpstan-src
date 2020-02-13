@@ -12,3 +12,4 @@ rules:
 	- PHPStan\Rules\Constants\ConstantRule
 	- PHPStan\Rules\Functions\UnusedClosureUsesRule
 	- PHPStan\Rules\Variables\VariableCertaintyInIssetRule
+	- PHPStan\Rules\Variables\CoalesceRule

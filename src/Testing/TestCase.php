@@ -13,6 +13,7 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\Cache\Cache;
+use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Cache\MemoryCacheStorage;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
@@ -78,9 +79,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			$rootDir = __DIR__ . '/../..';
 			$containerFactory = new ContainerFactory($rootDir);
-			self::$containers[$cacheKey] = $containerFactory->create($tmpDir, array_merge([
+			$container = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',
 			], $additionalConfigFiles), []);
+			self::$containers[$cacheKey] = $container;
+			$fileCacheStorage = $container->getService('cacheStorage');
+			if ($fileCacheStorage instanceof FileCacheStorage) {
+				$fileCacheStorage->makeRootDir();
+			}
 		}
 
 		return self::$containers[$cacheKey];

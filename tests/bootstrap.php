@@ -23,7 +23,3 @@ eval('trait TraitInEval {
 }');
 
 $container = TestCase::getContainer();
-$fileCacheStorage = $container->getService('cacheStorage');
-if ($fileCacheStorage instanceof FileCacheStorage) {
-	$fileCacheStorage->makeRootDir();
-}

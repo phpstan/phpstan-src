@@ -87,7 +87,6 @@ jobs:
         - export PATH=/c/tools/php:$PATH
       script:
         - vendor/bin/phing tests
-        - vendor/bin/phing phpstan
 
 cache:
   directories:

@@ -146,6 +146,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.0.3"
@@ -183,6 +184,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.0.3"

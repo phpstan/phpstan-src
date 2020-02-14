@@ -72,6 +72,7 @@ class FileCacheStorage implements CacheStorage
 	public function save(string $key, string $variableKey, $data): void
 	{
 		[$firstDirectory, $secondDirectory, $path] = $this->getFilePaths($key);
+		$this->makeDir($this->directory);
 		$this->makeDir($firstDirectory);
 		$this->makeDir($secondDirectory);
 

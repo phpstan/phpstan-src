@@ -9,7 +9,6 @@ use Nette\Schema\Context as SchemaContext;
 use Nette\Schema\Processor;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
-use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\ContainerFactory;
@@ -326,11 +325,6 @@ class CommandHelper
 				$errorOutput->writeLineFormatted($e->getMessage());
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
-		}
-
-		$fileCacheStorage = $container->getService('cacheStorage')->makeRootDir();
-		if ($fileCacheStorage instanceof FileCacheStorage) {
-			$fileCacheStorage->makeRootDir();
 		}
 
 		/** @var FileFinder $fileFinder */

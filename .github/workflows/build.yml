@@ -132,7 +132,7 @@ jobs:
   static-analysis:
     name: "PHPStan"
 
-    runs-on: "ubuntu-latest"
+    runs-on: ${{ matrix.operating-system }}
 
     strategy:
       matrix:
@@ -141,6 +141,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+        operating-system: [ubuntu-latest, windows-latest]
 
     steps:
       - name: "Checkout"
@@ -171,7 +172,7 @@ jobs:
   static-analysis-with-static-php-parser:
     name: "PHPStan with static PHP parser"
 
-    runs-on: "ubuntu-latest"
+    runs-on: ${{ matrix.operating-system }}
 
     strategy:
       matrix:
@@ -180,6 +181,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+        operating-system: [ubuntu-latest, windows-latest]
 
     steps:
       - name: "Checkout"

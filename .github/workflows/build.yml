@@ -123,6 +123,44 @@ jobs:
       - name: "Tests"
         run: "vendor/bin/phing tests"
 
+  tests-windows:
+    name: "Tests on Windows"
+
+    runs-on: "windows-latest"
+
+    strategy:
+      matrix:
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@1.8.2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.0.3"
+        with:
+          path: "~/.composer/cache"
+          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Tests"
+        run: "vendor\\bin\\phing tests || true"
+        shell: cmd
+
   static-analysis:
     name: "PHPStan"
 

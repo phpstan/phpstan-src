@@ -14,9 +14,6 @@ before_script:
   - composer update --no-interaction
 
 jobs:
-  allow_failures:
-    - php: master
-    - os: windows
   include:
     - stage: test
       php: 7.3
@@ -70,23 +67,6 @@ jobs:
             git tag -s ${TRAVIS_TAG} -m "${TRAVIS_TAG}" && \
             git push --quiet origin ${TRAVIS_TAG}
           fi
-    - stage: test
-      os: windows
-      language: shell # No PHP currently
-      env: PHP_VERSION=7.1.32
-      install:
-        - choco install php --version=${PHP_VERSION} --package-parameters="/InstallDir:c:\tools\php"
-        - choco install composer --ia "/DEV=C:\tools\php"
-        - cp 'C:\tools\php\php.ini-production' 'C:\tools\php\php.ini'
-        - echo 'memory_limit=1G' >> 'C:\tools\php\php.ini'
-        - echo 'date.timezone="UTC"' >> 'C:\tools\php\php.ini'
-        - echo 'extension_dir=ext' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_curl.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_mbstring.dll' >> 'C:\tools\php\php.ini'
-        - echo 'extension=php_openssl.dll' >> 'C:\tools\php\php.ini'
-        - export PATH=/c/tools/php:$PATH
-      script:
-        - vendor/bin/phing tests
 
 cache:
   directories:

@@ -15,13 +15,18 @@ class FileCacheStorage implements CacheStorage
 		$this->directory = $directory;
 	}
 
+	public function makeRootDir(): void
+	{
+		$this->makeDir($this->directory);
+	}
+
 	private function makeDir(string $directory): void
 	{
 		if (is_dir($directory)) {
 			return;
 		}
 
-		$result = @mkdir($directory, 0777, true);
+		$result = @mkdir($directory, 0777);
 		if ($result === false) {
 			clearstatcache();
 			if (is_dir($directory)) {
@@ -41,7 +46,7 @@ class FileCacheStorage implements CacheStorage
 	public function load(string $key, string $variableKey)
 	{
 		return (function (string $key, string $variableKey) {
-			$filePath = $this->getFilePath($key);
+			[,, $filePath] = $this->getFilePaths($key);
 			if (!is_file($filePath)) {
 				return null;
 			}
@@ -66,8 +71,9 @@ class FileCacheStorage implements CacheStorage
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{
-		$path = $this->getFilePath($key);
-		$this->makeDir(dirname($path));
+		[$firstDirectory, $secondDirectory, $path] = $this->getFilePaths($key);
+		$this->makeDir($firstDirectory);
+		$this->makeDir($secondDirectory);
 
 		$tmpPath = sprintf('%s/%s.tmp', $this->directory, Random::generate());
 		$tmpSuccess = @file_put_contents(
@@ -92,16 +98,22 @@ class FileCacheStorage implements CacheStorage
 		}
 	}
 
-	private function getFilePath(string $key): string
+	/**
+	 * @param string $key
+	 * @return array{string, string, string}
+	 */
+	private function getFilePaths(string $key): array
 	{
 		$keyHash = sha1($key);
-		return sprintf(
-			'%s/%s/%s/%s.php',
-			$this->directory,
-			substr($keyHash, 0, 2),
-			substr($keyHash, 2, 2),
-			$keyHash
-		);
+		$firstDirectory = sprintf('%s/%s', $this->directory, substr($keyHash, 0, 2));
+		$secondDirectory = sprintf('%s/%s', $firstDirectory, substr($keyHash, 2, 2));
+		$filePath = sprintf('%s/%s.php', $secondDirectory, $keyHash);
+
+		return [
+			$firstDirectory,
+			$secondDirectory,
+			$filePath,
+		];
 	}
 
 }

@@ -1,5 +1,6 @@
 <?php declare(strict_types = 1);
 
+use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Testing\TestCase;
 
 error_reporting(E_ALL);
@@ -21,4 +22,8 @@ eval('trait TraitInEval {
 
 }');
 
-TestCase::getContainer();
+$container = TestCase::getContainer();
+$fileCacheStorage = $container->getService('cacheStorage');
+if ($fileCacheStorage instanceof FileCacheStorage) {
+	$fileCacheStorage->makeRootDir();
+}

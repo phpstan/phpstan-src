@@ -72,7 +72,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
-			if (!@mkdir($tmpDir, 0777, true) && !is_dir($tmpDir)) {
+			if (!@mkdir($tmpDir, 0777) && !is_dir($tmpDir)) {
 				self::fail(sprintf('Cannot create temp directory %s', $tmpDir));
 			}
 

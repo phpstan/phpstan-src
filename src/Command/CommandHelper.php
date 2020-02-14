@@ -9,6 +9,7 @@ use Nette\Schema\Context as SchemaContext;
 use Nette\Schema\Processor;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
+use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\ContainerFactory;
@@ -208,7 +209,7 @@ class CommandHelper
 
 		if (!isset($tmpDir)) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan';
-			if (!@mkdir($tmpDir, 0777, true) && !is_dir($tmpDir)) {
+			if (!@mkdir($tmpDir, 0777) && !is_dir($tmpDir)) {
 				$errorOutput->writeLineFormatted(sprintf('Cannot create a temp directory %s', $tmpDir));
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
@@ -325,6 +326,11 @@ class CommandHelper
 				$errorOutput->writeLineFormatted($e->getMessage());
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
+		}
+
+		$fileCacheStorage = $container->getService('cacheStorage')->makeRootDir();
+		if ($fileCacheStorage instanceof FileCacheStorage) {
+			$fileCacheStorage->makeRootDir();
 		}
 
 		/** @var FileFinder $fileFinder */

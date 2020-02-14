@@ -1,6 +1,5 @@
 <?php declare(strict_types = 1);
 
-use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Testing\TestCase;
 
 error_reporting(E_ALL);
@@ -22,4 +21,4 @@ eval('trait TraitInEval {
 
 }');
 
-$container = TestCase::getContainer();
+TestCase::getContainer();

@@ -126,8 +126,6 @@ class Process
 		// todo what are all the events I should listen to?
 		// process: just exit now
 		// connection: connection, data, error?
-
-		$this->process->terminate();
 	}
 
 	public function bindConnection(ReadableStreamInterface $out, WritableStreamInterface $in): void

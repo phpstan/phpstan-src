@@ -6,6 +6,7 @@ $stubs = [
 	'../../src/Reflection/SignatureMap/functionMap.php',
 	'../../src/Reflection/SignatureMap/functionMap_php74delta.php',
 	'../../src/Reflection/SignatureMap/functionMetadata.php',
+	'../../vendor/hoa/consistency/Prelude.php',
 ];
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
 foreach ($stubFinder->files()->name('*.php')->in([

@@ -3000,7 +3000,7 @@ return [
 'fopen' => ['resource|false', 'filename'=>'string', 'mode'=>'string', 'use_include_path='=>'bool', 'context='=>'resource'],
 'forward_static_call' => ['mixed', 'function'=>'callable', '...parameters='=>'mixed'],
 'forward_static_call_array' => ['mixed', 'function'=>'callable', 'parameters'=>'array<int,mixed>'],
-'fpassthru' => ['int', 'fp'=>'resource'],
+'fpassthru' => ['int|false', 'fp'=>'resource'],
 'fpm_get_status' => ['array|false'],
 'fprintf' => ['int', 'stream'=>'resource', 'format'=>'string', '...args='=>'string|int|float'],
 'fputcsv' => ['int|false', 'fp'=>'resource', 'fields'=>'array', 'delimiter='=>'string', 'enclosure='=>'string', 'escape_char='=>'string'],

@@ -183,8 +183,16 @@ class ParallelAnalyser
 		InputInterface $input
 	): string
 	{
-		$processCommandArray = [];
-		foreach ([PHP_BINARY, $mainScript, 'worker'] as $arg) {
+		$processCommandArray = [
+			escapeshellarg(PHP_BINARY),
+		];
+
+		if ($input->getOption('memory-limit') === null) {
+			$processCommandArray[] = '-d';
+			$processCommandArray[] = 'memory_limit=' . ini_get('memory_limit');
+		}
+
+		foreach ([$mainScript, 'worker'] as $arg) {
 			$processCommandArray[] = escapeshellarg($arg);
 		}
 

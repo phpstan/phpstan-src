@@ -8,12 +8,25 @@ use PHPUnit\Framework\TestCase;
 class ParallelAnalyserIntegrationTest extends TestCase
 {
 
-	public function testTraitsInDifferentJobAnalysed(): void
+	public function dataRun(): array
+	{
+		return [
+			['analyse'],
+			['a'],
+		];
+	}
+
+	/**
+	 * @dataProvider dataRun
+	 * @param string $command
+	 */
+	public function testRun(string $command): void
 	{
 		exec(sprintf(
-			'%s %s analyse -l 8 -c %s --error-format json %s',
+			'%s %s %s -l 8 -c %s --error-format json %s',
 			escapeshellarg(PHP_BINARY),
 			escapeshellarg(__DIR__ . '/../../../bin/phpstan'),
+			$command,
 			escapeshellarg(__DIR__ . '/parallel-analyser.neon'),
 			implode(' ', array_map(static function (string $path): string {
 				return escapeshellarg($path);

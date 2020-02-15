@@ -183,17 +183,11 @@ class ParallelAnalyser
 		InputInterface $input
 	): string
 	{
-		$args = array_merge([PHP_BINARY, $mainScript], array_slice($_SERVER['argv'], 1));
 		$processCommandArray = [];
-		foreach ($args as $arg) {
-			if (in_array($arg, ['analyse', 'analyze'], true)) {
-				break;
-			}
-
+		foreach ([PHP_BINARY, $mainScript, 'worker'] as $arg) {
 			$processCommandArray[] = escapeshellarg($arg);
 		}
 
-		$processCommandArray[] = 'worker';
 		if ($projectConfigFile !== null) {
 			$processCommandArray[] = '--configuration';
 			$processCommandArray[] = escapeshellarg($projectConfigFile);

@@ -40,6 +40,7 @@ parameters:
 	reportStaticMethodSignatures: false
 	parallel:
 		jobSize: 20
+		processTimeout: 60.0
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	polluteCatchScopeWithTryAssignments: false
@@ -148,7 +149,8 @@ parametersSchema:
 	reportMaybesInMethodSignatures: bool()
 	reportStaticMethodSignatures: bool()
 	parallel: structure([
-		jobSize: int()
+		jobSize: int(),
+		processTimeout: float()
 	])
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
@@ -377,6 +379,7 @@ services:
 		class: PHPStan\Parallel\ParallelAnalyser
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%
+			processTimeout: %parallel.processTimeout%
 
 	-
 		class: PHPStan\Parallel\Scheduler

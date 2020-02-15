@@ -23,16 +23,21 @@ class ParallelAnalyser
 	/** @var int */
 	private $internalErrorsCountLimit;
 
+	/** @var float */
+	private $processTimeout;
+
 	/** @var ProcessPool */
 	private $processPool;
 
 	public function __construct(
 		IgnoredErrorHelper $ignoredErrorHelper,
-		int $internalErrorsCountLimit
+		int $internalErrorsCountLimit,
+		float $processTimeout
 	)
 	{
 		$this->ignoredErrorHelper = $ignoredErrorHelper;
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
+		$this->processTimeout = $processTimeout;
 	}
 
 	/**
@@ -120,7 +125,7 @@ class ParallelAnalyser
 				$serverPort,
 				$processIdentifier,
 				$input
-			), $loop);
+			), $loop, $this->processTimeout);
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$jobs, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {

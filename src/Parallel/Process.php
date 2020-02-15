@@ -19,6 +19,9 @@ class Process
 	/** @var LoopInterface */
 	private $loop;
 
+	/** @var float */
+	private $timeoutSeconds;
+
 	/** @var WritableStreamInterface */
 	private $in;
 
@@ -39,11 +42,13 @@ class Process
 
 	public function __construct(
 		string $command,
-		LoopInterface $loop
+		LoopInterface $loop,
+		float $timeoutSeconds
 	)
 	{
 		$this->command = $command;
 		$this->loop = $loop;
+		$this->timeoutSeconds = $timeoutSeconds;
 	}
 
 	public function start(callable $onData, callable $onError, callable $onExit): void
@@ -103,9 +108,9 @@ class Process
 	{
 		$this->cancelTimer();
 		$this->in->write($data);
-		$this->timer = $this->loop->addTimer(60.0, function (): void {
+		$this->timer = $this->loop->addTimer($this->timeoutSeconds, function (): void {
 			$onError = $this->onError;
-			$onError(new \Exception('Child process timed out after 60 seconds.'));
+			$onError(new \Exception(sprintf('Child process timed out after %.1f seconds.', $this->timeoutSeconds)));
 		});
 	}
 

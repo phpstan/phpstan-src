@@ -265,10 +265,10 @@
 				passthru="true"
 				checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=512M"/>
 			<arg path="bin/phpstan"/>
 			<arg value="analyse"/>
-			<arg value="--memory-limit"/>
-			<arg value="512M"/>
 			<arg value="-c"/>
 			<arg path="${phpstan.config}"/>
 			<arg value="-l"/>
@@ -306,10 +306,10 @@
 			passthru="true"
 			checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=512M"/>
 			<arg path="bin/phpstan"/>
 			<arg value="analyse"/>
-			<arg value="--memory-limit"/>
-			<arg value="512M"/>
 			<arg value="-c"/>
 			<arg path="${phpstan.config}"/>
 			<arg value="-l"/>

@@ -8,9 +8,16 @@ class Scheduler
 	/** @var int */
 	private $jobSize;
 
-	public function __construct(int $jobSize)
+	/** @var int */
+	private $maximumNumberOfProcesses;
+
+	public function __construct(
+		int $jobSize,
+		int $maximumNumberOfProcesses
+	)
 	{
 		$this->jobSize = $jobSize;
+		$this->maximumNumberOfProcesses = $maximumNumberOfProcesses;
 	}
 
 	/**
@@ -26,7 +33,7 @@ class Scheduler
 		$jobs = array_chunk($files, $this->jobSize);
 		$numberOfProcesses = min(count($jobs), $cpuCores);
 
-		return new Schedule($numberOfProcesses, $jobs);
+		return new Schedule(min($numberOfProcesses, $this->maximumNumberOfProcesses), $jobs);
 	}
 
 }

@@ -15,19 +15,6 @@ before_script:
 
 jobs:
   include:
-    - stage: test
-      php: 7.3
-      name: Compiler tests
-      os: linux
-      dist: xenial
-      script:
-        - |
-          cd compiler && \
-          composer install --no-interaction && \
-          vendor/bin/phpunit -c tests/phpunit.xml tests && \
-          ../bin/phpstan analyse -l 8 src tests && \
-          php bin/compile && \
-          ../tmp/phpstan.phar
     - stage: phar
       php: 7.3
       os: linux

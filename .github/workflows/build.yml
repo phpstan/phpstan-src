@@ -236,3 +236,42 @@ jobs:
 
       - name: "PHPStan with static PHP-Parser"
         run: "vendor/bin/phing phpstan-static-php-parser"
+
+  compiler-tests:
+    name: "Compiler Tests"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-version:
+          - "7.3"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@1.8.2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.1.2"
+        with:
+          path: "~/.composer/cache"
+          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Tests"
+        run: |
+          cd compiler && \
+          composer install --no-interaction && \
+          vendor/bin/phpunit -c tests/phpunit.xml tests && \
+          ../bin/phpstan analyse -l 8 src tests && \
+          php bin/compile && \
+          ../tmp/phpstan.phar

@@ -325,7 +325,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$key = $methodName;
 		if ($scope->isInClass()) {
-			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getName());
+			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 		if (!isset($this->methods[$key])) {
 			foreach ($this->methodsClassReflectionExtensions as $extension) {
@@ -391,7 +391,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$key = $propertyName;
 		if ($scope->isInClass()) {
-			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getName());
+			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 		if (!isset($this->properties[$key])) {
 			foreach ($this->propertiesClassReflectionExtensions as $extension) {

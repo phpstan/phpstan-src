@@ -29,7 +29,7 @@ class StubPhpDocProvider
 	/** @var array<string, array<string, ResolvedPhpDocBlock|null>> */
 	private $propertyMap = [];
 
-	/** @var array<string, array<string, ResolvedPhpDocBlock|null>> */
+	/** @var array<string, array<string, null>> */
 	private $methodMap = [];
 
 	/** @var array<string, ResolvedPhpDocBlock|null> */
@@ -162,7 +162,7 @@ class StubPhpDocProvider
 				$parameterNameMapping[$methodParameterNames[$i]] = $parameterName;
 			}
 
-			return $this->methodMap[$className][$methodName] = $resolvedPhpDoc->changeParameterNamesByMapping($parameterNameMapping);
+			return $resolvedPhpDoc->changeParameterNamesByMapping($parameterNameMapping);
 		}
 
 		return null;

@@ -55,11 +55,10 @@ class SchedulerTest extends TestCase
 		$schedule = $scheduler->scheduleWork($cpuCores, $files);
 
 		$this->assertSame($expectedNumberOfProcesses, $schedule->getNumberOfProcesses());
-		$this->assertCount(count($expectedJobSizes), $schedule->getJobs());
-		foreach ($expectedJobSizes as $i => $expectedJobSize) {
-			$scheduledJob = $schedule->getJobs()[$i];
-			$this->assertCount($expectedJobSize, $scheduledJob);
-		}
+		$jobSizes = array_map(static function (array $job): int {
+			return count($job);
+		}, $schedule->getJobs());
+		$this->assertSame($expectedJobSizes, $jobSizes);
 	}
 
 }

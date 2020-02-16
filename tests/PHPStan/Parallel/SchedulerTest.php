@@ -13,6 +13,7 @@ class SchedulerTest extends TestCase
 			[
 				1,
 				16,
+				1,
 				50,
 				115,
 				1,
@@ -21,6 +22,7 @@ class SchedulerTest extends TestCase
 			[
 				16,
 				16,
+				1,
 				30,
 				124,
 				5,
@@ -29,6 +31,7 @@ class SchedulerTest extends TestCase
 			[
 				16,
 				3,
+				1,
 				30,
 				124,
 				3,
@@ -37,10 +40,20 @@ class SchedulerTest extends TestCase
 			[
 				16,
 				16,
+				1,
 				10,
 				298,
 				16,
 				[10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 8],
+			],
+			[
+				16,
+				16,
+				2,
+				30,
+				124,
+				2,
+				[30, 30, 30, 30, 4],
 			],
 		];
 	}
@@ -49,6 +62,7 @@ class SchedulerTest extends TestCase
 	 * @dataProvider dataSchedule
 	 * @param int $cpuCores
 	 * @param int $maximumNumberOfProcesses
+	 * @param int $minimumNumberOfJobsPerProcess
 	 * @param int $jobSize
 	 * @param int $numberOfFiles
 	 * @param int $expectedNumberOfProcesses
@@ -57,6 +71,7 @@ class SchedulerTest extends TestCase
 	public function testSchedule(
 		int $cpuCores,
 		int $maximumNumberOfProcesses,
+		int $minimumNumberOfJobsPerProcess,
 		int $jobSize,
 		int $numberOfFiles,
 		int $expectedNumberOfProcesses,
@@ -64,7 +79,7 @@ class SchedulerTest extends TestCase
 	): void
 	{
 		$files = array_fill(0, $numberOfFiles, 'file.php');
-		$scheduler = new Scheduler($jobSize, $maximumNumberOfProcesses);
+		$scheduler = new Scheduler($jobSize, $maximumNumberOfProcesses, $minimumNumberOfJobsPerProcess);
 		$schedule = $scheduler->scheduleWork($cpuCores, $files);
 
 		$this->assertSame($expectedNumberOfProcesses, $schedule->getNumberOfProcesses());

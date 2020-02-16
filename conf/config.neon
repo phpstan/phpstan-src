@@ -42,6 +42,7 @@ parameters:
 		jobSize: 20
 		processTimeout: 60.0
 		maximumNumberOfProcesses: 32
+		minimumNumberOfJobsPerProcess: 2
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	polluteCatchScopeWithTryAssignments: false
@@ -152,7 +153,8 @@ parametersSchema:
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),
-		maximumNumberOfProcesses: int()
+		maximumNumberOfProcesses: int(),
+		minimumNumberOfJobsPerProcess: int()
 	])
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
@@ -388,6 +390,7 @@ services:
 		arguments:
 			jobSize: %parallel.jobSize%
 			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
+			minimumNumberOfJobsPerProcess: %parallel.minimumNumberOfJobsPerProcess%
 
 	-
 		class: PHPStan\Parser\CachedParser

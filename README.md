@@ -19,7 +19,9 @@ Any contributions are welcome.
 
 ### Building
 
-You can either run the whole build including linting and coding standards using
+Initially you need to run `composer install`, or `composer update` in case you aren't working in a folder which was built before.
+
+Afterwards you can either run the whole build including linting and coding standards using
 
 ```bash
 vendor/bin/phing

@@ -71,6 +71,9 @@ parameters:
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
+	staticReflectionClassNamePatterns:
+		- '#^PhpParser\\#'
+		- '#^Hoa\\#'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- PHP_VERSION
@@ -193,6 +196,7 @@ parametersSchema:
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
 	earlyTerminatingFunctionCalls: listOf(string())
 	memoryLimitFile: string()
+	staticReflectionClassNamePatterns: listOf(string())
 	dynamicConstantNames: listOf(string())
 	customRulesetUsed: bool()
 	rootDir: string()
@@ -994,9 +998,7 @@ services:
 		class: PHPStan\Reflection\ReflectionProvider\ClassWhitelistReflectionProvider
 		arguments:
 			reflectionProvider: @betterReflectionProvider
-			patterns:
-				- '#^PhpParser\\#'
-				- '#^Hoa\\#'
+			patterns: %staticReflectionClassNamePatterns%
 		autowired: false
 
 	betterReflectionSourceLocator:

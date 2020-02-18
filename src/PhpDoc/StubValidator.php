@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
@@ -78,6 +79,10 @@ class StubValidator
 
 		/** @var FileAnalyser $fileAnalyser */
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
+
+		/** @var NodeScopeResolver $nodeScopeResolver */
+		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
+		$nodeScopeResolver->setAnalysedFiles($this->stubFiles);
 
 		$errors = [];
 		foreach ($this->stubFiles as $stubFile) {

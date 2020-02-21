@@ -354,6 +354,9 @@ services:
 			tempDirectory: %tempDir%
 			additionalConfigFiles: %additionalConfigFiles%
 			analysedPaths: %analysedPaths%
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			analysedPathsFromConfig: %analysedPathsFromConfig%
+			allConfigFiles: %allConfigFiles%
 
 	-
 		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider

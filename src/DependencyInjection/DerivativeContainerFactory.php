@@ -17,23 +17,41 @@ class DerivativeContainerFactory
 	/** @var string[] */
 	private $analysedPaths;
 
+	/** @var string[] */
+	private $composerAutoloaderProjectPaths;
+
+	/** @var string[] */
+	private $analysedPathsFromConfig;
+
+	/** @var string[] */
+	private $allConfigFiles;
+
 	/**
 	 * @param string $currentWorkingDirectory
 	 * @param string $tempDirectory
 	 * @param string[] $additionalConfigFiles
 	 * @param string[] $analysedPaths
+	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string[] $analysedPathsFromConfig
+	 * @param string[] $allConfigFiles
 	 */
 	public function __construct(
 		string $currentWorkingDirectory,
 		string $tempDirectory,
 		array $additionalConfigFiles,
-		array $analysedPaths
+		array $analysedPaths,
+		array $composerAutoloaderProjectPaths,
+		array $analysedPathsFromConfig,
+		array $allConfigFiles
 	)
 	{
 		$this->currentWorkingDirectory = $currentWorkingDirectory;
 		$this->tempDirectory = $tempDirectory;
 		$this->additionalConfigFiles = $additionalConfigFiles;
 		$this->analysedPaths = $analysedPaths;
+		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
+		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
+		$this->allConfigFiles = $allConfigFiles;
 	}
 
 	/**
@@ -49,7 +67,10 @@ class DerivativeContainerFactory
 		return $containerFactory->create(
 			$this->tempDirectory,
 			array_merge($this->additionalConfigFiles, $additionalConfigFiles),
-			$this->analysedPaths
+			$this->analysedPaths,
+			$this->composerAutoloaderProjectPaths,
+			$this->analysedPathsFromConfig,
+			$this->allConfigFiles
 		);
 	}
 

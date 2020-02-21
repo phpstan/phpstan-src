@@ -211,6 +211,7 @@ parametersSchema:
 
 	# internal parameters only for DerivativeContainerFactory
 	additionalConfigFiles: listOf(string())
+	allCustomConfigFiles: listOf(string())
 	analysedPaths: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())
 	analysedPathsFromConfig: listOf(string())
@@ -356,7 +357,7 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
-			allConfigFiles: %allConfigFiles%
+			allCustomConfigFiles: %allCustomConfigFiles%
 
 	-
 		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider

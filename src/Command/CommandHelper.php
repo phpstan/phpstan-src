@@ -196,14 +196,16 @@ class CommandHelper
 			$additionalConfigFiles[] = $projectConfigFile;
 		}
 
+		$loaderParameters = [
+			'rootDir' => $containerFactory->getRootDirectory(),
+			'currentWorkingDirectory' => $containerFactory->getCurrentWorkingDirectory(),
+		];
+
 		self::detectDuplicateIncludedFiles(
 			$errorOutput,
 			$currentWorkingDirectoryFileHelper,
 			$additionalConfigFiles,
-			[
-				'rootDir' => $containerFactory->getRootDirectory(),
-				'currentWorkingDirectory' => $containerFactory->getCurrentWorkingDirectory(),
-			]
+			$loaderParameters
 		);
 
 		if (!isset($tmpDir)) {
@@ -215,7 +217,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $projectConfigFile !== null ? self::getConfigFiles(new NeonAdapter(), new PhpAdapter(), $projectConfigFile, $loaderParameters) : []);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

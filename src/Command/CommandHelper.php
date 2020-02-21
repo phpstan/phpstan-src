@@ -217,7 +217,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $projectConfigFile !== null ? self::getConfigFiles(new NeonAdapter(), new PhpAdapter(), $projectConfigFile, $loaderParameters) : [], $level !== null ? $level : self::DEFAULT_LEVEL);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $projectConfigFile !== null ? self::getConfigFiles(new NeonAdapter(), new PhpAdapter(), $projectConfigFile, $loaderParameters) : [], $level ?? self::DEFAULT_LEVEL);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

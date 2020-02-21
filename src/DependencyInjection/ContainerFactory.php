@@ -5,6 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\Extensions\PhpExtension;
 use Phar;
 use PHPStan\Broker\Broker;
+use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 
@@ -44,6 +45,7 @@ class ContainerFactory
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
 	 * @param string[] $allCustomConfigFiles
+	 * @param string $usedLevel
 	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(
@@ -52,7 +54,8 @@ class ContainerFactory
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths = [],
 		array $analysedPathsFromConfig = [],
-		array $allCustomConfigFiles = []
+		array $allCustomConfigFiles = [],
+		string $usedLevel = CommandHelper::DEFAULT_LEVEL
 	): Container
 	{
 		$configurator = new Configurator(new LoaderFactory(
@@ -75,6 +78,7 @@ class ContainerFactory
 			'composerAutoloaderProjectPaths' => $composerAutoloaderProjectPaths,
 			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 			'allCustomConfigFiles' => $allCustomConfigFiles,
+			'usedLevel' => $usedLevel,
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {

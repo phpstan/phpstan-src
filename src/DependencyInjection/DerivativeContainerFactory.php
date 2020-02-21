@@ -26,6 +26,9 @@ class DerivativeContainerFactory
 	/** @var string[] */
 	private $allCustomConfigFiles;
 
+	/** @var string */
+	private $usedLevel;
+
 	/**
 	 * @param string $currentWorkingDirectory
 	 * @param string $tempDirectory
@@ -34,6 +37,7 @@ class DerivativeContainerFactory
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
 	 * @param string[] $allCustomConfigFiles
+	 * @param string $usedLevel
 	 */
 	public function __construct(
 		string $currentWorkingDirectory,
@@ -42,7 +46,8 @@ class DerivativeContainerFactory
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths,
 		array $analysedPathsFromConfig,
-		array $allCustomConfigFiles
+		array $allCustomConfigFiles,
+		string $usedLevel
 	)
 	{
 		$this->currentWorkingDirectory = $currentWorkingDirectory;
@@ -52,6 +57,7 @@ class DerivativeContainerFactory
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
 		$this->allCustomConfigFiles = $allCustomConfigFiles;
+		$this->usedLevel = $usedLevel;
 	}
 
 	/**
@@ -70,7 +76,8 @@ class DerivativeContainerFactory
 			$this->analysedPaths,
 			$this->composerAutoloaderProjectPaths,
 			$this->analysedPathsFromConfig,
-			$this->allCustomConfigFiles
+			$this->allCustomConfigFiles,
+			$this->usedLevel
 		);
 	}
 

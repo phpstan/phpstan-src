@@ -24,7 +24,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class CommandHelper
 {
 
-	public const DEFAULT_LEVEL = 0;
+	public const DEFAULT_LEVEL = '0';
 
 	/**
 	 * @param string[] $paths
@@ -156,7 +156,7 @@ class CommandHelper
 				$tmpDir = Helpers::expand($projectConfig['parameters']['tmpDir'], $defaultParameters);
 			}
 			if ($level === null && isset($projectConfig['parameters']['level'])) {
-				$level = $projectConfig['parameters']['level'];
+				$level = (string) $projectConfig['parameters']['level'];
 			}
 			if (count($paths) === 0 && isset($projectConfig['parameters']['paths'])) {
 				$analysedPathsFromConfig = Helpers::expand($projectConfig['parameters']['paths'], $defaultParameters);
@@ -217,7 +217,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $projectConfigFile !== null ? self::getConfigFiles(new NeonAdapter(), new PhpAdapter(), $projectConfigFile, $loaderParameters) : []);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $projectConfigFile !== null ? self::getConfigFiles(new NeonAdapter(), new PhpAdapter(), $projectConfigFile, $loaderParameters) : [], $level !== null ? $level : self::DEFAULT_LEVEL);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

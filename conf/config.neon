@@ -215,6 +215,7 @@ parametersSchema:
 	analysedPaths: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())
 	analysedPathsFromConfig: listOf(string())
+	usedLevel: string()
 
 services:
 	-
@@ -358,6 +359,7 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
 			allCustomConfigFiles: %allCustomConfigFiles%
+			usedLevel: %usedLevel%
 
 	-
 		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider

@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Analyser;
+use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
@@ -72,7 +73,7 @@ class AnalyseApplication
 	): int
 	{
 		$this->updateMemoryLimitFile();
-		$errors = $this->stubValidator->validate();
+		$stubErrors = $this->stubValidator->validate();
 
 		register_shutdown_function(function (): void {
 			$error = error_get_last();
@@ -90,6 +91,59 @@ class AnalyseApplication
 			@unlink($this->memoryLimitFile);
 		});
 
+		$analyserResult = $this->runAnalyser(
+			$files,
+			$onlyFiles,
+			$debug,
+			$projectConfigFile,
+			$stdOutput,
+			$errorOutput,
+			$input
+		);
+
+		$errors = array_merge($stubErrors, $analyserResult->getErrors());
+
+		$fileSpecificErrors = [];
+		$notFileSpecificErrors = [];
+		$warnings = [];
+		foreach ($errors as $error) {
+			if (is_string($error)) {
+				$notFileSpecificErrors[] = $error;
+			} else {
+				if ($error->isWarning()) {
+					$warnings[] = $error->getMessage();
+					continue;
+				}
+				$fileSpecificErrors[] = $error;
+			}
+		}
+
+		return $errorFormatter->formatErrors(
+			new AnalysisResult(
+				$fileSpecificErrors,
+				$notFileSpecificErrors,
+				$warnings,
+				$defaultLevelUsed,
+				$analyserResult->hasInferrablePropertyTypesFromConstructor(),
+				$projectConfigFile
+			),
+			$stdOutput
+		);
+	}
+
+	/**
+	 * @param string[] $files
+	 */
+	private function runAnalyser(
+		array $files,
+		bool $onlyFiles,
+		bool $debug,
+		?string $projectConfigFile,
+		Output $stdOutput,
+		Output $errorOutput,
+		InputInterface $input
+	): AnalyserResult
+	{
 		/** @var bool $runningInParallel */
 		$runningInParallel = false;
 
@@ -135,9 +189,7 @@ class AnalyseApplication
 			&& $schedule->getNumberOfProcesses() > 1
 		) {
 			$runningInParallel = true;
-			$parallelAnalyserResult = $this->parallelAnalyser->analyse($schedule, $mainScript, $onlyFiles, $postFileCallback, $projectConfigFile, $input);
-			$errors = array_merge($errors, $parallelAnalyserResult->getErrors());
-			$hasInferrablePropertyTypesFromConstructor = $parallelAnalyserResult->hasInferrablePropertyTypesFromConstructor();
+			$analyserResult = $this->parallelAnalyser->analyse($schedule, $mainScript, $onlyFiles, $postFileCallback, $projectConfigFile, $input);
 		} else {
 			$analyserResult = $this->analyser->analyse(
 				$files,
@@ -146,40 +198,13 @@ class AnalyseApplication
 				$postFileCallback,
 				$debug
 			);
-			$errors = array_merge($errors, $analyserResult->getErrors());
-			$hasInferrablePropertyTypesFromConstructor = $analyserResult->hasInferrablePropertyTypesFromConstructor();
 		}
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();
 		}
 
-		$fileSpecificErrors = [];
-		$notFileSpecificErrors = [];
-		$warnings = [];
-		foreach ($errors as $error) {
-			if (is_string($error)) {
-				$notFileSpecificErrors[] = $error;
-			} else {
-				if ($error->isWarning()) {
-					$warnings[] = $error->getMessage();
-					continue;
-				}
-				$fileSpecificErrors[] = $error;
-			}
-		}
-
-		return $errorFormatter->formatErrors(
-			new AnalysisResult(
-				$fileSpecificErrors,
-				$notFileSpecificErrors,
-				$warnings,
-				$defaultLevelUsed,
-				$hasInferrablePropertyTypesFromConstructor,
-				$projectConfigFile
-			),
-			$stdOutput
-		);
+		return $analyserResult;
 	}
 
 	private function updateMemoryLimitFile(): void

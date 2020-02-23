@@ -3,7 +3,6 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Analyser;
-use PHPStan\Analyser\InferrablePropertyTypesFromConstructorHelper;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
@@ -137,19 +136,18 @@ class AnalyseApplication
 		) {
 			$runningInParallel = true;
 			$parallelAnalyserResult = $this->parallelAnalyser->analyse($schedule, $mainScript, $onlyFiles, $postFileCallback, $projectConfigFile, $input);
-			$errors = array_merge($errors, $parallelAnalyserResult['errors']);
-			$hasInferrablePropertyTypesFromConstructor = $parallelAnalyserResult['hasInferrablePropertyTypesFromConstructor'];
+			$errors = array_merge($errors, $parallelAnalyserResult->getErrors());
+			$hasInferrablePropertyTypesFromConstructor = $parallelAnalyserResult->hasInferrablePropertyTypesFromConstructor();
 		} else {
-			$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
-			$errors = array_merge($errors, $this->analyser->analyse(
+			$analyserResult = $this->analyser->analyse(
 				$files,
 				$onlyFiles,
 				$preFileCallback,
 				$postFileCallback,
-				$debug,
-				$inferrablePropertyTypesFromConstructorHelper
-			));
-			$hasInferrablePropertyTypesFromConstructor = $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor();
+				$debug
+			);
+			$errors = array_merge($errors, $analyserResult->getErrors());
+			$hasInferrablePropertyTypesFromConstructor = $analyserResult->hasInferrablePropertyTypesFromConstructor();
 		}
 
 		if (isset($progressStarted) && $progressStarted) {

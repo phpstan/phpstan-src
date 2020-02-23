@@ -5,6 +5,7 @@ namespace PHPStan\Parallel;
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
+use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Command\AnalyseCommand;
@@ -46,7 +47,7 @@ class ParallelAnalyser
 	 * @param bool $onlyFiles
 	 * @param \Closure(int): void|null $postFileCallback
 	 * @param string|null $projectConfigFile
-	 * @return array{errors: (string[]|\PHPStan\Analyser\Error[]), hasInferrablePropertyTypesFromConstructor: bool}
+	 * @return AnalyserResult
 	 */
 	public function analyse(
 		Schedule $schedule,
@@ -55,14 +56,14 @@ class ParallelAnalyser
 		?\Closure $postFileCallback,
 		?string $projectConfigFile,
 		InputInterface $input
-	): array
+	): AnalyserResult
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			return [
-				'errors' => $ignoredErrorHelperResult->getErrors(),
-				'hasInferrablePropertyTypesFromConstructor' => false,
-			];
+			return new AnalyserResult(
+				$ignoredErrorHelperResult->getErrors(),
+				false
+			);
 		}
 
 		$jobs = array_reverse($schedule->getJobs());
@@ -174,10 +175,10 @@ class ParallelAnalyser
 			$internalErrors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 		}
 
-		return [
-			'errors' => array_merge($ignoredErrorHelperResult->process($errors, $onlyFiles, $reachedInternalErrorsCountLimit), $internalErrors, $ignoredErrorHelperResult->getWarnings()),
-			'hasInferrablePropertyTypesFromConstructor' => $hasInferrablePropertyTypesFromConstructor,
-		];
+		return new AnalyserResult(
+			array_merge($ignoredErrorHelperResult->process($errors, $onlyFiles, $reachedInternalErrorsCountLimit), $internalErrors, $ignoredErrorHelperResult->getWarnings()),
+			$hasInferrablePropertyTypesFromConstructor
+		);
 	}
 
 	private function getWorkerCommand(

@@ -332,7 +332,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 
 		return $analyser->analyse(array_map(function (string $path): string {
 			return $this->getFileHelper()->normalizePath($path);
-		}, $filePaths), $onlyFiles);
+		}, $filePaths), $onlyFiles)->getErrors();
 	}
 
 	/**

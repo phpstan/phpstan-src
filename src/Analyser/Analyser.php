@@ -46,21 +46,19 @@ class Analyser
 	 * @param \Closure(string $file): void|null $preFileCallback
 	 * @param \Closure(int): void|null $postFileCallback
 	 * @param bool $debug
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
-	 * @return string[]|\PHPStan\Analyser\Error[] errors
+	 * @return AnalyserResult
 	 */
 	public function analyse(
 		array $files,
 		bool $onlyFiles,
 		?\Closure $preFileCallback = null,
 		?\Closure $postFileCallback = null,
-		bool $debug = false,
-		?callable $outerNodeCallback = null
-	): array
+		bool $debug = false
+	): AnalyserResult
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			return $ignoredErrorHelperResult->getErrors();
+			return new AnalyserResult($ignoredErrorHelperResult->getErrors(), false);
 		}
 
 		$this->nodeScopeResolver->setAnalysedFiles($files);
@@ -70,6 +68,7 @@ class Analyser
 		$errors = [];
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
+		$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
@@ -79,7 +78,7 @@ class Analyser
 				$errors = array_merge($errors, $this->fileAnalyser->analyseFile(
 					$file,
 					$this->registry,
-					$outerNodeCallback
+					$inferrablePropertyTypesFromConstructorHelper
 				));
 			} catch (\Throwable $t) {
 				if ($debug) {
@@ -115,7 +114,7 @@ class Analyser
 			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 		}
 
-		return array_merge($errors, $ignoredErrorHelperResult->getWarnings());
+		return new AnalyserResult(array_merge($errors, $ignoredErrorHelperResult->getWarnings()), $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor());
 	}
 
 	/**

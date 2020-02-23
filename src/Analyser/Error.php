@@ -146,4 +146,22 @@ class Error implements \JsonSerializable
 		);
 	}
 
+	/**
+	 * @param mixed[] $properties
+	 * @return self
+	 */
+	public static function __set_state(array $properties): self
+	{
+		return new self(
+			$properties['message'],
+			$properties['file'],
+			$properties['line'],
+			$properties['canBeIgnored'],
+			$properties['filePath'],
+			$properties['traitFilePath'],
+			$properties['tip'],
+			$properties['warning']
+		);
+	}
+
 }

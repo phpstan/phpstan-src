@@ -11,6 +11,7 @@ parameters:
 		disableRuntimeReflectionProvider: false
 		enableScanningPaths: false
 		parallel: false
+		resultCache: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -315,6 +316,17 @@ services:
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
+
+	-
+		class: PHPStan\Analyser\ResultCache\ResultCacheManager
+		arguments:
+			enabled: %featureToggles.resultCache%
+			cacheFilePath: %tmpDir%/resultCache.php
+			allCustomConfigFiles: %allCustomConfigFiles%
+			analysedPaths: %analysedPaths%
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			stubFiles: %stubFiles%
+			usedLevel: %usedLevel%
 
 	-
 		class: PHPStan\Cache\Cache

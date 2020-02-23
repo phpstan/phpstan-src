@@ -46,6 +46,7 @@ class Analyser
 	 * @param \Closure(string $file): void|null $preFileCallback
 	 * @param \Closure(int): void|null $postFileCallback
 	 * @param bool $debug
+	 * @param string[]|null $allAnalysedFiles
 	 * @return AnalyserResult
 	 */
 	public function analyse(
@@ -53,15 +54,21 @@ class Analyser
 		bool $onlyFiles,
 		?\Closure $preFileCallback = null,
 		?\Closure $postFileCallback = null,
-		bool $debug = false
+		bool $debug = false,
+		?array $allAnalysedFiles = null
 	): AnalyserResult
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			return new AnalyserResult($ignoredErrorHelperResult->getErrors(), false);
+			return new AnalyserResult($ignoredErrorHelperResult->getErrors(), false, null);
 		}
 
-		$this->nodeScopeResolver->setAnalysedFiles($files);
+		if ($allAnalysedFiles === null) {
+			$allAnalysedFiles = $files;
+		}
+
+		$this->nodeScopeResolver->setAnalysedFiles($allAnalysedFiles);
+		$allAnalysedFiles = array_fill_keys($allAnalysedFiles, true);
 
 		$this->collectErrors($files);
 
@@ -69,17 +76,21 @@ class Analyser
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
 		$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
+		$dependencies = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
 			}
 
 			try {
-				$errors = array_merge($errors, $this->fileAnalyser->analyseFile(
+				$fileAnalyserResult = $this->fileAnalyser->analyseFile(
 					$file,
+					$allAnalysedFiles,
 					$this->registry,
 					$inferrablePropertyTypesFromConstructorHelper
-				));
+				);
+				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
+				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 			} catch (\Throwable $t) {
 				if ($debug) {
 					throw $t;
@@ -114,7 +125,11 @@ class Analyser
 			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 		}
 
-		return new AnalyserResult(array_merge($errors, $ignoredErrorHelperResult->getWarnings()), $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor());
+		return new AnalyserResult(
+			array_merge($errors, $ignoredErrorHelperResult->getWarnings()),
+			$inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
+			$internalErrorsCount === 0 ? $dependencies : null
+		);
 	}
 
 	/**

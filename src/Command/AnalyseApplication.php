@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
@@ -26,6 +27,9 @@ class AnalyseApplication
 	/** @var Scheduler */
 	private $scheduler;
 
+	/** @var \PHPStan\Analyser\ResultCache\ResultCacheManager */
+	private $resultCacheManager;
+
 	/** @var string */
 	private $memoryLimitFile;
 
@@ -37,6 +41,7 @@ class AnalyseApplication
 		StubValidator $stubValidator,
 		ParallelAnalyser $parallelAnalyser,
 		Scheduler $scheduler,
+		ResultCacheManager $resultCacheManager,
 		string $memoryLimitFile,
 		bool $runParallel
 	)
@@ -45,6 +50,7 @@ class AnalyseApplication
 		$this->stubValidator = $stubValidator;
 		$this->parallelAnalyser = $parallelAnalyser;
 		$this->scheduler = $scheduler;
+		$this->resultCacheManager = $resultCacheManager;
 		$this->memoryLimitFile = $memoryLimitFile;
 		$this->runParallel = $runParallel;
 	}
@@ -91,20 +97,24 @@ class AnalyseApplication
 			@unlink($this->memoryLimitFile);
 		});
 
-		$analyserResult = $this->runAnalyser(
+		$resultCache = $this->resultCacheManager->restore($files, $debug);
+
+		$analyserResult = $this->resultCacheManager->process($this->runAnalyser(
+			$resultCache->getFilesToAnalyse(),
 			$files,
-			$onlyFiles,
+			$onlyFiles || !$resultCache->isFullAnalysis(),
 			$debug,
 			$projectConfigFile,
 			$stdOutput,
 			$errorOutput,
 			$input
-		);
+		), $resultCache);
 
 		$errors = array_merge($stubErrors, $analyserResult->getErrors());
 
 		$fileSpecificErrors = [];
 		$notFileSpecificErrors = [];
+		$filesErrorsToCache = [];
 		$warnings = [];
 		foreach ($errors as $error) {
 			if (is_string($error)) {
@@ -115,6 +125,7 @@ class AnalyseApplication
 					continue;
 				}
 				$fileSpecificErrors[] = $error;
+				$filesErrorsToCache[$error->getFilePath()][] = $error;
 			}
 		}
 
@@ -133,9 +144,11 @@ class AnalyseApplication
 
 	/**
 	 * @param string[] $files
+	 * @param string[] $allAnalysedFiles
 	 */
 	private function runAnalyser(
 		array $files,
+		array $allAnalysedFiles,
 		bool $onlyFiles,
 		bool $debug,
 		?string $projectConfigFile,
@@ -144,6 +157,15 @@ class AnalyseApplication
 		InputInterface $input
 	): AnalyserResult
 	{
+		$filesCount = count($files);
+		$allAnalysedFilesCount = count($allAnalysedFiles);
+		if ($filesCount === 0) {
+			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
+			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
+			$errorOutput->getStyle()->progressFinish();
+			return new AnalyserResult([], false, []);
+		}
+
 		/** @var bool $runningInParallel */
 		$runningInParallel = false;
 
@@ -151,9 +173,10 @@ class AnalyseApplication
 			$progressStarted = false;
 			$fileOrder = 0;
 			$preFileCallback = null;
-			$postFileCallback = function (int $step) use ($errorOutput, &$progressStarted, $files, &$fileOrder, &$runningInParallel): void {
+			$postFileCallback = function (int $step) use ($errorOutput, &$progressStarted, $allAnalysedFilesCount, $filesCount, &$fileOrder, &$runningInParallel): void {
 				if (!$progressStarted) {
-					$errorOutput->getStyle()->progressStart(count($files));
+					$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
+					$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
 					$progressStarted = true;
 				}
 				$errorOutput->getStyle()->progressAdvance($step);
@@ -196,7 +219,8 @@ class AnalyseApplication
 				$onlyFiles,
 				$preFileCallback,
 				$postFileCallback,
-				$debug
+				$debug,
+				$allAnalysedFiles
 			);
 		}
 

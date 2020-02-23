@@ -99,11 +99,14 @@ class DependencyResolver
 					// pass
 				}
 			} else {
-				$variants = $scope->getType($functionName)->getCallableParametersAcceptors($scope);
-				foreach ($variants as $variant) {
-					$referencedClasses = $variant->getReturnType()->getReferencedClasses();
-					foreach ($referencedClasses as $referencedClass) {
-						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				$calledType = $scope->getType($functionName);
+				if ($calledType->isCallable()->yes()) {
+					$variants = $calledType->getCallableParametersAcceptors($scope);
+					foreach ($variants as $variant) {
+						$referencedClasses = $variant->getReturnType()->getReferencedClasses();
+						foreach ($referencedClasses as $referencedClass) {
+							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+						}
 					}
 				}
 			}

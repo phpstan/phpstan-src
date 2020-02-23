@@ -104,16 +104,20 @@ class WorkerCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
+		$analysedFiles = $inceptionResult->getFiles();
+
 		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
-		$nodeScopeResolver->setAnalysedFiles($inceptionResult->getFiles());
+		$nodeScopeResolver->setAnalysedFiles($analysedFiles);
+
+		$analysedFiles = array_fill_keys($analysedFiles, true);
 
 		$tcpConector = new TcpConnector($loop);
-		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->then(function (ConnectionInterface $connection) use ($container, $identifier): void {
+		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->then(function (ConnectionInterface $connection) use ($container, $identifier, $analysedFiles): void {
 			$out = new Encoder($connection);
 			$in = new Decoder($connection, true, 512, 0, 4 * 1024 * 1024);
 			$out->write(['action' => 'hello', 'identifier' => $identifier]);
-			$this->runWorker($container, $out, $in);
+			$this->runWorker($container, $out, $in, $analysedFiles);
 		});
 
 		$loop->run();
@@ -121,13 +125,25 @@ class WorkerCommand extends Command
 		return 0;
 	}
 
-	private function runWorker(Container $container, WritableStreamInterface $out, ReadableStreamInterface $in): void
+	/**
+	 * @param Container $container
+	 * @param WritableStreamInterface $out
+	 * @param ReadableStreamInterface $in
+	 * @param array<string, true> $analysedFiles
+	 */
+	private function runWorker(
+		Container $container,
+		WritableStreamInterface $out,
+		ReadableStreamInterface $in,
+		array $analysedFiles
+	): void
 	{
 		$handleError = static function (\Throwable $error) use ($out): void {
 			$out->write([
 				'action' => 'result',
 				'result' => [
 					'errors' => [$error->getMessage()],
+					'dependencies' => [],
 					'filesCount' => 0,
 					'hasInferrablePropertyTypesFromConstructor' => false,
 					'internalErrorsCount' => 1,
@@ -144,7 +160,7 @@ class WorkerCommand extends Command
 		$registry = $container->getByType(Registry::class);
 
 		// todo collectErrors (from Analyser)
-		$in->on('data', static function (array $json) use ($fileAnalyser, $registry, $out): void {
+		$in->on('data', static function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -153,10 +169,13 @@ class WorkerCommand extends Command
 			$internalErrorsCount = 0;
 			$files = $json['files'];
 			$errors = [];
+			$dependencies = [];
 			$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
 			foreach ($files as $file) {
 				try {
-					$fileErrors = $fileAnalyser->analyseFile($file, $registry, $inferrablePropertyTypesFromConstructorHelper);
+					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $registry, $inferrablePropertyTypesFromConstructorHelper);
+					$fileErrors = $fileAnalyserResult->getErrors();
+					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
 					}
@@ -177,6 +196,7 @@ class WorkerCommand extends Command
 				'action' => 'result',
 				'result' => [
 					'errors' => $errors,
+					'dependencies' => $dependencies,
 					'filesCount' => count($files),
 					'hasInferrablePropertyTypesFromConstructor' => $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
 					'internalErrorsCount' => $internalErrorsCount,

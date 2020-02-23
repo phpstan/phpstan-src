@@ -84,14 +84,17 @@ class StubValidator
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
 		$nodeScopeResolver->setAnalysedFiles($this->stubFiles);
 
+		$analysedFiles = array_fill_keys($this->stubFiles, true);
+
 		$errors = [];
 		foreach ($this->stubFiles as $stubFile) {
 			$tmpErrors = $fileAnalyser->analyseFile(
 				$stubFile,
+				$analysedFiles,
 				$ruleRegistry,
 				static function (): void {
 				}
-			);
+			)->getErrors();
 			foreach ($tmpErrors as $tmpError) {
 				$errors[] = $tmpError->withoutTip();
 			}

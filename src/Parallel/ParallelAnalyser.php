@@ -62,7 +62,8 @@ class ParallelAnalyser
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			return new AnalyserResult(
 				$ignoredErrorHelperResult->getErrors(),
-				false
+				false,
+				null
 			);
 		}
 
@@ -114,6 +115,7 @@ class ParallelAnalyser
 			$this->processPool->quitAll();
 		};
 
+		$dependencies = [];
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {
 				break;
@@ -127,7 +129,7 @@ class ParallelAnalyser
 				$processIdentifier,
 				$input
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$jobs, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$jobs, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -135,6 +137,14 @@ class ParallelAnalyser
 					}
 
 					$errors[] = Error::decode($jsonError);
+				}
+
+				/**
+				 * @var string $file
+				 * @var array<string> $fileDependencies
+				 */
+				foreach ($json['dependencies'] as $file => $fileDependencies) {
+					$dependencies[$file] = $fileDependencies;
 				}
 
 				if ($postFileCallback !== null) {
@@ -177,7 +187,8 @@ class ParallelAnalyser
 
 		return new AnalyserResult(
 			array_merge($ignoredErrorHelperResult->process($errors, $onlyFiles, $reachedInternalErrorsCountLimit), $internalErrors, $ignoredErrorHelperResult->getWarnings()),
-			$hasInferrablePropertyTypesFromConstructor
+			$hasInferrablePropertyTypesFromConstructor,
+			$internalErrorsCount === 0 ? $dependencies : null
 		);
 	}
 

@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
+use PHPStan\Dependency\DependencyResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\DirectParser;
@@ -376,7 +377,9 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($broker, $typeSpecifier),
 			$nodeScopeResolver,
-			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser)
+			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser),
+			new DependencyResolver($broker),
+			$fileHelper
 		);
 		$ignoredErrorHelper = new IgnoredErrorHelper(
 			self::getContainer()->getByType(IgnoredRegexValidator::class),

@@ -12,6 +12,7 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Command\IgnoredRegexValidatorResult;
+use PHPStan\Dependency\DependencyResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -77,7 +78,9 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 			$fileAnalyser = new FileAnalyser(
 				$this->createScopeFactory($broker, $typeSpecifier),
 				$nodeScopeResolver,
-				$this->getParser()
+				$this->getParser(),
+				new DependencyResolver($broker),
+				$fileHelper
 			);
 			$ignoredRegexValidator = $this->createMock(IgnoredRegexValidator::class);
 			$ignoredRegexValidator->method('validate')

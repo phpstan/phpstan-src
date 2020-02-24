@@ -46,7 +46,7 @@ return [
 		'sapi_windows_set_ctrl_handler' => ['bool', 'callable'=>'callable', 'add'=>'bool'],
 		'ReflectionProperty::getType' => ['?ReflectionType'],
 		'ReflectionProperty::hasType' => ['bool'],
-		'ReflectionProperty::isInitialized' => ['bool'],
+		'ReflectionProperty::isInitialized' => ['bool', 'object='=>'?object'],
 		'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],
 		'ReflectionReference::getId' => ['string'],
 		'SQLite3Stmt::getSQL' => ['string', 'expanded='=>'bool'],

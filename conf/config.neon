@@ -10,7 +10,6 @@ parameters:
 		staticReflectionForPhpParser: true
 		disableRuntimeReflectionProvider: false
 		enableScanningPaths: false
-		parallel: false
 		resultCache: false
 	fileExtensions:
 		- php
@@ -337,7 +336,6 @@ services:
 		class: PHPStan\Command\AnalyseApplication
 		arguments:
 			memoryLimitFile: %memoryLimitFile%
-			runParallel: %featureToggles.parallel%
 
 	-
 		class: PHPStan\Command\IgnoredRegexValidator

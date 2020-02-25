@@ -33,17 +33,13 @@ class AnalyseApplication
 	/** @var string */
 	private $memoryLimitFile;
 
-	/** @var bool */
-	private $runParallel;
-
 	public function __construct(
 		Analyser $analyser,
 		StubValidator $stubValidator,
 		ParallelAnalyser $parallelAnalyser,
 		Scheduler $scheduler,
 		ResultCacheManager $resultCacheManager,
-		string $memoryLimitFile,
-		bool $runParallel
+		string $memoryLimitFile
 	)
 	{
 		$this->analyser = $analyser;
@@ -52,7 +48,6 @@ class AnalyseApplication
 		$this->scheduler = $scheduler;
 		$this->resultCacheManager = $resultCacheManager;
 		$this->memoryLimitFile = $memoryLimitFile;
-		$this->runParallel = $runParallel;
 	}
 
 	/**
@@ -206,8 +201,7 @@ class AnalyseApplication
 		}
 
 		if (
-			$this->runParallel
-			&& !$debug
+			!$debug
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 1
 		) {

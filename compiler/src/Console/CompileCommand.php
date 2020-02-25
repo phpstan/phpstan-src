@@ -48,6 +48,7 @@ final class CompileCommand extends Command
 		$this->processFactory->setOutput($output);
 
 		$this->fixComposerJson($this->buildDir);
+		$this->renamePhpStormStubs();
 		$this->processFactory->create(['composer', 'update', '--no-dev', '--classmap-authoritative'], $this->buildDir);
 
 		$this->processFactory->create(['php', 'box.phar', 'compile', '--no-parallel'], $this->dataDir);
@@ -74,6 +75,43 @@ final class CompileCommand extends Command
 		}
 
 		$this->filesystem->write($buildDir . '/composer.json', $encodedJson);
+	}
+
+	private function renamePhpStormStubs(): void
+	{
+		$directory = $this->buildDir . '/vendor/jetbrains/phpstorm-stubs';
+		if (!is_dir($directory)) {
+			return;
+		}
+
+		$stubFinder = \Symfony\Component\Finder\Finder::create();
+		$stubsMapPath = $directory . '/PhpStormStubsMap.php';
+		foreach ($stubFinder->files()->name('*.php')->in($directory) as $stubFile) {
+			$path = $stubFile->getPathname();
+			if ($path === $stubsMapPath) {
+				continue;
+			}
+
+			$renameSuccess = rename(
+				$path,
+				dirname($path) . '/' . $stubFile->getBasename('.php') . '.stub'
+			);
+			if ($renameSuccess === false) {
+				throw new \PHPStan\ShouldNotHappenException(sprintf('Could not rename %s', $path));
+			}
+		}
+
+		$stubsMapContents = file_get_contents($stubsMapPath);
+		if ($stubsMapContents === false) {
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not read %s', $stubsMapPath));
+		}
+
+		$stubsMapContents = str_replace('.php\',', '.stub\',', $stubsMapContents);
+
+		$putSuccess = file_put_contents($directory . '/PhpStormStubsMap.php', $stubsMapContents);
+		if ($putSuccess === false) {
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
+		}
 	}
 
 }

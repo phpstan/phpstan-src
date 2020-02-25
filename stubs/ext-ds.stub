@@ -567,6 +567,15 @@ final class Vector implements Sequence
 	public function map(callable $callback): Vector
 	{
 	}
+	
+	/**
+	 * @template TValue2
+	 * @param iterable<TValue2> $values
+	 * @return Sequence<TValue|TValue2>
+	 */
+	public function merge(iterable $values): Vector
+	{
+	}
 }
 
 /**

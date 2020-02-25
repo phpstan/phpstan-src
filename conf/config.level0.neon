@@ -1,8 +1,6 @@
 parameters:
 	customRulesetUsed: false
 	missingClosureNativeReturnCheckObjectTypehint: false
-	featureToggles:
-		closureUsesThis: false
 
 conditionalTags:
 	PHPStan\Rules\Functions\ClosureUsesThisRule:

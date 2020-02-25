@@ -8,8 +8,7 @@ conditionalTags:
 parameters:
 	checkFunctionArgumentTypes: true
 	checkArgumentsPassedByReference: true
-	featureToggles:
-		randomIntParameters: false
+
 
 services:
 	-

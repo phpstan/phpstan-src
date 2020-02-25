@@ -571,7 +571,7 @@ final class Vector implements Sequence
 	/**
 	 * @template TValue2
 	 * @param iterable<TValue2> $values
-	 * @return Sequence<TValue|TValue2>
+	 * @return Vector<TValue|TValue2>
 	 */
 	public function merge(iterable $values): Vector
 	{

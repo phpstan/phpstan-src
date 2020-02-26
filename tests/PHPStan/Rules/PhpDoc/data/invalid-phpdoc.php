@@ -51,3 +51,14 @@ class Bar
 	}
 
 }
+
+class Baz
+{
+
+	/** @var callable(int) */
+	private $fooProperty;
+
+	/** @var (Foo|Bar */
+	private $barProperty;
+
+}

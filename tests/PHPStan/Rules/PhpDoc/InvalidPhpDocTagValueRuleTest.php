@@ -82,14 +82,6 @@ class InvalidPhpDocTagValueRuleTest extends \PHPStan\Testing\RuleTestCase
 				'PHPDoc tag @var has invalid value ((Foo|Bar): Unexpected token "*/", expected \')\' at offset 18',
 				62,
 			],
-			[
-				'Encountered unknown tag that had the phpstan prefix: @phpstan-extens',
-				67,
-			],
-			[
-				'Encountered unknown tag that had the phpstan prefix: @phpstan-pararm',
-				74,
-			],
 		]);
 	}
 

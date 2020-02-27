@@ -16,6 +16,18 @@ use PHPStan\Rules\RuleErrorBuilder;
 class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 {
 
+	private const POSSIBLE_PHPSTAN_TAGS = [
+		'@phpstan-param',
+		'@phpstan-var',
+		'@phpstan-template',
+		'@phpstan-extends',
+		'@phpstan-implements',
+		'@phpstan-use',
+		'@phpstan-template',
+		'@phpstan-template-covariant',
+		'@phpstan-return',
+	];
+
 	/** @var Lexer */
 	private $phpDocLexer;
 
@@ -57,6 +69,14 @@ class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {
+			if (strpos($phpDocTag->name, '@phpstan-') === 0
+				&& !in_array($phpDocTag->name, self::POSSIBLE_PHPSTAN_TAGS, true)
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Encountered unknown tag that had the phpstan prefix: %s',
+					$phpDocTag->name
+				))->build();
+			}
 			if (!($phpDocTag->value instanceof InvalidTagValueNode)) {
 				continue;
 			}

@@ -152,7 +152,7 @@ jobs:
         run: |
           composer require pcov/clobber --dev && \
           vendor/bin/pcov clobber && \
-          php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit -c tests/phpunit.xml tests
+          php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit -c tests/phpunit.xml tests/PHPStan
 
       - name: "Codecov.io"
         env:

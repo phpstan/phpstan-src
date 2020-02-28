@@ -23,11 +23,11 @@ class InvalidPHPStanDocTagRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/invalid-phpstan-doc.php'], [
 			[
-				'Encountered unknown tag that had the phpstan prefix: @phpstan-extens',
+				'Unknown PHPDoc tag: @phpstan-extens',
 				7,
 			],
 			[
-				'Encountered unknown tag that had the phpstan prefix: @phpstan-pararm',
+				'Unknown PHPDoc tag: @phpstan-pararm',
 				14,
 			],
 		]);

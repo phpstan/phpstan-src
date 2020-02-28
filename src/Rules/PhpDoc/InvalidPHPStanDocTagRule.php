@@ -74,7 +74,7 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Encountered unknown tag that had the phpstan prefix: %s',
+				'Unknown PHPDoc tag: %s',
 				$phpDocTag->name
 			))->build();
 		}

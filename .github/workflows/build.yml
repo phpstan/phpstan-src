@@ -311,6 +311,44 @@ jobs:
           time vendor/bin/phing phpstan-result-cache
           time vendor/bin/phing phpstan-result-cache
 
+  result-cache-e2e-tests:
+    name: "Result cache E2E tests"
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version:
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@1.8.2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.1.2"
+        with:
+          path: "~/.composer/cache"
+          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Tests"
+        run: |
+          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && \
+          git -C tests/e2e/PHP-Parser checkout v3.1.5 && \
+          composer install --working-dir tests/e2e/PHP-Parser
+          vendor/bin/phpunit -c tests/phpunit.xml tests/e2e/ResultCacheEndToEndTest.php
+
   compiler-tests:
     name: "Compiler Tests"
 

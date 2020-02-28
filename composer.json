@@ -70,6 +70,7 @@
 			]
 		},
 		"classmap": [
+			"tests/e2e",
 			"tests/PHPStan"
 		]
 	},

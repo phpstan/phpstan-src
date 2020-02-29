@@ -28,17 +28,27 @@ class VariableCertaintyNullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCas
 				'Variable $a on left side of ?? is always null.',
 				13,
 			],
+		]);
+	}
+
+	public function testVariableCertaintyInNullCoalesceAssign(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[
 				'Variable $scalar on left side of ??= always exists and is not nullable.',
-				20,
+				6,
 			],
 			[
 				'Variable $doesNotExist on left side of ??= is never defined.',
-				22,
+				8,
 			],
 			[
 				'Variable $a on left side of ??= is always null.',
-				27,
+				13,
 			],
 		]);
 	}

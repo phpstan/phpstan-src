@@ -548,6 +548,9 @@ services:
 		class: PHPStan\Rules\Generics\VarianceCheck
 
 	-
+		class: PHPStan\Rules\IssetCheck
+
+	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
 			checkMissingIterableValueType: %checkMissingIterableValueType%

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
@@ -13,7 +14,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new NullCoalesceRule(new PropertyDescriptor(), new PropertyReflectionFinder());
+		return new NullCoalesceRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder()));
 	}
 
 	public function testCoalesceRule(): void

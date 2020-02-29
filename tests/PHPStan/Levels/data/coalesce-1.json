@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Variable $foo on left side of ?? is never defined.",
+        "line": 4,
+        "ignorable": true
+    },
+    {
+        "message": "Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.",
+        "line": 10,
+        "ignorable": true
+    }
+]

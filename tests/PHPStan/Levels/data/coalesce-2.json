@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Access to an undefined property ReflectionClass::$nonexistent.",
+        "line": 11,
+        "ignorable": true
+    }
+]

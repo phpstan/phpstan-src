@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Undefined variable: $bar",
+        "line": 6,
+        "ignorable": true
+    }
+]

@@ -32,6 +32,7 @@ class LevelsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 			['missingReturn'],
 			['arrayAccess'],
 			['typehints'],
+			['coalesce'],
 		];
 	}
 

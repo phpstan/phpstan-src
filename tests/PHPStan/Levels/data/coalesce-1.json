@@ -5,8 +5,8 @@
         "ignorable": true
     },
     {
-        "message": "Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.",
-        "line": 10,
+        "message": "Variable $bar on left side of ?? is never defined.",
+        "line": 6,
         "ignorable": true
     }
 ]

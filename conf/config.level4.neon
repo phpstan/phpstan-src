@@ -14,6 +14,10 @@ rules:
 	- PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
 
+conditionalTags:
+	PHPStan\Rules\Variables\NullCoalesceRule:
+		phpstan.rules.rule: %featureToggles.nullCoalesce%
+
 services:
 	-
 		class: PHPStan\Rules\Classes\ImpossibleInstanceOfRule
@@ -116,3 +120,6 @@ services:
 			checkProtectedAndPublicMethods: %checkTooWideReturnTypesInProtectedAndPublicMethods%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Variables\NullCoalesceRule

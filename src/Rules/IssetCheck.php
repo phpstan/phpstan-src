@@ -32,28 +32,12 @@ class IssetCheck
 	public function check(Expr $expr, Scope $scope, string $operatorDescription, ?RuleError $error = null): ?RuleError
 	{
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
-
 			$hasVariable = $scope->hasVariableType($expr->name);
-
-			if ($hasVariable->no()) {
-				return $error ?? RuleErrorBuilder::message(
-					sprintf('Variable $%s on left side of %s is never defined.', $expr->name, $operatorDescription)
-				)->build();
-			}
-
-			$variableType = $scope->getType($expr);
-
 			if ($hasVariable->maybe()) {
 				return null;
 			}
 
-			if ($hasVariable->yes()) {
-				return $error ?? $this->generateError(
-					$variableType,
-					sprintf('Variable $%s on left side of %s always exists and', $expr->name, $operatorDescription)
-				);
-			}
-
+			return $error;
 		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
 
 			$type = $scope->getType($expr->var);

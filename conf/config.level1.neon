@@ -7,8 +7,9 @@ parameters:
 	reportMagicMethods: true
 	reportMagicProperties: true
 
+
 conditionalTags:
-	PHPStan\Rules\Variables\NullCoalesceRule:
+	PHPStan\Rules\Variables\VariableCertaintyNullCoalesceRule:
 		phpstan.rules.rule: %featureToggles.nullCoalesce%
 
 rules:
@@ -19,4 +20,4 @@ rules:
 
 services:
 	-
-		class: PHPStan\Rules\Variables\NullCoalesceRule
+		class: PHPStan\Rules\Variables\VariableCertaintyNullCoalesceRule

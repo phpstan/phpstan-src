@@ -11733,7 +11733,7 @@ return [
 'stream_set_write_buffer' => ['int', 'fp'=>'resource', 'buffer'=>'int'],
 'stream_socket_accept' => ['resource|false', 'serverstream'=>'resource', 'timeout='=>'float', '&w_peername='=>'string'],
 'stream_socket_client' => ['resource|false', 'remoteaddress'=>'string', '&w_errcode='=>'int', '&w_errstring='=>'string', 'timeout='=>'float', 'flags='=>'int', 'context='=>'resource'],
-'stream_socket_enable_crypto' => ['int', 'stream'=>'resource', 'enable'=>'bool', 'cryptokind='=>'int', 'sessionstream='=>'resource'],
+'stream_socket_enable_crypto' => ['int|bool', 'stream'=>'resource', 'enable'=>'bool', 'cryptokind='=>'int', 'sessionstream='=>'resource'],
 'stream_socket_get_name' => ['string', 'stream'=>'resource', 'want_peer'=>'bool'],
 'stream_socket_pair' => ['resource[]|false', 'domain'=>'int', 'type'=>'int', 'protocol'=>'int'],
 'stream_socket_recvfrom' => ['string', 'stream'=>'resource', 'amount'=>'int', 'flags='=>'int', '&w_remote_addr='=>'string'],

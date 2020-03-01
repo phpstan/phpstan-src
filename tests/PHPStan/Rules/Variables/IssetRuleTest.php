@@ -81,4 +81,24 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNativePropertyTypes(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/isset-native-property-types.php'], [
+			/*[
+				// no way to achieve this with current PHP Reflection API
+				// There's ReflectionClass::getDefaultProperties()
+				// but it cannot differentiate between `public int $foo` and `public int $foo = null`;
+				'Property IssetNativePropertyTypes\Foo::$hasDefaultValue (int) in isset() is not nullable.',
+				17,
+			],*/
+			[
+				'Property IssetNativePropertyTypes\Foo::$isAssignedBefore (int) in isset() is not nullable.',
+				20,
+			],
+		]);
+	}
+
 }

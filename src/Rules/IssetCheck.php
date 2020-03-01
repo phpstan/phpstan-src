@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -91,6 +92,13 @@ class IssetCheck
 
 			if (!$propertyReflection->isNative()) {
 				return null;
+			}
+
+			$nativeType = $propertyReflection->getNativeType();
+			if (!$nativeType instanceof MixedType) {
+				if (!$scope->isSpecified($expr)) {
+					return null;
+				}
 			}
 
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $expr);

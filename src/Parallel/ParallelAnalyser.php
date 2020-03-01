@@ -30,15 +30,20 @@ class ParallelAnalyser
 	/** @var ProcessPool */
 	private $processPool;
 
+	/** @var int */
+	private $decoderBufferSize;
+
 	public function __construct(
 		IgnoredErrorHelper $ignoredErrorHelper,
 		int $internalErrorsCountLimit,
-		float $processTimeout
+		float $processTimeout,
+		int $decoderBufferSize
 	)
 	{
 		$this->ignoredErrorHelper = $ignoredErrorHelper;
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 		$this->processTimeout = $processTimeout;
+		$this->decoderBufferSize = $decoderBufferSize;
 	}
 
 	/**
@@ -78,7 +83,7 @@ class ParallelAnalyser
 		$server = new \React\Socket\TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server);
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs): void {
-			$decoder = new Decoder($connection, true, 512, 0, 4 * 1024 * 1024);
+			$decoder = new Decoder($connection, true, 512, 0, $this->decoderBufferSize);
 			$encoder = new Encoder($connection);
 			$decoder->on('data', function (array $data) use (&$jobs, $decoder, $encoder): void {
 				if ($data['action'] !== 'hello') {

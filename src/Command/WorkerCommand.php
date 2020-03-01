@@ -115,7 +115,7 @@ class WorkerCommand extends Command
 		$tcpConector = new TcpConnector($loop);
 		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->then(function (ConnectionInterface $connection) use ($container, $identifier, $analysedFiles): void {
 			$out = new Encoder($connection);
-			$in = new Decoder($connection, true, 512, 0, 4 * 1024 * 1024);
+			$in = new Decoder($connection, true, 512, 0, $container->getParameter('parallel')['buffer']);
 			$out->write(['action' => 'hello', 'identifier' => $identifier]);
 			$this->runWorker($container, $out, $in, $analysedFiles);
 		});

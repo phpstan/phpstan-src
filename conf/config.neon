@@ -46,6 +46,7 @@ parameters:
 		processTimeout: 60.0
 		maximumNumberOfProcesses: 32
 		minimumNumberOfJobsPerProcess: 2
+		buffer: 134217728 # 128 MB
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	polluteCatchScopeWithTryAssignments: false
@@ -169,7 +170,8 @@ parametersSchema:
 		jobSize: int(),
 		processTimeout: float(),
 		maximumNumberOfProcesses: int(),
-		minimumNumberOfJobsPerProcess: int()
+		minimumNumberOfJobsPerProcess: int(),
+		buffer: int()
 	])
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
@@ -416,6 +418,7 @@ services:
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 			processTimeout: %parallel.processTimeout%
+			decoderBufferSize: %parallel.buffer%
 
 	-
 		class: PHPStan\Parallel\Scheduler

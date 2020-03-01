@@ -2,6 +2,7 @@
 <?php declare(strict_types=1);
 
 use PHPStan\Command\AnalyseCommand;
+use PHPStan\Command\ClearResultCacheCommand;
 use PHPStan\Command\DumpDependenciesCommand;
 use PHPStan\Command\WorkerCommand;
 
@@ -75,5 +76,6 @@ use PHPStan\Command\WorkerCommand;
 	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new DumpDependenciesCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new WorkerCommand($reversedComposerAutoloaderProjectPaths));
+	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));
 	$application->run();
 })();

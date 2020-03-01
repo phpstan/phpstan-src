@@ -405,4 +405,18 @@ class ResultCacheManager
 		return $stubFiles;
 	}
 
+	public function clear(): string
+	{
+		if (!is_file($this->cacheFilePath)) {
+			return dirname($this->cacheFilePath);
+		}
+
+		@unlink($this->cacheFilePath);
+		if (is_file($this->cacheFilePath)) {
+			throw new \PHPStan\ShouldNotHappenException('File still exists.');
+		}
+
+		return dirname($this->cacheFilePath);
+	}
+
 }

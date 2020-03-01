@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\File\FuzzyRelativePathHelper;
@@ -37,6 +38,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 
 	private function runPath(string $path, int $expectedStatusCode): string
 	{
+		self::getContainer()->getByType(ResultCacheManager::class)->clear();
 		$analyserApplication = self::getContainer()->getByType(AnalyseApplication::class);
 		$resource = fopen('php://memory', 'w', false);
 		if ($resource === false) {

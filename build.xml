@@ -260,6 +260,18 @@
 				text=" ]"
 		></append>
 		<exec
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg path="bin/phpstan"/>
+			<arg value="clear-result-cache"/>
+			<arg value="-c"/>
+			<arg path="${phpstan.config}"/>
+			<arg value="-q"/>
+		</exec>
+		<exec
 				executable="php"
 				logoutput="true"
 				passthru="true"
@@ -306,6 +318,18 @@
 			passthru="true"
 			checkreturn="true"
 		>
+			<arg path="bin/phpstan"/>
+			<arg value="clear-result-cache"/>
+			<arg value="-c"/>
+			<arg path="${phpstan.config}"/>
+			<arg value="-q"/>
+		</exec>
+		<exec
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
 			<arg value="-d"/>
 			<arg value="memory_limit=512M"/>
 			<arg path="bin/phpstan"/>
@@ -337,10 +361,6 @@
 				></append>
 			</then>
 		</if>
-		<append
-			destFile="${phpstan.config}"
-			text=", result-cache.neon"
-		></append>
 		<append
 			destFile="${phpstan.config}"
 			text=" ]"

@@ -10,7 +10,6 @@ parameters:
 		staticReflectionForPhpParser: true
 		disableRuntimeReflectionProvider: false
 		enableScanningPaths: false
-		resultCache: false
 		closureUsesThis: false
 		randomIntParameters: false
 		nullCoalesce: false
@@ -134,7 +133,6 @@ parametersSchema:
 		staticReflectionForPhpParser: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		enableScanningPaths: bool(),
-		resultCache: bool(),
 		closureUsesThis: bool(),
 		randomIntParameters: bool(),
 		nullCoalesce: bool()
@@ -333,7 +331,6 @@ services:
 	-
 		class: PHPStan\Analyser\ResultCache\ResultCacheManager
 		arguments:
-			enabled: %featureToggles.resultCache%
 			cacheFilePath: %tmpDir%/resultCache.php
 			allCustomConfigFiles: %allCustomConfigFiles%
 			analysedPaths: %analysedPaths%

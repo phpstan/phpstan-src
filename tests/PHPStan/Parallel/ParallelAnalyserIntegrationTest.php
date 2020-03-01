@@ -22,6 +22,11 @@ class ParallelAnalyserIntegrationTest extends TestCase
 	 */
 	public function testRun(string $command): void
 	{
+		exec(sprintf('%s %s clear-result-cache --configuration %s', escapeshellarg(PHP_BINARY), escapeshellarg(__DIR__ . '/../../../bin/phpstan'), escapeshellarg(__DIR__ . '/parallel-analyser.neon')), $clearResultCacheOutputLines, $clearResultCacheExitCode);
+		if ($clearResultCacheExitCode !== 0) {
+			throw new \PHPStan\ShouldNotHappenException('Could not clear result cache.');
+		}
+
 		exec(sprintf(
 			'%s %s %s -l 8 -c %s --error-format json %s',
 			escapeshellarg(PHP_BINARY),

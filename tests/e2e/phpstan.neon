@@ -2,6 +2,4 @@ includes:
 	- baseline.neon
 
 parameters:
-	featureToggles:
-		resultCache: true
 	tmpDir: tmp

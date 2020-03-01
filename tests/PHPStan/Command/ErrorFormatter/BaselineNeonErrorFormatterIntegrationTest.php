@@ -59,6 +59,11 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 		chdir(__DIR__ . '/../../../..');
+		exec(sprintf('%s %s clear-result-cache %s', escapeshellarg(PHP_BINARY), 'bin/phpstan', $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : ''), $clearResultCacheOutputLines, $clearResultCacheExitCode);
+		if ($clearResultCacheExitCode !== 0) {
+			throw new \PHPStan\ShouldNotHappenException('Could not clear result cache.');
+		}
+
 		exec(sprintf('%s %s analyse --no-progress --error-format=%s --level=7 %s %s', escapeshellarg(PHP_BINARY), 'bin/phpstan', $errorFormatter, $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : '', escapeshellarg($analysedPath)), $outputLines);
 		chdir($originalDir);
 

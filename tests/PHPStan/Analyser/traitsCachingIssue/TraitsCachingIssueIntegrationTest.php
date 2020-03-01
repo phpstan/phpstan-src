@@ -111,6 +111,11 @@ class TraitsCachingIssueIntegrationTest extends TestCase
 	private function runPhpStan(): array
 	{
 		$phpstanBinPath = __DIR__ . '/../../../../bin/phpstan';
+		exec(sprintf('%s %s clear-result-cache --configuration %s', escapeshellarg(PHP_BINARY), $phpstanBinPath, escapeshellarg(__DIR__ . '/phpstan.neon')), $clearResultCacheOutputLines, $clearResultCacheExitCode);
+		if ($clearResultCacheExitCode !== 0) {
+			throw new \PHPStan\ShouldNotHappenException('Could not clear result cache.');
+		}
+
 		exec(
 			sprintf(
 				'%s %s analyse --no-progress --level 8 --configuration %s --error-format json %s',

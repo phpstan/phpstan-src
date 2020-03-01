@@ -14,9 +14,6 @@ class ResultCacheManager
 
 	private const CACHE_VERSION = 'v1';
 
-	/** @var bool */
-	private $enabled;
-
 	/** @var string */
 	private $cacheFilePath;
 
@@ -36,7 +33,6 @@ class ResultCacheManager
 	private $usedLevel;
 
 	/**
-	 * @param bool $enabled
 	 * @param string $cacheFilePath
 	 * @param string[] $allCustomConfigFiles
 	 * @param string[] $analysedPaths
@@ -45,7 +41,6 @@ class ResultCacheManager
 	 * @param string $usedLevel
 	 */
 	public function __construct(
-		bool $enabled,
 		string $cacheFilePath,
 		array $allCustomConfigFiles,
 		array $analysedPaths,
@@ -54,7 +49,6 @@ class ResultCacheManager
 		string $usedLevel
 	)
 	{
-		$this->enabled = $enabled;
 		$this->cacheFilePath = $cacheFilePath;
 		$this->allCustomConfigFiles = $allCustomConfigFiles;
 		$this->analysedPaths = $analysedPaths;
@@ -70,10 +64,6 @@ class ResultCacheManager
 	 */
 	public function restore(array $allAnalysedFiles, bool $debug): ResultCache
 	{
-		if (!$this->enabled) {
-			return new ResultCache($allAnalysedFiles, true, time(), [], []);
-		}
-
 		if ($debug) {
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
@@ -407,16 +397,14 @@ class ResultCacheManager
 
 	public function clear(): string
 	{
+		$dir = dirname($this->cacheFilePath);
 		if (!is_file($this->cacheFilePath)) {
-			return dirname($this->cacheFilePath);
+			return $dir;
 		}
 
 		@unlink($this->cacheFilePath);
-		if (is_file($this->cacheFilePath)) {
-			throw new \PHPStan\ShouldNotHappenException('File still exists.');
-		}
 
-		return dirname($this->cacheFilePath);
+		return $dir;
 	}
 
 }

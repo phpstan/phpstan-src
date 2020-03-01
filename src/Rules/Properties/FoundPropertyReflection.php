@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
@@ -98,16 +99,26 @@ class FoundPropertyReflection implements PropertyReflection
 
 	public function isNative(): bool
 	{
-		return $this->originalPropertyReflection instanceof PhpPropertyReflection;
+		$reflection = $this->originalPropertyReflection;
+		if ($reflection instanceof ResolvedPropertyReflection) {
+			$reflection = $reflection->getOriginalReflection();
+		}
+
+		return $reflection instanceof PhpPropertyReflection;
 	}
 
 	public function getNativeType(): ?Type
 	{
-		if (!$this->originalPropertyReflection instanceof PhpPropertyReflection) {
+		$reflection = $this->originalPropertyReflection;
+		if ($reflection instanceof ResolvedPropertyReflection) {
+			$reflection = $reflection->getOriginalReflection();
+		}
+
+		if (!$reflection instanceof PhpPropertyReflection) {
 			return null;
 		}
 
-		return $this->originalPropertyReflection->getNativeType();
+		return $reflection->getNativeType();
 	}
 
 }

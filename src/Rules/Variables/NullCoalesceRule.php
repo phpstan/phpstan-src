@@ -28,9 +28,9 @@ class NullCoalesceRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node instanceof Node\Expr\BinaryOp\Coalesce) {
-			$error = $this->issetCheck->check($node->left, $scope, '??');
+			$error = $this->issetCheck->check($node->left, $scope, 'on left side of ??');
 		} elseif ($node instanceof Node\Expr\AssignOp\Coalesce) {
-			$error = $this->issetCheck->check($node->var, $scope, '??=');
+			$error = $this->issetCheck->check($node->var, $scope, 'on left side of ??=');
 		} else {
 			return [];
 		}

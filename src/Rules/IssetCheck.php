@@ -50,7 +50,7 @@ class IssetCheck
 			if ($hasOffsetValue->no()) {
 				return $error ?? RuleErrorBuilder::message(
 					sprintf(
-						'Offset %s on %s on left side of %s does not exist.',
+						'Offset %s on %s %s does not exist.',
 						$dimType->describe(VerbosityLevel::value()),
 						$type->describe(VerbosityLevel::value()),
 						$operatorDescription
@@ -67,7 +67,7 @@ class IssetCheck
 			if ($hasOffsetValue->yes()) {
 
 				$error = $error ?? $this->generateError($type->getOffsetValueType($dimType), sprintf(
-					'Offset %s on %s on left side of %s always exists and',
+					'Offset %s on %s %s always exists and',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
 					$operatorDescription
@@ -89,12 +89,16 @@ class IssetCheck
 				return null;
 			}
 
+			if (!$propertyReflection->isNative()) {
+				return null;
+			}
+
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $expr);
 			$propertyType = $propertyReflection->getWritableType();
 
 			$error = $error ?? $this->generateError(
 				$propertyReflection->getWritableType(),
-				sprintf('%s (%s) on left side of %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription)
+				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription)
 			);
 
 			if ($error !== null) {
@@ -110,7 +114,7 @@ class IssetCheck
 			return $error;
 		}
 
-		return $error ?? $this->generateError($scope->getType($expr), sprintf('Left side of %s', $operatorDescription));
+		return $error ?? $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription));
 	}
 
 	private function generateError(Type $type, string $message): ?RuleError

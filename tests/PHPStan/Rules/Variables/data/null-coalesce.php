@@ -131,3 +131,8 @@ function (FooCoalesce $foo): void
 	echo $foo::$staticString ?? 'foo';
 	echo $foo::$staticStringOrNull ?? 'foo';
 };
+
+function (\ReflectionClass $ref): void {
+	echo $ref->name ?? 'foo';
+	echo $ref->nonexistent ?? 'bar';
+};

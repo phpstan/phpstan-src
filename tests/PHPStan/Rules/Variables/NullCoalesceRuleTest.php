@@ -42,7 +42,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				79,
 			],
 			[
-				'Left side of ?? is not nullable.',
+				'Expression on left side of ?? is not nullable.',
 				81,
 			],
 			[
@@ -74,11 +74,11 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				122,
 			],
 			[
-				'Left side of ?? is not nullable.',
+				'Expression on left side of ?? is not nullable.',
 				124,
 			],
 			[
-				'Left side of ?? is always null.',
+				'Expression on left side of ?? is always null.',
 				125,
 			],
 			[
@@ -88,6 +88,10 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Static property CoalesceRule\FooCoalesce::$staticString (string) on left side of ?? is not nullable.',
 				131,
+			],
+			[
+				'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
+				136,
 			],
 		]);
 	}

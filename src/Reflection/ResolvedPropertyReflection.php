@@ -29,6 +29,11 @@ class ResolvedPropertyReflection implements PropertyReflection
 		$this->templateTypeMap = $templateTypeMap;
 	}
 
+	public function getOriginalReflection(): PropertyReflection
+	{
+		return $this->reflection;
+	}
+
 	public function getDeclaringClass(): ClassReflection
 	{
 		return $this->reflection->getDeclaringClass();

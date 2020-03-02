@@ -13,4 +13,12 @@ class WindowsNewlines {
 	public function phpdocWithNewlines($object) {
 	}
 
+	/**
+	 *
+	 * @return
+	 *
+	 */
+	public function myfunc()
+	{
+	}
 }

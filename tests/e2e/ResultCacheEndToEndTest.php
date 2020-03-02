@@ -12,6 +12,11 @@ use function file_put_contents;
 class ResultCacheEndToEndTest extends TestCase
 {
 
+	public function setUp(): void
+	{
+		chdir(__DIR__ . '/PHP-Parser');
+	}
+
 	public function tearDown(): void
 	{
 		exec(sprintf('git -C %s reset --hard 2>&1', escapeshellarg(__DIR__ . '/PHP-Parser')), $outputLines, $exitCode);
@@ -24,7 +29,6 @@ class ResultCacheEndToEndTest extends TestCase
 
 	public function testResultCache(): void
 	{
-		chdir(__DIR__ . '/PHP-Parser');
 		$this->runPhpstan(0);
 		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
 
@@ -67,6 +71,26 @@ class ResultCacheEndToEndTest extends TestCase
 		$this->assertSame('Parameter #1 $code of method PhpParser\Lexer::startLexing() expects PhpParser\Node\Expr\MethodCall, string given.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/ParserAbstract.php']['messages'][0]['message']);
 		$this->assertSame('Parameter #1 (array(\'foo\')) of echo cannot be converted to string.', $result['files'][__DIR__ . '/PHP-Parser/lib/bootstrap.php']['messages'][0]['message']);
 		$this->assertResultCache(__DIR__ . '/resultCache_2.php');
+	}
+
+	public function testResultCacheDeleteFile(): void
+	{
+		$this->runPhpstan(0);
+		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
+
+		$serializerPath = __DIR__ . '/PHP-Parser/lib/PhpParser/Serializer.php';
+		$serializerCode = FileReader::read($serializerPath);
+		$originalSerializerCode = $serializerCode;
+		unlink($serializerPath);
+
+		$result = $this->runPhpstan(1);
+		$this->assertSame(1, $result['totals']['file_errors']);
+		$this->assertSame(0, $result['totals']['errors']);
+		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php']['messages'][0]['message']);
+
+		file_put_contents($serializerPath, $originalSerializerCode);
+		$this->runPhpstan(0);
+		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
 	}
 
 	/**

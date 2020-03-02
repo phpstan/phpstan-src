@@ -88,10 +88,12 @@ class ResultCacheManager
 		}
 
 		$invertedDependencies = $data['dependencies'];
+		$deletedFiles = array_fill_keys(array_keys($invertedDependencies), true);
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
 		$errors = $data['errors'];
 		$filteredErrors = [];
+		$newFileAppeared = false;
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];
@@ -99,8 +101,11 @@ class ResultCacheManager
 			if (!array_key_exists($analysedFile, $invertedDependencies)) {
 				// new file
 				$filesToAnalyse[] = $analysedFile;
+				$newFileAppeared = true;
 				continue;
 			}
+
+			unset($deletedFiles[$analysedFile]);
 
 			$analysedFileData = $invertedDependencies[$analysedFile];
 			$cachedModifiedTime = $analysedFileData['modifiedTime'];
@@ -121,6 +126,27 @@ class ResultCacheManager
 					continue;
 				}
 				$filesToAnalyse[] = $dependentFile;
+			}
+		}
+
+		foreach (array_keys($deletedFiles) as $deletedFile) {
+			if (!array_key_exists($deletedFile, $invertedDependencies)) {
+				continue;
+			}
+
+			$deletedFileData = $invertedDependencies[$deletedFile];
+			$dependentFiles = $deletedFileData['dependentFiles'];
+			foreach ($dependentFiles as $dependentFile) {
+				if (!is_file($dependentFile)) {
+					continue;
+				}
+				$filesToAnalyse[] = $dependentFile;
+			}
+		}
+
+		if ($newFileAppeared) {
+			foreach (array_keys($filteredErrors) as $fileWithError) {
+				$filesToAnalyse[] = $fileWithError;
 			}
 		}
 

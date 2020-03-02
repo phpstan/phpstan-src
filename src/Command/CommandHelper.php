@@ -383,7 +383,7 @@ class CommandHelper
 	{
 		$neonAdapter = new NeonAdapter();
 		$phpAdapter = new PhpAdapter();
-		$allConfigFiles = $configFiles;
+		$allConfigFiles = [];
 		foreach ($configFiles as $configFile) {
 			$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($neonAdapter, $phpAdapter, $configFile, $loaderParameters));
 		}
@@ -433,13 +433,12 @@ class CommandHelper
 		} else {
 			$data = $neonAdapter->load($configFile);
 		}
-		$allConfigFiles = [];
+		$allConfigFiles = [$configFile];
 		if (isset($data['includes'])) {
 			Validators::assert($data['includes'], 'list', sprintf("section 'includes' in file '%s'", $configFile));
 			$includes = Helpers::expand($data['includes'], $loaderParameters);
 			foreach ($includes as $include) {
 				$include = self::expandIncludedFile($include, $configFile);
-				$allConfigFiles[] = $include;
 				$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($neonAdapter, $phpAdapter, $include, $loaderParameters));
 			}
 		}

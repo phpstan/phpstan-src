@@ -115,6 +115,9 @@ class ResultCacheManager
 
 			$filesToAnalyse[] = $analysedFile;
 			foreach ($dependentFiles as $dependentFile) {
+				if (!is_file($dependentFile)) {
+					continue;
+				}
 				$filesToAnalyse[] = $dependentFile;
 			}
 		}

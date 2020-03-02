@@ -8,9 +8,18 @@ use PHPUnit\Framework\TestCase;
 use function escapeshellarg;
 use function file_get_contents;
 use function file_put_contents;
+use const FILE_APPEND;
 
 class ResultCacheEndToEndTest extends TestCase
 {
+
+	public function tearDown(): void
+	{
+		exec(sprintf('git -C %s reset --hard 2>&1', escapeshellarg(__DIR__ . '/PHP-Parser')), $outputLines, $exitCode);
+		if ($exitCode !== 0) {
+			$this->fail(implode("\n", $outputLines));
+		}
+	}
 
 	public function testResultCache(): void
 	{
@@ -32,15 +41,18 @@ class ResultCacheEndToEndTest extends TestCase
 		$lexerCode = str_replace('public function startLexing($code', 'public function startLexing(\\PhpParser\\Node\\Expr\\MethodCall $code', $lexerCode);
 		file_put_contents($lexerPath, $lexerCode);
 		touch(__DIR__ . '/PHP-Parser/lib/PhpParser/ErrorHandler.php');
+		file_put_contents(__DIR__ . '/PHP-Parser/lib/bootstrap.php', "\n\n echo ['foo'];", FILE_APPEND);
 
 		$result = $this->runPhpstan(1);
-		$this->assertSame(2, $result['totals']['file_errors']);
+		$this->assertSame(3, $result['totals']['file_errors']);
 		$this->assertSame(0, $result['totals']['errors']);
 		$this->assertSame('Parameter #1 $source of function token_get_all expects string, PhpParser\Node\Expr\MethodCall given.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/Lexer.php']['messages'][0]['message']);
 		$this->assertSame('Parameter #1 $code of method PhpParser\Lexer::startLexing() expects PhpParser\Node\Expr\MethodCall, string given.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/ParserAbstract.php']['messages'][0]['message']);
+		$this->assertSame('Parameter #1 (array(\'foo\')) of echo cannot be converted to string.', $result['files'][__DIR__ . '/PHP-Parser/lib/bootstrap.php']['messages'][0]['message']);
 		$this->assertResultCache(__DIR__ . '/resultCache_2.php');
 
 		file_put_contents($lexerPath, $originalLexerCode);
+		unlink(__DIR__ . '/PHP-Parser/lib/bootstrap.php');
 		$this->runPhpstan(0);
 		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
 	}

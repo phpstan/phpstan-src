@@ -31,6 +31,7 @@ class ResultCacheEndToEndTest extends TestCase
 		$lexerCode = str_replace('@param string $code', '', $lexerCode);
 		$lexerCode = str_replace('public function startLexing($code', 'public function startLexing(\\PhpParser\\Node\\Expr\\MethodCall $code', $lexerCode);
 		file_put_contents($lexerPath, $lexerCode);
+		touch(__DIR__ . '/PHP-Parser/lib/PhpParser/ErrorHandler.php');
 
 		$result = $this->runPhpstan(1);
 		$this->assertSame(2, $result['totals']['file_errors']);

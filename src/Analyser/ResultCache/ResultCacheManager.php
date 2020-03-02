@@ -119,7 +119,7 @@ class ResultCacheManager
 			}
 		}
 
-		return new ResultCache($filesToAnalyse, false, $data['lastFullAnalysisTime'], $data['errors'], $invertedDependenciesToReturn);
+		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $data['errors'], $invertedDependenciesToReturn);
 	}
 
 	public function process(AnalyserResult $analyserResult, ResultCache $resultCache): AnalyserResult

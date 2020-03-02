@@ -200,7 +200,7 @@ class IgnoredErrorHelperResult
 				$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
 				$unmatchedIgnoredError['realCount'],
 				$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
-			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line']);
+			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
 		}
 
 		$errors = array_merge($errors, $addErrors);

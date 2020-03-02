@@ -97,12 +97,13 @@ class IgnoredErrorHelperResult
 							$realCount++;
 							$unmatchedIgnoredErrors[$i]['realCount'] = $realCount;
 
+							if (!isset($unmatchedIgnoredErrors[$i]['file'])) {
+								$unmatchedIgnoredErrors[$i]['file'] = $error->getFile();
+								$unmatchedIgnoredErrors[$i]['line'] = $error->getLine();
+							}
+
 							if ($realCount > $ignore['count']) {
 								$shouldBeIgnored = false;
-								if (!isset($unmatchedIgnoredErrors[$i]['file'])) {
-									$unmatchedIgnoredErrors[$i]['file'] = $error->getFile();
-									$unmatchedIgnoredErrors[$i]['line'] = $error->getLine();
-								}
 							}
 						} else {
 							unset($unmatchedIgnoredErrors[$i]);
@@ -213,14 +214,14 @@ class IgnoredErrorHelperResult
 					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
 					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
-						$errors[] = sprintf(
+						$errors[] = new Error(sprintf(
 							'Ignored error pattern %s is expected to occur %d %s, but occured only %d %s.',
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 							$unmatchedIgnoredError['count'],
 							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
 							$unmatchedIgnoredError['realCount'],
 							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
-						);
+						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
 					}
 				} elseif (!$onlyFiles) {
 					$errors[] = sprintf(

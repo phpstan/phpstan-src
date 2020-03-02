@@ -93,9 +93,6 @@ class ResultCacheManager
 		$errors = $data['errors'];
 		$filteredErrors = [];
 		foreach ($allAnalysedFiles as $analysedFile) {
-			if (!is_file($analysedFile)) {
-				continue;
-			}
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];
 			}

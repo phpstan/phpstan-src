@@ -74,6 +74,8 @@ class IgnoredErrorHelper
 							'index' => $i,
 							'ignoreError' => $ignoreError,
 						];
+						$ignoreError['realPath'] = $normalizedPath;
+						$this->ignoreErrors[$i] = $ignoreError;
 					} else {
 						$otherIgnoreErrors[] = [
 							'index' => $i,

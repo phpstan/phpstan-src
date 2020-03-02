@@ -87,7 +87,19 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$this->assertCount(0, $result);
 	}
 
-	public function testIgnoreErrorByPathAndCountMoreThanExpected(): void
+	public function dataTrueAndFalse(): array
+	{
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	/**
+	 * @dataProvider dataTrueAndFalse
+	 * @param bool $onlyFiles
+	 */
+	public function testIgnoreErrorByPathAndCountMoreThanExpected(bool $onlyFiles): void
 	{
 		$ignoreErrors = [
 			[
@@ -96,7 +108,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 				'path' => __DIR__ . '/data/two-fails.php',
 			],
 		];
-		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', $onlyFiles);
 		$this->assertCount(3, $result);
 		$this->assertInstanceOf(Error::class, $result[0]);
 		$this->assertSame('Fail.', $result[0]->getMessage());
@@ -115,7 +127,11 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 	}
 
-	public function testIgnoreErrorByPathAndCountLessThanExpected(): void
+	/**
+	 * @dataProvider dataTrueAndFalse
+	 * @param bool $onlyFiles
+	 */
+	public function testIgnoreErrorByPathAndCountLessThanExpected(bool $onlyFiles): void
 	{
 		$ignoreErrors = [
 			[
@@ -124,7 +140,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 				'path' => __DIR__ . '/data/two-fails.php',
 			],
 		];
-		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', $onlyFiles);
 		$this->assertCount(1, $result);
 		$this->assertIsString($result[0]);
 		$this->assertStringContainsString('Ignored error pattern #Fail\.#', $result[0]);

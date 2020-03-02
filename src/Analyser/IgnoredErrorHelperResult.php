@@ -205,11 +205,12 @@ class IgnoredErrorHelperResult
 
 		$errors = array_merge($errors, $addErrors);
 
-		if (!$onlyFiles && $this->reportUnmatchedIgnoredErrors && !$reachedInternalErrorsCountLimit) {
+		if ($this->reportUnmatchedIgnoredErrors && !$reachedInternalErrorsCountLimit) {
 			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
 				if (
 					isset($unmatchedIgnoredError['count'])
 					&& isset($unmatchedIgnoredError['realCount'])
+					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
 					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
 						$errors[] = sprintf(
@@ -221,7 +222,7 @@ class IgnoredErrorHelperResult
 							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
 						);
 					}
-				} else {
+				} elseif (!$onlyFiles) {
 					$errors[] = sprintf(
 						'Ignored error pattern %s was not matched in reported errors.',
 						IgnoredError::stringifyPattern($unmatchedIgnoredError)

@@ -90,9 +90,14 @@ class ResultCacheManager
 		$invertedDependencies = $data['dependencies'];
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
+		$errors = $data['errors'];
+		$filteredErrors = [];
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (!is_file($analysedFile)) {
 				continue;
+			}
+			if (array_key_exists($analysedFile, $errors)) {
+				$filteredErrors[$analysedFile] = $errors[$analysedFile];
 			}
 			if (!array_key_exists($analysedFile, $invertedDependencies)) {
 				// new file
@@ -122,7 +127,7 @@ class ResultCacheManager
 			}
 		}
 
-		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $data['errors'], $invertedDependenciesToReturn);
+		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $filteredErrors, $invertedDependenciesToReturn);
 	}
 
 	public function process(AnalyserResult $analyserResult, ResultCache $resultCache): AnalyserResult

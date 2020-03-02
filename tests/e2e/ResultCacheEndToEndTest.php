@@ -3,12 +3,11 @@
 namespace PHPStan\Tests;
 
 use Nette\Utils\Json;
+use PHPStan\File\FileReader;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPUnit\Framework\TestCase;
 use function escapeshellarg;
-use function file_get_contents;
 use function file_put_contents;
-use const FILE_APPEND;
 
 class ResultCacheEndToEndTest extends TestCase
 {
@@ -16,9 +15,11 @@ class ResultCacheEndToEndTest extends TestCase
 	public function tearDown(): void
 	{
 		exec(sprintf('git -C %s reset --hard 2>&1', escapeshellarg(__DIR__ . '/PHP-Parser')), $outputLines, $exitCode);
-		if ($exitCode !== 0) {
-			$this->fail(implode("\n", $outputLines));
+		if ($exitCode === 0) {
+			return;
 		}
+
+		$this->fail(implode("\n", $outputLines));
 	}
 
 	public function testResultCache(): void
@@ -31,18 +32,34 @@ class ResultCacheEndToEndTest extends TestCase
 		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
 
 		$lexerPath = __DIR__ . '/PHP-Parser/lib/PhpParser/Lexer.php';
-		$lexerCode = file_get_contents($lexerPath);
+		$lexerCode = FileReader::read($lexerPath);
 		$originalLexerCode = $lexerCode;
-		if ($lexerCode === false) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
 
 		$lexerCode = str_replace('@param string $code', '', $lexerCode);
 		$lexerCode = str_replace('public function startLexing($code', 'public function startLexing(\\PhpParser\\Node\\Expr\\MethodCall $code', $lexerCode);
 		file_put_contents($lexerPath, $lexerCode);
 		touch(__DIR__ . '/PHP-Parser/lib/PhpParser/ErrorHandler.php');
-		file_put_contents(__DIR__ . '/PHP-Parser/lib/bootstrap.php', "\n\n echo ['foo'];", FILE_APPEND);
 
+		$bootstrapPath = __DIR__ . '/PHP-Parser/lib/bootstrap.php';
+		$originalBootstrapContents = FileReader::read($bootstrapPath);
+		file_put_contents($bootstrapPath, "\n\n echo ['foo'];", FILE_APPEND);
+
+		$this->runPhpstanWithErrors();
+		$this->runPhpstanWithErrors();
+
+		file_put_contents($lexerPath, $originalLexerCode);
+
+		unlink($bootstrapPath);
+		$this->runPhpstan(0);
+		$this->assertResultCache(__DIR__ . '/resultCache_3.php');
+
+		file_put_contents($bootstrapPath, $originalBootstrapContents);
+		$this->runPhpstan(0);
+		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
+	}
+
+	private function runPhpstanWithErrors(): void
+	{
 		$result = $this->runPhpstan(1);
 		$this->assertSame(3, $result['totals']['file_errors']);
 		$this->assertSame(0, $result['totals']['errors']);
@@ -50,11 +67,6 @@ class ResultCacheEndToEndTest extends TestCase
 		$this->assertSame('Parameter #1 $code of method PhpParser\Lexer::startLexing() expects PhpParser\Node\Expr\MethodCall, string given.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/ParserAbstract.php']['messages'][0]['message']);
 		$this->assertSame('Parameter #1 (array(\'foo\')) of echo cannot be converted to string.', $result['files'][__DIR__ . '/PHP-Parser/lib/bootstrap.php']['messages'][0]['message']);
 		$this->assertResultCache(__DIR__ . '/resultCache_2.php');
-
-		file_put_contents($lexerPath, $originalLexerCode);
-		unlink(__DIR__ . '/PHP-Parser/lib/bootstrap.php');
-		$this->runPhpstan(0);
-		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
 	}
 
 	/**

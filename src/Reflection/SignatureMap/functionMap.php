@@ -4688,7 +4688,7 @@ return [
 'Imagick::convolveImage' => ['bool', 'kernel'=>'array', 'channel='=>'int'],
 'Imagick::count' => ['void', 'mode='=>'string'],
 'Imagick::cropImage' => ['bool', 'width'=>'int', 'height'=>'int', 'x'=>'int', 'y'=>'int'],
-'Imagick::cropThumbnailImage' => ['bool', 'width'=>'int', 'height'=>'int'],
+'Imagick::cropThumbnailImage' => ['bool', 'width'=>'int', 'height'=>'int', 'legacy='=>'bool'],
 'Imagick::current' => ['Imagick'],
 'Imagick::cycleColormapImage' => ['bool', 'displace'=>'int'],
 'Imagick::decipherImage' => ['bool', 'passphrase'=>'string'],

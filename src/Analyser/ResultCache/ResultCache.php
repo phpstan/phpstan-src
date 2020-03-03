@@ -37,6 +37,7 @@ class ResultCache
 		array $dependencies
 	)
 	{
+		shuffle($filesToAnalyse);
 		$this->filesToAnalyse = $filesToAnalyse;
 		$this->fullAnalysis = $fullAnalysis;
 		$this->lastFullAnalysisTime = $lastFullAnalysisTime;

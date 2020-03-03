@@ -4997,7 +4997,7 @@ return [
 'Imagick::swirlImage' => ['bool', 'degrees'=>'float'],
 'Imagick::textureImage' => ['bool', 'texture_wand'=>'imagick'],
 'Imagick::thresholdImage' => ['bool', 'threshold'=>'float', 'channel='=>'int'],
-'Imagick::thumbnailImage' => ['bool', 'columns'=>'int', 'rows'=>'int', 'bestfit='=>'bool', 'fill='=>'bool'],
+'Imagick::thumbnailImage' => ['bool', 'columns'=>'int', 'rows'=>'int', 'bestfit='=>'bool', 'fill='=>'bool', 'legacy='=>'bool'],
 'Imagick::tintImage' => ['bool', 'tint'=>'mixed', 'opacity'=>'mixed'],
 'Imagick::transformImage' => ['Imagick', 'crop'=>'string', 'geometry'=>'string'],
 'Imagick::transformImageColorspace' => ['bool', 'colorspace'=>'int'],

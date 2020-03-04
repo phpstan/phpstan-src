@@ -19,7 +19,9 @@ class AutoloadFilesTest extends TestCase
 		if ($vendorPath === false) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
-		foreach ($finder->files()->name('composer.json')->in(__DIR__ . '/../../../vendor') as $fileInfo) {
+		foreach ($finder->files()->name('composer.json')->in(__DIR__ . '/../../../vendor')->exclude([
+			'ondrejmirtes/better-reflection/test',
+		]) as $fileInfo) {
 			$realpath = $fileInfo->getRealPath();
 			if ($realpath === false) {
 				throw new \PHPStan\ShouldNotHappenException();

@@ -140,18 +140,19 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		$analysisResult = $application->analyse(
+			$inceptionResult->getFiles(),
+			$inceptionResult->isOnlyFiles(),
+			$inceptionResult->getStdOutput(),
+			$inceptionResult->getErrorOutput(),
+			$inceptionResult->isDefaultLevelUsed(),
+			$debug,
+			$inceptionResult->getProjectConfigFile(),
+			$input
+		);
+
 		return $inceptionResult->handleReturn(
-			$application->analyse(
-				$inceptionResult->getFiles(),
-				$inceptionResult->isOnlyFiles(),
-				$inceptionResult->getStdOutput(),
-				$inceptionResult->getErrorOutput(),
-				$errorFormatter,
-				$inceptionResult->isDefaultLevelUsed(),
-				$debug,
-				$inceptionResult->getProjectConfigFile(),
-				$input
-			)
+			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput())
 		);
 	}
 

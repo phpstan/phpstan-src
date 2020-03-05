@@ -54,12 +54,12 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
 
 		$relativePathHelper = new FuzzyRelativePathHelper(__DIR__, DIRECTORY_SEPARATOR, []);
-		$statusCode = $analyserApplication->analyse(
+		$errorFormatter = new TableErrorFormatter($relativePathHelper, false, false, false, true);
+		$analysisResult = $analyserApplication->analyse(
 			[$path],
 			true,
 			$symfonyOutput,
 			$symfonyOutput,
-			new TableErrorFormatter($relativePathHelper, false, false, false, true),
 			false,
 			false,
 			null,
@@ -68,6 +68,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 		if (file_exists($memoryLimitFile)) {
 			unlink($memoryLimitFile);
 		}
+		$statusCode = $errorFormatter->formatErrors($analysisResult, $symfonyOutput);
 		$this->assertSame($expectedStatusCode, $statusCode);
 
 		rewind($output->getStream());

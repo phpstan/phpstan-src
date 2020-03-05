@@ -5,7 +5,6 @@ namespace PHPStan\Command;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\ResultCache\ResultCacheManager;
-use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\PhpDoc\StubValidator;
@@ -55,23 +54,21 @@ class AnalyseApplication
 	 * @param bool $onlyFiles
 	 * @param \PHPStan\Command\Output $stdOutput
 	 * @param \PHPStan\Command\Output $errorOutput
-	 * @param \PHPStan\Command\ErrorFormatter\ErrorFormatter $errorFormatter
 	 * @param bool $defaultLevelUsed
 	 * @param bool $debug
 	 * @param string|null $projectConfigFile
-	 * @return int Error code.
+	 * @return AnalysisResult
 	 */
 	public function analyse(
 		array $files,
 		bool $onlyFiles,
 		Output $stdOutput,
 		Output $errorOutput,
-		ErrorFormatter $errorFormatter,
 		bool $defaultLevelUsed,
 		bool $debug,
 		?string $projectConfigFile,
 		InputInterface $input
-	): int
+	): AnalysisResult
 	{
 		$this->updateMemoryLimitFile();
 		$stubErrors = $this->stubValidator->validate();
@@ -124,16 +121,13 @@ class AnalyseApplication
 			}
 		}
 
-		return $errorFormatter->formatErrors(
-			new AnalysisResult(
-				$fileSpecificErrors,
-				$notFileSpecificErrors,
-				$warnings,
-				$defaultLevelUsed,
-				$analyserResult->hasInferrablePropertyTypesFromConstructor(),
-				$projectConfigFile
-			),
-			$stdOutput
+		return new AnalysisResult(
+			$fileSpecificErrors,
+			$notFileSpecificErrors,
+			$warnings,
+			$defaultLevelUsed,
+			$analyserResult->hasInferrablePropertyTypesFromConstructor(),
+			$projectConfigFile
 		);
 	}
 

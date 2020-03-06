@@ -4554,7 +4554,7 @@ return [
 'imagecolorsforindex' => ['array', 'im'=>'resource', 'col'=>'int'],
 'imagecolorstotal' => ['int', 'im'=>'resource'],
 'imagecolortransparent' => ['int', 'im'=>'resource', 'col='=>'int'],
-'imageconvolution' => ['resource', 'src_im'=>'resource', 'matrix3x3'=>'array', 'div'=>'float', 'offset'=>'float'],
+'imageconvolution' => ['bool', 'src_im'=>'resource', 'matrix3x3'=>'array', 'div'=>'float', 'offset'=>'float'],
 'imagecopy' => ['bool', 'dst_im'=>'resource', 'src_im'=>'resource', 'dst_x'=>'int', 'dst_y'=>'int', 'src_x'=>'int', 'src_y'=>'int', 'src_w'=>'int', 'src_h'=>'int'],
 'imagecopymerge' => ['bool', 'src_im'=>'resource', 'dst_im'=>'resource', 'dst_x'=>'int', 'dst_y'=>'int', 'src_x'=>'int', 'src_y'=>'int', 'src_w'=>'int', 'src_h'=>'int', 'pct'=>'int'],
 'imagecopymergegray' => ['bool', 'src_im'=>'resource', 'dst_im'=>'resource', 'dst_x'=>'int', 'dst_y'=>'int', 'src_x'=>'int', 'src_y'=>'int', 'src_w'=>'int', 'src_h'=>'int', 'pct'=>'int'],

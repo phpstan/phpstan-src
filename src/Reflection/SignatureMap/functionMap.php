@@ -3581,7 +3581,7 @@ return [
 'gmp_random' => ['GMP', 'limiter='=>'int'],
 'gmp_random_bits' => ['GMP', 'bits'=>'int'],
 'gmp_random_range' => ['GMP', 'min'=>'GMP|string|int', 'max'=>'GMP|string|int'],
-'gmp_random_seed' => ['GMP', 'seed'=>'GMP|string|int'],
+'gmp_random_seed' => ['void', 'seed'=>'GMP|string|int'],
 'gmp_root' => ['GMP', 'a'=>'GMP|string|int', 'nth'=>'int'],
 'gmp_rootrem' => ['array<int,GMP>', 'a'=>'GMP|string|int', 'nth'=>'int'],
 'gmp_scan0' => ['int', 'a'=>'GMP|string|int', 'start'=>'int'],

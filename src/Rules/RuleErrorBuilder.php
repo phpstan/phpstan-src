@@ -34,31 +34,37 @@ class RuleErrorBuilder
 				RuleError::class,
 				'message',
 				'string',
+				'string',
 			],
 			self::TYPE_LINE => [
 				LineRuleError::class,
 				'line',
+				'int',
 				'int',
 			],
 			self::TYPE_FILE => [
 				FileRuleError::class,
 				'file',
 				'string',
+				'string',
 			],
 			self::TYPE_TIP => [
 				TipRuleError::class,
 				'tip',
+				'string',
 				'string',
 			],
 			self::TYPE_IDENTIFIER => [
 				IdentifierRuleError::class,
 				'identifier',
 				'string',
+				'string',
 			],
 			self::TYPE_METADATA => [
 				MetadataRuleError::class,
 				'metadata',
 				'array',
+				'mixed[]',
 			],
 		];
 	}

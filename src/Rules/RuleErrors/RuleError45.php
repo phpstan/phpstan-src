@@ -17,7 +17,7 @@ class RuleError45 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\FileRuleEr
 	/** @var string */
 	public $tip;
 
-	/** @var array */
+	/** @var mixed[] */
 	public $metadata;
 
 	public function getMessage(): string
@@ -35,6 +35,9 @@ class RuleError45 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\FileRuleEr
 		return $this->tip;
 	}
 
+	/**
+	 * @return mixed[]
+	 */
 	public function getMetadata(): array
 	{
 		return $this->metadata;

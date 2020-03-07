@@ -32,9 +32,9 @@ php;
 		}
 		$properties = [];
 		$interfaces = [];
-		foreach ($ruleErrorTypes as $typeNumber => [$interface, $propertyName, $propertyType]) {
+		foreach ($ruleErrorTypes as $typeNumber => [$interface, $propertyName, $nativePropertyType, $phpDocPropertyType]) {
 			if (($typeCombination & $typeNumber) === $typeNumber) {
-				$properties[] = [$propertyName, $propertyType];
+				$properties[] = [$propertyName, $nativePropertyType, $phpDocPropertyType];
 				$interfaces[] = '\\' . $interface;
 			}
 		}
@@ -44,10 +44,10 @@ php;
 			$typeCombination,
 			implode(', ', $interfaces),
 			implode("\n\n\t", array_map(function (array $property): string {
-				return sprintf("/** @var %s */\n\tpublic $%s;", $property[1], $property[0]);
+				return sprintf("/** @var %s */\n\tpublic $%s;", $property[2], $property[0]);
 			}, $properties)),
 			implode("\n\n\t", array_map(function (array $property): string {
-				return sprintf("public function get%s(): %s\n\t{\n\t\treturn \$this->%s;\n\t}", ucfirst($property[0]), $property[1], $property[0]);
+				return sprintf("%spublic function get%s(): %s\n\t{\n\t\treturn \$this->%s;\n\t}", $property[2] !== $property[1] ? sprintf("/**\n\t * @return %s\n\t */\n\t", $property[2]) : '', ucfirst($property[0]), $property[1], $property[0]);
 			}, $properties))
 		);
 

@@ -20,7 +20,7 @@ class RuleError55 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleEr
 	/** @var string */
 	public $identifier;
 
-	/** @var array */
+	/** @var mixed[] */
 	public $metadata;
 
 	public function getMessage(): string
@@ -43,6 +43,9 @@ class RuleError55 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleEr
 		return $this->identifier;
 	}
 
+	/**
+	 * @return mixed[]
+	 */
 	public function getMetadata(): array
 	{
 		return $this->metadata;

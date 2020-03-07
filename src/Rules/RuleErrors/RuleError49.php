@@ -14,7 +14,7 @@ class RuleError49 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\Identifier
 	/** @var string */
 	public $identifier;
 
-	/** @var array */
+	/** @var mixed[] */
 	public $metadata;
 
 	public function getMessage(): string
@@ -27,6 +27,9 @@ class RuleError49 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\Identifier
 		return $this->identifier;
 	}
 
+	/**
+	 * @return mixed[]
+	 */
 	public function getMetadata(): array
 	{
 		return $this->metadata;

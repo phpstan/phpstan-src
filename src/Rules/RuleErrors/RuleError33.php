@@ -11,7 +11,7 @@ class RuleError33 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\MetadataRu
 	/** @var string */
 	public $message;
 
-	/** @var array */
+	/** @var mixed[] */
 	public $metadata;
 
 	public function getMessage(): string
@@ -19,6 +19,9 @@ class RuleError33 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\MetadataRu
 		return $this->message;
 	}
 
+	/**
+	 * @return mixed[]
+	 */
 	public function getMetadata(): array
 	{
 		return $this->metadata;

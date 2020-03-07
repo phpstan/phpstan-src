@@ -29,6 +29,12 @@ class Error implements \JsonSerializable
 	/** @var bool */
 	private $warning;
 
+	/** @var int|null */
+	private $nodeLine;
+
+	/** @var class-string<\PhpParser\Node>|null */
+	private $nodeType;
+
 	public function __construct(
 		string $message,
 		string $file,
@@ -37,7 +43,9 @@ class Error implements \JsonSerializable
 		?string $filePath = null,
 		?string $traitFilePath = null,
 		?string $tip = null,
-		bool $warning = false
+		bool $warning = false,
+		?int $nodeLine = null,
+		?int $nodeType = null
 	)
 	{
 		$this->message = $message;
@@ -48,6 +56,8 @@ class Error implements \JsonSerializable
 		$this->traitFilePath = $traitFilePath;
 		$this->tip = $tip;
 		$this->warning = $warning;
+		$this->nodeLine = $nodeLine;
+		$this->nodeType = $nodeType;
 	}
 
 	public function getMessage(): string
@@ -102,13 +112,29 @@ class Error implements \JsonSerializable
 			$this->canBeIgnored,
 			$this->filePath,
 			$this->traitFilePath,
-			null
+			null,
+			$this->warning,
+			$this->nodeLine,
+			$this->nodeType
 		);
 	}
 
 	public function isWarning(): bool
 	{
 		return $this->warning;
+	}
+
+	public function getNodeLine(): ?int
+	{
+		return $this->nodeLine;
+	}
+
+	/**
+	 * @return class-string<\PhpParser\Node>|null
+	 */
+	public function getNodeType(): ?string
+	{
+		return $this->nodeType;
 	}
 
 	/**
@@ -125,6 +151,8 @@ class Error implements \JsonSerializable
 			'traitFilePath' => $this->traitFilePath,
 			'tip' => $this->tip,
 			'warning' => $this->warning,
+			'nodeLine' => $this->nodeLine,
+			'nodeType' => $this->nodeType,
 		];
 	}
 
@@ -142,7 +170,9 @@ class Error implements \JsonSerializable
 			$json['filePath'],
 			$json['traitFilePath'],
 			$json['tip'],
-			$json['warning']
+			$json['warning'],
+			$json['nodeLine'] ?? null,
+			$json['nodeType'] ?? null,
 		);
 	}
 
@@ -160,7 +190,9 @@ class Error implements \JsonSerializable
 			$properties['filePath'],
 			$properties['traitFilePath'],
 			$properties['tip'],
-			$properties['warning']
+			$properties['warning'],
+			$properties['nodeLine'] ?? null,
+			$properties['nodeType'] ?? null,
 		);
 	}
 

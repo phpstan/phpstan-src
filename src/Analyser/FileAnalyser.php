@@ -70,7 +70,8 @@ class FileAnalyser
 						$outerNodeCallback($node, $scope);
 					}
 					$uniquedAnalysedCodeExceptionMessages = [];
-					foreach ($registry->getRules(get_class($node)) as $rule) {
+					$nodeType = get_class($node);
+					foreach ($registry->getRules($nodeType) as $rule) {
 						try {
 							$ruleErrors = $rule->processNode($node, $scope);
 						} catch (\PHPStan\AnalysedCodeException $e) {
@@ -87,7 +88,8 @@ class FileAnalyser
 						}
 
 						foreach ($ruleErrors as $ruleError) {
-							$line = $node->getLine();
+							$nodeLine = $node->getLine();
+							$line = $nodeLine;
 							$fileName = $scope->getFileDescription();
 							$filePath = $scope->getFile();
 							$traitFilePath = null;
@@ -128,7 +130,10 @@ class FileAnalyser
 								true,
 								$filePath,
 								$traitFilePath,
-								$tip
+								$tip,
+								false,
+								$nodeLine,
+								$nodeType,
 							);
 						}
 					}

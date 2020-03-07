@@ -59,7 +59,8 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 				return $parameter->var->name;
 			}, $node->params),
 			$node->stmts,
-			$message
+			$message,
+			'constructor.unusedParameter'
 		);
 	}
 

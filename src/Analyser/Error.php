@@ -35,6 +35,28 @@ class Error implements \JsonSerializable
 	/** @var class-string<\PhpParser\Node>|null */
 	private $nodeType;
 
+	/** @var string|null */
+	private $identifier;
+
+	/** @var mixed[] */
+	private $metadata;
+
+	/**
+	 * Error constructor.
+	 *
+	 * @param string $message
+	 * @param string $file
+	 * @param int|null $line
+	 * @param bool $canBeIgnored
+	 * @param string|null $filePath
+	 * @param string|null $traitFilePath
+	 * @param string|null $tip
+	 * @param bool $warning
+	 * @param int|null $nodeLine
+	 * @param class-string<\PhpParser\Node>|null $nodeType
+	 * @param string|null $identifier
+	 * @param mixed[] $metadata
+	 */
 	public function __construct(
 		string $message,
 		string $file,
@@ -45,7 +67,9 @@ class Error implements \JsonSerializable
 		?string $tip = null,
 		bool $warning = false,
 		?int $nodeLine = null,
-		?int $nodeType = null
+		?string $nodeType = null,
+		?string $identifier = null,
+		array $metadata = []
 	)
 	{
 		$this->message = $message;
@@ -58,6 +82,8 @@ class Error implements \JsonSerializable
 		$this->warning = $warning;
 		$this->nodeLine = $nodeLine;
 		$this->nodeType = $nodeType;
+		$this->identifier = $identifier;
+		$this->metadata = $metadata;
 	}
 
 	public function getMessage(): string
@@ -137,6 +163,19 @@ class Error implements \JsonSerializable
 		return $this->nodeType;
 	}
 
+	public function getIdentifier(): ?string
+	{
+		return $this->identifier;
+	}
+
+	/**
+	 * @return mixed[]
+	 */
+	public function getMetadata(): array
+	{
+		return $this->metadata;
+	}
+
 	/**
 	 * @return mixed
 	 */
@@ -153,6 +192,8 @@ class Error implements \JsonSerializable
 			'warning' => $this->warning,
 			'nodeLine' => $this->nodeLine,
 			'nodeType' => $this->nodeType,
+			'identifier' => $this->identifier,
+			'metadata' => $this->metadata,
 		];
 	}
 
@@ -173,6 +214,8 @@ class Error implements \JsonSerializable
 			$json['warning'],
 			$json['nodeLine'] ?? null,
 			$json['nodeType'] ?? null,
+			$json['identifier'] ?? null,
+			$json['metadata'] ?? null
 		);
 	}
 
@@ -193,6 +236,8 @@ class Error implements \JsonSerializable
 			$properties['warning'],
 			$properties['nodeLine'] ?? null,
 			$properties['nodeType'] ?? null,
+			$properties['identifier'] ?? null,
+			$properties['metadata'] ?? null
 		);
 	}
 

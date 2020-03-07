@@ -7,7 +7,9 @@ use PHPStan\File\FileHelper;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Rules\FileRuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
+use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\TipRuleError;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -94,6 +96,8 @@ class FileAnalyser
 							$filePath = $scope->getFile();
 							$traitFilePath = null;
 							$tip = null;
+							$identifier = null;
+							$metadata = [];
 							if ($scope->isInTrait()) {
 								$traitReflection = $scope->getTraitReflection();
 								if ($traitReflection->getFileName() !== false) {
@@ -122,6 +126,14 @@ class FileAnalyser
 								if ($ruleError instanceof TipRuleError) {
 									$tip = $ruleError->getTip();
 								}
+
+								if ($ruleError instanceof IdentifierRuleError) {
+									$identifier = $ruleError->getIdentifier();
+								}
+
+								if ($ruleError instanceof MetadataRuleError) {
+									$metadata = $ruleError->getMetadata();
+								}
 							}
 							$fileErrors[] = new Error(
 								$message,
@@ -134,6 +146,8 @@ class FileAnalyser
 								false,
 								$nodeLine,
 								$nodeType,
+								$identifier,
+								$metadata
 							);
 						}
 					}

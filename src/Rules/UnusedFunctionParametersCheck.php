@@ -14,13 +14,15 @@ class UnusedFunctionParametersCheck
 	 * @param string[] $parameterNames
 	 * @param \PhpParser\Node[] $statements
 	 * @param string $unusedParameterMessage
+	 * @param string $identifier
 	 * @return RuleError[]
 	 */
 	public function getUnusedParameters(
 		Scope $scope,
 		array $parameterNames,
 		array $statements,
-		string $unusedParameterMessage
+		string $unusedParameterMessage,
+		string $identifier
 	): array
 	{
 		$unusedParameters = array_fill_keys($parameterNames, true);
@@ -33,7 +35,9 @@ class UnusedFunctionParametersCheck
 		}
 		$errors = [];
 		foreach (array_keys($unusedParameters) as $name) {
-			$errors[] = RuleErrorBuilder::message(sprintf($unusedParameterMessage, $name))->build();
+			$errors[] = RuleErrorBuilder::message(
+				sprintf($unusedParameterMessage, $name)
+			)->identifier($identifier)->metadata(['variableName' => $name])->build();
 		}
 
 		return $errors;

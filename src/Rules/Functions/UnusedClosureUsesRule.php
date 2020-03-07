@@ -40,7 +40,8 @@ class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
 				return $use->var->name;
 			}, $node->uses),
 			$node->stmts,
-			'Anonymous function has an unused use $%s.'
+			'Anonymous function has an unused use $%s.',
+			'anonymousFunction.unusedUse'
 		);
 	}
 

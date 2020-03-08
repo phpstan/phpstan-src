@@ -304,8 +304,17 @@ jobs:
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
+      - name: "Cache Result cache"
+        uses: actions/cache@v1
+        with:
+          path: ./tmp
+          key: "result-cache"
+          restore-keys: "result-cache"
+
       - name: "PHPStan with result cache"
         run: |
+          time vendor/bin/phing phpstan-result-cache
+          bin/phpstan clear-result-cache
           time vendor/bin/phing phpstan-result-cache
           touch src/TrinaryLogic.php
           time vendor/bin/phing phpstan-result-cache

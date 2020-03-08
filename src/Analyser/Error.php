@@ -38,6 +38,9 @@ class Error implements \JsonSerializable
 	/** @var string|null */
 	private $identifier;
 
+	/** @var mixed[] */
+	private $metadata;
+
 	/**
 	 * Error constructor.
 	 *
@@ -52,6 +55,7 @@ class Error implements \JsonSerializable
 	 * @param int|null $nodeLine
 	 * @param class-string<\PhpParser\Node>|null $nodeType
 	 * @param string|null $identifier
+	 * @param mixed[] $metadata
 	 */
 	public function __construct(
 		string $message,
@@ -64,7 +68,8 @@ class Error implements \JsonSerializable
 		bool $warning = false,
 		?int $nodeLine = null,
 		?string $nodeType = null,
-		?string $identifier = null
+		?string $identifier = null,
+		array $metadata = []
 	)
 	{
 		$this->message = $message;
@@ -78,6 +83,7 @@ class Error implements \JsonSerializable
 		$this->nodeLine = $nodeLine;
 		$this->nodeType = $nodeType;
 		$this->identifier = $identifier;
+		$this->metadata = $metadata;
 	}
 
 	public function getMessage(): string
@@ -163,6 +169,14 @@ class Error implements \JsonSerializable
 	}
 
 	/**
+	 * @return mixed[]
+	 */
+	public function getMetadata(): array
+	{
+		return $this->metadata;
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function jsonSerialize()
@@ -179,6 +193,7 @@ class Error implements \JsonSerializable
 			'nodeLine' => $this->nodeLine,
 			'nodeType' => $this->nodeType,
 			'identifier' => $this->identifier,
+			'metadata' => $this->metadata,
 		];
 	}
 
@@ -199,7 +214,8 @@ class Error implements \JsonSerializable
 			$json['warning'],
 			$json['nodeLine'] ?? null,
 			$json['nodeType'] ?? null,
-			$json['identifier'] ?? null
+			$json['identifier'] ?? null,
+			$json['metadata'] ?? null
 		);
 	}
 
@@ -220,7 +236,8 @@ class Error implements \JsonSerializable
 			$properties['warning'],
 			$properties['nodeLine'] ?? null,
 			$properties['nodeType'] ?? null,
-			$properties['identifier'] ?? null
+			$properties['identifier'] ?? null,
+			$properties['metadata'] ?? null
 		);
 	}
 

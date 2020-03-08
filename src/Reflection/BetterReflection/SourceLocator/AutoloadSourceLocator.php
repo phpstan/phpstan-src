@@ -72,8 +72,14 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 		[$potentiallyLocatedFile, $className] = $locateResult;
 
+		try {
+			$fileContents = FileReader::read($potentiallyLocatedFile);
+		} catch (\PHPStan\File\CouldNotReadFileException $e) {
+			return null;
+		}
+
 		$locatedSource = new LocatedSource(
-			FileReader::read($potentiallyLocatedFile),
+			$fileContents,
 			$potentiallyLocatedFile
 		);
 

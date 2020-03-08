@@ -72,7 +72,12 @@ class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 
-		$data = require $this->cacheFilePath;
+		try {
+			$data = require $this->cacheFilePath;
+		} catch (\Throwable $e) {
+			return new ResultCache($allAnalysedFiles, true, time(), [], []);
+		}
+
 		if (!is_array($data)) {
 			@unlink($this->cacheFilePath);
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);

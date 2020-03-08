@@ -308,8 +308,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ./tmp
-          key: "result-cache-${{ hashFiles('src/**/*.php') }}-${{ hashFiles('tests/**/*.php') }}"
-          restore-keys: "result-cache-"
+          key: "result-cache-v1"
 
       - name: "PHPStan with result cache"
         run: |

@@ -215,7 +215,7 @@ class Error implements \JsonSerializable
 			$json['nodeLine'] ?? null,
 			$json['nodeType'] ?? null,
 			$json['identifier'] ?? null,
-			$json['metadata'] ?? null
+			$json['metadata'] ?? []
 		);
 	}
 
@@ -237,7 +237,7 @@ class Error implements \JsonSerializable
 			$properties['nodeLine'] ?? null,
 			$properties['nodeType'] ?? null,
 			$properties['identifier'] ?? null,
-			$properties['metadata'] ?? null
+			$properties['metadata'] ?? []
 		);
 	}
 

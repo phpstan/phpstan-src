@@ -308,13 +308,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ./tmp
-          key: "result-cache"
-          restore-keys: "result-cache"
+          key: "result-cache-${{ hashFiles('src/**/*.php') }}-${{ hashFiles('tests/**/*.php') }}"
+          restore-keys: "result-cache-"
 
       - name: "PHPStan with result cache"
         run: |
           time vendor/bin/phing phpstan-result-cache
-          bin/phpstan clear-result-cache
+          bin/phpstan clear-result-cache -c build/phpstan.neon
           time vendor/bin/phing phpstan-result-cache
           touch src/TrinaryLogic.php
           time vendor/bin/phing phpstan-result-cache

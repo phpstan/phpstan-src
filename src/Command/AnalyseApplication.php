@@ -241,7 +241,7 @@ class AnalyseApplication
 
 		if (\DIRECTORY_SEPARATOR === '\\') {
 			// Windows
-			$process = @popen('wmic cpu get NumberOfCores', 'rb');
+			$process = @popen('wmic cpu get NumberOfLogicalProcessors', 'rb');
 			if ($process !== false) {
 				fgets($process);
 				$cores = (int) fgets($process);

@@ -3,9 +3,8 @@
 namespace PHPStan\Command;
 
 use Nette\Utils\Json;
-use Symfony\Component\Console\Command\Command;
 
-class JsonErrorFormatterDeserializer extends Command
+class JsonErrorFormatterDeserializer
 {
 
 	/**

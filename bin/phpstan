@@ -76,7 +76,7 @@ use PHPStan\Command\WorkerCommand;
 	$reversedComposerAutoloaderProjectPaths = array_reverse($composerAutoloaderProjectPaths);
 	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new DumpDependenciesCommand($reversedComposerAutoloaderProjectPaths));
-	$application->add(new ReformatCommand($reversedComposerAutoloaderProjectPaths));
+	$application->add(new ReformatCommand());
 	$application->add(new WorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));
 	$application->run();

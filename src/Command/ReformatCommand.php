@@ -13,11 +13,6 @@ class ReformatCommand extends Command
 
 	private const NAME = 'reformat';
 
-	public function __construct()
-	{
-		parent::__construct();
-	}
-
 	protected function configure(): void
 	{
 		$this->setName(self::NAME)

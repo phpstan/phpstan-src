@@ -322,12 +322,13 @@ jobs:
   result-cache-e2e-tests:
     name: "Result cache E2E tests"
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.operating-system }}
 
     strategy:
       matrix:
         php-version:
           - "7.4"
+        operating-system: [ubuntu-latest, windows-latest]
 
     steps:
       - name: "Checkout"
@@ -352,10 +353,7 @@ jobs:
 
       - name: "Tests"
         run: |
-          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && \
-          git -C tests/e2e/PHP-Parser checkout v3.1.5 && \
-          composer install --working-dir tests/e2e/PHP-Parser
-          vendor/bin/phpunit -c tests/phpunit.xml tests/e2e/ResultCacheEndToEndTest.php
+          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit -c tests/phpunit.xml tests/e2e/ResultCacheEndToEndTest.php
 
   compiler-tests:
     name: "Compiler Tests"

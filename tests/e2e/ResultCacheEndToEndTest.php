@@ -3,6 +3,7 @@
 namespace PHPStan\Tests;
 
 use Nette\Utils\Json;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPUnit\Framework\TestCase;
@@ -97,10 +98,16 @@ class ResultCacheEndToEndTest extends TestCase
 		$originalSerializerCode = $serializerCode;
 		unlink($serializerPath);
 
+		$fileHelper = new FileHelper(__DIR__);
+
 		$result = $this->runPhpstan(1);
-		$this->assertSame(1, $result['totals']['file_errors'], Json::encode($result));
+		$this->assertSame(2, $result['totals']['file_errors'], Json::encode($result));
 		$this->assertSame(0, $result['totals']['errors'], Json::encode($result));
-		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php']['messages'][0]['message']);
+
+		$message = $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php')]['messages'][0]['message'];
+		$this->assertStringContainsString('Ignored error pattern #^Argument of an invalid type PhpParser\\\\Node supplied for foreach, only iterables are supported\\.$# in path', $message);
+		$this->assertStringContainsString('was not matched in reported errors.', $message);
+		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php')]['messages'][1]['message']);
 
 		file_put_contents($serializerPath, $originalSerializerCode);
 		$this->runPhpstan(0);

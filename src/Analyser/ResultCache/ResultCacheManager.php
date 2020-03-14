@@ -187,6 +187,16 @@ class ResultCacheManager
 				return;
 			}
 
+			foreach ($errorsByFile as $errors) {
+				foreach ($errors as $error) {
+					if ($error->canBeIgnored()) {
+						continue;
+					}
+
+					return;
+				}
+			}
+
 			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $dependencies);
 		};
 

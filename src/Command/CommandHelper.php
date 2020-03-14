@@ -73,6 +73,7 @@ class CommandHelper
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 		$currentWorkingDirectoryFileHelper = new FileHelper($currentWorkingDirectory);
+		$currentWorkingDirectory = $currentWorkingDirectoryFileHelper->getWorkingDirectory();
 		if ($autoloadFile !== null) {
 			if (!is_file($autoloadFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Autoload file "%s" not found.', $autoloadFile));
@@ -102,7 +103,7 @@ class CommandHelper
 		}
 
 		$paths = array_map(static function (string $path) use ($currentWorkingDirectoryFileHelper): string {
-			return $currentWorkingDirectoryFileHelper->absolutizePath($path);
+			return $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path));
 		}, $paths);
 
 		if (count($paths) === 0 && $pathsFile !== null) {
@@ -125,7 +126,7 @@ class CommandHelper
 
 			$pathsFileFileHelper = new FileHelper(dirname($pathsFile));
 			$paths = array_map(static function (string $path) use ($pathsFileFileHelper): string {
-				return $pathsFileFileHelper->absolutizePath($path);
+				return $pathsFileFileHelper->normalizePath($pathsFileFileHelper->absolutizePath($path));
 			}, $paths);
 		}
 

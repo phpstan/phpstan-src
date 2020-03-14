@@ -98,8 +98,8 @@ class ResultCacheEndToEndTest extends TestCase
 		unlink($serializerPath);
 
 		$result = $this->runPhpstan(1);
-		$this->assertSame(1, $result['totals']['file_errors']);
-		$this->assertSame(0, $result['totals']['errors']);
+		$this->assertSame(1, $result['totals']['file_errors'], Json::encode($result));
+		$this->assertSame(0, $result['totals']['errors'], Json::encode($result));
 		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php']['messages'][0]['message']);
 
 		file_put_contents($serializerPath, $originalSerializerCode);

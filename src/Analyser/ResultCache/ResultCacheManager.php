@@ -348,6 +348,9 @@ class ResultCacheManager
 	 */
 	private function getMeta(): array
 	{
+		$extensions = get_loaded_extensions();
+		sort($extensions);
+
 		return [
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => $this->getPhpStanVersion(),
@@ -355,7 +358,7 @@ class ResultCacheManager
 			'configFiles' => $this->getConfigFiles(),
 			'analysedPaths' => $this->analysedPaths,
 			'composerLocks' => $this->getComposerLocks(),
-			'phpExtensions' => get_loaded_extensions(),
+			'phpExtensions' => $extensions,
 			'stubFiles' => $this->getStubFiles(),
 			'level' => $this->usedLevel,
 		];

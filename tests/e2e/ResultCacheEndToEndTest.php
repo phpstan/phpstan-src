@@ -82,9 +82,12 @@ class ResultCacheEndToEndTest extends TestCase
 		$result = $this->runPhpstan(1);
 		$this->assertSame(3, $result['totals']['file_errors']);
 		$this->assertSame(0, $result['totals']['errors']);
-		$this->assertSame('Parameter #1 $source of function token_get_all expects string, PhpParser\Node\Expr\MethodCall given.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/Lexer.php']['messages'][0]['message']);
-		$this->assertSame('Parameter #1 $code of method PhpParser\Lexer::startLexing() expects PhpParser\Node\Expr\MethodCall, string given.', $result['files'][__DIR__ . '/PHP-Parser/lib/PhpParser/ParserAbstract.php']['messages'][0]['message']);
-		$this->assertSame('Parameter #1 (array(\'foo\')) of echo cannot be converted to string.', $result['files'][__DIR__ . '/PHP-Parser/lib/bootstrap.php']['messages'][0]['message']);
+
+		$fileHelper = new FileHelper(__DIR__);
+
+		$this->assertSame('Parameter #1 $source of function token_get_all expects string, PhpParser\Node\Expr\MethodCall given.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Lexer.php')]['messages'][0]['message']);
+		$this->assertSame('Parameter #1 $code of method PhpParser\Lexer::startLexing() expects PhpParser\Node\Expr\MethodCall, string given.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/ParserAbstract.php')]['messages'][0]['message']);
+		$this->assertSame('Parameter #1 (array(\'foo\')) of echo cannot be converted to string.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/bootstrap.php')]['messages'][0]['message']);
 		$this->assertResultCache(__DIR__ . '/resultCache_2.php');
 	}
 

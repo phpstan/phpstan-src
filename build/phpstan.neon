@@ -25,10 +25,10 @@ parameters:
 		- '#Test::data[a-zA-Z0-9_]+\(\) return type has no value type specified in iterable type#'
 		-
 			message: '#Fetching class constant class of deprecated class DeprecatedAnnotations\\DeprecatedFoo.#'
-			path: %rootDir%/tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php
+			path: ../tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php
 		-
 			message: '#Fetching class constant class of deprecated class DeprecatedAnnotations\\DeprecatedWithMultipleTags.#'
-			path: %rootDir%/tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php
+			path: ../tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php
 		-
 			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php

@@ -175,9 +175,10 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$this->assertSame(7, $result[2]->getLine());
 		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 
-		$this->assertIsString($result[3]);
-		$this->assertStringContainsString('Ignored error pattern #Some custom error\.# in path', $result[3]);
-		$this->assertStringContainsString('was not matched in reported errors.', $result[3]);
+		$this->assertInstanceOf(Error::class, $result[3]);
+		$this->assertStringContainsString('Ignored error pattern #Some custom error\.# in path', $result[3]->getMessage());
+		$this->assertStringContainsString('was not matched in reported errors.', $result[3]->getMessage());
+		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 	}
 
 	public function testIgnoreErrorByPaths(): void

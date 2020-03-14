@@ -223,6 +223,16 @@ class IgnoredErrorHelperResult
 							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
 						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
 					}
+				} elseif (isset($unmatchedIgnoredError['realPath'])) {
+					$errors[] = new Error(
+						sprintf(
+							'Ignored error pattern %s was not matched in reported errors.',
+							IgnoredError::stringifyPattern($unmatchedIgnoredError)
+						),
+						$unmatchedIgnoredError['realPath'],
+						null,
+						false
+					);
 				} elseif (!$onlyFiles) {
 					$errors[] = sprintf(
 						'Ignored error pattern %s was not matched in reported errors.',

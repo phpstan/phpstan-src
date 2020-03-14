@@ -340,6 +340,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
+          ini-values: memory_limit=256M
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"

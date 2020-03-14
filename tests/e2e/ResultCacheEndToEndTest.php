@@ -8,6 +8,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPUnit\Framework\TestCase;
 use function escapeshellarg;
 use function file_put_contents;
+use function str_replace;
 
 class ResultCacheEndToEndTest extends TestCase
 {
@@ -15,6 +16,15 @@ class ResultCacheEndToEndTest extends TestCase
 	public function setUp(): void
 	{
 		chdir(__DIR__ . '/PHP-Parser');
+
+		if (DIRECTORY_SEPARATOR !== '\\') {
+			return;
+		}
+
+		$baselinePath = __DIR__ . '/baseline.neon';
+		$baselineContents = FileReader::read($baselinePath);
+		$baselineContents = str_replace('offset 88', 'offset 91', $baselineContents);
+		file_put_contents($baselinePath, $baselineContents);
 	}
 
 	public function tearDown(): void
@@ -142,7 +152,8 @@ class ResultCacheEndToEndTest extends TestCase
 
 	private function relativizePath(string $path): string
 	{
-		$helper = new SimpleRelativePathHelper(__DIR__ . '/PHP-Parser');
+		$path = str_replace('\\', '/', $path);
+		$helper = new SimpleRelativePathHelper(str_replace('\\', '/', __DIR__ . '/PHP-Parser'));
 		return $helper->getRelativePath($path);
 	}
 

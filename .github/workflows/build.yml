@@ -315,7 +315,7 @@ jobs:
           time vendor/bin/phing phpstan-result-cache
           bin/phpstan clear-result-cache -c build/phpstan.neon
           time vendor/bin/phing phpstan-result-cache
-          touch src/TrinaryLogic.php
+          echo -e "\n\n" >> src/TrinaryLogic.php
           time vendor/bin/phing phpstan-result-cache
           time vendor/bin/phing phpstan-result-cache
 

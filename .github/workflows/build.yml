@@ -325,13 +325,7 @@ jobs:
       - name: "PHPStan with result cache"
         if: matrix.operating-system == 'windows-latest'
         shell: cmd
-        run: |
-          vendor\bin\phing phpstan-result-cache
-          bin\phpstan clear-result-cache -c build/phpstan.neon
-          vendor\bin\phing phpstan-result-cache
-          echo. >> src\TrinaryLogic.php
-          vendor\bin\phing phpstan-result-cache
-          vendor\bin\phing phpstan-result-cache
+        run: vendor\bin\phing phpstan-result-cache && php bin\phpstan clear-result-cache -c build/phpstan.neon && vendor\bin\phing phpstan-result-cache && echo. >> src\TrinaryLogic.php && vendor\bin\phing phpstan-result-cache && vendor\bin\phing phpstan-result-cache
 
       - name: "Upload result cache artifact"
         uses: actions/upload-artifact@v1

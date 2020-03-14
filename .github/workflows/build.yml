@@ -308,7 +308,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ./tmp
-          key: "result-cache-v1"
+          key: "result-cache-v2"
 
       - name: "PHPStan with result cache"
         run: |

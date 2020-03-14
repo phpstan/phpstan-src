@@ -42,7 +42,11 @@ class ResultCacheEndToEndTest extends TestCase
 		$lexerCode = str_replace('@param string $code', '', $lexerCode);
 		$lexerCode = str_replace('public function startLexing($code', 'public function startLexing(\\PhpParser\\Node\\Expr\\MethodCall $code', $lexerCode);
 		file_put_contents($lexerPath, $lexerCode);
-		touch(__DIR__ . '/PHP-Parser/lib/PhpParser/ErrorHandler.php');
+
+		$errorHandlerPath = __DIR__ . '/PHP-Parser/lib/PhpParser/ErrorHandler.php';
+		$errorHandlerContents = FileReader::read($errorHandlerPath);
+		$errorHandlerContents .= "\n\n";
+		file_put_contents($errorHandlerPath, $errorHandlerContents);
 
 		$bootstrapPath = __DIR__ . '/PHP-Parser/lib/bootstrap.php';
 		$originalBootstrapContents = FileReader::read($bootstrapPath);

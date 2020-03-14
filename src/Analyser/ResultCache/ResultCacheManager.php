@@ -7,12 +7,11 @@ use PHPStan\Analyser\Error;
 use PHPStan\File\FileReader;
 use function array_fill_keys;
 use function array_key_exists;
-use function filemtime;
 
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v1';
+	private const CACHE_VERSION = 'v2-hashes';
 
 	/** @var string */
 	private $cacheFilePath;
@@ -31,6 +30,9 @@ class ResultCacheManager
 
 	/** @var string */
 	private $usedLevel;
+
+	/** @var array<string, string> */
+	private $fileHashes = [];
 
 	/**
 	 * @param string $cacheFilePath
@@ -113,15 +115,12 @@ class ResultCacheManager
 			unset($deletedFiles[$analysedFile]);
 
 			$analysedFileData = $invertedDependencies[$analysedFile];
-			$cachedModifiedTime = $analysedFileData['modifiedTime'];
+			$cachedFileHash = $analysedFileData['fileHash'];
 			$dependentFiles = $analysedFileData['dependentFiles'];
 			$invertedDependenciesToReturn[$analysedFile] = $dependentFiles;
-			$currentModifiedTime = filemtime($analysedFile);
-			if ($currentModifiedTime === false) {
-				$currentModifiedTime = time();
-			}
+			$currentFileHash = $this->getFileHash($analysedFile);
 
-			if ($cachedModifiedTime === $currentModifiedTime) {
+			if ($cachedFileHash === $currentFileHash) {
 				continue;
 			}
 
@@ -293,12 +292,8 @@ class ResultCacheManager
 		foreach ($dependencies as $file => $fileDependencies) {
 			foreach ($fileDependencies as $fileDep) {
 				if (!array_key_exists($fileDep, $invertedDependencies)) {
-					$modifiedTime = filemtime($fileDep);
-					if ($modifiedTime === false) {
-						$modifiedTime = time();
-					}
 					$invertedDependencies[$fileDep] = [
-						'modifiedTime' => $modifiedTime,
+						'fileHash' => $this->getFileHash($fileDep),
 						'dependentFiles' => [],
 					];
 					unset($filesNoOneIsDependingOn[$fileDep]);
@@ -316,12 +311,8 @@ class ResultCacheManager
 				continue;
 			}
 
-			$modifiedTime = filemtime($file);
-			if ($modifiedTime === false) {
-				$modifiedTime = time();
-			}
 			$invertedDependencies[$file] = [
-				'modifiedTime' => $modifiedTime,
+				'fileHash' => $this->getFileHash($file),
 				'dependentFiles' => [],
 			];
 		}
@@ -385,10 +376,17 @@ class ResultCacheManager
 
 	private function getFileHash(string $path): string
 	{
+		if (array_key_exists($path, $this->fileHashes)) {
+			return $this->fileHashes[$path];
+		}
+
 		$contents = FileReader::read($path);
 		$contents = str_replace("\r\n", "\n", $contents);
 
-		return sha1($contents);
+		$hash = sha1($contents);
+		$this->fileHashes[$path] = $hash;
+
+		return $hash;
 	}
 
 	private function getPhpStanVersion(): string

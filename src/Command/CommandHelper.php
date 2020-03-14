@@ -20,7 +20,6 @@ use PHPStan\File\FileReader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use function realpath;
 
 class CommandHelper
 {
@@ -434,11 +433,6 @@ class CommandHelper
 			$data = $phpAdapter->load($configFile);
 		} else {
 			$data = $neonAdapter->load($configFile);
-		}
-
-		$configFile = realpath($configFile);
-		if ($configFile === false) {
-			throw new \PHPStan\ShouldNotHappenException();
 		}
 		$allConfigFiles = [$configFile];
 		if (isset($data['includes'])) {

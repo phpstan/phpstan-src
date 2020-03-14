@@ -336,7 +336,7 @@ jobs:
       - name: "Upload result cache artifact"
         uses: actions/upload-artifact@v1
         with:
-          name: resultCache.php
+          name: resultCache-${{ matrix.operating-system }}.php
           path: tmp/resultCache.php
 
   result-cache-e2e-tests:

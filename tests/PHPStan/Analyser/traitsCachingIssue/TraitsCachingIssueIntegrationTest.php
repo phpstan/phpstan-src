@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Testing\TestCase;
 use RecursiveDirectoryIterator;
@@ -87,7 +88,9 @@ class TraitsCachingIssueIntegrationTest extends TestCase
 			$this->originalTraitTwoContents = $this->changeTrait(__DIR__ . '/data/TraitTwo.php');
 		}
 
-		$errorPath = __DIR__ . '/data/TestClassUsingTrait.php';
+		$fileHelper = new FileHelper(__DIR__);
+
+		$errorPath = $fileHelper->normalizePath(__DIR__ . '/data/TestClassUsingTrait.php');
 		[$statusCode, $errors] = $this->runPhpStan();
 
 		if (count($expectedErrors) === 0) {

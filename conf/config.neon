@@ -56,8 +56,8 @@ parameters:
 	ignoreErrors: []
 	internalErrorsCountLimit: 50
 	cache:
-	    nodesByFileCountMax: 512
-	    nodesByStringCountMax: 512
+		nodesByFileCountMax: 512
+		nodesByStringCountMax: 512
 	reportUnmatchedIgnoredErrors: true
 	scopeClass: PHPStan\Analyser\MutatingScope
 	typeAliases:

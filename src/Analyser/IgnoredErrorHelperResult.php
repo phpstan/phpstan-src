@@ -76,7 +76,7 @@ class IgnoredErrorHelperResult
 	 * @param Error[] $errors
 	 * @return string[]|Error[]
 	 */
-	public function process(array $errors, bool $onlyFiles, bool $reachedInternalErrorsCountLimit): array
+	public function process(array $errors, bool $onlyFiles, bool $hasInternalErrors): array
 	{
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
 		$addErrors = [];
@@ -206,7 +206,7 @@ class IgnoredErrorHelperResult
 
 		$errors = array_merge($errors, $addErrors);
 
-		if ($this->reportUnmatchedIgnoredErrors && !$reachedInternalErrorsCountLimit) {
+		if ($this->reportUnmatchedIgnoredErrors && !$hasInternalErrors) {
 			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
 				if (
 					isset($unmatchedIgnoredError['count'])

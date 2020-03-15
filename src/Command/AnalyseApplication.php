@@ -118,12 +118,13 @@ class AnalyseApplication
 			);
 			$analyserResult = $this->resultCacheManager->process($intermediateAnalyserResult, $resultCache);
 			$hasInferrablePropertyTypesFromConstructor = $analyserResult->hasInferrablePropertyTypesFromConstructor();
-			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $analyserResult->hasReachedInternalErrorsCountLimit());
+			$internalErrors = $analyserResult->getInternalErrors();
+			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
 			$warnings = $ignoredErrorHelperResult->getWarnings();
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 				$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 			}
-			$errors = array_merge($errors, $analyserResult->getInternalErrors());
+			$errors = array_merge($errors, $internalErrors);
 		}
 
 		$errors = array_merge($stubErrors, $errors);

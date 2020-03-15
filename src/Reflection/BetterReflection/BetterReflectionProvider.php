@@ -191,7 +191,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			}
 		}
 
-		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile));
+		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile), '/');
 		$className = $this->anonymousClassNameHelper->getAnonymousClassName(
 			$classNode,
 			$scopeFile

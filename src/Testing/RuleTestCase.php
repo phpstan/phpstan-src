@@ -11,7 +11,7 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\Rules\Registry;
@@ -60,10 +60,15 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$this->getStaticMethodTypeSpecifyingExtensions()
 			);
 			$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
+			$fileHelper = new FileHelper($currentWorkingDirectory);
+			$currentWorkingDirectory = $fileHelper->normalizePath($currentWorkingDirectory, '/');
+			$fileHelper = new FileHelper($currentWorkingDirectory);
+			$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
+			$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
 			$nodeScopeResolver = new NodeScopeResolver(
 				$broker,
 				$this->getParser(),
-				new FileTypeMapper($this->getParser(), self::getContainer()->getByType(PhpDocStringResolver::class), self::getContainer()->getByType(PhpDocNodeResolver::class), $this->createMock(Cache::class), new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new FuzzyRelativePathHelper($currentWorkingDirectory, [], DIRECTORY_SEPARATOR))),
+				new FileTypeMapper($this->getParser(), self::getContainer()->getByType(PhpDocStringResolver::class), self::getContainer()->getByType(PhpDocNodeResolver::class), $this->createMock(Cache::class), $anonymousClassNameHelper),
 				$fileHelper,
 				$typeSpecifier,
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),

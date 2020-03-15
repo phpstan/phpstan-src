@@ -143,15 +143,18 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$cache = new Cache(new MemoryCacheStorage());
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper($fileHelper, $relativePathHelper));
+		$currentWorkingDirectory = $fileHelper->normalizePath($currentWorkingDirectory, '/');
+		$fileHelper = new FileHelper($currentWorkingDirectory);
+		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
+		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
+		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
 		$functionReflectionFactory = $this->getFunctionReflectionFactory(
 			$functionCallStatementFinder,
 			$cache
 		);
-		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), $relativePathHelper);
+
 		$reflectionProviderFactory = new ReflectionProviderFactory(
 			$runtimeReflectionProvider,
 			$phpParser,
@@ -328,14 +331,13 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
+		$fileHelper = new FileHelper($currentWorkingDirectory);
 		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
-		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), $relativePathHelper));
+		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
+		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
 		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension($fileTypeMapper);
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);
 		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
-		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
 		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
 		$functionReflectionFactory = $this->getFunctionReflectionFactory(
 			$functionCallStatementFinder,

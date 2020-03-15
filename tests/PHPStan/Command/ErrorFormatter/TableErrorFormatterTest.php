@@ -143,7 +143,6 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected
 	): void
 	{
-		$this->skipIfNotOnUnix();
 		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(self::DIRECTORY_PATH, '/', []), false, false, false, true);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(

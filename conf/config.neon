@@ -966,8 +966,10 @@ services:
 
 	relativePathHelper:
 		class: PHPStan\File\RelativePathHelper
-		dynamic: true
-		autowired: true
+		factory: PHPStan\File\FuzzyRelativePathHelper
+		arguments:
+			currentWorkingDirectory: %currentWorkingDirectory%
+			analysedPaths: %analysedPaths%
 
 	simpleRelativePathHelper:
 		class: PHPStan\File\RelativePathHelper

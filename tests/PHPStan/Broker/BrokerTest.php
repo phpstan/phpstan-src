@@ -31,7 +31,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 
 		$workingDirectory = __DIR__;
-		$relativePathHelper = new FuzzyRelativePathHelper($workingDirectory, DIRECTORY_SEPARATOR, []);
+		$relativePathHelper = new FuzzyRelativePathHelper($workingDirectory, [], DIRECTORY_SEPARATOR);
 		$fileHelper = new FileHelper($workingDirectory);
 		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
 

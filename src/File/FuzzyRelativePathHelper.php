@@ -13,15 +13,19 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 
 	/**
 	 * @param string $currentWorkingDirectory
-	 * @param string $directorySeparator
 	 * @param string[] $analysedPaths
+	 * @param string|null $directorySeparator
 	 */
 	public function __construct(
 		string $currentWorkingDirectory,
-		string $directorySeparator,
-		array $analysedPaths
+		array $analysedPaths,
+		string $directorySeparator = null
 	)
 	{
+		if ($directorySeparator === null) {
+			$directorySeparator = DIRECTORY_SEPARATOR;
+		}
+
 		$this->directorySeparator = $directorySeparator;
 		$pathBeginning = null;
 		$pathToTrimArray = null;

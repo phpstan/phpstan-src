@@ -7,7 +7,6 @@ use Phar;
 use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FuzzyRelativePathHelper;
 
 class ContainerFactory
 {
@@ -84,10 +83,6 @@ class ContainerFactory
 		foreach ($additionalConfigFiles as $additionalConfigFile) {
 			$configurator->addConfig($additionalConfigFile);
 		}
-
-		$configurator->addServices([
-			'relativePathHelper' => new FuzzyRelativePathHelper($this->currentWorkingDirectory, DIRECTORY_SEPARATOR, $analysedPaths),
-		]);
 
 		$container = $configurator->createContainer();
 

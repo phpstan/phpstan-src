@@ -11,7 +11,7 @@ use function array_key_exists;
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v2-hashes';
+	private const CACHE_VERSION = 'v3-all-errors';
 
 	/** @var string */
 	private $cacheFilePath;
@@ -159,31 +159,18 @@ class ResultCacheManager
 
 	public function process(AnalyserResult $analyserResult, ResultCache $resultCache): AnalyserResult
 	{
-		$notFileSpecificErrors = [];
+		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
-		$warnings = [];
 		foreach ($analyserResult->getErrors() as $error) {
-			if (is_string($error)) {
-				$notFileSpecificErrors[] = $error;
-			} else {
-				if ($error->isWarning()) {
-					$warnings[] = $error->getMessage();
-					continue;
-				}
-				$freshErrorsByFile[$error->getFilePath()][] = $error;
-			}
+			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$save = function (array $errorsByFile, ?array $dependencies) use ($notFileSpecificErrors, $warnings, $resultCache): void {
+		$save = function (array $errorsByFile, ?array $dependencies) use ($internalErrors, $resultCache): void {
 			if ($dependencies === null) {
 				return;
 			}
 
-			if (count($notFileSpecificErrors) > 0) {
-				return;
-			}
-
-			if (count($warnings) > 0) {
+			if (count($internalErrors) > 0) {
 				return;
 			}
 
@@ -219,9 +206,11 @@ class ResultCacheManager
 		}
 
 		return new AnalyserResult(
-			array_merge($flatErrors, $warnings, $notFileSpecificErrors),
+			$flatErrors,
+			$internalErrors,
 			$analyserResult->hasInferrablePropertyTypesFromConstructor(),
-			$dependencies
+			$dependencies,
+			$analyserResult->hasReachedInternalErrorsCountLimit()
 		);
 	}
 

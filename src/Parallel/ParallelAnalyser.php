@@ -7,7 +7,6 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
-use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Command\AnalyseCommand;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
@@ -17,9 +16,6 @@ use function parse_url;
 
 class ParallelAnalyser
 {
-
-	/** @var IgnoredErrorHelper */
-	private $ignoredErrorHelper;
 
 	/** @var int */
 	private $internalErrorsCountLimit;
@@ -34,13 +30,11 @@ class ParallelAnalyser
 	private $decoderBufferSize;
 
 	public function __construct(
-		IgnoredErrorHelper $ignoredErrorHelper,
 		int $internalErrorsCountLimit,
 		float $processTimeout,
 		int $decoderBufferSize
 	)
 	{
-		$this->ignoredErrorHelper = $ignoredErrorHelper;
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 		$this->processTimeout = $processTimeout;
 		$this->decoderBufferSize = $decoderBufferSize;
@@ -49,7 +43,6 @@ class ParallelAnalyser
 	/**
 	 * @param Schedule $schedule
 	 * @param string $mainScript
-	 * @param bool $onlyFiles
 	 * @param \Closure(int): void|null $postFileCallback
 	 * @param string|null $projectConfigFile
 	 * @return AnalyserResult
@@ -57,21 +50,11 @@ class ParallelAnalyser
 	public function analyse(
 		Schedule $schedule,
 		string $mainScript,
-		bool $onlyFiles,
 		?\Closure $postFileCallback,
 		?string $projectConfigFile,
 		InputInterface $input
 	): AnalyserResult
 	{
-		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
-		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			return new AnalyserResult(
-				$ignoredErrorHelperResult->getErrors(),
-				false,
-				null
-			);
-		}
-
 		$jobs = array_reverse($schedule->getJobs());
 		$loop = new StreamSelectLoop();
 
@@ -186,14 +169,12 @@ class ParallelAnalyser
 
 		$loop->run();
 
-		if ($reachedInternalErrorsCountLimit) {
-			$internalErrors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
-		}
-
 		return new AnalyserResult(
-			array_merge($ignoredErrorHelperResult->process($errors, $onlyFiles, $reachedInternalErrorsCountLimit), $internalErrors, $ignoredErrorHelperResult->getWarnings()),
+			$errors,
+			$internalErrors,
 			$hasInferrablePropertyTypesFromConstructor,
-			$internalErrorsCount === 0 ? $dependencies : null
+			$internalErrorsCount === 0 ? $dependencies : null,
+			$reachedInternalErrorsCountLimit
 		);
 	}
 

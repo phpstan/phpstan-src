@@ -213,7 +213,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		/** @var \PHPStan\File\FileHelper $fileHelper */
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		/** @var \PHPStan\Analyser\Error[] $errors */
-		$errors = $analyser->analyse([$file], false)->getErrors();
+		$errors = $analyser->analyse([$file])->getErrors();
 		foreach ($errors as $error) {
 			$this->assertSame($fileHelper->normalizePath($file), $error->getFile());
 		}

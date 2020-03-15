@@ -347,6 +347,7 @@ services:
 		class: PHPStan\Command\AnalyseApplication
 		arguments:
 			memoryLimitFile: %memoryLimitFile%
+			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
 		class: PHPStan\Command\IgnoredRegexValidator

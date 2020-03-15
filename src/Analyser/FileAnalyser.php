@@ -143,7 +143,6 @@ class FileAnalyser
 								$filePath,
 								$traitFilePath,
 								$tip,
-								false,
 								$nodeLine,
 								$nodeType,
 								$identifier,

@@ -134,36 +134,25 @@ class IgnoredErrorHelper
 	/**
 	 * @param string $regex
 	 * @param array<string, string> $ignoredTypes
-	 * @return Error
+	 * @return string
 	 */
-	private function createIgnoredTypesWarning(string $regex, array $ignoredTypes): Error
+	private function createIgnoredTypesWarning(string $regex, array $ignoredTypes): string
 	{
-		return new Error(
-			sprintf("Ignored error %s has an unescaped '|' which leads to ignoring more errors than intended. Use '\\|' instead.\n%s", $regex, sprintf("It ignores all errors containing the following types:\n%s", implode("\n", array_map(static function (string $typeDescription): string {
-				return sprintf('* %s', $typeDescription);
-			}, array_keys($ignoredTypes))))),
-			'placeholder', // this value will never get used
-			null,
-			false,
-			null,
-			null,
-			null,
-			true
+		return sprintf(
+			"Ignored error %s has an unescaped '|' which leads to ignoring more errors than intended. Use '\\|' instead.\n%s",
+			$regex,
+			sprintf(
+				"It ignores all errors containing the following types:\n%s",
+				implode("\n", array_map(static function (string $typeDescription): string {
+					return sprintf('* %s', $typeDescription);
+				}, array_keys($ignoredTypes)))
+			)
 		);
 	}
 
-	private function createAnchorInTheMiddleWarning(string $regex): Error
+	private function createAnchorInTheMiddleWarning(string $regex): string
 	{
-		return new Error(
-			sprintf("Ignored error %s has an unescaped anchor '$' in the middle. This leads to unintended behavior. Use '\\$' instead.", $regex),
-			'placeholder', // this value will never get used
-			null,
-			false,
-			null,
-			null,
-			null,
-			true
-		);
+		return sprintf("Ignored error %s has an unescaped anchor '$' in the middle. This leads to unintended behavior. Use '\\$' instead.", $regex);
 	}
 
 }

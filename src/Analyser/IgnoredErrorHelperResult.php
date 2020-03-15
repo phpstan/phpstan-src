@@ -13,7 +13,7 @@ class IgnoredErrorHelperResult
 	/** @var string[] */
 	private $errors;
 
-	/** @var Error[] */
+	/** @var string[] */
 	private $warnings;
 
 	/** @var array<array<mixed>> */
@@ -31,7 +31,7 @@ class IgnoredErrorHelperResult
 	/**
 	 * @param FileHelper $fileHelper
 	 * @param string[] $errors
-	 * @param Error[] $warnings
+	 * @param string[] $warnings
 	 * @param array<array<mixed>> $otherIgnoreErrors
 	 * @param array<string, array<array<mixed>>> $ignoreErrorsByFile
 	 * @param (string|mixed[])[] $ignoreErrors
@@ -65,7 +65,7 @@ class IgnoredErrorHelperResult
 	}
 
 	/**
-	 * @return Error[]
+	 * @return string[]
 	 */
 	public function getWarnings(): array
 	{

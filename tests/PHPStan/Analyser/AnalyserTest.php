@@ -6,7 +6,6 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\DirectParser;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -341,29 +340,40 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		bool $onlyFiles
 	): array
 	{
-		$analyser = $this->createAnalyser(
-			$ignoreErrors,
-			$reportUnmatchedIgnoredErrors
-		);
+		$analyser = $this->createAnalyser();
 
 		if (is_string($filePaths)) {
 			$filePaths = [$filePaths];
 		}
 
-		return $analyser->analyse(array_map(function (string $path): string {
+		$ignoredErrorHelper = new IgnoredErrorHelper(
+			self::getContainer()->getByType(IgnoredRegexValidator::class),
+			$this->getFileHelper(),
+			$ignoreErrors,
+			$reportUnmatchedIgnoredErrors
+		);
+		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
+		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
+			return $ignoredErrorHelperResult->getErrors();
+		}
+
+		$analyserResult = $analyser->analyse(array_map(function (string $path): string {
 			return $this->getFileHelper()->normalizePath($path);
-		}, $filePaths), $onlyFiles)->getErrors();
+		}, $filePaths));
+
+		$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $analyserResult->hasReachedInternalErrorsCountLimit());
+		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
+			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', 50);
+		}
+
+		return array_merge(
+			$errors,
+			$ignoredErrorHelperResult->getWarnings(),
+			$analyserResult->getInternalErrors()
+		);
 	}
 
-	/**
-	 * @param string[]|array<array<string, string>> $ignoreErrors
-	 * @param bool $reportUnmatchedIgnoredErrors
-	 * @return Analyser
-	 */
-	private function createAnalyser(
-		array $ignoreErrors,
-		bool $reportUnmatchedIgnoredErrors = true
-	): \PHPStan\Analyser\Analyser
+	private function createAnalyser(): \PHPStan\Analyser\Analyser
 	{
 		$registry = new Registry([
 			new AlwaysFailRule(),
@@ -374,7 +384,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 
 		$broker = $this->createBroker();
 		$printer = new \PhpParser\PrettyPrinter\Standard();
-		$fileHelper = self::getContainer()->getByType(FileHelper::class);
+		$fileHelper = $this->getFileHelper();
 
 		/** @var RelativePathHelper $relativePathHelper */
 		$relativePathHelper = self::getContainer()->getService('relativePathHelper');
@@ -400,17 +410,11 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			new DependencyResolver($broker),
 			$fileHelper
 		);
-		$ignoredErrorHelper = new IgnoredErrorHelper(
-			self::getContainer()->getByType(IgnoredRegexValidator::class),
-			$fileHelper,
-			$ignoreErrors,
-			$reportUnmatchedIgnoredErrors
-		);
+
 		return new Analyser(
 			$fileAnalyser,
 			$registry,
 			$nodeScopeResolver,
-			$ignoredErrorHelper,
 			50
 		);
 	}

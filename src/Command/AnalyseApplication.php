@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
@@ -29,8 +30,14 @@ class AnalyseApplication
 	/** @var \PHPStan\Analyser\ResultCache\ResultCacheManager */
 	private $resultCacheManager;
 
+	/** @var IgnoredErrorHelper */
+	private $ignoredErrorHelper;
+
 	/** @var string */
 	private $memoryLimitFile;
+
+	/** @var int */
+	private $internalErrorsCountLimit;
 
 	public function __construct(
 		Analyser $analyser,
@@ -38,7 +45,9 @@ class AnalyseApplication
 		ParallelAnalyser $parallelAnalyser,
 		Scheduler $scheduler,
 		ResultCacheManager $resultCacheManager,
-		string $memoryLimitFile
+		IgnoredErrorHelper $ignoredErrorHelper,
+		string $memoryLimitFile,
+		int $internalErrorsCountLimit
 	)
 	{
 		$this->analyser = $analyser;
@@ -46,7 +55,9 @@ class AnalyseApplication
 		$this->parallelAnalyser = $parallelAnalyser;
 		$this->scheduler = $scheduler;
 		$this->resultCacheManager = $resultCacheManager;
+		$this->ignoredErrorHelper = $ignoredErrorHelper;
 		$this->memoryLimitFile = $memoryLimitFile;
+		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 	}
 
 	/**
@@ -89,36 +100,43 @@ class AnalyseApplication
 			@unlink($this->memoryLimitFile);
 		});
 
-		$resultCache = $this->resultCacheManager->restore($files, $debug);
+		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
+		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
+			$errors = $ignoredErrorHelperResult->getErrors();
+			$hasInferrablePropertyTypesFromConstructor = false;
+			$warnings = [];
+		} else {
+			$resultCache = $this->resultCacheManager->restore($files, $debug);
+			$intermediateAnalyserResult = $this->runAnalyser(
+				$resultCache->getFilesToAnalyse(),
+				$files,
+				$debug,
+				$projectConfigFile,
+				$stdOutput,
+				$errorOutput,
+				$input
+			);
+			$analyserResult = $this->resultCacheManager->process($intermediateAnalyserResult, $resultCache);
+			$hasInferrablePropertyTypesFromConstructor = $analyserResult->hasInferrablePropertyTypesFromConstructor();
+			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $analyserResult->hasReachedInternalErrorsCountLimit());
+			$warnings = $ignoredErrorHelperResult->getWarnings();
+			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
+				$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
+			}
+			$errors = array_merge($errors, $analyserResult->getInternalErrors());
+		}
 
-		$analyserResult = $this->resultCacheManager->process($this->runAnalyser(
-			$resultCache->getFilesToAnalyse(),
-			$files,
-			$onlyFiles || !$resultCache->isFullAnalysis(),
-			$debug,
-			$projectConfigFile,
-			$stdOutput,
-			$errorOutput,
-			$input
-		), $resultCache);
-
-		$errors = array_merge($stubErrors, $analyserResult->getErrors());
+		$errors = array_merge($stubErrors, $errors);
 
 		$fileSpecificErrors = [];
 		$notFileSpecificErrors = [];
-		$filesErrorsToCache = [];
-		$warnings = [];
 		foreach ($errors as $error) {
 			if (is_string($error)) {
 				$notFileSpecificErrors[] = $error;
-			} else {
-				if ($error->isWarning()) {
-					$warnings[] = $error->getMessage();
-					continue;
-				}
-				$fileSpecificErrors[] = $error;
-				$filesErrorsToCache[$error->getFilePath()][] = $error;
+				continue;
 			}
+
+			$fileSpecificErrors[] = $error;
 		}
 
 		return new AnalysisResult(
@@ -126,7 +144,7 @@ class AnalyseApplication
 			$notFileSpecificErrors,
 			$warnings,
 			$defaultLevelUsed,
-			$analyserResult->hasInferrablePropertyTypesFromConstructor(),
+			$hasInferrablePropertyTypesFromConstructor,
 			$projectConfigFile
 		);
 	}
@@ -138,7 +156,6 @@ class AnalyseApplication
 	private function runAnalyser(
 		array $files,
 		array $allAnalysedFiles,
-		bool $onlyFiles,
 		bool $debug,
 		?string $projectConfigFile,
 		Output $stdOutput,
@@ -152,7 +169,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], false, []);
+			return new AnalyserResult([], [], false, [], false);
 		}
 
 		/** @var bool $runningInParallel */
@@ -200,11 +217,10 @@ class AnalyseApplication
 			&& $schedule->getNumberOfProcesses() > 1
 		) {
 			$runningInParallel = true;
-			$analyserResult = $this->parallelAnalyser->analyse($schedule, $mainScript, $onlyFiles, $postFileCallback, $projectConfigFile, $input);
+			$analyserResult = $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $input);
 		} else {
 			$analyserResult = $this->analyser->analyse(
 				$files,
-				$onlyFiles,
 				$preFileCallback,
 				$postFileCallback,
 				$debug,

@@ -26,9 +26,6 @@ class Error implements \JsonSerializable
 	/** @var string|null */
 	private $tip;
 
-	/** @var bool */
-	private $warning;
-
 	/** @var int|null */
 	private $nodeLine;
 
@@ -51,7 +48,6 @@ class Error implements \JsonSerializable
 	 * @param string|null $filePath
 	 * @param string|null $traitFilePath
 	 * @param string|null $tip
-	 * @param bool $warning
 	 * @param int|null $nodeLine
 	 * @param class-string<\PhpParser\Node>|null $nodeType
 	 * @param string|null $identifier
@@ -65,7 +61,6 @@ class Error implements \JsonSerializable
 		?string $filePath = null,
 		?string $traitFilePath = null,
 		?string $tip = null,
-		bool $warning = false,
 		?int $nodeLine = null,
 		?string $nodeType = null,
 		?string $identifier = null,
@@ -79,7 +74,6 @@ class Error implements \JsonSerializable
 		$this->filePath = $filePath;
 		$this->traitFilePath = $traitFilePath;
 		$this->tip = $tip;
-		$this->warning = $warning;
 		$this->nodeLine = $nodeLine;
 		$this->nodeType = $nodeType;
 		$this->identifier = $identifier;
@@ -139,15 +133,9 @@ class Error implements \JsonSerializable
 			$this->filePath,
 			$this->traitFilePath,
 			null,
-			$this->warning,
 			$this->nodeLine,
 			$this->nodeType
 		);
-	}
-
-	public function isWarning(): bool
-	{
-		return $this->warning;
 	}
 
 	public function getNodeLine(): ?int
@@ -189,7 +177,6 @@ class Error implements \JsonSerializable
 			'filePath' => $this->filePath,
 			'traitFilePath' => $this->traitFilePath,
 			'tip' => $this->tip,
-			'warning' => $this->warning,
 			'nodeLine' => $this->nodeLine,
 			'nodeType' => $this->nodeType,
 			'identifier' => $this->identifier,
@@ -211,7 +198,6 @@ class Error implements \JsonSerializable
 			$json['filePath'],
 			$json['traitFilePath'],
 			$json['tip'],
-			$json['warning'],
 			$json['nodeLine'] ?? null,
 			$json['nodeType'] ?? null,
 			$json['identifier'] ?? null,
@@ -233,7 +219,6 @@ class Error implements \JsonSerializable
 			$properties['filePath'],
 			$properties['traitFilePath'],
 			$properties['tip'],
-			$properties['warning'],
 			$properties['nodeLine'] ?? null,
 			$properties['nodeType'] ?? null,
 			$properties['identifier'] ?? null,

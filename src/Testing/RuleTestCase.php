@@ -5,13 +5,10 @@ namespace PHPStan\Testing;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
-use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
-use PHPStan\Command\IgnoredRegexValidator;
-use PHPStan\Command\IgnoredRegexValidatorResult;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
@@ -82,20 +79,10 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				new DependencyResolver($broker),
 				$fileHelper
 			);
-			$ignoredRegexValidator = $this->createMock(IgnoredRegexValidator::class);
-			$ignoredRegexValidator->method('validate')
-				->willReturn(new IgnoredRegexValidatorResult([], false, false));
-			$ignoredErrorHelper = new IgnoredErrorHelper(
-				$ignoredRegexValidator,
-				$fileHelper,
-				[],
-				true
-			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
 				$registry,
 				$nodeScopeResolver,
-				$ignoredErrorHelper,
 				50
 			);
 		}
@@ -126,7 +113,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	public function analyse(array $files, array $expectedErrors): void
 	{
 		$files = array_map([$this->getFileHelper(), 'normalizePath'], $files);
-		$actualErrors = $this->getAnalyser()->analyse($files, false)->getErrors();
+		$actualErrors = $this->getAnalyser()->analyse($files)->getErrors();
 
 		$strictlyTypedSprintf = static function (int $line, string $message, ?string $tip): string {
 			$message = sprintf('%02d: %s', $line, $message);

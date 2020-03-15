@@ -5,8 +5,11 @@ namespace PHPStan\Analyser;
 class AnalyserResult
 {
 
-	/** @var string[]|\PHPStan\Analyser\Error[] */
+	/** @var \PHPStan\Analyser\Error[] */
 	private $errors;
+
+	/** @var string[] */
+	private $internalErrors;
 
 	/** @var bool */
 	private $hasInferrablePropertyTypesFromConstructor;
@@ -14,28 +17,45 @@ class AnalyserResult
 	/** @var array<string, array<string>>|null */
 	private $dependencies;
 
+	/** @var bool */
+	private $reachedInternalErrorsCountLimit;
+
 	/**
-	 * @param string[]|\PHPStan\Analyser\Error[] $errors
+	 * @param \PHPStan\Analyser\Error[] $errors
+	 * @param string[] $internalErrors
 	 * @param bool $hasInferrablePropertyTypesFromConstructor
 	 * @param array<string, array<string>>|null $dependencies
+	 * @param bool $reachedInternalErrorsCountLimit
 	 */
 	public function __construct(
 		array $errors,
+		array $internalErrors,
 		bool $hasInferrablePropertyTypesFromConstructor,
-		?array $dependencies
+		?array $dependencies,
+		bool $reachedInternalErrorsCountLimit
 	)
 	{
 		$this->errors = $errors;
+		$this->internalErrors = $internalErrors;
 		$this->hasInferrablePropertyTypesFromConstructor = $hasInferrablePropertyTypesFromConstructor;
 		$this->dependencies = $dependencies;
+		$this->reachedInternalErrorsCountLimit = $reachedInternalErrorsCountLimit;
 	}
 
 	/**
-	 * @return string[]|\PHPStan\Analyser\Error[]
+	 * @return \PHPStan\Analyser\Error[]
 	 */
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getInternalErrors(): array
+	{
+		return $this->internalErrors;
 	}
 
 	public function hasInferrablePropertyTypesFromConstructor(): bool
@@ -49,6 +69,11 @@ class AnalyserResult
 	public function getDependencies(): ?array
 	{
 		return $this->dependencies;
+	}
+
+	public function hasReachedInternalErrorsCountLimit(): bool
+	{
+		return $this->reachedInternalErrorsCountLimit;
 	}
 
 }

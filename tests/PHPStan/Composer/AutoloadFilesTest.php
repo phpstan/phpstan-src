@@ -3,6 +3,7 @@
 namespace PHPStan\Composer;
 
 use Nette\Utils\Json;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
@@ -36,7 +37,7 @@ class AutoloadFilesTest extends TestCase
 
 		sort($autoloadFiles);
 
-		$this->assertSame([
+		$expectedFiles = [
 			'hoa/consistency/Prelude.php', // Hoa isn't prefixed, no need to load this eagerly
 			'hoa/protocol/Wrapper.php', // Hoa isn't prefixed, no need to load this eagerly
 			'jetbrains/phpstorm-stubs/PhpStormStubsMap.php', // added to bin/phpstan
@@ -46,7 +47,13 @@ class AutoloadFilesTest extends TestCase
 			'symfony/polyfill-ctype/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-mbstring/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary
-		], $autoloadFiles);
+		];
+
+		$fileHelper = new FileHelper(__DIR__);
+
+		$this->assertSame(array_map(static function (string $path) use ($fileHelper): string {
+			return $fileHelper->normalizePath($path);
+		}, $expectedFiles), $autoloadFiles);
 	}
 
 }

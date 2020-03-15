@@ -196,7 +196,6 @@ jobs:
 
       - name: "Tests"
         run: "vendor/bin/phing tests"
-        continue-on-error: true
 
   static-analysis:
     name: "PHPStan"

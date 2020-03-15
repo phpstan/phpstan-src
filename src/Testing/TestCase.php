@@ -21,8 +21,8 @@ use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistr
 use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\PhpParserDecorator;
@@ -143,7 +143,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$cache = new Cache(new MemoryCacheStorage());
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$relativePathHelper = new FuzzyRelativePathHelper($currentWorkingDirectory, [], DIRECTORY_SEPARATOR);
+		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 		$fileHelper = new FileHelper($currentWorkingDirectory);
 		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper($fileHelper, $relativePathHelper));
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
@@ -328,7 +328,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$relativePathHelper = new FuzzyRelativePathHelper($currentWorkingDirectory, [], DIRECTORY_SEPARATOR);
+		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 		$fileTypeMapper = new FileTypeMapper($parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), $relativePathHelper));
 		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension($fileTypeMapper);
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);

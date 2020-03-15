@@ -12,7 +12,7 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\Broker;
 use PHPStan\Cache\Cache;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Node\VirtualNode;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -10399,7 +10399,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		$resolver = new NodeScopeResolver(
 			$broker,
 			$this->getParser(),
-			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new FuzzyRelativePathHelper($currentWorkingDirectory, [], DIRECTORY_SEPARATOR))),
+			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($currentWorkingDirectory))),
 			$fileHelper,
 			$typeSpecifier,
 			true,

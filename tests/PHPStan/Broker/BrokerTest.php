@@ -9,7 +9,7 @@ use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistr
 use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -31,7 +31,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 
 		$workingDirectory = __DIR__;
-		$relativePathHelper = new FuzzyRelativePathHelper($workingDirectory, [], DIRECTORY_SEPARATOR);
+		$relativePathHelper = new SimpleRelativePathHelper($workingDirectory);
 		$fileHelper = new FileHelper($workingDirectory);
 		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
 

@@ -19,7 +19,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 	public function __construct(
 		string $currentWorkingDirectory,
 		array $analysedPaths,
-		string $directorySeparator = null
+		?string $directorySeparator = null
 	)
 	{
 		if ($directorySeparator === null) {

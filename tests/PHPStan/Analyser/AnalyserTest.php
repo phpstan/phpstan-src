@@ -387,7 +387,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$fileHelper = $this->getFileHelper();
 
 		/** @var RelativePathHelper $relativePathHelper */
-		$relativePathHelper = self::getContainer()->getService('relativePathHelper');
+		$relativePathHelper = self::getContainer()->getService('simpleRelativePathHelper');
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);

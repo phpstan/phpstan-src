@@ -20,6 +20,9 @@ class AutoloadFilesTest extends TestCase
 		if ($vendorPath === false) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
+
+		$fileHelper = new FileHelper(__DIR__);
+
 		foreach ($finder->files()->name('composer.json')->in(__DIR__ . '/../../../vendor') as $fileInfo) {
 			$realpath = $fileInfo->getRealPath();
 			if ($realpath === false) {
@@ -31,7 +34,8 @@ class AutoloadFilesTest extends TestCase
 			}
 
 			foreach ($json['autoload']['files'] as $file) {
-				$autoloadFiles[] = substr(dirname($realpath) . '/' . $file, strlen($vendorPath) + 1);
+				$autoloadFile = substr(dirname($realpath) . '/' . $file, strlen($vendorPath) + 1);
+				$autoloadFiles[] = $fileHelper->normalizePath($autoloadFile);
 			}
 		}
 
@@ -49,11 +53,12 @@ class AutoloadFilesTest extends TestCase
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary
 		];
 
-		$fileHelper = new FileHelper(__DIR__);
-
-		$this->assertSame(array_map(static function (string $path) use ($fileHelper): string {
+		$expectedFiles = array_map(static function (string $path) use ($fileHelper): string {
 			return $fileHelper->normalizePath($path);
-		}, $expectedFiles), $autoloadFiles);
+		}, $expectedFiles);
+		sort($expectedFiles);
+
+		$this->assertSame($expectedFiles, $autoloadFiles);
 	}
 
 }

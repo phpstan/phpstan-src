@@ -17,7 +17,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -81,10 +80,6 @@ class ImpossibleCheckTypeHelper
 					$argType = $scope->getType($node->args[0]->value);
 					if (count(TypeUtils::getConstantScalars($argType)) > 0) {
 						return !$argType->toNumber() instanceof ErrorType;
-					}
-
-					if (!(new StringType())->isSuperTypeOf($argType)->no()) {
-						return null;
 					}
 				} elseif ($functionName === 'defined') {
 					return null;

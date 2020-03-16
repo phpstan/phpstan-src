@@ -682,3 +682,22 @@ class CheckIsStringInElseIf
 	}
 
 }
+
+class AssertIsNumeric
+{
+
+	public function doFoo(string $str, float $float)
+	{
+		assert(is_numeric($str));
+		assert(is_numeric('123'));
+		assert(is_numeric('blabla'));
+
+		$isNumeric = $float;
+		if (doFoo()) {
+			$isNumeric = 123;
+		}
+
+		assert(is_numeric($isNumeric));
+	}
+
+}

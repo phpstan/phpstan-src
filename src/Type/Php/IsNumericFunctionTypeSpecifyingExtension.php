@@ -34,6 +34,11 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		$argType = $scope->getType($node->args[0]->value);
+		if (!(new StringType())->isSuperTypeOf($argType)->no()) {
+			return new SpecifiedTypes([], []);
+		}
+
 		$numericTypes = [
 			new IntegerType(),
 			new FloatType(),

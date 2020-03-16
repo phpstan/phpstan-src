@@ -206,6 +206,22 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					677,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
+				[
+					'Call to function is_numeric() with \'123\' will always evaluate to true.',
+					692,
+				],
+				[
+					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
+					693,
+				],
+				[
+					'Call to function assert() with true will always evaluate to true.',
+					700,
+				],
+				[
+					'Call to function is_numeric() with 123|float will always evaluate to true.',
+					700,
+				],
 			]
 		);
 	}
@@ -297,6 +313,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
 					648,
+				],
+				[
+					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
+					693,
 				],
 			]
 		);

@@ -67,8 +67,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 				$output->writeln(sprintf('* %s (%s)%s%s', $commit['message'], $parenthesis, count($issuesToReference) > 0 ? ', ' . implode(', ', $issuesToReference) : '', $thanks !== null ? sprintf(', thanks @%s!', $thanks) : ''));
 
-				if ($i > 0 && $i % 10 === 0) {
-					sleep(30);
+				if ($i > 0 && $i % 8 === 0) {
+					sleep(60);
 				}
 
 				$i++;

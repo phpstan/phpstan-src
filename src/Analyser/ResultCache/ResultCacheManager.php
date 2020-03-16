@@ -11,7 +11,7 @@ use function array_key_exists;
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v3-all-errors';
+	private const CACHE_VERSION = 'v4-callback';
 
 	/** @var string */
 	private $cacheFilePath;
@@ -98,7 +98,7 @@ class ResultCacheManager
 		$deletedFiles = array_fill_keys(array_keys($invertedDependencies), true);
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
-		$errors = $data['errors'];
+		$errors = $data['errorsCallback']();
 		$filteredErrors = [];
 		$newFileAppeared = false;
 		foreach ($allAnalysedFiles as $analysedFile) {
@@ -325,16 +325,25 @@ class ResultCacheManager
 			$invertedDependencies[$file]['dependentFiles'] = $dependentFiles;
 		}
 
+		$template = <<<'php'
+<?php declare(strict_types = 1);
+
+return [
+	'lastFullAnalysisTime' => %s,
+	'meta' => %s,
+	'errorsCallback' => static function (): array { return %s; },
+	'dependencies' => %s,
+];
+php;
+
 		$tmpSuccess = @file_put_contents(
 			$this->cacheFilePath,
 			sprintf(
-				"<?php declare(strict_types = 1);\n\nreturn %s;",
-				var_export([
-					'lastFullAnalysisTime' => $lastFullAnalysisTime,
-					'meta' => $this->getMeta(),
-					'errors' => $errors,
-					'dependencies' => $invertedDependencies,
-				], true)
+				$template,
+				var_export($lastFullAnalysisTime, true),
+				var_export($this->getMeta(), true),
+				var_export($errors, true),
+				var_export($invertedDependencies, true)
 			)
 		);
 		if ($tmpSuccess === false) {

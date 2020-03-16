@@ -309,7 +309,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ./tmp
-          key: "result-cache-v3"
+          key: "result-cache-v4"
 
       - name: "PHPStan with result cache"
         if: matrix.operating-system == 'ubuntu-latest'

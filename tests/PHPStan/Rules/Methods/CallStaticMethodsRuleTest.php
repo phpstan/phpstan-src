@@ -220,6 +220,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Call to static method doFoo() on trait CallStaticMethods\TraitWithStaticMethod.',
 				323,
 			],
+			[
+				'Call to static method doFoo() on an unknown class CallStaticMethods\TraitWithStaticMethod.',
+				328,
+			],
 		]);
 	}
 

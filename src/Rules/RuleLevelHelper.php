@@ -172,7 +172,10 @@ class RuleLevelHelper
 		$directClassNames = TypeUtils::getDirectClassNames($type);
 		foreach ($directClassNames as $referencedClass) {
 			if ($this->reflectionProvider->hasClass($referencedClass)) {
-				continue;
+				$classReflection = $this->reflectionProvider->getClass($referencedClass);
+				if (!$classReflection->isTrait()) {
+					continue;
+				}
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))->line($var->getLine())->build();

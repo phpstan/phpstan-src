@@ -323,4 +323,9 @@ class MethodCallingTraitWithStaticMethod
 		TraitWithStaticMethod::doFoo();
 	}
 
+	public function doBar(TraitWithStaticMethod $a): void
+	{
+		$a::doFoo();
+	}
+
 }

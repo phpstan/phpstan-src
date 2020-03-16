@@ -304,3 +304,23 @@ class ClassStringChecks
 	}
 
 }
+
+trait TraitWithStaticMethod
+{
+
+	public static function doFoo(): void
+	{
+
+	}
+
+}
+
+class MethodCallingTraitWithStaticMethod
+{
+
+	public function doFoo(): void
+	{
+		TraitWithStaticMethod::doFoo();
+	}
+
+}

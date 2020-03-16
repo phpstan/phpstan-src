@@ -138,6 +138,15 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 				}
 
 				$classReflection = $this->reflectionProvider->getClass($className);
+				if ($classReflection->isTrait()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Call to static method %s() on trait %s.',
+							$methodName,
+							$className
+						))->build(),
+					];
+				}
 			}
 
 			$className = $classReflection->getName();

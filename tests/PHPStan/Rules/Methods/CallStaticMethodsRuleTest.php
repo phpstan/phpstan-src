@@ -216,6 +216,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Call to an undefined static method CallStaticMethods\Foo::nonexistentMethod().',
 				303,
 			],
+			[
+				'Call to static method doFoo() on trait CallStaticMethods\TraitWithStaticMethod.',
+				323,
+			],
 		]);
 	}
 

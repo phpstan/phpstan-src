@@ -36,7 +36,7 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		}
 
 		$argType = $scope->getType($node->args[0]->value);
-		if (!(new StringType())->isSuperTypeOf($argType)->no() && !$argType instanceof MixedType) {
+		if ((new StringType())->isSuperTypeOf($argType)->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 

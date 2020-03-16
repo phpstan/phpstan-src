@@ -188,3 +188,25 @@ class AccessInIsset
 	}
 
 }
+
+trait TraitWithStaticProperty
+{
+
+	public static $foo;
+
+}
+
+class MethodAccessingTraitProperty
+{
+
+	public function doFoo(): void
+	{
+		echo TraitWithStaticProperty::$foo;
+	}
+
+	public function doBar(TraitWithStaticProperty $a): void
+	{
+		echo $a::$foo;
+	}
+
+}

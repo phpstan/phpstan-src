@@ -117,7 +117,18 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				} else {
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
 				}
+
+				$classReflection = $this->reflectionProvider->getClass($class);
 				$className = $this->reflectionProvider->getClass($class)->getName();
+				if ($classReflection->isTrait()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Access to static property $%s on trait %s.',
+							$name,
+							$className
+						))->build(),
+					];
+				}
 			}
 
 			$classType = new ObjectType($className);

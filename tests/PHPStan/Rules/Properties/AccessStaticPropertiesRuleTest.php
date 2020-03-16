@@ -167,6 +167,14 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Access to an undefined static property AccessInIsset::$foo.',
 				185,
 			],
+			[
+				'Access to static property $foo on trait TraitWithStaticProperty.',
+				204,
+			],
+			[
+				'Access to static property $foo on an unknown class TraitWithStaticProperty.',
+				209,
+			],
 		]);
 	}
 

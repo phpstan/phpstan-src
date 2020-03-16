@@ -230,6 +230,10 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					'Strict comparison using === between 1000 and 1000 will always evaluate to true.',
 					910,
 				],
+				[
+					'Strict comparison using !== between int and null will always evaluate to true.',
+					960,
+				],
 			]
 		);
 	}
@@ -371,6 +375,10 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 				[
 					'Strict comparison using === between mixed and \'foo\' will always evaluate to false.',
 					808,
+				],
+				[
+					'Strict comparison using === between int and null will always evaluate to false.',
+					963,
 				],
 			]
 		);

@@ -634,6 +634,10 @@ class MutatingScope implements Scope
 				&& $rightType instanceof NullType
 				&& !$this->hasPropertyNativeType($node->left)
 			) {
+				if ($leftType->isSuperTypeOf(new NullType())->no()) {
+					return new ConstantBooleanType(false);
+				}
+
 				return new BooleanType();
 			}
 
@@ -645,6 +649,10 @@ class MutatingScope implements Scope
 				&& $leftType instanceof NullType
 				&& !$this->hasPropertyNativeType($node->right)
 			) {
+				if ($rightType->isSuperTypeOf(new NullType())->no()) {
+					return new ConstantBooleanType(false);
+				}
+
 				return new BooleanType();
 			}
 

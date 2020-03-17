@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -45,6 +46,11 @@ class IterableTypeTest extends \PHPStan\Testing\TestCase
 				new IterableType(new MixedType(true), new StringType()),
 				new ObjectType('Iterator'),
 				TrinaryLogic::createMaybe(),
+			],
+			[
+				new IterableType(new MixedType(false), new MixedType(true)),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
 			],
 		];
 	}
@@ -297,6 +303,51 @@ class IterableTypeTest extends \PHPStan\Testing\TestCase
 		$result = $type->describe(VerbosityLevel::typeOnly());
 
 		$this->assertSame($expect, $result);
+	}
+
+	public function dataAccepts(): array
+	{
+		/** @var TemplateMixedType $t */
+		$t = TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('foo'),
+			'T',
+			null,
+			TemplateTypeVariance::createInvariant()
+		);
+		return [
+			[
+				new IterableType(
+					new MixedType(),
+					$t,
+				),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new IterableType(
+					new MixedType(),
+					$t->toArgument()
+				),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataAccepts
+	 * @param IterableType $iterableType
+	 * @param Type $otherType
+	 * @param TrinaryLogic $expectedResult
+	 */
+	public function testAccepts(IterableType $iterableType, Type $otherType, TrinaryLogic $expectedResult): void
+	{
+		$actualResult = $iterableType->accepts($otherType, true);
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> accepts(%s)', $iterableType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+		);
 	}
 
 }

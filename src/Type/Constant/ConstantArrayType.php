@@ -57,6 +57,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$this->nextAutoIndex = $nextAutoIndex;
 	}
 
+	public function isEmpty(): bool
+	{
+		return count($this->keyTypes) === 0;
+	}
+
 	public function getNextAutoIndex(): int
 	{
 		return $this->nextAutoIndex;

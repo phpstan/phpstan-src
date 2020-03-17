@@ -182,6 +182,12 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 			new ArrayType(new MixedType(), new MixedType()),
 			TrinaryLogic::createMaybe(),
 		];
+
+		yield [
+			new ConstantArrayType([], []),
+			new IterableType(new MixedType(false), new MixedType(true)),
+			TrinaryLogic::createMaybe(),
+		];
 	}
 
 	/**

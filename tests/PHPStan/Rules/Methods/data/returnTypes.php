@@ -1212,3 +1212,17 @@ abstract class CollectionWithArrayKey implements \Iterator
 	}
 
 }
+
+class Bug3072
+{
+
+	/**
+	 * @template T
+	 * @return iterable<T>
+	 */
+	public function getIterable(): iterable
+	{
+		return [];
+	}
+
+}

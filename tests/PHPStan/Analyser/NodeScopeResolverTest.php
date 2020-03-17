@@ -9815,6 +9815,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/arrow-function-return-type.php');
 	}
 
+	public function dataIsNumeric(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/is-numeric.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9849,6 +9854,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataIteratorToArray
 	 * @dataProvider dataExtDs
 	 * @dataProvider dataArrowFunctionReturnTypeInference
+	 * @dataProvider dataIsNumeric
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

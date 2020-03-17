@@ -700,4 +700,59 @@ class AssertIsNumeric
 		assert(is_numeric($isNumeric));
 	}
 
+	/**
+	 * @param int|string $item
+	 */
+	public function doBar($item): void
+	{
+		if (!is_numeric($item)) {
+			throw new \Exception;
+		}
+
+		echo $item;
+	}
+
+	/**
+	 * @param string|float|int $value
+	 */
+	public function doBaz($value): void
+	{
+		if (is_numeric($value)) {
+
+		}
+	}
+
+	public  function doLorem(string $rating): ?int
+	{
+		$ratingMapping = [
+			'UR'    => 0,
+			'NR'    => 0,
+			'G'     => 0,
+			'PG'    => 8,
+			'PG-13' => 13,
+			'R'     => 15,
+			'NC-17' => 17,
+		];
+
+		if (array_key_exists($rating, $ratingMapping)) {
+			$rating = $ratingMapping[$rating];
+		}
+
+		if (is_numeric($rating)) {
+
+		}
+	}
+
+	/**
+	 * @param mixed[] $data
+	 */
+	function doIpsum(array $data): void
+	{
+		foreach ($data as $index => $element) {
+			if (is_numeric($index)) {
+				echo "numeric key\n";
+			}
+		}
+	}
+
 }

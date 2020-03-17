@@ -12,6 +12,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 
@@ -35,7 +36,7 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		}
 
 		$argType = $scope->getType($node->args[0]->value);
-		if ((new StringType())->isSuperTypeOf($argType)->yes()) {
+		if ($context->truthy() && !(new StringType())->isSuperTypeOf($argType)->no() && !$argType instanceof MixedType) {
 			return new SpecifiedTypes([], []);
 		}
 

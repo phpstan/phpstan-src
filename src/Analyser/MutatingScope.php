@@ -1183,9 +1183,15 @@ class MutatingScope implements Scope
 				);
 			}
 
+			if ($node->returnType === null && $node instanceof Expr\ArrowFunction) {
+				$returnType = $this->getType($node->expr);
+			} else {
+				$returnType = $this->getFunctionType($node->returnType, $node->returnType === null, false);
+			}
+
 			return new ClosureType(
 				$parameters,
-				$this->getFunctionType($node->returnType, $node->returnType === null, false),
+				$returnType,
 				$isVariadic
 			);
 		} elseif ($node instanceof New_) {

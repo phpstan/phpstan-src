@@ -9806,6 +9806,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');
 	}
 
+	public function dataArrowFunctionReturnTypeInference(): array
+	{
+		if (PHP_VERSION_ID < 70400) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/arrow-function-return-type.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9839,6 +9848,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataTypeChangeAfterArrayAccessAssignment
 	 * @dataProvider dataIteratorToArray
 	 * @dataProvider dataExtDs
+	 * @dataProvider dataArrowFunctionReturnTypeInference
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

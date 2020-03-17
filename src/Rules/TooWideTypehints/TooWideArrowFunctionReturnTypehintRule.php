@@ -29,7 +29,11 @@ class TooWideArrowFunctionReturnTypehintRule implements Rule
 			return [];
 		}
 
-		$expr = $node->getOriginalNode()->expr;
+		$arrowFunction = $node->getOriginalNode();
+		if ($arrowFunction->returnType === null) {
+			return [];
+		}
+		$expr = $arrowFunction->expr;
 		if ($expr instanceof Node\Expr\YieldFrom || $expr instanceof Node\Expr\Yield_) {
 			return [];
 		}

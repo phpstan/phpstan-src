@@ -16,4 +16,11 @@ class Foo
 		fn (): ?string => $nullableString;
 	}
 
+	public function doBar()
+	{
+		/** @var string[][] $data */
+		$data = doFoo();
+		array_reduce($data, static fn (int $carry, array $item) => $carry + $item['total_count'], 0);
+	}
+
 }

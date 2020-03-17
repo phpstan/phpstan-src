@@ -29,6 +29,12 @@ class TooWideClosureReturnTypehintRule implements Rule
 		if ($closureReturnType === null || !$closureReturnType instanceof UnionType) {
 			return [];
 		}
+
+		$closureExpr = $node->getClosureExpr();
+		if ($closureExpr->returnType === null) {
+			return [];
+		}
+
 		$statementResult = $node->getStatementResult();
 		if ($statementResult->hasYield()) {
 			return [];

@@ -3238,6 +3238,45 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	public function dataIssetInGlobalScope(): array
+	{
+		return [
+			[
+				'bool',
+				'isset($bar)',
+			],
+			[
+				'bool',
+				'!isset($bar)',
+			],
+			[
+				'bool',
+				'!isset($bar)',
+			],
+			[
+				'bool',
+				'!isset($bar) || $bar instanceof stdClass',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIssetInGlobalScope
+	 * @param string $description
+	 * @param string $expression
+	 */
+	public function testIssetInGlobalScope(
+		string $description,
+		string $expression
+	): void
+	{
+		$this->assertTypes(
+			__DIR__ . '/data/isset-in-global-scope.php',
+			$description,
+			$expression
+		);
+	}
+
 	public function dataVarStatementAnnotation(): array
 	{
 		return [

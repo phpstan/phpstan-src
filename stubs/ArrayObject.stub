@@ -20,7 +20,7 @@ interface ArrayAccess
 	public function offsetGet($offset);
 
 	/**
-	 * @param TKey $offset
+	 * @param TKey|null $offset
 	 * @param TValue $value
 	 * @return void
 	 */

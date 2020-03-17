@@ -100,7 +100,7 @@ class AttributeMap implements \ArrayAccess
 	}
 
 	/**
-	 * @param int   $offset
+	 * @param int|null   $offset
 	 * @param float $value
 	 */
 	public function offsetSet($offset, $value): void

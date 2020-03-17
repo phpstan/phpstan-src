@@ -222,6 +222,18 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					'Call to function is_numeric() with 123|float will always evaluate to true.',
 					700,
 				],
+				[
+					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
+					782,
+				],
+				[
+					'Call to function assert() with bool will always evaluate to true.',
+					786,
+				],
+				[
+					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
+					786,
+				],
 			]
 		);
 	}

@@ -9,7 +9,6 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
-use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -129,27 +128,7 @@ class ImpossibleCheckTypeHelper
 							}
 						}
 					}
-				} elseif (
-					$functionName === 'property_exists'
-					&& count($node->args) >= 2
-				) {
-					$classNames = TypeUtils::getDirectClassNames(
-						$scope->getType($node->args[0]->value)
-					);
-					foreach ($classNames as $className) {
-						if (!$this->reflectionProvider->hasClass($className)) {
-							continue;
-						}
-
-						if (UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-							$this->reflectionProvider,
-							$this->universalObjectCratesClasses,
-							$this->reflectionProvider->getClass($className)
-						)) {
-							return null;
-						}
-					}
-				} elseif ($functionName === 'method_exists') {
+				} elseif ($functionName === 'method_exists' && count($node->args) >= 2) {
 					$objectType = $scope->getType($node->args[0]->value);
 					$methodType = $scope->getType($node->args[1]->value);
 

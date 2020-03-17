@@ -472,9 +472,9 @@ class PropertyExistsUniversalCrate
 		if (property_exists($std, 'foo')) {
 
 		}
-		if (property_exists($stdOrSelf, 'foo')) {
+		/*if (property_exists($stdOrSelf, 'foo')) { // To solve this, we'd need FoundPropertyReflection::isNative() to return TrinaryLogic
 
-		}
+		}*/
 		if (property_exists($stdOrSelf, 'bar')) {
 
 		}
@@ -753,6 +753,61 @@ class AssertIsNumeric
 				echo "numeric key\n";
 			}
 		}
+	}
+
+}
+
+class Bug2221
+{
+
+	public $foo;
+
+	public function doFoo(): void
+	{
+		if (property_exists(Bug2221::class, 'foo')) {
+
+		}
+
+		assert(property_exists(Bug2221::class, 'foo'));
+
+		if (property_exists(Bug2221::class, 'bar')) {
+
+		}
+
+		assert(property_exists(Bug2221::class, 'bar'));
+	}
+
+	public function doBar(self $self): void
+	{
+		if (property_exists($self, 'foo')) {
+
+		}
+
+		assert(property_exists($self, 'foo'));
+
+		if (property_exists($self, 'bar')) {
+
+		}
+
+		assert(property_exists($self, 'bar'));
+	}
+
+	public function doBaz(\stdClass $std): void
+	{
+		if (property_exists($std, 'foo')) {
+
+		}
+
+		assert(property_exists($std, 'foo'));
+	}
+
+	public function doLorem(\SimpleXMLElement $xml): void
+	{
+		if (property_exists($xml, 'foo')) {
+
+		}
+
+		assert(property_exists($xml, 'foo'));
 	}
 
 }

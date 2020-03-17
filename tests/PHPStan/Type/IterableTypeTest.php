@@ -318,7 +318,7 @@ class IterableTypeTest extends \PHPStan\Testing\TestCase
 			[
 				new IterableType(
 					new MixedType(),
-					$t,
+					$t
 				),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),

@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 7.4
 
 function (): void {
 	$scalar = 3;

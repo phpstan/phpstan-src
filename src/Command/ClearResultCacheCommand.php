@@ -59,6 +59,7 @@ class ClearResultCacheCommand extends Command
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,
 				$configuration,
+				null,
 				'0',
 				false,
 				false

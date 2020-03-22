@@ -39,6 +39,7 @@ class CommandHelper
 		?string $autoloadFile,
 		array $composerAutoloaderProjectPaths,
 		?string $projectConfigFile,
+		?string $generateBaselineFile,
 		?string $level,
 		bool $allowXdebug,
 		bool $manageMemoryLimitFile = true
@@ -95,6 +96,11 @@ class CommandHelper
 		} else {
 			$projectConfigFile = $currentWorkingDirectoryFileHelper->absolutizePath($projectConfigFile);
 		}
+
+		if ($generateBaselineFile !== null) {
+			$generateBaselineFile = $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($generateBaselineFile));
+		}
+
 		$defaultLevelUsed = false;
 		if ($projectConfigFile === null && $level === null) {
 			$level = self::DEFAULT_LEVEL;
@@ -138,8 +144,10 @@ class CommandHelper
 			}
 
 			$loader = (new LoaderFactory(
+				$currentWorkingDirectoryFileHelper,
 				$containerFactory->getRootDirectory(),
-				$containerFactory->getCurrentWorkingDirectory()
+				$containerFactory->getCurrentWorkingDirectory(),
+				$generateBaselineFile
 			))->createLoader();
 
 			try {
@@ -217,8 +225,21 @@ class CommandHelper
 			}
 		}
 
+		if ($projectConfigFile !== null) {
+			$allCustomConfigFiles = self::getConfigFiles(
+				$currentWorkingDirectoryFileHelper,
+				new NeonAdapter(),
+				new PhpAdapter(),
+				$projectConfigFile,
+				$loaderParameters,
+				$generateBaselineFile
+			);
+		} else {
+			$allCustomConfigFiles = [];
+		}
+
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $projectConfigFile !== null ? self::getConfigFiles(new NeonAdapter(), new PhpAdapter(), $projectConfigFile, $loaderParameters) : [], $level ?? self::DEFAULT_LEVEL);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $allCustomConfigFiles, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());
@@ -348,7 +369,8 @@ class CommandHelper
 			$container,
 			$defaultLevelUsed,
 			$memoryLimitFile,
-			$projectConfigFile
+			$projectConfigFile,
+			$generateBaselineFile
 		);
 	}
 
@@ -386,7 +408,7 @@ class CommandHelper
 		$phpAdapter = new PhpAdapter();
 		$allConfigFiles = [];
 		foreach ($configFiles as $configFile) {
-			$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($neonAdapter, $phpAdapter, $configFile, $loaderParameters));
+			$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $configFile, $loaderParameters, null));
 		}
 
 		$normalized = array_map(static function (string $file) use ($fileHelper): string {
@@ -416,15 +438,21 @@ class CommandHelper
 	 * @param \Nette\DI\Config\Adapters\PhpAdapter $phpAdapter
 	 * @param string $configFile
 	 * @param array<string, string> $loaderParameters
+	 * @param string|null $generateBaselineFile
 	 * @return string[]
 	 */
 	private static function getConfigFiles(
+		FileHelper $fileHelper,
 		NeonAdapter $neonAdapter,
 		PhpAdapter $phpAdapter,
 		string $configFile,
-		array $loaderParameters
+		array $loaderParameters,
+		?string $generateBaselineFile
 	): array
 	{
+		if ($generateBaselineFile === $fileHelper->normalizePath($configFile)) {
+			return [];
+		}
 		if (!is_file($configFile) || !is_readable($configFile)) {
 			return [];
 		}
@@ -440,7 +468,7 @@ class CommandHelper
 			$includes = Helpers::expand($data['includes'], $loaderParameters);
 			foreach ($includes as $include) {
 				$include = self::expandIncludedFile($include, $configFile);
-				$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($neonAdapter, $phpAdapter, $include, $loaderParameters));
+				$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $include, $loaderParameters, $generateBaselineFile));
 			}
 		}
 

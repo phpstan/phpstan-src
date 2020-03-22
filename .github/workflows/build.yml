@@ -446,3 +446,39 @@ jobs:
           ../bin/phpstan analyse -l 8 src tests && \
           php bin/compile && \
           ../tmp/phpstan.phar
+
+  generate-baseline:
+    name: "Generate baseline"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-version:
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2.0.0"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@1.8.2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Cache dependencies"
+        uses: "actions/cache@v1.1.2"
+        with:
+          path: "~/.composer/cache"
+          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Install dependencies"
+        run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Generate baseline"
+        run: |
+          cp phpstan-baseline.neon phpstan-baseline-orig.neon && \
+          vendor/bin/phing phpstan-generate-baseline && \
+          diff phpstan-baseline.neon phpstan-baseline-orig.neon

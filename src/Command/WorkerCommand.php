@@ -93,6 +93,7 @@ class WorkerCommand extends Command
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,
 				$configuration,
+				null,
 				$level,
 				$allowXdebug,
 				false

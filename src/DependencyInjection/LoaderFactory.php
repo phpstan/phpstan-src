@@ -3,9 +3,13 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Config\Loader;
+use PHPStan\File\FileHelper;
 
 class LoaderFactory
 {
+
+	/** @var FileHelper */
+	private $fileHelper;
 
 	/** @var string */
 	private $rootDir;
@@ -13,18 +17,25 @@ class LoaderFactory
 	/** @var string */
 	private $currentWorkingDirectory;
 
+	/** @var string|null */
+	private $generateBaselineFile;
+
 	public function __construct(
+		FileHelper $fileHelper,
 		string $rootDir,
-		string $currentWorkingDirectory
+		string $currentWorkingDirectory,
+		?string $generateBaselineFile
 	)
 	{
+		$this->fileHelper = $fileHelper;
 		$this->rootDir = $rootDir;
 		$this->currentWorkingDirectory = $currentWorkingDirectory;
+		$this->generateBaselineFile = $generateBaselineFile;
 	}
 
 	public function createLoader(): Loader
 	{
-		$loader = new Loader();
+		$loader = new NeonLoader($this->fileHelper, $this->generateBaselineFile);
 		$loader->addAdapter('dist', NeonAdapter::class);
 		$loader->addAdapter('neon', NeonAdapter::class);
 		$loader->setParameters([

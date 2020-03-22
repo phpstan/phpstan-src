@@ -118,6 +118,7 @@ class CommandHelperTest extends TestCase
 				null,
 				[],
 				$projectConfigFile,
+				null,
 				$level,
 				false,
 				true
@@ -228,6 +229,7 @@ class CommandHelperTest extends TestCase
 			null,
 			[],
 			$configFile,
+			null,
 			'0',
 			false,
 			true

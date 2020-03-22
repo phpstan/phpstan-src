@@ -31,6 +31,9 @@ class InceptionResult
 	/** @var string|null */
 	private $projectConfigFile;
 
+	/** @var string|null */
+	private $generateBaselineFile;
+
 	/**
 	 * @param string[] $files
 	 * @param bool $onlyFiles
@@ -40,6 +43,7 @@ class InceptionResult
 	 * @param bool $isDefaultLevelUsed
 	 * @param string $memoryLimitFile
 	 * @param string|null $projectConfigFile
+	 * @param string|null $generateBaselineFile
 	 */
 	public function __construct(
 		array $files,
@@ -49,7 +53,8 @@ class InceptionResult
 		Container $container,
 		bool $isDefaultLevelUsed,
 		string $memoryLimitFile,
-		?string $projectConfigFile
+		?string $projectConfigFile,
+		?string $generateBaselineFile
 	)
 	{
 		$this->files = $files;
@@ -60,6 +65,7 @@ class InceptionResult
 		$this->isDefaultLevelUsed = $isDefaultLevelUsed;
 		$this->memoryLimitFile = $memoryLimitFile;
 		$this->projectConfigFile = $projectConfigFile;
+		$this->generateBaselineFile = $generateBaselineFile;
 	}
 
 	/**
@@ -98,6 +104,11 @@ class InceptionResult
 	public function getProjectConfigFile(): ?string
 	{
 		return $this->projectConfigFile;
+	}
+
+	public function getGenerateBaselineFile(): ?string
+	{
+		return $this->generateBaselineFile;
 	}
 
 	public function handleReturn(int $exitCode): int

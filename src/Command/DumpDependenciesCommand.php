@@ -75,6 +75,7 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,
 				$configurationFile,
+				null,
 				'0', // irrelevant but prevents an error when a config file is passed
 				$allowXdebug,
 				true

@@ -14,6 +14,9 @@ class ContainerFactory
 	/** @var string */
 	private $currentWorkingDirectory;
 
+	/** @var FileHelper */
+	private $fileHelper;
+
 	/** @var string */
 	private $rootDirectory;
 
@@ -23,17 +26,17 @@ class ContainerFactory
 	public function __construct(string $currentWorkingDirectory)
 	{
 		$this->currentWorkingDirectory = $currentWorkingDirectory;
-		$fileHelper = new FileHelper($currentWorkingDirectory);
+		$this->fileHelper = new FileHelper($currentWorkingDirectory);
 
 		$rootDir = __DIR__ . '/../..';
-		$originalRootDir = $fileHelper->normalizePath($rootDir);
+		$originalRootDir = $this->fileHelper->normalizePath($rootDir);
 		if (extension_loaded('phar')) {
 			$pharPath = Phar::running(false);
 			if ($pharPath !== '') {
 				$rootDir = dirname($pharPath);
 			}
 		}
-		$this->rootDirectory = $fileHelper->normalizePath($rootDir);
+		$this->rootDirectory = $this->fileHelper->normalizePath($rootDir);
 		$this->configDirectory = $originalRootDir . '/conf';
 	}
 
@@ -45,6 +48,7 @@ class ContainerFactory
 	 * @param string[] $analysedPathsFromConfig
 	 * @param string[] $allCustomConfigFiles
 	 * @param string $usedLevel
+	 * @param string|null $generateBaselineFile
 	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(
@@ -54,12 +58,15 @@ class ContainerFactory
 		array $composerAutoloaderProjectPaths = [],
 		array $analysedPathsFromConfig = [],
 		array $allCustomConfigFiles = [],
-		string $usedLevel = CommandHelper::DEFAULT_LEVEL
+		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
+		?string $generateBaselineFile = null
 	): Container
 	{
 		$configurator = new Configurator(new LoaderFactory(
+			$this->fileHelper,
 			$this->rootDirectory,
-			$this->currentWorkingDirectory
+			$this->currentWorkingDirectory,
+			$generateBaselineFile
 		));
 		$configurator->defaultExtensions = [
 			'php' => PhpExtension::class,

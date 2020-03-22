@@ -349,6 +349,30 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 	}
 
 	/**
+	 * @dataProvider dataTrueAndFalse
+	 * @param bool $onlyFiles
+	 */
+	public function testDoNotReportUnmatchedIgnoredErrorsFromPathWithCountIfPathWasNotAnalysed(bool $onlyFiles): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'path' => __DIR__ . '/data/bootstrap-error.php',
+				'count' => 2,
+			],
+			[
+				'message' => '#Fail\.#',
+				'path' => __DIR__ . '/data/two-fails.php',
+				'count' => 3,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, [
+			__DIR__ . '/data/two-fails.php',
+		], $onlyFiles);
+		$this->assertCount(0, $result);
+	}
+
+	/**
 	 * @param mixed[] $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param string|string[] $filePaths

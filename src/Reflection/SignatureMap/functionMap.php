@@ -421,7 +421,7 @@ return [
 'bbcode_set_flags' => ['bool', 'bbcode_container'=>'resource', 'flags'=>'int', 'mode='=>'int'],
 'bcadd' => ['string', 'left_operand'=>'string', 'right_operand'=>'string', 'scale='=>'int'],
 'bccomp' => ['int', 'left_operand'=>'string', 'right_operand'=>'string', 'scale='=>'int'],
-'bcdiv' => ['string', 'left_operand'=>'string', 'right_operand'=>'string', 'scale='=>'int'],
+'bcdiv' => ['string|null', 'left_operand'=>'string', 'right_operand'=>'string', 'scale='=>'int'],
 'bcmod' => ['string', 'left_operand'=>'string', 'right_operand'=>'string', 'scale='=>'int'],
 'bcmul' => ['string', 'left_operand'=>'string', 'right_operand'=>'string', 'scale='=>'int'],
 'bcompiler_load' => ['bool', 'filename'=>'string'],

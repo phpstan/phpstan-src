@@ -118,7 +118,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	public function analyse(array $files, array $expectedErrors): void
 	{
 		$files = array_map([$this->getFileHelper(), 'normalizePath'], $files);
-		$actualErrors = $this->getAnalyser()->analyse($files)->getErrors();
+		$actualErrors = $this->getAnalyser()->analyse($files)->getUnorderedErrors();
 
 		$strictlyTypedSprintf = static function (int $line, string $message, ?string $tip): string {
 			$message = sprintf('%02d: %s', $line, $message);

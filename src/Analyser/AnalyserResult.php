@@ -6,6 +6,9 @@ class AnalyserResult
 {
 
 	/** @var \PHPStan\Analyser\Error[] */
+	private $unorderedErrors;
+
+	/** @var \PHPStan\Analyser\Error[] */
 	private $errors;
 
 	/** @var string[] */
@@ -35,11 +38,36 @@ class AnalyserResult
 		bool $reachedInternalErrorsCountLimit
 	)
 	{
+		$this->unorderedErrors = $errors;
+
+		usort(
+			$errors,
+			static function (Error $a, Error $b): int {
+				return [
+					$a->getFile(),
+					$a->getLine(),
+					$a->getMessage(),
+				] <=> [
+					$b->getFile(),
+					$b->getLine(),
+					$b->getMessage(),
+				];
+			}
+		);
+
 		$this->errors = $errors;
 		$this->internalErrors = $internalErrors;
 		$this->hasInferrablePropertyTypesFromConstructor = $hasInferrablePropertyTypesFromConstructor;
 		$this->dependencies = $dependencies;
 		$this->reachedInternalErrorsCountLimit = $reachedInternalErrorsCountLimit;
+	}
+
+	/**
+	 * @return \PHPStan\Analyser\Error[]
+	 */
+	public function getUnorderedErrors(): array
+	{
+		return $this->unorderedErrors;
 	}
 
 	/**

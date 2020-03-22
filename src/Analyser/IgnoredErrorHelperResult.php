@@ -74,9 +74,15 @@ class IgnoredErrorHelperResult
 
 	/**
 	 * @param Error[] $errors
+	 * @param string[] $analysedFiles
 	 * @return string[]|Error[]
 	 */
-	public function process(array $errors, bool $onlyFiles, bool $hasInternalErrors): array
+	public function process(
+		array $errors,
+		bool $onlyFiles,
+		array $analysedFiles,
+		bool $hasInternalErrors
+	): array
 	{
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
 		$addErrors = [];
@@ -206,6 +212,8 @@ class IgnoredErrorHelperResult
 
 		$errors = array_merge($errors, $addErrors);
 
+		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
+
 		if ($this->reportUnmatchedIgnoredErrors && !$hasInternalErrors) {
 			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
 				if (
@@ -224,6 +232,10 @@ class IgnoredErrorHelperResult
 						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
 					}
 				} elseif (isset($unmatchedIgnoredError['realPath'])) {
+					if (!array_key_exists($unmatchedIgnoredError['realPath'], $analysedFilesKeys)) {
+						continue;
+					}
+
 					$errors[] = new Error(
 						sprintf(
 							'Ignored error pattern %s was not matched in reported errors.',

@@ -327,6 +327,28 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 	}
 
 	/**
+	 * @dataProvider dataTrueAndFalse
+	 * @param bool $onlyFiles
+	 */
+	public function testDoNotReportUnmatchedIgnoredErrorsFromPathIfPathWasNotAnalysed(bool $onlyFiles): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'path' => __DIR__ . '/data/bootstrap-error.php',
+			],
+			[
+				'message' => '#Fail\.#',
+				'path' => __DIR__ . '/data/two-fails.php',
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, [
+			__DIR__ . '/data/two-fails.php',
+		], $onlyFiles);
+		$this->assertCount(0, $result);
+	}
+
+	/**
 	 * @param mixed[] $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param string|string[] $filePaths
@@ -357,11 +379,13 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			return $ignoredErrorHelperResult->getErrors();
 		}
 
-		$analyserResult = $analyser->analyse(array_map(function (string $path): string {
+		$normalizedFilePaths = array_map(function (string $path): string {
 			return $this->getFileHelper()->normalizePath($path);
-		}, $filePaths));
+		}, $filePaths);
 
-		$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$analyserResult = $analyser->analyse($normalizedFilePaths);
+
+		$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', 50);
 		}

@@ -89,8 +89,8 @@ class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 
-		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24) {
-			// run full analysis if the result cache is older than 24 hours
+		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
+			// run full analysis if the result cache is older than 7 days
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 

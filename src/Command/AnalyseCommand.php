@@ -198,12 +198,6 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		);
 
 		if ($generateBaselineFile !== null) {
-			if (!$analysisResult->hasErrors()) {
-				$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
-
-				return $inceptionResult->handleReturn(1);
-			}
-
 			$baselineFileDirectory = dirname($generateBaselineFile);
 			$baselineErrorFormatter = new BaselineNeonErrorFormatter(new ParentDirectoryRelativePathHelper($baselineFileDirectory));
 

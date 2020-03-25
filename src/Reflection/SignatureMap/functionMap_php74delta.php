@@ -50,6 +50,7 @@ return [
 		'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],
 		'ReflectionReference::getId' => ['string'],
 		'SQLite3Stmt::getSQL' => ['string', 'expanded='=>'bool'],
+		'strip_tags' => ['string', 'str'=>'string', 'allowable_tags='=>'string|array<int, string>'],
 		'WeakReference::create' => ['WeakReference', 'referent'=>'object'],
 		'WeakReference::get' => ['?object'],
 	],

@@ -8633,7 +8633,7 @@ return [
 'Phar::getMetadata' => ['mixed'],
 'Phar::getModified' => ['bool'],
 'Phar::getPath' => ['string'],
-'Phar::getSignature' => ['array'],
+'Phar::getSignature' => ['array{hash:string, hash_type:string}'],
 'Phar::getStub' => ['string'],
 'Phar::getSupportedCompression' => ['array'],
 'Phar::getSupportedSignatures' => ['array'],

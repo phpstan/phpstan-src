@@ -6,6 +6,7 @@ use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
+use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,7 +14,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
-use function file_put_contents;
 use function stream_get_contents;
 
 class AnalyseCommand extends \Symfony\Component\Console\Command\Command
@@ -228,9 +228,10 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				}
 			}
 
-			$writeResult = @file_put_contents($generateBaselineFile, $baselineContents);
-			if ($writeResult === false) {
-				$inceptionResult->getStdOutput()->writeLineFormatted(sprintf('Failed to write the baseline to file "%s".', $generateBaselineFile));
+			try {
+				FileWriter::write($generateBaselineFile, $baselineContents);
+			} catch (\PHPStan\File\CouldNotWriteFileException $e) {
+				$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
 				return $inceptionResult->handleReturn(1);
 			}

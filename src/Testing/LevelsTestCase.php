@@ -3,6 +3,7 @@
 namespace PHPStan\Testing;
 
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileWriter;
 
 abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 {
@@ -158,7 +159,7 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 				$actualOutput
 			);
 		} catch (\PHPUnit\Framework\AssertionFailedError $e) {
-			file_put_contents($expectedJsonFile, $actualOutput);
+			FileWriter::write($expectedJsonFile, $actualOutput);
 			return $e;
 		}
 

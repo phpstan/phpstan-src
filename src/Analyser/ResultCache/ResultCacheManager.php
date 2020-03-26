@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ResultCache;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\File\FileReader;
+use PHPStan\File\FileWriter;
 use function array_fill_keys;
 use function array_key_exists;
 
@@ -336,7 +337,7 @@ return [
 ];
 php;
 
-		$tmpSuccess = @file_put_contents(
+		FileWriter::write(
 			$this->cacheFilePath,
 			sprintf(
 				$template,
@@ -346,9 +347,6 @@ php;
 				var_export($invertedDependencies, true)
 			)
 		);
-		if ($tmpSuccess === false) {
-			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $this->cacheFilePath));
-		}
 	}
 
 	/**

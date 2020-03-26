@@ -3,6 +3,7 @@
 namespace PHPStan\Cache;
 
 use Nette\Utils\Random;
+use PHPStan\File\FileWriter;
 
 class FileCacheStorage implements CacheStorage
 {
@@ -77,16 +78,13 @@ class FileCacheStorage implements CacheStorage
 		$this->makeDir($secondDirectory);
 
 		$tmpPath = sprintf('%s/%s.tmp', $this->directory, Random::generate());
-		$tmpSuccess = @file_put_contents(
+		FileWriter::write(
 			$tmpPath,
 			sprintf(
 				"<?php declare(strict_types = 1);\n\nreturn %s;",
 				var_export(new CacheItem($variableKey, $data), true)
 			)
 		);
-		if ($tmpSuccess === false) {
-			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $tmpPath));
-		}
 
 		$renameSuccess = @rename($tmpPath, $path);
 		if ($renameSuccess) {

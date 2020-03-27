@@ -77,7 +77,7 @@ parameters:
 	staticReflectionClassNamePatterns:
 		- '#^PhpParser\\#'
 		- '#^Hoa\\#'
-		#- '#^DateTime(?:Interface|Immutable)?$#'
+		- '#^DateTime(?:Interface|Immutable)?$#'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- PHP_VERSION

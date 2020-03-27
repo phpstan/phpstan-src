@@ -21,7 +21,7 @@ class PhpDefectClassReflectionExtension implements PropertiesClassReflectionExte
 			'i' => 'int',
 			's' => 'int',
 			'invert' => 'int',
-			'days' => 'mixed',
+			'days' => 'int|false',
 			'f' => 'float',
 		],
 		\DatePeriod::class => [

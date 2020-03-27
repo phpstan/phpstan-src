@@ -64,7 +64,7 @@ class PhpDefectClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
 					'i' => 'int',
 					's' => 'int',
 					'invert' => 'int',
-					'days' => 'mixed',
+					'days' => 'int|false',
 				],
 			],
 			[
@@ -78,7 +78,7 @@ class PhpDefectClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
 					'i' => 'int',
 					's' => 'int',
 					'invert' => 'int',
-					'days' => 'mixed',
+					'days' => 'int|false',
 				],
 			],
 		];
@@ -653,7 +653,7 @@ class PhpDefectClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
 					's' => 'int',
 					'f' => 'float',
 					'invert' => 'int',
-					'days' => 'mixed',
+					'days' => 'int|false',
 				],
 			],
 			[
@@ -668,7 +668,7 @@ class PhpDefectClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
 					's' => 'int',
 					'f' => 'float',
 					'invert' => 'int',
-					'days' => 'mixed',
+					'days' => 'int|false',
 				],
 			],
 		];

@@ -354,7 +354,9 @@ php;
 	 */
 	private function getMeta(): array
 	{
-		$extensions = get_loaded_extensions();
+		$extensions = array_values(array_filter(get_loaded_extensions(), static function (string $extension): bool {
+			return $extension !== 'xdebug';
+		}));
 		sort($extensions);
 
 		return [

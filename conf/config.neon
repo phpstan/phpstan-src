@@ -33,7 +33,6 @@ parameters:
 	checkPhpDocMissingReturn: false
 	checkExtraArguments: false
 	checkMissingClosureNativeReturnTypehintRule: false
-	checkPossibleCovariantMethodReturnType: true
 	checkMissingTypehints: false
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	inferPrivatePropertyTypeFromConstructor: false
@@ -157,7 +156,6 @@ parametersSchema:
 	checkPhpDocMissingReturn: bool()
 	checkExtraArguments: bool()
 	checkMissingClosureNativeReturnTypehintRule: bool()
-	checkPossibleCovariantMethodReturnType: bool()
 	checkMissingTypehints: bool()
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()

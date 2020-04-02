@@ -33,7 +33,6 @@ parameters:
 			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php
 	reportStaticMethodSignatures: true
-	checkPossibleCovariantMethodReturnType: false
 	tmpDir: %rootDir%/tmp
 	stubFiles:
 		- stubs/ReactChildProcess.php

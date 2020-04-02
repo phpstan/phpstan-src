@@ -1,6 +1,6 @@
 # PHPStan - PHP Static Analysis Tool
 
-[![Build Status](https://travis-ci.org/phpstan/phpstan-src.svg)](https://travis-ci.org/phpstan/phpstan-src)
+[![Build Status](https://travis-ci.com/phpstan/phpstan-src.svg?branch=master)](https://travis-ci.com/phpstan/phpstan-src)
 [![Build](https://github.com/phpstan/phpstan-src/workflows/Build/badge.svg)](https://github.com/phpstan/phpstan-src/actions)
 [![PHPStan Enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 

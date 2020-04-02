@@ -9820,6 +9820,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/is-numeric.php');
 	}
 
+	public function dataBug3142(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3142.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9855,6 +9860,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataExtDs
 	 * @dataProvider dataArrowFunctionReturnTypeInference
 	 * @dataProvider dataIsNumeric
+	 * @dataProvider dataBug3142
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

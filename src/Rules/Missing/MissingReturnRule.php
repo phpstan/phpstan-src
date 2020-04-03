@@ -66,7 +66,7 @@ class MissingReturnRule implements Rule
 		}
 
 		$isVoidSuperType = $returnType->isSuperTypeOf(new VoidType());
-		if ($isVoidSuperType->yes()) {
+		if ($isVoidSuperType->yes() && !$returnType instanceof MixedType) {
 			return [];
 		}
 

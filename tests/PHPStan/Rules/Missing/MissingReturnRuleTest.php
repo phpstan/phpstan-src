@@ -116,4 +116,15 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2875.php'], []);
 	}
 
+	public function testMissingMixedReturnInEmptyBody(): void
+	{
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->analyse([__DIR__ . '/data/missing-mixed-return-empty-body.php'], [
+			[
+				'Method MissingMixedReturnEmptyBody\HelloWorld::doFoo() should return mixed but return statement is missing.',
+				11,
+			],
+		]);
+	}
+
 }

@@ -150,7 +150,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					571,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'testWithStringFirst…\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExists\' and \'testWithStringFirst…\' will always evaluate to true.',
 					585,
 				],
 				[
@@ -178,27 +178,27 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					630,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
 					633,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
 					636,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					639,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
 					642,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
 					645,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					648,
 				],
 				[
@@ -319,11 +319,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					630,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					639,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCa…\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					648,
 				],
 				[

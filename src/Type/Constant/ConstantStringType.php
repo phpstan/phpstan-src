@@ -51,6 +51,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				return 'string';
 			},
 			function (): string {
+				$broker = Broker::getInstance();
+				if ($broker->hasClass($this->value)) {
+					return var_export($this->value, true);
+				}
+
 				return var_export(
 					\Nette\Utils\Strings::truncate($this->value, self::DESCRIBE_LIMIT),
 					true

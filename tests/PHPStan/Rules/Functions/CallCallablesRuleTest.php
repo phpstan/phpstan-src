@@ -119,7 +119,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				167,
 			],
 			[
-				'Trying to invoke array(\'CallCallables…\', \'bar\'|\'foo\') but it might not be a callable.',
+				'Trying to invoke array(\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\') but it might not be a callable.',
 				179,
 			],
 		]);

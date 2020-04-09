@@ -1535,7 +1535,7 @@ return [
 'date' => ['string', 'format'=>'string', 'timestamp='=>'int'],
 'date_add' => ['DateTime|false', 'object'=>'', 'interval'=>''],
 'date_create' => ['DateTime|false', 'time='=>'string|null', 'timezone='=>'?\DateTimeZone'],
-'date_create_from_format' => ['DateTime|false', 'format'=>'string', 'time'=>'string', 'timezone='=>'DateTimeZone'],
+'date_create_from_format' => ['DateTime|false', 'format'=>'string', 'time'=>'string', 'timezone='=>'?\DateTimeZone'],
 'date_create_immutable' => ['DateTimeImmutable|false', 'time='=>'string', 'timezone='=>'?\DateTimeZone'],
 'date_create_immutable_from_format' => ['DateTimeImmutable|false', 'format'=>'string', 'time'=>'string', 'timezone='=>'?\DateTimeZone'],
 'date_date_set' => ['DateTime|false', 'object'=>'', 'year'=>'', 'month'=>'', 'day'=>''],

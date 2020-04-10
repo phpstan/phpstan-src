@@ -35,11 +35,11 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 			)->getReturnType();
 		}
 
-		if (! $returnType instanceof UnionType) {
-			return $returnType;
+		if ($returnType instanceof UnionType) {
+			return new UnionType(array_slice($returnType->getTypes(), 0, -1));
 		}
 
-		return $returnType->getTypes()[0];
+		return $returnType;
 	}
 
 }

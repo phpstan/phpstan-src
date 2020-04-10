@@ -148,6 +148,8 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -176,6 +178,8 @@ jobs:
         with:
           coverage: "pcov"
           php-version: "7.4"
+          tools: pecl
+          extensions: ds
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -502,7 +506,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           tools: pecl
-          extension: timecop-beta
+          extensions: timecop-beta
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"

@@ -104,7 +104,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				$varTagType instanceof ErrorType
 				|| ($varTagType instanceof NeverType && !$varTagType->isExplicit())
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getStartLine())->build();
 				continue;
 			}
 

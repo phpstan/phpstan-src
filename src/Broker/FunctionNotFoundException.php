@@ -19,4 +19,9 @@ class FunctionNotFoundException extends \PHPStan\AnalysedCodeException
 		return $this->functionName;
 	}
 
+	public function getTip(): ?string
+	{
+		return 'Learn more at https://phpstan.org/user-guide/autoloading';
+	}
+
 }

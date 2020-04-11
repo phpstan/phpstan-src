@@ -23,4 +23,9 @@ class MissingConstantFromReflectionException extends \PHPStan\AnalysedCodeExcept
 		);
 	}
 
+	public function getTip(): ?string
+	{
+		return null;
+	}
+
 }

@@ -23,4 +23,9 @@ class MissingMethodFromReflectionException extends \PHPStan\AnalysedCodeExceptio
 		);
 	}
 
+	public function getTip(): ?string
+	{
+		return null;
+	}
+
 }

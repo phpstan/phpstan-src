@@ -19,4 +19,9 @@ class ConstantNotFoundException extends \PHPStan\AnalysedCodeException
 		return $this->constantName;
 	}
 
+	public function getTip(): ?string
+	{
+		return 'Learn more at https://phpstan.org/user-guide/autoloading';
+	}
+
 }

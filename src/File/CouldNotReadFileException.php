@@ -10,4 +10,9 @@ class CouldNotReadFileException extends \PHPStan\AnalysedCodeException
 		parent::__construct(sprintf('Could not read file: %s', $fileName));
 	}
 
+	public function getTip(): ?string
+	{
+		return null;
+	}
+
 }

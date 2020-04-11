@@ -28,4 +28,9 @@ class UndefinedVariableException extends \PHPStan\AnalysedCodeException
 		return $this->variableName;
 	}
 
+	public function getTip(): ?string
+	{
+		return null;
+	}
+
 }

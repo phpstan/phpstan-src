@@ -10,4 +10,9 @@ class CouldNotWriteFileException extends \PHPStan\AnalysedCodeException
 		parent::__construct(sprintf('Could not write file: %s (%s)', $fileName, $error));
 	}
 
+	public function getTip(): ?string
+	{
+		return null;
+	}
+
 }

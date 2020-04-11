@@ -23,4 +23,9 @@ class MissingPropertyFromReflectionException extends \PHPStan\AnalysedCodeExcept
 		);
 	}
 
+	public function getTip(): ?string
+	{
+		return null;
+	}
+
 }

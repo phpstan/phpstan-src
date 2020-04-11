@@ -19,4 +19,9 @@ class ClassNotFoundException extends \PHPStan\AnalysedCodeException
 		return $this->className;
 	}
 
+	public function getTip(): ?string
+	{
+		return 'Learn more at https://phpstan.org/user-guide/autoloading';
+	}
+
 }

@@ -82,7 +82,7 @@ class FileAnalyser
 							}
 
 							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
-							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), false);
+							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), false, null, null, $e->getTip());
 							continue;
 						} catch (IdentifierNotFound $e) {
 							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), false);
@@ -176,7 +176,7 @@ class FileAnalyser
 					$fileErrors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, false);
 				}
 			} catch (\PHPStan\AnalysedCodeException $e) {
-				$fileErrors[] = new Error($e->getMessage(), $file, null, false);
+				$fileErrors[] = new Error($e->getMessage(), $file, null, false, null, null, $e->getTip());
 			} catch (IdentifierNotFound $e) {
 				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, false);
 			}

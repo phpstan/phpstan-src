@@ -7,7 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 
 final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -36,7 +38,20 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 		}
 
 		if ($returnType instanceof UnionType) {
-			return new UnionType(array_slice($returnType->getTypes(), 0, -1));
+			$types = array_values(
+				array_filter(
+					$returnType->getTypes(),
+					static function (Type $type): bool {
+						return !$type instanceof TemplateType;
+					}
+				)
+			);
+
+			if (count($types) === 1) {
+				return $types[0];
+			}
+
+			return TypeCombinator::union(...$types);
 		}
 
 		return $returnType;

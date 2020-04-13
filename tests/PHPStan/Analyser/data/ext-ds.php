@@ -16,6 +16,18 @@ class B
 
 class Foo
 {
+	/** @param Map<int, int> $a */
+	public function mapGet(Map $a) : void
+	{
+		assertType('int', $a->get(1));
+	}
+
+	/** @param Map<int, int> $a */
+	public function mapGetWithDefaultValue(Map $a) : void
+	{
+		assertType('int|null', $a->get(1, null));
+	}
+
 	/** @param Map<int, int|string> $a */
 	public function mapGetUnionType(Map $a) : void
 	{

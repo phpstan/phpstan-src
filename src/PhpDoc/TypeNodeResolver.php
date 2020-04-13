@@ -5,6 +5,7 @@ namespace PHPStan\PhpDoc;
 use PHPStan\Analyser\NameScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
@@ -457,6 +458,10 @@ class TypeNodeResolver
 					$offsetType = new ConstantIntegerType((int) $itemNode->keyName->value);
 				} elseif ($itemNode->keyName instanceof IdentifierTypeNode) {
 					$offsetType = new ConstantStringType($itemNode->keyName->name);
+				} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
+					$offsetType = new ConstantStringType($itemNode->keyName->value);
+				} elseif ($itemNode->keyName !== null) {
+					throw new \PHPStan\ShouldNotHappenException('Unsupported key node type: ' . get_class($itemNode->keyName));
 				}
 				$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope));
 			}

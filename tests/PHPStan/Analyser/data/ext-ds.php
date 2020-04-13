@@ -16,6 +16,42 @@ class B
 
 class Foo
 {
+	/** @param Map<int, int> $a */
+	public function mapGet(Map $a) : void
+	{
+		assertType('int', $a->get(1));
+	}
+
+	/** @param Map<int, int> $a */
+	public function mapGetWithDefaultValue(Map $a) : void
+	{
+		assertType('int|null', $a->get(1, null));
+	}
+
+	/** @param Map<int, int|string> $a */
+	public function mapGetUnionType(Map $a) : void
+	{
+		assertType('int|string', $a->get(1));
+	}
+
+	/** @param Map<int, int|string> $a */
+	public function mapGetUnionTypeWithDefaultValue(Map $a) : void
+	{
+		assertType('int|string|null', $a->get(1, null));
+	}
+
+	/** @param Map<int, int|string> $a */
+	public function mapRemoveUnionType(Map $a) : void
+	{
+		assertType('int|string', $a->remove(1));
+	}
+
+	/** @param Map<int, int|string> $a */
+	public function mapRemoveUnionTypeWithDefaultValue(Map $a) : void
+	{
+		assertType('int|string|null', $a->remove(1, null));
+	}
+
 	public function mapMerge() : void
 	{
 		$a = new Map([1 => new A()]);

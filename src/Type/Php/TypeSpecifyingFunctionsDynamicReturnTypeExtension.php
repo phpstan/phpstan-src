@@ -66,6 +66,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 			'is_string',
 			'is_subclass_of',
 			'is_a',
+			'is_countable',
 		], true);
 	}
 

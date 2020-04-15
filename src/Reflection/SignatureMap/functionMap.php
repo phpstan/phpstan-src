@@ -9137,7 +9137,7 @@ return [
 'readline_read_history' => ['bool', 'filename='=>'string'],
 'readline_redisplay' => ['void'],
 'readline_write_history' => ['bool', 'filename='=>'string'],
-'readlink' => ['string', 'filename'=>'string'],
+'readlink' => ['string|false', 'filename'=>'string'],
 'realpath' => ['string|false', 'path'=>'string'],
 'realpath_cache_get' => ['array'],
 'realpath_cache_size' => ['int'],

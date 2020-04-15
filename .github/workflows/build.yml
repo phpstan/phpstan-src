@@ -129,7 +129,7 @@ jobs:
   tests:
     name: "Tests"
 
-    runs-on: "ubuntu-latest"
+    runs-on: ${{ matrix.operating-system }}
 
     strategy:
       matrix:
@@ -138,6 +138,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+        operating-system: [ubuntu-latest, windows-latest]
 
     steps:
       - name: "Checkout"
@@ -149,7 +150,8 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           tools: pecl
-          extensions: ds
+          extensions: ds,mbstring
+          ini-values: memory_limit=512M
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -201,44 +203,6 @@ jobs:
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
         run: "bash <(curl -s https://codecov.io/bash) -f tests/tmp/clover.xml"
-
-  tests-windows:
-    name: "Tests on Windows"
-
-    runs-on: "windows-latest"
-
-    strategy:
-      matrix:
-        php-version:
-          - "7.1"
-          - "7.2"
-          - "7.3"
-          - "7.4"
-
-    steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v2.0.0"
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@1.8.2"
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-          extensions: mbstring
-          ini-values: memory_limit=512M
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
-
-      - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
-
-      - name: "Tests"
-        run: "vendor/bin/phing tests"
 
   static-analysis:
     name: "PHPStan"

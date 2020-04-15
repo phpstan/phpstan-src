@@ -9820,6 +9820,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/is-numeric.php');
 	}
 
+	public function dataIsNumericAndNotArray(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/is-numeric-excludes-array.php');
+	}
+
 	public function dataBug3142(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3142.php');
@@ -9865,6 +9870,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataExtDs
 	 * @dataProvider dataArrowFunctionReturnTypeInference
 	 * @dataProvider dataIsNumeric
+	 * @dataProvider dataIsNumericAndNotArray
 	 * @dataProvider dataBug3142
 	 * @dataProvider dataArrayShapeKeysStrings
 	 * @param ConstantStringType $expectedType

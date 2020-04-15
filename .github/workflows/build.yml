@@ -187,8 +187,8 @@ jobs:
         uses: "actions/cache@v1.1.2"
         with:
           path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
+          key: "php-7.4-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-7.4-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"

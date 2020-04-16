@@ -22,6 +22,8 @@ final class CompileCommandTest extends TestCase
     "require": {
         "php": "~7.1"
     },
+    "require-dev": 1,
+    "autoload-dev": 2,
     "autoload": {
         "psr-4": {
             "PHPStan\\\\": "src/"
@@ -35,8 +37,7 @@ EOT
 
 		$processFactory = $this->createMock(ProcessFactory::class);
 		$processFactory->expects(self::at(0))->method('setOutput');
-		$processFactory->expects(self::at(1))->method('create')->with(['composer', 'update', '--no-dev', '--classmap-authoritative'], 'bar')->willReturn($process);
-		$processFactory->expects(self::at(2))->method('create')->with(['php', 'box.phar', 'compile', '--no-parallel'], 'foo')->willReturn($process);
+		$processFactory->expects(self::at(1))->method('create')->with(['php', 'box.phar', 'compile', '--no-parallel'], 'foo')->willReturn($process);
 
 		$application = new Application();
 		$application->add(new CompileCommand($filesystem, $processFactory, 'foo', 'bar'));

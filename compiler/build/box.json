@@ -9,9 +9,9 @@
   "directories": [
     "conf",
     "src",
-    "stubs",
-    "vendor"
+    "stubs"
   ],
+  "force-autodiscovery": true,
   "output": "tmp/phpstan.phar",
   "php-scoper": "compiler/build/scoper.inc.php"
 }

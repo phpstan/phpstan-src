@@ -49,7 +49,6 @@ final class CompileCommand extends Command
 
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
-		$this->processFactory->create(['composer', 'update', '--no-dev', '--classmap-authoritative'], $this->buildDir);
 
 		$this->processFactory->create(['php', 'box.phar', 'compile', '--no-parallel'], $this->dataDir);
 
@@ -59,9 +58,6 @@ final class CompileCommand extends Command
 	private function fixComposerJson(string $buildDir): void
 	{
 		$json = json_decode($this->filesystem->read($buildDir . '/composer.json'), true);
-
-		// remove dev dependencies (they create conflicts)
-		unset($json['require-dev'], $json['autoload-dev']);
 
 		unset($json['replace']);
 		$json['name'] = 'phpstan/phpstan';

@@ -16,11 +16,6 @@ class AlwaysFailRule implements \PHPStan\Rules\Rule
 		return Node\Expr\FuncCall::class;
 	}
 
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->name instanceof Node\Name) {

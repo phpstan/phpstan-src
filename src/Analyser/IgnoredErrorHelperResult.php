@@ -118,18 +118,20 @@ class IgnoredErrorHelperResult
 				} elseif (isset($ignore['paths'])) {
 					foreach ($ignore['paths'] as $j => $ignorePath) {
 						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignorePath);
-						if ($shouldBeIgnored) {
-							if (isset($unmatchedIgnoredErrors[$i])) {
-								if (!is_array($unmatchedIgnoredErrors[$i])) {
-									throw new \PHPStan\ShouldNotHappenException();
-								}
-								unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
-								if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
-									unset($unmatchedIgnoredErrors[$i]);
-								}
-							}
-							break;
+						if (!$shouldBeIgnored) {
+							continue;
 						}
+
+						if (isset($unmatchedIgnoredErrors[$i])) {
+							if (!is_array($unmatchedIgnoredErrors[$i])) {
+								throw new \PHPStan\ShouldNotHappenException();
+							}
+							unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
+							if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
+								unset($unmatchedIgnoredErrors[$i]);
+							}
+						}
+						break;
 					}
 				} else {
 					throw new \PHPStan\ShouldNotHappenException();

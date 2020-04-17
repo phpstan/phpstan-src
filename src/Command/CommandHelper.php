@@ -422,21 +422,23 @@ class CommandHelper
 		}, $allConfigFiles);
 
 		$deduplicated = array_unique($normalized);
-		if (count($normalized) > count($deduplicated)) {
-			$duplicateFiles = array_unique(array_diff_key($normalized, $deduplicated));
-
-			$format = "<error>These files are included multiple times:</error>\n- %s";
-			if (count($duplicateFiles) === 1) {
-				$format = "<error>This file is included multiple times:</error>\n- %s";
-			}
-			$output->writeLineFormatted(sprintf($format, implode("\n- ", $duplicateFiles)));
-
-			if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
-				$output->writeLineFormatted('');
-				$output->writeLineFormatted('It can lead to unexpected results. If you\'re using phpstan/extension-installer, make sure you have removed corresponding neon files from your project config file.');
-			}
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		if (count($normalized) <= count($deduplicated)) {
+			return;
 		}
+
+		$duplicateFiles = array_unique(array_diff_key($normalized, $deduplicated));
+
+		$format = "<error>These files are included multiple times:</error>\n- %s";
+		if (count($duplicateFiles) === 1) {
+			$format = "<error>This file is included multiple times:</error>\n- %s";
+		}
+		$output->writeLineFormatted(sprintf($format, implode("\n- ", $duplicateFiles)));
+
+		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
+			$output->writeLineFormatted('');
+			$output->writeLineFormatted('It can lead to unexpected results. If you\'re using phpstan/extension-installer, make sure you have removed corresponding neon files from your project config file.');
+		}
+		throw new \PHPStan\Command\InceptionNotSuccessfulException();
 	}
 
 	/**

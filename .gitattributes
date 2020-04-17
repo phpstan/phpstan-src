@@ -1,4 +1,5 @@
 *.php text eol=lf
 *.stub linguist-language=PHP
+*.neon linguist-language=YAML
 
 tests/PHPStan/Command/ErrorFormatter/data/WindowsNewlines.php eol=crlf

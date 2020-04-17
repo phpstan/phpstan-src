@@ -2,6 +2,6 @@
 
 namespace TwoFails;
 
-doFoo();
-doFoo();
-doFoo();
+fail();
+fail();
+fail();

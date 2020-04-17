@@ -7,7 +7,7 @@ trait FooTrait
 
 	public function doFoo(): void
 	{
-		doFoo();
+		fail();
 	}
 
 }

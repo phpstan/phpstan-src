@@ -2,4 +2,4 @@
 
 namespace BootstrapError;
 
-doFoo();
+fail();

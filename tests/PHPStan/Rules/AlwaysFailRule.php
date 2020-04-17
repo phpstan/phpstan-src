@@ -23,6 +23,14 @@ class AlwaysFailRule implements \PHPStan\Rules\Rule
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$node->name instanceof Node\Name) {
+			return [];
+		}
+
+		if ($node->name->toLowerString() !== 'fail') {
+			return [];
+		}
+
 		return ['Fail.'];
 	}
 

@@ -304,6 +304,8 @@ services:
 
 	-
 		class: PHPStan\Analyser\FileAnalyser
+		arguments:
+			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
 		class: PHPStan\Analyser\IgnoredErrorHelper

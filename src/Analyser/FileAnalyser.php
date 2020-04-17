@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Comment;
+use PhpParser\Node;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\FileNode;
@@ -13,6 +15,8 @@ use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\TipRuleError;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use function array_fill_keys;
+use function array_key_exists;
 use function array_unique;
 
 class FileAnalyser
@@ -33,12 +37,16 @@ class FileAnalyser
 	/** @var FileHelper */
 	private $fileHelper;
 
+	/** @var bool */
+	private $reportUnmatchedIgnoredErrors;
+
 	public function __construct(
 		ScopeFactory $scopeFactory,
 		NodeScopeResolver $nodeScopeResolver,
 		Parser $parser,
 		DependencyResolver $dependencyResolver,
-		FileHelper $fileHelper
+		FileHelper $fileHelper,
+		bool $reportUnmatchedIgnoredErrors
 	)
 	{
 		$this->scopeFactory = $scopeFactory;
@@ -46,6 +54,7 @@ class FileAnalyser
 		$this->parser = $parser;
 		$this->dependencyResolver = $dependencyResolver;
 		$this->fileHelper = $fileHelper;
+		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 	}
 
 	/**
@@ -67,7 +76,8 @@ class FileAnalyser
 		if (is_file($file)) {
 			try {
 				$parserNodes = $this->parser->parseFile($file);
-				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, $file, $registry, $outerNodeCallback, $analysedFiles): void {
+				$linesToIgnore = [];
+				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore): void {
 					if ($outerNodeCallback !== null) {
 						$outerNodeCallback($node, $scope);
 					}
@@ -151,6 +161,10 @@ class FileAnalyser
 						}
 					}
 
+					foreach ($this->getLinesToIgnore($node) as $lineToIgnore) {
+						$linesToIgnore[] = $lineToIgnore;
+					}
+
 					try {
 						foreach ($this->resolveDependencies($node, $scope, $analysedFiles) as $dependentFile) {
 							$fileDependencies[] = $dependentFile;
@@ -169,6 +183,39 @@ class FileAnalyser
 					$scope,
 					$nodeCallback
 				);
+				$linesToIgnoreKeys = array_fill_keys($linesToIgnore, true);
+				$unmatchedLineIgnores = $linesToIgnoreKeys;
+				$filteredFileErrors = [];
+				foreach ($fileErrors as $fileError) {
+					$line = $fileError->getLine();
+					if ($line === null) {
+						continue;
+					}
+					if (!$fileError->canBeIgnored()) {
+						continue;
+					}
+
+					if (array_key_exists($line, $linesToIgnoreKeys)) {
+						unset($unmatchedLineIgnores[$line]);
+						continue;
+					}
+
+					$filteredFileErrors[] = $fileError;
+				}
+
+				$fileErrors = $filteredFileErrors;
+
+				if ($this->reportUnmatchedIgnoredErrors) {
+					foreach (array_keys($unmatchedLineIgnores) as $line) {
+						$fileErrors[] = new Error(
+							sprintf('No error to ignore is reported on line %d.', $line),
+							$scope->getFileDescription(),
+							$line,
+							false,
+							$scope->getFile()
+						);
+					}
+				}
 			} catch (\PhpParser\Error $e) {
 				$fileErrors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, false);
 			} catch (\PHPStan\Parser\ParserErrorsException $e) {
@@ -187,6 +234,55 @@ class FileAnalyser
 		}
 
 		return new FileAnalyserResult($fileErrors, array_values(array_unique($fileDependencies)));
+	}
+
+	/**
+	 * @param Node $node
+	 * @return int[]
+	 */
+	private function getLinesToIgnore(Node $node): array
+	{
+		$lines = [];
+		if ($node->getDocComment() !== null) {
+			$line = $this->findLineToIgnoreComment($node->getDocComment());
+			if ($line !== null) {
+				$lines[] = $line;
+			}
+		}
+
+		foreach ($node->getComments() as $comment) {
+			$line = $this->findLineToIgnoreComment($comment);
+			if ($line === null) {
+				continue;
+			}
+
+			$lines[] = $line;
+		}
+
+		return $lines;
+	}
+
+	private function findLineToIgnoreComment(Comment $comment): ?int
+	{
+		$text = $comment->getText();
+		if ($comment instanceof Comment\Doc) {
+			$line = $comment->getEndLine();
+		} else {
+			if (strpos($text, "\n") === false || strpos($text, '//') === 0) {
+				$line = $comment->getStartLine();
+			} else {
+				$line = $comment->getEndLine();
+			}
+		}
+		if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+			return $line + 1;
+		}
+
+		if (strpos($text, '@phpstan-ignore-line') !== false) {
+			return $line;
+		}
+
+		return null;
 	}
 
 	/**

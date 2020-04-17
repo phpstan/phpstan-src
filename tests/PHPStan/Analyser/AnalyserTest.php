@@ -373,6 +373,60 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 	}
 
 	/**
+	 * @dataProvider dataTrueAndFalse
+	 * @param bool $reportUnmatchedIgnoredErrors
+	 */
+	public function testIgnoreNextLine(bool $reportUnmatchedIgnoredErrors): void
+	{
+		$result = $this->runAnalyser([], $reportUnmatchedIgnoredErrors, [
+			__DIR__ . '/data/ignore-next-line.php',
+		], true);
+		$this->assertCount($reportUnmatchedIgnoredErrors ? 4 : 3, $result);
+		foreach ([10, 30, 34] as $i => $line) {
+			$this->assertArrayHasKey($i, $result);
+			$this->assertInstanceOf(Error::class, $result[$i]);
+			$this->assertSame('Fail.', $result[$i]->getMessage());
+			$this->assertSame($line, $result[$i]->getLine());
+		}
+
+		if (!$reportUnmatchedIgnoredErrors) {
+			return;
+		}
+
+		$this->assertArrayHasKey(3, $result);
+		$this->assertInstanceOf(Error::class, $result[3]);
+		$this->assertSame('No error to ignore is reported on line 38.', $result[3]->getMessage());
+		$this->assertSame(38, $result[3]->getLine());
+	}
+
+	/**
+	 * @dataProvider dataTrueAndFalse
+	 * @param bool $reportUnmatchedIgnoredErrors
+	 */
+	public function testIgnoreLine(bool $reportUnmatchedIgnoredErrors): void
+	{
+		$result = $this->runAnalyser([], $reportUnmatchedIgnoredErrors, [
+			__DIR__ . '/data/ignore-line.php',
+		], true);
+		$this->assertCount($reportUnmatchedIgnoredErrors ? 4 : 3, $result);
+		foreach ([10, 19, 22] as $i => $line) {
+			$this->assertArrayHasKey($i, $result);
+			$this->assertInstanceOf(Error::class, $result[$i]);
+			$this->assertSame('Fail.', $result[$i]->getMessage());
+			$this->assertSame($line, $result[$i]->getLine());
+		}
+
+		if (!$reportUnmatchedIgnoredErrors) {
+			return;
+		}
+
+		$this->assertArrayHasKey(3, $result);
+		$this->assertInstanceOf(Error::class, $result[3]);
+		$this->assertSame('No error to ignore is reported on line 26.', $result[3]->getMessage());
+		$this->assertSame(26, $result[3]->getLine());
+	}
+
+	/**
 	 * @param mixed[] $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param string|string[] $filePaths
@@ -386,7 +440,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		bool $onlyFiles
 	): array
 	{
-		$analyser = $this->createAnalyser();
+		$analyser = $this->createAnalyser($reportUnmatchedIgnoredErrors);
 
 		if (is_string($filePaths)) {
 			$filePaths = [$filePaths];
@@ -421,7 +475,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
-	private function createAnalyser(): \PHPStan\Analyser\Analyser
+	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): \PHPStan\Analyser\Analyser
 	{
 		$registry = new Registry([
 			new AlwaysFailRule(),
@@ -456,7 +510,8 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$nodeScopeResolver,
 			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser),
 			new DependencyResolver($broker),
-			$fileHelper
+			$fileHelper,
+			$reportUnmatchedIgnoredErrors
 		);
 
 		return new Analyser(

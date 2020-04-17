@@ -82,7 +82,8 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$nodeScopeResolver,
 				$this->getParser(),
 				new DependencyResolver($broker),
-				$fileHelper
+				$fileHelper,
+				true
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,

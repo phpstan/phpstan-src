@@ -8979,16 +8979,20 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			[
 				'string',
 				'DynamicConstants\DynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS',
-			], [
+			],
+			[
 				"'abc123def'",
 				'DynamicConstants\DynamicConstantClass::PURE_CONSTANT_IN_CLASS',
-			], [
+			],
+			[
 				"'xyz'",
 				'DynamicConstants\NoDynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS',
-			], [
+			],
+			[
 				'bool',
 				'GLOBAL_DYNAMIC_CONSTANT',
-			], [
+			],
+			[
 				'123',
 				'GLOBAL_PURE_CONSTANT',
 			],

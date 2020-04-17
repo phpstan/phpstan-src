@@ -77,7 +77,8 @@ class FileAnalyser
 			try {
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = [];
-				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore): void {
+				$temporaryFileErrors = [];
+				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
 					if ($outerNodeCallback !== null) {
 						$outerNodeCallback($node, $scope);
 					}
@@ -145,7 +146,7 @@ class FileAnalyser
 									$metadata = $ruleError->getMetadata();
 								}
 							}
-							$fileErrors[] = new Error(
+							$temporaryFileErrors[] = new Error(
 								$message,
 								$fileName,
 								$line,
@@ -185,13 +186,12 @@ class FileAnalyser
 				);
 				$linesToIgnoreKeys = array_fill_keys($linesToIgnore, true);
 				$unmatchedLineIgnores = $linesToIgnoreKeys;
-				$filteredFileErrors = [];
-				foreach ($fileErrors as $fileError) {
-					$line = $fileError->getLine();
+				foreach ($temporaryFileErrors as $tmpFileError) {
+					$line = $tmpFileError->getLine();
 					if ($line === null) {
 						continue;
 					}
-					if (!$fileError->canBeIgnored()) {
+					if (!$tmpFileError->canBeIgnored()) {
 						continue;
 					}
 
@@ -200,10 +200,8 @@ class FileAnalyser
 						continue;
 					}
 
-					$filteredFileErrors[] = $fileError;
+					$fileErrors[] = $tmpFileError;
 				}
-
-				$fileErrors = $filteredFileErrors;
 
 				if ($this->reportUnmatchedIgnoredErrors) {
 					foreach (array_keys($unmatchedLineIgnores) as $line) {

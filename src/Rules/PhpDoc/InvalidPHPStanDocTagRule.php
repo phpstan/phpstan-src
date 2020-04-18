@@ -25,6 +25,8 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 		'@phpstan-template',
 		'@phpstan-template-covariant',
 		'@phpstan-return',
+		'@phpstan-ignore-next-line',
+		'@phpstan-ignore-line',
 	];
 
 	/** @var Lexer */

@@ -12,4 +12,19 @@ class Boo extends Baz
 	 * @phpstan-return T
 	 */
 	function foo(string $a){}
+
+	/**
+	 * @phpstan-ignore-next-line
+	 * @phpstan-pararm
+	 */
+	function bar()
+	{
+
+	}
+
+	function baz()
+	{
+		/** @phpstan-va */$a = $b; /** @phpstan-ignore-line */
+		$c = 'foo';
+	}
 }

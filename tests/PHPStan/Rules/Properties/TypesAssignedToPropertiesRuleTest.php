@@ -77,4 +77,18 @@ class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug1216(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1216.php'], [
+			[
+				'Property Bug1216PropertyTest\Baz::$untypedBar (string) does not accept int.',
+				35,
+			],
+			[
+				'Property Bug1216PropertyTest\Dummy::$foo (Exception) does not accept stdClass.',
+				59,
+			],
+		]);
+	}
+
 }

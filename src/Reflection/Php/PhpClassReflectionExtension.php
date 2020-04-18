@@ -199,7 +199,7 @@ class PhpClassReflectionExtension
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
-			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] < $hierarchyDistances[$propertyReflection->getDeclaringClass()->getName()]) {
+			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] <= $hierarchyDistances[$propertyReflection->getDeclaringClass()->getName()]) {
 				return $annotationProperty;
 			}
 		}

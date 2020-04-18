@@ -9834,6 +9834,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/array-shapes-keys-strings.php');
 	}
 
+	public function dataBug1216(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1216.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9871,6 +9876,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataIsNumeric
 	 * @dataProvider dataBug3142
 	 * @dataProvider dataArrayShapeKeysStrings
+	 * @dataProvider dataBug1216
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

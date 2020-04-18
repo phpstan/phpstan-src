@@ -100,7 +100,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends \PHPStan\Testing
 					],
 					'conflictingAnnotationProperty' => [
 						'class' => \AnnotationsProperties\Bar::class,
-						'type' => \AnnotationsProperties\Bar::class,
+						'type' => \AnnotationsProperties\Foo::class,
 						'writable' => true,
 						'readable' => true,
 					],

@@ -46,7 +46,7 @@ class MySoapHeader extends \SoapHeader
 
 	public function __construct(string $username, string $password)
 	{
-		parent::__construct($username, $password);
+		parent::SoapHeader($username, $password);
 	}
 
 }

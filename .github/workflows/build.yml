@@ -451,14 +451,16 @@ jobs:
           vendor/bin/phing phpstan-generate-baseline && \
           diff phpstan-baseline.neon phpstan-baseline-orig.neon
 
-  timecop-e2e-test:
-    name: "Timecop E2E test"
+  e2e-tests:
+    name: "E2E tests"
     runs-on: "ubuntu-latest"
 
     strategy:
       matrix:
-        php-version:
-          - "7.4"
+        include:
+          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/timecop.php tests/e2e/data/timecop.php"
+            tools: "pecl"
+            extensions: "timecop-beta"
 
     steps:
       - name: "Checkout"
@@ -468,9 +470,9 @@ jobs:
         uses: "shivammathur/setup-php@1.8.2"
         with:
           coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-          tools: pecl
-          extensions: timecop-beta
+          php-version: "7.4"
+          tools: ${{ matrix.tools }}
+          extensions: ${{ matrix.extensions }}
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -483,4 +485,4 @@ jobs:
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Test"
-        run: "bin/phpstan analyse -l 8 -a tests/e2e/data/timecop.php tests/e2e/data/timecop.php"
+        run: ${{ matrix.script }}

@@ -104,8 +104,12 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 
 		/** @var \PHPStan\Analyser\Error $fileSpecificError */
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			$absolutePath = $fileSpecificError->getFilePath();
+			if ($fileSpecificError->getTraitFilePath() !== null) {
+				$absolutePath = $fileSpecificError->getTraitFilePath();
+			}
 			$relativeFilePath = $this->relativePathHelper->getRelativePath(
-				$fileSpecificError->getFile()
+				$absolutePath
 			);
 
 			$files[$relativeFilePath][] = $fileSpecificError;

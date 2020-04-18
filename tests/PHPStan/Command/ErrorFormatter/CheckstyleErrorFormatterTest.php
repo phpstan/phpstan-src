@@ -2,6 +2,8 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\Analyser\Error;
+use PHPStan\Command\AnalysisResult;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 
@@ -134,6 +136,32 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 		$outputContent = $this->getOutputContent();
 		$this->assertXmlStringEqualsXmlString($expected, $outputContent, sprintf('%s: XML do not match', $message));
 		$this->assertStringStartsWith('<?xml', $outputContent);
+	}
+
+	public function testTraitPath(): void
+	{
+		$formatter = new CheckstyleErrorFormatter(new SimpleRelativePathHelper(__DIR__));
+		$error = new Error(
+			'Foo',
+			__DIR__ . '/FooTrait.php (in context of class Foo)',
+			5,
+			true,
+			__DIR__ . '/Foo.php',
+			__DIR__ . '/FooTrait.php'
+		);
+		$formatter->formatErrors(new AnalysisResult(
+			[$error],
+			[],
+			[],
+			false,
+			false,
+			null
+		), $this->getOutput());
+		$this->assertXmlStringEqualsXmlString('<checkstyle>
+	<file name="FooTrait.php">
+		<error column="1" line="5" message="Foo" severity="error"/>
+	</file>
+</checkstyle>', $this->getOutputContent());
 	}
 
 }

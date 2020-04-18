@@ -32,6 +32,9 @@ class ResultCacheManager
 	/** @var string */
 	private $usedLevel;
 
+	/** @var string|null */
+	private $cliAutoloadFile;
+
 	/** @var array<string, string> */
 	private $fileHashes = [];
 
@@ -42,6 +45,7 @@ class ResultCacheManager
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $stubFiles
 	 * @param string $usedLevel
+	 * @param string|null $cliAutoloadFile
 	 */
 	public function __construct(
 		string $cacheFilePath,
@@ -49,7 +53,8 @@ class ResultCacheManager
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths,
 		array $stubFiles,
-		string $usedLevel
+		string $usedLevel,
+		?string $cliAutoloadFile
 	)
 	{
 		$this->cacheFilePath = $cacheFilePath;
@@ -58,6 +63,7 @@ class ResultCacheManager
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 		$this->stubFiles = $stubFiles;
 		$this->usedLevel = $usedLevel;
+		$this->cliAutoloadFile = $cliAutoloadFile;
 	}
 
 	/**
@@ -366,6 +372,7 @@ php;
 			'configFiles' => $this->getConfigFiles(),
 			'analysedPaths' => $this->analysedPaths,
 			'composerLocks' => $this->getComposerLocks(),
+			'cliAutoloadFile' => $this->cliAutoloadFile,
 			'phpExtensions' => $extensions,
 			'stubFiles' => $this->getStubFiles(),
 			'level' => $this->usedLevel,

@@ -76,6 +76,7 @@ class CommandHelper
 		$currentWorkingDirectoryFileHelper = new FileHelper($currentWorkingDirectory);
 		$currentWorkingDirectory = $currentWorkingDirectoryFileHelper->getWorkingDirectory();
 		if ($autoloadFile !== null) {
+			$autoloadFile = $currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile);
 			if (!is_file($autoloadFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Autoload file "%s" not found.', $autoloadFile));
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
@@ -83,7 +84,7 @@ class CommandHelper
 
 			(static function (string $file): void {
 				require_once $file;
-			})($currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile));
+			})($autoloadFile);
 		}
 		if ($projectConfigFile === null) {
 			foreach (['phpstan.neon', 'phpstan.neon.dist'] as $discoverableConfigName) {
@@ -240,7 +241,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $allCustomConfigFiles, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $allCustomConfigFiles, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

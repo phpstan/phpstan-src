@@ -228,6 +228,7 @@ parametersSchema:
 	composerAutoloaderProjectPaths: listOf(string())
 	analysedPathsFromConfig: listOf(string())
 	usedLevel: string()
+	cliAutoloadFile: schema(string(), nullable())
 
 services:
 	-
@@ -339,6 +340,7 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			stubFiles: %stubFiles%
 			usedLevel: %usedLevel%
+			cliAutoloadFile: %cliAutoloadFile%
 
 	-
 		class: PHPStan\Cache\Cache

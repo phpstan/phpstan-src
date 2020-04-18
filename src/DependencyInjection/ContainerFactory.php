@@ -49,6 +49,7 @@ class ContainerFactory
 	 * @param string[] $allCustomConfigFiles
 	 * @param string $usedLevel
 	 * @param string|null $generateBaselineFile
+	 * @param string|null $cliAutoloadFile
 	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(
@@ -59,7 +60,8 @@ class ContainerFactory
 		array $analysedPathsFromConfig = [],
 		array $allCustomConfigFiles = [],
 		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
-		?string $generateBaselineFile = null
+		?string $generateBaselineFile = null,
+		?string $cliAutoloadFile = null
 	): Container
 	{
 		$configurator = new Configurator(new LoaderFactory(
@@ -85,6 +87,7 @@ class ContainerFactory
 			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 			'allCustomConfigFiles' => $allCustomConfigFiles,
 			'usedLevel' => $usedLevel,
+			'cliAutoloadFile' => $cliAutoloadFile,
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {

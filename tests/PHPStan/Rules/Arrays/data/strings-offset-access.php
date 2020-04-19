@@ -31,18 +31,18 @@ $maybeString[12.34];
 $maybeString = [];
 $maybeString[$maybeInt];
 
-/** @var mixed $mixed */
-$mixed = null;
+// Implicit mixed
+$mixed = doFoo();
 $mixed[0];
 
-/** @var mixed $mixed */
-$mixed = null;
+// Implicit mixed
+$mixed = doFoo();
 $mixed['foo'];
 
-/** @var mixed $mixed */
-$mixed = null;
+// Implicit mixed
+$mixed = doFoo();
 $mixed[12.34];
 
-/** @var mixed $mixed */
-$mixed = null;
+// Implicit mixed
+$mixed = doFoo();
 $mixed[$maybeInt];

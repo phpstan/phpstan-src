@@ -22,7 +22,7 @@ $f = function () {
 	$baz = doBaz();
 	clone $baz;
 
-	/** @var mixed|string $lorem */
+	// Implicit mixed
 	$lorem = doLorem();
 	clone $lorem;
 

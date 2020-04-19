@@ -578,6 +578,7 @@ services:
 			checkNullables: %checkNullables%
 			checkThisOnly: %checkThisOnly%
 			checkUnionTypes: %checkUnionTypes%
+			checkExplicitMixed: %checkExplicitMixed%
 
 	-
 		class: PHPStan\Rules\UnusedFunctionParametersCheck

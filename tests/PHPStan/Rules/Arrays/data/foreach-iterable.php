@@ -37,7 +37,7 @@ if (empty($arrayOrNull)) {
 	}
 }
 
-/** @var mixed $mixed */
+// Implicit mixed
 $mixed = doFoo();
 foreach ($mixed as $val) {
 

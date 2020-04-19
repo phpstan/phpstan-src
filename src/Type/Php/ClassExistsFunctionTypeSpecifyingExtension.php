@@ -46,7 +46,7 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			if ($argType instanceof ConstantStringType) {
 				return $this->typeSpecifier->create(
 					new FuncCall(new FullyQualified('class_exists'), [
-						new Arg(new String_($argType->getValue())),
+						new Arg(new String_(ltrim($argType->getValue(), '\\'))),
 					]),
 					new ConstantBooleanType(true),
 					$context

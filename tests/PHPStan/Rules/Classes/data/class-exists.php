@@ -28,3 +28,9 @@ function () {
 
 	echo \UnknownClass\Foo::class; // error
 };
+
+function () {
+	if (class_exists('\UnknownClass\Foo')) {
+		echo \UnknownClass\Foo::class;
+	}
+};

@@ -13,6 +13,5 @@
   ],
   "force-autodiscovery": true,
   "output": "tmp/phpstan.phar",
-  "php-scoper": "compiler/build/scoper.inc.php",
-  "shebang": false
+  "php-scoper": "compiler/build/scoper.inc.php"
 }

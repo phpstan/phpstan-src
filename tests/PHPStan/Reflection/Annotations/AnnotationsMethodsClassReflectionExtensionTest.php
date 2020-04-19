@@ -451,7 +451,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\Te
 				],
 				'conflictingMethod' => [
 					'class' => \AnnotationsMethods\Bar::class,
-					'returnType' => \AnnotationsMethods\Foo::class,
+					'returnType' => \AnnotationsMethods\Bar::class,
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],

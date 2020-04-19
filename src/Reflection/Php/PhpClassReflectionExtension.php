@@ -228,10 +228,7 @@ class PhpClassReflectionExtension
 					[]
 				);
 				if ($phpDocBlock !== null) {
-					$declaringTraitName = $this->findPropertyTrait(
-						$phpDocBlock,
-						$propertyReflection
-					);
+					$declaringTraitName = $this->findPropertyTrait($propertyReflection);
 					$phpDocBlockClassReflection = $phpDocBlock->getClassReflection();
 					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 						$phpDocBlock->getFile(),
@@ -594,43 +591,40 @@ class PhpClassReflectionExtension
 		);
 	}
 
-	private function findPropertyTrait(
-		PhpDocBlock $phpDocBlock,
+	private function findPropertyTrait(\ReflectionProperty $propertyReflection): ?string
+	{
+		$declaringClass = $propertyReflection->getDeclaringClass();
+		$trait = $this->deepScanTraitsForProperty($declaringClass->getTraits(), $propertyReflection);
+		if ($trait !== null) {
+			return $trait;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param \ReflectionClass[] $traits
+	 * @param \ReflectionProperty $propertyReflection
+	 * @return string|null
+	 */
+	private function deepScanTraitsForProperty(
+		array $traits,
 		\ReflectionProperty $propertyReflection
 	): ?string
 	{
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$phpDocBlock->getFile(),
-			$phpDocBlock->getClassReflection()->getName(),
-			null,
-			null,
-			$phpDocBlock->getDocComment()
-		);
-		if (count($resolvedPhpDoc->getVarTags()) > 0) {
-			return null;
-		}
+		foreach ($traits as $trait) {
+			$result = $this->deepScanTraitsForProperty($trait->getTraits(), $propertyReflection);
+			if ($result !== null) {
+				return $result;
+			}
 
-		$declaringClass = $propertyReflection->getDeclaringClass();
-		$traits = $declaringClass->getTraits();
-		while (count($traits) > 0) {
-			/** @var \ReflectionClass<object> $traitReflection */
-			$traitReflection = array_pop($traits);
-			$traits = array_merge($traits, $traitReflection->getTraits());
-			if (!$traitReflection->hasProperty($propertyReflection->getName())) {
+			if (!$trait->hasProperty($propertyReflection->getName())) {
 				continue;
 			}
 
-			$traitResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-				$phpDocBlock->getFile(),
-				$phpDocBlock->getClassReflection()->getName(),
-				$traitReflection->getName(),
-				null,
-				$phpDocBlock->getDocComment()
-			);
-			if (
-				count($traitResolvedPhpDoc->getVarTags()) > 0
-			) {
-				return $traitReflection->getName();
+			$traitProperty = $trait->getProperty($propertyReflection->getName());
+			if ($traitProperty->getDocComment() === $propertyReflection->getDocComment()) {
+				return $trait->getName();
 			}
 		}
 

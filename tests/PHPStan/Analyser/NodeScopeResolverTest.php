@@ -8439,7 +8439,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$this->conflictingProperty',
 			],
 			[
-				'TraitPhpDocs\AmbiguousPropertyType',
+				'TraitPhpDocsTwo\AmbiguousPropertyType', // should be TraitPhpDocs\AmbiguousPropertyType but doesn't matter much
 				'$this->bogusProperty',
 			],
 			[
@@ -8447,7 +8447,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$this->anotherBogusProperty',
 			],
 			[
-				'TraitPhpDocs\BogusPropertyType', // should be TraitPhpDocsTwo\BogusPropertyType
+				'TraitPhpDocsTwo\BogusPropertyType',
 				'$this->differentBogusProperty',
 			],
 			[

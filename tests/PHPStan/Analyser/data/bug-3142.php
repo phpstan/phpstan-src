@@ -34,7 +34,7 @@ class HelloWorld extends ParentClass
 
 $hw = new HelloWorld();
 assertType('string', $hw->sayHi());
-assertType('string', $hw->sayHello());
+assertType('int', $hw->sayHello());
 
 interface DecoratorInterface
 {

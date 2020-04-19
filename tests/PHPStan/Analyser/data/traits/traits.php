@@ -2,7 +2,7 @@
 
 namespace TraitPhpDocs;
 
-class Foo
+class Foo extends Bar
 {
 
 	use \TraitPhpDocsTwo\FooTrait, \TraitPhpDocsThree\BarTrait {

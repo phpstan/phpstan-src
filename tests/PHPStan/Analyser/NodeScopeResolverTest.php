@@ -8506,6 +8506,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'string',
 				'$this->methodFromTraitUsingTrait()',
 			],
+			[
+				'TraitPhpDocsThree\Foo',
+				'$this->loremTraitProperty',
+			],
 		];
 	}
 

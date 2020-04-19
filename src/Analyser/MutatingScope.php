@@ -2099,7 +2099,7 @@ class MutatingScope implements Scope
 			}
 		}
 		$expr = new FuncCall(new FullyQualified('class_exists'), [
-			new Arg(new String_($className)),
+			new Arg(new String_(ltrim($className, '\\'))),
 		]);
 
 		return (new ConstantBooleanType(true))->isSuperTypeOf($this->getType($expr))->yes();

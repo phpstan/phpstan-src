@@ -480,10 +480,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Cannot call method fooMethod() on mixed.',
 				12,
 			],
-			[
-				'Cannot call method fooMethod() on mixed.',
-				15,
-			],
 		]);
 	}
 

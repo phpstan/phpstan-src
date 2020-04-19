@@ -15,6 +15,14 @@ class Baz
 		$a->fooMethod();
 	}
 
+	public function mixedMethod2($value)
+	{
+		$value->fooMethod();
+
+		$a = $value['a'];
+		$a->fooMethod();
+	}
+
 }
 
 class Foo

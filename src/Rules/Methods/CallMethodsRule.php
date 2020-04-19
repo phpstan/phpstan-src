@@ -11,7 +11,6 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -75,7 +74,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 		if ($type instanceof ErrorType) {
 			return $typeResult->getUnknownClassErrors();
 		}
-		if (!$type->canCallMethods()->yes() || $type instanceof MixedType) {
+		if (!$type->canCallMethods()->yes()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot call method %s() on %s.',

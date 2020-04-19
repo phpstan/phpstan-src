@@ -46,7 +46,7 @@ class SignatureMapParser
 	private function getTypeFromString(string $typeString, ?string $className): Type
 	{
 		if ($typeString === '') {
-			return new MixedType(true);
+			return new MixedType();
 		}
 
 		return $this->typeStringResolver->resolve($typeString, new NameScope(null, [], $className));

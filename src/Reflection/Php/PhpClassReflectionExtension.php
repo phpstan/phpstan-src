@@ -803,7 +803,7 @@ class PhpClassReflectionExtension
 
 			$propertyType = TypeUtils::generalizeType($propertyType);
 			if ($propertyType instanceof ConstantArrayType) {
-				$propertyType = new ArrayType(new MixedType(true), new MixedType(true));
+				$propertyType = new ArrayType(new MixedType(), new MixedType());
 			}
 
 			$propertyTypes[$propertyFetch->name->toString()] = $propertyType;

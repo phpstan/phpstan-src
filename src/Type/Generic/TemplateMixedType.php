@@ -81,7 +81,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 	public function getBound(): Type
 	{
 		if ($this->bound === null) {
-			$this->bound = new MixedType(true, $this->getSubtractedType());
+			$this->bound = new MixedType(false, $this->getSubtractedType());
 		}
 		return $this->bound;
 	}

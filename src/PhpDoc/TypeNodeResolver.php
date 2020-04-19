@@ -283,7 +283,7 @@ class TypeNodeResolver
 
 		if ($mainTypeName === 'array') {
 			if (count($genericTypes) === 1) { // array<ValueType>
-				return new ArrayType(new MixedType(true), $genericTypes[0]);
+				return new ArrayType(new MixedType(), $genericTypes[0]);
 
 			}
 
@@ -299,7 +299,7 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'iterable') {
 			if (count($genericTypes) === 1) { // iterable<ValueType>
-				return new IterableType(new MixedType(true), $genericTypes[0]);
+				return new IterableType(new MixedType(), $genericTypes[0]);
 
 			}
 
@@ -333,7 +333,7 @@ class TypeNodeResolver
 				], true)) {
 					if (count($genericTypes) === 1) {
 						return new GenericObjectType($mainType->getClassName(), [
-							new MixedType(true),
+							new MixedType(),
 							$genericTypes[0],
 						]);
 					}
@@ -347,7 +347,7 @@ class TypeNodeResolver
 				}
 				if ($mainType->getClassName() === \Generator::class) {
 					if (count($genericTypes) === 1) {
-						$mixed = new MixedType(true);
+						$mixed = new MixedType();
 						return new GenericObjectType($mainType->getClassName(), [
 							$mixed,
 							$genericTypes[0],
@@ -357,7 +357,7 @@ class TypeNodeResolver
 					}
 
 					if (count($genericTypes) === 2) {
-						$mixed = new MixedType(true);
+						$mixed = new MixedType();
 						return new GenericObjectType($mainType->getClassName(), [
 							$genericTypes[0],
 							$genericTypes[1],
@@ -384,7 +384,7 @@ class TypeNodeResolver
 			if (count($genericTypes) === 1) { // Foo<ValueType>
 				return TypeCombinator::intersect(
 					$mainType,
-					new IterableType(new MixedType(true), $genericTypes[0])
+					new IterableType(new MixedType(), $genericTypes[0])
 				);
 			}
 

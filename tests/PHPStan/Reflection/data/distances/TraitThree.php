@@ -2,9 +2,7 @@
 
 namespace HierarchyDistances;
 
-trait TraitTwo
+trait TraitThree
 {
-
-	use TraitThree;
 
 }

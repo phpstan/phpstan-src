@@ -259,7 +259,7 @@ class ClassReflection implements ReflectionWithFilename
 				$this->getName() => $distance,
 			];
 			$currentClassReflection = $this->getNativeReflection();
-			foreach ($this->getNativeReflection()->getTraits() as $trait) {
+			foreach ($this->collectTraits($this->getNativeReflection()) as $trait) {
 				$distance++;
 				if (array_key_exists($trait->getName(), $distances)) {
 					continue;
@@ -275,7 +275,7 @@ class ClassReflection implements ReflectionWithFilename
 					$distances[$parentClassName] = $distance;
 				}
 				$currentClassReflection = $currentClassReflection->getParentClass();
-				foreach ($currentClassReflection->getTraits() as $trait) {
+				foreach ($this->collectTraits($currentClassReflection) as $trait) {
 					$distance++;
 					if (array_key_exists($trait->getName(), $distances)) {
 						continue;
@@ -297,6 +297,33 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		return $this->classHierarchyDistances;
+	}
+
+	/**
+	 * @param \ReflectionClass $class
+	 * @return \ReflectionClass[]
+	 */
+	private function collectTraits(\ReflectionClass $class): array
+	{
+		$traits = [];
+		$traitsLeftToAnalyze = $class->getTraits();
+
+		while (count($traitsLeftToAnalyze) !== 0) {
+			$trait = reset($traitsLeftToAnalyze);
+			$traits[] = $trait;
+
+			foreach ($trait->getTraits() as $subTrait) {
+				if (in_array($subTrait, $traits, true)) {
+					continue;
+				}
+
+				$traitsLeftToAnalyze[] = $subTrait;
+			}
+
+			array_shift($traitsLeftToAnalyze);
+		}
+
+		return $traits;
 	}
 
 	public function hasProperty(string $propertyName): bool

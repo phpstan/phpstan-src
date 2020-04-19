@@ -195,11 +195,17 @@ class PhpClassReflectionExtension
 			if (!isset($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()])) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			if (!isset($hierarchyDistances[$propertyReflection->getDeclaringClass()->getName()])) {
+
+			$distanceDeclaringClass = $propertyReflection->getDeclaringClass()->getName();
+			$propertyTrait = $this->findPropertyTrait($propertyReflection);
+			if ($propertyTrait !== null) {
+				$distanceDeclaringClass = $propertyTrait;
+			}
+			if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
-			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] <= $hierarchyDistances[$propertyReflection->getDeclaringClass()->getName()]) {
+			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
 				return $annotationProperty;
 			}
 		}
@@ -391,11 +397,17 @@ class PhpClassReflectionExtension
 			if (!isset($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()])) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			if (!isset($hierarchyDistances[$methodReflection->getDeclaringClass()->getName()])) {
+
+			$distanceDeclaringClass = $methodReflection->getDeclaringClass()->getName();
+			$methodTrait = $this->findMethodTrait($methodReflection);
+			if ($methodTrait !== null) {
+				$distanceDeclaringClass = $methodTrait;
+			}
+			if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
-			if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] <= $hierarchyDistances[$methodReflection->getDeclaringClass()->getName()]) {
+			if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
 				return $annotationMethod;
 			}
 		}
@@ -603,7 +615,7 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \ReflectionClass[] $traits
+	 * @param \ReflectionClass<object>[] $traits
 	 * @param \ReflectionProperty $propertyReflection
 	 * @return string|null
 	 */

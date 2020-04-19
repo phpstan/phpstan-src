@@ -300,8 +300,8 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/**
-	 * @param \ReflectionClass $class
-	 * @return \ReflectionClass[]
+	 * @param \ReflectionClass<object> $class
+	 * @return \ReflectionClass<object>[]
 	 */
 	private function collectTraits(\ReflectionClass $class): array
 	{

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\Type;
 
@@ -20,6 +22,7 @@ interface ScopeFactory
 	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
+	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 *
 	 * @return MutatingScope
 	 */
@@ -34,7 +37,8 @@ interface ScopeFactory
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
-		array $nativeExpressionTypes = []
+		array $nativeExpressionTypes = [],
+		array $inFunctionCallsStack = []
 	): MutatingScope;
 
 }

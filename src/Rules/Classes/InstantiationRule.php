@@ -118,6 +118,10 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			$classReflection = $scope->getClassReflection()->getParentClass();
 		} else {
 			if (!$this->reflectionProvider->hasClass($class)) {
+				if ($scope->isInClassExists($class)) {
+					return [];
+				}
+
 				return [
 					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))->build(),
 				];

@@ -170,6 +170,7 @@ class RuleLevelHelper
 
 		$errors = [];
 		$directClassNames = TypeUtils::getDirectClassNames($type);
+		$hasClassExistsClass = false;
 		foreach ($directClassNames as $referencedClass) {
 			if ($this->reflectionProvider->hasClass($referencedClass)) {
 				$classReflection = $this->reflectionProvider->getClass($referencedClass);
@@ -178,10 +179,15 @@ class RuleLevelHelper
 				}
 			}
 
+			if ($scope->isInClassExists($referencedClass)) {
+				$hasClassExistsClass = true;
+				continue;
+			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))->line($var->getLine())->build();
 		}
 
-		if (count($errors) > 0) {
+		if (count($errors) > 0 || $hasClassExistsClass) {
 			return new FoundTypeResult(new ErrorType(), [], $errors);
 		}
 

@@ -375,4 +375,29 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testClassExists(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/access-properties-class-exists.php'], [
+			[
+				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Bar.',
+				15,
+			],
+			[
+				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Baz.',
+				15,
+			],
+			[
+				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Baz.',
+				18,
+			],
+			[
+				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Bar.',
+				22,
+			],
+		]);
+	}
+
 }

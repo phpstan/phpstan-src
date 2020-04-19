@@ -2120,6 +2120,10 @@ class NodeScopeResolver
 			$parameters = $parametersAcceptor->getParameters();
 		}
 
+		if ($calleeReflection !== null) {
+			$scope = $scope->pushInFunctionCall($calleeReflection);
+		}
+
 		$hasYield = false;
 		foreach ($args as $i => $arg) {
 			$nodeCallback($arg, $scope);
@@ -2183,6 +2187,10 @@ class NodeScopeResolver
 			}
 
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
+		}
+
+		if ($calleeReflection !== null) {
+			$scope = $scope->popInFunctionCall();
 		}
 
 		return new ExpressionResult($scope, $hasYield);

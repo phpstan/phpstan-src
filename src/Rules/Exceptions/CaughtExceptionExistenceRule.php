@@ -47,6 +47,9 @@ class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 		foreach ($node->types as $class) {
 			$className = (string) $class;
 			if (!$this->reflectionProvider->hasClass($className)) {
+				if ($scope->isInClassExists($className)) {
+					continue;
+				}
 				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))->line($class->getLine())->build();
 				continue;
 			}

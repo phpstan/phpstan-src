@@ -126,6 +126,10 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 				$classReflection = $currentClassReflection->getParentClass();
 			} else {
 				if (!$this->reflectionProvider->hasClass($className)) {
+					if ($scope->isInClassExists($className)) {
+						return [];
+					}
+
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Call to static method %s() on an unknown class %s.',

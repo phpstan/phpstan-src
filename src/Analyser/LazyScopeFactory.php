@@ -49,6 +49,7 @@ class LazyScopeFactory implements ScopeFactory
 	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
+	 * @param array<\PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection> $inFunctionCallsStack
 	 *
 	 * @return MutatingScope
 	 */
@@ -63,7 +64,8 @@ class LazyScopeFactory implements ScopeFactory
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
-		array $nativeExpressionTypes = []
+		array $nativeExpressionTypes = [],
+		array $inFunctionCallsStack = []
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;
@@ -90,6 +92,7 @@ class LazyScopeFactory implements ScopeFactory
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
 			$nativeExpressionTypes,
+			$inFunctionCallsStack,
 			$this->dynamicConstantNames,
 			$this->treatPhpDocTypesAsCertain
 		);

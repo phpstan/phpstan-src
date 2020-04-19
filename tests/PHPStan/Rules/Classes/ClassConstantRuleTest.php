@@ -143,4 +143,22 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testClassExists(): void
+	{
+		$this->analyse([__DIR__ . '/data/class-exists.php'], [
+			[
+				'Class UnknownClass\Bar not found.',
+				24,
+			],
+			[
+				'Class UnknownClass\Foo not found.',
+				26,
+			],
+			[
+				'Class UnknownClass\Foo not found.',
+				29,
+			],
+		]);
+	}
+
 }

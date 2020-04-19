@@ -87,6 +87,10 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				$className = $currentClassReflection->getParentClass()->getName();
 			} else {
 				if (!$this->reflectionProvider->hasClass($className)) {
+					if ($scope->isInClassExists($className)) {
+						return [];
+					}
+
 					if (strtolower($constantName) === 'class') {
 						return [
 							RuleErrorBuilder::message(sprintf('Class %s not found.', $className))->build(),

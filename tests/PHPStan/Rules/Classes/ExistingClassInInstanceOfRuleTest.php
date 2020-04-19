@@ -53,4 +53,9 @@ class ExistingClassInInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 		);
 	}
 
+	public function testClassExists(): void
+	{
+		$this->analyse([__DIR__ . '/data/instanceof-class-exists.php'], []);
+	}
+
 }

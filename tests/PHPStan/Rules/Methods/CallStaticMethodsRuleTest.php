@@ -339,4 +339,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testClassExists(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/static-methods-class-exists.php'], []);
+	}
+
 }

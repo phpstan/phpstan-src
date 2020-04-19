@@ -203,4 +203,9 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		);
 	}
 
+	public function testClassExists(): void
+	{
+		$this->analyse([__DIR__ . '/data/instantiation-class-exists.php'], []);
+	}
+
 }

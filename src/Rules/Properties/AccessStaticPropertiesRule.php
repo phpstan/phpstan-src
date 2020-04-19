@@ -107,6 +107,10 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				$className = $scope->getClassReflection()->getParentClass()->getName();
 			} else {
 				if (!$this->reflectionProvider->hasClass($class)) {
+					if ($scope->isInClassExists($class)) {
+						return [];
+					}
+
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Access to static property $%s on an unknown class %s.',

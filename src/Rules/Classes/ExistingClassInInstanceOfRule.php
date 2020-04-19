@@ -66,6 +66,10 @@ class ExistingClassInInstanceOfRule implements \PHPStan\Rules\Rule
 		}
 
 		if (!$this->reflectionProvider->hasClass($name)) {
+			if ($scope->isInClassExists($name)) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))->line($class->getLine())->build(),
 			];

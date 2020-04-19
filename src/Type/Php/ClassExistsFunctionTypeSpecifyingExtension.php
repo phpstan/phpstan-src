@@ -2,7 +2,10 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -10,6 +13,8 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
@@ -38,6 +43,16 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		$argType = $scope->getType($node->args[0]->value);
 		$classStringType = new ClassStringType();
 		if (TypeCombinator::intersect($argType, $classStringType) instanceof NeverType) {
+			if ($argType instanceof ConstantStringType) {
+				return $this->typeSpecifier->create(
+					new FuncCall(new FullyQualified('class_exists'), [
+						new Arg(new String_($argType->getValue())),
+					]),
+					new ConstantBooleanType(true),
+					$context
+				);
+			}
+
 			return new SpecifiedTypes();
 		}
 

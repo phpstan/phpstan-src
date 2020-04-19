@@ -81,9 +81,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testExtendingKnownClassWithCheck(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-known-class-with-check.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Class ExtendingKnownClassWithCheck\Bar not found.', $errors[0]->getMessage());
-		$this->assertSame(5, $errors[0]->getLine());
+		$this->assertCount(0, $errors);
 
 		$broker = self::getContainer()->getByType(Broker::class);
 		$this->assertTrue($broker->hasClass(\ExtendingKnownClassWithCheck\Foo::class));
@@ -174,9 +172,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testClassExistsAutoloadingError(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/class-exists.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Instantiated class \PHPStan\GitHubIssue2359 not found.', $errors[0]->getMessage());
-		$this->assertSame(12, $errors[0]->getLine());
+		$this->assertCount(0, $errors);
 	}
 
 	public function testCollectWarnings(): void

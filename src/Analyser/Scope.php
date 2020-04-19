@@ -68,6 +68,8 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function isSpecified(Expr $node): bool;
 
+	public function isInClassExists(string $className): bool;
+
 	public function isInClosureBind(): bool;
 
 	public function isParameterValueNullable(Param $parameter): bool;

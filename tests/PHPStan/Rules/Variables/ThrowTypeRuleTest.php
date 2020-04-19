@@ -44,4 +44,9 @@ class ThrowTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		);
 	}
 
+	public function testClassExists(): void
+	{
+		$this->analyse([__DIR__ . '/data/throw-class-exists.php'], []);
+	}
+
 }

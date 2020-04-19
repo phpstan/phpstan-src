@@ -30,15 +30,15 @@ jobs:
           php compiler/bin/compile && \
           GIT_LOG=$(git log ${TRAVIS_COMMIT_RANGE} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//') && \
           git clone https://${GITHUB_TOKEN}@github.com/phpstan/phpstan.git phpstan-dist > /dev/null 2>&1 && \
-          cp tmp/phpstan.phar phpstan-dist/phpstan-phar.phar && \
+          cp tmp/phpstan.phar phpstan-dist/phpstan.phar && \
           cd phpstan-dist && \
           git config user.email "ondrej@mirtes.cz" && \
           git config user.name "Ondrej Mirtes" && \
           git config --global user.signingkey CF1A108D0E7AE720 && \
           rm phpstan.phar.asc && \
-          gpg --batch -ab phpstan-phar.phar && \
-          gpg --verify phpstan-phar.phar.asc && \
-          git add phpstan-phar.phar phpstan-phar.phar.asc
+          gpg --batch -ab phpstan.phar && \
+          gpg --verify phpstan.phar.asc && \
+          git add phpstan.phar phpstan.phar.asc
 
           if [ "${TRAVIS_TAG}" != "" ]; then
             COMMIT_MSG="PHPStan ${TRAVIS_TAG}"

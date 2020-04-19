@@ -29,6 +29,7 @@ parameters:
 	checkNullables: false
 	checkThisOnly: true
 	checkUnionTypes: false
+	checkMixed: false
 	checkExplicitMixedMissingReturn: false
 	checkPhpDocMissingReturn: false
 	checkExtraArguments: false
@@ -153,6 +154,7 @@ parametersSchema:
 	checkNullables: bool()
 	checkThisOnly: bool()
 	checkUnionTypes: bool()
+	checkMixed: bool()
 	checkExplicitMixedMissingReturn: bool()
 	checkPhpDocMissingReturn: bool()
 	checkExtraArguments: bool()

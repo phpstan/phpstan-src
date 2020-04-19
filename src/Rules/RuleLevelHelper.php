@@ -34,17 +34,22 @@ class RuleLevelHelper
 	/** @var bool */
 	private $checkUnionTypes;
 
+	/** @var bool */
+	private $checkMixed;
+
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		bool $checkNullables,
-		bool $checkThisOnly,
-		bool $checkUnionTypes
+		bool $checkNullables = true,
+		bool $checkThisOnly = false,
+		bool $checkUnionTypes = true,
+		bool $checkMixed = true
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->checkNullables = $checkNullables;
 		$this->checkThisOnly = $checkThisOnly;
 		$this->checkUnionTypes = $checkUnionTypes;
+		$this->checkMixed = $checkMixed;
 	}
 
 	public function isThis(Expr $expression): bool
@@ -161,7 +166,10 @@ class RuleLevelHelper
 		if (!$this->checkNullables && !$type instanceof NullType) {
 			$type = \PHPStan\Type\TypeCombinator::removeNull($type);
 		}
-		if ($type instanceof MixedType || $type instanceof NeverType) {
+		if (!$this->checkMixed && $type instanceof MixedType) {
+			return new FoundTypeResult(new ErrorType(), [], []);
+		}
+		if ($type instanceof NeverType) {
 			return new FoundTypeResult(new ErrorType(), [], []);
 		}
 		if ($type instanceof StaticType) {

@@ -86,26 +86,7 @@ class SubtractedType implements Type, CompoundType
 			return TrinaryLogic::createNo();
 		}
 
-		if ($this->originalType instanceof MixedType) {
-			return TrinaryLogic::createYes();
-		}
-
-		$original = $this->originalType->canAccessProperties();
-		if (!$original->yes()) {
-			return $original;
-		}
-
-		if ($this->subtractedType->canAccessProperties()->no()) {
-			return TrinaryLogic::createYes();
-		}
-
-		/*
-		 * TODO:
-		 * Both the original and the subtracted type can access properties
-		 * now we need to determine if *only* the subtracted type has it, or if it is
-		 * present without the subtracted type as well.
-		 */
-		return TrinaryLogic::createMaybe();
+		return $this->originalType->canAccessProperties();
 	}
 
 	public function hasProperty(string $propertyName): TrinaryLogic

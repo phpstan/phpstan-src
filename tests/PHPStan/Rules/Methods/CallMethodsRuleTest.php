@@ -22,7 +22,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	private $checkUnionTypes;
 
 	/** @var bool */
-	private $checkMixed;
+	private $checkExplicitMixed;
 
 	protected function getRule(): Rule
 	{
@@ -32,7 +32,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->checkNullables,
 			$this->checkThisOnly,
 			$this->checkUnionTypes,
-			$this->checkMixed
+			$this->checkExplicitMixed
 		);
 		return new CallMethodsRule(
 			$broker,
@@ -48,7 +48,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([ __DIR__ . '/data/call-methods.php'], [
 			[
 				'Call to an undefined method Test\Foo::protectedMethodFromChild().',
@@ -474,7 +474,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([ __DIR__ . '/data/call-methods-mixed.php'], [
 			[
 				'Cannot call method fooMethod() on mixed.',
@@ -488,7 +488,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = true;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([ __DIR__ . '/data/call-methods.php'], [
 			[
 				'Call to an undefined method Test\Foo::protectedMethodFromChild().',
@@ -746,7 +746,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/call-trait-methods.php'], [
 			[
 				'Call to an undefined method CallTraitMethods\Baz::unexistentMethod().',
@@ -760,7 +760,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/call-trait-overridden-methods.php'], []);
 	}
 
@@ -769,7 +769,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/call-interface-methods.php'], [
 			[
 				'Call to an undefined method InterfaceMethods\Baz::barMethod().',
@@ -783,7 +783,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/closure-bind.php'], [
 			[
 				'Call to an undefined method CallClosureBind\Foo::nonexistentMethod().',
@@ -824,7 +824,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/arrow-function-bind.php'], [
 			[
 				'Call to an undefined method CallArrowFunctionBind\Foo::nonexistentMethod().',
@@ -850,7 +850,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/call-variadic-methods.php'], [
 			[
 				'Method CallVariadicMethods\Foo::baz() invoked with 0 parameters, at least 1 required.',
@@ -888,7 +888,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/incorrect-method-case.php'], [
 			[
 				'Call to method IncorrectMethodCase\Foo::fooBar() with incorrect case: foobar',
@@ -902,7 +902,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/nullable-parameters.php'], [
 			[
 				'Method NullableParameters\Foo::doFoo() invoked with 0 parameters, 2 required.',
@@ -924,7 +924,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/protected-method-call-from-parent.php'], []);
 	}
 
@@ -933,7 +933,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/sibling-method-prototype.php'], []);
 	}
 
@@ -942,7 +942,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/overriden-method-prototype.php'], []);
 	}
 
@@ -951,7 +951,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/calling-method-with-inheritdoc.php'], [
 			[
 				'Parameter #1 $i of method MethodWithInheritDoc\Baz::doFoo() expects int, string given.',
@@ -969,7 +969,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/calling-method-with-inheritdoc-without-curly-braces.php'], [
 			[
 				'Parameter #1 $i of method MethodWithInheritDocWithoutCurlyBraces\Baz::doFoo() expects int, string given.',
@@ -987,7 +987,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/calling-method-with-phpDocs-implicit-inheritance.php'], [
 			[
 				'Parameter #1 $i of method MethodWithPhpDocsImplicitInheritance\Baz::doFoo() expects int, string given.',
@@ -1049,7 +1049,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/negated-instanceof.php'], []);
 	}
 
@@ -1058,7 +1058,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/invoke-magic-method.php'], [
 			[
 				'Parameter #1 $foo of method InvokeMagicInvokeMethod\ClassForCallable::doFoo() expects callable(): mixed, InvokeMagicInvokeMethod\ClassForCallable given.',
@@ -1072,7 +1072,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/check-nullables.php'], [
 			[
 				'Parameter #1 $foo of method CheckNullables\Foo::doFoo() expects string, null given.',
@@ -1090,7 +1090,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = false;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/check-nullables.php'], [
 			[
 				'Parameter #1 $foo of method CheckNullables\Foo::doFoo() expects string, null given.',
@@ -1104,7 +1104,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = false;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/mysqli-query.php'], [
 			[
 				'Method mysqli::query() invoked with 0 parameters, 1-2 required.',
@@ -1118,7 +1118,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = false;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/order.php'], []);
 	}
 
@@ -1143,7 +1143,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = $checkNullables;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/call-methods-iterable.php'], [
 			[
 				'Parameter #1 $ids of method CallMethodsIterables\Uuid::bar() expects iterable<CallMethodsIterables\Uuid>, array<int, null> given.',
@@ -1201,7 +1201,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/accept-throwable.php'], [
 			[
 				'Parameter #1 $i of method AcceptThrowable\Foo::doBar() expects int, AcceptThrowable\SomeInterface&Throwable given.',
@@ -1227,7 +1227,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = false;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/without-union-types.php'], [
 			[
 				'Method CallMethodsWithoutUnionTypes\Foo::doFoo() invoked with 3 parameters, 0 required.',
@@ -1241,7 +1241,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/call-methods-strict.php'], [
 			[
 				'Parameter #1 $foo of method Test\ClassWithToString::acceptsString() expects string, Test\ClassWithToString given.',
@@ -1255,7 +1255,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/aliased-traits-problem.php'], []);
 	}
 
@@ -1264,7 +1264,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkMixed = true;
+		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/closure-call.php'], [
 			[
 				'Method Closure::call() invoked with 0 parameters, 2 required.',

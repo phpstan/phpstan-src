@@ -205,12 +205,24 @@ class FileAnalyser
 
 				if ($this->reportUnmatchedIgnoredErrors) {
 					foreach (array_keys($unmatchedLineIgnores) as $line) {
+						$traitFilePath = null;
+						if ($scope->isInTrait()) {
+							$traitReflection = $scope->getTraitReflection();
+							if ($traitReflection->getFileName() !== false) {
+								$traitFilePath = $traitReflection->getFileName();
+							}
+						}
 						$fileErrors[] = new Error(
 							sprintf('No error to ignore is reported on line %d.', $line),
 							$scope->getFileDescription(),
 							$line,
 							false,
-							$scope->getFile()
+							$scope->getFile(),
+							$traitFilePath,
+							null,
+							null,
+							null,
+							'ignoredError.unmatchedOnLine'
 						);
 					}
 				}

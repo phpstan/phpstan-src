@@ -9695,6 +9695,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
 	}
 
+	public function dataAssignWithExtractFunction(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/assignment-with-extract-function.php');
+	}
+
 	public function dataIntersectionStatic(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/intersection-static.php');
@@ -9853,6 +9858,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataRandomInt
 	 * @dataProvider dataClosureReturnTypes
 	 * @dataProvider dataArrayKey
+	 * @dataProvider dataAssignWithExtractFunction
 	 * @dataProvider dataIntersectionStatic
 	 * @dataProvider dataStaticProperties
 	 * @dataProvider dataStaticMethods

@@ -1465,6 +1465,33 @@ class NodeScopeResolver
 			) {
 				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()));
 			}
+
+			if (
+				isset($functionReflection)
+				&& $functionReflection->getName() === 'extract'
+				&& $scope->getType($expr->args[0]->value) instanceof ConstantArrayType
+			) {
+				$flags = isset($expr->args[1]) ? $scope->getType($expr->args[1]->value) : false;
+				$prefix = isset($expr->args[2]) ? $scope->getType($expr->args[2]->value) : false;
+				$arrayArg = $scope->getType($expr->args[0]->value);
+				$keys = $arrayArg->getKeyTypes();
+				$values = $arrayArg->getValueTypes();
+
+				if ($flags === false || ($flags instanceof ConstantIntegerType && $flags->getValue() === EXTR_OVERWRITE)) {
+					foreach ($keys as $i => $key) {
+						$scope = $scope->assignVariable($key->getValue(), $values[$i]);
+					}
+				} elseif ($prefix === false && $flags->getValue() & EXTR_SKIP) {
+					foreach ($keys as $i => $key) {
+						if (! $scope->hasVariableType($key->getValue())->no()) {
+							continue;
+						}
+
+						$scope = $scope->assignVariable($key->getValue(), $values[$i]);
+					}
+				}
+
+			}
 		} elseif ($expr instanceof MethodCall) {
 			$originalScope = $scope;
 			if (

@@ -613,6 +613,9 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		$reflectionConstant = $this->getNativeReflection()->getReflectionConstant($name);
+		if ($reflectionConstant === false) {
+			return false;
+		}
 
 		return $this->reflectionProvider->hasClass($reflectionConstant->getDeclaringClass()->getName());
 	}

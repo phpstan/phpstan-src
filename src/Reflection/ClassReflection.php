@@ -608,7 +608,13 @@ class ClassReflection implements ReflectionWithFilename
 
 	public function hasConstant(string $name): bool
 	{
-		return $this->getNativeReflection()->hasConstant($name);
+		if (!$this->getNativeReflection()->hasConstant($name)) {
+			return false;
+		}
+
+		$reflectionConstant = $this->getNativeReflection()->getReflectionConstant($name);
+
+		return $this->reflectionProvider->hasClass($reflectionConstant->getDeclaringClass()->getName());
 	}
 
 	public function getConstant(string $name): ConstantReflection

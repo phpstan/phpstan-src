@@ -28,4 +28,14 @@ class InvalidPartOfEncapsedStringRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testRuleMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-encapsed-part-mixed.php'], [
+			[
+				'Part $std (mixed) of encapsed string cannot be cast to string.',
+				8,
+			],
+		]);
+	}
+
 }

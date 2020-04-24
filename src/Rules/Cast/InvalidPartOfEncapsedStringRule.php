@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -58,7 +59,10 @@ class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 			}
 
 			$stringPartType = $partType->toString();
-			if (!$stringPartType instanceof ErrorType) {
+			if (
+				!$stringPartType instanceof ErrorType
+				&& !($partType instanceof MixedType && $this->ruleLevelHelper->shouldCheckMixed($partType))
+			) {
 				continue;
 			}
 			$messages[] = RuleErrorBuilder::message(sprintf(

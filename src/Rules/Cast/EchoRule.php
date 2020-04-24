@@ -8,6 +8,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -35,17 +36,22 @@ class EchoRule implements Rule
 		$messages = [];
 
 		foreach ($node->exprs as $key => $expr) {
-			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+			$type = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
 				$expr,
 				'',
 				static function (Type $type): bool {
 					return !$type->toString() instanceof ErrorType;
 				}
-			);
+			)->getType();
 
-			if ($typeResult->getType() instanceof ErrorType
-				|| !$typeResult->getType()->toString() instanceof ErrorType
+			if ($type instanceof ErrorType) {
+				continue;
+			}
+
+			if (
+				!$type->toString() instanceof ErrorType
+				&& !($type instanceof MixedType && $this->ruleLevelHelper->shouldCheckMixed($type))
 			) {
 				continue;
 			}
@@ -53,7 +59,7 @@ class EchoRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Parameter #%d (%s) of echo cannot be converted to string.',
 				$key + 1,
-				$typeResult->getType()->describe(VerbosityLevel::value())
+				$type->describe(VerbosityLevel::value())
 			))->line($expr->getLine())->build();
 		}
 		return $messages;

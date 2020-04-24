@@ -49,4 +49,13 @@ class EchoRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testEchoRuleMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/echo-mixed.php'], [
+			[
+				'Parameter #1 (mixed) of echo cannot be converted to string.',
+				8,
+			],
+		]);
+	}
 }

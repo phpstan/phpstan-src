@@ -11,7 +11,6 @@ use PHPStan\Testing\RuleTestCase;
  */
 class PrintRuleTest extends RuleTestCase
 {
-
 	protected function getRule(): Rule
 	{
 		return new PrintRule(
@@ -21,7 +20,8 @@ class PrintRuleTest extends RuleTestCase
 
 	public function testPrintRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/print.php'], [
+		$this->analyse(
+			[__DIR__ . '/data/print.php'], [
 			[
 				'Parameter array() of print cannot be converted to string.',
 				5,
@@ -50,7 +50,17 @@ class PrintRuleTest extends RuleTestCase
 				'Parameter \'string\'|array(\'string\') of print cannot be converted to string.',
 				21,
 			],
-		]);
+		]
+		);
 	}
 
+	public function testPrintRuleMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/print-mixed.php'], [
+			[
+				'Parameter mixed of print cannot be converted to string.',
+				9,
+			],
+		]);
+	}
 }

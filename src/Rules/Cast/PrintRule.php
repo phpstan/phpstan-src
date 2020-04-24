@@ -8,6 +8,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -32,21 +33,26 @@ class PrintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+		$type = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->expr,
 			'',
 			static function (Type $type): bool {
 				return !$type->toString() instanceof ErrorType;
 			}
-		);
+		)->getType();
 
-		if (!$typeResult->getType() instanceof ErrorType
-			&& $typeResult->getType()->toString() instanceof ErrorType
+		if ($type instanceof ErrorType) {
+			return [];
+		}
+
+		if (
+			$type->toString() instanceof ErrorType
+			|| $type instanceof MixedType && $this->ruleLevelHelper->shouldCheckMixed($type)
 		) {
 			return [RuleErrorBuilder::message(sprintf(
 				'Parameter %s of print cannot be converted to string.',
-				$typeResult->getType()->describe(VerbosityLevel::value())
+				$type->describe(VerbosityLevel::value())
 			))->line($node->expr->getLine())->build()];
 		}
 

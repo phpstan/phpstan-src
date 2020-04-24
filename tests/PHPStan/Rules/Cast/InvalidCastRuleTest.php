@@ -50,4 +50,14 @@ class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testRuleMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-cast-mixed.php'], [
+			[
+				'Cannot cast mixed to string.',
+				8,
+			],
+		]);
+	}
+
 }

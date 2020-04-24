@@ -8,6 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -72,7 +73,10 @@ class InvalidCastRule implements \PHPStan\Rules\Rule
 		}
 
 		$castType = $castTypeCallback($type);
-		if ($castType instanceof ErrorType) {
+		if (
+			$castType instanceof ErrorType
+			|| $type instanceof MixedType && $this->ruleLevelHelper->shouldCheckMixed($type)
+		) {
 			$classReflection = $this->reflectionProvider->getClass(get_class($node));
 			$shortName = $classReflection->getNativeReflection()->getShortName();
 			$shortName = strtolower($shortName);

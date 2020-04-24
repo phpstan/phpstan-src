@@ -121,7 +121,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 
 		$this->assertInstanceOf(Error::class, $result[2]);
 		$this->assertStringContainsString('Ignored error pattern #Fail\.#', $result[2]->getMessage());
-		$this->assertStringContainsString('is expected to occur 1 time, but occured 3 times.', $result[2]->getMessage());
+		$this->assertStringContainsString('is expected to occur 1 time, but occurred 3 times.', $result[2]->getMessage());
 		$this->assertSame(5, $result[2]->getLine());
 		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 	}
@@ -143,7 +143,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$this->assertCount(1, $result);
 		$this->assertInstanceOf(Error::class, $result[0]);
 		$this->assertStringContainsString('Ignored error pattern #Fail\.#', $result[0]->getMessage());
-		$this->assertStringContainsString('is expected to occur 4 times, but occured only 3 times.', $result[0]->getMessage());
+		$this->assertStringContainsString('is expected to occur 4 times, but occurred only 3 times.', $result[0]->getMessage());
 		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
 		$this->assertSame(5, $result[0]->getLine());
 	}

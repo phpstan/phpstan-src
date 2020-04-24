@@ -203,7 +203,7 @@ class IgnoredErrorHelperResult
 			}
 
 			$addErrors[] = new Error(sprintf(
-				'Ignored error pattern %s is expected to occur %d %s, but occured %d %s.',
+				'Ignored error pattern %s is expected to occur %d %s, but occurred %d %s.',
 				IgnoredError::stringifyPattern($unmatchedIgnoredError),
 				$unmatchedIgnoredError['count'],
 				$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
@@ -225,7 +225,7 @@ class IgnoredErrorHelperResult
 				) {
 					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
 						$errors[] = new Error(sprintf(
-							'Ignored error pattern %s is expected to occur %d %s, but occured only %d %s.',
+							'Ignored error pattern %s is expected to occur %d %s, but occurred only %d %s.',
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 							$unmatchedIgnoredError['count'],
 							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',

@@ -487,17 +487,17 @@ class TypeCombinator
 
 		$keyTypesForGeneralArray = [];
 		$valueTypesForGeneralArray = [];
-		$generalArrayOcurred = false;
+		$generalArrayOccurred = false;
 		$constantKeyTypesNumbered = [];
 
 		/** @var int|float $nextConstantKeyTypeIndex */
 		$nextConstantKeyTypeIndex = 1;
 
 		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType instanceof ConstantArrayType || $generalArrayOcurred) {
+			if (!$arrayType instanceof ConstantArrayType || $generalArrayOccurred) {
 				$keyTypesForGeneralArray[] = $arrayType->getKeyType();
 				$valueTypesForGeneralArray[] = $arrayType->getItemType();
-				$generalArrayOcurred = true;
+				$generalArrayOccurred = true;
 				continue;
 			}
 
@@ -513,7 +513,7 @@ class TypeCombinator
 				$constantKeyTypesNumbered[$keyTypeValue] = $nextConstantKeyTypeIndex;
 				$nextConstantKeyTypeIndex *= 2;
 				if (!is_int($nextConstantKeyTypeIndex)) {
-					$generalArrayOcurred = true;
+					$generalArrayOccurred = true;
 					continue;
 				}
 			}
@@ -526,7 +526,7 @@ class TypeCombinator
 			), ...$accessoryTypes);
 		};
 
-		if ($generalArrayOcurred) {
+		if ($generalArrayOccurred) {
 			return [
 				$createGeneralArray(),
 			];

@@ -68,6 +68,10 @@ class RuleLevelHelper
 			$acceptedType = TypeCombinator::removeNull($acceptedType);
 		}
 
+		if ($acceptedType instanceof MixedType && $this->shouldCheckMixed($acceptedType)) {
+			return false;
+		}
+
 		if (
 			$acceptedType->isArray()->yes()
 			&& $acceptingType->isArray()->yes()
@@ -166,7 +170,7 @@ class RuleLevelHelper
 		if (!$this->checkNullables && !$type instanceof NullType) {
 			$type = \PHPStan\Type\TypeCombinator::removeNull($type);
 		}
-		if ($type instanceof MixedType && (!$this->checkExplicitMixed || !$type->isExplicitMixed())) {
+		if ($type instanceof MixedType && !$this->shouldCheckMixed($type)) {
 			return new FoundTypeResult(new ErrorType(), [], []);
 		}
 		if ($type instanceof NeverType) {
@@ -214,6 +218,11 @@ class RuleLevelHelper
 		}
 
 		return new FoundTypeResult($type, $directClassNames, []);
+	}
+
+	public function shouldCheckMixed(MixedType $mixedType): bool
+	{
+		return $this->checkExplicitMixed && $mixedType->isExplicitMixed();
 	}
 
 }

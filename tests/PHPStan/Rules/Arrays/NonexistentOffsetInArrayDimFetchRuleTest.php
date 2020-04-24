@@ -156,6 +156,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		]);
 	}
 
+	public function testRuleMixed(): void
+	{
+		$this->analyse(
+			[__DIR__ . '/data/nonexistent-offset-mixed.php'],
+			[] // Already reported by InvalidKeyInArrayDimFetchRule
+		);
+	}
+
 	public function testStrings(): void
 	{
 		$this->analyse([__DIR__ . '/data/strings-offset-access.php'], [

@@ -33,4 +33,14 @@ class IterableInForeachRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testCheckWithMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/foreach-iterable-mixed.php'], [
+			[
+				'Argument of an invalid type mixed supplied for foreach, only iterables are supported.',
+				7,
+			],
+		]);
+	}
+
 }

@@ -38,4 +38,17 @@ class UnpackIterableInArrayRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleMixed(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/unpack-iterable-mixed.php'], [
+			[
+				'Only iterables can be unpacked, mixed given.',
+				17,
+			],
+		]);
+	}
+
 }

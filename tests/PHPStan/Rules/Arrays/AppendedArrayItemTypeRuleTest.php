@@ -56,4 +56,12 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		);
 	}
 
+	public function testAppendedArrayItemTypeMixed(): void
+	{
+		$this->analyse(
+			[__DIR__ . '/data/appended-array-item-mixed.php'],
+			[] // Already reported by InvalidKeyInArrayDimFetchRule
+		);
+	}
+
 }

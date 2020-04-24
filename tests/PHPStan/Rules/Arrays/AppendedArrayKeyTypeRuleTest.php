@@ -48,4 +48,12 @@ class AppendedArrayKeyTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testRuleMixed(): void
+	{
+		$this->analyse(
+			[__DIR__ . '/data/appended-array-key-mixed.php'],
+			[] // Already reported by InvalidKeyInArrayDimFetchRule
+		);
+	}
+
 }

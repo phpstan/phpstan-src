@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Rules\RuleLevelHelper;
+
 /**
  * @extends \PHPStan\Testing\RuleTestCase<InvalidKeyInArrayDimFetchRule>
  */
@@ -10,7 +12,10 @@ class InvalidKeyInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new InvalidKeyInArrayDimFetchRule(true);
+		$broker = $this->createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper($broker);
+
+		return new InvalidKeyInArrayDimFetchRule($ruleLevelHelper, true);
 	}
 
 	public function testInvalidKey(): void
@@ -31,6 +36,16 @@ class InvalidKeyInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Invalid array key type DateTimeImmutable.',
 				31,
+			],
+		]);
+	}
+
+	public function testInvalidKeyMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-key-array-dim-fetch-mixed.php'], [
+			[
+				'Possibly invalid array key type mixed.',
+				11,
 			],
 		]);
 	}

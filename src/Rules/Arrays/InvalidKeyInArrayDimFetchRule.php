@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -14,11 +15,15 @@ use PHPStan\Type\VerbosityLevel;
 class InvalidKeyInArrayDimFetchRule implements \PHPStan\Rules\Rule
 {
 
+	/** @var RuleLevelHelper */
+	private $ruleLevelHelper;
+
 	/** @var bool */
 	private $reportMaybes;
 
-	public function __construct(bool $reportMaybes)
+	public function __construct(RuleLevelHelper $ruleLevelHelper, bool $reportMaybes)
 	{
+		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->reportMaybes = $reportMaybes;
 	}
 
@@ -46,7 +51,11 @@ class InvalidKeyInArrayDimFetchRule implements \PHPStan\Rules\Rule
 					sprintf('Invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly()))
 				)->build(),
 			];
-		} elseif ($this->reportMaybes && $isSuperType->maybe() && !$dimensionType instanceof MixedType) {
+		} elseif (
+			$this->reportMaybes
+			&& $isSuperType->maybe()
+			&& (!$dimensionType instanceof MixedType || $this->ruleLevelHelper->shouldCheckMixed($dimensionType))
+		) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Possibly invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly()))

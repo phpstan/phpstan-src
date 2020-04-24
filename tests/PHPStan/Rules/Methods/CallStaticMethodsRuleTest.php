@@ -227,6 +227,21 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testCallStaticMethodsOnMixed(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/call-static-methods-on-mixed.php'], [
+			[
+				'Cannot call static method test() on mixed.',
+				11,
+			],
+			[
+				'Cannot call static method test() on mixed.',
+				12,
+			],
+		]);
+	}
+
 	public function testCallInterfaceMethods(): void
 	{
 		$this->checkThisOnly = false;

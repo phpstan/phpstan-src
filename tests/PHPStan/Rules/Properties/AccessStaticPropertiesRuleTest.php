@@ -178,4 +178,13 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testAccessStaticPropertiesOnMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/access-static-properties-on-mixed.php'], [
+			[
+				'Cannot access static property $loremipsum on mixed.',
+				15,
+			],
+		]);
+	}
 }

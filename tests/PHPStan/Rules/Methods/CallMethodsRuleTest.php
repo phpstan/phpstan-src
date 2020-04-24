@@ -475,7 +475,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
-		$this->analyse([ __DIR__ . '/data/call-methods-mixed.php'], [
+		$this->analyse([ __DIR__ . '/data/call-methods-on-mixed.php'], [
 			[
 				'Cannot call method fooMethod() on mixed.',
 				12,

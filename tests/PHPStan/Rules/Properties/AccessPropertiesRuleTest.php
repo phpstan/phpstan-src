@@ -169,6 +169,21 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		);
 	}
 
+	public function testAccessPropertiesOnMixed(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse(
+			[__DIR__ . '/data/access-properties-on-mixed.php'],
+			[
+				[
+					'Cannot access property $loremipsum on mixed.',
+					17,
+				],
+			]
+		);
+	}
+
 	public function testAccessPropertiesWithoutUnionTypes(): void
 	{
 		$this->checkThisOnly = false;

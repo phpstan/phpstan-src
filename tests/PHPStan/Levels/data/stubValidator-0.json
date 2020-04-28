@@ -20,12 +20,12 @@
         "ignorable": true
     },
     {
-        "message": "Method class@anonymous/stubValidator/stubs.php:27::doFoo() has no return typehint specified.",
+        "message": "Method class@anonymous/Levels/data/stubValidator/stubs.php:27::doFoo() has no return typehint specified.",
         "line": 30,
         "ignorable": true
     },
     {
-        "message": "Parameter $foo of method class@anonymous/stubValidator/stubs.php:27::doFoo() has invalid typehint type StubValidator\\Foooooooo.",
+        "message": "Parameter $foo of method class@anonymous/Levels/data/stubValidator/stubs.php:27::doFoo() has invalid typehint type StubValidator\\Foooooooo.",
         "line": 30,
         "ignorable": true
     }

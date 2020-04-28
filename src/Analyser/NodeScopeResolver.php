@@ -1471,17 +1471,22 @@ class NodeScopeResolver
 				&& $functionReflection->getName() === 'extract'
 				&& $scope->getType($expr->args[0]->value) instanceof ConstantArrayType
 			) {
-				$flags = isset($expr->args[1]) ? $scope->getType($expr->args[1]->value) : false;
-				$prefix = isset($expr->args[2]) ? $scope->getType($expr->args[2]->value) : false;
+				$flags = isset($expr->args[1]) ? $scope->getType($expr->args[1]->value)->getValue() : EXTR_OVERWRITE;
+				$prefix = isset($expr->args[2]) ? $scope->getType($expr->args[2]->value)->getValue() : '';
 				$arrayArg = $scope->getType($expr->args[0]->value);
+
 				$keys = $arrayArg->getKeyTypes();
 				$values = $arrayArg->getValueTypes();
 
-				if ($flags === false || ($flags instanceof ConstantIntegerType && $flags->getValue() === EXTR_OVERWRITE)) {
+				if ($flags === EXTR_OVERWRITE) {
 					foreach ($keys as $i => $key) {
 						$scope = $scope->assignVariable($key->getValue(), $values[$i]);
 					}
-				} elseif ($prefix === false && $flags->getValue() & EXTR_SKIP) {
+				} elseif ($flags === EXTR_PREFIX_ALL) {
+					foreach ($keys as $i => $key) {
+						$scope = $scope->assignVariable($prefix.'_'.$key->getValue(), $values[$i]);
+					}
+				} elseif ($flags === EXTR_SKIP) {
 					foreach ($keys as $i => $key) {
 						if (! $scope->hasVariableType($key->getValue())->no()) {
 							continue;

@@ -9695,9 +9695,19 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
 	}
 
-	public function dataAssignWithExtractFunction(): array
+	public function dataAssignWithExtract(): array
 	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/assignment-with-extract-function.php');
+		return $this->gatherAssertTypes(__DIR__ . '/data/assignment-with-extract-overwrite.php');
+	}
+
+	public function dataAssignWithExtractAndSkip(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/assignment-with-extract-skip.php');
+	}
+
+	public function dataAssignWithExtractAndPrefix(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/assignment-with-extract-prefix.php');
 	}
 
 	public function dataIntersectionStatic(): array
@@ -9858,7 +9868,9 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataRandomInt
 	 * @dataProvider dataClosureReturnTypes
 	 * @dataProvider dataArrayKey
-	 * @dataProvider dataAssignWithExtractFunction
+	 * @dataProvider dataAssignWithExtract
+	 * @dataProvider dataAssignWithExtractAndSkip
+	 * @dataProvider dataAssignWithExtractAndPrefix
 	 * @dataProvider dataIntersectionStatic
 	 * @dataProvider dataStaticProperties
 	 * @dataProvider dataStaticMethods

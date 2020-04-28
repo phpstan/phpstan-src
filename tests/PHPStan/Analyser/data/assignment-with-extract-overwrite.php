@@ -19,22 +19,11 @@ assertType('array()', $items);
 
 
 $implicitOverwrite = [
-	'headline2' => 'Test',
+	'headline' => 'Test2',
 	'body' => 'Test',
 ];
 
 extract($implicitOverwrite);
 
-assertType('\'Test\'', $headline2);
+assertType('\'Test2\'', $headline);
 assertType('\'Test\'', $body);
-
-
-$skip = [
-	'headline' => 'Test Skip',
-	'does_not_already_exist' => 'Test Skip',
-];
-
-extract($skip, EXTR_SKIP);
-
-assertType('\'Test\'', $headline);
-assertType('\'Test Skip\'', $does_not_already_exist);

@@ -154,7 +154,7 @@ class CommandHelper
 
 			try {
 				$projectConfig = $loader->load($projectConfigFile, null);
-			} catch (\Nette\InvalidStateException | \Nette\FileNotFoundException $e) {
+			} catch (\Nette\InvalidStateException | \Nette\FileNotFoundException | \Nette\Neon\Exception $e) {
 				$errorOutput->writeLineFormatted($e->getMessage());
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}

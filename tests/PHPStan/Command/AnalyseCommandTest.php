@@ -49,6 +49,24 @@ class AnalyseCommandTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('magic value', SOME_CONSTANT_IN_AUTOLOAD_FILE);
 	}
 
+	public function testTabsAndSpacesIndentationInConfigurationFile(): void
+	{
+		$configurationFile = realpath(__DIR__ . '/test-bad-indentation') . DS . 'tabs_and_spaces.neon';
+		$parseError = 'Invalid combination of tabs and spaces on line 3, column 2';
+
+		$output = $this->runCommand(1, ['--configuration' => $configurationFile]);
+		$this->assertSame(sprintf('Error while loading %s: %s.' . PHP_EOL, $configurationFile, $parseError), $output);
+	}
+
+	public function testInvalidIndentationInConfigurationFile(): void
+	{
+		$configurationFile = realpath(__DIR__ . '/test-bad-indentation') . DS . 'invalid_indentation.neon';
+		$parseError = 'Bad indentation on line 3, column 5';
+
+		$output = $this->runCommand(1, ['--configuration' => $configurationFile]);
+		$this->assertSame(sprintf('Error while loading %s: %s.' . PHP_EOL, $configurationFile, $parseError), $output);
+	}
+
 	/**
 	 * @return string[][]
 	 */

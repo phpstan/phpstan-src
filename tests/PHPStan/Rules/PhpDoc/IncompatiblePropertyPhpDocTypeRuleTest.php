@@ -47,6 +47,14 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCa
 				'Type stdClass in generic type InvalidPhpDocDefinitions\FooGeneric<int, stdClass> in PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$anotherInvalidTypeGenericfoo is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
 				39,
 			],
+			[
+				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$unknownClassConstant contains unresolvable type.',
+				42,
+			],
+			[
+				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$unknownClassConstant2 contains unresolvable type.',
+				45,
+			],
 		]);
 	}
 

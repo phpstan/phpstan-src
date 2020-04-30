@@ -38,4 +38,10 @@ class FooWithProperty
 	/** @var \InvalidPhpDocDefinitions\FooGeneric<int, \stdClass> */
 	private $anotherInvalidTypeGenericfoo;
 
+	/** @var UnknownClass::BLABLA */
+	private $unknownClassConstant;
+
+	/** @var self::BLABLA */
+	private $unknownClassConstant2;
+
 }

@@ -20,6 +20,7 @@ class Foo
 	 * @param 1.0 $six
 	 * @param 234 $seven
 	 * @param self::SOME_OTHER_* $eight
+	 * @param self::* $nine
 	 */
 	public function doFoo(
 		$one,
@@ -29,7 +30,8 @@ class Foo
 		$five,
 		$six,
 		$seven,
-		$eight
+		$eight,
+		$nine
 	)
 	{
 		assertType("'bar'|'foo'", $one);
@@ -40,6 +42,7 @@ class Foo
 		assertType('1.0', $six);
 		assertType('234', $seven);
 		assertType('2', $eight);
+		assertType('1|2', $nine);
 	}
 
 }

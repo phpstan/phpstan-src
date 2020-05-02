@@ -73,6 +73,10 @@ class MixinRuleTest extends RuleTestCase
 				'Generic type MixinRule\Consecteur<MixinRule\Foo> in PHPDoc tag @mixin does not specify all template types of class MixinRule\Consecteur: T, U',
 				76,
 			],
+			[
+				'Class MixinRule\Foo referenced with incorrect case: MixinRule\foo.',
+				84,
+			],
 		]);
 	}
 

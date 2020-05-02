@@ -77,3 +77,11 @@ class Sit
 {
 
 }
+
+/**
+ * @mixin foo
+ */
+class Amet
+{
+
+}

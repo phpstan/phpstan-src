@@ -178,7 +178,7 @@ class DOMNodeList implements Traversable
 }
 
 /**
- * @template T
+ * @template T of \Traversable
  * @mixin T
  */
 class RecursiveIteratorIterator

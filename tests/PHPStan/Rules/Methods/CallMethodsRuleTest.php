@@ -1275,4 +1275,17 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testRecursiveIteratorIterator(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/recursive-iterator-iterator.php'], [
+			[
+				'Method RecursiveDirectoryIterator::getSubPathname() invoked with 1 parameter, 0 required.',
+				14,
+			],
+		]);
+	}
+
 }

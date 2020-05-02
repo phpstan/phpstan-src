@@ -176,3 +176,26 @@ class DOMNodeList implements Traversable
 	public function item ($index) {}
 
 }
+
+/**
+ * @template T
+ * @mixin T
+ */
+class RecursiveIteratorIterator
+{
+
+	/**
+	 * @param T $iterator
+	 * @param int $mode
+	 * @param int $flags
+	 */
+	public function __construct(
+		$iterator,
+		$mode = RecursiveIteratorIterator::LEAVES_ONLY,
+		int $flags = 0
+	)
+	{
+
+	}
+
+}

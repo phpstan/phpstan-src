@@ -130,3 +130,17 @@ class CollectionIterableAndGeneric
 	}
 
 }
+
+class TraversableInTemplateBound
+{
+
+	/**
+	 * @template T of \Iterator
+	 * @param T $it
+	 */
+	public function doFoo($it)
+	{
+
+	}
+
+}

@@ -1250,4 +1250,29 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testMixin(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/mixin.php'], [
+			[
+				'Method MixinMethods\Foo::doFoo() invoked with 1 parameter, 0 required.',
+				30,
+			],
+			[
+				'Method MixinMethods\Foo::doFoo() invoked with 1 parameter, 0 required.',
+				40,
+			],
+			[
+				'Method Exception::getMessage() invoked with 1 parameter, 0 required.',
+				61,
+			],
+			[
+				'Call to an undefined method MixinMethods\GenericFoo<Exception>::getMessagee().',
+				62,
+			],
+		]);
+	}
+
 }

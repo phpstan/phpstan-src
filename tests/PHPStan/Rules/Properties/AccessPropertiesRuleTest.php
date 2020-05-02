@@ -400,4 +400,16 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testMixin(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/mixin.php'], [
+			[
+				'Access to an undefined property MixinProperties\GenericFoo<ReflectionClass>::$namee.',
+				51,
+			],
+		]);
+	}
+
 }

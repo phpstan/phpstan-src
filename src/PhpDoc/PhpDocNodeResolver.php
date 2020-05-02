@@ -8,6 +8,7 @@ use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MethodTagParameter;
+use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
@@ -16,6 +17,7 @@ use PHPStan\PhpDoc\Tag\ThrowsTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
@@ -337,6 +339,20 @@ class PhpDocNodeResolver
 		}
 
 		return new ThrowsTag(TypeCombinator::union(...$types));
+	}
+
+	/**
+	 * @param PhpDocNode $phpDocNode
+	 * @param NameScope $nameScope
+	 * @return array<MixinTag>
+	 */
+	public function resolveMixinTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		return array_map(function (MixinTagValueNode $mixinTagValueNode) use ($nameScope): MixinTag {
+			return new MixinTag(
+				$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope)
+			);
+		}, $phpDocNode->getMixinTagValues());
 	}
 
 	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\DeprecatedTag

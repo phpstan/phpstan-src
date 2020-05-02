@@ -12,6 +12,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -20,6 +21,9 @@ use PHPStan\Type\VerbosityLevel;
  */
 class MixinRule implements Rule
 {
+
+	/** @var FileTypeMapper */
+	private $fileTypeMapper;
 
 	/** @var ReflectionProvider */
 	private $reflectionProvider;
@@ -37,6 +41,7 @@ class MixinRule implements Rule
 	private $checkClassCaseSensitivity;
 
 	public function __construct(
+		FileTypeMapper $fileTypeMapper,
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
@@ -44,6 +49,7 @@ class MixinRule implements Rule
 		bool $checkClassCaseSensitivity
 	)
 	{
+		$this->fileTypeMapper = $fileTypeMapper;
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
@@ -64,11 +70,18 @@ class MixinRule implements Rule
 		}
 
 		$className = (string) $node->namespacedName;
-		if (!$this->reflectionProvider->hasClass($className)) {
+		$docComment = $node->getDocComment();
+		if ($docComment === null) {
 			return [];
 		}
-		$classReflection = $this->reflectionProvider->getClass($className);
-		$mixinTags = $classReflection->getMixinTags();
+		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+			$scope->getFile(),
+			$className,
+			null,
+			null,
+			$docComment->getText()
+		);
+		$mixinTags = $resolvedPhpDoc->getMixinTags();
 		$errors = [];
 		foreach ($mixinTags as $mixinTag) {
 			$type = $mixinTag->getType();

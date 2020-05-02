@@ -7,6 +7,7 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\FileTypeMapper;
 
 /**
  * @extends RuleTestCase<MixinRule>
@@ -19,6 +20,7 @@ class MixinRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new MixinRule(
+			self::getContainer()->getByType(FileTypeMapper::class),
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider),
 			new GenericObjectTypeCheck(),

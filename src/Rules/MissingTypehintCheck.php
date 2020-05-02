@@ -99,6 +99,9 @@ class MissingTypehintCheck
 			if ($type instanceof GenericObjectType) {
 				return $type;
 			}
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
 			if ($type instanceof ObjectType) {
 				$classReflection = $type->getClassReflection();
 				if ($classReflection === null) {

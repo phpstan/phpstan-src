@@ -144,3 +144,17 @@ class TraversableInTemplateBound
 	}
 
 }
+
+class GenericClassInTemplateBound
+{
+
+	/**
+	 * @template T of GenericClass
+	 * @param T $obj
+	 */
+	public function doFoo($obj)
+	{
+
+	}
+
+}

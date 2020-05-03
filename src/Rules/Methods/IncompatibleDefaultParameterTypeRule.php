@@ -50,14 +50,16 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 				continue;
 			}
 
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType);
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Default value of the parameter #%d $%s (%s) of method %s::%s() is incompatible with type %s.',
 				$paramI + 1,
 				$param->var->name,
-				$defaultValueType->describe(VerbosityLevel::value()),
+				$defaultValueType->describe($verbosityLevel),
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$parameterType->describe(VerbosityLevel::value())
+				$parameterType->describe($verbosityLevel)
 			))->line($param->getLine())->build();
 		}
 

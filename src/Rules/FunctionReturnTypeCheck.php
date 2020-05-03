@@ -6,7 +6,6 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -58,9 +57,7 @@ class FunctionReturnTypeCheck
 		}
 
 		$isVoidSuperType = (new VoidType())->isSuperTypeOf($returnType);
-		$verbosityLevel = $returnType->isCallable()->yes() || count(TypeUtils::getConstantArrays($returnType)) > 0
-			? VerbosityLevel::value()
-			: VerbosityLevel::typeOnly();
+		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType);
 		if ($returnValue === null) {
 			if (!$isVoidSuperType->no()) {
 				return [];

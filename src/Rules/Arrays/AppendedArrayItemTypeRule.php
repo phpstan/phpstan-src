@@ -76,7 +76,7 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 
 		$itemType = $assignedToType->getItemType();
 		if (!$this->ruleLevelHelper->accepts($itemType, $assignedValueType, $scope->isDeclareStrictTypes())) {
-			$verbosityLevel = $itemType->isCallable()->and($assignedValueType->isCallable())->yes() ? VerbosityLevel::value() : VerbosityLevel::typeOnly();
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($itemType);
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept %s.',

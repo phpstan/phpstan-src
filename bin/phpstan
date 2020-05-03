@@ -59,6 +59,7 @@ use PHPStan\Command\WorkerCommand;
 	require_once __DIR__ . '/../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php';
 	require_once __DIR__ . '/../vendor/react/promise-timer/src/functions_include.php';
 	require_once __DIR__ . '/../vendor/react/promise/src/functions_include.php';
+	require_once __DIR__ . '/../preload.php';
 
 	$version = 'Version unknown';
 	try {

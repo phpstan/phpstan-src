@@ -12,6 +12,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntersectionType;
@@ -94,8 +95,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		if (parent::isSuperTypeOf($type)->no()) {
-			return TrinaryLogic::createNo();
+		if ($type instanceof MixedType && !$type instanceof TemplateMixedType) {
+			return $type->isAcceptedBy($this, $strictTypes);
+		}
+
+		if ($type instanceof self && count($this->keyTypes) === 0) {
+			return TrinaryLogic::createFromBoolean(count($type->keyTypes) === 0);
 		}
 
 		$result = TrinaryLogic::createYes();
@@ -115,7 +120,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$result = $result->and($acceptsValue);
 		}
 
-		return $result;
+		return $result->and($type->isArray());
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

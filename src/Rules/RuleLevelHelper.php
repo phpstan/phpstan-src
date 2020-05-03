@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CompoundType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -63,52 +62,6 @@ class RuleLevelHelper
 			$acceptedType = TypeCombinator::removeNull($acceptedType);
 		}
 
-		if (
-			$acceptedType->isArray()->yes()
-			&& $acceptingType->isArray()->yes()
-			&& !$acceptingType instanceof ConstantArrayType
-		) {
-			$acceptedConstantArrays = TypeUtils::getConstantArrays($acceptedType);
-			if (count($acceptedConstantArrays) > 0) {
-				foreach ($acceptedConstantArrays as $acceptedConstantArray) {
-					foreach ($acceptedConstantArray->getKeyTypes() as $i => $keyType) {
-						$valueType = $acceptedConstantArray->getValueTypes()[$i];
-						if (
-							!self::accepts(
-								$acceptingType->getIterableKeyType(),
-								$keyType,
-								$strictTypes
-							) || !self::accepts(
-								$acceptingType->getIterableValueType(),
-								$valueType,
-								$strictTypes
-							)
-						) {
-							return false;
-						}
-					}
-				}
-
-				return true;
-			}
-
-			if (
-				!self::accepts(
-					$acceptingType->getIterableKeyType(),
-					$acceptedType->getIterableKeyType(),
-					$strictTypes
-				) || !self::accepts(
-					$acceptingType->getIterableValueType(),
-					$acceptedType->getIterableValueType(),
-					$strictTypes
-				)
-			) {
-				return false;
-			}
-
-			return true;
-		}
-
 		if ($acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
 			foreach ($acceptingType->getTypes() as $innerType) {
 				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
@@ -122,7 +75,8 @@ class RuleLevelHelper
 		if (
 			$acceptedType->isArray()->yes()
 			&& $acceptingType->isArray()->yes()
-			&& !$acceptingType instanceof ConstantArrayType
+			&& count(TypeUtils::getConstantArrays($acceptedType)) === 0
+			&& count(TypeUtils::getConstantArrays($acceptingType)) === 0
 		) {
 			return self::accepts(
 				$acceptingType->getIterableKeyType(),

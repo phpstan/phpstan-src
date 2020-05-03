@@ -15,11 +15,6 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Foo::doBarArray() expects array<int>, array<int, int|null> given.",
-        "line": 131,
-        "ignorable": true
-    },
-    {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Baz::doBar() expects int, int|null given.",
         "line": 405,
         "ignorable": true

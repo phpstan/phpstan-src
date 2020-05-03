@@ -1598,3 +1598,45 @@ class ParameterTypeCheckVerbosity
 	}
 
 }
+
+class ConstantArrayAccepts
+{
+
+	/**
+	 * @param array{
+	 *   name: string,
+	 *   color: string,
+	 *   year: int,
+	 * } $param
+	 */
+	public function doFoo(array $param): void
+	{
+		$this->doBar($param);
+	}
+
+	/**
+	 * @param array{
+	 *   name: string,
+	 *   color?: string,
+	 * } $param
+	 */
+	public function doBar(array $param): void
+	{
+
+	}
+
+}
+
+class ConstantArrayAcceptsOptionalKey
+{
+
+	/**
+	 * @param array{wrapperClass?: class-string} $params
+	 */
+	public function doFoo(array $params)
+	{
+		$this->doFoo(['wrapperClass' => \stdClass::class, 'undocumented' => 42]);
+		$this->doFoo([]);
+	}
+
+}

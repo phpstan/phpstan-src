@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Constant\ConstantArrayType;
+
 class VerbosityLevel
 {
 
@@ -49,11 +51,20 @@ class VerbosityLevel
 
 	public static function getRecommendedLevelByType(Type $type): self
 	{
-		if (TypeUtils::containsCallable($type) || count(TypeUtils::getConstantArrays($type)) > 0) {
-			return self::value();
-		}
+		$moreVerbose = false;
+		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$moreVerbose): Type {
+			if ($type->isCallable()->yes()) {
+				$moreVerbose = true;
+				return $type;
+			}
+			if ($type instanceof ConstantType && !$type instanceof NullType) {
+				$moreVerbose = true;
+				return $type;
+			}
+			return $traverse($type);
+		});
 
-		return self::typeOnly();
+		return $moreVerbose ? VerbosityLevel::value() : VerbosityLevel::typeOnly();
 	}
 
 	/**

@@ -1577,3 +1577,24 @@ class TestVarAnnotationAboveMethodCall
 	}
 
 }
+
+class ParameterTypeCheckVerbosity
+{
+
+	/**
+	 * @param array{code: string}[] $members
+	 */
+	public function doFoo(array $members)
+	{
+		$this->doBar($members);
+	}
+
+	/**
+	 * @param array{id: string, code: string}[] $members
+	 */
+	public function doBar(array $members)
+	{
+
+	}
+
+}

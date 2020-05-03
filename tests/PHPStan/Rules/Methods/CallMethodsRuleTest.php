@@ -456,6 +456,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
 				1533,
 			],
+			[
+				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				1589,
+			],
 		]);
 	}
 
@@ -712,6 +716,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
 				1533,
+			],
+			[
+				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				1589,
 			],
 		]);
 	}

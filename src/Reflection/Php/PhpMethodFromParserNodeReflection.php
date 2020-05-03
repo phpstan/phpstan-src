@@ -54,6 +54,34 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		bool $isFinal
 	)
 	{
+		$name = strtolower($classMethod->name->name);
+		if (
+			$name === '__construct'
+			|| $name === '__destruct'
+			|| $name === '__unset'
+			|| $name === '__wakeup'
+			|| $name === '__clone'
+		) {
+			$realReturnTypePresent = true;
+			$realReturnType = new VoidType();
+		}
+		if ($name === '__tostring') {
+			$realReturnTypePresent = true;
+			$realReturnType = new StringType();
+		}
+		if ($name === '__isset') {
+			$realReturnTypePresent = true;
+			$realReturnType = new BooleanType();
+		}
+		if ($name === '__sleep') {
+			$realReturnTypePresent = true;
+			$realReturnType = new ArrayType(new IntegerType(), new StringType());
+		}
+		if ($name === '__set_state') {
+			$realReturnTypePresent = true;
+			$realReturnType = new ObjectWithoutClassType();
+		}
+
 		parent::__construct(
 			$classMethod,
 			$templateTypeMap,
@@ -106,34 +134,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	public function isPublic(): bool
 	{
 		return $this->getClassMethod()->isPublic();
-	}
-
-	protected function getReturnType(): Type
-	{
-		$name = strtolower($this->getName());
-		if (
-			$name === '__construct'
-			|| $name === '__destruct'
-			|| $name === '__unset'
-			|| $name === '__wakeup'
-			|| $name === '__clone'
-		) {
-			return new VoidType();
-		}
-		if ($name === '__tostring') {
-			return new StringType();
-		}
-		if ($name === '__isset') {
-			return new BooleanType();
-		}
-		if ($name === '__sleep') {
-			return new ArrayType(new IntegerType(), new StringType());
-		}
-		if ($name === '__set_state') {
-			return new ObjectWithoutClassType();
-		}
-
-		return parent::getReturnType();
 	}
 
 	public function getDocComment(): ?string

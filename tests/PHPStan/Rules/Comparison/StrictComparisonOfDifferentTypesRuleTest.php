@@ -119,10 +119,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					300,
 				],
 				[
-					'Strict comparison using === between array(\'X\' => 1, \'Y\' => 2) and array(\'Y\' => 2, \'X\' => 1) will always evaluate to false.',
-					308,
-				],
-				[
 					'Strict comparison using === between \'/\'|\'\\\\\' and \'//\' will always evaluate to false.',
 					320,
 				],
@@ -299,10 +295,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 				[
 					'Strict comparison using === between array(\'X\' => 1, \'Y\' => 2) and array(\'X\' => 2, \'Y\' => 1) will always evaluate to false.',
 					300,
-				],
-				[
-					'Strict comparison using === between array(\'X\' => 1, \'Y\' => 2) and array(\'Y\' => 2, \'X\' => 1) will always evaluate to false.',
-					308,
 				],
 				[
 					'Strict comparison using === between \'/\'|\'\\\\\' and \'//\' will always evaluate to false.',

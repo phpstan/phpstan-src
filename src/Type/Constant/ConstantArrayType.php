@@ -121,14 +121,21 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
-			if (count($this->keyTypes) !== count($type->keyTypes)) {
-				return TrinaryLogic::createNo();
+			if (count($this->keyTypes) === 0) {
+				if (count($type->keyTypes) > 0) {
+					return TrinaryLogic::createNo();
+				}
+
+				return TrinaryLogic::createYes();
 			}
 
 			$results = [];
-			foreach (array_keys($this->keyTypes) as $i) {
-				$results[] = $this->keyTypes[$i]->isSuperTypeOf($type->keyTypes[$i]);
-				$results[] = $this->valueTypes[$i]->isSuperTypeOf($type->valueTypes[$i]);
+			foreach ($this->keyTypes as $i => $keyType) {
+				$hasOffset = $type->hasOffsetValueType($keyType);
+				if ($hasOffset->no()) {
+					return TrinaryLogic::createNo();
+				}
+				$results[] = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
 			}
 
 			return TrinaryLogic::createYes()->and(...$results);

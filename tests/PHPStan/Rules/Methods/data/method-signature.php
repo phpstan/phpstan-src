@@ -457,3 +457,27 @@ class Rule implements GenericRule
 	}
 
 }
+
+interface ConstantArrayInterface
+{
+
+	/**
+	 * @return array{foo: string}
+	 */
+	public function foobar(): array;
+
+}
+
+class ConstantArrayClass implements ConstantArrayInterface
+{
+	/**
+	 * @return array{foo: string, bar: string}
+	 */
+	public function foobar(): array
+	{
+		return [
+			'foo' => '',
+			'bar' => '',
+		];
+	}
+}

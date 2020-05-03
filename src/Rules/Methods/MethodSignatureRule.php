@@ -72,11 +72,11 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Return type (%s) of method %s::%s() should be %s with return type (%s) of method %s::%s()',
-					$parameters->getReturnType()->describe(VerbosityLevel::typeOnly()),
+					$parameters->getReturnType()->describe(VerbosityLevel::value()),
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$returnTypeCompatibility->no() ? 'compatible' : 'covariant',
-					$parentParameters->getReturnType()->describe(VerbosityLevel::typeOnly()),
+					$parentParameters->getReturnType()->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName()
 				))->build();
@@ -96,12 +96,12 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 					'Parameter #%d $%s (%s) of method %s::%s() should be %s with parameter $%s (%s) of method %s::%s()',
 					$parameterIndex + 1,
 					$parameter->getName(),
-					$parameter->getType()->describe(VerbosityLevel::typeOnly()),
+					$parameter->getType()->describe(VerbosityLevel::value()),
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$parameterResult->no() ? 'compatible' : 'contravariant',
 					$parentParameter->getName(),
-					$parentParameter->getType()->describe(VerbosityLevel::typeOnly()),
+					$parentParameter->getType()->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName()
 				))->build();

@@ -9890,7 +9890,7 @@ return [
 'restore_exception_handler' => ['bool'],
 'restore_include_path' => ['void'],
 'rewind' => ['bool', 'fp'=>'resource'],
-'rewinddir' => ['void', 'dir_handle='=>'resource'],
+'rewinddir' => ['null|false', 'dir_handle='=>'resource'],
 'rmdir' => ['bool', 'dirname'=>'string', 'context='=>'resource'],
 'round' => ['float', 'number'=>'float', 'precision='=>'int', 'mode='=>'int'],
 'rpm_close' => ['bool', 'rpmr'=>'resource'],

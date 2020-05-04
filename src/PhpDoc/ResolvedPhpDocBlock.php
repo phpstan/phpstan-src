@@ -126,6 +126,7 @@ class ResolvedPhpDocBlock
 		$self->paramTags = [];
 		$self->returnTag = null;
 		$self->throwsTag = null;
+		$self->mixinTags = [];
 		$self->deprecatedTag = null;
 		$self->isDeprecated = false;
 		$self->isInternal = false;

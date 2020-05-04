@@ -13,6 +13,10 @@ use PHPStan\Command\WorkerCommand;
 
 	define('__PHPSTAN_RUNNING__', true);
 
+	$devOrPharLoader = require_once __DIR__ . '/../vendor/autoload.php';
+	require_once __DIR__ . '/../preload.php';
+	$devOrPharLoader->unregister();
+
 	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';
 	$composerAutoloaderProjectPaths = [];
 	if (is_file($autoloaderInWorkingDirectory)) {
@@ -50,16 +54,11 @@ use PHPStan\Command\WorkerCommand;
 
 	$autoloadProjectAutoloaderFile('/../../autoload.php');
 
-	$devOrPharAutoloadFile = __DIR__ . '/../vendor/autoload.php';
-	if (is_file($devOrPharAutoloadFile)) {
-		//$composerAutoloaderProjectPaths[] = dirname($devOrPharAutoloadFile, 2);
-		require_once $devOrPharAutoloadFile;
-	}
+	$devOrPharLoader->register(true);
 
 	require_once __DIR__ . '/../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php';
 	require_once __DIR__ . '/../vendor/react/promise-timer/src/functions_include.php';
 	require_once __DIR__ . '/../vendor/react/promise/src/functions_include.php';
-	require_once __DIR__ . '/../preload.php';
 
 	$version = 'Version unknown';
 	try {

@@ -17,6 +17,8 @@ use PHPStan\Command\WorkerCommand;
 	require_once __DIR__ . '/../preload.php';
 	$devOrPharLoader->unregister();
 
+	$GLOBALS['__composer_autoload_files'] = [];
+
 	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';
 	$composerAutoloaderProjectPaths = [];
 	if (is_file($autoloaderInWorkingDirectory)) {
@@ -55,10 +57,6 @@ use PHPStan\Command\WorkerCommand;
 	$autoloadProjectAutoloaderFile('/../../autoload.php');
 
 	$devOrPharLoader->register(true);
-
-	require_once __DIR__ . '/../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php';
-	require_once __DIR__ . '/../vendor/react/promise-timer/src/functions_include.php';
-	require_once __DIR__ . '/../vendor/react/promise/src/functions_include.php';
 
 	$version = 'Version unknown';
 	try {

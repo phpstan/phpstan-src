@@ -328,7 +328,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($classReflection->hasNativeMethod('__toString')) {
-			return new StringType();
+			return ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__toString')->getVariants())->getReturnType();
 		}
 
 		return new ErrorType();

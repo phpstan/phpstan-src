@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
@@ -59,6 +60,9 @@ class ResolvedPhpDocBlock
 
 	/** @var \PHPStan\PhpDoc\Tag\ThrowsTag|false|null */
 	private $throwsTag = false;
+
+	/** @var array<MixinTag>|false */
+	private $mixinTags = false;
 
 	/** @var \PHPStan\PhpDoc\Tag\DeprecatedTag|false|null */
 	private $deprecatedTag = false;
@@ -125,6 +129,7 @@ class ResolvedPhpDocBlock
 		$self->paramTags = [];
 		$self->returnTag = null;
 		$self->throwsTag = null;
+		$self->mixinTags = [];
 		$self->deprecatedTag = null;
 		$self->isDeprecated = false;
 		$self->isInternal = false;
@@ -315,6 +320,21 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->throwsTag;
+	}
+
+	/**
+	 * @return array<MixinTag>
+	 */
+	public function getMixinTags(): array
+	{
+		if ($this->mixinTags === false) {
+			$this->mixinTags = $this->phpDocNodeResolver->resolveMixinTags(
+				$this->phpDocNode,
+				$this->nameScope
+			);
+		}
+
+		return $this->mixinTags;
 	}
 
 	public function getDeprecatedTag(): ?\PHPStan\PhpDoc\Tag\DeprecatedTag

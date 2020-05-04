@@ -13,6 +13,26 @@ use PHPStan\Command\WorkerCommand;
 
 	define('__PHPSTAN_RUNNING__', true);
 
+	$devOrPharLoader = require_once __DIR__ . '/../vendor/autoload.php';
+	require_once __DIR__ . '/../preload.php';
+	$devOrPharLoader->unregister();
+
+	$composerAutoloadFiles = $GLOBALS['__composer_autoload_files'];
+	if (
+		!array_key_exists('e88992873b7765f9b5710cab95ba5dd7', $composerAutoloadFiles)
+		|| !array_key_exists('3e76f7f02b41af8cea96018933f6b7e3', $composerAutoloadFiles)
+	) {
+		echo "Composer autoloader changed\n";
+		exit(1);
+	}
+
+	// empty the global variable so that unprefixed functions from user-space can be loaded
+	$GLOBALS['__composer_autoload_files'] = [
+		// fix unprefixed Hoa namespace - files already loaded
+		'e88992873b7765f9b5710cab95ba5dd7' => true,
+		'3e76f7f02b41af8cea96018933f6b7e3' => true,
+	];
+
 	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';
 	$composerAutoloaderProjectPaths = [];
 	if (is_file($autoloaderInWorkingDirectory)) {
@@ -50,15 +70,7 @@ use PHPStan\Command\WorkerCommand;
 
 	$autoloadProjectAutoloaderFile('/../../autoload.php');
 
-	$devOrPharAutoloadFile = __DIR__ . '/../vendor/autoload.php';
-	if (is_file($devOrPharAutoloadFile)) {
-		//$composerAutoloaderProjectPaths[] = dirname($devOrPharAutoloadFile, 2);
-		require_once $devOrPharAutoloadFile;
-	}
-
-	require_once __DIR__ . '/../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php';
-	require_once __DIR__ . '/../vendor/react/promise-timer/src/functions_include.php';
-	require_once __DIR__ . '/../vendor/react/promise/src/functions_include.php';
+	$devOrPharLoader->register(true);
 
 	$version = 'Version unknown';
 	try {

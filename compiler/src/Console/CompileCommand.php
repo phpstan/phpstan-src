@@ -47,6 +47,7 @@ final class CompileCommand extends Command
 	{
 		$this->processFactory->setOutput($output);
 
+		$this->buildPreloadScript();
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
 
@@ -108,6 +109,40 @@ final class CompileCommand extends Command
 		if ($putSuccess === false) {
 			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
 		}
+	}
+
+	private function buildPreloadScript(): void
+	{
+		$vendorDir = $this->buildDir . '/vendor';
+		if (!is_dir($vendorDir . '/nikic/php-parser/lib/PhpParser')) {
+			return;
+		}
+
+		$preloadScript = $this->buildDir . '/preload.php';
+		$template = <<<'php'
+<?php declare(strict_types = 1);
+
+%s
+php;
+		$finder = \Symfony\Component\Finder\Finder::create();
+		$root = realpath(__DIR__ . '/../../..');
+		if ($root === false) {
+			return;
+		}
+		$output = '';
+		foreach ($finder->files()->name('*.php')->in([
+			$vendorDir . '/nikic/php-parser/lib/PhpParser',
+			$vendorDir . '/phpstan/phpdoc-parser/src',
+		]) as $phpFile) {
+			$realPath = $phpFile->getRealPath();
+			if ($realPath === false) {
+				return;
+			}
+			$path = substr($realPath, strlen($root));
+			$output .= 'require_once __DIR__ . ' . var_export($path, true) . ';' . "\n";
+		}
+
+		file_put_contents($preloadScript, sprintf($template, $output));
 	}
 
 }

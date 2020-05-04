@@ -6,6 +6,9 @@
   "compactors": [
     "KevinGH\\Box\\Compactor\\PhpScoper"
   ],
+  "files": [
+	"preload.php"
+  ],
   "directories": [
     "conf",
     "src",

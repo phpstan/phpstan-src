@@ -34,6 +34,12 @@ rules:
 
 services:
 	-
+		class: PHPStan\Rules\Classes\MixinRule
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+		tags:
+			- phpstan.rules.rule
+	-
 		class: PHPStan\Rules\Functions\CallCallablesRule
 		arguments:
 			reportMaybes: %reportMaybes%

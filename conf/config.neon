@@ -480,6 +480,16 @@ services:
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository
 
 	-
+		class: PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension
+
+	-
+		class: PHPStan\Reflection\Mixin\MixinPropertiesClassReflectionExtension
+		tags:
+			- phpstan.broker.propertiesClassReflectionExtension
+
+	-
 		class: PHPStan\Reflection\Php\PhpClassReflectionExtension
 		arguments:
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%

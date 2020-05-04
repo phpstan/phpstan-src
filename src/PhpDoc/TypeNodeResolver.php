@@ -2,14 +2,22 @@
 
 namespace PHPStan\PhpDoc;
 
+use Nette\Utils\Strings;
 use PHPStan\Analyser\NameScope;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprTrueNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
@@ -30,6 +38,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -105,6 +114,8 @@ class TypeNodeResolver
 
 		} elseif ($typeNode instanceof ArrayShapeNode) {
 			return $this->resolveArrayShapeNode($typeNode, $nameScope);
+		} elseif ($typeNode instanceof ConstTypeNode) {
+			return $this->resolveConstTypeNode($typeNode, $nameScope);
 		}
 
 		return new ErrorType();
@@ -479,6 +490,97 @@ class TypeNodeResolver
 		$arrays[] = $builder->getArray();
 
 		return TypeCombinator::union(...$arrays);
+	}
+
+	private function resolveConstTypeNode(ConstTypeNode $typeNode, NameScope $nameScope): Type
+	{
+		$constExpr = $typeNode->constExpr;
+		if ($constExpr instanceof ConstExprArrayNode) {
+			throw new \PHPStan\ShouldNotHappenException(); // we prefer array shapes
+		}
+
+		if (
+			$constExpr instanceof ConstExprFalseNode
+			|| $constExpr instanceof ConstExprTrueNode
+			|| $constExpr instanceof ConstExprNullNode
+		) {
+			throw new \PHPStan\ShouldNotHappenException(); // we prefer IdentifierTypeNode
+		}
+
+		if ($constExpr instanceof ConstFetchNode) {
+			if ($constExpr->className === '') {
+				throw new \PHPStan\ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
+			}
+
+			if ($nameScope->getClassName() !== null) {
+				switch (strtolower($constExpr->className)) {
+					case 'static':
+					case 'self':
+						$className = $nameScope->getClassName();
+						break;
+
+					case 'parent':
+						if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
+							$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
+							if ($classReflection->getParentClass() === false) {
+								return new ErrorType();
+
+							}
+
+							$className = $classReflection->getParentClass()->getName();
+						}
+				}
+			}
+
+			if (!isset($className)) {
+				$className = $nameScope->resolveStringName($constExpr->className);
+			}
+
+			if (!$this->getReflectionProvider()->hasClass($className)) {
+				return new ErrorType();
+			}
+
+			$classReflection = $this->getReflectionProvider()->getClass($className);
+
+			$constantName = $constExpr->name;
+			if (Strings::endsWith($constantName, '*')) {
+				$constantNameStartsWith = Strings::substring($constantName, 0, Strings::length($constantName) - 1);
+				$constantTypes = [];
+				foreach ($classReflection->getNativeReflection()->getConstants() as $classConstantName => $constantValue) {
+					if (!Strings::startsWith($classConstantName, $constantNameStartsWith)) {
+						continue;
+					}
+
+					$constantTypes[] = ConstantTypeHelper::getTypeFromValue($constantValue);
+				}
+
+				if (count($constantTypes) === 0) {
+					return new ErrorType();
+				}
+
+				return TypeCombinator::union(...$constantTypes);
+			}
+
+			if (!$classReflection->hasConstant($constantName)) {
+				return new ErrorType();
+			}
+
+			return $classReflection->getConstant($constantName)->getValueType();
+		}
+
+		if ($constExpr instanceof ConstExprFloatNode) {
+			return ConstantTypeHelper::getTypeFromValue((float) $constExpr->value);
+		}
+
+		if ($constExpr instanceof ConstExprIntegerNode) {
+			return ConstantTypeHelper::getTypeFromValue((int) $constExpr->value);
+		}
+
+		if ($constExpr instanceof ConstExprStringNode) {
+			return ConstantTypeHelper::getTypeFromValue($constExpr->value);
+		}
+
+		return new ErrorType();
 	}
 
 	/**

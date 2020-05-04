@@ -71,13 +71,14 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 		}
 		if (!$this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes())) {
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $propertyFetch);
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType);
 
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'%s (%s) does not accept %s.',
 					$propertyDescription,
-					$propertyType->describe(VerbosityLevel::typeOnly()),
-					$assignedValueType->describe(VerbosityLevel::typeOnly())
+					$propertyType->describe($verbosityLevel),
+					$assignedValueType->describe($verbosityLevel)
 				))->build(),
 			];
 		}

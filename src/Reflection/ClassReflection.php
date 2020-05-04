@@ -5,6 +5,7 @@ namespace PHPStan\Reflection;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
+use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
@@ -939,6 +940,40 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		return in_array($reflection->getName(), $ancestorClasses, true);
+	}
+
+	/**
+	 * @return array<MixinTag>
+	 */
+	public function getMixinTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getMixinTags();
+	}
+
+	/**
+	 * @return array<Type>
+	 */
+	public function getResolvedMixinTypes(): array
+	{
+		$types = [];
+		foreach ($this->getMixinTags() as $mixinTag) {
+			if (!$this->isGeneric()) {
+				$types[] = $mixinTag->getType();
+				continue;
+			}
+
+			$types[] = TemplateTypeHelper::resolveTemplateTypes(
+				$mixinTag->getType(),
+				$this->getActiveTemplateTypeMap()
+			);
+		}
+
+		return $types;
 	}
 
 }

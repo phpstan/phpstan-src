@@ -13,6 +13,7 @@ use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
 class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
@@ -109,15 +110,75 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 			new ConstantArrayType([new ConstantStringType('foo')], [new ConstantStringType('bar')]),
 			TrinaryLogic::createYes(),
 		];
+
+		yield [
+			TypeCombinator::union(
+				new ConstantArrayType([
+					new ConstantStringType('name'),
+				], [
+					new StringType(),
+				]),
+				new ConstantArrayType([
+					new ConstantStringType('name'),
+					new ConstantStringType('color'),
+				], [
+					new StringType(),
+					new StringType(),
+				])
+			),
+			new ConstantArrayType([
+				new ConstantStringType('name'),
+				new ConstantStringType('color'),
+				new ConstantStringType('year'),
+			], [
+				new StringType(),
+				new StringType(),
+				new IntegerType(),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('name'),
+				new ConstantStringType('color'),
+				new ConstantStringType('year'),
+			], [
+				new StringType(),
+				new StringType(),
+				new IntegerType(),
+			]),
+			new MixedType(),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			TypeCombinator::union(
+				new ConstantArrayType([], []),
+				new ConstantArrayType([
+					new ConstantStringType('name'),
+					new ConstantStringType('color'),
+				], [
+					new StringType(),
+					new StringType(),
+				])
+			),
+			new ConstantArrayType([
+				new ConstantStringType('surname'),
+			], [
+				new StringType(),
+			]),
+			TrinaryLogic::createNo(),
+		];
 	}
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param ConstantArrayType $type
+	 * @param Type $type
 	 * @param Type $otherType
 	 * @param TrinaryLogic $expectedResult
 	 */
-	public function testAccepts(ConstantArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true);
 		$this->assertSame(
@@ -187,6 +248,38 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 			new ConstantArrayType([], []),
 			new IterableType(new MixedType(false), new MixedType(true)),
 			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+			], [
+				new IntegerType(),
+			]),
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new IntegerType(),
+				new IntegerType(),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new IntegerType(),
+				new IntegerType(),
+			]),
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+			], [
+				new IntegerType(),
+			]),
+			TrinaryLogic::createNo(),
 		];
 	}
 

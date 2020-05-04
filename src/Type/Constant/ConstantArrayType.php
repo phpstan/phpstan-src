@@ -12,6 +12,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntersectionType;
@@ -94,8 +95,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		if (parent::isSuperTypeOf($type)->no()) {
-			return TrinaryLogic::createNo();
+		if ($type instanceof MixedType && !$type instanceof TemplateMixedType) {
+			return $type->isAcceptedBy($this, $strictTypes);
+		}
+
+		if ($type instanceof self && count($this->keyTypes) === 0) {
+			return TrinaryLogic::createFromBoolean(count($type->keyTypes) === 0);
 		}
 
 		$result = TrinaryLogic::createYes();
@@ -115,20 +120,27 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$result = $result->and($acceptsValue);
 		}
 
-		return $result;
+		return $result->and($type->isArray());
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
-			if (count($this->keyTypes) !== count($type->keyTypes)) {
-				return TrinaryLogic::createNo();
+			if (count($this->keyTypes) === 0) {
+				if (count($type->keyTypes) > 0) {
+					return TrinaryLogic::createNo();
+				}
+
+				return TrinaryLogic::createYes();
 			}
 
 			$results = [];
-			foreach (array_keys($this->keyTypes) as $i) {
-				$results[] = $this->keyTypes[$i]->isSuperTypeOf($type->keyTypes[$i]);
-				$results[] = $this->valueTypes[$i]->isSuperTypeOf($type->valueTypes[$i]);
+			foreach ($this->keyTypes as $i => $keyType) {
+				$hasOffset = $type->hasOffsetValueType($keyType);
+				if ($hasOffset->no()) {
+					return TrinaryLogic::createNo();
+				}
+				$results[] = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
 			}
 
 			return TrinaryLogic::createYes()->and(...$results);

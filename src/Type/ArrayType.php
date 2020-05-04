@@ -61,20 +61,25 @@ class ArrayType implements Type
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		$arrays = TypeUtils::getArrays($type);
-		if (count($arrays) > 0) {
+		if ($type instanceof CompoundType) {
+			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+		}
+
+		if ($type instanceof ConstantArrayType) {
 			$result = TrinaryLogic::createYes();
-			foreach ($arrays as $array) {
-				$result = $result
-					->and($this->getItemType()->accepts($array->getItemType(), $strictTypes))
-					->and($this->keyType->accepts($array->keyType, $strictTypes));
+			$thisKeyType = $this->keyType;
+			$itemType = $this->getItemType();
+			foreach ($type->getKeyTypes() as $i => $keyType) {
+				$valueType = $type->getValueTypes()[$i];
+				$result = $result->and($thisKeyType->accepts($keyType, $strictTypes))->and($itemType->accepts($valueType, $strictTypes));
 			}
 
 			return $result;
 		}
 
-		if ($type instanceof CompoundType) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+		if ($type instanceof ArrayType) {
+			return $this->getItemType()->accepts($type->getItemType(), $strictTypes)
+				->and($this->keyType->accepts($type->keyType, $strictTypes));
 		}
 
 		return TrinaryLogic::createNo();

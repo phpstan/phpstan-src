@@ -53,13 +53,15 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType);
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'%s %s::$%s (%s) does not accept default value of type %s.',
 				$node->isStatic() ? 'Static property' : 'Property',
 				$classReflection->getDisplayName(),
 				$property->name->name,
-				$propertyType->describe(VerbosityLevel::typeOnly()),
-				$defaultValueType->describe(VerbosityLevel::typeOnly())
+				$propertyType->describe($verbosityLevel),
+				$defaultValueType->describe($verbosityLevel)
 			))->build();
 		}
 

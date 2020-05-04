@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -57,6 +58,9 @@ class MissingTypehintCheck
 
 		$iterablesWithMissingValueTypehint = [];
 		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$iterablesWithMissingValueTypehint): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
 			if ($type->isIterable()->yes()) {
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
@@ -93,6 +97,9 @@ class MissingTypehintCheck
 		$objectTypes = [];
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$objectTypes): Type {
 			if ($type instanceof GenericObjectType) {
+				return $type;
+			}
+			if ($type instanceof TemplateType) {
 				return $type;
 			}
 			if ($type instanceof ObjectType) {

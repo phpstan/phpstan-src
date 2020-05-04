@@ -136,11 +136,6 @@ parameters:
 			path: src/Rules/Registry.php
 
 		-
-			message: "#^Method PHPStan\\\\Testing\\\\RuleTestCase\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: src/Testing/RuleTestCase.php
-
-		-
 			message: "#^Cannot call method getActiveTemplateTypeMap\\(\\) on PHPStan\\\\Reflection\\\\ClassReflection\\|null\\.$#"
 			count: 2
 			path: src/Type/Generic/GenericObjectType.php

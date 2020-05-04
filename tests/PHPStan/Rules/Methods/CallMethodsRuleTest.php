@@ -456,6 +456,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
 				1533,
 			],
+			[
+				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				1589,
+			],
 		]);
 	}
 
@@ -712,6 +716,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
 				1533,
+			],
+			[
+				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				1589,
 			],
 		]);
 	}
@@ -1246,6 +1254,44 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Result of method Closure::call() (void) is used.',
 				18,
+			],
+		]);
+	}
+
+	public function testMixin(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/mixin.php'], [
+			[
+				'Method MixinMethods\Foo::doFoo() invoked with 1 parameter, 0 required.',
+				30,
+			],
+			[
+				'Method MixinMethods\Foo::doFoo() invoked with 1 parameter, 0 required.',
+				40,
+			],
+			[
+				'Method Exception::getMessage() invoked with 1 parameter, 0 required.',
+				61,
+			],
+			[
+				'Call to an undefined method MixinMethods\GenericFoo<Exception>::getMessagee().',
+				62,
+			],
+		]);
+	}
+
+	public function testRecursiveIteratorIterator(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/recursive-iterator-iterator.php'], [
+			[
+				'Method RecursiveDirectoryIterator::getSubPathname() invoked with 1 parameter, 0 required.',
+				14,
 			],
 		]);
 	}

@@ -73,7 +73,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param references unknown parameter: $%s',
 					$parameterName
-				))->build();
+				))->identifier('phpDoc.unknownParameter')->metadata(['parameterName' => $parameterName])->build();
 
 			} elseif (
 				$phpDocParamType instanceof ErrorType

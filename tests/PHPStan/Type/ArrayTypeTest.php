@@ -110,6 +110,29 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new ArrayType(new MixedType(), new CallableType()),
+				new ConstantArrayType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				], [
+					new ConstantArrayType([
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+					], [
+						new ThisType(self::class),
+						new ConstantStringType('dataAccepts'),
+					]),
+					new ConstantArrayType([
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+					], [
+						new ThisType(self::class),
+						new ConstantStringType('dataIsSuperTypeOf'),
+					]),
+				]),
+				TrinaryLogic::createYes(),
+			],
 		];
 	}
 

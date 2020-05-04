@@ -3,10 +3,13 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
+use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
@@ -19,9 +22,16 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 	/** @var FileTypeMapper */
 	private $fileTypeMapper;
 
-	public function __construct(FileTypeMapper $fileTypeMapper)
+	/** @var NodeScopeResolver */
+	private $nodeScopeResolver;
+
+	public function __construct(
+		FileTypeMapper $fileTypeMapper,
+		NodeScopeResolver $nodeScopeResolver
+	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->nodeScopeResolver = $nodeScopeResolver;
 	}
 
 	public function getNodeType(): string
@@ -31,15 +41,26 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$throwsType = $this->getThrowsType($node, $scope);
+		return $this->check($throwsType);
+	}
+
+	private function getThrowsType(Node $node, Scope $scope): ?Type
+	{
+		return $scope->isInClass() === true
+			? $this->getMethodThrowsType($node, $scope)
+			: $this->getFunctionThrowsType($node, $scope);
+	}
+
+	private function getFunctionThrowsType(Node $node, Scope $scope): ?Type
+	{
 		$docComment = $node->getDocComment();
 		if ($docComment === null) {
-			return [];
+			return null;
 		}
 
 		$functionName = null;
-		if ($node instanceof Node\Stmt\ClassMethod) {
-			$functionName = $node->name->name;
-		} elseif ($node instanceof Node\Stmt\Function_) {
+		if ($node instanceof Node\Stmt\Function_) {
 			$functionName = trim($scope->getNamespace() . '\\' . $node->name->name, '\\');
 		}
 
@@ -51,11 +72,30 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 			$docComment->getText()
 		);
 
-		if ($resolvedPhpDoc->getThrowsTag() === null) {
+		$throwsTag = $resolvedPhpDoc->getThrowsTag();
+		return $throwsTag ? $throwsTag->getType() : null;
+	}
+
+	private function getMethodThrowsType(Node $node, Scope $scope): ?Type
+	{
+		if (!($node instanceof Node\Stmt\ClassMethod)) {
+			throw new ShouldNotHappenException();
+		}
+
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType] = $this->nodeScopeResolver->getPhpDocs($scope, $node);
+		return $phpDocThrowType;
+	}
+
+	/**
+	 * @param Type|null $phpDocThrowsType
+	 * @return array<int, RuleErrorBuilder> errors
+	 */
+	private function check(?Type $phpDocThrowsType): array
+	{
+		if ($phpDocThrowsType === null) {
 			return [];
 		}
 
-		$phpDocThrowsType = $resolvedPhpDoc->getThrowsTag()->getType();
 		if ((new VoidType())->isSuperTypeOf($phpDocThrowsType)->yes()) {
 			return [];
 		}

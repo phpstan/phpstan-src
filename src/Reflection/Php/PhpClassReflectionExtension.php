@@ -12,6 +12,7 @@ use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocBlock;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
@@ -56,6 +57,9 @@ class PhpClassReflectionExtension
 
 	/** @var \PHPStan\Type\FileTypeMapper */
 	private $fileTypeMapper;
+
+	/** @var \PHPStan\PhpDoc\PhpDocInheritanceResolver */
+	private $phpDocInheritanceResolver;
 
 	/** @var \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension */
 	private $annotationsMethodsClassReflectionExtension;
@@ -104,6 +108,7 @@ class PhpClassReflectionExtension
 	 * @param \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver
 	 * @param \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
+	 * @param \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver
 	 * @param \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension
 	 * @param \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension
 	 * @param \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider
@@ -118,6 +123,7 @@ class PhpClassReflectionExtension
 		NodeScopeResolver $nodeScopeResolver,
 		PhpMethodReflectionFactory $methodReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
+		PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
 		AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
 		SignatureMapProvider $signatureMapProvider,
@@ -132,6 +138,7 @@ class PhpClassReflectionExtension
 		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->methodReflectionFactory = $methodReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
 		$this->annotationsMethodsClassReflectionExtension = $annotationsMethodsClassReflectionExtension;
 		$this->annotationsPropertiesClassReflectionExtension = $annotationsPropertiesClassReflectionExtension;
 		$this->signatureMapProvider = $signatureMapProvider;
@@ -223,27 +230,14 @@ class PhpClassReflectionExtension
 		$stubPhpDocString = null;
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClassReflection->getFileName() !== false) {
-				$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForProperty(
+				$declaringTraitName = $this->findPropertyTrait($propertyReflection);
+				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
 					$docComment,
 					$declaringClassReflection,
-					null,
-					$propertyName,
-					$declaringClassReflection->getFileName(),
-					null,
-					[],
-					[]
+					$declaringTraitName,
+					$propertyName
 				);
-				if ($phpDocBlock !== null) {
-					$declaringTraitName = $this->findPropertyTrait($propertyReflection);
-					$phpDocBlockClassReflection = $phpDocBlock->getClassReflection();
-					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-						$phpDocBlock->getFile(),
-						$phpDocBlockClassReflection->getName(),
-						$declaringTraitName,
-						null,
-						$phpDocBlock->getDocComment()
-					);
-				}
+				$phpDocBlockClassReflection = $declaringClassReflection;
 			}
 		} else {
 			$phpDocBlockClassReflection = $declaringClassReflection;
@@ -517,31 +511,17 @@ class PhpClassReflectionExtension
 				$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
 					return $parameter->getName();
 				}, $methodReflection->getParameters());
-				$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
+
+				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$docComment,
 					$declaringClass,
 					$declaringTraitName,
 					$methodReflection->getName(),
-					$declaringClass->getFileName(),
-					null,
-					$positionalParameterNames,
 					$positionalParameterNames
 				);
-
-				if ($phpDocBlock !== null) {
-					$phpDocBlockClassReflection = $phpDocBlock->getClassReflection();
-					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-						$phpDocBlock->getFile(),
-						$phpDocBlockClassReflection->getName(),
-						$phpDocBlock->getTrait(),
-						$methodReflection->getName(),
-						$phpDocBlock->getDocComment()
-					);
-					$isPhpDocBlockExplicit = $phpDocBlock->isExplicit();
-				}
+				$phpDocBlockClassReflection = $declaringClass;
 			}
 		} else {
-			$isPhpDocBlockExplicit = true;
 			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
 
@@ -561,9 +541,6 @@ class PhpClassReflectionExtension
 		$isInternal = false;
 		$isFinal = false;
 		if ($resolvedPhpDoc !== null) {
-			if (!isset($isPhpDocBlockExplicit)) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
 			$phpDocParameterTypes = array_map(static function (ParamTag $tag) use ($phpDocBlockClassReflection): Type {
 				return TemplateTypeHelper::resolveTemplateTypes(
@@ -579,7 +556,7 @@ class PhpClassReflectionExtension
 				null,
 				$declaringClass->getName()
 			);
-			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $isPhpDocBlockExplicit, $resolvedPhpDoc, $nativeReturnType);
+			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
@@ -872,7 +849,7 @@ class PhpClassReflectionExtension
 		return null;
 	}
 
-	private function getPhpDocReturnType(ClassReflection $phpDocBlockClassReflection, bool $isPhpDocBlockExplicit, ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type
+	private function getPhpDocReturnType(ClassReflection $phpDocBlockClassReflection, ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type
 	{
 		$returnTag = $resolvedPhpDoc->getReturnTag();
 
@@ -886,7 +863,7 @@ class PhpClassReflectionExtension
 			$phpDocBlockClassReflection->getActiveTemplateTypeMap()
 		);
 
-		if ($isPhpDocBlockExplicit || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
+		if ($returnTag->isExplicit() || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
 			return $phpDocReturnType;
 		}
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace ForeachWithComplexValueType;
+namespace ForeachIterableWithComplexValueType;
 
 class Foo
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace ForeachWithGenericsPhpDoc;
+namespace ForEachWithSpecificKeyType;
 
 class Foo
 {

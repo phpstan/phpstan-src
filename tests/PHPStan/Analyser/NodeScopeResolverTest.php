@@ -14,6 +14,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Node\VirtualNode;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\Reflection\MethodReflection;
@@ -4792,7 +4793,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				__DIR__ . '/data/foreach/foreach-iterable-with-complex-value-type.php',
-				'float|ForeachWithComplexValueType\Foo',
+				'float|ForeachIterableWithComplexValueType\Foo',
 				'$value',
 			],
 			[
@@ -10438,10 +10439,13 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		$typeSpecifier = $this->createTypeSpecifier($printer, $broker, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$fileHelper = new FileHelper($currentWorkingDirectory);
+		$fileTypeMapper = new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($currentWorkingDirectory)));
+		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 		$resolver = new NodeScopeResolver(
 			$broker,
 			$this->getParser(),
-			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($currentWorkingDirectory))),
+			$fileTypeMapper,
+			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,
 			true,

@@ -60,6 +60,7 @@ use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocBlock;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
@@ -110,6 +111,9 @@ class NodeScopeResolver
 	/** @var \PHPStan\Type\FileTypeMapper */
 	private $fileTypeMapper;
 
+	/** @var \PHPStan\PhpDoc\PhpDocInheritanceResolver */
+	private $phpDocInheritanceResolver;
+
 	/** @var \PHPStan\File\FileHelper */
 	private $fileHelper;
 
@@ -138,6 +142,7 @@ class NodeScopeResolver
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param Parser $parser
 	 * @param FileTypeMapper $fileTypeMapper
+	 * @param PhpDocInheritanceResolver $phpDocInheritanceResolver
 	 * @param FileHelper $fileHelper
 	 * @param TypeSpecifier $typeSpecifier
 	 * @param bool $polluteScopeWithLoopInitialAssignments
@@ -150,6 +155,7 @@ class NodeScopeResolver
 		ReflectionProvider $reflectionProvider,
 		Parser $parser,
 		FileTypeMapper $fileTypeMapper,
+		PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		FileHelper $fileHelper,
 		TypeSpecifier $typeSpecifier,
 		bool $polluteScopeWithLoopInitialAssignments,
@@ -162,6 +168,7 @@ class NodeScopeResolver
 		$this->reflectionProvider = $reflectionProvider;
 		$this->parser = $parser;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
 		$this->fileHelper = $fileHelper;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
@@ -2556,7 +2563,9 @@ class NodeScopeResolver
 		$class = $scope->isInClass() ? $scope->getClassReflection()->getName() : null;
 		$trait = $scope->isInTrait() ? $scope->getTraitReflection()->getName() : null;
 		$phpDocBlock = null;
+		$resolvedPhpDoc = null;
 		$functionName = null;
+
 		if ($functionLike instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -2569,29 +2578,18 @@ class NodeScopeResolver
 
 				return $param->var->name;
 			}, $functionLike->getParams());
-			$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
+			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 				$docComment,
 				$scope->getClassReflection(),
 				$trait,
 				$functionLike->name->name,
-				$file,
-				null,
-				$positionalParameterNames,
 				$positionalParameterNames
 			);
-
-			if ($phpDocBlock !== null) {
-				$docComment = $phpDocBlock->getDocComment();
-				$file = $phpDocBlock->getFile();
-				$class = $phpDocBlock->getClassReflection()->getName();
-				$trait = $phpDocBlock->getTrait();
-				$phpDocBlockTemplateTypeMap = $phpDocBlock->getClassReflection()->getActiveTemplateTypeMap();
-			}
 		} elseif ($functionLike instanceof Node\Stmt\Function_) {
 			$functionName = trim($scope->getNamespace() . '\\' . $functionLike->name->name, '\\');
 		}
 
-		if ($docComment !== null) {
+		if ($docComment !== null && $resolvedPhpDoc === null) {
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$file,
 				$class,
@@ -2599,6 +2597,9 @@ class NodeScopeResolver
 				$functionName,
 				$docComment
 			);
+		}
+
+		if ($resolvedPhpDoc !== null) {
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
 			$phpDocParameterTypes = array_map(static function (ParamTag $tag) use ($phpDocBlockTemplateTypeMap): Type {
 				if ($phpDocBlockTemplateTypeMap !== null) {
@@ -2641,7 +2642,7 @@ class NodeScopeResolver
 			);
 		}
 
-		if ($phpDocBlock === null || $phpDocBlock->isExplicit()) {
+		if ($returnTag->isExplicit()) {
 			return $phpDocReturnType;
 		}
 

@@ -48,7 +48,7 @@ EOT
 			'command' => $command->getName(),
 		]);
 
-		self::assertStringContainsString('Patching failed', $commandTester->getDisplay());
+		self::assertSame('', $commandTester->getDisplay());
 	}
 
 }

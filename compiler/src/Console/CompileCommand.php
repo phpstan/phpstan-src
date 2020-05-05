@@ -172,7 +172,7 @@ php;
 	{
 		exec(sprintf(
 			'patch -d %s %s %s',
-			escapeshellarg(realpath(__DIR__ . '/../../..')),
+			escapeshellarg($this->buildDir),
 			escapeshellarg($originalFile),
 			escapeshellarg($patchFile)
 		), $outputLines, $exitCode);

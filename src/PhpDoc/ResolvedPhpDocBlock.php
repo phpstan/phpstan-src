@@ -7,6 +7,7 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\TypeCombinator;
 
@@ -392,7 +393,7 @@ class ResolvedPhpDocBlock
 	{
 		$result = clone $this;
 
-		$result->mergeVarTags($parents);
+		$result->mergeVarTags($parents, $parentPhpDocBlocks);
 		$result->mergeParamTags($parents, $parentPhpDocBlocks);
 		$result->mergeReturnTags($parents, $parentPhpDocBlocks);
 		$result->mergeThrowsTags($parents);
@@ -403,24 +404,25 @@ class ResolvedPhpDocBlock
 
 	/**
 	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
 	 */
-	private function mergeVarTags(array $parents): void
+	private function mergeVarTags(array $parents, array $parentPhpDocBlocks): void
 	{
 		// Only allow one var tag per comment. Check the parent if child does not have this tag.
 		if (count($this->getVarTags()) > 0) {
 			return;
 		}
 
-		foreach ($parents as $parent) {
-			$this->mergeOneParentVarTags($parent);
+		foreach ($parents as $i => $parent) {
+			$this->mergeOneParentVarTags($parent, $parentPhpDocBlocks[$i]);
 		}
 	}
 
-	private function mergeOneParentVarTags(self $parent): void
+	private function mergeOneParentVarTags(self $parent, PhpDocBlock $phpDocBlock): void
 	{
 		$parentVarTags = $parent->getVarTags();
 		if (count($parentVarTags) > 0) {
-			$this->varTags[0] = $parentVarTags[0];
+			$this->varTags[0] = $this->resolveTemplateTypeInTag($parentVarTags[0], $phpDocBlock);
 		}
 	}
 
@@ -533,7 +535,10 @@ class ResolvedPhpDocBlock
 	 */
 	private function resolveTemplateTypeInTag($tag, PhpDocBlock $phpDocBlock)
 	{
-		$type = $phpDocBlock->resolveTemplateTypeIfAny($tag->getType());
+		$type = TemplateTypeHelper::resolveTemplateTypes(
+			$tag->getType(),
+			$phpDocBlock->getClassReflection()->getActiveTemplateTypeMap()
+		);
 		return $tag->withType($type);
 	}
 

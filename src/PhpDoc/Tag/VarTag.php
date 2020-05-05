@@ -4,7 +4,7 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Type\Type;
 
-class VarTag
+class VarTag implements TypedTag
 {
 
 	/** @var \PHPStan\Type\Type */
@@ -18,6 +18,13 @@ class VarTag
 	public function getType(): Type
 	{
 		return $this->type;
+	}
+
+	public function withType(Type $type): self
+	{
+		$clone = clone $this;
+		$clone->type = $type;
+		return $clone;
 	}
 
 	/**

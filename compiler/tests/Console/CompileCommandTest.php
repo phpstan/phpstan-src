@@ -44,11 +44,11 @@ EOT
 
 		$command = $application->find('phpstan:compile');
 		$commandTester = new CommandTester($command);
-		$commandTester->execute([
+		$exitCode = $commandTester->execute([
 			'command' => $command->getName(),
 		]);
 
-		self::assertSame('', $commandTester->getDisplay());
+		self::assertSame(0, $exitCode);
 	}
 
 }

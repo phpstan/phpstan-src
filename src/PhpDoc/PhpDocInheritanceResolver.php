@@ -30,7 +30,7 @@ class PhpDocInheritanceResolver
 			$classReflection,
 			null,
 			$propertyName,
-			$classReflection->getFileName(),
+			$classReflection->requireFileName(),
 			null,
 			[],
 			[]
@@ -60,7 +60,7 @@ class PhpDocInheritanceResolver
 			$classReflection,
 			$declaringTraitName,
 			$methodName,
-			$classReflection->getFileName(),
+			$classReflection->requireFileName(),
 			null,
 			$positionalParameterNames,
 			$positionalParameterNames

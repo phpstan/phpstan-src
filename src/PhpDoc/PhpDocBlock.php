@@ -218,14 +218,11 @@ class PhpDocBlock
 	{
 		$docBlocksFromParents = self::resolveParentPhpDocBlocks(
 			$classReflection,
-			$trait,
 			$name,
-			$file,
 			$hasMethodName,
 			$getMethodName,
 			$resolveMethodName,
 			$explicit ?? $docComment !== null,
-			$newPositionalParameterNames,
 			$newPositionalParameterNames
 		);
 
@@ -261,17 +258,24 @@ class PhpDocBlock
 		return $parameterNameMapping;
 	}
 
+	/**
+	 * @param ClassReflection $classReflection
+	 * @param string $name
+	 * @param string $hasMethodName
+	 * @param string $getMethodName
+	 * @param string $resolveMethodName
+	 * @param bool $explicit
+	 * @param array<int, string> $positionalParameterNames
+	 * @return array<int, self>
+	 */
 	private static function resolveParentPhpDocBlocks(
 		ClassReflection $classReflection,
-		?string $trait,
 		string $name,
-		string $file,
 		string $hasMethodName,
 		string $getMethodName,
 		string $resolveMethodName,
 		bool $explicit,
-		array $originalPositionalParameterNames,
-		array $newPositionalParameterNames
+		array $positionalParameterNames
 	): array
 	{
 		$result = [];
@@ -285,7 +289,7 @@ class PhpDocBlock
 				$getMethodName,
 				$resolveMethodName,
 				$explicit,
-				$originalPositionalParameterNames
+				$positionalParameterNames
 			);
 
 			if ($oneResult !== null) { // Null if it is private or from a wrong trait.

@@ -503,7 +503,7 @@ class PhpClassReflectionExtension
 			[$resolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
 		}
 		$stubPhpDocString = null;
-		$phpDocBlock = null;
+
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== false) {
 				$docComment = $methodReflection->getDocComment();
@@ -547,9 +547,6 @@ class PhpClassReflectionExtension
 					$phpDocBlockClassReflection->getActiveTemplateTypeMap()
 				);
 			}, $resolvedPhpDoc->getParamTags());
-			if ($phpDocBlock !== null) {
-				$phpDocParameterTypes = $phpDocBlock->transformArrayKeysWithParameterNameMapping($phpDocParameterTypes);
-			}
 			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$methodReflection->getReturnType(),
 				null,

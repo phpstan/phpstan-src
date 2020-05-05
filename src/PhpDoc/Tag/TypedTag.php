@@ -6,6 +6,7 @@ use PHPStan\Type\Type;
 
 interface TypedTag
 {
+
 	public function getType(): Type;
 
 	/**
@@ -14,4 +15,5 @@ interface TypedTag
 	 * @return static
 	 */
 	public function withType(Type $type);
+
 }

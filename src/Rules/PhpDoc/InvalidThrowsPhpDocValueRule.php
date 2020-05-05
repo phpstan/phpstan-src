@@ -5,8 +5,8 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -47,7 +47,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 
 	private function getThrowsType(Node $node, Scope $scope): ?Type
 	{
-		return $scope->isInClass() === true
+		return ($node instanceof Node\Stmt\ClassMethod)
 			? $this->getMethodThrowsType($node, $scope)
 			: $this->getFunctionThrowsType($node, $scope);
 	}
@@ -73,22 +73,18 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 		);
 
 		$throwsTag = $resolvedPhpDoc->getThrowsTag();
-		return $throwsTag ? $throwsTag->getType() : null;
+		return $throwsTag === null ? null : $throwsTag->getType();
 	}
 
-	private function getMethodThrowsType(Node $node, Scope $scope): ?Type
+	private function getMethodThrowsType(Node\Stmt\ClassMethod $node, Scope $scope): ?Type
 	{
-		if (!($node instanceof Node\Stmt\ClassMethod)) {
-			throw new ShouldNotHappenException();
-		}
-
 		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType] = $this->nodeScopeResolver->getPhpDocs($scope, $node);
 		return $phpDocThrowType;
 	}
 
 	/**
 	 * @param Type|null $phpDocThrowsType
-	 * @return array<int, RuleErrorBuilder> errors
+	 * @return array<int, RuleError> errors
 	 */
 	private function check(?Type $phpDocThrowsType): array
 	{

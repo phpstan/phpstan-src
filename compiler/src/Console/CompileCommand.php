@@ -7,6 +7,7 @@ use PHPStan\Compiler\Process\ProcessFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use function escapeshellarg;
 
 final class CompileCommand extends Command
 {
@@ -48,6 +49,17 @@ final class CompileCommand extends Command
 		$this->processFactory->setOutput($output);
 
 		$this->buildPreloadScript();
+		$this->deleteUnnecessaryVendorCode();
+		$this->patchFile(
+			$output,
+			'vendor/hoa/consistency/Consistency.php',
+			'compiler/patches/Consistency.diff'
+		);
+		$this->patchFile(
+			$output,
+			'vendor/hoa/protocol/Wrapper.php',
+			'compiler/patches/Wrapper.diff'
+		);
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
 
@@ -143,6 +155,32 @@ php;
 		}
 
 		file_put_contents($preloadScript, sprintf($template, $output));
+	}
+
+	private function deleteUnnecessaryVendorCode(): void
+	{
+		$vendorDir = $this->buildDir . '/vendor';
+		if (!is_dir($vendorDir . '/nikic/php-parser')) {
+			return;
+		}
+
+		@unlink($vendorDir . '/nikic/php-parser/grammar/rebuildParsers.php');
+		@unlink($vendorDir . '/nikic/php-parser/bin/php-parse');
+	}
+
+	private function patchFile(OutputInterface $output, string $originalFile, string $patchFile): void
+	{
+		exec(sprintf(
+			'patch -d %s %s %s',
+			escapeshellarg(realpath(__DIR__ . '/../../..')),
+			escapeshellarg($originalFile),
+			escapeshellarg($patchFile)
+		), $outputLines, $exitCode);
+		if ($exitCode === 0) {
+			return;
+		}
+
+		$output->writeln(sprintf('Patching failed: %s', implode("\n", $outputLines)));
 	}
 
 }

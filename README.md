@@ -32,3 +32,47 @@ or run only tests using
 ```bash
 vendor/bin/phing tests
 ```
+
+### Running development version
+
+The executable is bin/phpstan
+Rut it as
+bin/phpstan analyze -c your-config.neon -l 8 path-to-analyze
+
+As you change the source code it immediately takes effect, no re-building is required.
+
+
+### Debugging
+
+1. Make sure XDebug is installed and configured using any HOWTO available.
+2. Add --xdebug option when running phpstan. Without it PHPStan turns the debugger off at runtime.
+
+Now you are ready to set breakpoints on rules and have fun.
+
+
+### Fixing code style
+
+First install composer in build-cs:
+
+```bash
+cd build-cs
+composer install
+cd ..
+```
+
+And then to fix code style, run:
+
+```bash
+vendor/bin/phing cs-fix
+```
+
+
+### Running tests
+
+If you have XDebug enabled and run PHPUnit directly instead of phing, make sure to set PHPSTAN_ALLOW_XDEBUG environment variable to 1 before running PHPUnit. Otherwise PHPStan will detect XDebug and try to disable it. It would restart the 'phpunit' command with arguments of 'phpstan' command which will break.
+
+Run:
+```bash
+export PHPSTAN_ALLOW_XDEBUG=1
+vendor/bin/phpunit --bootstrap=tests/bootstrap.php --stop-on-failure tests
+```

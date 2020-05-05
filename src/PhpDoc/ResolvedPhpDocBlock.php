@@ -5,6 +5,7 @@ namespace PHPStan\PhpDoc;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
+use PHPStan\PhpDoc\Tag\TypedTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -419,7 +420,7 @@ class ResolvedPhpDocBlock
 
 	private function mergeOneParentVarTags(self $parent, PhpDocBlock $phpDocBlock): void
 	{
-		foreach ($parentVarTags = $parent->getVarTags() as $key => $parentVarTag) {
+		foreach ($parent->getVarTags() as $key => $parentVarTag) {
 			$this->varTags = [$key => $this->resolveTemplateTypeInTag($parentVarTag, $phpDocBlock)];
 			break;
 		}
@@ -443,9 +444,11 @@ class ResolvedPhpDocBlock
 		$parentParamTags = $phpDocBlock->transformArrayKeysWithParameterNameMapping($parent->getParamTags());
 
 		foreach ($parentParamTags as $name => $parentParamTag) {
-			if ($this->paramTags !== false && !array_key_exists($name, $this->paramTags)) {
-				$this->paramTags[$name] = $this->resolveTemplateTypeInTag($parentParamTag, $phpDocBlock);
+			if ($this->paramTags === false || array_key_exists($name, $this->paramTags)) {
+				continue;
 			}
+
+			$this->paramTags[$name] = $this->resolveTemplateTypeInTag($parentParamTag, $phpDocBlock);
 		}
 	}
 
@@ -467,15 +470,19 @@ class ResolvedPhpDocBlock
 	private function mergeOneParentReturnTag(self $parent, PhpDocBlock $phpDocBlock): void
 	{
 		$parentReturnTag = $parent->getReturnTag();
-		if ($parentReturnTag !== null) {
-			$parentType = $parentReturnTag->getType();
-
-			// Each parent would overwrite the previous one except if it returns a less specific type.
-			// Do not care for incompatible types as there is a separate rule for that.
-			if ($this->returnTag === null || $this->returnTag === false || !$parentType->isSuperTypeOf($this->returnTag->getType())->yes()) {
-				$this->returnTag = $this->resolveTemplateTypeInTag($parentReturnTag->cloneImplicit(), $phpDocBlock);
-			}
+		if ($parentReturnTag === null) {
+			return;
 		}
+
+		$parentType = $parentReturnTag->getType();
+
+		// Each parent would overwrite the previous one except if it returns a less specific type.
+		// Do not care for incompatible types as there is a separate rule for that.
+		if ($this->returnTag !== null && $this->returnTag !== false && $parentType->isSuperTypeOf($this->returnTag->getType())->yes()) {
+			return;
+		}
+
+		$this->returnTag = $this->resolveTemplateTypeInTag($parentReturnTag->cloneImplicit(), $phpDocBlock);
 	}
 
 	/**
@@ -493,14 +500,15 @@ class ResolvedPhpDocBlock
 	private function mergeOneParentThrowsTag(self $parent): void
 	{
 		$parentThrowsTag = $parent->getThrowsTag();
+		if ($parentThrowsTag === null) {
+			return;
+		}
 
-		if ($parentThrowsTag !== null) {
-			if ($this->throwsTag === null || $this->throwsTag === false) {
-				$this->throwsTag = $parentThrowsTag;
-			} else {
-				$type = TypeCombinator::union($this->throwsTag->getType(), $parentThrowsTag->getType());
-				$this->throwsTag = new ThrowsTag($type);
-			}
+		if ($this->throwsTag === null || $this->throwsTag === false) {
+			$this->throwsTag = $parentThrowsTag;
+		} else {
+			$type = TypeCombinator::union($this->throwsTag->getType(), $parentThrowsTag->getType());
+			$this->throwsTag = new ThrowsTag($type);
 		}
 	}
 
@@ -521,9 +529,11 @@ class ResolvedPhpDocBlock
 	private function mergeOneParentDeprecatedTag(self $parent): void
 	{
 		$parentDeprecatedTag = $parent->getDeprecatedTag();
-		if ($parentDeprecatedTag !== null) {
-			$this->deprecatedTag = $parentDeprecatedTag;
+		if ($parentDeprecatedTag === null) {
+			return;
 		}
+
+		$this->deprecatedTag = $parentDeprecatedTag;
 	}
 
 	/**
@@ -532,7 +542,7 @@ class ResolvedPhpDocBlock
 	 * @param PhpDocBlock $phpDocBlock
 	 * @return T
 	 */
-	private function resolveTemplateTypeInTag($tag, PhpDocBlock $phpDocBlock)
+	private function resolveTemplateTypeInTag($tag, PhpDocBlock $phpDocBlock): TypedTag
 	{
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$tag->getType(),

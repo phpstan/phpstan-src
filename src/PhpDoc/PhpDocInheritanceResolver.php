@@ -41,6 +41,7 @@ class PhpDocInheritanceResolver
 
 	/**
 	 * @param string|null $docComment
+	 * @param string $fileName
 	 * @param ClassReflection $classReflection
 	 * @param string|null $declaringTraitName
 	 * @param string $methodName
@@ -49,18 +50,19 @@ class PhpDocInheritanceResolver
 	 */
 	public function resolvePhpDocForMethod(
 		?string $docComment,
+		string $fileName,
 		ClassReflection $classReflection,
 		?string $declaringTraitName,
 		string $methodName,
 		array $positionalParameterNames
-	)
+	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
 			$docComment,
 			$classReflection,
 			$declaringTraitName,
 			$methodName,
-			$classReflection->requireFileName(),
+			$fileName,
 			null,
 			$positionalParameterNames,
 			$positionalParameterNames
@@ -99,4 +101,5 @@ class PhpDocInheritanceResolver
 			$phpDocBlock->getDocComment()
 		);
 	}
+
 }

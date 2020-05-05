@@ -9,7 +9,6 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -158,7 +157,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$result = $this->getFileName();
 		if ($result === false) {
-			throw new ShouldNotHappenException();
+			throw new \PHPStan\ShouldNotHappenException();
 		}
 		return $result;
 	}

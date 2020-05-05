@@ -358,7 +358,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			self::getContainer()->getByType(StubPhpDocProvider::class)
 		);
 		$methodReflectionFactory->reflectionProvider = $reflectionProvider;
-		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $fileTypeMapper, $phpDocInheritanceResolver, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $reflectionProvider, true, []);
+		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $phpDocInheritanceResolver, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $reflectionProvider, true, []);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new PhpDefectClassReflectionExtension(self::getContainer()->getByType(TypeStringResolver::class), $annotationsPropertiesClassReflectionExtension));
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new UniversalObjectCratesClassReflectionExtension([\stdClass::class]));

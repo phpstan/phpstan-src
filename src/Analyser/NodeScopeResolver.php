@@ -59,7 +59,6 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Parser\Parser;
-use PHPStan\PhpDoc\PhpDocBlock;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ParamTag;
@@ -2578,6 +2577,7 @@ class NodeScopeResolver
 			}, $functionLike->getParams());
 			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 				$docComment,
+				$file,
 				$scope->getClassReflection(),
 				$trait,
 				$functionLike->name->name,

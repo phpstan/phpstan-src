@@ -292,9 +292,11 @@ class PhpDocBlock
 				$positionalParameterNames
 			);
 
-			if ($oneResult !== null) { // Null if it is private or from a wrong trait.
-				$result[] = $oneResult;
+			if ($oneResult === null) { // Null if it is private or from a wrong trait.
+				continue;
 			}
+
+			$result[] = $oneResult;
 		}
 
 		return $result;
@@ -402,7 +404,7 @@ class PhpDocBlock
 
 	public function resolveTemplateTypeIfAny(Type $type): Type
 	{
-		return ($type instanceof TemplateType)
+		return $type instanceof TemplateType
 			? $this->resolveTemplateType($type)
 			: $type;
 	}

@@ -47,7 +47,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 
 	private function getThrowsType(Node $node, Scope $scope): ?Type
 	{
-		return ($node instanceof Node\Stmt\ClassMethod)
+		return $node instanceof Node\Stmt\ClassMethod
 			? $this->getMethodThrowsType($node, $scope)
 			: $this->getFunctionThrowsType($node, $scope);
 	}
@@ -78,7 +78,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 
 	private function getMethodThrowsType(Node\Stmt\ClassMethod $node, Scope $scope): ?Type
 	{
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType] = $this->nodeScopeResolver->getPhpDocs($scope, $node);
+		[, , , $phpDocThrowType] = $this->nodeScopeResolver->getPhpDocs($scope, $node);
 		return $phpDocThrowType;
 	}
 

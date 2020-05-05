@@ -4793,7 +4793,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				__DIR__ . '/data/foreach/foreach-iterable-with-complex-value-type.php',
-				'float|ForeachIterableWithComplexValueType\Foo',
+				'float|ForeachWithComplexValueType\Foo',
 				'$value',
 			],
 			[

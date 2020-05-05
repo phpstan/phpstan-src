@@ -7,6 +7,7 @@ use PHPStan\File\FileHelper;
 
 class PhpDocInheritanceResolverIntegrationTest extends \PHPStan\Testing\TestCase
 {
+
 	private const DATA_DIR = __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
 
 	public function testMergeVarTags(): void

@@ -138,6 +138,16 @@ class PhpDefectClassReflectionExtension implements PropertiesClassReflectionExte
 			'key' => 'mixed',
 			'value' => 'mixed',
 		],
+		'SNMP' => [
+			'max_oids' => 'int',
+			'valueretrieval' => 'int',
+			'quick_print' => 'bool',
+			'enum_print' => 'bool',
+			'oid_output_format' => 'int',
+			'oid_increasing_check' => 'bool',
+			'exceptions_enabled' => 'int',
+			'info' => 'array',
+		],
 		'XMLReader' => [
 			'attributeCount' => 'int',
 			'baseURI' => 'string',

@@ -52,19 +52,19 @@ Now you are ready to set breakpoints on rules and have fun.
 
 ### Fixing code style
 
-First install composer in build-cs:
-
+To detect code style issues, run:
 ```bash
-cd build-cs
-composer install
-cd ..
+vendor/bin/phing cs
 ```
+
+This requires PHP 7.4. Otherwise the check will be skipped and succeed silently.
 
 And then to fix code style, run:
 
 ```bash
 vendor/bin/phing cs-fix
 ```
+This does not depend on PHP version.
 
 
 ### Running tests

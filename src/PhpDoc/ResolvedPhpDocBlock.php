@@ -392,14 +392,21 @@ class ResolvedPhpDocBlock
 	public function cloneAndMerge(array $parents, array $parentPhpDocBlocks): self
 	{
 		$result = clone $this;
-
-		$result->mergeVarTags($parents, $parentPhpDocBlocks);
-		$result->mergeParamTags($parents, $parentPhpDocBlocks);
-		$result->mergeReturnTags($parents, $parentPhpDocBlocks);
-		$result->mergeThrowsTags($parents);
-		$result->mergeDeprecatedTags($parents);
-
+		$result->mergeTags($parents, $parentPhpDocBlocks);
 		return $result;
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 */
+	private function mergeTags(array $parents, array $parentPhpDocBlocks): void // phpcs:disable
+	{
+		$this->mergeVarTags($parents, $parentPhpDocBlocks);
+		$this->mergeParamTags($parents, $parentPhpDocBlocks);
+		$this->mergeReturnTags($parents, $parentPhpDocBlocks);
+		$this->mergeThrowsTags($parents);
+		$this->mergeDeprecatedTags($parents);
 	}
 
 	/**
@@ -430,7 +437,7 @@ class ResolvedPhpDocBlock
 	 * @param array<int, self> $parents
 	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
 	 */
-	public function mergeParamTags(array $parents, array $parentPhpDocBlocks): void
+	private function mergeParamTags(array $parents, array $parentPhpDocBlocks): void
 	{
 		$this->getParamTags();
 
@@ -542,7 +549,7 @@ class ResolvedPhpDocBlock
 	 * @param PhpDocBlock $phpDocBlock
 	 * @return T
 	 */
-	private function resolveTemplateTypeInTag($tag, PhpDocBlock $phpDocBlock): TypedTag
+	private function resolveTemplateTypeInTag(TypedTag $tag, PhpDocBlock $phpDocBlock): TypedTag
 	{
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$tag->getType(),

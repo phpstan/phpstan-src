@@ -5,10 +5,8 @@ namespace PHPStan\Type\Generic;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -35,11 +33,10 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
-		string $name,
-		?Type $subtractedType = null
+		string $name
 	)
 	{
-		parent::__construct($subtractedType);
+		parent::__construct();
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
@@ -60,7 +57,7 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 	public function getBound(): Type
 	{
 		if ($this->bound === null) {
-			$this->bound = new ObjectWithoutClassType($this->getSubtractedType());
+			$this->bound = new ObjectWithoutClassType();
 		}
 		return $this->bound;
 	}
@@ -95,8 +92,7 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
-			$this->name,
-			$this->getSubtractedType()
+			$this->name
 		);
 	}
 
@@ -105,44 +101,19 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		return $this->variance->isValidVariance($a, $b);
 	}
 
-	public function getTypeWithoutSubtractedType(): Type
-	{
-		return new self(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			null
-		);
-	}
-
 	public function subtract(Type $type): Type
 	{
-		if ($type instanceof self) {
-			return new NeverType();
-		}
-		if ($this->getSubtractedType() !== null) {
-			$type = TypeCombinator::union($this->getSubtractedType(), $type);
-		}
+		return $this;
+	}
 
-		return new self(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			$type
-		);
+	public function getTypeWithoutSubtractedType(): Type
+	{
+		return $this;
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		return new self(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			$subtractedType
-		);
+		return $this;
 	}
 
 	public function equals(Type $type): bool
@@ -241,8 +212,7 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 			$properties['scope'],
 			$properties['strategy'],
 			$properties['variance'],
-			$properties['name'],
-			$properties['subtractedType']
+			$properties['name']
 		);
 	}
 

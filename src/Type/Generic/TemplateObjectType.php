@@ -35,17 +35,16 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		string $class,
-		?Type $subtractedType = null
+		string $class
 	)
 	{
-		parent::__construct($class, $subtractedType);
+		parent::__construct($class);
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new ObjectType($class, $subtractedType);
+		$this->bound = new ObjectType($class);
 	}
 
 	public function getName(): string
@@ -179,8 +178,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			new TemplateTypeArgumentStrategy(),
 			TemplateTypeVariance::createInvariant(),
 			$this->name,
-			$this->getClassName(),
-			$this->getSubtractedType()
+			$this->getClassName()
 		);
 	}
 
@@ -189,16 +187,19 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return $this->variance->isValidVariance($a, $b);
 	}
 
+	public function subtract(Type $type): Type
+	{
+		return $this;
+	}
+
+	public function getTypeWithoutSubtractedType(): Type
+	{
+		return $this;
+	}
+
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		return new self(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			$this->getClassName(),
-			$subtractedType
-		);
+		return $this;
 	}
 
 	public function getVariance(): TemplateTypeVariance
@@ -217,8 +218,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			$properties['strategy'],
 			$properties['variance'],
 			$properties['name'],
-			$properties['className'],
-			$properties['subtractedType']
+			$properties['className']
 		);
 	}
 

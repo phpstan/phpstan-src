@@ -6,9 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -35,11 +33,10 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
-		string $name,
-		?Type $subtractedType = null
+		string $name
 	)
 	{
-		parent::__construct(true, $subtractedType);
+		parent::__construct(true);
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
@@ -82,7 +79,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 	public function getBound(): Type
 	{
 		if ($this->bound === null) {
-			$this->bound = new MixedType(true, $this->getSubtractedType());
+			$this->bound = new MixedType(true);
 		}
 		return $this->bound;
 	}
@@ -172,8 +169,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
-			$this->name,
-			$this->getSubtractedType()
+			$this->name
 		);
 	}
 
@@ -184,42 +180,17 @@ final class TemplateMixedType extends MixedType implements TemplateType
 
 	public function subtract(Type $type): Type
 	{
-		if ($type instanceof self) {
-			return new NeverType();
-		}
-		if ($this->getSubtractedType() !== null) {
-			$type = TypeCombinator::union($this->getSubtractedType(), $type);
-		}
-
-		return new self(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			$type
-		);
+		return $this;
 	}
 
 	public function getTypeWithoutSubtractedType(): Type
 	{
-		return new self(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			null
-		);
+		return $this;
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		return new self(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			$subtractedType
-		);
+		return $this;
 	}
 
 	public function getVariance(): TemplateTypeVariance
@@ -237,8 +208,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$properties['scope'],
 			$properties['strategy'],
 			$properties['variance'],
-			$properties['name'],
-			$properties['subtractedType']
+			$properties['name']
 		);
 	}
 

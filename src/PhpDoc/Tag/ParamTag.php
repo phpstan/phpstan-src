@@ -29,6 +29,10 @@ class ParamTag implements TypedTag
 		return $this->isVariadic;
 	}
 
+	/**
+	 * @param Type $type
+	 * @return static
+	 */
 	public function withType(Type $type): self
 	{
 		$clone = clone $this;

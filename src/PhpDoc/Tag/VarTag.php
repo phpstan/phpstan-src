@@ -20,6 +20,10 @@ class VarTag implements TypedTag
 		return $this->type;
 	}
 
+	/**
+	 * @param Type $type
+	 * @return static
+	 */
 	public function withType(Type $type): self
 	{
 		$clone = clone $this;

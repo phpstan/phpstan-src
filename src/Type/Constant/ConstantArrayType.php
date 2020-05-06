@@ -442,14 +442,26 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
 			foreach ($this->keyTypes as $i => $keyType) {
 				if ($keyType->getValue() === $offsetType->getValue()) {
-					$newKeyTypes = $this->keyTypes;
-					unset($newKeyTypes[$i]);
-					$newValueTypes = $this->valueTypes;
-					unset($newValueTypes[$i]);
-					$optionalKeys = $this->optionalKeys;
-					unset($optionalKeys[$i]);
+					$keyTypes = $this->keyTypes;
+					unset($keyTypes[$i]);
+					$valueTypes = $this->valueTypes;
+					unset($valueTypes[$i]);
 
-					return new self(array_values($newKeyTypes), array_values($newValueTypes), $this->nextAutoIndex, array_values($optionalKeys));
+					$newKeyTypes = [];
+					$newValueTypes = [];
+					$newOptionalKeys = [];
+
+					$k = 0;
+					foreach ($keyTypes as $j => $newKeyType) {
+						$newKeyTypes[] = $newKeyType;
+						$newValueTypes[] = $valueTypes[$j];
+						if (in_array($j, $this->optionalKeys, true)) {
+							$newOptionalKeys[] = $k;
+						}
+						$k++;
+					}
+
+					return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndex, $newOptionalKeys);
 				}
 			}
 		}

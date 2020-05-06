@@ -170,6 +170,174 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 			]),
 			TrinaryLogic::createNo(),
 		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			], 0, [0, 1]),
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new ConstantStringType('test'),
+				new ConstantStringType('true'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			]),
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new ConstantStringType('test'),
+				new ConstantStringType('true'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			], 0, [1]),
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new ConstantStringType('test'),
+				new ConstantStringType('true'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('limit'),
+			], [
+				new IntegerType(),
+			], 0, [0]),
+			new ConstantArrayType([
+				new ConstantStringType('limit'),
+			], [
+				new ConstantStringType('true'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('limit'),
+			], [
+				new IntegerType(),
+			], 0),
+			new ConstantArrayType([
+				new ConstantStringType('limit'),
+			], [
+				new ConstantStringType('true'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new StringType(),
+				new StringType(),
+			], 0, [0, 1]),
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new ConstantStringType('test'),
+				new ConstantStringType('true'),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('name'),
+				new ConstantStringType('color'),
+			], [
+				new StringType(),
+				new StringType(),
+			], 0, [0, 1]),
+			new ConstantArrayType([
+				new ConstantStringType('color'),
+			], [
+				new ConstantStringType('test'),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('name'),
+				new ConstantStringType('color'),
+			], [
+				new StringType(),
+				new StringType(),
+			], 0, [0, 1]),
+			new ConstantArrayType([
+				new ConstantStringType('sound'),
+			], [
+				new ConstantStringType('test'),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new StringType(),
+				new StringType(),
+			], 0, [0, 1]),
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new ConstantStringType('s'),
+				new ConstantStringType('m'),
+			], 0, [0, 1]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			], 0, [0, 1]),
+			new ConstantArrayType([
+				new ConstantStringType('sorton'),
+				new ConstantStringType('limit'),
+			], [
+				new ConstantStringType('test'),
+				new ConstantStringType('true'),
+			]),
+			TrinaryLogic::createNo(),
+		];
 	}
 
 	/**

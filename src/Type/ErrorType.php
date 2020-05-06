@@ -5,6 +5,11 @@ namespace PHPStan\Type;
 class ErrorType extends MixedType
 {
 
+	public function __construct()
+	{
+		parent::__construct();
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
@@ -33,6 +38,11 @@ class ErrorType extends MixedType
 	public function subtract(Type $type): Type
 	{
 		return new self();
+	}
+
+	public function equals(Type $type): bool
+	{
+		return $type instanceof self;
 	}
 
 	/**

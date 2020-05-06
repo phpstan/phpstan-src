@@ -2866,14 +2866,22 @@ class MutatingScope implements Scope
 		);
 	}
 
-	public function removeTypeFromExpression(Expr $expr, Type $type): self
+	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove): self
 	{
+		$exprType = $this->getType($expr);
+		$typeAfterRemove = TypeCombinator::remove($exprType, $typeToRemove);
+		if (
+			!$expr instanceof Variable
+			&& $exprType->equals($typeAfterRemove)
+		) {
+			return $this;
+		}
 		$scope = $this->specifyExpressionType(
 			$expr,
-			TypeCombinator::remove($this->getType($expr), $type)
+			$typeAfterRemove
 		);
 		if ($expr instanceof Variable && is_string($expr->name)) {
-			$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = TypeCombinator::remove($this->getNativeType($expr), $type);
+			$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = TypeCombinator::remove($this->getNativeType($expr), $typeToRemove);
 		}
 
 		return $scope;

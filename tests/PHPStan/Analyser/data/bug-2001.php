@@ -34,4 +34,18 @@ class HelloWorld
 
 		return $redirectUrl;
 	}
+
+	public function doFoo(int $i)
+	{
+		$a = ['a' => $i];
+		if (rand(0, 1)) {
+			$a['b'] = $i;
+		}
+
+		if (rand(0,1)) {
+			$a = ['d' => $i];
+		}
+
+		assertType('array(\'a\' => int, ?\'b\' => int)|array(\'d\' => int)', $a);
+	}
 }

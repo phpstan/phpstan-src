@@ -186,11 +186,6 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 
 		-
-			message: "#^Negated boolean expression is always true\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
-
-		-
 			message: "#^Strict comparison using \\=\\=\\= between null and PhpParser\\\\Node will always evaluate to false\\.$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/PrettyPrinterAbstract.php

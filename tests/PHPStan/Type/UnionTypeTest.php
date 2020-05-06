@@ -18,13 +18,13 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				new UnionType([
+				TypeCombinator::union(
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 						[new ConstantStringType('Closure'), new ConstantStringType('bind')]
 					),
-					new ConstantStringType('array_push'),
-				]),
+					new ConstantStringType('array_push')
+				),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -520,7 +520,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 					]),
 					new ConstantStringType('aaa')
 				),
-				'\'aaa\'|array(?\'a\' => string, \'b\' => bool|int, ?\'c\' => float)',
+				'\'aaa\'|array(\'a\' => string, \'b\' => bool)|array(\'b\' => int, \'c\' => float)',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -581,12 +581,12 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @dataProvider dataDescribe
-	 * @param UnionType $type
+	 * @param Type $type
 	 * @param string $expectedValueDescription
 	 * @param string $expectedTypeOnlyDescription
 	 */
 	public function testDescribe(
-		UnionType $type,
+		Type $type,
 		string $expectedValueDescription,
 		string $expectedTypeOnlyDescription
 	): void

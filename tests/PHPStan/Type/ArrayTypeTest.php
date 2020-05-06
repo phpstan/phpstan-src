@@ -94,7 +94,7 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 		return [
 			[
 				new ArrayType(new MixedType(), new StringType()),
-				new UnionType([
+				TypeCombinator::union(
 					new ConstantArrayType([], []),
 					new ConstantArrayType(
 						[new ConstantIntegerType(0)],
@@ -106,8 +106,8 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 					], [
 						new StringType(),
 						new MixedType(),
-					]),
-				]),
+					])
+				),
 				TrinaryLogic::createYes(),
 			],
 			[

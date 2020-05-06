@@ -15,6 +15,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -24,6 +25,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_unique;
 
 class ConstantArrayType extends ArrayType implements ConstantType
 {
@@ -39,12 +41,21 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	/** @var int */
 	private $nextAutoIndex;
 
+	/** @var int[] */
+	private $optionalKeys;
+
 	/**
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param int $nextAutoIndex
+	 * @param int[] $optionalKeys
 	 */
-	public function __construct(array $keyTypes, array $valueTypes, int $nextAutoIndex = 0)
+	public function __construct(
+		array $keyTypes,
+		array $valueTypes,
+		int $nextAutoIndex = 0,
+		array $optionalKeys = []
+	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
 
@@ -56,6 +67,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$this->keyTypes = $keyTypes;
 		$this->valueTypes = $valueTypes;
 		$this->nextAutoIndex = $nextAutoIndex;
+		$this->optionalKeys = $optionalKeys;
 	}
 
 	public function isEmpty(): bool
@@ -66,6 +78,70 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function getNextAutoIndex(): int
 	{
 		return $this->nextAutoIndex;
+	}
+
+	/**
+	 * @return int[]
+	 */
+	public function getOptionalKeys(): array
+	{
+		return $this->optionalKeys;
+	}
+
+	/**
+	 * @return self[]
+	 */
+	public function getAllArrays(): array
+	{
+		$optionalKeysCombination = $this->powerSet($this->optionalKeys);
+		$requiredKeys = [];
+		foreach (array_keys($this->keyTypes) as $i) {
+			if (in_array($i, $this->optionalKeys, true)) {
+				continue;
+			}
+			$requiredKeys[] = $i;
+		}
+
+		$arrays = [];
+		foreach ($optionalKeysCombination as $combination) {
+			$keys = array_merge($requiredKeys, $combination);
+			$keyTypes = [];
+			$valueTypes = [];
+			foreach ($keys as $i) {
+				$keyTypes[] = $this->keyTypes[$i];
+				$valueTypes[] = $this->valueTypes[$i];
+			}
+
+			$arrays[] = new self($keyTypes, $valueTypes, 0 /*TODO*/, []);
+		}
+
+		return $arrays;
+	}
+
+	/**
+	 * @template T
+	 * @param T[] $in
+	 * @return T[][]
+	 */
+	private function powerSet(array $in): array
+	{
+		$count = count($in);
+		$members = pow(2, $count);
+		$return = [];
+		for ($i = 0; $i < $members; $i++) {
+			$b = sprintf('%0' . $count . 'b', $i);
+			$out = [];
+			for ($j = 0; $j < $count; $j++) {
+				if ($b[$j] !== '1') {
+					continue;
+				}
+
+				$out[] = $in[$j];
+			}
+			$return[] = $out;
+		}
+
+		return $return;
 	}
 
 	public function getKeyType(): Type
@@ -93,6 +169,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->valueTypes;
 	}
 
+	public function isOptionalKey(int $i): bool
+	{
+		return in_array($i, $this->optionalKeys, true);
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof MixedType && !$type instanceof TemplateMixedType) {
@@ -108,7 +189,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$valueType = $this->valueTypes[$i];
 			$hasOffset = $type->hasOffsetValueType($keyType);
 			if ($hasOffset->no()) {
+				if ($this->isOptionalKey($i)) {
+					continue;
+				}
 				return $hasOffset;
+			}
+			if ($hasOffset->maybe() && $this->isOptionalKey($i)) {
+				$hasOffset = TrinaryLogic::createYes();
 			}
 
 			$result = $result->and($hasOffset);
@@ -185,6 +272,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 		}
 
+		if ($this->optionalKeys !== $type->optionalKeys) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -257,6 +348,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$has = $type->hasMethod($method->getValue());
 		if (!$has->no()) {
+			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
+				$has = $has->and(TrinaryLogic::createMaybe());
+			}
+
 			return ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
 		}
 
@@ -275,7 +370,23 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return TrinaryLogic::extremeIdentity(...$results);
 		}
 
-		return $this->getKeyType()->isSuperTypeOf($offsetType);
+		$result = TrinaryLogic::createNo();
+		foreach ($this->keyTypes as $i => $keyType) {
+			$has = $keyType->isSuperTypeOf($offsetType);
+			if ($has->yes()) {
+				if ($this->isOptionalKey($i)) {
+					return TrinaryLogic::createMaybe();
+				}
+				return TrinaryLogic::createYes();
+			}
+			if (!$has->maybe()) {
+				continue;
+			}
+
+			$result = TrinaryLogic::createMaybe();
+		}
+
+		return $result;
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
@@ -320,7 +431,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					unset($newKeyTypes[$i]);
 					$newValueTypes = $this->valueTypes;
 					unset($newValueTypes[$i]);
-					return new self(array_values($newKeyTypes), array_values($newValueTypes), $this->nextAutoIndex);
+					$optionalKeys = $this->optionalKeys;
+					unset($optionalKeys[$i]);
+
+					return new self(array_values($newKeyTypes), array_values($newValueTypes), $this->nextAutoIndex, array_values($optionalKeys));
 				}
 			}
 		}
@@ -339,8 +453,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
+		$i = count($this->keyTypes) - 1;
+
 		$keyTypes = $this->keyTypes;
 		$valueTypes = $this->valueTypes;
+		$optionalKeys = $this->optionalKeys;
+		unset($optionalKeys[$i]);
 
 		$removedKeyType = array_pop($keyTypes);
 		array_pop($valueTypes);
@@ -351,7 +469,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self(
 			$keyTypes,
 			$valueTypes,
-			$nextAutoindex
+			$nextAutoindex,
+			array_values($optionalKeys)
 		);
 	}
 
@@ -410,7 +529,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self(
 			$keyTypes,
 			$valueTypes,
-			(int) $nextAutoIndex
+			(int) $nextAutoIndex,
+			[]
 		);
 	}
 
@@ -441,7 +561,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$valueTypes[] = TypeUtils::generalizeType($valueType);
 		}
 
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex);
+		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $this->optionalKeys);
 	}
 
 	/**
@@ -451,15 +571,22 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$keyTypes = [];
 		$valueTypes = [];
+		$optionalKeys = [];
 		$autoIndex = 0;
 
 		foreach ($this->keyTypes as $i => $keyType) {
 			$keyTypes[] = new ConstantIntegerType($i);
 			$valueTypes[] = $keyType;
 			$autoIndex++;
+
+			if (!$this->isOptionalKey($i)) {
+				continue;
+			}
+
+			$optionalKeys[] = $i;
 		}
 
-		return new self($keyTypes, $valueTypes, $autoIndex);
+		return new self($keyTypes, $valueTypes, $autoIndex, $optionalKeys);
 	}
 
 	/**
@@ -469,20 +596,33 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$keyTypes = [];
 		$valueTypes = [];
+		$optionalKeys = [];
 		$autoIndex = 0;
 
 		foreach ($this->valueTypes as $i => $valueType) {
 			$keyTypes[] = new ConstantIntegerType($i);
 			$valueTypes[] = $valueType;
 			$autoIndex++;
+
+			if (!$this->isOptionalKey($i)) {
+				continue;
+			}
+
+			$optionalKeys[] = $i;
 		}
 
-		return new self($keyTypes, $valueTypes, $autoIndex);
+		return new self($keyTypes, $valueTypes, $autoIndex, $optionalKeys);
 	}
 
 	public function count(): Type
 	{
-		return new ConstantIntegerType(count($this->getKeyTypes()));
+		$optionalKeysCount = count($this->optionalKeys);
+		$totalKeysCount = count($this->getKeyTypes());
+		if ($optionalKeysCount === $totalKeysCount) {
+			return new ConstantIntegerType($totalKeysCount);
+		}
+
+		return IntegerRangeType::fromInterval($totalKeysCount - $optionalKeysCount, $totalKeysCount);
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -497,7 +637,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					$exportValuesOnly = false;
 				}
 
-				$items[] = sprintf('%s => %s', var_export($keyType->getValue(), true), $valueType->describe($level));
+				$isOptional = $this->isOptionalKey($i);
+				if ($isOptional) {
+					$exportValuesOnly = false;
+				}
+
+				$items[] = sprintf('%s%s => %s', $isOptional ? '?' : '', var_export($keyType->getValue(), true), $valueType->describe($level));
 				$values[] = $valueType->describe($level);
 			}
 
@@ -603,7 +748,92 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		return new self($keyTypes, $valueTypes, $this->nextAutoIndex);
+		return new self($keyTypes, $valueTypes, $this->nextAutoIndex, $this->optionalKeys);
+	}
+
+	public function isKeysSupersetOf(self $otherArray): bool
+	{
+		if (count($this->keyTypes) === 0) {
+			return count($otherArray->keyTypes) === 0;
+		}
+
+		if (count($otherArray->keyTypes) === 0) {
+			return false;
+		}
+
+		$otherKeys = $otherArray->keyTypes;
+		foreach ($this->keyTypes as $keyType) {
+			foreach ($otherArray->keyTypes as $j => $otherKeyType) {
+				if (!$keyType->equals($otherKeyType)) {
+					continue;
+				}
+
+				unset($otherKeys[$j]);
+				continue 2;
+			}
+		}
+
+		return count($otherKeys) === 0;
+	}
+
+	public function mergeWith(self $otherArray): self
+	{
+		// only call this after verifying isKeysSupersetOf
+		$valueTypes = $this->valueTypes;
+		$optionalKeys = $this->optionalKeys;
+		foreach ($this->keyTypes as $i => $keyType) {
+			$otherIndex = $otherArray->getKeyIndex($keyType);
+			if ($otherIndex === null) {
+				$optionalKeys[] = $i;
+				continue;
+			}
+			if ($otherArray->isOptionalKey($otherIndex)) {
+				$optionalKeys[] = $i;
+			}
+			$otherValueType = $otherArray->valueTypes[$otherIndex];
+			$valueTypes[$i] = TypeCombinator::union($valueTypes[$i], $otherValueType);
+		}
+
+		$optionalKeys = array_values(array_unique($optionalKeys));
+
+		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $optionalKeys);
+	}
+
+	/**
+	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
+	 * @return int|null
+	 */
+	private function getKeyIndex($otherKeyType): ?int
+	{
+		foreach ($this->keyTypes as $i => $keyType) {
+			if ($keyType->equals($otherKeyType)) {
+				return $i;
+			}
+		}
+
+		return null;
+	}
+
+	public function makeOffsetRequired(Type $offsetType): self
+	{
+		$offsetType = ArrayType::castToArrayKeyType($offsetType);
+		$optionalKeys = $this->optionalKeys;
+		foreach ($this->keyTypes as $i => $keyType) {
+			if (!$keyType->equals($offsetType)) {
+				continue;
+			}
+
+			foreach ($optionalKeys as $j => $key) {
+				if ($i === $key) {
+					unset($optionalKeys[$j]);
+					return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndex, array_values($optionalKeys));
+				}
+			}
+
+			break;
+		}
+
+		return $this;
 	}
 
 	/**
@@ -612,7 +842,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		return new self($properties['keyTypes'], $properties['valueTypes'], $properties['nextAutoIndex']);
+		return new self($properties['keyTypes'], $properties['valueTypes'], $properties['nextAutoIndex'], $properties['optionalKeys'] ?? []);
 	}
 
 }

@@ -2663,11 +2663,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$arrayOfIntegers += $arrayOfIntegers',
 			],
 			[
-				'array(0 => 1, 1 => 1, 2 => 1, 3 => 1|2, 4 => 1|3, ?5 => 2, ?6 => 3)',
+				'array(0 => 1, 1 => 1, 2 => 1, 3 => 1|2, 4 => 1|3, ?5 => 2|3, ?6 => 3)',
 				'$conditionalArray + $unshiftedConditionalArray',
 			],
 			[
-				'array(0 => \'lorem\', 1 => stdClass, 2 => 1, 3 => 1, 4 => 1, ?5 => 2, ?6 => 3)',
+				'array(0 => \'lorem\', 1 => stdClass, 2 => 1, 3 => 1, 4 => 1, ?5 => 2|3, ?6 => 3)',
 				'$unshiftedConditionalArray + $conditionalArray',
 			],
 			[
@@ -2807,7 +2807,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'count($appendingToArrayInBranches)',
 			],
 			[
-				'3|5',
+				'3|4|5',
 				'count($conditionalArray)',
 			],
 			[
@@ -3023,7 +3023,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$arrToUnshift2',
 			],
 			[
-				'array(0 => \'lorem\', 1 => stdClass, 2 => 1, 3 => 1, 4 => 1, ?5 => 2, ?6 => 3)',
+				'array(0 => \'lorem\', 1 => stdClass, 2 => 1, 3 => 1, 4 => 1, ?5 => 2|3, ?6 => 3)',
 				'$unshiftedConditionalArray',
 			],
 			[
@@ -3095,7 +3095,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$anotherConditionalString . $conditionalString',
 			],
 			[
-				'6|8',
+				'6|7|8',
 				'count($conditionalArray) + count($array)',
 			],
 			[
@@ -3183,7 +3183,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				"sprintf('%s %s', 'foo', 'bar')",
 			],
 			[
-				'array(?0 => \'password\'|\'username\', ?1 => \'password\')',
+				'array()|array(0 => \'password\'|\'username\', ?1 => \'password\')',
 				'$coalesceArray',
 			],
 			[
@@ -5444,7 +5444,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_slice($withPossiblyFalsey, -2, null, true)',
 			],
 			[
-				'array(0 => \'\', \'a\' => 0)|array(\'baz\' => \'qux\')',
+				'array(\'baz\' => \'qux\')|array(0 => \'\', \'a\' => 0)',
 				'array_slice($unionArrays, 1)',
 			],
 			[
@@ -5780,7 +5780,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$parseUrlConstantUrlWithoutComponent2',
 			],
 			[
-				"array()|array('scheme' => string, 'host' => string, 'port' => int, 'user' => string, 'pass' => string, 'path' => string, 'query' => string, 'fragment' => string)|false",
+				"array(?'scheme' => string, ?'host' => string, ?'port' => int, ?'user' => string, ?'pass' => string, ?'path' => string, ?'query' => string, ?'fragment' => string)|false",
 				'$parseUrlConstantUrlUnknownComponent',
 			],
 			[
@@ -5804,7 +5804,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$parseUrlStringUrlWithComponentPort',
 			],
 			[
-				"array()|array('scheme' => string, 'host' => string, 'port' => int, 'user' => string, 'pass' => string, 'path' => string, 'query' => string, 'fragment' => string)|false",
+				"array(?'scheme' => string, ?'host' => string, ?'port' => int, ?'user' => string, ?'pass' => string, ?'path' => string, ?'query' => string, ?'fragment' => string)|false",
 				'$parseUrlStringUrlWithoutComponent',
 			],
 			[
@@ -9037,19 +9037,19 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$array[\'b\']',
 			],
 			[
-				'array(\'a\' => 1|3, \'b\' => 2|3, ?\'c\' => 4)',
+				'array(\'a\' => 1|2|3, \'b\' => 2|3, ?\'c\' => 4)',
 				'$array',
 			],
 			[
-				'array(\'a\' => 1|3, \'b\' => 2|3|null, ?\'c\' => 4)',
+				'array(\'a\' => 1|2|3, \'b\' => 2|3|null, ?\'c\' => 4)',
 				'$arrayCopy',
 			],
 			[
-				'array(\'a\' => 2)',
+				'array(\'a\' => 1|2|3, ?\'c\' => 4)',
 				'$anotherArrayCopy',
 			],
 			[
-				'array(\'a\' => 1|2|3, ?\'b\' => 2|3|null, ?\'c\' => 4)',
+				'array<string, 1|2|3|4|null>',
 				'$yetAnotherArrayCopy',
 			],
 			[
@@ -9617,7 +9617,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$two',
 			],
 			[
-				'array()|array(0 => string, 1 => ArrayShapesInPhpDoc\Foo, \'foo\' => ArrayShapesInPhpDoc\Bar)',
+				'array(?0 => string, ?1 => ArrayShapesInPhpDoc\Foo, ?\'foo\' => ArrayShapesInPhpDoc\Bar)',
 				'$three',
 			],
 		];

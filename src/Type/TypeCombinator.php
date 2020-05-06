@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryType;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -15,7 +16,6 @@ use PHPStan\Type\Generic\TemplateType;
 class TypeCombinator
 {
 
-	private const CONSTANT_ARRAY_UNION_THRESHOLD = 16;
 	private const CONSTANT_SCALAR_UNION_THRESHOLD = 8;
 
 	public static function addNull(Type $type): Type
@@ -111,6 +111,10 @@ class TypeCombinator
 
 			if ($typeToRemove instanceof NonEmptyArrayType) {
 				return new ConstantArrayType([], []);
+			}
+
+			if ($fromType instanceof ConstantArrayType && $typeToRemove instanceof HasOffsetType) {
+				return $fromType->unsetOffset($typeToRemove->getOffsetType());
 			}
 		} elseif ($fromType instanceof SubtractableType) {
 			$typeToSubtractFrom = $fromType;
@@ -519,16 +523,12 @@ class TypeCombinator
 			}
 		}
 
-		$createGeneralArray = static function () use ($keyTypesForGeneralArray, $valueTypesForGeneralArray, $accessoryTypes): Type {
-			return TypeCombinator::intersect(new ArrayType(
-				self::union(...$keyTypesForGeneralArray),
-				self::union(...$valueTypesForGeneralArray)
-			), ...$accessoryTypes);
-		};
-
 		if ($generalArrayOccurred) {
 			return [
-				$createGeneralArray(),
+				self::intersect(new ArrayType(
+					self::union(...$keyTypesForGeneralArray),
+					self::union(...$valueTypesForGeneralArray)
+				), ...$accessoryTypes),
 			];
 		}
 
@@ -551,6 +551,7 @@ class TypeCombinator
 					$bucket[$keyType->getValue()] = [
 						'keyType' => $keyType,
 						'valueType' => $arrayTypeAgain->getValueTypes()[$i],
+						'optional' => $arrayTypeAgain->isOptionalKey($i),
 					];
 				}
 				$constantArraysBuckets[$arrayIndex] = $bucket;
@@ -563,28 +564,58 @@ class TypeCombinator
 					$bucket[$keyType->getValue()]['valueType'],
 					$arrayTypeAgain->getValueTypes()[$i]
 				);
+				$bucket[$keyType->getValue()]['optional'] = $bucket[$keyType->getValue()]['optional'] || $arrayTypeAgain->isOptionalKey($i);
 			}
 
 			$constantArraysBuckets[$arrayIndex] = $bucket;
-		}
-
-		if (count($constantArraysBuckets) > self::CONSTANT_ARRAY_UNION_THRESHOLD) {
-			return [
-				$createGeneralArray(),
-			];
 		}
 
 		$resultArrays = [];
 		foreach ($constantArraysBuckets as $bucket) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			foreach ($bucket as $data) {
-				$builder->setOffsetValueType($data['keyType'], $data['valueType']);
+				$builder->setOffsetValueType($data['keyType'], $data['valueType'], $data['optional']);
 			}
 
 			$resultArrays[] = self::intersect($builder->getArray(), ...$accessoryTypes);
 		}
 
-		return $resultArrays;
+		return self::reduceArrays($resultArrays);
+	}
+
+	/**
+	 * @param Type[] $constantArrays
+	 * @return Type[]
+	 */
+	private static function reduceArrays(array $constantArrays): array
+	{
+		$newArrays = [];
+		$arraysToProcess = [];
+		foreach ($constantArrays as $constantArray) {
+			if (!$constantArray instanceof ConstantArrayType) {
+				$newArrays[] = $constantArray;
+				continue;
+			}
+
+			$arraysToProcess[] = $constantArray;
+		}
+
+		for ($i = 0; $i < count($arraysToProcess); $i++) {
+			for ($j = $i + 1; $j < count($arraysToProcess); $j++) {
+				if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
+					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+					array_splice($arraysToProcess, $i--, 1);
+					continue 2;
+
+				} elseif ($arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
+					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
+					array_splice($arraysToProcess, $j--, 1);
+					continue 1;
+				}
+			}
+		}
+
+		return array_merge($newArrays, $arraysToProcess);
 	}
 
 	public static function intersect(Type ...$types): Type
@@ -677,6 +708,15 @@ class TypeCombinator
 						$types[$j] = IntegerRangeType::fromInterval($min, $max);
 						array_splice($types, $i--, 1);
 						continue 2;
+					}
+					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof HasOffsetType) {
+						$types[$i] = $types[$i]->makeOffsetRequired($types[$j]->getOffsetType());
+						array_splice($types, $j--, 1);
+					}
+
+					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetType) {
+						$types[$j] = $types[$j]->makeOffsetRequired($types[$i]->getOffsetType());
+						array_splice($types, $i--, 1);
 					}
 
 					continue;

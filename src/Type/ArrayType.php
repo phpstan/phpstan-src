@@ -102,6 +102,7 @@ class ArrayType implements Type
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self
+			&& !$type instanceof ConstantArrayType
 			&& $this->getItemType()->equals($type->getItemType())
 			&& $this->keyType->equals($type->keyType);
 	}

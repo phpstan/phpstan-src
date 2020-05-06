@@ -149,7 +149,8 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 	{
 		return $type instanceof self
 			&& $type->scope->equals($this->scope)
-			&& $type->name === $this->name;
+			&& $type->name === $this->name
+			&& parent::equals($type);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic

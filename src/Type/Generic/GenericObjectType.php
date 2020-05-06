@@ -49,6 +49,30 @@ final class GenericObjectType extends ObjectType
 		);
 	}
 
+	public function equals(Type $type): bool
+	{
+		if (!$type instanceof self) {
+			return false;
+		}
+
+		if (!parent::equals($type)) {
+			return false;
+		}
+
+		if (count($this->types) !== count($type->types)) {
+			return false;
+		}
+
+		foreach ($this->types as $i => $genericType) {
+			$otherGenericType = $type->types[$i];
+			if (!$genericType->equals($otherGenericType)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	/**
 	 * @return string[]
 	 */

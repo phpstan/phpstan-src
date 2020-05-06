@@ -15,6 +15,9 @@ class ConstantArrayTypeBuilder
 	/** @var array<int, Type> */
 	private $valueTypes = [];
 
+	/** @var array<int> */
+	private $optionalKeys = [];
+
 	/** @var int */
 	private $nextAutoIndex;
 
@@ -24,22 +27,25 @@ class ConstantArrayTypeBuilder
 	/**
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
+	 * @param array<int> $optionalKeys
 	 * @param int $nextAutoIndex
 	 */
 	private function __construct(
 		array $keyTypes,
 		array $valueTypes,
-		int $nextAutoIndex
+		int $nextAutoIndex,
+		array $optionalKeys
 	)
 	{
 		$this->keyTypes = $keyTypes;
 		$this->valueTypes = $valueTypes;
 		$this->nextAutoIndex = $nextAutoIndex;
+		$this->optionalKeys = $optionalKeys;
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], 0);
+		return new self([], [], 0, []);
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -47,11 +53,12 @@ class ConstantArrayTypeBuilder
 		return new self(
 			$startArrayType->getKeyTypes(),
 			$startArrayType->getValueTypes(),
-			$startArrayType->getNextAutoIndex()
+			$startArrayType->getNextAutoIndex(),
+			$startArrayType->getOptionalKeys()
 		);
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): void
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $optional = false): void
 	{
 		if ($offsetType === null) {
 			$offsetType = new ConstantIntegerType($this->nextAutoIndex);
@@ -73,6 +80,10 @@ class ConstantArrayTypeBuilder
 
 			$this->keyTypes[] = $offsetType;
 			$this->valueTypes[] = $valueType;
+
+			if ($optional) {
+				$this->optionalKeys[] = count($this->keyTypes) - 1;
+			}
 
 			/** @var int|float $newNextAutoIndex */
 			$newNextAutoIndex = $offsetType instanceof ConstantIntegerType
@@ -99,7 +110,7 @@ class ConstantArrayTypeBuilder
 		if (!$this->degradeToGeneralArray) {
 			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
-			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndex);
+			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndex, $this->optionalKeys);
 		}
 
 		return new ArrayType(

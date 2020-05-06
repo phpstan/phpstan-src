@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -83,13 +82,12 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		if ($this->allComponentsTogetherType === null) {
 			$returnTypes = [
 				new ConstantBooleanType(false),
-				new ConstantArrayType([], []),
 			];
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 
 			foreach ($this->componentTypesPairedStrings as $componentName => $componentValueType) {
-				$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType);
+				$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType, true);
 			}
 
 			$returnTypes[] = $builder->getArray();

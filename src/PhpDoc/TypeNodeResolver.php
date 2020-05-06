@@ -449,47 +449,23 @@ class TypeNodeResolver
 
 	private function resolveArrayShapeNode(ArrayShapeNode $typeNode, NameScope $nameScope): Type
 	{
-		$requiredItems = [];
-		$optionalItems = [];
-		foreach ($typeNode->items as $itemNode) {
-			if ($itemNode->optional) {
-				$optionalItems[] = $itemNode;
-				continue;
-			}
-
-			$requiredItems[] = $itemNode;
-		}
-
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
-		$addToBuilder = function (ConstantArrayTypeBuilder $builder, array $items) use ($nameScope): void {
-			foreach ($items as $itemNode) {
-				$offsetType = null;
-				if ($itemNode->keyName instanceof ConstExprIntegerNode) {
-					$offsetType = new ConstantIntegerType((int) $itemNode->keyName->value);
-				} elseif ($itemNode->keyName instanceof IdentifierTypeNode) {
-					$offsetType = new ConstantStringType($itemNode->keyName->name);
-				} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
-					$offsetType = new ConstantStringType($itemNode->keyName->value);
-				} elseif ($itemNode->keyName !== null) {
-					throw new \PHPStan\ShouldNotHappenException('Unsupported key node type: ' . get_class($itemNode->keyName));
-				}
-				$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope));
+		foreach ($typeNode->items as $itemNode) {
+			$offsetType = null;
+			if ($itemNode->keyName instanceof ConstExprIntegerNode) {
+				$offsetType = new ConstantIntegerType((int) $itemNode->keyName->value);
+			} elseif ($itemNode->keyName instanceof IdentifierTypeNode) {
+				$offsetType = new ConstantStringType($itemNode->keyName->name);
+			} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
+				$offsetType = new ConstantStringType($itemNode->keyName->value);
+			} elseif ($itemNode->keyName !== null) {
+				throw new \PHPStan\ShouldNotHappenException('Unsupported key node type: ' . get_class($itemNode->keyName));
 			}
-		};
-
-		$arrays = [];
-		$addToBuilder($builder, $requiredItems);
-		$arrays[] = $builder->getArray();
-
-		if (count($optionalItems) === 0) {
-			return $arrays[0];
+			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
 
-		$addToBuilder($builder, $optionalItems);
-		$arrays[] = $builder->getArray();
-
-		return TypeCombinator::union(...$arrays);
+		return $builder->getArray();
 	}
 
 	private function resolveConstTypeNode(ConstTypeNode $typeNode, NameScope $nameScope): Type

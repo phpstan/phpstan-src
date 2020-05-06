@@ -16,7 +16,29 @@ class TypeUtils
 	 */
 	public static function getArrays(Type $type): array
 	{
-		return self::map(ArrayType::class, $type, true);
+		if ($type instanceof ConstantArrayType) {
+			return $type->getAllArrays();
+		}
+
+		if ($type instanceof ArrayType) {
+			return [$type];
+		}
+
+		if ($type instanceof UnionType) {
+			$matchingTypes = [];
+			foreach ($type->getTypes() as $innerType) {
+				if (!$innerType instanceof ArrayType) {
+					return [];
+				}
+				foreach (self::getArrays($innerType) as $innerInnerType) {
+					$matchingTypes[] = $innerInnerType;
+				}
+			}
+
+			return $matchingTypes;
+		}
+
+		return [];
 	}
 
 	/**
@@ -25,7 +47,25 @@ class TypeUtils
 	 */
 	public static function getConstantArrays(Type $type): array
 	{
-		return self::map(ConstantArrayType::class, $type, false);
+		if ($type instanceof ConstantArrayType) {
+			return $type->getAllArrays();
+		}
+
+		if ($type instanceof UnionType) {
+			$matchingTypes = [];
+			foreach ($type->getTypes() as $innerType) {
+				if (!$innerType instanceof ConstantArrayType) {
+					return [];
+				}
+				foreach (self::getConstantArrays($innerType) as $innerInnerType) {
+					$matchingTypes[] = $innerInnerType;
+				}
+			}
+
+			return $matchingTypes;
+		}
+
+		return [];
 	}
 
 	/**

@@ -78,11 +78,11 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				171,
 			],
 			[
-				'Offset int does not exist on array()|array(3 => 3, 4 => 4)|array(1 => 1, 2 => 2).',
+				'Offset int does not exist on array()|array(1 => 1, 2 => 2)|array(3 => 3, 4 => 4).',
 				190,
 			],
 			[
-				'Offset int does not exist on array()|array(3 => 3, 4 => 4)|array(1 => 1, 2 => 2).',
+				'Offset int does not exist on array()|array(1 => 1, 2 => 2)|array(3 => 3, 4 => 4).',
 				193,
 			],
 			[

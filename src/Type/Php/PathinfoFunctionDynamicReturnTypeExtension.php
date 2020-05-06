@@ -6,10 +6,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
 
 class PathinfoFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
@@ -31,21 +31,15 @@ class PathinfoFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 		} elseif ($argsCount === 1) {
 			$stringType = new StringType();
 
-			$dirname = new ConstantStringType('dirname');
-			$basename = new ConstantStringType('basename');
-			$extension = new ConstantStringType('extension');
-			$filename = new ConstantStringType('filename');
-
-			return new UnionType([
+			$builder = ConstantArrayTypeBuilder::createFromConstantArray(
 				new ConstantArrayType(
-					[$dirname, $basename, $filename],
+					[new ConstantStringType('dirname'), new ConstantStringType('basename'), new ConstantStringType('filename')],
 					[$stringType, $stringType, $stringType]
-				),
-				new ConstantArrayType(
-					[$dirname, $basename, $extension, $filename],
-					[$stringType, $stringType, $stringType, $stringType]
-				),
-			]);
+				)
+			);
+			$builder->setOffsetValueType(new ConstantStringType('extension'), $stringType, true);
+
+			return $builder->getArray();
 		}
 
 		return new StringType();

@@ -91,7 +91,11 @@ class ImpossibleCheckTypeHelper
 						return null;
 					}
 
-					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 1) {
+					if (!$haystackType->isArray()->yes()) {
+						return null;
+					}
+
+					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
 						$needleType = $scope->getType($node->args[0]->value);
 
 						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
@@ -99,7 +103,7 @@ class ImpossibleCheckTypeHelper
 							return null;
 						}
 
-						$valueType = TypeCombinator::union(...$haystackArrayTypes)->getIterableValueType();
+						$valueType = $haystackType->getIterableValueType();
 						$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
 
 						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {

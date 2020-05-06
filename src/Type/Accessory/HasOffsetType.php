@@ -34,6 +34,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		$this->offsetType = $offsetType;
 	}
 
+	public function getOffsetType(): Type
+	{
+		return $this->offsetType;
+	}
+
 	public function getReferencedClasses(): array
 	{
 		return [];

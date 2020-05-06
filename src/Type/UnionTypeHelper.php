@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -77,6 +78,20 @@ class UnionTypeHelper
 
 			if ($a instanceof ConstantStringType && $b instanceof ConstantStringType) {
 				return strcasecmp($a->getValue(), $b->getValue());
+			}
+
+			if ($a instanceof ConstantArrayType && $b instanceof ConstantArrayType) {
+				if ($a->isEmpty()) {
+					if ($b->isEmpty()) {
+						return 0;
+					}
+
+					return -1;
+				} elseif ($b->isEmpty()) {
+					return 1;
+				}
+
+				return strcasecmp($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
 			}
 
 			return strcasecmp($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));

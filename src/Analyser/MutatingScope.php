@@ -2873,6 +2873,8 @@ class MutatingScope implements Scope
 		if (
 			!$expr instanceof Variable
 			&& $exprType->equals($typeAfterRemove)
+			&& !$exprType instanceof ErrorType
+			&& !$exprType instanceof NeverType
 		) {
 			return $this;
 		}

@@ -44,6 +44,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	/** @var int[] */
 	private $optionalKeys;
 
+	/** @var self[]|null */
+	private $allArrays;
+
 	/**
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
@@ -93,7 +96,19 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public function getAllArrays(): array
 	{
-		$optionalKeysCombination = $this->powerSet($this->optionalKeys);
+		if ($this->allArrays !== null) {
+			return $this->allArrays;
+		}
+
+		if (count($this->optionalKeys) <= 10) {
+			$optionalKeysCombinations = $this->powerSet($this->optionalKeys);
+		} else {
+			$optionalKeysCombinations = [
+				[],
+				$this->optionalKeys,
+			];
+		}
+
 		$requiredKeys = [];
 		foreach (array_keys($this->keyTypes) as $i) {
 			if (in_array($i, $this->optionalKeys, true)) {
@@ -103,7 +118,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$arrays = [];
-		foreach ($optionalKeysCombination as $combination) {
+		foreach ($optionalKeysCombinations as $combination) {
 			$keys = array_merge($requiredKeys, $combination);
 			$keyTypes = [];
 			$valueTypes = [];
@@ -115,7 +130,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$arrays[] = new self($keyTypes, $valueTypes, 0 /*TODO*/, []);
 		}
 
-		return $arrays;
+		return $this->allArrays = $arrays;
 	}
 
 	/**

@@ -6,9 +6,21 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Type\TypeUtils;
 
 class MixinPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
+
+	/** @var string[] */
+	private $mixinExcludeClasses;
+
+	/**
+	 * @param string[] $mixinExcludeClasses
+	 */
+	public function __construct(array $mixinExcludeClasses)
+	{
+		$this->mixinExcludeClasses = $mixinExcludeClasses;
+	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
@@ -29,6 +41,10 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 	{
 		$mixinTypes = $classReflection->getResolvedMixinTypes();
 		foreach ($mixinTypes as $type) {
+			if (count(array_intersect(TypeUtils::getDirectClassNames($type), $this->mixinExcludeClasses)) > 0) {
+				continue;
+			}
+
 			if (!$type->hasProperty($propertyName)->yes()) {
 				continue;
 			}

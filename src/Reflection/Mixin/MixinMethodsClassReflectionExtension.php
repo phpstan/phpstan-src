@@ -6,9 +6,21 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
+use PHPStan\Type\TypeUtils;
 
 class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
+
+	/** @var string[] */
+	private $mixinExcludeClasses;
+
+	/**
+	 * @param string[] $mixinExcludeClasses
+	 */
+	public function __construct(array $mixinExcludeClasses)
+	{
+		$this->mixinExcludeClasses = $mixinExcludeClasses;
+	}
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool
 	{
@@ -29,6 +41,10 @@ class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExte
 	{
 		$mixinTypes = $classReflection->getResolvedMixinTypes();
 		foreach ($mixinTypes as $type) {
+			if (count(array_intersect(TypeUtils::getDirectClassNames($type), $this->mixinExcludeClasses)) > 0) {
+				continue;
+			}
+
 			if (!$type->hasMethod($methodName)->yes()) {
 				continue;
 			}

@@ -39,6 +39,7 @@ parameters:
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
 	reportStaticMethodSignatures: false
+	mixinExcludeClasses: []
 	parallel:
 		jobSize: 20
 		processTimeout: 60.0
@@ -215,6 +216,7 @@ parametersSchema:
 	tmpDir: string()
 	currentWorkingDirectory: string()
 	cliArgumentsVariablesRegistered: bool()
+	mixinExcludeClasses: listOf(string())
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -480,11 +482,15 @@ services:
 		class: PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension
 		tags:
 			- phpstan.broker.methodsClassReflectionExtension
+		arguments:
+			mixinExcludeClasses: %mixinExcludeClasses%
 
 	-
 		class: PHPStan\Reflection\Mixin\MixinPropertiesClassReflectionExtension
 		tags:
 			- phpstan.broker.propertiesClassReflectionExtension
+		arguments:
+			mixinExcludeClasses: %mixinExcludeClasses%
 
 	-
 		class: PHPStan\Reflection\Php\PhpClassReflectionExtension

@@ -1,10 +1,11 @@
-<?php declare(strict_types = 1);
+<?php
 
-namespace PhpDoc\ReturnTag;
+namespace ReturnTypePhpDocMergeReturnInherited;
 
 class A {}
 class B extends A {}
 class C extends B {}
+class D extends A {}
 
 class GrandparentClass
 {
@@ -27,10 +28,27 @@ interface InterfaceA
 class ParentClass extends GrandparentClass implements InterfaceC, InterfaceA
 {
 	/** Some comment */
-	public function method() { return new B(); } // error: should return C
+	public function method()
+	{
+		return new B();
+	}
 }
 
 class ChildClass extends ParentClass
 {
-	public function method() { return 1; } // error: should return C
+	public function method()
+	{
+		return new B();
+	}
+}
+
+class ChildClass2 extends ParentClass
+{
+	/**
+	 * @return D
+	 */
+	public function method()
+	{
+		return new B();
+	}
 }

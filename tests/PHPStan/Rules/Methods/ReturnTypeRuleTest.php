@@ -355,4 +355,22 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2885.php'], []);
 	}
 
+	public function testMergeInheritedPhpDocs(): void
+	{
+		$this->analyse([__DIR__ . '/data/merge-inherited-return.php'], [
+			[
+				'Method ReturnTypePhpDocMergeReturnInherited\ParentClass::method() should return ReturnTypePhpDocMergeReturnInherited\C but returns ReturnTypePhpDocMergeReturnInherited\B.',
+				33,
+			],
+			[
+				'Method ReturnTypePhpDocMergeReturnInherited\ChildClass::method() should return ReturnTypePhpDocMergeReturnInherited\C but returns ReturnTypePhpDocMergeReturnInherited\B.',
+				41,
+			],
+			[
+				'Method ReturnTypePhpDocMergeReturnInherited\ChildClass2::method() should return ReturnTypePhpDocMergeReturnInherited\D but returns ReturnTypePhpDocMergeReturnInherited\B.',
+				52,
+			],
+		]);
+	}
+
 }

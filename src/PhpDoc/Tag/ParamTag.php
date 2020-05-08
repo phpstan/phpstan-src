@@ -31,13 +31,11 @@ class ParamTag implements TypedTag
 
 	/**
 	 * @param Type $type
-	 * @return static
+	 * @return self
 	 */
-	public function withType(Type $type): self
+	public function withType(Type $type): TypedTag
 	{
-		$clone = clone $this;
-		$clone->type = $type;
-		return $clone;
+		return new self($type, $this->isVariadic);
 	}
 
 	/**

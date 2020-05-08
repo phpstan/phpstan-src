@@ -31,20 +31,16 @@ class ReturnTag implements TypedTag
 
 	/**
 	 * @param Type $type
-	 * @return static
+	 * @return self
 	 */
-	public function withType(Type $type): self
+	public function withType(Type $type): TypedTag
 	{
-		$clone = clone $this;
-		$clone->type = $type;
-		return $clone;
+		return new self($type, $this->isExplicit);
 	}
 
 	public function cloneImplicit(): self
 	{
-		$clone = clone $this;
-		$clone->isExplicit = false;
-		return $clone;
+		return new self($this->type, false);
 	}
 
 	/**

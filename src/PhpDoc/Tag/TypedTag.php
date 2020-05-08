@@ -11,9 +11,8 @@ interface TypedTag
 
 	/**
 	 * @param Type $type
-	 *
 	 * @return static
 	 */
-	public function withType(Type $type);
+	public function withType(Type $type): self;
 
 }

@@ -3,100 +3,58 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
-use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassMethodNode;
+use PHPStan\Node\InFunctionNode;
+use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\FunctionLike>
+ * @implements \PHPStan\Rules\Rule<VirtualNode>
  */
 class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var FileTypeMapper */
-	private $fileTypeMapper;
-
-	/** @var NodeScopeResolver */
-	private $nodeScopeResolver;
-
-	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		NodeScopeResolver $nodeScopeResolver
-	)
-	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-	}
-
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\FunctionLike::class;
+		return VirtualNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$throwsType = $this->getThrowsType($node, $scope);
-		return $this->check($throwsType);
-	}
-
-	private function getThrowsType(Node $node, Scope $scope): ?Type
-	{
-		return $node instanceof Node\Stmt\ClassMethod
-			? $this->getMethodThrowsType($node, $scope)
-			: $this->getFunctionThrowsType($node, $scope);
-	}
-
-	private function getFunctionThrowsType(Node $node, Scope $scope): ?Type
-	{
-		$docComment = $node->getDocComment();
-		if ($docComment === null) {
-			return null;
+		if (!$node instanceof InFunctionNode && !$node instanceof InClassMethodNode) {
+			return [];
 		}
 
-		$functionName = null;
-		if ($node instanceof Node\Stmt\Function_) {
-			$functionName = trim($scope->getNamespace() . '\\' . $node->name->name, '\\');
+		if ($scope->getFunction() === null) {
+			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$scope->getFile(),
-			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$functionName,
-			$docComment->getText()
-		);
+		$throwType = $scope->getFunction()->getThrowType();
 
-		$throwsTag = $resolvedPhpDoc->getThrowsTag();
-		return $throwsTag === null ? null : $throwsTag->getType();
-	}
-
-	private function getMethodThrowsType(Node\Stmt\ClassMethod $node, Scope $scope): ?Type
-	{
-		[, , , $phpDocThrowType] = $this->nodeScopeResolver->getPhpDocs($scope, $node);
-		return $phpDocThrowType;
+		return $this->check($throwType);
 	}
 
 	/**
-	 * @param Type|null $phpDocThrowsType
+	 * @param Type|null $phpDocThrowType
 	 * @return array<int, RuleError> errors
 	 */
-	private function check(?Type $phpDocThrowsType): array
+	private function check(?Type $phpDocThrowType): array
 	{
-		if ($phpDocThrowsType === null) {
+		if ($phpDocThrowType === null) {
 			return [];
 		}
 
-		if ((new VoidType())->isSuperTypeOf($phpDocThrowsType)->yes()) {
+		if ((new VoidType())->isSuperTypeOf($phpDocThrowType)->yes()) {
 			return [];
 		}
 
-		$isThrowsSuperType = (new ObjectType(\Throwable::class))->isSuperTypeOf($phpDocThrowsType);
+		$isThrowsSuperType = (new ObjectType(\Throwable::class))->isSuperTypeOf($phpDocThrowType);
 		if ($isThrowsSuperType->yes()) {
 			return [];
 		}
@@ -104,7 +62,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @throws with type %s is not subtype of Throwable',
-				$phpDocThrowsType->describe(VerbosityLevel::typeOnly())
+				$phpDocThrowType->describe(VerbosityLevel::typeOnly())
 			))->build(),
 		];
 	}

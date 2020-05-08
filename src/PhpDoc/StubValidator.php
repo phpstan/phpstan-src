@@ -117,9 +117,6 @@ class StubValidator
 		$functionDefinitionCheck = $container->getByType(FunctionDefinitionCheck::class);
 		$missingTypehintCheck = $container->getByType(MissingTypehintCheck::class);
 
-		/** @var NodeScopeResolver $nodeScopeResolver */
-		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
-
 		return new Registry([
 			// level 0
 			new ExistingClassesInClassImplementsRule($classCaseSensitivityCheck),
@@ -149,7 +146,7 @@ class StubValidator
 				$container->getByType(Lexer::class),
 				$container->getByType(PhpDocParser::class)
 			),
-			new InvalidThrowsPhpDocValueRule($fileTypeMapper, $nodeScopeResolver),
+			new InvalidThrowsPhpDocValueRule(),
 
 			// level 6
 			new MissingFunctionParameterTypehintRule($reflectionProvider, $missingTypehintCheck),

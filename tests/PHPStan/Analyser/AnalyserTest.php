@@ -8,6 +8,7 @@ use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\DirectParser;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 
@@ -493,10 +494,14 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);
+		$fileTypeMapper = new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper));
+		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
+
 		$nodeScopeResolver = new NodeScopeResolver(
 			$broker,
 			$this->getParser(),
-			new FileTypeMapper($this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper)),
+			$fileTypeMapper,
+			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,
 			false,

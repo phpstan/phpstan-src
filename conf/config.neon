@@ -271,6 +271,9 @@ services:
 		class: PHPStan\PhpDocParser\Parser\PhpDocParser
 
 	-
+		class: PHPStan\PhpDoc\PhpDocInheritanceResolver
+
+	-
 		class: PHPStan\PhpDoc\PhpDocNodeResolver
 
 	-

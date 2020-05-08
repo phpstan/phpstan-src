@@ -8,6 +8,8 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Type;
 
 class PhpDocBlock
 {
@@ -30,6 +32,9 @@ class PhpDocBlock
 	/** @var array<string, string> */
 	private $parameterNameMapping;
 
+	/** @var array<int, self> */
+	private $parents;
+
 	/**
 	 * @param string $docComment
 	 * @param string $file
@@ -37,6 +42,7 @@ class PhpDocBlock
 	 * @param string|null $trait
 	 * @param bool $explicit
 	 * @param array<string, string> $parameterNameMapping
+	 * @param array<int, self> $parents
 	 */
 	private function __construct(
 		string $docComment,
@@ -44,7 +50,8 @@ class PhpDocBlock
 		ClassReflection $classReflection,
 		?string $trait,
 		bool $explicit,
-		array $parameterNameMapping
+		array $parameterNameMapping,
+		array $parents
 	)
 	{
 		$this->docComment = $docComment;
@@ -53,6 +60,7 @@ class PhpDocBlock
 		$this->trait = $trait;
 		$this->explicit = $explicit;
 		$this->parameterNameMapping = $parameterNameMapping;
+		$this->parents = $parents;
 	}
 
 	public function getDocComment(): string
@@ -78,6 +86,14 @@ class PhpDocBlock
 	public function isExplicit(): bool
 	{
 		return $this->explicit;
+	}
+
+	/**
+	 * @return array<int, self>
+	 */
+	public function getParents(): array
+	{
+		return $this->parents;
 	}
 
 	/**
@@ -107,7 +123,7 @@ class PhpDocBlock
 	 * @param bool|null $explicit
 	 * @param array<int, string> $originalPositionalParameterNames
 	 * @param array<int, string> $newPositionalParameterNames
-	 * @return self|null
+	 * @return self
 	 */
 	public static function resolvePhpDocBlockForProperty(
 		?string $docComment,
@@ -118,9 +134,9 @@ class PhpDocBlock
 		?bool $explicit,
 		array $originalPositionalParameterNames, // unused
 		array $newPositionalParameterNames // unused
-	): ?self
+	): self
 	{
-		return self::resolvePhpDocBlock(
+		return self::resolvePhpDocBlockTree(
 			$docComment,
 			$classReflection,
 			$trait,
@@ -144,7 +160,7 @@ class PhpDocBlock
 	 * @param bool|null $explicit
 	 * @param array<int, string> $originalPositionalParameterNames
 	 * @param array<int, string> $newPositionalParameterNames
-	 * @return self|null
+	 * @return self
 	 */
 	public static function resolvePhpDocBlockForMethod(
 		?string $docComment,
@@ -155,9 +171,9 @@ class PhpDocBlock
 		?bool $explicit,
 		array $originalPositionalParameterNames,
 		array $newPositionalParameterNames
-	): ?self
+	): self
 	{
-		return self::resolvePhpDocBlock(
+		return self::resolvePhpDocBlockTree(
 			$docComment,
 			$classReflection,
 			$trait,
@@ -184,9 +200,9 @@ class PhpDocBlock
 	 * @param bool|null $explicit
 	 * @param array<int, string> $originalPositionalParameterNames
 	 * @param array<int, string> $newPositionalParameterNames
-	 * @return self|null
+	 * @return self
 	 */
-	private static function resolvePhpDocBlock(
+	private static function resolvePhpDocBlockTree(
 		?string $docComment,
 		ClassReflection $classReflection,
 		?string $trait,
@@ -198,45 +214,39 @@ class PhpDocBlock
 		?bool $explicit,
 		array $originalPositionalParameterNames,
 		array $newPositionalParameterNames
-	): ?self
+	): self
 	{
-		if (
-			$docComment === null
-			|| preg_match('#@inheritdoc|\{@inheritdoc\}#i', $docComment) > 0
-		) {
-			if ($classReflection->getParentClass() !== false) {
-				$parentClassReflection = $classReflection->getParentClass();
-				$phpDocBlockFromClass = self::resolvePhpDocBlockRecursive(
-					$parentClassReflection,
-					$trait,
-					$name,
-					$hasMethodName,
-					$getMethodName,
-					$resolveMethodName,
-					$explicit ?? $docComment !== null,
-					$originalPositionalParameterNames
-				);
-				if ($phpDocBlockFromClass !== null) {
-					return $phpDocBlockFromClass;
-				}
-			}
+		$docBlocksFromParents = self::resolveParentPhpDocBlocks(
+			$classReflection,
+			$name,
+			$hasMethodName,
+			$getMethodName,
+			$resolveMethodName,
+			$explicit ?? $docComment !== null,
+			$newPositionalParameterNames
+		);
 
-			foreach ($classReflection->getInterfaces() as $interface) {
-				$phpDocBlockFromClass = self::resolvePhpDocBlockFromClass(
-					$interface,
-					$name,
-					$hasMethodName,
-					$getMethodName,
-					$resolveMethodName,
-					$explicit ?? $docComment !== null,
-					$originalPositionalParameterNames
-				);
-				if ($phpDocBlockFromClass !== null) {
-					return $phpDocBlockFromClass;
-				}
-			}
-		}
+		return new self(
+			$docComment ?? '/** */',
+			$file,
+			$classReflection,
+			$trait,
+			$explicit ?? true,
+			self::remapParameterNames($originalPositionalParameterNames, $newPositionalParameterNames),
+			$docBlocksFromParents
+		);
+	}
 
+	/**
+	 * @param array<int, string> $originalPositionalParameterNames
+	 * @param array<int, string> $newPositionalParameterNames
+	 * @return array<string, string>
+	 */
+	private static function remapParameterNames(
+		array $originalPositionalParameterNames,
+		array $newPositionalParameterNames
+	): array
+	{
 		$parameterNameMapping = [];
 		foreach ($originalPositionalParameterNames as $i => $parameterName) {
 			if (!array_key_exists($i, $newPositionalParameterNames)) {
@@ -245,52 +255,35 @@ class PhpDocBlock
 			$parameterNameMapping[$newPositionalParameterNames[$i]] = $parameterName;
 		}
 
-		return $docComment !== null
-			? new self($docComment, $file, $classReflection, $trait, $explicit ?? true, $parameterNameMapping)
-			: null;
+		return $parameterNameMapping;
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassReflection $classReflection
-	 * @param string|null $trait
+	 * @param ClassReflection $classReflection
 	 * @param string $name
 	 * @param string $hasMethodName
 	 * @param string $getMethodName
 	 * @param string $resolveMethodName
 	 * @param bool $explicit
-	 * @param array<int, string> $positionalParameterNames $positionalParameterNames
-	 * @return self|null
+	 * @param array<int, string> $positionalParameterNames
+	 * @return array<int, self>
 	 */
-	private static function resolvePhpDocBlockRecursive(
+	private static function resolveParentPhpDocBlocks(
 		ClassReflection $classReflection,
-		?string $trait,
 		string $name,
 		string $hasMethodName,
 		string $getMethodName,
 		string $resolveMethodName,
 		bool $explicit,
-		array $positionalParameterNames = []
-	): ?self
+		array $positionalParameterNames
+	): array
 	{
-		$phpDocBlockFromClass = self::resolvePhpDocBlockFromClass(
-			$classReflection,
-			$name,
-			$hasMethodName,
-			$getMethodName,
-			$resolveMethodName,
-			$explicit,
-			$positionalParameterNames
-		);
+		$result = [];
+		$parentReflections = self::getParentReflections($classReflection);
 
-		if ($phpDocBlockFromClass !== null) {
-			return $phpDocBlockFromClass;
-		}
-
-		$parentClassReflection = $classReflection->getParentClass();
-		if ($parentClassReflection !== false) {
-			return self::resolvePhpDocBlockRecursive(
-				$parentClassReflection,
-				$trait,
+		foreach ($parentReflections as $parentReflection) {
+			$oneResult = self::resolvePhpDocBlockFromClass(
+				$parentReflection,
 				$name,
 				$hasMethodName,
 				$getMethodName,
@@ -298,9 +291,35 @@ class PhpDocBlock
 				$explicit,
 				$positionalParameterNames
 			);
+
+			if ($oneResult === null) { // Null if it is private or from a wrong trait.
+				continue;
+			}
+
+			$result[] = $oneResult;
 		}
 
-		return null;
+		return $result;
+	}
+
+	/**
+	 * @param ClassReflection $classReflection
+	 * @return array<int, ClassReflection>
+	 */
+	private static function getParentReflections(ClassReflection $classReflection): array
+	{
+		$result = [];
+
+		$parent = $classReflection->getParentClass();
+		if ($parent !== false) {
+			$result[] = $parent;
+		}
+
+		foreach ($classReflection->getInterfaces() as $interface) {
+			$result[] = $interface;
+		}
+
+		return $result;
 	}
 
 	/**
@@ -368,21 +387,34 @@ class PhpDocBlock
 				? $traitReflection->getName()
 				: null;
 
-			if ($parentReflection->getDocComment() !== null) {
-				return self::$resolveMethodName(
-					$parentReflection->getDocComment(),
-					$classReflection,
-					$trait,
-					$name,
-					$classReflection->getFileNameWithPhpDocs(),
-					$explicit,
-					$positionalParameterNames,
-					$positionalMethodParameterNames
-				);
-			}
+			return self::$resolveMethodName(
+				$parentReflection->getDocComment() ?? '/** */',
+				$classReflection,
+				$trait,
+				$name,
+				$classReflection->getFileNameWithPhpDocs(),
+				$explicit,
+				$positionalParameterNames,
+				$positionalMethodParameterNames
+			);
 		}
 
 		return null;
+	}
+
+	public function resolveTemplateTypeIfAny(Type $type): Type
+	{
+		return $type instanceof TemplateType
+			? $this->resolveTemplateType($type)
+			: $type;
+	}
+
+	private function resolveTemplateType(TemplateType $type): Type
+	{
+		$name = $type->getName();
+		$typeMap = $this->classReflection->getActiveTemplateTypeMap();
+
+		return $typeMap->getType($name) ?? $type;
 	}
 
 }

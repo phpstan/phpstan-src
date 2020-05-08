@@ -153,6 +153,15 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->filename = $fileName;
 	}
 
+	public function requireFileName(): string
+	{
+		$result = $this->getFileName();
+		if ($result === false) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+		return $result;
+	}
+
 	public function getFileNameWithPhpDocs(): ?string
 	{
 		if ($this->stubPhpDocBlock !== null) {

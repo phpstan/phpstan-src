@@ -4,7 +4,7 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Type\Type;
 
-class ParamTag
+class ParamTag implements TypedTag
 {
 
 	/** @var \PHPStan\Type\Type */
@@ -27,6 +27,17 @@ class ParamTag
 	public function isVariadic(): bool
 	{
 		return $this->isVariadic;
+	}
+
+	/**
+	 * @param Type $type
+	 * @return static
+	 */
+	public function withType(Type $type): self
+	{
+		$clone = clone $this;
+		$clone->type = $type;
+		return $clone;
 	}
 
 	/**

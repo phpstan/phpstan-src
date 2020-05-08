@@ -153,6 +153,16 @@ class TypeUtils
 	}
 
 	/**
+	 * @internal
+	 * @param Type $type
+	 * @return ConstantArrayType[]
+	 */
+	public static function getOldConstantArrays(Type $type): array
+	{
+		return self::map(ConstantArrayType::class, $type, false);
+	}
+
+	/**
 	 * @param string $typeClass
 	 * @param Type $type
 	 * @param bool $inspectIntersections
@@ -226,8 +236,24 @@ class TypeUtils
 	 */
 	public static function flattenTypes(Type $type): array
 	{
+		if ($type instanceof ConstantArrayType) {
+			return $type->getAllArrays();
+		}
+
 		if ($type instanceof UnionType) {
-			return $type->getTypes();
+			$types = [];
+			foreach ($type->getTypes() as $innerType) {
+				if ($innerType instanceof ConstantArrayType) {
+					foreach ($innerType->getAllArrays() as $array) {
+						$types[] = $array;
+					}
+					continue;
+				}
+
+				$types[] = $innerType;
+			}
+
+			return $types;
 		}
 
 		return [$type];

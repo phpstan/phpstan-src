@@ -109,7 +109,7 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 		$hasOffsetValueType = $type->hasOffsetValueType($dimType);
 		$report = $hasOffsetValueType->no();
 		if ($hasOffsetValueType->maybe()) {
-			$constantArrays = TypeUtils::getConstantArrays($type);
+			$constantArrays = TypeUtils::getOldConstantArrays($type);
 			if (count($constantArrays) > 0) {
 				foreach ($constantArrays as $constantArray) {
 					if ($constantArray->hasOffsetValueType($dimType)->no()) {

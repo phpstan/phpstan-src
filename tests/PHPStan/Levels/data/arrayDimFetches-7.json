@@ -10,6 +10,11 @@
         "ignorable": true
     },
     {
+        "message": "Offset 'b' does not exist on array('a' => 1, ?'b' => 1).",
+        "line": 40,
+        "ignorable": true
+    },
+    {
         "message": "Cannot access offset 0 on array<int, string>|false.",
         "line": 49,
         "ignorable": true

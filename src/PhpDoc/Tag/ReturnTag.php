@@ -4,20 +4,47 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Type\Type;
 
-class ReturnTag
+class ReturnTag implements TypedTag
 {
 
 	/** @var \PHPStan\Type\Type */
 	private $type;
 
-	public function __construct(Type $type)
+	/** @var bool */
+	private $isExplicit;
+
+	public function __construct(Type $type, bool $isExplicit)
 	{
 		$this->type = $type;
+		$this->isExplicit = $isExplicit;
 	}
 
 	public function getType(): Type
 	{
 		return $this->type;
+	}
+
+	public function isExplicit(): bool
+	{
+		return $this->isExplicit;
+	}
+
+	/**
+	 * @param Type $type
+	 * @return static
+	 */
+	public function withType(Type $type): self
+	{
+		$clone = clone $this;
+		$clone->type = $type;
+		return $clone;
+	}
+
+	public function cloneImplicit(): self
+	{
+		$clone = clone $this;
+		$clone->isExplicit = false;
+		return $clone;
 	}
 
 	/**
@@ -27,7 +54,8 @@ class ReturnTag
 	public static function __set_state(array $properties): self
 	{
 		return new self(
-			$properties['type']
+			$properties['type'],
+			$properties['isExplicit']
 		);
 	}
 

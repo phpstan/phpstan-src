@@ -4,8 +4,12 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\ThrowsTag;
+use PHPStan\PhpDoc\Tag\TypedTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\TypeCombinator;
 
 class ResolvedPhpDocBlock
 {
@@ -378,6 +382,180 @@ class ResolvedPhpDocBlock
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->templateTypeMap;
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 * @return self
+	 */
+	public function cloneAndMerge(array $parents, array $parentPhpDocBlocks): self
+	{
+		$result = clone $this;
+		$result->mergeTags($parents, $parentPhpDocBlocks);
+		return $result;
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 */
+	private function mergeTags(array $parents, array $parentPhpDocBlocks): void // phpcs:disable
+	{
+		$this->mergeVarTags($parents, $parentPhpDocBlocks);
+		$this->mergeParamTags($parents, $parentPhpDocBlocks);
+		$this->mergeReturnTags($parents, $parentPhpDocBlocks);
+		$this->mergeThrowsTags($parents);
+		$this->mergeDeprecatedTags($parents);
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 */
+	private function mergeVarTags(array $parents, array $parentPhpDocBlocks): void
+	{
+		// Only allow one var tag per comment. Check the parent if child does not have this tag.
+		if (count($this->getVarTags()) > 0) {
+			return;
+		}
+
+		foreach ($parents as $i => $parent) {
+			$this->mergeOneParentVarTags($parent, $parentPhpDocBlocks[$i]);
+		}
+	}
+
+	private function mergeOneParentVarTags(self $parent, PhpDocBlock $phpDocBlock): void
+	{
+		foreach ($parent->getVarTags() as $key => $parentVarTag) {
+			$this->varTags = [$key => $this->resolveTemplateTypeInTag($parentVarTag, $phpDocBlock)];
+			break;
+		}
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 */
+	private function mergeParamTags(array $parents, array $parentPhpDocBlocks): void
+	{
+		$this->getParamTags();
+
+		foreach ($parents as $i => $parent) {
+			$this->mergeOneParentParamTags($parent, $parentPhpDocBlocks[$i]);
+		}
+	}
+
+	private function mergeOneParentParamTags(self $parent, PhpDocBlock $phpDocBlock): void
+	{
+		$parentParamTags = $phpDocBlock->transformArrayKeysWithParameterNameMapping($parent->getParamTags());
+
+		foreach ($parentParamTags as $name => $parentParamTag) {
+			if ($this->paramTags === false || array_key_exists($name, $this->paramTags)) {
+				continue;
+			}
+
+			$this->paramTags[$name] = $this->resolveTemplateTypeInTag($parentParamTag, $phpDocBlock);
+		}
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 */
+	private function mergeReturnTags(array $parents, array $parentPhpDocBlocks): void
+	{
+		if ($this->getReturnTag() !== null) {
+			return;
+		}
+
+		foreach ($parents as $i => $parent) {
+			$this->mergeOneParentReturnTag($parent, $parentPhpDocBlocks[$i]);
+		}
+	}
+
+	private function mergeOneParentReturnTag(self $parent, PhpDocBlock $phpDocBlock): void
+	{
+		$parentReturnTag = $parent->getReturnTag();
+		if ($parentReturnTag === null) {
+			return;
+		}
+
+		$parentType = $parentReturnTag->getType();
+
+		// Each parent would overwrite the previous one except if it returns a less specific type.
+		// Do not care for incompatible types as there is a separate rule for that.
+		if ($this->returnTag !== null && $this->returnTag !== false && $parentType->isSuperTypeOf($this->returnTag->getType())->yes()) {
+			return;
+		}
+
+		$this->returnTag = $this->resolveTemplateTypeInTag($parentReturnTag->cloneImplicit(), $phpDocBlock);
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 */
+	private function mergeThrowsTags(array $parents): void
+	{
+		$this->getThrowsTag();
+
+		foreach ($parents as $parent) {
+			$this->mergeOneParentThrowsTag($parent);
+		}
+	}
+
+	private function mergeOneParentThrowsTag(self $parent): void
+	{
+		$parentThrowsTag = $parent->getThrowsTag();
+		if ($parentThrowsTag === null) {
+			return;
+		}
+
+		if ($this->throwsTag === null || $this->throwsTag === false) {
+			$this->throwsTag = $parentThrowsTag;
+		} else {
+			$type = TypeCombinator::union($this->throwsTag->getType(), $parentThrowsTag->getType());
+			$this->throwsTag = new ThrowsTag($type);
+		}
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 */
+	private function mergeDeprecatedTags(array $parents): void
+	{
+		$this->getDeprecatedTag();
+
+		foreach ($parents as $parent) {
+			$this->mergeOneParentDeprecatedTag($parent);
+		}
+
+		$this->isDeprecated = ($this->deprecatedTag !== null);
+	}
+
+	private function mergeOneParentDeprecatedTag(self $parent): void
+	{
+		$parentDeprecatedTag = $parent->getDeprecatedTag();
+		if ($parentDeprecatedTag === null) {
+			return;
+		}
+
+		$this->deprecatedTag = $parentDeprecatedTag;
+	}
+
+	/**
+	 * @template T of \PHPStan\PhpDoc\Tag\TypedTag
+	 * @param T $tag
+	 * @param PhpDocBlock $phpDocBlock
+	 * @return T
+	 */
+	private function resolveTemplateTypeInTag(TypedTag $tag, PhpDocBlock $phpDocBlock): TypedTag
+	{
+		$type = TemplateTypeHelper::resolveTemplateTypes(
+			$tag->getType(),
+			$phpDocBlock->getClassReflection()->getActiveTemplateTypeMap()
+		);
+		return $tag->withType($type);
 	}
 
 }

@@ -321,7 +321,7 @@ class PhpDocNodeResolver
 				if ($this->shouldSkipType($tagName, $type)) {
 					continue;
 				}
-				$resolved = new ReturnTag($type);
+				$resolved = new ReturnTag($type, true);
 			}
 		}
 

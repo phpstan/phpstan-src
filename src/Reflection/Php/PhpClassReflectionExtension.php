@@ -226,6 +226,7 @@ class PhpClassReflectionExtension
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
 					$docComment,
 					$declaringClassReflection,
+					$declaringClassReflection->getFileName(),
 					$declaringTraitName,
 					$propertyName
 				);
@@ -506,7 +507,7 @@ class PhpClassReflectionExtension
 
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$docComment,
-					$declaringClass->requireFileName(),
+					$declaringClass->getFileName(),
 					$declaringClass,
 					$declaringTraitName,
 					$methodReflection->getName(),

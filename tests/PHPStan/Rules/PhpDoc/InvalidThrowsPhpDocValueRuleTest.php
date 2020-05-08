@@ -2,9 +2,6 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Type\FileTypeMapper;
-
 /**
  * @extends \PHPStan\Testing\RuleTestCase<InvalidThrowsPhpDocValueRule>
  */
@@ -13,10 +10,7 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new InvalidThrowsPhpDocValueRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
-			self::getContainer()->getByType(NodeScopeResolver::class)
-		);
+		return new InvalidThrowsPhpDocValueRule();
 	}
 
 	public function testRule(): void

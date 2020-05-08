@@ -21,6 +21,7 @@ class PhpDocInheritanceResolver
 	public function resolvePhpDocForProperty(
 		?string $docComment,
 		ClassReflection $classReflection,
+		string $classReflectionFileName,
 		?string $declaringTraitName,
 		string $propertyName
 	): ?ResolvedPhpDocBlock
@@ -30,7 +31,7 @@ class PhpDocInheritanceResolver
 			$classReflection,
 			null,
 			$propertyName,
-			$classReflection->requireFileName(),
+			$classReflectionFileName,
 			null,
 			[],
 			[]

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PhpDoc\ThrowsTag;
+namespace InvalidThrowsPhpDocMergeInherited;
 
 class A {}
 class B {}

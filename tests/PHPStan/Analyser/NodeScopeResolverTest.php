@@ -9869,6 +9869,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3009.php');
 	}
 
+	public function dataInheritPhpDocMerging(): array
+	{
+		return array_merge(
+			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-var.php'),
+			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-param.php'),
+			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-return.php')
+		);
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9912,6 +9921,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2001
 	 * @dataProvider dataBug2232
 	 * @dataProvider dataBug3009
+	 * @dataProvider dataInheritPhpDocMerging
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

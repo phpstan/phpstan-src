@@ -47,4 +47,30 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testMergeInheritedPhpDocs(): void
+	{
+		$this->analyse([__DIR__ . '/data/merge-inherited-throws.php'], [
+			[
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\A is not subtype of Throwable',
+				13,
+			],
+			[
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\B is not subtype of Throwable',
+				19,
+			],
+			[
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\A|InvalidThrowsPhpDocMergeInherited\B|InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
+				28,
+			],
+			[
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\A|InvalidThrowsPhpDocMergeInherited\B|InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
+				34,
+			],
+			[
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\A|InvalidThrowsPhpDocMergeInherited\B|InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
+				39,
+			],
+		]);
+	}
+
 }

@@ -1296,4 +1296,29 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testMergeInheritedPhpDocs(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/merge-inherited-param.php'], [
+			[
+				'Parameter #1 $uno of method CallMethodsPhpDocMergeParamInherited\ParentClass::method() expects CallMethodsPhpDocMergeParamInherited\A, CallMethodsPhpDocMergeParamInherited\D given.',
+				37,
+			],
+			[
+				'Parameter #2 $dos of method CallMethodsPhpDocMergeParamInherited\ParentClass::method() expects CallMethodsPhpDocMergeParamInherited\B, CallMethodsPhpDocMergeParamInherited\D given.',
+				37,
+			],
+			[
+				'Parameter #1 $one of method CallMethodsPhpDocMergeParamInherited\ChildClass::method() expects CallMethodsPhpDocMergeParamInherited\C, CallMethodsPhpDocMergeParamInherited\B given.',
+				42,
+			],
+			[
+				'Parameter #2 $two of method CallMethodsPhpDocMergeParamInherited\ChildClass::method() expects CallMethodsPhpDocMergeParamInherited\B, CallMethodsPhpDocMergeParamInherited\D given.',
+				42,
+			],
+		]);
+	}
+
 }

@@ -38,6 +38,20 @@ class TypeUtils
 			return $matchingTypes;
 		}
 
+		if ($type instanceof IntersectionType) {
+			$matchingTypes = [];
+			foreach ($type->getTypes() as $innerType) {
+				if (!$innerType instanceof ArrayType) {
+					continue;
+				}
+				foreach (self::getArrays($innerType) as $innerInnerType) {
+					$matchingTypes[] = $innerInnerType;
+				}
+			}
+
+			return $matchingTypes;
+		}
+
 		return [];
 	}
 

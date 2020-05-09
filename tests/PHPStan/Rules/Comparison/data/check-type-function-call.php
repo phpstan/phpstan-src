@@ -811,3 +811,37 @@ class Bug2221
 	}
 
 }
+
+class InArray2
+{
+
+	/**
+	 * @param array<int> $ints
+	 */
+	public function doFoo($ints): void
+	{
+		if ($ints === []) {
+			return;
+		}
+
+		if (in_array(0, $ints, true)) {
+
+		}
+	}
+
+	/**
+	 * @param \stdClass $std
+	 * @param array<int, \stdClass|null> $stdClassesOrNull
+	 */
+	public function doBar($std, $stdClassesOrNull): void
+	{
+		if ($stdClassesOrNull === []) {
+			return;
+		}
+
+		if (in_array($std, $stdClassesOrNull, true)) {
+
+		}
+	}
+
+}

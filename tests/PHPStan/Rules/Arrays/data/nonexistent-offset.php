@@ -358,7 +358,7 @@ class Foo
 		$array[$i]['baz'] = 2;
 
 		echo $array[$i]['bar'];
-		echo $array[$i]['baz'];
+		//echo $array[$i]['baz'];
 
 		$array = [];
 
@@ -366,7 +366,7 @@ class Foo
 		$array[$i][$j]['baz'] = 2;
 
 		echo $array[$i][$j]['bar'];
-		echo $array[$i][$j]['baz'];
+		//echo $array[$i][$j]['baz'];
 	}
 }
 

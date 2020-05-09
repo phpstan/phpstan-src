@@ -8,8 +8,6 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
-use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\Type;
 
 class PhpDocBlock
 {
@@ -400,21 +398,6 @@ class PhpDocBlock
 		}
 
 		return null;
-	}
-
-	public function resolveTemplateTypeIfAny(Type $type): Type
-	{
-		return $type instanceof TemplateType
-			? $this->resolveTemplateType($type)
-			: $type;
-	}
-
-	private function resolveTemplateType(TemplateType $type): Type
-	{
-		$name = $type->getName();
-		$typeMap = $this->classReflection->getActiveTemplateTypeMap();
-
-		return $typeMap->getType($name) ?? $type;
 	}
 
 }

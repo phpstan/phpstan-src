@@ -120,14 +120,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$arrays = [];
 		foreach ($optionalKeysCombinations as $combination) {
 			$keys = array_merge($requiredKeys, $combination);
-			$keyTypes = [];
-			$valueTypes = [];
+			$builder = ConstantArrayTypeBuilder::createEmpty();
 			foreach ($keys as $i) {
-				$keyTypes[] = $this->keyTypes[$i];
-				$valueTypes[] = $this->valueTypes[$i];
+				$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i]);
 			}
 
-			$arrays[] = new self($keyTypes, $valueTypes, 0 /*TODO*/, []);
+			$arrays[] = $builder->getArray();
 		}
 
 		return $this->allArrays = $arrays;

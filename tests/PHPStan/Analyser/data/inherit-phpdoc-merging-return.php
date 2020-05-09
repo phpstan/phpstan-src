@@ -48,11 +48,11 @@ class ChildClass2 extends ParentClass
 
 
 function (ParentClass $foo): void {
-	assertType('InheritDocMergingReturn\C', $foo->method());
+	assertType('InheritDocMergingReturn\B', $foo->method());
 };
 
 function (ChildClass $foo): void {
-	assertType('InheritDocMergingReturn\C', $foo->method());
+	assertType('InheritDocMergingReturn\B', $foo->method());
 };
 
 function (ChildClass2 $foo): void {

@@ -38,7 +38,7 @@ class ReturnTag implements TypedTag
 		return new self($type, $this->isExplicit);
 	}
 
-	public function cloneImplicit(): self
+	public function toImplicit(): self
 	{
 		return new self($this->type, false);
 	}

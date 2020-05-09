@@ -9874,7 +9874,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return array_merge(
 			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-var.php'),
 			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-param.php'),
-			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-return.php')
+			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-return.php'),
+			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-template.php')
 		);
 	}
 

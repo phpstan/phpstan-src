@@ -87,7 +87,7 @@ class PhpDocInheritanceResolver
 		}
 
 		$oneResolvedDockBlock = $this->docBlockToResolvedDocBlock($phpDocBlock, $traitName, $functionName);
-		return $oneResolvedDockBlock->cloneAndMerge($parents, $parentPhpDocBlocks);
+		return $oneResolvedDockBlock->merge($parents, $parentPhpDocBlocks);
 	}
 
 	private function docBlockToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName): ResolvedPhpDocBlock

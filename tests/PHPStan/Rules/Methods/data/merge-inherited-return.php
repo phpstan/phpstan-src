@@ -30,7 +30,7 @@ class ParentClass extends GrandparentClass implements InterfaceC, InterfaceA
 	/** Some comment */
 	public function method()
 	{
-		return new B();
+		return new A();
 	}
 }
 
@@ -38,7 +38,7 @@ class ChildClass extends ParentClass
 {
 	public function method()
 	{
-		return new B();
+		return new A();
 	}
 }
 

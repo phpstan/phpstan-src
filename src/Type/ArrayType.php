@@ -285,31 +285,35 @@ class ArrayType implements Type
 
 	public static function castToArrayKeyType(Type $offsetType): Type
 	{
-		if ($offsetType instanceof UnionType) {
-			return TypeCombinator::union(...array_map(static function (Type $type): Type {
-				return self::castToArrayKeyType($type);
-			}, $offsetType->getTypes()));
-		}
+		return TypeTraverser::map($offsetType, static function (Type $offsetType, callable $traverse): Type {
+			if ($offsetType instanceof TemplateType) {
+				return $offsetType;
+			}
 
-		if ($offsetType instanceof ConstantScalarType) {
-			/** @var int|string $offsetValue */
-			$offsetValue = key([$offsetType->getValue() => null]);
-			return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
-		}
+			if ($offsetType instanceof ConstantScalarType) {
+				/** @var int|string $offsetValue */
+				$offsetValue = key([$offsetType->getValue() => null]);
+				return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
+			}
 
-		if ($offsetType instanceof IntegerType) {
-			return $offsetType;
-		}
+			if ($offsetType instanceof IntegerType) {
+				return $offsetType;
+			}
 
-		if ($offsetType instanceof FloatType || $offsetType instanceof BooleanType) {
-			return new IntegerType();
-		}
+			if ($offsetType instanceof FloatType || $offsetType instanceof BooleanType) {
+				return new IntegerType();
+			}
 
-		if ($offsetType instanceof StringType) {
-			return $offsetType;
-		}
+			if ($offsetType instanceof StringType) {
+				return $offsetType;
+			}
 
-		return new UnionType([new IntegerType(), new StringType()]);
+			if ($offsetType instanceof UnionType || $offsetType instanceof IntersectionType) {
+				return $traverse($offsetType);
+			}
+
+			return new UnionType([new IntegerType(), new StringType()]);
+		});
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

@@ -125,7 +125,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i]);
 			}
 
-			$arrays[] = $builder->getArray();
+			$array = $builder->getArray();
+			if (!$array instanceof ConstantArrayType) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$arrays[] = $array;
 		}
 
 		return $this->allArrays = $arrays;

@@ -78,8 +78,6 @@ class TableErrorFormatter implements ErrorFormatter
 						AnalyseCommand::DEFAULT_LEVEL
 					));
 					$output->writeLineFormatted('');
-				} else {
-					$showInferPropertiesTip();
 				}
 			}
 

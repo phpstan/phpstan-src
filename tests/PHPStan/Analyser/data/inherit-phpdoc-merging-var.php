@@ -80,3 +80,42 @@ class Seven extends One
 	protected $property;
 
 }
+
+/**
+ * @template T of object
+ */
+class ClassWithTemplate
+{
+
+	/** @var T */
+	protected $prop;
+
+}
+
+class ChildClassExtendingClassWithTemplate extends ClassWithTemplate
+{
+
+	protected $prop;
+
+	public function doFoo()
+	{
+		assertType('object', $this->prop);
+	}
+
+}
+
+/**
+ * @extends ClassWithTemplate<\stdClass>
+ */
+class ChildClass2ExtendingClassWithTemplate extends ClassWithTemplate
+{
+
+	/** someComment */
+	protected $prop;
+
+	public function doFoo()
+	{
+		assertType('stdClass', $this->prop);
+	}
+
+}

@@ -9894,6 +9894,14 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/assign-nested-arrays.php');
 	}
 
+	public function dataBug3276(): array
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3276.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9941,6 +9949,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3266
 	 * @dataProvider dataBug3269
 	 * @dataProvider dataAssignNestedArray
+	 * @dataProvider dataBug3276
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

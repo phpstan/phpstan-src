@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_filter;
 
 class ConstantArrayTypeBuilder
 {
@@ -74,6 +75,9 @@ class ConstantArrayTypeBuilder
 			foreach ($this->keyTypes as $i => $keyType) {
 				if ($keyType->getValue() === $offsetType->getValue()) {
 					$this->valueTypes[$i] = $valueType;
+					$this->optionalKeys = array_values(array_filter($this->optionalKeys, static function (int $index) use ($i): bool {
+						return $index !== $i;
+					}));
 					return;
 				}
 			}

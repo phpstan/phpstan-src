@@ -66,11 +66,12 @@ parameters:
 	universalObjectCratesClasses:
 		- stdClass
 	stubFiles:
-		- ../stubs/ReflectionClass.stub
-		- ../stubs/iterable.stub
 		- ../stubs/ArrayObject.stub
-		- ../stubs/WeakReference.stub
 		- ../stubs/ext-ds.stub
+		- ../stubs/iterable.stub
+		- ../stubs/PDOStatement.stub
+		- ../stubs/ReflectionClass.stub
+		- ../stubs/WeakReference.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

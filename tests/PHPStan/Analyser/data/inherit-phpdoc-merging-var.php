@@ -66,7 +66,7 @@ class Six extends Five
 
 	public function method(): void
 	{
-		// assertType('InheritDocMergingVar\B', $this->property);
+		assertType('InheritDocMergingVar\B', $this->property);
 	}
 }
 

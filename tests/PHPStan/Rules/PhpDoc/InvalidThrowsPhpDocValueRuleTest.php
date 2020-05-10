@@ -59,15 +59,15 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 				19,
 			],
 			[
-				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\A|InvalidThrowsPhpDocMergeInherited\B|InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
 				28,
 			],
 			[
-				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\A|InvalidThrowsPhpDocMergeInherited\B|InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
 				34,
 			],
 			[
-				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\A|InvalidThrowsPhpDocMergeInherited\B|InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
+				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
 				39,
 			],
 		]);

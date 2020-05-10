@@ -13,7 +13,6 @@ use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\TypeCombinator;
 
 class ResolvedPhpDocBlock
 {
@@ -540,32 +539,19 @@ class ResolvedPhpDocBlock
 	 */
 	private static function mergeThrowsTags(?ThrowsTag $throwsTag, array $parents): ?ThrowsTag
 	{
+		if ($throwsTag !== null) {
+			return $throwsTag;
+		}
 		foreach ($parents as $parent) {
-			$result = self::mergeOneParentThrowsTag($throwsTag, $parent);
+			$result = $parent->getThrowsTag();
 			if ($result === null) {
 				continue;
 			}
 
-			$throwsTag = $result;
+			return $result;
 		}
 
-		return $throwsTag;
-	}
-
-	private static function mergeOneParentThrowsTag(?ThrowsTag $throwsTag, self $parent): ?ThrowsTag
-	{
-		$parentThrowsTag = $parent->getThrowsTag();
-		if ($parentThrowsTag === null) {
-			return $throwsTag;
-		}
-
-		if ($throwsTag === null) {
-			return $parentThrowsTag;
-		}
-
-		return new ThrowsTag(
-			TypeCombinator::union($throwsTag->getType(), $parentThrowsTag->getType())
-		);
+		return null;
 	}
 
 	/**

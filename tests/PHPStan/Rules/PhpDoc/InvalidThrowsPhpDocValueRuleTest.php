@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\Type\FileTypeMapper;
+
 /**
  * @extends \PHPStan\Testing\RuleTestCase<InvalidThrowsPhpDocValueRule>
  */
@@ -10,7 +12,7 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new InvalidThrowsPhpDocValueRule();
+		return new InvalidThrowsPhpDocValueRule(self::getContainer()->getByType(FileTypeMapper::class));
 	}
 
 	public function testRule(): void
@@ -47,7 +49,7 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
-	public function testMergeInheritedPhpDocs(): void
+	public function testInheritedPhpDocs(): void
 	{
 		$this->analyse([__DIR__ . '/data/merge-inherited-throws.php'], [
 			[
@@ -61,14 +63,6 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
 				28,
-			],
-			[
-				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
-				34,
-			],
-			[
-				'PHPDoc tag @throws with type InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D is not subtype of Throwable',
-				39,
 			],
 		]);
 	}

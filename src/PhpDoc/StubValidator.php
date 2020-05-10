@@ -146,7 +146,7 @@ class StubValidator
 				$container->getByType(Lexer::class),
 				$container->getByType(PhpDocParser::class)
 			),
-			new InvalidThrowsPhpDocValueRule(),
+			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 
 			// level 6
 			new MissingFunctionParameterTypehintRule($reflectionProvider, $missingTypehintCheck),

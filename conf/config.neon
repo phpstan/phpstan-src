@@ -71,6 +71,7 @@ parameters:
 		- ../stubs/ArrayObject.stub
 		- ../stubs/WeakReference.stub
 		- ../stubs/ext-ds.stub
+		- ../stubs/PDOStatement.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\VerbosityLevel;
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<InvalidThrowsPhpDocValueRule>
@@ -65,6 +66,47 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 				28,
 			],
 		]);
+	}
+
+	public function dataMergeInheritedPhpDocs(): array
+	{
+		return [
+			[
+				\InvalidThrowsPhpDocMergeInherited\Two::class,
+				'method',
+				'InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D',
+			],
+			[
+				\InvalidThrowsPhpDocMergeInherited\Three::class,
+				'method',
+				'InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D',
+			],
+			[
+				\InvalidThrowsPhpDocMergeInherited\Four::class,
+				'method',
+				'InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataMergeInheritedPhpDocs
+	 * @param string $className
+	 * @param string $method
+	 * @param string $expectedType
+	 */
+	public function testMergeInheritedPhpDocs(
+		string $className,
+		string $method,
+		string $expectedType
+	): void
+	{
+		$reflectionProvider = $this->createBroker();
+		$reflection = $reflectionProvider->getClass($className);
+		$method = $reflection->getNativeMethod($method);
+		$throwsType = $method->getThrowType();
+		$this->assertNotNull($throwsType);
+		$this->assertSame($expectedType, $throwsType->describe(VerbosityLevel::precise()));
 	}
 
 }

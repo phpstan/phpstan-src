@@ -215,7 +215,6 @@ class ResultCacheManager
 		return new AnalyserResult(
 			$flatErrors,
 			$internalErrors,
-			$analyserResult->hasInferrablePropertyTypesFromConstructor(),
 			$dependencies,
 			$analyserResult->hasReachedInternalErrorsCountLimit()
 		);

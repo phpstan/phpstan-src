@@ -80,7 +80,6 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\TestCase
 			$genericErrors,
 			[],
 			false,
-			false,
 			null
 		);
 	}

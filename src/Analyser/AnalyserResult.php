@@ -14,9 +14,6 @@ class AnalyserResult
 	/** @var string[] */
 	private $internalErrors;
 
-	/** @var bool */
-	private $hasInferrablePropertyTypesFromConstructor;
-
 	/** @var array<string, array<string>>|null */
 	private $dependencies;
 
@@ -26,14 +23,12 @@ class AnalyserResult
 	/**
 	 * @param \PHPStan\Analyser\Error[] $errors
 	 * @param string[] $internalErrors
-	 * @param bool $hasInferrablePropertyTypesFromConstructor
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param bool $reachedInternalErrorsCountLimit
 	 */
 	public function __construct(
 		array $errors,
 		array $internalErrors,
-		bool $hasInferrablePropertyTypesFromConstructor,
 		?array $dependencies,
 		bool $reachedInternalErrorsCountLimit
 	)
@@ -57,7 +52,6 @@ class AnalyserResult
 
 		$this->errors = $errors;
 		$this->internalErrors = $internalErrors;
-		$this->hasInferrablePropertyTypesFromConstructor = $hasInferrablePropertyTypesFromConstructor;
 		$this->dependencies = $dependencies;
 		$this->reachedInternalErrorsCountLimit = $reachedInternalErrorsCountLimit;
 	}
@@ -84,11 +78,6 @@ class AnalyserResult
 	public function getInternalErrors(): array
 	{
 		return $this->internalErrors;
-	}
-
-	public function hasInferrablePropertyTypesFromConstructor(): bool
-	{
-		return $this->hasInferrablePropertyTypesFromConstructor;
 	}
 
 	/**

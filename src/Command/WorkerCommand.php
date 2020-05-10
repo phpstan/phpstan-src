@@ -6,7 +6,6 @@ use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
-use PHPStan\Analyser\InferrablePropertyTypesFromConstructorHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Rules\Registry;
@@ -146,7 +145,6 @@ class WorkerCommand extends Command
 					'errors' => [$error->getMessage()],
 					'dependencies' => [],
 					'filesCount' => 0,
-					'hasInferrablePropertyTypesFromConstructor' => false,
 					'internalErrorsCount' => 1,
 				],
 			]);
@@ -171,10 +169,9 @@ class WorkerCommand extends Command
 			$files = $json['files'];
 			$errors = [];
 			$dependencies = [];
-			$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
 			foreach ($files as $file) {
 				try {
-					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $registry, $inferrablePropertyTypesFromConstructorHelper);
+					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $registry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					foreach ($fileErrors as $fileError) {
@@ -199,7 +196,6 @@ class WorkerCommand extends Command
 					'errors' => $errors,
 					'dependencies' => $dependencies,
 					'filesCount' => count($files),
-					'hasInferrablePropertyTypesFromConstructor' => $inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);
 		});

@@ -1137,9 +1137,6 @@ services:
 		class: PHPStan\Command\ErrorFormatter\TableErrorFormatter
 		arguments:
 			showTipsOfTheDay: %tipsOfTheDay%
-			checkThisOnly: %checkThisOnly%
-			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%
-			checkMissingTypehints: %checkMissingTypehints%
 
 	errorFormatter.checkstyle:
 		class: PHPStan\Command\ErrorFormatter\CheckstyleErrorFormatter

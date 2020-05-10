@@ -39,7 +39,6 @@ final class AnalysisResultTest extends TestCase
 				[],
 				[],
 				false,
-				false,
 				null
 			))->getFileSpecificErrors()
 		);

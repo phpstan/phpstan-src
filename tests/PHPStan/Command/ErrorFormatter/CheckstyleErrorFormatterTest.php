@@ -154,7 +154,6 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			[],
 			false,
-			false,
 			null
 		), $this->getOutput());
 		$this->assertXmlStringEqualsXmlString('<checkstyle>

@@ -61,7 +61,6 @@ class ParallelAnalyser
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 		$errors = [];
 		$internalErrors = [];
-		$hasInferrablePropertyTypesFromConstructor = false;
 
 		$server = new \React\Socket\TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server);
@@ -117,7 +116,7 @@ class ParallelAnalyser
 				$processIdentifier,
 				$input
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$jobs, $postFileCallback, &$hasInferrablePropertyTypesFromConstructor, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -139,7 +138,6 @@ class ParallelAnalyser
 					$postFileCallback($json['filesCount']);
 				}
 
-				$hasInferrablePropertyTypesFromConstructor = $hasInferrablePropertyTypesFromConstructor || $json['hasInferrablePropertyTypesFromConstructor'];
 				$internalErrorsCount += $json['internalErrorsCount'];
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
@@ -172,7 +170,6 @@ class ParallelAnalyser
 		return new AnalyserResult(
 			$errors,
 			$internalErrors,
-			$hasInferrablePropertyTypesFromConstructor,
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$reachedInternalErrorsCountLimit
 		);

@@ -103,7 +103,6 @@ class AnalyseApplication
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			$errors = $ignoredErrorHelperResult->getErrors();
-			$hasInferrablePropertyTypesFromConstructor = false;
 			$warnings = [];
 		} else {
 			$resultCache = $this->resultCacheManager->restore($files, $debug);
@@ -117,7 +116,6 @@ class AnalyseApplication
 				$input
 			);
 			$analyserResult = $this->resultCacheManager->process($intermediateAnalyserResult, $resultCache);
-			$hasInferrablePropertyTypesFromConstructor = $analyserResult->hasInferrablePropertyTypesFromConstructor();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
 			$warnings = $ignoredErrorHelperResult->getWarnings();
@@ -145,7 +143,6 @@ class AnalyseApplication
 			$notFileSpecificErrors,
 			$warnings,
 			$defaultLevelUsed,
-			$hasInferrablePropertyTypesFromConstructor,
 			$projectConfigFile
 		);
 	}
@@ -170,7 +167,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], false, [], false);
+			return new AnalyserResult([], [], [], false);
 		}
 
 		/** @var bool $runningInParallel */

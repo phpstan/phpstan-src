@@ -131,7 +131,6 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			['Escape Regex without file # ~ <> \' ()'],
 			[],
 			false,
-			false,
 			null
 		);
 		$formatter->formatErrors(

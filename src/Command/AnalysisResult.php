@@ -19,9 +19,6 @@ class AnalysisResult
 	/** @var bool */
 	private $defaultLevelUsed;
 
-	/** @var bool */
-	private $hasInferrablePropertyTypesFromConstructor;
-
 	/** @var string|null */
 	private $projectConfigFile;
 
@@ -30,7 +27,6 @@ class AnalysisResult
 	 * @param string[] $notFileSpecificErrors
 	 * @param string[] $warnings
 	 * @param bool $defaultLevelUsed
-	 * @param bool $hasInferrablePropertyTypesFromConstructor
 	 * @param string|null $projectConfigFile
 	 */
 	public function __construct(
@@ -38,7 +34,6 @@ class AnalysisResult
 		array $notFileSpecificErrors,
 		array $warnings,
 		bool $defaultLevelUsed,
-		bool $hasInferrablePropertyTypesFromConstructor,
 		?string $projectConfigFile
 	)
 	{
@@ -61,7 +56,6 @@ class AnalysisResult
 		$this->notFileSpecificErrors = $notFileSpecificErrors;
 		$this->warnings = $warnings;
 		$this->defaultLevelUsed = $defaultLevelUsed;
-		$this->hasInferrablePropertyTypesFromConstructor = $hasInferrablePropertyTypesFromConstructor;
 		$this->projectConfigFile = $projectConfigFile;
 	}
 
@@ -107,11 +101,6 @@ class AnalysisResult
 	public function isDefaultLevelUsed(): bool
 	{
 		return $this->defaultLevelUsed;
-	}
-
-	public function hasInferrablePropertyTypesFromConstructor(): bool
-	{
-		return $this->hasInferrablePropertyTypesFromConstructor;
 	}
 
 	public function getProjectConfigFile(): ?string

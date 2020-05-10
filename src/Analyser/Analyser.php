@@ -63,7 +63,6 @@ class Analyser
 		$errors = [];
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
-		$inferrablePropertyTypesFromConstructorHelper = new InferrablePropertyTypesFromConstructorHelper();
 		$dependencies = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
@@ -75,7 +74,7 @@ class Analyser
 					$file,
 					$allAnalysedFiles,
 					$this->registry,
-					$inferrablePropertyTypesFromConstructorHelper
+					null
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
@@ -112,7 +111,6 @@ class Analyser
 		return new AnalyserResult(
 			$errors,
 			[],
-			$inferrablePropertyTypesFromConstructorHelper->hasInferrablePropertyTypesFromConstructor(),
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$reachedInternalErrorsCountLimit
 		);

@@ -57,3 +57,30 @@ class Foo extends FooParent
 	}
 
 }
+
+class Bar
+{
+
+	/**
+	 * @param array{name?:string} $settings
+	 */
+	public function doFoo(array $settings = []): void
+	{
+
+	}
+
+	public function doBar(float $test2 = 0): void
+	{
+
+	}
+
+	/**
+	 * @template T
+	 * @param T $a
+	 */
+	public function doBaz($a = 'str'): void
+	{
+
+	}
+
+}

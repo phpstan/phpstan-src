@@ -10,6 +10,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -59,8 +60,9 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 
 			$defaultValueType = $scope->getType($param->default);
 			$parameterType = $parameters->getParameters()[$paramI]->getType();
+			$parameterType = TemplateTypeHelper::resolveToBounds($parameterType);
 
-			if ($parameterType->isSuperTypeOf($defaultValueType)->yes()) {
+			if ($parameterType->accepts($defaultValueType, true)->yes()) {
 				continue;
 			}
 

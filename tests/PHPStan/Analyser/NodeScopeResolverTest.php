@@ -9889,6 +9889,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3269.php');
 	}
 
+	public function dataAssignNestedArray(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/assign-nested-arrays.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9935,6 +9940,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataInheritPhpDocMerging
 	 * @dataProvider dataBug3266
 	 * @dataProvider dataBug3269
+	 * @dataProvider dataAssignNestedArray
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

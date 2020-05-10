@@ -216,7 +216,7 @@ class ArrayType implements Type
 		return $type;
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		if ($offsetType === null) {
 			$offsetType = new IntegerType();
@@ -224,7 +224,7 @@ class ArrayType implements Type
 
 		return new self(
 			TypeCombinator::union($this->keyType, self::castToArrayKeyType($offsetType)),
-			TypeCombinator::union($this->itemType, $valueType)
+			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType
 		);
 	}
 

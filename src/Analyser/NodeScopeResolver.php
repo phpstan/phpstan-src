@@ -2298,10 +2298,12 @@ class NodeScopeResolver
 					$offsetValueTypeStack[] = $offsetValueType;
 				}
 
-				foreach (array_reverse($offsetTypes) as $offsetType) {
+				foreach (array_reverse($offsetTypes) as $i => $offsetType) {
 					/** @var Type $offsetValueType */
 					$offsetValueType = array_pop($offsetValueTypeStack);
-					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite);
+
+					/** @phpstan-ignore-next-line */
+					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
 				}
 
 				if ($var instanceof Variable && is_string($var->name)) {

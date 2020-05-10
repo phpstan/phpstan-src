@@ -431,7 +431,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new ErrorType(); // undefined offset
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = false): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
 		$builder->setOffsetValueType($offsetType, $valueType);

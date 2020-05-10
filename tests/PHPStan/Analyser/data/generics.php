@@ -1280,3 +1280,43 @@ function arrayOfGenericClassStrings(array $a): void
 {
 	assertType('array<class-string<PHPStan\Generics\FunctionsAssertType\Foo>>', $a);
 }
+
+/**
+ * @template T
+ */
+class TagMergingGrandparent
+{
+	/** @var T */
+	public $property;
+
+	/**
+	 * @param T $one
+	 * @param int $two
+	 */
+	public function method($one, $two): void {}
+}
+
+/**
+ * @template TT
+ * @extends TagMergingGrandparent<TT>
+ */
+class TagMergingParent extends TagMergingGrandparent
+{
+	/**
+	 * @param TT $one
+	 */
+	public function method($one, $two): void {}
+}
+
+/**
+ * @extends TagMergingParent<float>
+ */
+class TagMergingChild extends TagMergingParent
+{
+	public function method($one, $two): void
+	{
+		assertType('float', $one);
+		assertType('int', $two);
+		assertType('float', $this->property);
+	}
+}

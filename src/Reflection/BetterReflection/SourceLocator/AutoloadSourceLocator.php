@@ -134,9 +134,12 @@ class AutoloadSourceLocator implements SourceLocator
 			return true;
 		});
 		stream_wrapper_unregister('file');
+		stream_wrapper_unregister('phar');
 		stream_wrapper_register('file', self::class);
+		stream_wrapper_register('phar', self::class);
 		class_exists($className);
 		stream_wrapper_restore('file');
+		stream_wrapper_restore('phar');
 		set_error_handler($previousErrorHandler);
 
 		if (self::$autoloadLocatedFile === null) {
@@ -185,6 +188,7 @@ class AutoloadSourceLocator implements SourceLocator
 	public function url_stat($path, $flags)
 	{
 		stream_wrapper_restore('file');
+		stream_wrapper_restore('phar');
 
 		if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
 			set_error_handler(static function (): bool {
@@ -198,7 +202,9 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 
 		stream_wrapper_unregister('file');
+		stream_wrapper_unregister('phar');
 		stream_wrapper_register('file', self::class);
+		stream_wrapper_register('phar', self::class);
 
 		return $result;
 	}

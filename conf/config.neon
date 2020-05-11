@@ -517,6 +517,10 @@ services:
 			classes: %universalObjectCratesClasses%
 
 	-
+		class: PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider
+		factory: PHPStan\Reflection\ReflectionProvider\LazyReflectionProviderProvider
+
+	-
 		class: PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider
 
 	-

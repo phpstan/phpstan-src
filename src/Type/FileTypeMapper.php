@@ -14,6 +14,7 @@ use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -26,6 +27,9 @@ class FileTypeMapper
 
 	private const SKIP_NODE = 1;
 	private const POP_TYPE_MAP_STACK = 2;
+
+	/** @var ReflectionProviderProvider */
+	private $reflectionProviderProvider;
 
 	/** @var \PHPStan\Parser\Parser */
 	private $phpParser;
@@ -55,6 +59,7 @@ class FileTypeMapper
 	private $alreadyProcessedDependentFiles = [];
 
 	public function __construct(
+		ReflectionProviderProvider $reflectionProviderProvider,
 		Parser $phpParser,
 		PhpDocStringResolver $phpDocStringResolver,
 		PhpDocNodeResolver $phpDocNodeResolver,
@@ -62,6 +67,7 @@ class FileTypeMapper
 		AnonymousClassNameHelper $anonymousClassNameHelper
 	)
 	{
+		$this->reflectionProviderProvider = $reflectionProviderProvider;
 		$this->phpParser = $phpParser;
 		$this->phpDocStringResolver = $phpDocStringResolver;
 		$this->phpDocNodeResolver = $phpDocNodeResolver;
@@ -310,11 +316,15 @@ class FileTypeMapper
 					foreach ($node->traits as $traitName) {
 						/** @var class-string $traitName */
 						$traitName = (string) $traitName;
-						if (!trait_exists($traitName)) {
+						$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
+						if (!$reflectionProvider->hasClass($traitName)) {
 							continue;
 						}
 
-						$traitReflection = new \ReflectionClass($traitName);
+						$traitReflection = $reflectionProvider->getClass($traitName);
+						if (!$traitReflection->isTrait()) {
+							continue;
+						}
 						if ($traitReflection->getFileName() === false) {
 							continue;
 						}

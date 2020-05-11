@@ -15,6 +15,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
+use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -53,7 +54,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 
 			$broker = $this->createBroker();
 			$printer = new \PhpParser\PrettyPrinter\Standard();
-			$fileHelper = $this->getFileHelper();
 			$typeSpecifier = $this->createTypeSpecifier(
 				$printer,
 				$broker,
@@ -66,7 +66,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 			$fileHelper = new FileHelper($currentWorkingDirectory);
 			$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 			$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
-			$fileTypeMapper = new FileTypeMapper($this->getParser(), self::getContainer()->getByType(PhpDocStringResolver::class), self::getContainer()->getByType(PhpDocNodeResolver::class), $this->createMock(Cache::class), $anonymousClassNameHelper);
+			$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($broker), $this->getParser(), self::getContainer()->getByType(PhpDocStringResolver::class), self::getContainer()->getByType(PhpDocNodeResolver::class), $this->createMock(Cache::class), $anonymousClassNameHelper);
 			$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 			$nodeScopeResolver = new NodeScopeResolver(
 				$broker,

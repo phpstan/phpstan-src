@@ -14,6 +14,8 @@ Any contributions are welcome.
 
 ### Building
 
+PHPStan's source code is developed on PHP 7.4. For distribution in `phpstan/phpstan` package and as a PHAR file, the source code is transformed to run on PHP 7.1 and higher.
+
 Initially you need to run `composer install`, or `composer update` in case you aren't working in a directory which was built before.
 
 Afterwards you can either run the whole build including linting and coding standards using

@@ -35,6 +35,10 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
+
       - name: "Validate Composer"
         run: "composer validate"
 
@@ -47,6 +51,10 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        if: matrix.php-version != '7.4'
+        run: php bin/transform-source.php
 
       - name: "Lint"
         run: "vendor/bin/phing lint"
@@ -71,6 +79,10 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
+
       - name: "Validate Composer"
         run: "composer validate"
 
@@ -83,6 +95,10 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        if: matrix.php-version != '7.4'
+        run: php bin/transform-source.php
 
       - name: "Composer Normalize"
         run: "vendor/bin/phing composer-normalize-check"
@@ -112,6 +128,10 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -153,6 +173,10 @@ jobs:
           extensions: ds,mbstring
           ini-values: memory_limit=512M
 
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
+
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
         with:
@@ -162,6 +186,10 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        if: matrix.php-version != '7.4'
+        run: php bin/transform-source.php
 
       - name: "Tests"
         run: "vendor/bin/phing tests"
@@ -182,6 +210,10 @@ jobs:
           php-version: "7.4"
           tools: pecl
           extensions: ds
+
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -229,6 +261,10 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
 
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
+
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
         with:
@@ -238,6 +274,10 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        if: matrix.php-version != '7.4'
+        run: php bin/transform-source.php
 
       - name: "PHPStan"
         run: "vendor/bin/phing phpstan"
@@ -267,6 +307,10 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
 
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
+
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
         with:
@@ -276,6 +320,10 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        if: matrix.php-version != '7.4'
+        run: php bin/transform-source.php
 
       - name: "PHPStan with static PHP-Parser"
         run: "vendor/bin/phing phpstan-static-php-parser"
@@ -301,6 +349,10 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
+
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -362,6 +414,10 @@ jobs:
           extensions: mbstring
           ini-values: memory_limit=256M
 
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
+
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
         with:
@@ -396,6 +452,9 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
+      - name: "Change PHP version in composer.json"
+        run: php bin/change-composer-json.php
+
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
         with:
@@ -405,6 +464,9 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        run: php bin/transform-source.php
 
       - name: "Tests"
         run: |
@@ -434,6 +496,10 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"
@@ -477,6 +543,10 @@ jobs:
           php-version: "7.4"
           tools: ${{ matrix.tools }}
           extensions: ${{ matrix.extensions }}
+
+      - name: "Change PHP version in composer.json"
+        #if: matrix.php-version != '7.4'
+        run: php bin/change-composer-json.php
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"

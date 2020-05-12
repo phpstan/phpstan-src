@@ -7,11 +7,9 @@ use PHPStan\Rules\Registry;
 class Analyser
 {
 
-	/** @var \PHPStan\Analyser\FileAnalyser */
-	private $fileAnalyser;
+	private \PHPStan\Analyser\FileAnalyser $fileAnalyser;
 
-	/** @var \PHPStan\Rules\Registry */
-	private $registry;
+	private Registry $registry;
 
 	/** @var \PHPStan\Analyser\NodeScopeResolver */
 	private $nodeScopeResolver;

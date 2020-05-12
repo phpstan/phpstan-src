@@ -15,12 +15,12 @@ final class CompileCommandTest extends TestCase
 	public function testCommand(): void
 	{
 		$filesystem = $this->createMock(Filesystem::class);
-		$filesystem->expects(self::once())->method('read')->with('bar/composer.json')->willReturn('{"name":"phpstan/phpstan-src","replace":{"phpstan/phpstan": "self.version"},"require":{"php":"~7.1"},"require-dev":1,"autoload-dev":2,"autoload":{"psr-4":{"PHPStan\\\\":[3]}}}');
+		$filesystem->expects(self::once())->method('read')->with('bar/composer.json')->willReturn('{"name":"phpstan/phpstan-src","replace":{"phpstan/phpstan": "self.version"},"require":{"php":"^7.4"},"require-dev":1,"autoload-dev":2,"autoload":{"psr-4":{"PHPStan\\\\":[3]}}}');
 		$filesystem->expects(self::once())->method('write')->with('bar/composer.json', <<<EOT
 {
     "name": "phpstan/phpstan",
     "require": {
-        "php": "~7.1"
+        "php": "^7.1"
     },
     "require-dev": 1,
     "autoload-dev": 2,

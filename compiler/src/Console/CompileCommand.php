@@ -62,6 +62,7 @@ final class CompileCommand extends Command
 		);
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
+		$this->transformSource();
 
 		$this->processFactory->create(['php', 'box.phar', 'compile', '--no-parallel'], $this->dataDir);
 
@@ -74,6 +75,7 @@ final class CompileCommand extends Command
 
 		unset($json['replace']);
 		$json['name'] = 'phpstan/phpstan';
+		$json['require']['php'] = '^7.1';
 
 		// simplify autoload (remove not packed build directory]
 		$json['autoload']['psr-4']['PHPStan\\'] = 'src/';
@@ -181,6 +183,16 @@ php;
 		}
 
 		$output->writeln(sprintf('Patching failed: %s', implode("\n", $outputLines)));
+	}
+
+	private function transformSource(): void
+	{
+		exec(escapeshellarg(__DIR__ . '/../../../bin/transform-source.php'), $outputLines, $exitCode);
+		if ($exitCode === 0) {
+			return;
+		}
+
+		throw new \PHPStan\ShouldNotHappenException(implode("\n", $outputLines));
 	}
 
 }

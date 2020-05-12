@@ -5,23 +5,19 @@ namespace PHPStan\Analyser;
 class ExpressionResult
 {
 
-	/** @var MutatingScope */
-	private $scope;
+	private MutatingScope $scope;
 
-	/** @var bool */
-	private $hasYield;
+	private bool $hasYield;
 
 	/** @var (callable(): MutatingScope)|null */
 	private $truthyScopeCallback;
 
-	/** @var MutatingScope|null */
-	private $truthyScope;
+	private ?MutatingScope $truthyScope = null;
 
 	/** @var (callable(): MutatingScope)|null */
 	private $falseyScopeCallback;
 
-	/** @var MutatingScope|null */
-	private $falseyScope;
+	private ?MutatingScope $falseyScope = null;
 
 	/**
 	 * @param MutatingScope $scope

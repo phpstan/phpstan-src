@@ -8,11 +8,9 @@ use PHPStan\Analyser\Scope;
 class LiteralArrayItem
 {
 
-	/** @var Scope */
-	private $scope;
+	private Scope $scope;
 
-	/** @var ArrayItem */
-	private $arrayItem;
+	private ArrayItem $arrayItem;
 
 	public function __construct(Scope $scope, ArrayItem $arrayItem)
 	{

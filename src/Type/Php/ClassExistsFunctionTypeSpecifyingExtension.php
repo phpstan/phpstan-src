@@ -22,8 +22,7 @@ use PHPStan\Type\TypeCombinator;
 class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	/** @var TypeSpecifier */
-	private $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,

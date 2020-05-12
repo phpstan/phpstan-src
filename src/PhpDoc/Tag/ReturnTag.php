@@ -7,11 +7,9 @@ use PHPStan\Type\Type;
 class ReturnTag implements TypedTag
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
-	/** @var bool */
-	private $isExplicit;
+	private bool $isExplicit;
 
 	public function __construct(Type $type, bool $isExplicit)
 	{

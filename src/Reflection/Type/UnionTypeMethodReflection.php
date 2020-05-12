@@ -14,11 +14,10 @@ use PHPStan\Type\TypeCombinator;
 class UnionTypeMethodReflection implements MethodReflection
 {
 
-	/** @var string */
-	private $methodName;
+	private string $methodName;
 
 	/** @var MethodReflection[] */
-	private $methods;
+	private array $methods;
 
 	/**
 	 * @param string $methodName

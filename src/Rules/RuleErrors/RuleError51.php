@@ -8,17 +8,14 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError51 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\IdentifierRuleError, \PHPStan\Rules\MetadataRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var int */
-	public $line;
+	public int $line;
 
-	/** @var string */
-	public $identifier;
+	public string $identifier;
 
 	/** @var mixed[] */
-	public $metadata;
+	public array $metadata;
 
 	public function getMessage(): string
 	{

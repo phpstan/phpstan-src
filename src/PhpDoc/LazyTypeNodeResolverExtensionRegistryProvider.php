@@ -5,11 +5,9 @@ namespace PHPStan\PhpDoc;
 class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
 {
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	private \PHPStan\DependencyInjection\Container $container;
 
-	/** @var TypeNodeResolverExtensionRegistry|null */
-	private $registry;
+	private ?TypeNodeResolverExtensionRegistry $registry = null;
 
 	public function __construct(\PHPStan\DependencyInjection\Container $container)
 	{

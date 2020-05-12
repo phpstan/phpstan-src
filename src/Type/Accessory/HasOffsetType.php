@@ -26,8 +26,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 
-	/** @var \PHPStan\Type\Type */
-	private $offsetType;
+	private \PHPStan\Type\Type $offsetType;
 
 	public function __construct(Type $offsetType)
 	{

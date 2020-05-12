@@ -44,59 +44,48 @@ class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 
-	/** @var ScopeFactory */
-	private $scopeFactory;
+	private ScopeFactory $scopeFactory;
 
-	/** @var NodeScopeResolver */
-	private $nodeScopeResolver;
+	private NodeScopeResolver $nodeScopeResolver;
 
-	/** @var \PHPStan\Reflection\Php\PhpMethodReflectionFactory */
-	private $methodReflectionFactory;
+	private \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory;
 
-	/** @var \PHPStan\PhpDoc\PhpDocInheritanceResolver */
-	private $phpDocInheritanceResolver;
+	private \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
-	/** @var \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension */
-	private $annotationsMethodsClassReflectionExtension;
+	private \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension;
 
-	/** @var \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension */
-	private $annotationsPropertiesClassReflectionExtension;
+	private \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension;
 
-	/** @var \PHPStan\Reflection\SignatureMap\SignatureMapProvider */
-	private $signatureMapProvider;
+	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
 
-	/** @var \PHPStan\Parser\Parser */
-	private $parser;
+	private \PHPStan\Parser\Parser $parser;
 
-	/** @var \PHPStan\PhpDoc\StubPhpDocProvider */
-	private $stubPhpDocProvider;
+	private \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider;
 
-	/** @var bool */
-	private $inferPrivatePropertyTypeFromConstructor;
+	private bool $inferPrivatePropertyTypeFromConstructor;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
 	/** @var string[] */
-	private $universalObjectCratesClasses;
+	private array $universalObjectCratesClasses;
 
 	/** @var \PHPStan\Reflection\PropertyReflection[][] */
-	private $propertiesIncludingAnnotations = [];
+	private array $propertiesIncludingAnnotations = [];
 
 	/** @var \PHPStan\Reflection\Php\PhpPropertyReflection[][] */
-	private $nativeProperties;
+	private array $nativeProperties;
 
 	/** @var \PHPStan\Reflection\MethodReflection[][] */
-	private $methodsIncludingAnnotations = [];
+	private array $methodsIncludingAnnotations = [];
 
 	/** @var \PHPStan\Reflection\MethodReflection[][] */
-	private $nativeMethods = [];
+	private array $nativeMethods = [];
 
 	/** @var array<string, array<string, Type>> */
-	private $propertyTypesCache = [];
+	private array $propertyTypesCache = [];
 
 	/** @var array<string, true> */
-	private $inferClassConstructorPropertyTypesInProcess = [];
+	private array $inferClassConstructorPropertyTypesInProcess = [];
 
 	/**
 	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory

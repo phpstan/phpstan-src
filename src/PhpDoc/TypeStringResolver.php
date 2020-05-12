@@ -11,14 +11,11 @@ use PHPStan\Type\Type;
 class TypeStringResolver
 {
 
-	/** @var Lexer */
-	private $typeLexer;
+	private Lexer $typeLexer;
 
-	/** @var TypeParser */
-	private $typeParser;
+	private TypeParser $typeParser;
 
-	/** @var TypeNodeResolver */
-	private $typeNodeResolver;
+	private TypeNodeResolver $typeNodeResolver;
 
 	public function __construct(Lexer $typeLexer, TypeParser $typeParser, TypeNodeResolver $typeNodeResolver)
 	{

@@ -7,8 +7,7 @@ use PHPStan\Reflection\ReflectionProvider;
 class SetterReflectionProviderProvider implements ReflectionProviderProvider
 {
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	public function setReflectionProvider(ReflectionProvider $reflectionProvider): void
 	{

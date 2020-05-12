@@ -14,8 +14,7 @@ use PHPStan\Type\VoidType;
 class DummyConstructorReflection implements MethodReflection
 {
 
-	/** @var ClassReflection */
-	private $declaringClass;
+	private ClassReflection $declaringClass;
 
 	public function __construct(ClassReflection $declaringClass)
 	{

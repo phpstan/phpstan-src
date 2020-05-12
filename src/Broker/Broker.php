@@ -15,20 +15,16 @@ use PHPStan\Type\Type;
 class Broker implements ReflectionProvider
 {
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	/** @var DynamicReturnTypeExtensionRegistryProvider */
-	private $dynamicReturnTypeExtensionRegistryProvider;
+	private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider;
 
-	/** @var \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider */
-	private $operatorTypeSpecifyingExtensionRegistryProvider;
+	private \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider;
 
 	/** @var string[] */
-	private $universalObjectCratesClasses;
+	private array $universalObjectCratesClasses;
 
-	/** @var \PHPStan\Broker\Broker|null */
-	private static $instance;
+	private static ?\PHPStan\Broker\Broker $instance = null;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider

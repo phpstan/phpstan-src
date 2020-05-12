@@ -32,65 +32,48 @@ use PHPStan\Type\VoidType;
 class PhpMethodReflection implements MethodReflection
 {
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var ClassReflection|null */
-	private $declaringTrait;
+	private ?ClassReflection $declaringTrait;
 
-	/** @var BuiltinMethodReflection */
-	private $reflection;
+	private BuiltinMethodReflection $reflection;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Parser\Parser */
-	private $parser;
+	private \PHPStan\Parser\Parser $parser;
 
-	/** @var \PHPStan\Parser\FunctionCallStatementFinder */
-	private $functionCallStatementFinder;
+	private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
 
-	/** @var \PHPStan\Cache\Cache */
-	private $cache;
+	private \PHPStan\Cache\Cache $cache;
 
-	/** @var \PHPStan\Type\Generic\TemplateTypeMap */
-	private $templateTypeMap;
+	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
 
 	/** @var \PHPStan\Type\Type[] */
-	private $phpDocParameterTypes;
+	private array $phpDocParameterTypes;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocReturnType;
+	private ?\PHPStan\Type\Type $phpDocReturnType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocThrowType;
+	private ?\PHPStan\Type\Type $phpDocThrowType;
 
 	/** @var \PHPStan\Reflection\Php\PhpParameterReflection[]|null */
-	private $parameters;
+	private ?array $parameters = null;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $returnType;
+	private ?\PHPStan\Type\Type $returnType = null;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $nativeReturnType;
+	private ?\PHPStan\Type\Type $nativeReturnType = null;
 
-	/** @var string|null  */
-	private $deprecatedDescription;
+	private ?string $deprecatedDescription;
 
-	/** @var bool */
-	private $isDeprecated;
+	private bool $isDeprecated;
 
-	/** @var bool */
-	private $isInternal;
+	private bool $isInternal;
 
-	/** @var bool */
-	private $isFinal;
+	private bool $isFinal;
 
-	/** @var string|null */
-	private $stubPhpDocString;
+	private ?string $stubPhpDocString;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
-	private $variants;
+	private ?array $variants = null;
 
 	/**
 	 * @param ClassReflection $declaringClass

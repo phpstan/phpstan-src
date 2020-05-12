@@ -8,19 +8,17 @@ class AnalysisResult
 {
 
 	/** @var \PHPStan\Analyser\Error[] sorted by their file name, line number and message */
-	private $fileSpecificErrors;
+	private array $fileSpecificErrors;
 
 	/** @var string[] */
-	private $notFileSpecificErrors;
+	private array $notFileSpecificErrors;
 
 	/** @var string[] */
-	private $warnings;
+	private array $warnings;
 
-	/** @var bool */
-	private $defaultLevelUsed;
+	private bool $defaultLevelUsed;
 
-	/** @var string|null */
-	private $projectConfigFile;
+	private ?string $projectConfigFile;
 
 	/**
 	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors

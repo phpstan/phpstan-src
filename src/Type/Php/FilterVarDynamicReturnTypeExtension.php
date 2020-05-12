@@ -25,11 +25,10 @@ use PHPStan\Type\UnionType;
 class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	/** @var ConstantStringType */
-	private $flagsString;
+	private ConstantStringType $flagsString;
 
 	/** @var array<int, Type> */
-	private $filterTypeMap;
+	private array $filterTypeMap;
 
 	public function __construct()
 	{

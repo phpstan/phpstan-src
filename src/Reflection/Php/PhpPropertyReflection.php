@@ -12,38 +12,27 @@ use PHPStan\Type\TypehintHelper;
 class PhpPropertyReflection implements PropertyReflection
 {
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var \PHPStan\Reflection\ClassReflection|null */
-	private $declaringTrait;
+	private ?\PHPStan\Reflection\ClassReflection $declaringTrait;
 
-	/** @var \ReflectionType|null */
-	private $nativeType;
+	private ?\ReflectionType $nativeType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $finalNativeType;
+	private ?\PHPStan\Type\Type $finalNativeType = null;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocType;
+	private ?\PHPStan\Type\Type $phpDocType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $type;
+	private ?\PHPStan\Type\Type $type = null;
 
-	/** @var \ReflectionProperty */
-	private $reflection;
+	private \ReflectionProperty $reflection;
 
-	/** @var string|null */
-	private $deprecatedDescription;
+	private ?string $deprecatedDescription;
 
-	/** @var bool */
-	private $isDeprecated;
+	private bool $isDeprecated;
 
-	/** @var bool */
-	private $isInternal;
+	private bool $isInternal;
 
-	/** @var string|null */
-	private $stubPhpDocString;
+	private ?string $stubPhpDocString;
 
 	public function __construct(
 		ClassReflection $declaringClass,

@@ -17,8 +17,7 @@ use PHPStan\Type\VerbosityLevel;
 class PrintRule implements Rule
 {
 
-	/** @var RuleLevelHelper */
-	private $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(RuleLevelHelper $ruleLevelHelper)
 	{

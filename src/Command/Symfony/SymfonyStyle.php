@@ -11,8 +11,7 @@ use Symfony\Component\Console\Style\StyleInterface;
 class SymfonyStyle implements OutputStyle
 {
 
-	/** @var \Symfony\Component\Console\Style\StyleInterface */
-	private $symfonyStyle;
+	private \Symfony\Component\Console\Style\StyleInterface $symfonyStyle;
 
 	public function __construct(StyleInterface $symfonyStyle)
 	{

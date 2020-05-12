@@ -22,71 +22,59 @@ use PHPStan\Type\VerbosityLevel;
 class ClassReflection implements ReflectionWithFilename
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
 	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
-	private $propertiesClassReflectionExtensions;
+	private array $propertiesClassReflectionExtensions;
 
 	/** @var \PHPStan\Reflection\MethodsClassReflectionExtension[] */
-	private $methodsClassReflectionExtensions;
+	private array $methodsClassReflectionExtensions;
 
-	/** @var string */
-	private $displayName;
+	private string $displayName;
 
-	/** @var \ReflectionClass */
-	private $reflection;
+	private \ReflectionClass $reflection;
 
-	/** @var string|null */
-	private $anonymousFilename;
+	private ?string $anonymousFilename;
 
 	/** @var \PHPStan\Reflection\MethodReflection[] */
-	private $methods = [];
+	private array $methods = [];
 
 	/** @var \PHPStan\Reflection\PropertyReflection[] */
-	private $properties = [];
+	private array $properties = [];
 
 	/** @var \PHPStan\Reflection\ConstantReflection[] */
-	private $constants;
+	private array $constants;
 
 	/** @var int[]|null */
-	private $classHierarchyDistances;
+	private ?array $classHierarchyDistances = null;
 
-	/** @var string|null */
-	private $deprecatedDescription;
+	private ?string $deprecatedDescription = null;
 
-	/** @var bool|null */
-	private $isDeprecated;
+	private ?bool $isDeprecated = null;
 
-	/** @var bool|null */
-	private $isGeneric;
+	private ?bool $isGeneric = null;
 
-	/** @var bool|null */
-	private $isInternal;
+	private ?bool $isInternal = null;
 
-	/** @var bool|null */
-	private $isFinal;
+	private ?bool $isFinal = null;
 
 	/** @var ?TemplateTypeMap */
-	private $templateTypeMap;
+	private ?TemplateTypeMap $templateTypeMap = null;
 
 	/** @var ?TemplateTypeMap */
-	private $resolvedTemplateTypeMap;
+	private ?TemplateTypeMap $resolvedTemplateTypeMap;
 
-	/** @var ResolvedPhpDocBlock|null */
-	private $stubPhpDocBlock;
+	private ?ResolvedPhpDocBlock $stubPhpDocBlock;
 
 	/** @var array<string,ClassReflection>|null */
-	private $ancestors;
+	private ?array $ancestors = null;
 
-	/** @var string|null */
-	private $cacheKey;
+	private ?string $cacheKey = null;
 
 	/** @var array<string, bool> */
-	private $subclasses = [];
+	private array $subclasses = [];
 
 	/** @var string|false|null */
 	private $filename;

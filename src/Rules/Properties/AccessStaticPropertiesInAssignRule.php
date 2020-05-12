@@ -12,8 +12,7 @@ use PHPStan\Rules\Rule;
 class AccessStaticPropertiesInAssignRule implements Rule
 {
 
-	/** @var \PHPStan\Rules\Properties\AccessStaticPropertiesRule */
-	private $accessStaticPropertiesRule;
+	private \PHPStan\Rules\Properties\AccessStaticPropertiesRule $accessStaticPropertiesRule;
 
 	public function __construct(AccessStaticPropertiesRule $accessStaticPropertiesRule)
 	{

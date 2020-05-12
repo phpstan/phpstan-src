@@ -6,10 +6,10 @@ class Registry
 {
 
 	/** @var \PHPStan\Rules\Rule[][] */
-	private $rules = [];
+	private array $rules = [];
 
 	/** @var \PHPStan\Rules\Rule[][] */
-	private $cache = [];
+	private array $cache = [];
 
 	/**
 	 * @param \PHPStan\Rules\Rule[] $rules

@@ -16,7 +16,7 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 	private const NAME = 'dump-deps';
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
+	private array $composerAutoloaderProjectPaths;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths

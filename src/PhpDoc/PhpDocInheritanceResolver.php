@@ -8,8 +8,7 @@ use PHPStan\Type\FileTypeMapper;
 class PhpDocInheritanceResolver
 {
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper

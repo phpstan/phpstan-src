@@ -7,11 +7,9 @@ use PHPStan\File\FileHelper;
 class NeonLoader extends \Nette\DI\Config\Loader
 {
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
-	/** @var string|null */
-	private $generateBaselineFile;
+	private ?string $generateBaselineFile;
 
 	public function __construct(
 		FileHelper $fileHelper,

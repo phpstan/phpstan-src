@@ -10,11 +10,9 @@ use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 class LazyDynamicReturnTypeExtensionRegistryProvider implements DynamicReturnTypeExtensionRegistryProvider
 {
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	private \PHPStan\DependencyInjection\Container $container;
 
-	/** @var \PHPStan\Type\DynamicReturnTypeExtensionRegistry|null */
-	private $registry;
+	private ?\PHPStan\Type\DynamicReturnTypeExtensionRegistry $registry = null;
 
 	public function __construct(\PHPStan\DependencyInjection\Container $container)
 	{

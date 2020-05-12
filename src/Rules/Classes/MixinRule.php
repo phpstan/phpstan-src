@@ -22,23 +22,17 @@ use PHPStan\Type\VerbosityLevel;
 class MixinRule implements Rule
 {
 
-	/** @var FileTypeMapper */
-	private $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
-	private $genericObjectTypeCheck;
+	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
 
-	/** @var MissingTypehintCheck */
-	private $missingTypehintCheck;
+	private MissingTypehintCheck $missingTypehintCheck;
 
-	/** @var bool */
-	private $checkClassCaseSensitivity;
+	private bool $checkClassCaseSensitivity;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,

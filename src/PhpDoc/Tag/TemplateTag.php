@@ -8,14 +8,11 @@ use PHPStan\Type\Type;
 class TemplateTag
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var \PHPStan\Type\Type */
-	private $bound;
+	private \PHPStan\Type\Type $bound;
 
-	/** @var TemplateTypeVariance */
-	private $variance;
+	private TemplateTypeVariance $variance;
 
 	public function __construct(string $name, Type $bound, TemplateTypeVariance $variance)
 	{

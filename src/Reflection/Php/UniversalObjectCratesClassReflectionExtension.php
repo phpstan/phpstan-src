@@ -14,10 +14,9 @@ class UniversalObjectCratesClassReflectionExtension
 {
 
 	/** @var string[] */
-	private $classes;
+	private array $classes;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	private \PHPStan\Broker\Broker $broker;
 
 	/**
 	 * @param string[] $classes

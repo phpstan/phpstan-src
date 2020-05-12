@@ -12,14 +12,12 @@ use PHPStan\Type\TypeTraverser;
 class ObjectTypeMethodReflection implements MethodReflection
 {
 
-	/** @var \PHPStan\Type\ObjectType */
-	private $objectType;
+	private \PHPStan\Type\ObjectType $objectType;
 
-	/** @var \PHPStan\Reflection\MethodReflection */
-	private $reflection;
+	private \PHPStan\Reflection\MethodReflection $reflection;
 
 	/** @var \PHPStan\Reflection\ParametersAcceptor[]|null */
-	private $variants;
+	private ?array $variants = null;
 
 	public function __construct(
 		ObjectType $objectType,

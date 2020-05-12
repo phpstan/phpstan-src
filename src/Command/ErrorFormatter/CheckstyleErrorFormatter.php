@@ -9,8 +9,7 @@ use PHPStan\File\RelativePathHelper;
 class CheckstyleErrorFormatter implements ErrorFormatter
 {
 
-	/** @var RelativePathHelper */
-	private $relativePathHelper;
+	private RelativePathHelper $relativePathHelper;
 
 	public function __construct(RelativePathHelper $relativePathHelper)
 	{

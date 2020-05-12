@@ -12,26 +12,21 @@ use PHPStan\Reflection\ResolvedPropertyReflection;
 class PhpDocBlock
 {
 
-	/** @var string */
-	private $docComment;
+	private string $docComment;
 
-	/** @var string */
-	private $file;
+	private string $file;
 
-	/** @var ClassReflection */
-	private $classReflection;
+	private ClassReflection $classReflection;
 
-	/** @var string|null */
-	private $trait;
+	private ?string $trait;
 
-	/** @var bool */
-	private $explicit;
+	private bool $explicit;
 
 	/** @var array<string, string> */
-	private $parameterNameMapping;
+	private array $parameterNameMapping;
 
 	/** @var array<int, self> */
-	private $parents;
+	private array $parents;
 
 	/**
 	 * @param string $docComment

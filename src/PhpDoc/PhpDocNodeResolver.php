@@ -34,11 +34,9 @@ use PHPStan\Type\TypeCombinator;
 class PhpDocNodeResolver
 {
 
-	/** @var TypeNodeResolver */
-	private $typeNodeResolver;
+	private TypeNodeResolver $typeNodeResolver;
 
-	/** @var ConstExprNodeResolver */
-	private $constExprNodeResolver;
+	private ConstExprNodeResolver $constExprNodeResolver;
 
 	public function __construct(TypeNodeResolver $typeNodeResolver, ConstExprNodeResolver $constExprNodeResolver)
 	{

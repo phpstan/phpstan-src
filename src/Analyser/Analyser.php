@@ -11,14 +11,12 @@ class Analyser
 
 	private Registry $registry;
 
-	/** @var \PHPStan\Analyser\NodeScopeResolver */
-	private $nodeScopeResolver;
+	private \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver;
 
-	/** @var int */
-	private $internalErrorsCountLimit;
+	private int $internalErrorsCountLimit;
 
 	/** @var \PHPStan\Analyser\Error[] */
-	private $collectedErrors = [];
+	private array $collectedErrors = [];
 
 	public function __construct(
 		FileAnalyser $fileAnalyser,

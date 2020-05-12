@@ -12,7 +12,7 @@ class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExte
 {
 
 	/** @var string[] */
-	private $mixinExcludeClasses;
+	private array $mixinExcludeClasses;
 
 	/**
 	 * @param string[] $mixinExcludeClasses

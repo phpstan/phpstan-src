@@ -8,20 +8,16 @@ use PHPStan\Type\Type;
 class FunctionVariant implements ParametersAcceptor
 {
 
-	/** @var TemplateTypeMap */
-	private $templateTypeMap;
+	private TemplateTypeMap $templateTypeMap;
 
-	/** @var TemplateTypeMap|null */
-	private $resolvedTemplateTypeMap;
+	private ?TemplateTypeMap $resolvedTemplateTypeMap;
 
 	/** @var array<int, ParameterReflection> */
-	private $parameters;
+	private array $parameters;
 
-	/** @var bool */
-	private $isVariadic;
+	private bool $isVariadic;
 
-	/** @var Type */
-	private $returnType;
+	private Type $returnType;
 
 	/**
 	 * @param array<int, ParameterReflection> $parameters

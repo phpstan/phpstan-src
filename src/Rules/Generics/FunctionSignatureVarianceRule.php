@@ -15,11 +15,9 @@ use PHPStan\Rules\Rule;
 class FunctionSignatureVarianceRule implements Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\Generics\VarianceCheck */
-	private $varianceCheck;
+	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
 
 	public function __construct(ReflectionProvider $reflectionProvider, VarianceCheck $varianceCheck)
 	{

@@ -14,11 +14,9 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 class TraitTemplateTypeRule implements Rule
 {
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
-	/** @var \PHPStan\Rules\Generics\TemplateTypeCheck */
-	private $templateTypeCheck;
+	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,

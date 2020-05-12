@@ -14,29 +14,26 @@ class ResultCacheManager
 
 	private const CACHE_VERSION = 'v4-callback';
 
-	/** @var string */
-	private $cacheFilePath;
+	private string $cacheFilePath;
 
 	/** @var string[] */
-	private $allCustomConfigFiles;
+	private array $allCustomConfigFiles;
 
 	/** @var string[] */
-	private $analysedPaths;
+	private array $analysedPaths;
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
+	private array $composerAutoloaderProjectPaths;
 
 	/** @var string[] */
-	private $stubFiles;
+	private array $stubFiles;
 
-	/** @var string */
-	private $usedLevel;
+	private string $usedLevel;
 
-	/** @var string|null */
-	private $cliAutoloadFile;
+	private ?string $cliAutoloadFile;
 
 	/** @var array<string, string> */
-	private $fileHashes = [];
+	private array $fileHashes = [];
 
 	/**
 	 * @param string $cacheFilePath

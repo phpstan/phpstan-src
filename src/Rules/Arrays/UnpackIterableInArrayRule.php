@@ -18,8 +18,7 @@ use PHPStan\Type\VerbosityLevel;
 class UnpackIterableInArrayRule implements Rule
 {
 
-	/** @var RuleLevelHelper */
-	private $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper

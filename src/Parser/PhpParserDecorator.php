@@ -7,8 +7,7 @@ use PhpParser\ErrorHandler;
 class PhpParserDecorator implements \PhpParser\Parser
 {
 
-	/** @var \PHPStan\Parser\Parser */
-	private $wrappedParser;
+	private \PHPStan\Parser\Parser $wrappedParser;
 
 	public function __construct(\PHPStan\Parser\Parser $wrappedParser)
 	{

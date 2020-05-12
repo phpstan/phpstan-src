@@ -21,14 +21,13 @@ use PHPStan\Type\TypeCombinator;
 final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	/** @var array<int,Type> */
-	private $componentTypesPairedConstants;
+	/** @var array<int,Type>|null */
+	private ?array $componentTypesPairedConstants = null;
 
-	/** @var array<string,Type> */
-	private $componentTypesPairedStrings;
+	/** @var array<string,Type>|null */
+	private ?array $componentTypesPairedStrings = null;
 
-	/** @var Type */
-	private $allComponentsTogetherType;
+	private ?Type $allComponentsTogetherType = null;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -85,6 +84,10 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			];
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
+
+			if ($this->componentTypesPairedStrings === null) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
 
 			foreach ($this->componentTypesPairedStrings as $componentName => $componentValueType) {
 				$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType, true);

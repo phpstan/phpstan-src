@@ -23,7 +23,7 @@ final class GenericObjectType extends ObjectType
 {
 
 	/** @var array<int, Type> */
-	private $types;
+	private array $types;
 
 	/**
 	 * @param array<int, Type> $types

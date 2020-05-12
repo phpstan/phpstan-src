@@ -11,8 +11,7 @@ use function preg_quote;
 class BaselineNeonErrorFormatter implements ErrorFormatter
 {
 
-	/** @var \PHPStan\File\RelativePathHelper */
-	private $relativePathHelper;
+	private \PHPStan\File\RelativePathHelper $relativePathHelper;
 
 	public function __construct(RelativePathHelper $relativePathHelper)
 	{

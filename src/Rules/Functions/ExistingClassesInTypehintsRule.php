@@ -13,8 +13,7 @@ use PHPStan\Rules\FunctionDefinitionCheck;
 class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\FunctionDefinitionCheck */
-	private $check;
+	private \PHPStan\Rules\FunctionDefinitionCheck $check;
 
 	public function __construct(FunctionDefinitionCheck $check)
 	{

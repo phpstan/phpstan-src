@@ -13,26 +13,21 @@ use PHPStan\Type\Type;
 class AnnotationMethodReflection implements MethodReflection
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var  Type */
-	private $returnType;
+	private Type $returnType;
 
-	/** @var bool */
-	private $isStatic;
+	private bool $isStatic;
 
 	/** @var \PHPStan\Reflection\Annotations\AnnotationsMethodParameterReflection[] */
-	private $parameters;
+	private array $parameters;
 
-	/** @var bool */
-	private $isVariadic;
+	private bool $isVariadic;
 
 	/** @var FunctionVariant[]|null */
-	private $variants;
+	private ?array $variants = null;
 
 	/**
 	 * @param string $name

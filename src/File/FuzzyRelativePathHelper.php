@@ -5,11 +5,9 @@ namespace PHPStan\File;
 class FuzzyRelativePathHelper implements RelativePathHelper
 {
 
-	/** @var string */
-	private $directorySeparator;
+	private string $directorySeparator;
 
-	/** @var string|null */
-	private $pathToTrim;
+	private ?string $pathToTrim = null;
 
 	/**
 	 * @param string $currentWorkingDirectory

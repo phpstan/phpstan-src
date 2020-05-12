@@ -26,7 +26,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 	public const DEFAULT_LEVEL = CommandHelper::DEFAULT_LEVEL;
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
+	private array $composerAutoloaderProjectPaths;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths

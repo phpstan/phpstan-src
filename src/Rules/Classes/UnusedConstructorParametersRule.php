@@ -15,8 +15,7 @@ use PHPStan\Rules\UnusedFunctionParametersCheck;
 class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\UnusedFunctionParametersCheck */
-	private $check;
+	private \PHPStan\Rules\UnusedFunctionParametersCheck $check;
 
 	public function __construct(UnusedFunctionParametersCheck $check)
 	{

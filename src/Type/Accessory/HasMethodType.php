@@ -20,8 +20,7 @@ class HasMethodType implements AccessoryType, CompoundType
 	use ObjectTypeTrait;
 	use NonGenericTypeTrait;
 
-	/** @var string */
-	private $methodName;
+	private string $methodName;
 
 	public function __construct(string $methodName)
 	{

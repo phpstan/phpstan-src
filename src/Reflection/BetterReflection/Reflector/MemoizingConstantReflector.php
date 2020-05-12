@@ -9,7 +9,7 @@ final class MemoizingConstantReflector extends ConstantReflector
 {
 
 	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionConstant|\Throwable> */
-	private $reflections = [];
+	private array $reflections = [];
 
 	/**
 	 * Create a ReflectionConstant for the specified $constantName.

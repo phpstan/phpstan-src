@@ -101,41 +101,32 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Parser\Parser */
-	private $parser;
+	private \PHPStan\Parser\Parser $parser;
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
-	/** @var \PHPStan\PhpDoc\PhpDocInheritanceResolver */
-	private $phpDocInheritanceResolver;
+	private \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
-	/** @var \PHPStan\File\FileHelper */
-	private $fileHelper;
+	private \PHPStan\File\FileHelper $fileHelper;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
-	/** @var bool */
-	private $polluteScopeWithLoopInitialAssignments;
+	private bool $polluteScopeWithLoopInitialAssignments;
 
-	/** @var bool */
-	private $polluteCatchScopeWithTryAssignments;
+	private bool $polluteCatchScopeWithTryAssignments;
 
-	/** @var bool */
-	private $polluteScopeWithAlwaysIterableForeach;
+	private bool $polluteScopeWithAlwaysIterableForeach;
 
 	/** @var string[][] className(string) => methods(string[]) */
-	private $earlyTerminatingMethodCalls;
+	private array $earlyTerminatingMethodCalls;
 
 	/** @var array<int, string> */
-	private $earlyTerminatingFunctionCalls;
+	private array $earlyTerminatingFunctionCalls;
 
 	/** @var bool[] filePath(string) => bool(true) */
-	private $analysedFiles;
+	private array $analysedFiles;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider

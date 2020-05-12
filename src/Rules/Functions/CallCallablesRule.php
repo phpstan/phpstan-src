@@ -19,14 +19,11 @@ use PHPStan\Type\VerbosityLevel;
 class CallCallablesRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
-	private $check;
+	private \PHPStan\Rules\FunctionCallParametersCheck $check;
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	public function __construct(
 		FunctionCallParametersCheck $check,

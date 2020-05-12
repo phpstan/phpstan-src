@@ -12,11 +12,10 @@ class RuleErrorBuilder
 	private const TYPE_IDENTIFIER = 16;
 	private const TYPE_METADATA = 32;
 
-	/** @var int */
-	private $type;
+	private int $type;
 
 	/** @var mixed[] */
-	private $properties;
+	private array $properties;
 
 	private function __construct(string $message)
 	{

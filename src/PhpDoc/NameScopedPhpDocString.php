@@ -7,11 +7,9 @@ use PHPStan\Analyser\NameScope;
 class NameScopedPhpDocString
 {
 
-	/** @var string */
-	private $phpDocString;
+	private string $phpDocString;
 
-	/** @var \PHPStan\Analyser\NameScope */
-	private $nameScope;
+	private \PHPStan\Analyser\NameScope $nameScope;
 
 	public function __construct(string $phpDocString, NameScope $nameScope)
 	{

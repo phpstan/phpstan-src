@@ -11,17 +11,13 @@ use PHPStan\File\FileHelper;
 class ContainerFactory
 {
 
-	/** @var string */
-	private $currentWorkingDirectory;
+	private string $currentWorkingDirectory;
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
-	/** @var string */
-	private $rootDirectory;
+	private string $rootDirectory;
 
-	/** @var string */
-	private $configDirectory;
+	private string $configDirectory;
 
 	public function __construct(string $currentWorkingDirectory)
 	{

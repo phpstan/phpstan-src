@@ -8,8 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 class LazyReflectionProviderProvider implements ReflectionProviderProvider
 {
 
-	/** @var Container */
-	private $container;
+	private Container $container;
 
 	public function __construct(Container $container)
 	{

@@ -11,17 +11,16 @@ use PHPStan\Reflection\ReflectionProvider;
 class MemoizingReflectionProvider implements ReflectionProvider
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $provider;
+	private \PHPStan\Reflection\ReflectionProvider $provider;
 
 	/** @var array<string, bool> */
-	private $hasClasses = [];
+	private array $hasClasses = [];
 
 	/** @var array<string, \PHPStan\Reflection\ClassReflection> */
-	private $classes = [];
+	private array $classes = [];
 
 	/** @var array<string, string> */
-	private $classNames = [];
+	private array $classNames = [];
 
 	public function __construct(ReflectionProvider $provider)
 	{

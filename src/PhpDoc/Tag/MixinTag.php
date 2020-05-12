@@ -7,8 +7,7 @@ use PHPStan\Type\Type;
 class MixinTag
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
 	public function __construct(Type $type)
 	{

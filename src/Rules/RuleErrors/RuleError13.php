@@ -8,14 +8,11 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError13 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\FileRuleError, \PHPStan\Rules\TipRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var string */
-	public $file;
+	public string $file;
 
-	/** @var string */
-	public $tip;
+	public string $tip;
 
 	public function getMessage(): string
 	{

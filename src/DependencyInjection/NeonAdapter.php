@@ -19,7 +19,7 @@ class NeonAdapter implements Adapter
 	private const PREVENT_MERGING_SUFFIX = '!';
 
 	/** @var FileHelper[] */
-	private $fileHelpers;
+	private array $fileHelpers;
 
 	/**
 	 * @param string $file

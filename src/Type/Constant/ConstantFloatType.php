@@ -16,8 +16,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	use ConstantScalarTypeTrait;
 	use ConstantScalarToBooleanTrait;
 
-	/** @var float */
-	private $value;
+	private float $value;
 
 	public function __construct(float $value)
 	{

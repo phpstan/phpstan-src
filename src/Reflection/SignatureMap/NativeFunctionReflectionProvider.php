@@ -19,10 +19,9 @@ class NativeFunctionReflectionProvider
 {
 
 	/** @var NativeFunctionReflection[] */
-	private static $functionMap = [];
+	private static array $functionMap = [];
 
-	/** @var \PHPStan\Reflection\SignatureMap\SignatureMapProvider */
-	private $signatureMapProvider;
+	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
 
 	public function __construct(SignatureMapProvider $signatureMapProvider)
 	{

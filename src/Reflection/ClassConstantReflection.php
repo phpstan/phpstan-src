@@ -9,20 +9,15 @@ use PHPStan\Type\Type;
 class ClassConstantReflection implements ConstantReflection
 {
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var \ReflectionClassConstant */
-	private $reflection;
+	private \ReflectionClassConstant $reflection;
 
-	/** @var string|null */
-	private $deprecatedDescription;
+	private ?string $deprecatedDescription;
 
-	/** @var bool */
-	private $isDeprecated;
+	private bool $isDeprecated;
 
-	/** @var bool */
-	private $isInternal;
+	private bool $isInternal;
 
 	public function __construct(
 		ClassReflection $declaringClass,

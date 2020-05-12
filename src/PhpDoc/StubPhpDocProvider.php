@@ -14,47 +14,43 @@ use function array_key_exists;
 class StubPhpDocProvider
 {
 
-	/** @var \PHPStan\Parser\Parser */
-	private $parser;
+	private \PHPStan\Parser\Parser $parser;
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
 	/** @var string[] */
-	private $stubFiles;
+	private array $stubFiles;
 
 	/** @var array<string, ResolvedPhpDocBlock|null> */
-	private $classMap = [];
+	private array $classMap = [];
 
 	/** @var array<string, array<string, ResolvedPhpDocBlock|null>> */
-	private $propertyMap = [];
+	private array $propertyMap = [];
 
 	/** @var array<string, array<string, null>> */
-	private $methodMap = [];
+	private array $methodMap = [];
 
 	/** @var array<string, ResolvedPhpDocBlock|null> */
-	private $functionMap = [];
+	private array $functionMap = [];
 
-	/** @var bool */
-	private $initialized = false;
+	private bool $initialized = false;
 
-	/** @var bool */
-	private $initializing = false;
+	private bool $initializing = false;
 
 	/** @var array<string, array{string, string}> */
-	private $knownClassesDocComments = [];
+	private array $knownClassesDocComments = [];
 
 	/** @var array<string, array{string, string}> */
-	private $knownFunctionsDocComments = [];
+	private array $knownFunctionsDocComments = [];
 
 	/** @var array<string, array<string, array{string, string}>> */
-	private $knownPropertiesDocComments = [];
+	private array $knownPropertiesDocComments = [];
 
 	/** @var array<string, array<string, array{string, string}>> */
-	private $knownMethodsDocComments = [];
+	private array $knownMethodsDocComments = [];
 
 	/** @var array<string, array<string, array<string>>> */
-	private $knownMethodsParameterNames = [];
+	private array $knownMethodsParameterNames = [];
 
 	/**
 	 * @param \PHPStan\Parser\Parser $parser

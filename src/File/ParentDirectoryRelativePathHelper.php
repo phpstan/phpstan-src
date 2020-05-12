@@ -8,8 +8,7 @@ use function str_replace;
 class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
 
-	/** @var string */
-	private $parentDirectory;
+	private string $parentDirectory;
 
 	public function __construct(string $parentDirectory)
 	{

@@ -26,7 +26,7 @@ class WorkerCommand extends Command
 	private const NAME = 'worker';
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
+	private array $composerAutoloaderProjectPaths;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths

@@ -10,14 +10,12 @@ use PHPStan\Type\Type;
 class ResolvedMethodReflection implements MethodReflection
 {
 
-	/** @var MethodReflection */
-	private $reflection;
+	private MethodReflection $reflection;
 
-	/** @var TemplateTypeMap */
-	private $resolvedTemplateTypeMap;
+	private TemplateTypeMap $resolvedTemplateTypeMap;
 
 	/** @var \PHPStan\Reflection\ParametersAcceptor[]|null */
-	private $variants;
+	private ?array $variants = null;
 
 	public function __construct(MethodReflection $reflection, TemplateTypeMap $resolvedTemplateTypeMap)
 	{

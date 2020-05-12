@@ -7,8 +7,7 @@ use PhpParser\Node\Stmt;
 class UnreachableStatementNode extends Stmt implements VirtualNode
 {
 
-	/** @var Stmt */
-	private $originalStatement;
+	private Stmt $originalStatement;
 
 	public function __construct(Stmt $originalStatement)
 	{

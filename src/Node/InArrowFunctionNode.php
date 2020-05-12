@@ -8,8 +8,7 @@ use PhpParser\NodeAbstract;
 class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var \PhpParser\Node\Expr\ArrowFunction */
-	private $originalNode;
+	private \PhpParser\Node\Expr\ArrowFunction $originalNode;
 
 	public function __construct(ArrowFunction $originalNode)
 	{

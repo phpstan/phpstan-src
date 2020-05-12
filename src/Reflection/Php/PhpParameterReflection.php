@@ -12,17 +12,13 @@ use PHPStan\Type\TypehintHelper;
 class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 {
 
-	/** @var \ReflectionParameter */
-	private $reflection;
+	private \ReflectionParameter $reflection;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocType = null;
+	private ?\PHPStan\Type\Type $phpDocType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $type;
+	private ?\PHPStan\Type\Type $type = null;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $nativeType;
+	private ?\PHPStan\Type\Type $nativeType = null;
 
 	public function __construct(\ReflectionParameter $reflection, ?Type $phpDocType)
 	{

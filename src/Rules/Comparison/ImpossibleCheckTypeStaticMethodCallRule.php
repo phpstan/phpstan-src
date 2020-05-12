@@ -15,14 +15,11 @@ use PHPStan\Type\ObjectType;
 class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper */
-	private $impossibleCheckTypeHelper;
+	private \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
 
-	/** @var bool */
-	private $checkAlwaysTrueCheckTypeFunctionCall;
+	private bool $checkAlwaysTrueCheckTypeFunctionCall;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	public function __construct(
 		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,

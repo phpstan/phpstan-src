@@ -9,13 +9,11 @@ class FetchedNode
 {
 
 	/** @var T */
-	private $node;
+	private \PhpParser\Node $node;
 
-	/** @var \PhpParser\Node\Stmt\Namespace_|null */
-	private $namespace;
+	private ?\PhpParser\Node\Stmt\Namespace_ $namespace;
 
-	/** @var string */
-	private $fileName;
+	private string $fileName;
 
 	/**
 	 * @param T $node

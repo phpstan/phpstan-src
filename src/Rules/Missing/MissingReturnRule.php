@@ -22,11 +22,9 @@ use PHPStan\Type\VoidType;
 class MissingReturnRule implements Rule
 {
 
-	/** @var bool */
-	private $checkExplicitMixedMissingReturn;
+	private bool $checkExplicitMixedMissingReturn;
 
-	/** @var bool */
-	private $checkPhpDocMissingReturn;
+	private bool $checkPhpDocMissingReturn;
 
 	public function __construct(
 		bool $checkExplicitMixedMissingReturn,

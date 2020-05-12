@@ -17,8 +17,7 @@ use PHPStan\Type\VerbosityLevel;
 class ThrowTypeRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper

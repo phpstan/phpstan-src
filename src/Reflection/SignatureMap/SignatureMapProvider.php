@@ -5,14 +5,13 @@ namespace PHPStan\Reflection\SignatureMap;
 class SignatureMapProvider
 {
 
-	/** @var \PHPStan\Reflection\SignatureMap\SignatureMapParser */
-	private $parser;
+	private \PHPStan\Reflection\SignatureMap\SignatureMapParser $parser;
 
 	/** @var mixed[]|null */
-	private static $signatureMap;
+	private static ?array $signatureMap = null;
 
 	/** @var array<string, array{hasSideEffects: bool}>|null */
-	private static $functionMetadata;
+	private static ?array $functionMetadata = null;
 
 	public function __construct(SignatureMapParser $parser)
 	{

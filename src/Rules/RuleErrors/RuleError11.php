@@ -8,14 +8,11 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError11 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\TipRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var int */
-	public $line;
+	public int $line;
 
-	/** @var string */
-	public $tip;
+	public string $tip;
 
 	public function getMessage(): string
 	{

@@ -14,8 +14,7 @@ use PHPStan\Type\VerbosityLevel;
 class StrictComparisonOfDifferentTypesRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueStrictComparison;
+	private bool $checkAlwaysTrueStrictComparison;
 
 	public function __construct(bool $checkAlwaysTrueStrictComparison)
 	{

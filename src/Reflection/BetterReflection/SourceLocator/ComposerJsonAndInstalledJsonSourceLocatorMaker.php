@@ -12,17 +12,13 @@ use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 class ComposerJsonAndInstalledJsonSourceLocatorMaker
 {
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository */
-	private $optimizedDirectorySourceLocatorRepository;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
-	private $optimizedSingleFileSourceLocatorRepository;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory */
-	private $optimizedPsrAutoloaderLocatorFactory;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory;
 
-	/** @var bool */
-	private $enableScanningPaths;
+	private bool $enableScanningPaths;
 
 	public function __construct(
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,

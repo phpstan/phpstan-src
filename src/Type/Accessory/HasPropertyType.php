@@ -18,8 +18,7 @@ class HasPropertyType implements AccessoryType, CompoundType
 	use ObjectTypeTrait;
 	use NonGenericTypeTrait;
 
-	/** @var string */
-	private $propertyName;
+	private string $propertyName;
 
 	public function __construct(string $propertyName)
 	{

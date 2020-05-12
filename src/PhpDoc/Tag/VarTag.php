@@ -7,8 +7,7 @@ use PHPStan\Type\Type;
 class VarTag implements TypedTag
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
 	public function __construct(Type $type)
 	{

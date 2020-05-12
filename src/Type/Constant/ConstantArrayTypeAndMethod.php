@@ -8,14 +8,11 @@ use PHPStan\Type\Type;
 class ConstantArrayTypeAndMethod
 {
 
-	/** @var \PHPStan\Type\Type|null */
-	private $type;
+	private ?\PHPStan\Type\Type $type;
 
-	/** @var string|null */
-	private $method;
+	private ?string $method;
 
-	/** @var TrinaryLogic */
-	private $certainty;
+	private TrinaryLogic $certainty;
 
 	private function __construct(
 		?Type $type,

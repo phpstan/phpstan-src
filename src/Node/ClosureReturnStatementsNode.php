@@ -9,14 +9,12 @@ use PHPStan\Analyser\StatementResult;
 class ClosureReturnStatementsNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var \PhpParser\Node\Expr\Closure */
-	private $closureExpr;
+	private \PhpParser\Node\Expr\Closure $closureExpr;
 
 	/** @var \PHPStan\Node\ReturnStatement[] */
-	private $returnStatements;
+	private array $returnStatements;
 
-	/** @var StatementResult */
-	private $statementResult;
+	private StatementResult $statementResult;
 
 	/**
 	 * @param \PhpParser\Node\Expr\Closure $closureExpr

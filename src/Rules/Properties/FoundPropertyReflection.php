@@ -12,14 +12,11 @@ use PHPStan\Type\Type;
 class FoundPropertyReflection implements PropertyReflection
 {
 
-	/** @var PropertyReflection */
-	private $originalPropertyReflection;
+	private PropertyReflection $originalPropertyReflection;
 
-	/** @var Type */
-	private $readableType;
+	private Type $readableType;
 
-	/** @var Type */
-	private $writableType;
+	private Type $writableType;
 
 	public function __construct(
 		PropertyReflection $originalPropertyReflection,

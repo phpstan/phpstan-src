@@ -16,11 +16,9 @@ use PHPStan\Rules\RuleErrorBuilder;
 class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var Lexer */
-	private $phpDocLexer;
+	private Lexer $phpDocLexer;
 
-	/** @var PhpDocParser */
-	private $phpDocParser;
+	private PhpDocParser $phpDocParser;
 
 	public function __construct(Lexer $phpDocLexer, PhpDocParser $phpDocParser)
 	{

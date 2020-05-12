@@ -13,11 +13,9 @@ use PHPStan\Reflection\PhpDefect\PhpDefectClassReflectionExtension;
 class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	private \PHPStan\DependencyInjection\Container $container;
 
-	/** @var \PHPStan\Reflection\ClassReflectionExtensionRegistry|null */
-	private $registry;
+	private ?\PHPStan\Reflection\ClassReflectionExtensionRegistry $registry = null;
 
 	public function __construct(\PHPStan\DependencyInjection\Container $container)
 	{

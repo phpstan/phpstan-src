@@ -13,17 +13,13 @@ use PHPStan\Type\VerbosityLevel;
 class GenericAncestorsCheck
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
-	private $genericObjectTypeCheck;
+	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
 
-	/** @var \PHPStan\Rules\Generics\VarianceCheck */
-	private $varianceCheck;
+	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
 
-	/** @var bool */
-	private $checkGenericClassInNonGenericObjectType;
+	private bool $checkGenericClassInNonGenericObjectType;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

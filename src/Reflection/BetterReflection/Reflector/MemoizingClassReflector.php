@@ -9,7 +9,7 @@ final class MemoizingClassReflector extends ClassReflector
 {
 
 	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionClass|\Throwable> */
-	private $reflections = [];
+	private array $reflections = [];
 
 	/**
 	 * Create a ReflectionClass for the specified $className.

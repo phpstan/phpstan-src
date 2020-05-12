@@ -7,17 +7,14 @@ use PhpParser\Node\Stmt;
 class StatementResult
 {
 
-	/** @var MutatingScope */
-	private $scope;
+	private MutatingScope $scope;
 
-	/** @var bool */
-	private $hasYield;
+	private bool $hasYield;
 
-	/** @var bool */
-	private $isAlwaysTerminating;
+	private bool $isAlwaysTerminating;
 
 	/** @var StatementExitPoint[] */
-	private $exitPoints;
+	private array $exitPoints;
 
 	/**
 	 * @param MutatingScope $scope

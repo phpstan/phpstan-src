@@ -15,8 +15,7 @@ use PHPStan\Type\FileTypeMapper;
 class WrongVariableNameInVarTagRule implements Rule
 {
 
-	/** @var FileTypeMapper */
-	private $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	public function __construct(FileTypeMapper $fileTypeMapper)
 	{

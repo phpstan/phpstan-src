@@ -20,26 +20,19 @@ use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 class ReflectionProviderFactory
 {
 
-	/** @var \PHPStan\Reflection\Runtime\RuntimeReflectionProvider */
-	private $runtimeReflectionProvider;
+	private \PHPStan\Reflection\Runtime\RuntimeReflectionProvider $runtimeReflectionProvider;
 
-	/** @var \PhpParser\Parser */
-	private $parser;
+	private \PhpParser\Parser $parser;
 
-	/** @var PhpStormStubsSourceStubber */
-	private $phpStormStubsSourceStubber;
+	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
-	/** @var \PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory */
-	private $betterReflectionProviderFactory;
+	private \PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory $betterReflectionProviderFactory;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $phpParserReflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $phpParserReflectionProvider;
 
-	/** @var bool */
-	private $enableStaticReflectionForPhpParser;
+	private bool $enableStaticReflectionForPhpParser;
 
-	/** @var bool */
-	private $disableRuntimeReflectionProvider;
+	private bool $disableRuntimeReflectionProvider;
 
 	public function __construct(
 		RuntimeReflectionProvider $runtimeReflectionProvider,

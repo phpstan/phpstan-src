@@ -14,11 +14,9 @@ use PHPStan\Rules\RuleErrorBuilder;
 class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var bool */
-	private $checkFunctionNameCase;
+	private bool $checkFunctionNameCase;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

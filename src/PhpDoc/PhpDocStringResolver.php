@@ -10,11 +10,9 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 class PhpDocStringResolver
 {
 
-	/** @var Lexer */
-	private $phpDocLexer;
+	private Lexer $phpDocLexer;
 
-	/** @var PhpDocParser */
-	private $phpDocParser;
+	private PhpDocParser $phpDocParser;
 
 	public function __construct(Lexer $phpDocLexer, PhpDocParser $phpDocParser)
 	{

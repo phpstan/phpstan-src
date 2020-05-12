@@ -17,14 +17,11 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	/** @var bool */
-	private $checkFunctionNameCase;
+	private bool $checkFunctionNameCase;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

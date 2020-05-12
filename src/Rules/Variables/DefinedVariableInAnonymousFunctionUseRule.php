@@ -13,8 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 class DefinedVariableInAnonymousFunctionUseRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $checkMaybeUndefinedVariables;
+	private bool $checkMaybeUndefinedVariables;
 
 	public function __construct(
 		bool $checkMaybeUndefinedVariables

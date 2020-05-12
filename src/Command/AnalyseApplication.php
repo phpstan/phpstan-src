@@ -15,29 +15,21 @@ use function file_exists;
 class AnalyseApplication
 {
 
-	/** @var \PHPStan\Analyser\Analyser */
-	private $analyser;
+	private \PHPStan\Analyser\Analyser $analyser;
 
-	/** @var \PHPStan\PhpDoc\StubValidator */
-	private $stubValidator;
+	private \PHPStan\PhpDoc\StubValidator $stubValidator;
 
-	/** @var ParallelAnalyser */
-	private $parallelAnalyser;
+	private ParallelAnalyser $parallelAnalyser;
 
-	/** @var Scheduler */
-	private $scheduler;
+	private Scheduler $scheduler;
 
-	/** @var \PHPStan\Analyser\ResultCache\ResultCacheManager */
-	private $resultCacheManager;
+	private \PHPStan\Analyser\ResultCache\ResultCacheManager $resultCacheManager;
 
-	/** @var IgnoredErrorHelper */
-	private $ignoredErrorHelper;
+	private IgnoredErrorHelper $ignoredErrorHelper;
 
-	/** @var string */
-	private $memoryLimitFile;
+	private string $memoryLimitFile;
 
-	/** @var int */
-	private $internalErrorsCountLimit;
+	private int $internalErrorsCountLimit;
 
 	public function __construct(
 		Analyser $analyser,

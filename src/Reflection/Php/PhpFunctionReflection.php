@@ -25,47 +25,36 @@ use PHPStan\Type\VoidType;
 class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilename
 {
 
-	/** @var \ReflectionFunction */
-	private $reflection;
+	private \ReflectionFunction $reflection;
 
-	/** @var \PHPStan\Parser\Parser */
-	private $parser;
+	private \PHPStan\Parser\Parser $parser;
 
-	/** @var \PHPStan\Parser\FunctionCallStatementFinder */
-	private $functionCallStatementFinder;
+	private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
 
-	/** @var \PHPStan\Cache\Cache */
-	private $cache;
+	private \PHPStan\Cache\Cache $cache;
 
-	/** @var \PHPStan\Type\Generic\TemplateTypeMap */
-	private $templateTypeMap;
+	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
 
 	/** @var \PHPStan\Type\Type[] */
-	private $phpDocParameterTypes;
+	private array $phpDocParameterTypes;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocReturnType;
+	private ?\PHPStan\Type\Type $phpDocReturnType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocThrowType;
+	private ?\PHPStan\Type\Type $phpDocThrowType;
 
-	/** @var string|null  */
-	private $deprecatedDescription;
+	private ?string $deprecatedDescription;
 
-	/** @var bool */
-	private $isDeprecated;
+	private bool $isDeprecated;
 
-	/** @var bool */
-	private $isInternal;
+	private bool $isInternal;
 
-	/** @var bool */
-	private $isFinal;
+	private bool $isFinal;
 
 	/** @var string|false */
 	private $filename;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
-	private $variants;
+	private ?array $variants = null;
 
 	/**
 	 * @param \ReflectionFunction $reflection

@@ -15,11 +15,10 @@ class TrinaryLogic
 	private const MAYBE = 0;
 	private const NO = -1;
 
-	/** @var int */
-	private $value;
+	private int $value;
 
 	/** @var self[] */
-	private static $registry = [];
+	private static array $registry = [];
 
 	private function __construct(int $value)
 	{

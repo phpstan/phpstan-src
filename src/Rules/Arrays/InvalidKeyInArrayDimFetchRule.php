@@ -14,8 +14,7 @@ use PHPStan\Type\VerbosityLevel;
 class InvalidKeyInArrayDimFetchRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	public function __construct(bool $reportMaybes)
 	{

@@ -18,11 +18,9 @@ use PHPStan\Type\VerbosityLevel;
 class RandomIntParametersRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	public function __construct(ReflectionProvider $reflectionProvider, bool $reportMaybes)
 	{

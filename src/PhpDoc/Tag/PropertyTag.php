@@ -7,14 +7,11 @@ use PHPStan\Type\Type;
 class PropertyTag
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
-	/** @var bool */
-	private $readable;
+	private bool $readable;
 
-	/** @var bool */
-	private $writable;
+	private bool $writable;
 
 	public function __construct(
 		Type $type,

@@ -18,11 +18,9 @@ use PHPStan\Type\VerbosityLevel;
 class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueInstanceof;
+	private bool $checkAlwaysTrueInstanceof;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	public function __construct(
 		bool $checkAlwaysTrueInstanceof,

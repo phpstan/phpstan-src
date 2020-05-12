@@ -5,8 +5,7 @@ namespace PHPStan\File;
 class SimpleRelativePathHelper implements RelativePathHelper
 {
 
-	/** @var string */
-	private $currentWorkingDirectory;
+	private string $currentWorkingDirectory;
 
 	public function __construct(string $currentWorkingDirectory)
 	{

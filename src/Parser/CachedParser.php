@@ -5,26 +5,21 @@ namespace PHPStan\Parser;
 class CachedParser implements Parser
 {
 
-	/** @var \PHPStan\Parser\Parser */
-	private $originalParser;
+	private \PHPStan\Parser\Parser $originalParser;
 
 	/** @var array<string, \PhpParser\Node\Stmt[]> */
-	private $cachedNodesByFile = [];
+	private array $cachedNodesByFile = [];
 
-	/** @var int */
-	private $cachedNodesByFileCount = 0;
+	private int $cachedNodesByFileCount = 0;
 
-	/** @var int */
-	private $cachedNodesByFileCountMax;
+	private int $cachedNodesByFileCountMax;
 
 	/** @var array<string, \PhpParser\Node\Stmt[]>*/
-	private $cachedNodesByString = [];
+	private array $cachedNodesByString = [];
 
-	/** @var int */
-	private $cachedNodesByStringCount = 0;
+	private int $cachedNodesByStringCount = 0;
 
-	/** @var int */
-	private $cachedNodesByStringCountMax;
+	private int $cachedNodesByStringCountMax;
 
 	public function __construct(
 		Parser $originalParser,

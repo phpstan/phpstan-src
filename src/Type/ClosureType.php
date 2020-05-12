@@ -23,17 +23,14 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	use NonGenericTypeTrait;
 
-	/** @var ObjectType */
-	private $objectType;
+	private ObjectType $objectType;
 
 	/** @var array<int, \PHPStan\Reflection\ParameterReflection> */
-	private $parameters;
+	private array $parameters;
 
-	/** @var Type */
-	private $returnType;
+	private Type $returnType;
 
-	/** @var bool */
-	private $variadic;
+	private bool $variadic;
 
 	/**
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters

@@ -6,10 +6,10 @@ class FileAnalyserResult
 {
 
 	/** @var Error[] */
-	private $errors;
+	private array $errors;
 
 	/** @var array<int, string> */
-	private $dependencies;
+	private array $dependencies;
 
 	/**
 	 * @param Error[] $errors

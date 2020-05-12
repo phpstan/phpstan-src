@@ -5,8 +5,7 @@ namespace PHPStan\Cache;
 class CacheItem
 {
 
-	/** @var string */
-	private $variableKey;
+	private string $variableKey;
 
 	/** @var mixed */
 	private $data;

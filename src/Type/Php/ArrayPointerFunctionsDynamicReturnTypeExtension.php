@@ -15,7 +15,7 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements \PHPStan\Type\D
 {
 
 	/** @var string[] */
-	private $functions = [
+	private array $functions = [
 		'reset',
 		'end',
 	];

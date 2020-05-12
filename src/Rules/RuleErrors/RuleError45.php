@@ -8,17 +8,14 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError45 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\FileRuleError, \PHPStan\Rules\TipRuleError, \PHPStan\Rules\MetadataRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var string */
-	public $file;
+	public string $file;
 
-	/** @var string */
-	public $tip;
+	public string $tip;
 
 	/** @var mixed[] */
-	public $metadata;
+	public array $metadata;
 
 	public function getMessage(): string
 	{

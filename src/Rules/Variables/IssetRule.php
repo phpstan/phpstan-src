@@ -12,8 +12,7 @@ use PHPStan\Rules\IssetCheck;
 class IssetRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var IssetCheck */
-	private $issetCheck;
+	private IssetCheck $issetCheck;
 
 	public function __construct(IssetCheck $issetCheck)
 	{

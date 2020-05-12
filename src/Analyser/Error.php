@@ -5,38 +5,29 @@ namespace PHPStan\Analyser;
 class Error implements \JsonSerializable
 {
 
-	/** @var string */
-	private $message;
+	private string $message;
 
-	/** @var string */
-	private $file;
+	private string $file;
 
-	/** @var int|NULL */
-	private $line;
+	private ?int $line;
 
-	/** @var bool */
-	private $canBeIgnored;
+	private bool $canBeIgnored;
 
-	/** @var string|null */
-	private $filePath;
+	private ?string $filePath;
 
-	/** @var string|null */
-	private $traitFilePath;
+	private ?string $traitFilePath;
 
-	/** @var string|null */
-	private $tip;
+	private ?string $tip;
 
-	/** @var int|null */
-	private $nodeLine;
+	private ?int $nodeLine;
 
-	/** @var class-string<\PhpParser\Node>|null */
-	private $nodeType;
+	/** @phpstan-var class-string<\PhpParser\Node>|null */
+	private ?string $nodeType;
 
-	/** @var string|null */
-	private $identifier;
+	private ?string $identifier;
 
 	/** @var mixed[] */
-	private $metadata;
+	private array $metadata;
 
 	/**
 	 * Error constructor.

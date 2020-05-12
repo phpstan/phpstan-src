@@ -5,14 +5,11 @@ namespace PHPStan\Parallel;
 class Scheduler
 {
 
-	/** @var int */
-	private $jobSize;
+	private int $jobSize;
 
-	/** @var int */
-	private $maximumNumberOfProcesses;
+	private int $maximumNumberOfProcesses;
 
-	/** @var int */
-	private $minimumNumberOfJobsPerProcess;
+	private int $minimumNumberOfJobsPerProcess;
 
 	public function __construct(
 		int $jobSize,

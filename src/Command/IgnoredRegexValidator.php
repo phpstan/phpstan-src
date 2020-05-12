@@ -13,11 +13,9 @@ use function substr;
 class IgnoredRegexValidator
 {
 
-	/** @var Parser */
-	private $parser;
+	private Parser $parser;
 
-	/** @var \PHPStan\PhpDoc\TypeStringResolver */
-	private $typeStringResolver;
+	private \PHPStan\PhpDoc\TypeStringResolver $typeStringResolver;
 
 	public function __construct(
 		Parser $parser,

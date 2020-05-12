@@ -24,17 +24,14 @@ use PHPStan\Type\VerbosityLevel;
 class ImpossibleCheckTypeHelper
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
 	/** @var string[] */
-	private $universalObjectCratesClasses;
+	private array $universalObjectCratesClasses;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider

@@ -23,16 +23,13 @@ class CallableType implements CompoundType, ParametersAcceptor
 	use TruthyBooleanTypeTrait;
 
 	/** @var array<int, \PHPStan\Reflection\ParameterReflection> */
-	private $parameters;
+	private array $parameters;
 
-	/** @var Type */
-	private $returnType;
+	private Type $returnType;
 
-	/** @var bool */
-	private $variadic;
+	private bool $variadic;
 
-	/** @var bool */
-	private $isCommonCallable;
+	private bool $isCommonCallable;
 
 	/**
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters

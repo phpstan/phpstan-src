@@ -17,11 +17,9 @@ use PHPStan\Type\VerbosityLevel;
 class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var RuleLevelHelper */
-	private $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,

@@ -9,23 +9,22 @@ use PHPStan\Reflection\ReflectionProvider;
 class DynamicReturnTypeExtensionRegistry
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
 	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[] */
-	private $dynamicMethodReturnTypeExtensions;
+	private array $dynamicMethodReturnTypeExtensions;
 
 	/** @var \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] */
-	private $dynamicStaticMethodReturnTypeExtensions;
+	private array $dynamicStaticMethodReturnTypeExtensions;
 
 	/** @var \PHPStan\Type\DynamicFunctionReturnTypeExtension[] */
-	private $dynamicFunctionReturnTypeExtensions;
+	private array $dynamicFunctionReturnTypeExtensions;
 
 	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[][]|null */
-	private $dynamicMethodReturnTypeExtensionsByClass;
+	private ?array $dynamicMethodReturnTypeExtensionsByClass = null;
 
 	/** @var \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[][]|null */
-	private $dynamicStaticMethodReturnTypeExtensionsByClass;
+	private ?array $dynamicStaticMethodReturnTypeExtensionsByClass = null;
 
 	/**
 	 * @param \PHPStan\Broker\Broker $broker

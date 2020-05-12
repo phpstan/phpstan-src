@@ -14,8 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 class NoopRule implements Rule
 {
 
-	/** @var Standard */
-	private $printer;
+	private Standard $printer;
 
 	public function __construct(Standard $printer)
 	{

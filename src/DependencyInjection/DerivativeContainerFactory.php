@@ -5,29 +5,26 @@ namespace PHPStan\DependencyInjection;
 class DerivativeContainerFactory
 {
 
-	/** @var string */
-	private $currentWorkingDirectory;
+	private string $currentWorkingDirectory;
 
-	/** @var string */
-	private $tempDirectory;
+	private string $tempDirectory;
 
 	/** @var string[] */
-	private $additionalConfigFiles;
+	private array $additionalConfigFiles;
 
 	/** @var string[] */
-	private $analysedPaths;
+	private array $analysedPaths;
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
+	private array $composerAutoloaderProjectPaths;
 
 	/** @var string[] */
-	private $analysedPathsFromConfig;
+	private array $analysedPathsFromConfig;
 
 	/** @var string[] */
-	private $allCustomConfigFiles;
+	private array $allCustomConfigFiles;
 
-	/** @var string */
-	private $usedLevel;
+	private string $usedLevel;
 
 	/**
 	 * @param string $currentWorkingDirectory

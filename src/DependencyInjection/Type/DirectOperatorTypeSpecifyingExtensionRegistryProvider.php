@@ -10,10 +10,9 @@ class DirectOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorT
 {
 
 	/** @var OperatorTypeSpecifyingExtension[] */
-	private $extensions;
+	private array $extensions;
 
-	/** @var Broker */
-	private $broker;
+	private Broker $broker;
 
 	/**
 	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtension[] $extensions

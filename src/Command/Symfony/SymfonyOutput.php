@@ -12,11 +12,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SymfonyOutput implements Output
 {
 
-	/** @var \Symfony\Component\Console\Output\OutputInterface */
-	private $symfonyOutput;
+	private \Symfony\Component\Console\Output\OutputInterface $symfonyOutput;
 
-	/** @var OutputStyle */
-	private $style;
+	private OutputStyle $style;
 
 	public function __construct(
 		OutputInterface $symfonyOutput,

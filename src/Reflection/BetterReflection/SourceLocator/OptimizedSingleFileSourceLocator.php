@@ -15,14 +15,11 @@ use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher */
-	private $fileNodesFetcher;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher $fileNodesFetcher;
 
-	/** @var string */
-	private $fileName;
+	private string $fileName;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\FetchedNodesResult|null */
-	private $fetchedNodesResult;
+	private ?\PHPStan\Reflection\BetterReflection\SourceLocator\FetchedNodesResult $fetchedNodesResult = null;
 
 	public function __construct(
 		FileNodesFetcher $fileNodesFetcher,

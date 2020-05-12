@@ -9,23 +9,17 @@ use PHPStan\Type\Type;
 class AnnotationsMethodParameterReflection implements ParameterReflection
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var Type */
-	private $type;
+	private Type $type;
 
-	/** @var \PHPStan\Reflection\PassedByReference */
-	private $passedByReference;
+	private \PHPStan\Reflection\PassedByReference $passedByReference;
 
-	/** @var bool */
-	private $isOptional;
+	private bool $isOptional;
 
-	/** @var bool */
-	private $isVariadic;
+	private bool $isVariadic;
 
-	/** @var Type|null */
-	private $defaultValue;
+	private ?Type $defaultValue;
 
 	public function __construct(string $name, Type $type, PassedByReference $passedByReference, bool $isOptional, bool $isVariadic, ?Type $defaultValue)
 	{

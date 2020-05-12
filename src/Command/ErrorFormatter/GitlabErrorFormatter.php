@@ -13,8 +13,7 @@ use PHPStan\File\RelativePathHelper;
 class GitlabErrorFormatter implements ErrorFormatter
 {
 
-	/** @var RelativePathHelper */
-	private $relativePathHelper;
+	private RelativePathHelper $relativePathHelper;
 
 	public function __construct(RelativePathHelper $relativePathHelper)
 	{

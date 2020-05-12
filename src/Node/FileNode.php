@@ -8,7 +8,7 @@ class FileNode extends NodeAbstract implements VirtualNode
 {
 
 	/** @var \PhpParser\Node[] */
-	private $nodes;
+	private array $nodes;
 
 	/**
 	 * @param \PhpParser\Node[] $nodes

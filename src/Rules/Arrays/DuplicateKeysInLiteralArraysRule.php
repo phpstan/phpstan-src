@@ -13,8 +13,7 @@ use PHPStan\Type\ConstantScalarType;
 class DuplicateKeysInLiteralArraysRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PhpParser\PrettyPrinter\Standard */
-	private $printer;
+	private \PhpParser\PrettyPrinter\Standard $printer;
 
 	public function __construct(
 		\PhpParser\PrettyPrinter\Standard $printer

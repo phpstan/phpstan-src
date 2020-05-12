@@ -10,8 +10,7 @@ use PHPStan\DependencyInjection\Container;
 class NetteContainer implements Container
 {
 
-	/** @var \Nette\DI\Container */
-	private $container;
+	private \Nette\DI\Container $container;
 
 	public function __construct(\Nette\DI\Container $container)
 	{

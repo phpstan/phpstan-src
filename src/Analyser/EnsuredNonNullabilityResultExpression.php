@@ -8,11 +8,9 @@ use PHPStan\Type\Type;
 class EnsuredNonNullabilityResultExpression
 {
 
-	/** @var Expr */
-	private $expression;
+	private Expr $expression;
 
-	/** @var Type */
-	private $originalType;
+	private Type $originalType;
 
 	public function __construct(Expr $expression, Type $originalType)
 	{

@@ -8,8 +8,7 @@ use PHPStan\File\FileWriter;
 class FileCacheStorage implements CacheStorage
 {
 
-	/** @var string */
-	private $directory;
+	private string $directory;
 
 	public function __construct(string $directory)
 	{

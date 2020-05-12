@@ -12,7 +12,7 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 {
 
 	/** @var string[] */
-	private $mixinExcludeClasses;
+	private array $mixinExcludeClasses;
 
 	/**
 	 * @param string[] $mixinExcludeClasses

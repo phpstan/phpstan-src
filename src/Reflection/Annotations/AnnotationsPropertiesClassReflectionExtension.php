@@ -10,11 +10,10 @@ use PHPStan\Type\FileTypeMapper;
 class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
 	/** @var \PHPStan\Reflection\PropertyReflection[][] */
-	private $properties = [];
+	private array $properties = [];
 
 	public function __construct(FileTypeMapper $fileTypeMapper)
 	{

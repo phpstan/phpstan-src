@@ -8,10 +8,10 @@ class ClassReflectionExtensionRegistry
 {
 
 	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
-	private $propertiesClassReflectionExtensions;
+	private array $propertiesClassReflectionExtensions;
 
 	/** @var \PHPStan\Reflection\MethodsClassReflectionExtension[] */
-	private $methodsClassReflectionExtensions;
+	private array $methodsClassReflectionExtensions;
 
 	/**
 	 * @param \PHPStan\Broker\Broker $broker

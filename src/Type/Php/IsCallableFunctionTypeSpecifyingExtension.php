@@ -19,11 +19,9 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	/** @var \PHPStan\Type\Php\MethodExistsTypeSpecifyingExtension */
-	private $methodExistsExtension;
+	private \PHPStan\Type\Php\MethodExistsTypeSpecifyingExtension $methodExistsExtension;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
 	public function __construct(MethodExistsTypeSpecifyingExtension $methodExistsExtension)
 	{

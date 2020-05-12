@@ -5,8 +5,7 @@ namespace PHPStan\Broker;
 class FunctionNotFoundException extends \PHPStan\AnalysedCodeException
 {
 
-	/** @var string */
-	private $functionName;
+	private string $functionName;
 
 	public function __construct(string $functionName)
 	{

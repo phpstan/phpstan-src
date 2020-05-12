@@ -6,13 +6,11 @@ class IgnoredRegexValidatorResult
 {
 
 	/** @var array<string, string> */
-	private $ignoredTypes;
+	private array $ignoredTypes;
 
-	/** @var bool */
-	private $anchorsInTheMiddle;
+	private bool $anchorsInTheMiddle;
 
-	/** @var bool */
-	private $allErrorsIgnored;
+	private bool $allErrorsIgnored;
 
 	/**
 	 * @param array<string, string> $ignoredTypes

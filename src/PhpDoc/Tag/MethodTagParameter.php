@@ -8,20 +8,15 @@ use PHPStan\Type\Type;
 class MethodTagParameter
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
-	/** @var \PHPStan\Reflection\PassedByReference */
-	private $passedByReference;
+	private \PHPStan\Reflection\PassedByReference $passedByReference;
 
-	/** @var bool */
-	private $isOptional;
+	private bool $isOptional;
 
-	/** @var bool */
-	private $isVariadic;
+	private bool $isVariadic;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $defaultValue;
+	private ?\PHPStan\Type\Type $defaultValue;
 
 	public function __construct(
 		Type $type,

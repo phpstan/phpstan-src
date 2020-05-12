@@ -8,17 +8,13 @@ use PHPStan\File\FileHelper;
 class LoaderFactory
 {
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
-	/** @var string */
-	private $rootDir;
+	private string $rootDir;
 
-	/** @var string */
-	private $currentWorkingDirectory;
+	private string $currentWorkingDirectory;
 
-	/** @var string|null */
-	private $generateBaselineFile;
+	private ?string $generateBaselineFile;
 
 	public function __construct(
 		FileHelper $fileHelper,

@@ -6,7 +6,7 @@ class TypeNodeResolverExtensionRegistry
 {
 
 	/** @var TypeNodeResolverExtension[] */
-	private $extensions;
+	private array $extensions;
 
 	/**
 	 * @param TypeNodeResolverExtension[] $extensions

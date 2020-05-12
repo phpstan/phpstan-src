@@ -18,17 +18,13 @@ use PHPStan\Type\Type;
 class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension, BrokerAwareExtension
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	private \PHPStan\Broker\Broker $broker;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
-	/** @var \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper|null */
-	private $helper;
+	private ?\PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $helper = null;
 
 	public function __construct(bool $treatPhpDocTypesAsCertain)
 	{

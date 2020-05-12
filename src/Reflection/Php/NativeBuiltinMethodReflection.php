@@ -7,8 +7,7 @@ use PHPStan\TrinaryLogic;
 class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
-	/** @var \ReflectionMethod */
-	private $reflection;
+	private \ReflectionMethod $reflection;
 
 	public function __construct(\ReflectionMethod $reflection)
 	{

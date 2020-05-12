@@ -7,26 +7,24 @@ use PHPStan\File\FileHelper;
 class IgnoredErrorHelperResult
 {
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
 	/** @var string[] */
-	private $errors;
+	private array $errors;
 
 	/** @var string[] */
-	private $warnings;
+	private array $warnings;
 
 	/** @var array<array<mixed>> */
-	private $otherIgnoreErrors;
+	private array $otherIgnoreErrors;
 
 	/** @var array<string, array<array<mixed>>> */
-	private $ignoreErrorsByFile;
+	private array $ignoreErrorsByFile;
 
 	/** @var (string|mixed[])[] */
-	private $ignoreErrors;
+	private array $ignoreErrors;
 
-	/** @var bool */
-	private $reportUnmatchedIgnoredErrors;
+	private bool $reportUnmatchedIgnoredErrors;
 
 	/**
 	 * @param FileHelper $fileHelper

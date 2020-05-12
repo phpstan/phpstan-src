@@ -27,17 +27,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private const EXTRA_OFFSET_CLASSES = ['SimpleXMLElement', 'DOMNodeList', 'Threaded'];
 
-	/** @var string */
-	private $className;
+	private string $className;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $subtractedType;
+	private ?\PHPStan\Type\Type $subtractedType;
 
-	/** @var GenericObjectType|null */
-	private $genericObjectType;
+	private ?GenericObjectType $genericObjectType = null;
 
 	/** @var array<string, \PHPStan\TrinaryLogic> */
-	private $superTypes = [];
+	private array $superTypes = [];
 
 	public function __construct(
 		string $className,

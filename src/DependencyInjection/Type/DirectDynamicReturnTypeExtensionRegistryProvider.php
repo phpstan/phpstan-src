@@ -16,19 +16,17 @@ class DirectDynamicReturnTypeExtensionRegistryProvider implements DynamicReturnT
 {
 
 	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[] */
-	private $dynamicMethodReturnTypeExtensions;
+	private array $dynamicMethodReturnTypeExtensions;
 
 	/** @var \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] */
-	private $dynamicStaticMethodReturnTypeExtensions;
+	private array $dynamicStaticMethodReturnTypeExtensions;
 
 	/** @var \PHPStan\Type\DynamicFunctionReturnTypeExtension[] */
-	private $dynamicFunctionReturnTypeExtensions;
+	private array $dynamicFunctionReturnTypeExtensions;
 
-	/** @var Broker */
-	private $broker;
+	private Broker $broker;
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	/**
 	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions

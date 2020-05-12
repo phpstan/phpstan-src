@@ -16,11 +16,9 @@ use PHPStan\Type\VerbosityLevel;
 class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PhpParser\PrettyPrinter\Standard */
-	private $printer;
+	private \PhpParser\PrettyPrinter\Standard $printer;
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
 		\PhpParser\PrettyPrinter\Standard $printer,

@@ -33,19 +33,18 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	private const DESCRIBE_LIMIT = 8;
 
 	/** @var array<int, ConstantIntegerType|ConstantStringType> */
-	private $keyTypes;
+	private array $keyTypes;
 
 	/** @var array<int, Type> */
-	private $valueTypes;
+	private array $valueTypes;
 
-	/** @var int */
-	private $nextAutoIndex;
+	private int $nextAutoIndex;
 
 	/** @var int[] */
-	private $optionalKeys;
+	private array $optionalKeys;
 
 	/** @var self[]|null */
-	private $allArrays;
+	private ?array $allArrays = null;
 
 	/**
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes

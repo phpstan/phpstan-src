@@ -6,7 +6,7 @@ class RecursionGuard
 {
 
 	/** @var true[] */
-	private static $context = [];
+	private static array $context = [];
 
 	/**
 	 * @param Type $type

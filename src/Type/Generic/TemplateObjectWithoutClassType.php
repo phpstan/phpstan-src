@@ -14,20 +14,15 @@ use PHPStan\Type\VerbosityLevel;
 class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements TemplateType
 {
 
-	/** @var TemplateTypeScope */
-	private $scope;
+	private TemplateTypeScope $scope;
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var TemplateTypeStrategy */
-	private $strategy;
+	private TemplateTypeStrategy $strategy;
 
-	/** @var TemplateTypeVariance */
-	private $variance;
+	private TemplateTypeVariance $variance;
 
-	/** @var ObjectWithoutClassType|null */
-	private $bound;
+	private ?ObjectWithoutClassType $bound = null;
 
 	public function __construct(
 		TemplateTypeScope $scope,

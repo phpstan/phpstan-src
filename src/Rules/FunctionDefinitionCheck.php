@@ -22,17 +22,13 @@ use PHPStan\Type\VerbosityLevel;
 class FunctionDefinitionCheck
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	/** @var bool */
-	private $checkClassCaseSensitivity;
+	private bool $checkClassCaseSensitivity;
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

@@ -15,29 +15,25 @@ use function array_key_exists;
 class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher */
-	private $fileNodesFetcher;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher $fileNodesFetcher;
 
-	/** @var \PHPStan\File\FileFinder */
-	private $fileFinder;
+	private \PHPStan\File\FileFinder $fileFinder;
 
-	/** @var string */
-	private $directory;
+	private string $directory;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
-	private $classNodes = [];
+	private array $classNodes = [];
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
-	private $functionNodes = [];
+	private array $functionNodes = [];
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>> */
-	private $constantNodes = [];
+	private array $constantNodes = [];
 
 	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
-	private $locatedSourcesByFile;
+	private array $locatedSourcesByFile;
 
-	/** @var bool */
-	private $initialized = false;
+	private bool $initialized = false;
 
 	public function __construct(
 		FileNodesFetcher $fileNodesFetcher,

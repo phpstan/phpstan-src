@@ -8,8 +8,7 @@ use Nette\DI\ContainerLoader;
 class Configurator extends \Nette\Configurator
 {
 
-	/** @var LoaderFactory */
-	private $loaderFactory;
+	private LoaderFactory $loaderFactory;
 
 	public function __construct(LoaderFactory $loaderFactory)
 	{

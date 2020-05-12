@@ -15,20 +15,16 @@ use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 class StubSourceLocatorFactory
 {
 
-	/** @var \PhpParser\Parser */
-	private $parser;
+	private \PhpParser\Parser $parser;
 
-	/** @var PhpStormStubsSourceStubber */
-	private $phpStormStubsSourceStubber;
+	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
-	private $optimizedSingleFileSourceLocatorRepository;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	private \PHPStan\DependencyInjection\Container $container;
 
 	/** @var string[] */
-	private $stubFiles;
+	private array $stubFiles;
 
 	/**
 	 * @param string[] $stubFiles

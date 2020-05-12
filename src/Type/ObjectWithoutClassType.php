@@ -12,8 +12,7 @@ class ObjectWithoutClassType implements SubtractableType
 	use ObjectTypeTrait;
 	use NonGenericTypeTrait;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $subtractedType;
+	private ?\PHPStan\Type\Type $subtractedType;
 
 	public function __construct(
 		?Type $subtractedType = null

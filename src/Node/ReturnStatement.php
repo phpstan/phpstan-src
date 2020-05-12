@@ -8,11 +8,9 @@ use PHPStan\Analyser\Scope;
 class ReturnStatement
 {
 
-	/** @var Scope */
-	private $scope;
+	private Scope $scope;
 
-	/** @var \PhpParser\Node\Stmt\Return_ */
-	private $returnNode;
+	private \PhpParser\Node\Stmt\Return_ $returnNode;
 
 	public function __construct(Scope $scope, Return_ $returnNode)
 	{

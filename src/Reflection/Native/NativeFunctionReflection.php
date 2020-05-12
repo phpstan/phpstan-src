@@ -8,17 +8,14 @@ use PHPStan\Type\Type;
 class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
 	/** @var \PHPStan\Reflection\ParametersAcceptor[] */
-	private $variants;
+	private array $variants;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $throwType;
+	private ?\PHPStan\Type\Type $throwType;
 
-	/** @var TrinaryLogic */
-	private $hasSideEffects;
+	private TrinaryLogic $hasSideEffects;
 
 	/**
 	 * @param string $name

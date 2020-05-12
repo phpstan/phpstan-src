@@ -18,17 +18,13 @@ use PHPStan\Type\TypeCombinator;
 class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	/** @var string */
-	private $isInMethodName;
+	private string $isInMethodName;
 
-	/** @var string */
-	private $removeNullMethodName;
+	private string $removeNullMethodName;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
 	public function __construct(
 		string $isInMethodName,

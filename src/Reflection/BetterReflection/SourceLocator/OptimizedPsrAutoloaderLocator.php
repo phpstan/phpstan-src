@@ -12,11 +12,9 @@ use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 class OptimizedPsrAutoloaderLocator implements SourceLocator
 {
 
-	/** @var PsrAutoloaderMapping */
-	private $mapping;
+	private PsrAutoloaderMapping $mapping;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
-	private $optimizedSingleFileSourceLocatorRepository;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
 	public function __construct(
 		PsrAutoloaderMapping $mapping,

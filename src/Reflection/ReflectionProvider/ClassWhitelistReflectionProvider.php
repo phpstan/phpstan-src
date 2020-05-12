@@ -12,11 +12,10 @@ use PHPStan\Reflection\ReflectionProvider;
 class ClassWhitelistReflectionProvider implements ReflectionProvider
 {
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	/** @var string[] */
-	private $patterns;
+	private array $patterns;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider

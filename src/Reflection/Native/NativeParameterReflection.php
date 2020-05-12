@@ -11,26 +11,19 @@ use PHPStan\Type\Type;
 class NativeParameterReflection implements ParameterReflection
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var bool */
-	private $optional;
+	private bool $optional;
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
-	/** @var \PHPStan\Reflection\PassedByReference */
-	private $passedByReference;
+	private \PHPStan\Reflection\PassedByReference $passedByReference;
 
-	/** @var bool */
-	private $variadic;
+	private bool $variadic;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $defaultValue;
+	private ?\PHPStan\Type\Type $defaultValue;
 
-	/** @var bool */
-	private $variadicParameterAlreadyExpanded;
+	private bool $variadicParameterAlreadyExpanded;
 
 	public function __construct(
 		string $name,

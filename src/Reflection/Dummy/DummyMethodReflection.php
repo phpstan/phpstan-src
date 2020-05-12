@@ -13,8 +13,7 @@ use PHPStan\Type\Type;
 class DummyMethodReflection implements MethodReflection
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
 	public function __construct(string $name)
 	{

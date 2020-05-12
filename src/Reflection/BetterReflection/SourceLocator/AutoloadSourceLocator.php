@@ -27,19 +27,11 @@ use function file_exists;
 class AutoloadSourceLocator implements SourceLocator
 {
 
-	/** @var AstLocator */
-	private $astLocator;
+	private AstLocator $astLocator;
 
-	/**
-	 * Primarily used by the non-loading-autoloader magic trickery to determine
-	 * the filename used during autoloading.
-	 *
-	 * @var string|null
-	 */
-	private static $autoloadLocatedFile;
+	private static ?string $autoloadLocatedFile = null;
 
-	/** @var AstLocator|null */
-	private static $currentAstLocator;
+	private static ?AstLocator $currentAstLocator = null;
 
 	/**
 	 * Note: the constructor has been made a 0-argument constructor because `\stream_wrapper_register`
@@ -142,11 +134,13 @@ class AutoloadSourceLocator implements SourceLocator
 		stream_wrapper_restore('phar');
 		set_error_handler($previousErrorHandler);
 
-		if (self::$autoloadLocatedFile === null) {
+		/** @var string|null $autoloadLocatedFile */
+		$autoloadLocatedFile = self::$autoloadLocatedFile;
+		if ($autoloadLocatedFile === null) {
 			return null;
 		}
 
-		return [self::$autoloadLocatedFile, $className];
+		return [$autoloadLocatedFile, $className];
 	}
 
 	/**

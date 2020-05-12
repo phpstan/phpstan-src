@@ -8,13 +8,12 @@ class SpecifiedTypes
 {
 
 	/** @var mixed[] */
-	private $sureTypes;
+	private array $sureTypes;
 
 	/** @var mixed[] */
-	private $sureNotTypes;
+	private array $sureNotTypes;
 
-	/** @var bool */
-	private $overwrite;
+	private bool $overwrite;
 
 	/**
 	 * @param mixed[] $sureTypes

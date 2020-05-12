@@ -11,11 +11,9 @@ use PHPStan\Type\BooleanType;
 class ConstantConditionRuleHelper
 {
 
-	/** @var ImpossibleCheckTypeHelper */
-	private $impossibleCheckTypeHelper;
+	private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	public function __construct(
 		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,

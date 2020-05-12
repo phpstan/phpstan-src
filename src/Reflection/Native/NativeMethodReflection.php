@@ -14,23 +14,18 @@ use PHPStan\Type\Type;
 class NativeMethodReflection implements MethodReflection
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var BuiltinMethodReflection */
-	private $reflection;
+	private BuiltinMethodReflection $reflection;
 
 	/** @var \PHPStan\Reflection\ParametersAcceptor[] */
-	private $variants;
+	private array $variants;
 
-	/** @var TrinaryLogic */
-	private $hasSideEffects;
+	private TrinaryLogic $hasSideEffects;
 
-	/** @var string|null */
-	private $stubPhpDocString;
+	private ?string $stubPhpDocString;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider

@@ -18,11 +18,9 @@ use PHPStan\Type\Type;
 class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 {
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,

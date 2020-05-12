@@ -10,10 +10,9 @@ class FunctionReturnStatementsNode extends NodeAbstract implements VirtualNode
 {
 
 	/** @var \PHPStan\Node\ReturnStatement[] */
-	private $returnStatements;
+	private array $returnStatements;
 
-	/** @var StatementResult */
-	private $statementResult;
+	private StatementResult $statementResult;
 
 	/**
 	 * @param \PhpParser\Node\Stmt\Function_ $function

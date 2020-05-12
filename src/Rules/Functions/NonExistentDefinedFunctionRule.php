@@ -15,8 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 class NonExistentDefinedFunctionRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
 	public function __construct(ReflectionProvider $reflectionProvider)
 	{

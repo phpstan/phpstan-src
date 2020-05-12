@@ -17,11 +17,9 @@ use PHPStan\Type\VerbosityLevel;
 class InvalidCastRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

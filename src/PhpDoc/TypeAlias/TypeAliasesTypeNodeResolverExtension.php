@@ -14,20 +14,18 @@ use function array_key_exists;
 class TypeAliasesTypeNodeResolverExtension implements TypeNodeResolverExtension
 {
 
-	/** @var TypeStringResolver */
-	private $typeStringResolver;
+	private TypeStringResolver $typeStringResolver;
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	/** @var array<string, string> */
-	private $aliases;
+	private array $aliases;
 
 	/** @var array<string, Type> */
-	private $resolvedTypes = [];
+	private array $resolvedTypes = [];
 
 	/** @var array<string, true> */
-	private $inProcess = [];
+	private array $inProcess = [];
 
 	/**
 	 * @param TypeStringResolver $typeStringResolver

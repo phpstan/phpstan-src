@@ -15,20 +15,15 @@ use PHPStan\Type\VerbosityLevel;
 final class TemplateObjectType extends ObjectType implements TemplateType
 {
 
-	/** @var TemplateTypeScope */
-	private $scope;
+	private TemplateTypeScope $scope;
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var TemplateTypeStrategy */
-	private $strategy;
+	private TemplateTypeStrategy $strategy;
 
-	/** @var ObjectType */
-	private $bound;
+	private ObjectType $bound;
 
-	/** @var TemplateTypeVariance */
-	private $variance;
+	private TemplateTypeVariance $variance;
 
 	public function __construct(
 		TemplateTypeScope $scope,

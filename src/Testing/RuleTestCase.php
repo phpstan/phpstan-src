@@ -26,8 +26,7 @@ use PHPStan\Type\FileTypeMapper;
 abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 {
 
-	/** @var \PHPStan\Analyser\Analyser|null */
-	private $analyser;
+	private ?\PHPStan\Analyser\Analyser $analyser = null;
 
 	/**
 	 * @return \PHPStan\Rules\Rule

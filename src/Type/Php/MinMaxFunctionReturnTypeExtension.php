@@ -18,7 +18,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 {
 
 	/** @var string[] */
-	private $functionNames = [
+	private array $functionNames = [
 		'min' => '',
 		'max' => '',
 	];

@@ -9,7 +9,7 @@ final class MemoizingFunctionReflector extends FunctionReflector
 {
 
 	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionFunction|\Throwable> */
-	private $reflections = [];
+	private array $reflections = [];
 
 	/**
 	 * Create a ReflectionFunction for the specified $functionName.

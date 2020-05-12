@@ -16,11 +16,9 @@ use PHPStan\Type\Type;
 class ClassAncestorsRule implements Rule
 {
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
-	/** @var \PHPStan\Rules\Generics\GenericAncestorsCheck */
-	private $genericAncestorsCheck;
+	private \PHPStan\Rules\Generics\GenericAncestorsCheck $genericAncestorsCheck;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,

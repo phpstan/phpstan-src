@@ -19,10 +19,10 @@ class MbFunctionsReturnTypeExtension implements \PHPStan\Type\DynamicFunctionRet
 {
 
 	/** @var string[] */
-	private $supportedEncodings;
+	private array $supportedEncodings;
 
 	/** @var int[]  */
-	private $encodingPositionMap = [
+	private array $encodingPositionMap = [
 		'mb_http_output' => 1,
 		'mb_regex_encoding' => 1,
 		'mb_internal_encoding' => 1,

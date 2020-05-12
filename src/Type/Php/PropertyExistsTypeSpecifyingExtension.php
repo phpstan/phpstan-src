@@ -21,11 +21,9 @@ use PHPStan\Type\ObjectWithoutClassType;
 class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	/** @var PropertyReflectionFinder */
-	private $propertyReflectionFinder;
+	private PropertyReflectionFinder $propertyReflectionFinder;
 
-	/** @var TypeSpecifier */
-	private $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function __construct(PropertyReflectionFinder $propertyReflectionFinder)
 	{

@@ -5,8 +5,7 @@ namespace PHPStan\Node;
 class InFunctionNode extends \PhpParser\Node\Stmt implements VirtualNode
 {
 
-	/** @var \PhpParser\Node\Stmt\Function_ */
-	private $originalNode;
+	private \PhpParser\Node\Stmt\Function_ $originalNode;
 
 	public function __construct(\PhpParser\Node\Stmt\Function_ $originalNode)
 	{

@@ -8,14 +8,11 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError7 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\FileRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var int */
-	public $line;
+	public int $line;
 
-	/** @var string */
-	public $file;
+	public string $file;
 
 	public function getMessage(): string
 	{

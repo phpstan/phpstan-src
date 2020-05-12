@@ -8,17 +8,13 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError15 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\FileRuleError, \PHPStan\Rules\TipRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var int */
-	public $line;
+	public int $line;
 
-	/** @var string */
-	public $file;
+	public string $file;
 
-	/** @var string */
-	public $tip;
+	public string $tip;
 
 	public function getMessage(): string
 	{

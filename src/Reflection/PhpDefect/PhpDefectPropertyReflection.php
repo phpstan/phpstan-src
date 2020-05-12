@@ -10,11 +10,9 @@ use PHPStan\Type\Type;
 class PhpDefectPropertyReflection implements PropertyReflection
 {
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
 	public function __construct(
 		ClassReflection $declaringClass,

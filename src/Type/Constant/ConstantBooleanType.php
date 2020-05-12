@@ -13,8 +13,7 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 
 	use ConstantScalarTypeTrait;
 
-	/** @var bool */
-	private $value;
+	private bool $value;
 
 	public function __construct(bool $value)
 	{

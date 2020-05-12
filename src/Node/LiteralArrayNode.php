@@ -9,7 +9,7 @@ class LiteralArrayNode extends NodeAbstract implements VirtualNode
 {
 
 	/** @var LiteralArrayItem[] */
-	private $itemNodes;
+	private array $itemNodes;
 
 	/**
 	 * @param Array_ $originalNode

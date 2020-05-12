@@ -12,17 +12,14 @@ use PHPStan\Type\Type;
 class ResolvedFunctionVariant implements ParametersAcceptor
 {
 
-	/** @var ParametersAcceptor */
-	private $parametersAcceptor;
+	private ParametersAcceptor $parametersAcceptor;
 
-	/** @var TemplateTypeMap */
-	private $resolvedTemplateTypeMap;
+	private TemplateTypeMap $resolvedTemplateTypeMap;
 
 	/** @var ParameterReflection[]|null */
-	private $parameters;
+	private ?array $parameters = null;
 
-	/** @var Type|null */
-	private $returnType;
+	private ?Type $returnType = null;
 
 	public function __construct(
 		ParametersAcceptor $parametersAcceptor,

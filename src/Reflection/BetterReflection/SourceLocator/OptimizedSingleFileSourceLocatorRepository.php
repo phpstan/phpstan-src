@@ -5,11 +5,10 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 class OptimizedSingleFileSourceLocatorRepository
 {
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory */
-	private $factory;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory $factory;
 
 	/** @var array<string, OptimizedSingleFileSourceLocator> */
-	private $locators = [];
+	private array $locators = [];
 
 	public function __construct(OptimizedSingleFileSourceLocatorFactory $factory)
 	{

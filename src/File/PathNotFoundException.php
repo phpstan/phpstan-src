@@ -5,8 +5,7 @@ namespace PHPStan\File;
 class PathNotFoundException extends \Exception
 {
 
-	/** @var string */
-	private $path;
+	private string $path;
 
 	public function __construct(string $path)
 	{

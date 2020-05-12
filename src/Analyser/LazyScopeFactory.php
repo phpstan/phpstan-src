@@ -14,17 +14,14 @@ use PHPStan\Type\Type;
 class LazyScopeFactory implements ScopeFactory
 {
 
-	/** @var string */
-	private $scopeClass;
+	private string $scopeClass;
 
-	/** @var Container */
-	private $container;
+	private Container $container;
 
 	/** @var string[] */
-	private $dynamicConstantNames;
+	private array $dynamicConstantNames;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	public function __construct(
 		string $scopeClass,

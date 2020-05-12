@@ -18,11 +18,9 @@ use PHPStan\Type\VerbosityLevel;
 final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\MissingTypehintCheck */
-	private $missingTypehintCheck;
+	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

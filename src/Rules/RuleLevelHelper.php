@@ -21,17 +21,13 @@ use PHPStan\Type\UnionType;
 class RuleLevelHelper
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var bool */
-	private $checkNullables;
+	private bool $checkNullables;
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

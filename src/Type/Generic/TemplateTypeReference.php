@@ -5,11 +5,9 @@ namespace PHPStan\Type\Generic;
 class TemplateTypeReference
 {
 
-	/** @var TemplateType */
-	private $type;
+	private TemplateType $type;
 
-	/** @var TemplateTypeVariance */
-	private $positionVariance;
+	private TemplateTypeVariance $positionVariance;
 
 	public function __construct(TemplateType $type, TemplateTypeVariance $positionVariance)
 	{

@@ -7,14 +7,12 @@ use PHPStan\Type\Type;
 class MethodTag
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $returnType;
+	private \PHPStan\Type\Type $returnType;
 
-	/** @var bool */
-	private $isStatic;
+	private bool $isStatic;
 
 	/** @var array<string, \PHPStan\PhpDoc\Tag\MethodTagParameter> */
-	private $parameters;
+	private array $parameters;
 
 	/**
 	 * @param \PHPStan\Type\Type $returnType

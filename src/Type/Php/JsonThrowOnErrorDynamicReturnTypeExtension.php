@@ -18,7 +18,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 {
 
 	/** @var array<string, int> */
-	private $argumentPositions = [
+	private array $argumentPositions = [
 		'json_encode' => 1,
 		'json_decode' => 3,
 	];

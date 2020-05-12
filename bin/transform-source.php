@@ -47,7 +47,7 @@ class PhpPatcher extends NodeVisitorAbstract
 	private function printType($type): string
 	{
 		if ($type instanceof NullableType) {
-			return '?' . $this->printType($type->type);
+			return $this->printType($type->type) . '|null';
 		}
 
 		if ($type instanceof UnionType) {

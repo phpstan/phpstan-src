@@ -21,8 +21,7 @@ use PHPStan\Type\VerbosityLevel;
 class TooWideMethodReturnTypehintRule implements Rule
 {
 
-	/** @var bool */
-	private $checkProtectedAndPublicMethods;
+	private bool $checkProtectedAndPublicMethods;
 
 	public function __construct(bool $checkProtectedAndPublicMethods)
 	{

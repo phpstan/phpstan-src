@@ -98,71 +98,57 @@ class MutatingScope implements Scope
 		Node\Expr\AssignOp\Div::class => '/',
 	];
 
-	/** @var \PHPStan\Analyser\ScopeFactory */
-	private $scopeFactory;
+	private \PHPStan\Analyser\ScopeFactory $scopeFactory;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Type\DynamicReturnTypeExtensionRegistry */
-	private $dynamicReturnTypeExtensionRegistry;
+	private \PHPStan\Type\DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry;
 
-	/** @var OperatorTypeSpecifyingExtensionRegistry */
-	private $operatorTypeSpecifyingExtensionRegistry;
+	private OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry;
 
-	/** @var \PhpParser\PrettyPrinter\Standard */
-	private $printer;
+	private \PhpParser\PrettyPrinter\Standard $printer;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
-	/** @var \PHPStan\Rules\Properties\PropertyReflectionFinder */
-	private $propertyReflectionFinder;
+	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
-	/** @var \PHPStan\Analyser\ScopeContext */
-	private $context;
+	private \PHPStan\Analyser\ScopeContext $context;
 
 	/** @var \PHPStan\Type\Type[] */
-	private $resolvedTypes = [];
+	private array $resolvedTypes = [];
 
-	/** @var bool */
-	private $declareStrictTypes;
+	private bool $declareStrictTypes;
 
 	/** @var \PHPStan\Reflection\FunctionReflection|MethodReflection|null */
 	private $function;
 
-	/** @var string|null */
-	private $namespace;
+	private ?string $namespace;
 
 	/** @var \PHPStan\Analyser\VariableTypeHolder[] */
-	private $variableTypes;
+	private array $variableTypes;
 
 	/** @var \PHPStan\Analyser\VariableTypeHolder[] */
-	private $moreSpecificTypes;
+	private array $moreSpecificTypes;
 
-	/** @var string|null */
-	private $inClosureBindScopeClass;
+	private ?string $inClosureBindScopeClass;
 
-	/** @var ParametersAcceptor|null */
-	private $anonymousFunctionReflection;
+	private ?ParametersAcceptor $anonymousFunctionReflection;
 
-	/** @var bool */
-	private $inFirstLevelStatement;
+	private bool $inFirstLevelStatement;
 
 	/** @var array<string, true> */
-	private $currentlyAssignedExpressions = [];
+	private array $currentlyAssignedExpressions;
 
 	/** @var array<MethodReflection|FunctionReflection> */
-	private $inFunctionCallsStack = [];
+	private array $inFunctionCallsStack;
 
 	/** @var array<string, Type> */
-	private $nativeExpressionTypes;
+	private array $nativeExpressionTypes;
 
 	/** @var string[] */
-	private $dynamicConstantNames;
+	private array $dynamicConstantNames;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	/**
 	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory

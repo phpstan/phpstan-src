@@ -20,11 +20,9 @@ use PHPStan\Type\VerbosityLevel;
 class YieldFromTypeRule implements Rule
 {
 
-	/** @var RuleLevelHelper */
-	private $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,

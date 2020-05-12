@@ -10,20 +10,15 @@ use React\Stream\WritableStreamInterface;
 class Process
 {
 
-	/** @var string */
-	private $command;
+	private string $command;
 
-	/** @var \React\ChildProcess\Process */
-	public $process;
+	public \React\ChildProcess\Process $process;
 
-	/** @var LoopInterface */
-	private $loop;
+	private LoopInterface $loop;
 
-	/** @var float */
-	private $timeoutSeconds;
+	private float $timeoutSeconds;
 
-	/** @var WritableStreamInterface */
-	private $in;
+	private WritableStreamInterface $in;
 
 	/** @var resource */
 	private $stdOut;
@@ -37,8 +32,7 @@ class Process
 	/** @var callable */
 	private $onError;
 
-	/** @var TimerInterface|null */
-	private $timer;
+	private ?TimerInterface $timer = null;
 
 	public function __construct(
 		string $command,

@@ -23,14 +23,11 @@ use PHPStan\Type\TypeWithClassName;
 class InstantiationRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
-	private $check;
+	private \PHPStan\Rules\FunctionCallParametersCheck $check;
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

@@ -23,26 +23,19 @@ use function sprintf;
 class InvalidPhpDocVarTagTypeRule implements Rule
 {
 
-	/** @var FileTypeMapper */
-	private $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
-	private $genericObjectTypeCheck;
+	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
 
-	/** @var MissingTypehintCheck */
-	private $missingTypehintCheck;
+	private MissingTypehintCheck $missingTypehintCheck;
 
-	/** @var bool */
-	private $checkClassCaseSensitivity;
+	private bool $checkClassCaseSensitivity;
 
-	/** @var bool */
-	private $checkMissingVarTagTypehint;
+	private bool $checkMissingVarTagTypehint;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,

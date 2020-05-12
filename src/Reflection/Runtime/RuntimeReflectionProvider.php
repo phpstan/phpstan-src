@@ -26,50 +26,40 @@ use ReflectionClass;
 class RuntimeReflectionProvider implements ReflectionProvider
 {
 
-	/** @var ClassReflectionExtensionRegistryProvider */
-	private $classReflectionExtensionRegistryProvider;
+	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
 	/** @var \PHPStan\Reflection\ClassReflection[] */
-	private $classReflections = [];
+	private array $classReflections = [];
 
-	/** @var \PHPStan\Reflection\FunctionReflectionFactory */
-	private $functionReflectionFactory;
+	private \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory;
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
-	/** @var \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider */
-	private $nativeFunctionReflectionProvider;
+	private \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
 
-	/** @var \PhpParser\PrettyPrinter\Standard */
-	private $printer;
+	private \PhpParser\PrettyPrinter\Standard $printer;
 
-	/** @var AnonymousClassNameHelper */
-	private $anonymousClassNameHelper;
+	private AnonymousClassNameHelper $anonymousClassNameHelper;
 
-	/** @var Parser */
-	private $parser;
+	private Parser $parser;
 
-	/** @var \PHPStan\File\FileHelper */
-	private $fileHelper;
+	private \PHPStan\File\FileHelper $fileHelper;
 
-	/** @var RelativePathHelper */
-	private $relativePathHelper;
+	private RelativePathHelper $relativePathHelper;
 
-	/** @var StubPhpDocProvider */
-	private $stubPhpDocProvider;
+	private StubPhpDocProvider $stubPhpDocProvider;
 
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
-	private $functionReflections = [];
+	private array $functionReflections = [];
 
 	/** @var \PHPStan\Reflection\Php\PhpFunctionReflection[] */
-	private $customFunctionReflections = [];
+	private array $customFunctionReflections = [];
 
 	/** @var bool[] */
-	private $hasClassCache;
+	private array $hasClassCache;
 
 	/** @var \PHPStan\Reflection\ClassReflection[] */
-	private static $anonymousClasses = [];
+	private static array $anonymousClasses = [];
 
 	public function __construct(
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,

@@ -5,8 +5,7 @@ namespace PHPStan\PhpDoc\Tag;
 class DeprecatedTag
 {
 
-	/** @var string|null */
-	private $message;
+	private ?string $message;
 
 	public function __construct(?string $message)
 	{

@@ -7,14 +7,13 @@ use PHPStan\Type\Type;
 class FoundTypeResult
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
 	/** @var string[] */
-	private $referencedClasses;
+	private array $referencedClasses;
 
 	/** @var RuleError[] */
-	private $unknownClassErrors;
+	private array $unknownClassErrors;
 
 	/**
 	 * @param \PHPStan\Type\Type $type

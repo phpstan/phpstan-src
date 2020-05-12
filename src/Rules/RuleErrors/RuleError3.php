@@ -8,11 +8,9 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError3 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var int */
-	public $line;
+	public int $line;
 
 	public function getMessage(): string
 	{

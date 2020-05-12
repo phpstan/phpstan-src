@@ -7,20 +7,18 @@ use PHPStan\Analyser\Error;
 class ResultCache
 {
 
-	/** @var bool */
-	private $fullAnalysis;
+	private bool $fullAnalysis;
 
 	/** @var string[] */
-	private $filesToAnalyse;
+	private array $filesToAnalyse;
 
-	/** @var int */
-	private $lastFullAnalysisTime;
+	private int $lastFullAnalysisTime;
 
 	/** @var array<string, array<Error>> */
-	private $errors;
+	private array $errors;
 
 	/** @var array<string, array<string>> */
-	private $dependencies;
+	private array $dependencies;
 
 	/**
 	 * @param string[] $filesToAnalyse

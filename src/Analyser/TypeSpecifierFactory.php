@@ -14,8 +14,7 @@ class TypeSpecifierFactory
 	public const METHOD_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.typeSpecifier.methodTypeSpecifyingExtension';
 	public const STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension';
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	private \PHPStan\DependencyInjection\Container $container;
 
 	public function __construct(Container $container)
 	{

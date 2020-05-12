@@ -14,7 +14,7 @@ class ClearResultCacheCommand extends Command
 	private const NAME = 'clear-result-cache';
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
+	private array $composerAutoloaderProjectPaths;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths

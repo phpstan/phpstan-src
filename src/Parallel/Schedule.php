@@ -5,11 +5,10 @@ namespace PHPStan\Parallel;
 class Schedule
 {
 
-	/** @var int */
-	private $numberOfProcesses;
+	private int $numberOfProcesses;
 
 	/** @var array<array<string>> */
-	private $jobs;
+	private array $jobs;
 
 	/**
 	 * @param int $numberOfProcesses

@@ -16,11 +16,9 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\TestCase
 
 	protected const DIRECTORY_PATH = '/data/folder/with space/and unicode 😃/project';
 
-	/** @var StreamOutput|null */
-	private $outputStream;
+	private ?StreamOutput $outputStream = null;
 
-	/** @var Output|null */
-	private $output;
+	private ?Output $output = null;
 
 	private function getOutputStream(): StreamOutput
 	{

@@ -9,14 +9,11 @@ use PHPStan\Analyser\StatementResult;
 class ExecutionEndNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var Node */
-	private $node;
+	private Node $node;
 
-	/** @var StatementResult */
-	private $statementResult;
+	private StatementResult $statementResult;
 
-	/** @var bool */
-	private $hasNativeReturnTypehint;
+	private bool $hasNativeReturnTypehint;
 
 	public function __construct(
 		Node $node,

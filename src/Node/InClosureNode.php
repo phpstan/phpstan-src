@@ -8,8 +8,7 @@ use PhpParser\NodeAbstract;
 class InClosureNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var \PhpParser\Node\Expr\Closure */
-	private $originalNode;
+	private \PhpParser\Node\Expr\Closure $originalNode;
 
 	public function __construct(Closure $originalNode)
 	{

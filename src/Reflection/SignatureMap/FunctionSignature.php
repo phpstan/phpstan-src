@@ -8,13 +8,11 @@ class FunctionSignature
 {
 
 	/** @var \PHPStan\Reflection\SignatureMap\ParameterSignature[] */
-	private $parameters;
+	private array $parameters;
 
-	/** @var \PHPStan\Type\Type */
-	private $returnType;
+	private \PHPStan\Type\Type $returnType;
 
-	/** @var bool */
-	private $variadic;
+	private bool $variadic;
 
 	/**
 	 * @param array<int, \PHPStan\Reflection\SignatureMap\ParameterSignature> $parameters

@@ -10,11 +10,9 @@ use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 class FileNodesFetcher
 {
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor */
-	private $cachingVisitor;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor $cachingVisitor;
 
-	/** @var Parser */
-	private $phpParser;
+	private Parser $phpParser;
 
 	public function __construct(
 		CachingVisitor $cachingVisitor,

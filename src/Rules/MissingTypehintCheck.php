@@ -26,14 +26,11 @@ class MissingTypehintCheck
 		\Generator::class,
 	];
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var bool */
-	private $checkMissingIterableValueType;
+	private bool $checkMissingIterableValueType;
 
-	/** @var bool */
-	private $checkGenericClassInNonGenericObjectType;
+	private bool $checkGenericClassInNonGenericObjectType;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

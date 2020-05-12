@@ -28,35 +28,29 @@ class FileTypeMapper
 	private const SKIP_NODE = 1;
 	private const POP_TYPE_MAP_STACK = 2;
 
-	/** @var ReflectionProviderProvider */
-	private $reflectionProviderProvider;
+	private ReflectionProviderProvider $reflectionProviderProvider;
 
-	/** @var \PHPStan\Parser\Parser */
-	private $phpParser;
+	private \PHPStan\Parser\Parser $phpParser;
 
-	/** @var \PHPStan\PhpDoc\PhpDocStringResolver */
-	private $phpDocStringResolver;
+	private \PHPStan\PhpDoc\PhpDocStringResolver $phpDocStringResolver;
 
-	/** @var \PHPStan\PhpDoc\PhpDocNodeResolver */
-	private $phpDocNodeResolver;
+	private \PHPStan\PhpDoc\PhpDocNodeResolver $phpDocNodeResolver;
 
-	/** @var \PHPStan\Cache\Cache */
-	private $cache;
+	private \PHPStan\Cache\Cache $cache;
 
-	/** @var \PHPStan\Broker\AnonymousClassNameHelper */
-	private $anonymousClassNameHelper;
+	private \PHPStan\Broker\AnonymousClassNameHelper $anonymousClassNameHelper;
 
 	/** @var \PHPStan\PhpDoc\NameScopedPhpDocString[][] */
-	private $memoryCache = [];
+	private array $memoryCache = [];
 
 	/** @var (false|(callable(): \PHPStan\PhpDoc\NameScopedPhpDocString)|\PHPStan\PhpDoc\NameScopedPhpDocString)[][] */
-	private $inProcess = [];
+	private array $inProcess = [];
 
 	/** @var array<string, ResolvedPhpDocBlock> */
-	private $resolvedPhpDocBlockCache = [];
+	private array $resolvedPhpDocBlockCache = [];
 
 	/** @var array<string, bool> */
-	private $alreadyProcessedDependentFiles = [];
+	private array $alreadyProcessedDependentFiles = [];
 
 	public function __construct(
 		ReflectionProviderProvider $reflectionProviderProvider,

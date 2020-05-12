@@ -8,20 +8,15 @@ use PHPStan\Type\Type;
 class ParameterSignature
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var bool */
-	private $optional;
+	private bool $optional;
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
-	/** @var \PHPStan\Reflection\PassedByReference */
-	private $passedByReference;
+	private \PHPStan\Reflection\PassedByReference $passedByReference;
 
-	/** @var bool */
-	private $variadic;
+	private bool $variadic;
 
 	public function __construct(
 		string $name,

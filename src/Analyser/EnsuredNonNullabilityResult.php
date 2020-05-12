@@ -5,11 +5,10 @@ namespace PHPStan\Analyser;
 class EnsuredNonNullabilityResult
 {
 
-	/** @var MutatingScope */
-	private $scope;
+	private MutatingScope $scope;
 
 	/** @var EnsuredNonNullabilityResultExpression[] */
-	private $specifiedExpressions;
+	private array $specifiedExpressions;
 
 	/**
 	 * @param MutatingScope $scope

@@ -16,8 +16,7 @@ use PHPStan\Type\Type;
 class CallToMethodStamentWithoutSideEffectsRule implements Rule
 {
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(RuleLevelHelper $ruleLevelHelper)
 	{

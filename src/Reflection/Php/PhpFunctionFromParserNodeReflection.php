@@ -18,47 +18,37 @@ use PHPStan\Type\VoidType;
 class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\FunctionReflection
 {
 
-	/** @var \PhpParser\Node\FunctionLike */
-	private $functionLike;
+	private \PhpParser\Node\FunctionLike $functionLike;
 
-	/** @var \PHPStan\Type\Generic\TemplateTypeMap */
-	private $templateTypeMap;
+	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
 
 	/** @var \PHPStan\Type\Type[] */
-	private $realParameterTypes;
+	private array $realParameterTypes;
 
 	/** @var \PHPStan\Type\Type[] */
-	private $phpDocParameterTypes;
+	private array $phpDocParameterTypes;
 
 	/** @var \PHPStan\Type\Type[] */
-	private $realParameterDefaultValues;
+	private array $realParameterDefaultValues;
 
-	/** @var bool */
-	private $realReturnTypePresent;
+	private bool $realReturnTypePresent;
 
-	/** @var \PHPStan\Type\Type */
-	private $realReturnType;
+	private \PHPStan\Type\Type $realReturnType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocReturnType;
+	private ?\PHPStan\Type\Type $phpDocReturnType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $throwType;
+	private ?\PHPStan\Type\Type $throwType;
 
-	/** @var string|null */
-	private $deprecatedDescription;
+	private ?string $deprecatedDescription;
 
-	/** @var bool */
-	private $isDeprecated;
+	private bool $isDeprecated;
 
-	/** @var bool */
-	private $isInternal;
+	private bool $isInternal;
 
-	/** @var bool */
-	private $isFinal;
+	private bool $isFinal;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
-	private $variants;
+	private ?array $variants = null;
 
 	/**
 	 * @param FunctionLike $functionLike

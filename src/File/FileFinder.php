@@ -7,14 +7,12 @@ use Symfony\Component\Finder\Finder;
 class FileFinder
 {
 
-	/** @var FileExcluder */
-	private $fileExcluder;
+	private FileExcluder $fileExcluder;
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
 	/** @var string[] */
-	private $fileExtensions;
+	private array $fileExtensions;
 
 	/**
 	 * @param FileExcluder $fileExcluder

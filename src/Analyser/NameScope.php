@@ -9,20 +9,16 @@ use PHPStan\Type\Type;
 class NameScope
 {
 
-	/** @var string|null */
-	private $namespace;
+	private ?string $namespace;
 
 	/** @var string[] alias(string) => fullName(string) */
-	private $uses;
+	private array $uses;
 
-	/** @var string|null */
-	private $className;
+	private ?string $className;
 
-	/** @var string|null */
-	private $functionName;
+	private ?string $functionName;
 
-	/** @var TemplateTypeMap */
-	private $templateTypeMap;
+	private TemplateTypeMap $templateTypeMap;
 
 	/**
 	 * @param string|null $namespace

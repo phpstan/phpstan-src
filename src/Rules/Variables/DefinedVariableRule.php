@@ -13,11 +13,9 @@ use PHPStan\Rules\RuleErrorBuilder;
 class DefinedVariableRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $cliArgumentsVariablesRegistered;
+	private bool $cliArgumentsVariablesRegistered;
 
-	/** @var bool */
-	private $checkMaybeUndefinedVariables;
+	private bool $checkMaybeUndefinedVariables;
 
 	public function __construct(
 		bool $cliArgumentsVariablesRegistered,

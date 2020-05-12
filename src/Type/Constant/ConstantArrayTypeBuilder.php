@@ -11,19 +11,17 @@ class ConstantArrayTypeBuilder
 {
 
 	/** @var array<int, Type> */
-	private $keyTypes = [];
+	private array $keyTypes;
 
 	/** @var array<int, Type> */
-	private $valueTypes = [];
+	private array $valueTypes;
 
 	/** @var array<int> */
-	private $optionalKeys = [];
+	private array $optionalKeys;
 
-	/** @var int */
-	private $nextAutoIndex;
+	private int $nextAutoIndex;
 
-	/** @var bool */
-	private $degradeToGeneralArray = false;
+	private bool $degradeToGeneralArray = false;
 
 	/**
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes

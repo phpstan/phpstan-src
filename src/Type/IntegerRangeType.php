@@ -8,11 +8,9 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 class IntegerRangeType extends IntegerType
 {
 
-	/** @var int */
-	private $min;
+	private int $min;
 
-	/** @var int */
-	private $max;
+	private int $max;
 
 	private function __construct(?int $min, ?int $max)
 	{

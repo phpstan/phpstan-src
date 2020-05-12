@@ -17,8 +17,7 @@ class NeverType implements CompoundType
 	use FalseyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 
-	/** @var bool */
-	private $isExplicit;
+	private bool $isExplicit;
 
 	public function __construct(bool $isExplicit = false)
 	{

@@ -17,17 +17,13 @@ use function parse_url;
 class ParallelAnalyser
 {
 
-	/** @var int */
-	private $internalErrorsCountLimit;
+	private int $internalErrorsCountLimit;
 
-	/** @var float */
-	private $processTimeout;
+	private float $processTimeout;
 
-	/** @var ProcessPool */
-	private $processPool;
+	private ProcessPool $processPool;
 
-	/** @var int */
-	private $decoderBufferSize;
+	private int $decoderBufferSize;
 
 	public function __construct(
 		int $internalErrorsCountLimit,

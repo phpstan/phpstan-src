@@ -8,11 +8,10 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError33 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\MetadataRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
 	/** @var mixed[] */
-	public $metadata;
+	public array $metadata;
 
 	public function getMessage(): string
 	{

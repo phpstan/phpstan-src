@@ -8,14 +8,11 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError19 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\IdentifierRuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var int */
-	public $line;
+	public int $line;
 
-	/** @var string */
-	public $identifier;
+	public string $identifier;
 
 	public function getMessage(): string
 	{

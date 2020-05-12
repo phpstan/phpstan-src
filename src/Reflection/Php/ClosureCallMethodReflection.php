@@ -16,11 +16,9 @@ use PHPStan\Type\Type;
 final class ClosureCallMethodReflection implements MethodReflection
 {
 
-	/** @var MethodReflection */
-	private $nativeMethodReflection;
+	private MethodReflection $nativeMethodReflection;
 
-	/** @var ClosureType */
-	private $closureType;
+	private ClosureType $closureType;
 
 	public function __construct(
 		MethodReflection $nativeMethodReflection,

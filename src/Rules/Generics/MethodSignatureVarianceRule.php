@@ -13,8 +13,7 @@ use PHPStan\Rules\Rule;
 class MethodSignatureVarianceRule implements Rule
 {
 
-	/** @var \PHPStan\Rules\Generics\VarianceCheck */
-	private $varianceCheck;
+	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
 
 	public function __construct(VarianceCheck $varianceCheck)
 	{

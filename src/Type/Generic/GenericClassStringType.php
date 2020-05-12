@@ -21,8 +21,7 @@ use PHPStan\Type\VerbosityLevel;
 class GenericClassStringType extends ClassStringType
 {
 
-	/** @var Type */
-	private $type;
+	private Type $type;
 
 	public function __construct(Type $type)
 	{

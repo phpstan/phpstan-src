@@ -12,8 +12,7 @@ use PHPStan\Rules\UnusedFunctionParametersCheck;
 class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\UnusedFunctionParametersCheck */
-	private $check;
+	private \PHPStan\Rules\UnusedFunctionParametersCheck $check;
 
 	public function __construct(UnusedFunctionParametersCheck $check)
 	{

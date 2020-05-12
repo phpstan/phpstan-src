@@ -10,11 +10,9 @@ use PHPStan\File\RelativePathHelper;
 class TableErrorFormatter implements ErrorFormatter
 {
 
-	/** @var RelativePathHelper */
-	private $relativePathHelper;
+	private RelativePathHelper $relativePathHelper;
 
-	/** @var bool */
-	private $showTipsOfTheDay;
+	private bool $showTipsOfTheDay;
 
 	public function __construct(
 		RelativePathHelper $relativePathHelper,

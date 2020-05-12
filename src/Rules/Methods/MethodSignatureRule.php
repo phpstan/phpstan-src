@@ -21,11 +21,9 @@ use PHPStan\Type\VoidType;
 class MethodSignatureRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
-	/** @var bool */
-	private $reportStatic;
+	private bool $reportStatic;
 
 	public function __construct(
 		bool $reportMaybes,

@@ -11,17 +11,13 @@ use PHPStan\Type\Type;
 class ResolvedPropertyReflection implements PropertyReflection
 {
 
-	/** @var PropertyReflection */
-	private $reflection;
+	private PropertyReflection $reflection;
 
-	/** @var TemplateTypeMap */
-	private $templateTypeMap;
+	private TemplateTypeMap $templateTypeMap;
 
-	/** @var Type|null */
-	private $readableType;
+	private ?Type $readableType = null;
 
-	/** @var Type|null */
-	private $writableType;
+	private ?Type $writableType = null;
 
 	public function __construct(PropertyReflection $reflection, TemplateTypeMap $templateTypeMap)
 	{

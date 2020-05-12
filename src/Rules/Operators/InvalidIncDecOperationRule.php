@@ -12,8 +12,7 @@ use PHPStan\Type\VerbosityLevel;
 class InvalidIncDecOperationRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
 	public function __construct(bool $checkThisOnly)
 	{

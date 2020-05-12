@@ -18,11 +18,9 @@ use PHPStan\Type\VerbosityLevel;
 class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var PropertyReflectionFinder */
-	private $propertyReflectionFinder;
+	private PropertyReflectionFinder $propertyReflectionFinder;
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
 	public function __construct(
 		PropertyReflectionFinder $propertyReflectionFinder,

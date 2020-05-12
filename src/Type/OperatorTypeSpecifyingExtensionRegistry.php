@@ -9,7 +9,7 @@ class OperatorTypeSpecifyingExtensionRegistry
 {
 
 	/** @var OperatorTypeSpecifyingExtension[] */
-	private $extensions;
+	private array $extensions;
 
 	/**
 	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtension[] $extensions

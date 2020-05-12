@@ -12,7 +12,7 @@ class ChainReflectionProvider implements ReflectionProvider
 {
 
 	/** @var \PHPStan\Reflection\ReflectionProvider[] */
-	private $providers;
+	private array $providers;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider[] $providers

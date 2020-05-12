@@ -6,19 +6,18 @@ class AnalyserResult
 {
 
 	/** @var \PHPStan\Analyser\Error[] */
-	private $unorderedErrors;
+	private array $unorderedErrors;
 
 	/** @var \PHPStan\Analyser\Error[] */
-	private $errors;
+	private array $errors;
 
 	/** @var string[] */
-	private $internalErrors;
+	private array $internalErrors;
 
 	/** @var array<string, array<string>>|null */
-	private $dependencies;
+	private ?array $dependencies;
 
-	/** @var bool */
-	private $reachedInternalErrorsCountLimit;
+	private bool $reachedInternalErrorsCountLimit;
 
 	/**
 	 * @param \PHPStan\Analyser\Error[] $errors

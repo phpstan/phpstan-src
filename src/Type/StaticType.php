@@ -16,11 +16,9 @@ class StaticType implements TypeWithClassName
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 
-	/** @var string */
-	private $baseClass;
+	private string $baseClass;
 
-	/** @var \PHPStan\Type\ObjectType|null */
-	private $staticObjectType;
+	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
 
 	final public function __construct(string $baseClass)
 	{

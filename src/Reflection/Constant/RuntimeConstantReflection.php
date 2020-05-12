@@ -9,11 +9,9 @@ use PHPStan\Type\Type;
 class RuntimeConstantReflection implements GlobalConstantReflection
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var Type */
-	private $valueType;
+	private Type $valueType;
 
 	public function __construct(string $name, Type $valueType)
 	{

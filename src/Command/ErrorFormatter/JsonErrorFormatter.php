@@ -9,8 +9,7 @@ use PHPStan\Command\Output;
 class JsonErrorFormatter implements ErrorFormatter
 {
 
-	/** @var bool */
-	private $pretty;
+	private bool $pretty;
 
 	public function __construct(bool $pretty)
 	{

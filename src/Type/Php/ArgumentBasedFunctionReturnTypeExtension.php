@@ -14,7 +14,7 @@ class ArgumentBasedFunctionReturnTypeExtension implements \PHPStan\Type\DynamicF
 {
 
 	/** @var int[] */
-	private $functionNames = [
+	private array $functionNames = [
 		'array_unique' => 0,
 		'array_reverse' => 0,
 		'array_change_key_case' => 0,

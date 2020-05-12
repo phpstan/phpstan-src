@@ -13,23 +13,17 @@ use PHPStan\Parser\Parser;
 class DependencyDumper
 {
 
-	/** @var DependencyResolver */
-	private $dependencyResolver;
+	private DependencyResolver $dependencyResolver;
 
-	/** @var NodeScopeResolver */
-	private $nodeScopeResolver;
+	private NodeScopeResolver $nodeScopeResolver;
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
-	/** @var Parser */
-	private $parser;
+	private Parser $parser;
 
-	/** @var ScopeFactory */
-	private $scopeFactory;
+	private ScopeFactory $scopeFactory;
 
-	/** @var FileFinder */
-	private $fileFinder;
+	private FileFinder $fileFinder;
 
 	public function __construct(
 		DependencyResolver $dependencyResolver,

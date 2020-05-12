@@ -18,11 +18,9 @@ use PHPStan\Type\VerbosityLevel;
 class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\Properties\PropertyReflectionFinder */
-	private $propertyReflectionFinder;
+	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
 		PropertyReflectionFinder $propertyReflectionFinder,

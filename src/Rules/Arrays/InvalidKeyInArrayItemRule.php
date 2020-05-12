@@ -13,8 +13,7 @@ use PHPStan\Type\VerbosityLevel;
 class InvalidKeyInArrayItemRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	public function __construct(bool $reportMaybes)
 	{

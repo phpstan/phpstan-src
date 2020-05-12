@@ -5,11 +5,9 @@ namespace PHPStan\Analyser;
 class UndefinedVariableException extends \PHPStan\AnalysedCodeException
 {
 
-	/** @var \PHPStan\Analyser\Scope */
-	private $scope;
+	private \PHPStan\Analyser\Scope $scope;
 
-	/** @var string */
-	private $variableName;
+	private string $variableName;
 
 	public function __construct(Scope $scope, string $variableName)
 	{

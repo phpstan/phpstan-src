@@ -13,8 +13,7 @@ use PHPStan\Rules\ClassNameNodePair;
 class ExistingClassesInInterfaceExtendsRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	public function __construct(ClassCaseSensitivityCheck $classCaseSensitivityCheck)
 	{

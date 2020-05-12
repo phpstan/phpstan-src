@@ -22,23 +22,17 @@ use function array_unique;
 class FileAnalyser
 {
 
-	/** @var \PHPStan\Analyser\ScopeFactory */
-	private $scopeFactory;
+	private \PHPStan\Analyser\ScopeFactory $scopeFactory;
 
-	/** @var \PHPStan\Analyser\NodeScopeResolver */
-	private $nodeScopeResolver;
+	private \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver;
 
-	/** @var \PHPStan\Parser\Parser */
-	private $parser;
+	private \PHPStan\Parser\Parser $parser;
 
-	/** @var DependencyResolver */
-	private $dependencyResolver;
+	private DependencyResolver $dependencyResolver;
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
-	/** @var bool */
-	private $reportUnmatchedIgnoredErrors;
+	private bool $reportUnmatchedIgnoredErrors;
 
 	public function __construct(
 		ScopeFactory $scopeFactory,

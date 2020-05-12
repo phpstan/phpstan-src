@@ -12,7 +12,7 @@ class PhpDefectClassReflectionExtension implements PropertiesClassReflectionExte
 {
 
 	/** @var array<string, array<string, string>> */
-	private static $defaultProperties = [
+	private static array $defaultProperties = [
 		\DateInterval::class => [
 			'y' => 'int',
 			'm' => 'int',
@@ -181,14 +181,12 @@ class PhpDefectClassReflectionExtension implements PropertiesClassReflectionExte
 		],
 	];
 
-	/** @var \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension */
-	private $annotationsPropertiesClassReflectionExtension;
+	private \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension;
 
-	/** @var TypeStringResolver */
-	private $typeStringResolver;
+	private TypeStringResolver $typeStringResolver;
 
 	/** @var string[][] */
-	private $properties = [];
+	private array $properties;
 
 	public function __construct(
 		TypeStringResolver $typeStringResolver,

@@ -25,8 +25,7 @@ use PHPStan\Type\VerbosityLevel;
 class MissingClosureNativeReturnTypehintRule implements Rule
 {
 
-	/** @var bool */
-	private $checkObjectTypehint;
+	private bool $checkObjectTypehint;
 
 	public function __construct(bool $checkObjectTypehint)
 	{

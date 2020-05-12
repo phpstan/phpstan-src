@@ -10,7 +10,7 @@ class FileExcluder
 	 *
 	 * @var string[]
 	 */
-	private $analyseExcludes;
+	private array $analyseExcludes;
 
 	/**
 	 * @param FileHelper $fileHelper

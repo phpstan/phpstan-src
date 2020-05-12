@@ -14,8 +14,7 @@ use PHPStan\Type\ObjectType;
 class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\FunctionReturnTypeCheck */
-	private $returnTypeCheck;
+	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
 
 	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
 	{

@@ -21,11 +21,9 @@ use PHPStan\Type\VerbosityLevel;
 class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var FileTypeMapper */
-	private $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
-	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
-	private $genericObjectTypeCheck;
+	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,

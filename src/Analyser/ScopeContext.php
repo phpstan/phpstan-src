@@ -7,14 +7,11 @@ use PHPStan\Reflection\ClassReflection;
 class ScopeContext
 {
 
-	/** @var string */
-	private $file;
+	private string $file;
 
-	/** @var ClassReflection|null */
-	private $classReflection;
+	private ?ClassReflection $classReflection;
 
-	/** @var ClassReflection|null */
-	private $traitReflection;
+	private ?ClassReflection $traitReflection;
 
 	private function __construct(
 		string $file,

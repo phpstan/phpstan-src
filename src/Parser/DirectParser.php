@@ -9,11 +9,9 @@ use PHPStan\File\FileReader;
 class DirectParser implements Parser
 {
 
-	/** @var \PhpParser\Parser */
-	private $parser;
+	private \PhpParser\Parser $parser;
 
-	/** @var \PhpParser\NodeTraverser */
-	private $traverser;
+	private \PhpParser\NodeTraverser $traverser;
 
 	public function __construct(\PhpParser\Parser $parser, NodeTraverser $traverser)
 	{

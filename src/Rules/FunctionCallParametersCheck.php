@@ -16,20 +16,15 @@ use PHPStan\Type\VoidType;
 class FunctionCallParametersCheck
 {
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
-	/** @var bool */
-	private $checkArgumentTypes;
+	private bool $checkArgumentTypes;
 
-	/** @var bool */
-	private $checkArgumentsPassedByReference;
+	private bool $checkArgumentsPassedByReference;
 
-	/** @var bool */
-	private $checkExtraArguments;
+	private bool $checkExtraArguments;
 
-	/** @var bool */
-	private $checkMissingTypehints;
+	private bool $checkMissingTypehints;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,

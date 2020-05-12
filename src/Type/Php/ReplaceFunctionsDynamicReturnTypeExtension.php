@@ -18,7 +18,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 {
 
 	/** @var array<string, int> */
-	private $functions = [
+	private array $functions = [
 		'preg_replace' => 2,
 		'preg_replace_callback' => 2,
 		'preg_replace_callback_array' => 1,

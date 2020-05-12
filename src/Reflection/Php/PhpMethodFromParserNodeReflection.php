@@ -18,8 +18,7 @@ use PHPStan\Type\VoidType;
 class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements MethodReflection
 {
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
 	/**
 	 * @param ClassReflection $declaringClass

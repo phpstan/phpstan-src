@@ -5,11 +5,10 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 class OptimizedDirectorySourceLocatorRepository
 {
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory */
-	private $factory;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory $factory;
 
 	/** @var array<string, OptimizedDirectorySourceLocator> */
-	private $locators = [];
+	private array $locators = [];
 
 	public function __construct(OptimizedDirectorySourceLocatorFactory $factory)
 	{

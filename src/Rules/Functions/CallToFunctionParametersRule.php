@@ -15,11 +15,9 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
-	private $check;
+	private \PHPStan\Rules\FunctionCallParametersCheck $check;
 
 	public function __construct(ReflectionProvider $reflectionProvider, FunctionCallParametersCheck $check)
 	{

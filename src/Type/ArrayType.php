@@ -23,11 +23,9 @@ class ArrayType implements Type
 	use NonObjectTypeTrait;
 	use UndecidedBooleanTypeTrait;
 
-	/** @var \PHPStan\Type\Type */
-	private $keyType;
+	private \PHPStan\Type\Type $keyType;
 
-	/** @var \PHPStan\Type\Type */
-	private $itemType;
+	private \PHPStan\Type\Type $itemType;
 
 	public function __construct(Type $keyType, Type $itemType)
 	{

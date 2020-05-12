@@ -5,11 +5,9 @@ namespace PHPStan\Type\Generic;
 class TemplateTypeScope
 {
 
-	/** @var string|null */
-	private $className;
+	private ?string $className;
 
-	/** @var string|null */
-	private $functionName;
+	private ?string $functionName;
 
 	public static function createWithFunction(string $functionName): self
 	{

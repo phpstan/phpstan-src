@@ -8,16 +8,15 @@ class FetchedNodesResult
 {
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
-	private $classNodes;
+	private array $classNodes;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
-	private $functionNodes;
+	private array $functionNodes;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>> */
-	private $constantNodes;
+	private array $constantNodes;
 
-	/** @var \Roave\BetterReflection\SourceLocator\Located\LocatedSource */
-	private $locatedSource;
+	private \Roave\BetterReflection\SourceLocator\Located\LocatedSource $locatedSource;
 
 	/**
 	 * @param array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> $classNodes

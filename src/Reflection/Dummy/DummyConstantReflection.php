@@ -12,8 +12,7 @@ use PHPStan\Type\Type;
 class DummyConstantReflection implements ConstantReflection
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
 	public function __construct(string $name)
 	{

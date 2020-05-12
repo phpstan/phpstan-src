@@ -10,11 +10,10 @@ use PHPStan\Type\FileTypeMapper;
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
-	/** @var FileTypeMapper */
-	private $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	/** @var MethodReflection[][] */
-	private $methods = [];
+	private array $methods = [];
 
 	public function __construct(FileTypeMapper $fileTypeMapper)
 	{

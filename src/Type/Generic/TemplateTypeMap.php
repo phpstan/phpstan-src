@@ -9,11 +9,10 @@ use PHPStan\Type\TypeCombinator;
 class TemplateTypeMap
 {
 
-	/** @var TemplateTypeMap|null */
-	private static $empty;
+	private static ?TemplateTypeMap $empty = null;
 
 	/** @var array<string,\PHPStan\Type\Type> */
-	private $types;
+	private array $types;
 
 	/** @param array<string,\PHPStan\Type\Type> $types */
 	public function __construct(array $types)

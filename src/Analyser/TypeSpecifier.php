@@ -50,26 +50,24 @@ use PHPStan\Type\UnionType;
 class TypeSpecifier
 {
 
-	/** @var \PhpParser\PrettyPrinter\Standard */
-	private $printer;
+	private \PhpParser\PrettyPrinter\Standard $printer;
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	/** @var \PHPStan\Type\FunctionTypeSpecifyingExtension[] */
-	private $functionTypeSpecifyingExtensions = [];
+	private array $functionTypeSpecifyingExtensions;
 
 	/** @var \PHPStan\Type\MethodTypeSpecifyingExtension[] */
-	private $methodTypeSpecifyingExtensions = [];
+	private array $methodTypeSpecifyingExtensions;
 
 	/** @var \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] */
-	private $staticMethodTypeSpecifyingExtensions = [];
+	private array $staticMethodTypeSpecifyingExtensions;
 
 	/** @var \PHPStan\Type\MethodTypeSpecifyingExtension[][]|null */
-	private $methodTypeSpecifyingExtensionsByClass;
+	private ?array $methodTypeSpecifyingExtensionsByClass = null;
 
 	/** @var \PHPStan\Type\StaticMethodTypeSpecifyingExtension[][]|null */
-	private $staticMethodTypeSpecifyingExtensionsByClass;
+	private ?array $staticMethodTypeSpecifyingExtensionsByClass = null;
 
 	/**
 	 * @param \PhpParser\PrettyPrinter\Standard $printer

@@ -9,14 +9,11 @@ use PHPStan\Type\Type;
 class UniversalObjectCrateProperty implements \PHPStan\Reflection\PropertyReflection
 {
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var \PHPStan\Type\Type */
-	private $readableType;
+	private \PHPStan\Type\Type $readableType;
 
-	/** @var \PHPStan\Type\Type */
-	private $writableType;
+	private \PHPStan\Type\Type $writableType;
 
 	public function __construct(
 		ClassReflection $declaringClass,

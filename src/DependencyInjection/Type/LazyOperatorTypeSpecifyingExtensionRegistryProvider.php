@@ -9,11 +9,9 @@ use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTypeSpecifyingExtensionRegistryProvider
 {
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	private \PHPStan\DependencyInjection\Container $container;
 
-	/** @var \PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry|null */
-	private $registry;
+	private ?\PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry $registry = null;
 
 	public function __construct(\PHPStan\DependencyInjection\Container $container)
 	{

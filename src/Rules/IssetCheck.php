@@ -15,11 +15,9 @@ use PHPStan\Type\VerbosityLevel;
 class IssetCheck
 {
 
-	/** @var \PHPStan\Rules\Properties\PropertyDescriptor */
-	private $propertyDescriptor;
+	private \PHPStan\Rules\Properties\PropertyDescriptor $propertyDescriptor;
 
-	/** @var \PHPStan\Rules\Properties\PropertyReflectionFinder */
-	private $propertyReflectionFinder;
+	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
 	public function __construct(
 		PropertyDescriptor $propertyDescriptor,

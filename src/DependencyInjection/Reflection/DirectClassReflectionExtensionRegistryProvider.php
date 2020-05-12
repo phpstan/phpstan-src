@@ -14,13 +14,12 @@ class DirectClassReflectionExtensionRegistryProvider implements ClassReflectionE
 {
 
 	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
-	private $propertiesClassReflectionExtensions;
+	private array $propertiesClassReflectionExtensions;
 
 	/** @var \PHPStan\Reflection\MethodsClassReflectionExtension[] */
-	private $methodsClassReflectionExtensions;
+	private array $methodsClassReflectionExtensions;
 
-	/** @var Broker */
-	private $broker;
+	private Broker $broker;
 
 	/**
 	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions

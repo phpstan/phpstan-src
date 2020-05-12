@@ -5,20 +5,15 @@ namespace PHPStan\Reflection;
 class MethodPrototypeReflection implements ClassMemberReflection
 {
 
-	/** @var \PHPStan\Reflection\ClassReflection */
-	private $declaringClass;
+	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
-	/** @var bool */
-	private $isStatic;
+	private bool $isStatic;
 
-	/** @var bool */
-	private $isPrivate;
+	private bool $isPrivate;
 
-	/** @var bool */
-	private $isPublic;
+	private bool $isPublic;
 
-	/** @var bool */
-	private $isAbstract;
+	private bool $isAbstract;
 
 	public function __construct(
 		ClassReflection $declaringClass,

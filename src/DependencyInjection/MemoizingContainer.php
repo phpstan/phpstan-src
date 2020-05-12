@@ -5,11 +5,10 @@ namespace PHPStan\DependencyInjection;
 class MemoizingContainer implements Container
 {
 
-	/** @var Container */
-	private $originalContainer;
+	private Container $originalContainer;
 
 	/** @var array<string, mixed> */
-	private $servicesByType = [];
+	private array $servicesByType = [];
 
 	public function __construct(Container $originalContainer)
 	{

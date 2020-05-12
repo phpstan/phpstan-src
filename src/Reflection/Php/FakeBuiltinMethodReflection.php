@@ -7,11 +7,9 @@ use PHPStan\TrinaryLogic;
 class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
-	/** @var string */
-	private $methodName;
+	private string $methodName;
 
-	/** @var \ReflectionClass */
-	private $declaringClass;
+	private \ReflectionClass $declaringClass;
 
 	public function __construct(
 		string $methodName,

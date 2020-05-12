@@ -8,7 +8,7 @@ class ParserErrorsException extends \Exception
 {
 
 	/** @var \PhpParser\Error[] */
-	private $errors;
+	private array $errors;
 
 	/**
 	 * @param \PhpParser\Error[] $errors

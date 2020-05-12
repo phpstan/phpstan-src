@@ -17,26 +17,20 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 class ResolvedPhpDocBlock
 {
 
-	/** @var PhpDocNode */
-	private $phpDocNode;
+	private PhpDocNode $phpDocNode;
 
-	/** @var string */
-	private $phpDocString;
+	private string $phpDocString;
 
-	/** @var string|null */
-	private $filename;
+	private ?string $filename;
 
-	/** @var NameScope */
-	private $nameScope;
+	private NameScope $nameScope;
 
-	/** @var TemplateTypeMap */
-	private $templateTypeMap;
+	private TemplateTypeMap $templateTypeMap;
 
 	/** @var array<string, \PHPStan\PhpDoc\Tag\TemplateTag> */
-	private $templateTags;
+	private array $templateTags;
 
-	/** @var \PHPStan\PhpDoc\PhpDocNodeResolver */
-	private $phpDocNodeResolver;
+	private \PHPStan\PhpDoc\PhpDocNodeResolver $phpDocNodeResolver;
 
 	/** @var array<string|int, \PHPStan\PhpDoc\Tag\VarTag>|false */
 	private $varTags = false;
@@ -71,14 +65,11 @@ class ResolvedPhpDocBlock
 	/** @var \PHPStan\PhpDoc\Tag\DeprecatedTag|false|null */
 	private $deprecatedTag = false;
 
-	/** @var bool|null */
-	private $isDeprecated;
+	private ?bool $isDeprecated = null;
 
-	/** @var bool|null */
-	private $isInternal;
+	private ?bool $isInternal = null;
 
-	/** @var bool|null */
-	private $isFinal;
+	private ?bool $isFinal = null;
 
 	private function __construct()
 	{

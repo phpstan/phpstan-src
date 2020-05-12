@@ -18,8 +18,7 @@ use PHPStan\Type\VerbosityLevel;
 final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\MissingTypehintCheck */
-	private $missingTypehintCheck;
+	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
 
 	public function __construct(MissingTypehintCheck $missingTypehintCheck)
 	{

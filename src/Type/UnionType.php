@@ -16,7 +16,7 @@ class UnionType implements CompoundType
 {
 
 	/** @var \PHPStan\Type\Type[] */
-	private $types;
+	private array $types;
 
 	/**
 	 * @param Type[] $types

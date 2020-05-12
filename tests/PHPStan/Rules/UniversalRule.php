@@ -12,7 +12,7 @@ use PHPStan\Analyser\Scope;
 class UniversalRule implements Rule
 {
 
-	/** @var class-string<TNodeType> */
+	/** @phpstan-var class-string<TNodeType> */
 	private $nodeType;
 
 	/** @var (callable(TNodeType, Scope): array<string|RuleError>) */

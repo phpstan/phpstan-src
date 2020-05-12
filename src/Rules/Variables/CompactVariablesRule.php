@@ -14,8 +14,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 final class CompactVariablesRule implements Rule
 {
 
-	/** @var bool */
-	private $checkMaybeUndefinedVariables;
+	private bool $checkMaybeUndefinedVariables;
 
 	public function __construct(bool $checkMaybeUndefinedVariables)
 	{

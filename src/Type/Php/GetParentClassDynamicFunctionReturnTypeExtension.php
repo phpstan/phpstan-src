@@ -17,8 +17,7 @@ use PHPStan\Type\UnionType;
 class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
 	public function __construct(\PHPStan\Reflection\ReflectionProvider $reflectionProvider)
 	{

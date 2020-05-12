@@ -17,8 +17,7 @@ use PHPStan\Type\VerbosityLevel;
 class IncompatiblePropertyPhpDocTypeRule implements Rule
 {
 
-	/** @var \PHPStan\Rules\Generics\GenericObjectTypeCheck */
-	private $genericObjectTypeCheck;
+	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
 
 	public function __construct(GenericObjectTypeCheck $genericObjectTypeCheck)
 	{

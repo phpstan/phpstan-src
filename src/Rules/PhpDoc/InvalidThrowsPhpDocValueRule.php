@@ -16,8 +16,7 @@ use PHPStan\Type\VoidType;
 class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var FileTypeMapper */
-	private $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	public function __construct(FileTypeMapper $fileTypeMapper)
 	{

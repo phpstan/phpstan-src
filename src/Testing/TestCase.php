@@ -61,10 +61,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
 
 	/** @var array<string, Container> */
-	private static $containers = [];
+	private static array $containers = [];
 
-	/** @var DirectClassReflectionExtensionRegistryProvider|null */
-	private $classReflectionExtensionRegistryProvider;
+	private ?DirectClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider = null;
 
 	public static function getContainer(): Container
 	{
@@ -172,29 +171,21 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$fileHelper
 			) implements BetterReflectionProviderFactory {
 
-				/** @var \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider */
-				private $classReflectionExtensionRegistryProvider;
+				private \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
-				/** @var Container */
-				private $container;
+				private Container $container;
 
-				/** @var FileTypeMapper */
-				private $fileTypeMapper;
+				private FileTypeMapper $fileTypeMapper;
 
-				/** @var FunctionReflectionFactory */
-				private $functionReflectionFactory;
+				private FunctionReflectionFactory $functionReflectionFactory;
 
-				/** @var \PHPStan\File\RelativePathHelper */
-				private $relativePathHelper;
+				private \PHPStan\File\RelativePathHelper $relativePathHelper;
 
-				/** @var AnonymousClassNameHelper */
-				private $anonymousClassNameHelper;
+				private AnonymousClassNameHelper $anonymousClassNameHelper;
 
-				/** @var Parser */
-				private $parser;
+				private Parser $parser;
 
-				/** @var \PHPStan\File\FileHelper */
-				private $fileHelper;
+				private \PHPStan\File\FileHelper $fileHelper;
 
 				public function __construct(
 					ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
@@ -259,17 +250,13 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$cache = new Cache(new MemoryCacheStorage());
 		$methodReflectionFactory = new class($parser, $functionCallStatementFinder, $cache) implements PhpMethodReflectionFactory {
 
-			/** @var \PHPStan\Parser\Parser */
-			private $parser;
+			private \PHPStan\Parser\Parser $parser;
 
-			/** @var \PHPStan\Parser\FunctionCallStatementFinder */
-			private $functionCallStatementFinder;
+			private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
 
-			/** @var \PHPStan\Cache\Cache */
-			private $cache;
+			private \PHPStan\Cache\Cache $cache;
 
-			/** @var ReflectionProvider */
-			public $reflectionProvider;
+			public ReflectionProvider $reflectionProvider;
 
 			public function __construct(
 				Parser $parser,
@@ -383,14 +370,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	{
 		return new class($this->getParser(), $functionCallStatementFinder, $cache) implements FunctionReflectionFactory {
 
-			/** @var \PHPStan\Parser\Parser */
-			private $parser;
+			private \PHPStan\Parser\Parser $parser;
 
-			/** @var \PHPStan\Parser\FunctionCallStatementFinder */
-			private $functionCallStatementFinder;
+			private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
 
-			/** @var \PHPStan\Cache\Cache */
-			private $cache;
+			private \PHPStan\Cache\Cache $cache;
 
 			public function __construct(
 				Parser $parser,

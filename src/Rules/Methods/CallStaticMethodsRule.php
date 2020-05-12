@@ -32,23 +32,17 @@ use PHPStan\Type\VerbosityLevel;
 class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\FunctionCallParametersCheck */
-	private $check;
+	private \PHPStan\Rules\FunctionCallParametersCheck $check;
 
-	/** @var \PHPStan\Rules\RuleLevelHelper */
-	private $ruleLevelHelper;
+	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	/** @var bool */
-	private $checkFunctionNameCase;
+	private bool $checkFunctionNameCase;
 
-	/** @var bool */
-	private $reportMagicMethods;
+	private bool $reportMagicMethods;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

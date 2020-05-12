@@ -5,8 +5,7 @@ namespace PHPStan\Broker;
 class ClassAutoloadingException extends \PHPStan\AnalysedCodeException
 {
 
-	/** @var string */
-	private $className;
+	private string $className;
 
 	public function __construct(
 		string $functionName,

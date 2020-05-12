@@ -6,7 +6,7 @@ class MemoryCacheStorage implements CacheStorage
 {
 
 	/** @var array<string, \PHPStan\Cache\CacheItem> */
-	private $storage = [];
+	private array $storage = [];
 
 	/**
 	 * @param string $key

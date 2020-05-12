@@ -7,14 +7,11 @@ use PHPStan\Type\Type;
 class ExpressionContext
 {
 
-	/** @var bool */
-	private $isDeep;
+	private bool $isDeep;
 
-	/** @var string|null */
-	private $inAssignRightSideVariableName;
+	private ?string $inAssignRightSideVariableName;
 
-	/** @var Type|null */
-	private $inAssignRightSideType;
+	private ?Type $inAssignRightSideType;
 
 	private function __construct(
 		bool $isDeep,

@@ -6,10 +6,9 @@ class FileFinderResult
 {
 
 	/** @var string[] */
-	private $files;
+	private array $files;
 
-	/** @var bool */
-	private $onlyFiles;
+	private bool $onlyFiles;
 
 	/**
 	 * @param string[] $files

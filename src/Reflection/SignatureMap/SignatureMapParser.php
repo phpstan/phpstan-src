@@ -11,8 +11,7 @@ use PHPStan\Type\Type;
 class SignatureMapParser
 {
 
-	/** @var \PHPStan\PhpDoc\TypeStringResolver */
-	private $typeStringResolver;
+	private \PHPStan\PhpDoc\TypeStringResolver $typeStringResolver;
 
 	public function __construct(
 		TypeStringResolver $typeNodeResolver

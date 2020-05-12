@@ -26,11 +26,9 @@ class MixedType implements CompoundType, SubtractableType
 	use UndecidedBooleanTypeTrait;
 	use NonGenericTypeTrait;
 
-	/** @var bool */
-	private $isExplicitMixed;
+	private bool $isExplicitMixed;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $subtractedType;
+	private ?\PHPStan\Type\Type $subtractedType;
 
 	public function __construct(
 		bool $isExplicitMixed = false,

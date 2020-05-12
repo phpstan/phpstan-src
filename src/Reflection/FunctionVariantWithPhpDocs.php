@@ -8,11 +8,9 @@ use PHPStan\Type\Type;
 class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAcceptorWithPhpDocs
 {
 
-	/** @var Type */
-	private $phpDocReturnType;
+	private Type $phpDocReturnType;
 
-	/** @var Type */
-	private $nativeReturnType;
+	private Type $nativeReturnType;
 
 	/**
 	 * @param TemplateTypeMap $templateTypeMap

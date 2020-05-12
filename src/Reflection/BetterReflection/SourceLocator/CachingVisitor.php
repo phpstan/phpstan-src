@@ -11,20 +11,18 @@ use Roave\BetterReflection\Util\ConstantNodeChecker;
 class CachingVisitor extends NodeVisitorAbstract
 {
 
-	/** @var string */
-	private $fileName;
+	private string $fileName;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
-	private $classNodes;
+	private array $classNodes;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
-	private $functionNodes;
+	private array $functionNodes;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>> */
-	private $constantNodes;
+	private array $constantNodes;
 
-	/** @var \PhpParser\Node\Stmt\Namespace_|null */
-	private $currentNamespaceNode;
+	private ?\PhpParser\Node\Stmt\Namespace_ $currentNamespaceNode = null;
 
 	public function enterNode(\PhpParser\Node $node): ?int
 	{

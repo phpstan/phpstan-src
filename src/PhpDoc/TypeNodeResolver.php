@@ -64,11 +64,9 @@ use PHPStan\Type\VoidType;
 class TypeNodeResolver
 {
 
-	/** @var TypeNodeResolverExtensionRegistryProvider */
-	private $extensionRegistryProvider;
+	private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider;
 
-	/** @var Container */
-	private $container;
+	private Container $container;
 
 	public function __construct(
 		TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,

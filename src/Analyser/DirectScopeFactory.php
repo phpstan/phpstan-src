@@ -16,32 +16,24 @@ use PHPStan\Type\Type;
 class DirectScopeFactory implements ScopeFactory
 {
 
-	/** @var string */
-	private $scopeClass;
+	private string $scopeClass;
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider */
-	private $dynamicReturnTypeExtensionRegistryProvider;
+	private \PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider;
 
-	/** @var OperatorTypeSpecifyingExtensionRegistryProvider */
-	private $operatorTypeSpecifyingExtensionRegistryProvider;
+	private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider;
 
-	/** @var \PhpParser\PrettyPrinter\Standard */
-	private $printer;
+	private \PhpParser\PrettyPrinter\Standard $printer;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
-	/** @var \PHPStan\Rules\Properties\PropertyReflectionFinder */
-	private $propertyReflectionFinder;
+	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	/** @var string[] */
-	private $dynamicConstantNames;
+	private array $dynamicConstantNames;
 
 	public function __construct(
 		string $scopeClass,

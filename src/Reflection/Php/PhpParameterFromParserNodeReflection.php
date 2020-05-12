@@ -11,29 +11,21 @@ use PHPStan\Type\TypehintHelper;
 class PhpParameterFromParserNodeReflection implements \PHPStan\Reflection\ParameterReflectionWithPhpDocs
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var bool */
-	private $optional;
+	private bool $optional;
 
-	/** @var \PHPStan\Type\Type */
-	private $realType;
+	private \PHPStan\Type\Type $realType;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $phpDocType;
+	private ?\PHPStan\Type\Type $phpDocType;
 
-	/** @var \PHPStan\Reflection\PassedByReference */
-	private $passedByReference;
+	private \PHPStan\Reflection\PassedByReference $passedByReference;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $defaultValue;
+	private ?\PHPStan\Type\Type $defaultValue;
 
-	/** @var bool */
-	private $variadic;
+	private bool $variadic;
 
-	/** @var \PHPStan\Type\Type|null */
-	private $type;
+	private ?\PHPStan\Type\Type $type = null;
 
 	public function __construct(
 		string $name,

@@ -48,10 +48,9 @@ class StubValidator
 {
 
 	/** @var string[] */
-	private $stubFiles;
+	private array $stubFiles;
 
-	/** @var \PHPStan\DependencyInjection\DerivativeContainerFactory */
-	private $derivativeContainerFactory;
+	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
 
 	/**
 	 * @param string[] $stubFiles

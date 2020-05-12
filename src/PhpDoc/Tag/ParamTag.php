@@ -7,11 +7,9 @@ use PHPStan\Type\Type;
 class ParamTag implements TypedTag
 {
 
-	/** @var \PHPStan\Type\Type */
-	private $type;
+	private \PHPStan\Type\Type $type;
 
-	/** @var bool */
-	private $isVariadic;
+	private bool $isVariadic;
 
 	public function __construct(Type $type, bool $isVariadic)
 	{

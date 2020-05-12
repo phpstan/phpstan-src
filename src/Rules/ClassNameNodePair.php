@@ -7,11 +7,9 @@ use PhpParser\Node;
 class ClassNameNodePair
 {
 
-	/** @var string */
-	private $className;
+	private string $className;
 
-	/** @var Node */
-	private $node;
+	private Node $node;
 
 	public function __construct(string $className, Node $node)
 	{

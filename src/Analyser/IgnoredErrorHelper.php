@@ -9,17 +9,14 @@ use PHPStan\File\FileHelper;
 class IgnoredErrorHelper
 {
 
-	/** @var IgnoredRegexValidator */
-	private $ignoredRegexValidator;
+	private IgnoredRegexValidator $ignoredRegexValidator;
 
-	/** @var \PHPStan\File\FileHelper */
-	private $fileHelper;
+	private \PHPStan\File\FileHelper $fileHelper;
 
 	/** @var (string|mixed[])[] */
-	private $ignoreErrors;
+	private array $ignoreErrors;
 
-	/** @var bool */
-	private $reportUnmatchedIgnoredErrors;
+	private bool $reportUnmatchedIgnoredErrors;
 
 	/**
 	 * @param IgnoredRegexValidator $ignoredRegexValidator

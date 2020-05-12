@@ -8,31 +8,23 @@ class InceptionResult
 {
 
 	/** @var string[] */
-	private $files;
+	private array $files;
 
-	/** @var bool */
-	private $onlyFiles;
+	private bool $onlyFiles;
 
-	/** @var Output */
-	private $stdOutput;
+	private Output $stdOutput;
 
-	/** @var Output */
-	private $errorOutput;
+	private Output $errorOutput;
 
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
+	private \PHPStan\DependencyInjection\Container $container;
 
-	/** @var bool */
-	private $isDefaultLevelUsed;
+	private bool $isDefaultLevelUsed;
 
-	/** @var string */
-	private $memoryLimitFile;
+	private string $memoryLimitFile;
 
-	/** @var string|null */
-	private $projectConfigFile;
+	private ?string $projectConfigFile;
 
-	/** @var string|null */
-	private $generateBaselineFile;
+	private ?string $generateBaselineFile;
 
 	/**
 	 * @param string[] $files

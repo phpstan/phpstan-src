@@ -13,17 +13,13 @@ use PHPStan\Rules\RuleLevelHelper;
 class ReadingWriteOnlyPropertiesRule implements \PHPStan\Rules\Rule
 {
 
-	/** @var \PHPStan\Rules\Properties\PropertyDescriptor */
-	private $propertyDescriptor;
+	private \PHPStan\Rules\Properties\PropertyDescriptor $propertyDescriptor;
 
-	/** @var \PHPStan\Rules\Properties\PropertyReflectionFinder */
-	private $propertyReflectionFinder;
+	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
-	/** @var RuleLevelHelper */
-	private $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
 	public function __construct(
 		PropertyDescriptor $propertyDescriptor,

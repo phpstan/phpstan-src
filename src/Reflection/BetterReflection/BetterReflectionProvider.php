@@ -36,53 +36,40 @@ use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 class BetterReflectionProvider implements ReflectionProvider
 {
 
-	/** @var \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider */
-	private $classReflectionExtensionRegistryProvider;
+	private \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
-	/** @var \Roave\BetterReflection\Reflector\ClassReflector */
-	private $classReflector;
+	private \Roave\BetterReflection\Reflector\ClassReflector $classReflector;
 
-	/** @var \Roave\BetterReflection\Reflector\FunctionReflector */
-	private $functionReflector;
+	private \Roave\BetterReflection\Reflector\FunctionReflector $functionReflector;
 
-	/** @var \Roave\BetterReflection\Reflector\ConstantReflector */
-	private $constantReflector;
+	private \Roave\BetterReflection\Reflector\ConstantReflector $constantReflector;
 
-	/** @var \PHPStan\Type\FileTypeMapper */
-	private $fileTypeMapper;
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
-	/** @var \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider */
-	private $nativeFunctionReflectionProvider;
+	private \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
 
-	/** @var StubPhpDocProvider */
-	private $stubPhpDocProvider;
+	private StubPhpDocProvider $stubPhpDocProvider;
 
-	/** @var \PHPStan\Reflection\FunctionReflectionFactory */
-	private $functionReflectionFactory;
+	private \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory;
 
-	/** @var RelativePathHelper */
-	private $relativePathHelper;
+	private RelativePathHelper $relativePathHelper;
 
-	/** @var AnonymousClassNameHelper */
-	private $anonymousClassNameHelper;
+	private AnonymousClassNameHelper $anonymousClassNameHelper;
 
-	/** @var \PhpParser\PrettyPrinter\Standard */
-	private $printer;
+	private \PhpParser\PrettyPrinter\Standard $printer;
 
-	/** @var Parser */
-	private $parser;
+	private Parser $parser;
 
-	/** @var \PHPStan\File\FileHelper */
-	private $fileHelper;
+	private \PHPStan\File\FileHelper $fileHelper;
 
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
-	private $functionReflections = [];
+	private array $functionReflections = [];
 
 	/** @var \PHPStan\Reflection\ClassReflection[] */
-	private $classReflections = [];
+	private array $classReflections = [];
 
 	/** @var \PHPStan\Reflection\ClassReflection[] */
-	private static $anonymousClasses = [];
+	private static array $anonymousClasses = [];
 
 	public function __construct(
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,

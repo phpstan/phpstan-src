@@ -14,11 +14,9 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 class UnreachableTernaryElseBranchRule implements Rule
 {
 
-	/** @var ConstantConditionRuleHelper */
-	private $helper;
+	private ConstantConditionRuleHelper $helper;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	public function __construct(
 		ConstantConditionRuleHelper $helper,

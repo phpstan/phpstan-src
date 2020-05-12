@@ -8,11 +8,9 @@ use PHPStan\File\RelativePathHelper;
 class AnonymousClassNameHelper
 {
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
-	/** @var RelativePathHelper */
-	private $relativePathHelper;
+	private RelativePathHelper $relativePathHelper;
 
 	public function __construct(
 		FileHelper $fileHelper,

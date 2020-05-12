@@ -18,17 +18,14 @@ use function array_map;
 class TemplateTypeCheck
 {
 
-	/** @var \PHPStan\Reflection\ReflectionProvider */
-	private $reflectionProvider;
+	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Rules\ClassCaseSensitivityCheck */
-	private $classCaseSensitivityCheck;
+	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	/** @var array<string, string> */
-	private $typeAliases;
+	private array $typeAliases;
 
-	/** @var bool */
-	private $checkClassCaseSensitivity;
+	private bool $checkClassCaseSensitivity;
 
 	/**
 	 * @param ReflectionProvider $reflectionProvider

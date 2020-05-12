@@ -8,11 +8,10 @@ use function array_key_exists;
 class ProcessPool
 {
 
-	/** @var TcpServer */
-	private $server;
+	private TcpServer $server;
 
 	/** @var array<string, Process> */
-	private $processes = [];
+	private array $processes = [];
 
 	public function __construct(TcpServer $server)
 	{

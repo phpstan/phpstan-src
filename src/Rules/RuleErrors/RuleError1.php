@@ -8,8 +8,7 @@ namespace PHPStan\Rules\RuleErrors;
 class RuleError1 implements \PHPStan\Rules\RuleError
 {
 
-	/** @var string */
-	public $message;
+	public string $message;
 
 	public function getMessage(): string
 	{

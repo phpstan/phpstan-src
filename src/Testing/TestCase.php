@@ -136,6 +136,19 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 	public function createReflectionProvider(): ReflectionProvider
 	{
+		return $this->createReflectionProviderByParameters(
+			$this->createMock(ReflectionProvider::class),
+			false,
+			false
+		);
+	}
+
+	public function createReflectionProviderByParameters(
+		ReflectionProvider $phpParserReflectionProvider,
+		bool $enableStaticReflectionForPhpParser,
+		bool $disableRuntimeReflectionProvider
+	): ReflectionProvider
+	{
 		$runtimeReflectionProvider = $this->createRuntimeReflectionProvider();
 		$parser = $this->getParser();
 		$phpParser = new PhpParserDecorator($parser);
@@ -232,9 +245,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				}
 
 			},
-			$this->createMock(ReflectionProvider::class),
-			false,
-			false
+			$phpParserReflectionProvider,
+			$enableStaticReflectionForPhpParser,
+			$disableRuntimeReflectionProvider
 		);
 
 		$reflectionProvider = $reflectionProviderFactory->create();

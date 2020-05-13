@@ -22,7 +22,7 @@ class GetCalledClassDynamicReturnTypeExtension implements DynamicFunctionReturnT
 	{
 		$classContext = $scope->getClassReflection();
 		if ($classContext !== null) {
-			return new ConstantStringType($classContext->getName());
+			return new ConstantStringType($classContext->getName(), true);
 		}
 		return new ConstantBooleanType(false);
 	}

@@ -1262,7 +1262,7 @@ class MutatingScope implements Scope
 				return new ConstantStringType('');
 			}
 
-			return new ConstantStringType($this->getClassReflection()->getName());
+			return new ConstantStringType($this->getClassReflection()->getName(), true);
 		} elseif ($node instanceof Node\Scalar\MagicConst\Dir) {
 			return new ConstantStringType(dirname($this->getFile()));
 		} elseif ($node instanceof Node\Scalar\MagicConst\File) {
@@ -1299,7 +1299,7 @@ class MutatingScope implements Scope
 			if (!$this->isInTrait()) {
 				return new ConstantStringType('');
 			}
-			return new ConstantStringType($this->getTraitReflection()->getName());
+			return new ConstantStringType($this->getTraitReflection()->getName(), true);
 		} elseif ($node instanceof Object_) {
 			$castToObject = static function (Type $type): Type {
 				if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
@@ -1450,7 +1450,7 @@ class MutatingScope implements Scope
 			}
 
 			if (strtolower($constantName) === 'class' && $constantClassType instanceof TypeWithClassName) {
-				return new ConstantStringType($constantClassType->getClassName());
+				return new ConstantStringType($constantClassType->getClassName(), true);
 			}
 
 			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);

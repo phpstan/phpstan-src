@@ -33,9 +33,12 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	private string $value;
 
-	public function __construct(string $value)
+	private bool $isClassString;
+
+	public function __construct(string $value, bool $isClassString = false)
 	{
 		$this->value = $value;
+		$this->isClassString = $isClassString;
 	}
 
 	public function getValue(): string
@@ -50,8 +53,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				return 'string';
 			},
 			function (): string {
-				$broker = Broker::getInstance();
-				if ($broker->hasClass($this->value)) {
+				if ($this->isClassString) {
 					return var_export($this->value, true);
 				}
 
@@ -269,8 +271,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function generalize(): Type
 	{
-		$broker = Broker::getInstance();
-		if ($broker->hasClass($this->getValue())) {
+		if ($this->isClassString) {
 			return new ClassStringType();
 		}
 		return new StringType();
@@ -282,7 +283,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		return new self($properties['value']);
+		return new self($properties['value'], $properties['isClassString'] ?? false);
 	}
 
 }

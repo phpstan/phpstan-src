@@ -28,7 +28,7 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		$args = $functionCall->args;
 		if (count($args) === 0) {
 			if ($scope->isInClass()) {
-				return new ConstantStringType($scope->getClassReflection()->getName());
+				return new ConstantStringType($scope->getClassReflection()->getName(), true);
 			}
 
 			return new ConstantBooleanType(false);

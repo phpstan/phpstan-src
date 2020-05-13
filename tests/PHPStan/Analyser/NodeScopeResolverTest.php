@@ -5090,7 +5090,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'array<class-string|int, stdClass>',
+				'array<int|string, stdClass>',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[

@@ -143,7 +143,9 @@ class ConstantStringTypeTest extends TestCase
 	public function testGeneralize(): void
 	{
 		$this->assertSame('string', (new ConstantStringType('NonexistentClass'))->generalize()->describe(VerbosityLevel::precise()));
-		$this->assertSame('class-string', (new ConstantStringType(\stdClass::class))->generalize()->describe(VerbosityLevel::precise()));
+		$this->assertSame('string', (new ConstantStringType(\stdClass::class))->generalize()->describe(VerbosityLevel::precise()));
+		$this->assertSame('class-string', (new ConstantStringType(\stdClass::class, true))->generalize()->describe(VerbosityLevel::precise()));
+		$this->assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize()->describe(VerbosityLevel::precise()));
 	}
 
 }

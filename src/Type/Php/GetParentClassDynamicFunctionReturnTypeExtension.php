@@ -96,7 +96,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\
 			return new ConstantBooleanType(false);
 		}
 
-		return new ConstantStringType($parentClass->getName());
+		return new ConstantStringType($parentClass->getName(), true);
 	}
 
 }

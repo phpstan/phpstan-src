@@ -159,6 +159,9 @@ jobs:
           - "7.3"
           - "7.4"
         operating-system: [ubuntu-latest, windows-latest]
+        script:
+          - "vendor/bin/phing tests"
+          - "vendor/bin/phing tests-fast-static-reflection"
 
     steps:
       - name: "Checkout"
@@ -192,7 +195,7 @@ jobs:
         run: php bin/transform-source.php
 
       - name: "Tests"
-        run: "vendor/bin/phing tests"
+        run: "${{ matrix.script }}"
 
   tests-code-coverage:
     name: "Tests with code coverage"

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use Composer\Autoload\ClassLoader;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\MutatingScope;
@@ -35,6 +36,11 @@ use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\BetterReflection\BetterReflectionProvider;
 use PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory;
+use PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector;
+use PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector;
+use PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector;
+use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
@@ -55,15 +61,24 @@ use PHPStan\Type\Type;
 use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
+use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
+
+	/** @var bool */
+	public static $useStaticReflectionProvider = false;
 
 	/** @var array<string, Container> */
 	private static array $containers = [];
 
 	private ?DirectClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider = null;
+
+	/** @var array{ClassReflector, FunctionReflector, ConstantReflector}|null */
+	private static $reflectors;
 
 	public static function getContainer(): Container
 	{
@@ -136,7 +151,17 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 	public function createReflectionProvider(): ReflectionProvider
 	{
+		if (self::$useStaticReflectionProvider) {
+			return $this->createReflectionProviderByParameters(
+				$this->createRuntimeReflectionProvider(),
+				$this->createStaticReflectionProvider(),
+				true,
+				false
+			);
+		}
+
 		return $this->createReflectionProviderByParameters(
+			$this->createRuntimeReflectionProvider(),
 			$this->createMock(ReflectionProvider::class),
 			false,
 			false
@@ -144,12 +169,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	}
 
 	public function createReflectionProviderByParameters(
+		RuntimeReflectionProvider $runtimeReflectionProvider,
 		ReflectionProvider $phpParserReflectionProvider,
 		bool $enableStaticReflectionForPhpParser,
 		bool $disableRuntimeReflectionProvider
 	): ReflectionProvider
 	{
-		$runtimeReflectionProvider = $this->createRuntimeReflectionProvider();
 		$parser = $this->getParser();
 		$phpParser = new PhpParserDecorator($parser);
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
@@ -374,6 +399,96 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$setterReflectionProvider->setReflectionProvider($reflectionProvider);
 
 		return $reflectionProvider;
+	}
+
+	private function createStaticReflectionProvider(): ReflectionProvider
+	{
+		$parser = $this->getParser();
+		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
+		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
+		$cache = new Cache(new MemoryCacheStorage());
+		$fileHelper = new FileHelper($currentWorkingDirectory);
+		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
+		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
+		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
+		$fileTypeMapper = new FileTypeMapper($setterReflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
+		$functionCallStatementFinder = new FunctionCallStatementFinder();
+		$functionReflectionFactory = $this->getFunctionReflectionFactory(
+			$functionCallStatementFinder,
+			$cache
+		);
+
+		[$classReflector, $functionReflector, $constantReflector] = self::getReflectors();
+
+		$reflectionProvider = new BetterReflectionProvider(
+			$this->getClassReflectionExtensionRegistryProvider(),
+			$classReflector,
+			$fileTypeMapper,
+			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
+			self::getContainer()->getByType(StubPhpDocProvider::class),
+			$functionReflectionFactory,
+			$relativePathHelper,
+			$anonymousClassNameHelper,
+			self::getContainer()->getByType(Standard::class),
+			$parser,
+			$fileHelper,
+			$functionReflector,
+			$constantReflector
+		);
+
+		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
+
+		return $reflectionProvider;
+	}
+
+	/**
+	 * @return array{ClassReflector, FunctionReflector, ConstantReflector}
+	 */
+	private static function getReflectors(): array
+	{
+		if (self::$reflectors !== null) {
+			return self::$reflectors;
+		}
+
+		$classLoaderReflection = new \ReflectionClass(ClassLoader::class);
+		if ($classLoaderReflection->getFileName() === false) {
+			self::fail('Unknown ClassLoader filename');
+		}
+
+		$composerProjectPath = dirname($classLoaderReflection->getFileName(), 3);
+		if (!is_file($composerProjectPath . '/composer.json')) {
+			self::fail(sprintf('composer.json not found in directory %s', $composerProjectPath));
+		}
+
+		$composerJsonAndInstalledJsonSourceLocatorMaker = self::getContainer()->getByType(ComposerJsonAndInstalledJsonSourceLocatorMaker::class);
+		$composerSourceLocator = $composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
+		if ($composerSourceLocator === null) {
+			self::fail('Could not create composer source locator');
+		}
+
+		$locators = [
+			$composerSourceLocator,
+		];
+
+		$phpParser = new PhpParserDecorator(self::getContainer()->getService('directParser'));
+
+		/** @var FunctionReflector $functionReflector */
+		$functionReflector = null;
+		$astLocator = new Locator($phpParser, static function () use (&$functionReflector): FunctionReflector {
+			return $functionReflector;
+		});
+		$locators[] = new AutoloadSourceLocator($astLocator);
+		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($phpParser));
+		$sourceLocator = new AggregateSourceLocator($locators);
+
+		$classReflector = new MemoizingClassReflector($sourceLocator);
+		$functionReflector = new MemoizingFunctionReflector($sourceLocator, $classReflector);
+		$constantReflector = new MemoizingConstantReflector($sourceLocator, $classReflector);
+
+		self::$reflectors = [$classReflector, $functionReflector, $constantReflector];
+
+		return self::$reflectors;
 	}
 
 	private function getFunctionReflectionFactory(

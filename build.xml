@@ -225,6 +225,23 @@
 		</exec>
 	</target>
 
+	<target name="tests-fast-static-reflection">
+		<exec
+			executable="vendor/bin/phpunit"
+			logoutput="true"
+			passthru="true"
+			checkreturn="false"
+		>
+			<arg value="-c"/>
+			<arg value="tests/phpunit.xml"/>
+			<arg value="--exclude-group"/>
+			<arg value="exec"/>
+			<arg value="--bootstrap"/>
+			<arg path="tests/bootstrap-static-reflection.php"/>
+			<arg path="tests/PHPStan"/>
+		</exec>
+	</target>
+
 	<target name="phpstan">
 		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>

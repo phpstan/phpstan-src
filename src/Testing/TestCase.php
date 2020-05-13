@@ -451,6 +451,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			return self::$reflectors;
 		}
 
+		if (!class_exists(ClassLoader::class)) {
+			self::fail('Composer ClassLoader is unknown');
+		}
+
 		$classLoaderReflection = new \ReflectionClass(ClassLoader::class);
 		if ($classLoaderReflection->getFileName() === false) {
 			self::fail('Unknown ClassLoader filename');

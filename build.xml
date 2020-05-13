@@ -227,7 +227,7 @@
 
 	<target name="tests-fast-static-reflection">
 		<exec
-			executable="vendor/bin/phpunit"
+			executable="${phpunit.executable}"
 			logoutput="true"
 			passthru="true"
 			checkreturn="false"

@@ -83,6 +83,8 @@ parameters:
 		- '#^Soap(?:Client|Var|Server|Fault|Param|Header)$#'
 	dynamicConstantNames:
 		- ICONV_IMPL
+		- LIBXML_VERSION
+		- LIBXML_DOTTED_VERSION
 		- PHP_VERSION
 		- PHP_MAJOR_VERSION
 		- PHP_MINOR_VERSION

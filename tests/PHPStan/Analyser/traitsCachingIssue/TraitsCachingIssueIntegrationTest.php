@@ -9,6 +9,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use function file_exists;
 
+/**
+ * @group exec
+ */
 class TraitsCachingIssueIntegrationTest extends TestCase
 {
 

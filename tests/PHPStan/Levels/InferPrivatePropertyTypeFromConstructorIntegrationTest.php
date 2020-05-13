@@ -2,6 +2,9 @@
 
 namespace PHPStan\Levels;
 
+/**
+ * @group exec
+ */
 class InferPrivatePropertyTypeFromConstructorIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 {
 

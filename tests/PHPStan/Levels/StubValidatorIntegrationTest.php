@@ -2,6 +2,9 @@
 
 namespace PHPStan\Levels;
 
+/**
+ * @group exec
+ */
 class StubValidatorIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 {
 

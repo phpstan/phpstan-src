@@ -6,6 +6,9 @@ use Nette\Utils\Json;
 use PHPStan\File\FileHelper;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @group exec
+ */
 class ParallelAnalyserIntegrationTest extends TestCase
 {
 

@@ -11,6 +11,9 @@ use function escapeshellarg;
 use function file_put_contents;
 use function str_replace;
 
+/**
+ * @group exec
+ */
 class ResultCacheEndToEndTest extends TestCase
 {
 

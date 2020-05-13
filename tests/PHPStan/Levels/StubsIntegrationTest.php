@@ -2,6 +2,9 @@
 
 namespace PHPStan\Levels;
 
+/**
+ * @group exec
+ */
 class StubsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 {
 

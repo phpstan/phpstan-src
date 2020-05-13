@@ -2,6 +2,9 @@
 
 namespace PHPStan\Generics;
 
+/**
+ * @group exec
+ */
 class GenericsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 {
 

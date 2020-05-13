@@ -2,6 +2,9 @@
 
 namespace PHPStan\Levels;
 
+/**
+ * @group exec
+ */
 class LevelsCheckAlwaysTrueIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 {
 

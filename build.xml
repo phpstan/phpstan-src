@@ -210,7 +210,7 @@
 		</exec>
 	</target>
 
-	<target name="tests-rules">
+	<target name="tests-fast">
 		<exec
 			executable="${phpunit.executable}"
 			logoutput="true"
@@ -219,24 +219,11 @@
 		>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
-			<arg path="tests/PHPStan/Rules"/>
+			<arg value="--exclude-group"/>
+			<arg value="exec"/>
+			<arg path="tests/PHPStan"/>
 		</exec>
 	</target>
-
-	<target name="tests-type-inference">
-		<exec
-			executable="${phpunit.executable}"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-c"/>
-			<arg value="tests/phpunit.xml"/>
-			<arg path="tests/PHPStan/Analyser/NodeScopeResolverTest.php"/>
-		</exec>
-	</target>
-
-	<target name="tests-fast" depends="tests-type-inference, tests-rules" />
 
 	<target name="phpstan">
 		<property name="phpstan.config" value="build/phpstan-generated.neon"/>

@@ -8,6 +8,9 @@ use function chdir;
 use function file_put_contents;
 use function getcwd;
 
+/**
+ * @group exec
+ */
 class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 {
 

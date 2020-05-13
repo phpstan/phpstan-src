@@ -24,6 +24,7 @@ use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegist
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\Parser\CachedParser;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\PhpParserDecorator;
@@ -112,7 +113,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	public function getParser(): \PHPStan\Parser\Parser
 	{
 		/** @var \PHPStan\Parser\Parser $parser */
-		$parser = self::getContainer()->getService('directParser');
+		$parser = self::getContainer()->getByType(CachedParser::class);
 		return $parser;
 	}
 
@@ -475,7 +476,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			$composerSourceLocator,
 		];
 
-		$phpParser = new PhpParserDecorator(self::getContainer()->getService('directParser'));
+		$phpParser = new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class));
 
 		/** @var FunctionReflector $functionReflector */
 		$functionReflector = null;

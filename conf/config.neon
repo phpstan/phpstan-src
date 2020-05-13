@@ -241,7 +241,7 @@ services:
 		class: PhpParser\BuilderFactory
 
 	-
-		class: PhpParser\Lexer
+		class: PhpParser\Lexer\Emulative
 
 	-
 		class: PhpParser\NodeTraverser

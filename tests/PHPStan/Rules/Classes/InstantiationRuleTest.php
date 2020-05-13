@@ -24,7 +24,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testInstantiation(): void
 	{
-		if (PHP_VERSION_ID >= 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
 			$this->markTestSkipped('Test does not run on PHP 7.4 because of referencing parent:: without parent class.');
 		}
 		$this->analyse(

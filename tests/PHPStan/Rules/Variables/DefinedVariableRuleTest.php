@@ -665,7 +665,7 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testArrowFunctions(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
@@ -688,7 +688,7 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testCoalesceAssign(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 

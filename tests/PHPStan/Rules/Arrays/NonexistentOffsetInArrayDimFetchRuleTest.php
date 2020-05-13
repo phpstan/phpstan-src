@@ -222,7 +222,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 
 	public function testCoalesceAssign(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->analyse([__DIR__ . '/data/nonexistent-offset-coalesce-assign.php'], []);

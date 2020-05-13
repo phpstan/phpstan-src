@@ -196,7 +196,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	 */
 	public function testUnpackOnAfter711(): void
 	{
-		if (PHP_VERSION_ID < 70101) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70101) {
 			$this->markTestSkipped('This test requires PHP >= 7.1.1');
 		}
 		$this->analyse([__DIR__ . '/data/unpack.php'], [
@@ -228,7 +228,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testImplodeOnPhp74(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
@@ -246,7 +246,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testImplodeOnLessThanPhp74(): void
 	{
-		if (PHP_VERSION_ID >= 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
 			$this->markTestSkipped('Test skipped on 7.4.');
 		}
 

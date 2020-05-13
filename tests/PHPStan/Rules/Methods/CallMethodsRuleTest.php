@@ -797,7 +797,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testArrowFunctionClosureBind(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->checkThisOnly = false;

@@ -33,7 +33,7 @@ class VariableCertaintyNullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCas
 
 	public function testVariableCertaintyInNullCoalesceAssign(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 

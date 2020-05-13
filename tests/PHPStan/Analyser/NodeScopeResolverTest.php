@@ -1662,7 +1662,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID >= 70200) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70200) {
 			$this->markTestSkipped(
 				'Test cannot be run on PHP 7.2 and higher - (unset) cast is deprecated.'
 			);
@@ -9454,7 +9454,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID < 70300) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70300) {
 			$this->markTestSkipped('Test requires PHP 7.3');
 		}
 		$this->assertTypes(
@@ -9818,7 +9818,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	public function dataArrowFunctionReturnTypeInference(): array
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			return [];
 		}
 
@@ -9897,7 +9897,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	public function dataBug3276(): array
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3276.php');
@@ -10097,7 +10097,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->assertTypes(
@@ -10131,7 +10131,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->assertTypes(
@@ -10169,7 +10169,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->assertTypes(
@@ -10231,7 +10231,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->assertTypes(
@@ -10285,7 +10285,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->assertTypes(
@@ -10315,7 +10315,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID >= 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
 			$this->markTestSkipped('Test does not run on PHP >= 7.4.');
 		}
 		$this->assertTypes(
@@ -10345,7 +10345,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->assertTypes(

@@ -155,6 +155,14 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	public function getClassName(string $className): string
 	{
+		if (!$this->hasClass($className)) {
+			throw new \PHPStan\Broker\ClassNotFoundException($className);
+		}
+
+		if (isset(self::$anonymousClasses[$className])) {
+			return self::$anonymousClasses[$className]->getDisplayName();
+		}
+
 		$reflectionClass = $this->classReflector->reflect($className);
 
 		return $reflectionClass->getName();

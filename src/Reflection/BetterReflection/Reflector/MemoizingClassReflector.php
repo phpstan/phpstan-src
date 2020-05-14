@@ -20,17 +20,18 @@ final class MemoizingClassReflector extends ClassReflector
 	 */
 	public function reflect(string $className): Reflection
 	{
-		if (isset($this->reflections[$className])) {
-			if ($this->reflections[$className] instanceof \Throwable) {
-				throw $this->reflections[$className];
+		$lowerClassName = strtolower($className);
+		if (isset($this->reflections[$lowerClassName])) {
+			if ($this->reflections[$lowerClassName] instanceof \Throwable) {
+				throw $this->reflections[$lowerClassName];
 			}
-			return $this->reflections[$className];
+			return $this->reflections[$lowerClassName];
 		}
 
 		try {
-			return $this->reflections[$className] = parent::reflect($className);
+			return $this->reflections[$lowerClassName] = parent::reflect($className);
 		} catch (\Throwable $e) {
-			$this->reflections[$className] = $e;
+			$this->reflections[$lowerClassName] = $e;
 			throw $e;
 		}
 	}

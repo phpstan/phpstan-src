@@ -20,17 +20,18 @@ final class MemoizingFunctionReflector extends FunctionReflector
 	 */
 	public function reflect(string $functionName): Reflection
 	{
-		if (isset($this->reflections[$functionName])) {
-			if ($this->reflections[$functionName] instanceof \Throwable) {
-				throw $this->reflections[$functionName];
+		$lowerFunctionName = strtolower($functionName);
+		if (isset($this->reflections[$lowerFunctionName])) {
+			if ($this->reflections[$lowerFunctionName] instanceof \Throwable) {
+				throw $this->reflections[$lowerFunctionName];
 			}
-			return $this->reflections[$functionName];
+			return $this->reflections[$lowerFunctionName];
 		}
 
 		try {
-			return $this->reflections[$functionName] = parent::reflect($functionName);
+			return $this->reflections[$lowerFunctionName] = parent::reflect($functionName);
 		} catch (\Throwable $e) {
-			$this->reflections[$functionName] = $e;
+			$this->reflections[$lowerFunctionName] = $e;
 			throw $e;
 		}
 	}

@@ -130,8 +130,10 @@ class BetterReflectionProvider implements ReflectionProvider
 			throw new \PHPStan\Broker\ClassNotFoundException($className);
 		}
 
-		if (array_key_exists($reflectionClass->getName(), $this->classReflections)) {
-			return $this->classReflections[$reflectionClass->getName()];
+		$reflectionClassName = strtolower($reflectionClass->getName());
+
+		if (array_key_exists($reflectionClassName, $this->classReflections)) {
+			return $this->classReflections[$reflectionClassName];
 		}
 
 		$classReflection = new ClassReflection(
@@ -146,7 +148,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->stubPhpDocProvider->findClassPhpDoc($className)
 		);
 
-		$this->classReflections[$reflectionClass->getName()] = $classReflection;
+		$this->classReflections[$reflectionClassName] = $classReflection;
 
 		return $classReflection;
 	}

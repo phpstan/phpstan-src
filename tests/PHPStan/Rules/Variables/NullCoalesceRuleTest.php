@@ -19,7 +19,6 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testCoalesceRule(): void
 	{
-		require_once __DIR__ . '/data/null-coalesce.php';
 		$this->analyse([__DIR__ . '/data/null-coalesce.php'], [
 			[
 				'Property CoalesceRule\FooCoalesce::$string (string) on left side of ?? is not nullable.',
@@ -102,7 +101,6 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
-		require_once __DIR__ . '/data/null-coalesce-assign.php';
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
 			[
 				'Property CoalesceAssignRule\FooCoalesce::$string (string) on left side of ??= is not nullable.',

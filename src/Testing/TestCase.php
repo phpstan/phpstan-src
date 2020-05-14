@@ -65,6 +65,7 @@ use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
@@ -90,6 +91,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
 			if (!@mkdir($tmpDir, 0777) && !is_dir($tmpDir)) {
 				self::fail(sprintf('Cannot create temp directory %s', $tmpDir));
+			}
+
+			if (self::$useStaticReflectionProvider) {
+				$additionalConfigFiles[] = __DIR__ . '/TestCase-staticReflection.neon';
 			}
 
 			$rootDir = __DIR__ . '/../..';
@@ -503,6 +508,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			self::fail('Could not create composer source locator');
 		}
 
+		// these need to be synced with TestCase-staticReflection.neon file and TestCaseSourceLocatorFactory
+
 		$locators = [
 			$composerSourceLocator,
 		];
@@ -516,7 +523,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		});
 		$locators[] = new AutoloadSourceLocator($astLocator);
 		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($phpParser));
-		$sourceLocator = new AggregateSourceLocator($locators);
+		$sourceLocator = new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 
 		$classReflector = new MemoizingClassReflector($sourceLocator);
 		$functionReflector = new MemoizingFunctionReflector($sourceLocator, $classReflector);

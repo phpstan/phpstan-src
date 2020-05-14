@@ -1,0 +1,56 @@
+parameters:
+	featureToggles:
+		# these are needed only with "partial static reflection"
+		disableRobotLoader: true
+		disableRuntimeReflectionProvider: false
+		enableScanningPaths: false
+
+services:
+	-
+		class: PHPStan\Testing\TestCaseSourceLocatorFactory
+		arguments:
+			phpParser: @phpParserDecorator
+
+	testCaseBetterReflectionProvider:
+		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
+		arguments:
+			classReflector: @testCaseClassReflector
+			functionReflector: @testCaseFunctionReflector
+			constantReflector: @testCaseConstantReflector
+		autowired: false
+
+	testCaseClassReflector:
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector
+		arguments:
+			sourceLocator: @testCaseSourceLocator
+		autowired: false
+
+	testCaseFunctionReflector:
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector
+		arguments:
+			classReflector: @testCaseClassReflector
+			sourceLocator: @testCaseSourceLocator
+		autowired: false
+
+	testCaseConstantReflector:
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector
+		arguments:
+			classReflector: @testCaseClassReflector
+			sourceLocator: @testCaseSourceLocator
+		autowired: false
+
+	testCaseSourceLocator:
+		class: Roave\BetterReflection\SourceLocator\Type\SourceLocator
+		factory: @PHPStan\Testing\TestCaseSourceLocatorFactory::create()
+		autowired: false
+
+	# total static reflection without RuntimeReflectionProvider involved
+	#reflectionProvider:
+	#	factory: @testCaseBetterReflectionProvider
+	#	autowired:
+	#		- PHPStan\Reflection\ReflectionProvider
+
+	# partial static reflection with RuntimeReflectionProvider involved
+	phpParserReflectionProvider:
+		factory: @testCaseBetterReflectionProvider
+		arguments!: []

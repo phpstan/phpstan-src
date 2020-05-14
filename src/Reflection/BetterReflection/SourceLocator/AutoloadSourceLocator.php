@@ -129,10 +129,14 @@ class AutoloadSourceLocator implements SourceLocator
 		stream_wrapper_unregister('phar');
 		stream_wrapper_register('file', self::class);
 		stream_wrapper_register('phar', self::class);
-		class_exists($className);
-		stream_wrapper_restore('file');
-		stream_wrapper_restore('phar');
-		set_error_handler($previousErrorHandler);
+
+		try {
+			class_exists($className);
+		} finally {
+			stream_wrapper_restore('file');
+			stream_wrapper_restore('phar');
+			set_error_handler($previousErrorHandler);
+		}
 
 		/** @var string|null $autoloadLocatedFile */
 		$autoloadLocatedFile = self::$autoloadLocatedFile;

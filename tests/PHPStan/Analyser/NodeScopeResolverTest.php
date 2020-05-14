@@ -8441,7 +8441,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$this->conflictingProperty',
 			],
 			[
-				'TraitPhpDocsTwo\AmbiguousPropertyType', // should be TraitPhpDocs\AmbiguousPropertyType but doesn't matter much
+				self::$useStaticReflectionProvider ? 'TraitPhpDocs\AmbiguousPropertyType' : 'TraitPhpDocsTwo\AmbiguousPropertyType',
 				'$this->bogusProperty',
 			],
 			[

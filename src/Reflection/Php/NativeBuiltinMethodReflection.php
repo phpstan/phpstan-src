@@ -19,6 +19,11 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->getName();
 	}
 
+	public function getReflection(): ?\ReflectionMethod
+	{
+		return $this->reflection;
+	}
+
 	/**
 	 * @return string|false
 	 */

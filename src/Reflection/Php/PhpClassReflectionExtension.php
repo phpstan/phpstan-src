@@ -39,6 +39,8 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
+use Roave\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use Roave\BetterReflection\Reflection\Adapter\ReflectionProperty;
 
 class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
@@ -562,6 +564,14 @@ class PhpClassReflectionExtension
 
 	private function findPropertyTrait(\ReflectionProperty $propertyReflection): ?string
 	{
+		if ($propertyReflection instanceof ReflectionProperty) {
+			$declaringClass = $propertyReflection->getBetterReflection()->getDeclaringClass();
+			if ($declaringClass->isTrait()) {
+				return $declaringClass->getName();
+			}
+
+			return null;
+		}
 		$declaringClass = $propertyReflection->getDeclaringClass();
 		$trait = $this->deepScanTraitsForProperty($declaringClass->getTraits(), $propertyReflection);
 		if ($trait !== null) {
@@ -604,6 +614,15 @@ class PhpClassReflectionExtension
 		BuiltinMethodReflection $methodReflection
 	): ?string
 	{
+		if ($methodReflection->getReflection() instanceof ReflectionMethod) {
+			$declaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
+			if ($declaringClass->isTrait()) {
+				return $declaringClass->getName();
+			}
+
+			return null;
+		}
+
 		$declaringClass = $methodReflection->getDeclaringClass();
 		if (
 			$methodReflection->getFileName() === $declaringClass->getFileName()

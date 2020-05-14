@@ -9,6 +9,8 @@ interface BuiltinMethodReflection
 
 	public function getName(): string;
 
+	public function getReflection(): ?\ReflectionMethod;
+
 	/**
 	 * @return string|false
 	 */

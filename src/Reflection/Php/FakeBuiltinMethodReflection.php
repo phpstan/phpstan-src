@@ -25,6 +25,11 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->methodName;
 	}
 
+	public function getReflection(): ?\ReflectionMethod
+	{
+		return null;
+	}
+
 	/**
 	 * @return string|false
 	 */

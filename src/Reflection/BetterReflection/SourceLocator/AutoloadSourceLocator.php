@@ -58,11 +58,10 @@ class AutoloadSourceLocator implements SourceLocator
 			return null;
 		}
 
-		$locateResult = $this->locateClassByName($identifier->getName());
-		if ($locateResult === null) {
+		$potentiallyLocatedFile = $this->locateClassByName($identifier->getName());
+		if ($potentiallyLocatedFile === null) {
 			return null;
 		}
-		[$potentiallyLocatedFile, $className] = $locateResult;
 
 		try {
 			$fileContents = FileReader::read($potentiallyLocatedFile);
@@ -76,7 +75,7 @@ class AutoloadSourceLocator implements SourceLocator
 		);
 
 		try {
-			return $this->astLocator->findReflection($reflector, $locatedSource, new Identifier($className, $identifier->getType()));
+			return $this->astLocator->findReflection($reflector, $locatedSource, $identifier);
 		} catch (IdentifierNotFound $exception) {
 			return null;
 		}
@@ -101,9 +100,9 @@ class AutoloadSourceLocator implements SourceLocator
 	 * error handler temporarily.
 	 *
 	 * @throws ReflectionException
-	 * @return array{string, string}|null
+	 * @return string|null
 	 */
-	private function locateClassByName(string $className): ?array
+	private function locateClassByName(string $className): ?string
 	{
 		if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
 			$reflection = new ReflectionClass($className);
@@ -117,7 +116,7 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			return [$filename, $reflection->getName()];
+			return $filename;
 		}
 
 		self::$autoloadLocatedFile = null;
@@ -144,7 +143,7 @@ class AutoloadSourceLocator implements SourceLocator
 			return null;
 		}
 
-		return [$autoloadLocatedFile, $className];
+		return $autoloadLocatedFile;
 	}
 
 	/**

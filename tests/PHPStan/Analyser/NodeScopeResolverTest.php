@@ -9405,11 +9405,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_key_last($mixedArray)',
 			],
 			[
-				'(int|string)',
+				'int|string',
 				'array_key_first($nonEmptyArray)',
 			],
 			[
-				'(int|string)',
+				'int|string',
 				'array_key_last($nonEmptyArray)',
 			],
 			[
@@ -9970,84 +9970,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/array-typehint-without-null-in-phpdoc.php');
 	}
 
-	public function dataOverrideVariableCertaintyInRootScope(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/override-root-scope-variable.php');
-	}
-
-	public function dataBitwiseNot(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bitwise-not.php');
-	}
-
-	public function dataGraphicsDrawReturnTypes(): array
-	{
-		if (!extension_loaded('gd')) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/graphics-draw-return-types.php');
-	}
-
-	public function dataNativeUnionTypes(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
-		require_once __DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php';
-
-		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/unionTypes.php');
-	}
-
-	public function dataNativeMixedType(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/mixedType.php');
-	}
-
-	public function dataNativeStaticReturnType(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/staticReturnType.php');
-	}
-
-	public function dataMinMaxReturnTypeWithArrays(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
-	}
-
-	public function dataClassPhpDocs(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
-	}
-
-	public function dataNonEmptyArrayKeyType(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array-key-type.php');
-	}
-
-	public function dataBug3133(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3133.php');
-	}
-
-	public function dataBug2550(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Comparison/data/bug-2550.php');
-	}
-
-	public function dataBug2899(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2899.php');
-	}
-
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10105,56 +10027,33 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataMixedTypehint
 	 * @dataProvider dataVariadics
 	 * @dataProvider dataArrayTypehintWithoutNullInPhpDoc
-	 * @dataProvider dataOverrideVariableCertaintyInRootScope
-	 * @dataProvider dataBitwiseNot
-	 * @dataProvider dataGraphicsDrawReturnTypes
-	 * @dataProvider dataNativeUnionTypes
-	 * @dataProvider dataMinMaxReturnTypeWithArrays
-	 * @dataProvider dataNativeStaticReturnType
-	 * @dataProvider dataClassPhpDocs
-	 * @dataProvider dataNonEmptyArrayKeyType
-	 * @dataProvider dataBug3133
-	 * @dataProvider dataBug2550
-	 * @dataProvider dataBug2899
-	 * @param string $assertType
-	 * @param string $file
-	 * @param mixed ...$args
+	 * @param ConstantStringType $expectedType
+	 * @param Type $actualType
 	 */
 	public function testFileAsserts(
-		string $assertType,
 		string $file,
-		...$args
+		ConstantStringType $expectedType,
+		Type $actualType,
+		int $line
 	): void
 	{
-		if ($assertType === 'type') {
-			$expectedType = $args[0];
-			$expected = $expectedType->getValue();
-			$actualType = $args[1];
-			$actual = $actualType->describe(VerbosityLevel::precise());
-			$this->assertSame(
-				$expected,
-				$actual,
-				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2])
-			);
-		} elseif ($assertType === 'variableCertainty') {
-			$expectedCertainty = $args[0];
-			$actualCertainty = $args[1];
-			$variableName = $args[2];
-			$this->assertTrue(
-				$expectedCertainty->equals($actualCertainty),
-				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
-			);
-		}
+		$expected = $expectedType->getValue();
+		$actual = $actualType->describe(VerbosityLevel::precise());
+		$this->assertSame(
+			$expected,
+			$actual,
+			sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $line)
+		);
 	}
 
 	/**
 	 * @param string $file
-	 * @return array<string, mixed[]>
+	 * @return array<string, array{string, Type, Type, int}>
 	 */
 	private function gatherAssertTypes(string $file): array
 	{
-		$asserts = [];
-		$this->processFile($file, function (Node $node, Scope $scope) use (&$asserts, $file): void {
+		$types = [];
+		$this->processFile($file, function (Node $node, Scope $scope) use (&$types, $file): void {
 			if (!$node instanceof Node\Expr\FuncCall) {
 				return;
 			}
@@ -10166,42 +10065,13 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 			$functionName = $nameNode->toString();
 			if ($functionName === 'PHPStan\\Analyser\\assertType') {
+				$assertTypeFunctionName = 'PHPStan\\Analyser\\assertType';
 				$expectedType = $scope->getType($node->args[0]->value);
 				$actualType = $scope->getType($node->args[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Analyser\\assertNativeType') {
+				$assertTypeFunctionName = 'PHPStan\\Analyser\\assertNativeType';
 				$expectedType = $scope->getNativeType($node->args[0]->value);
 				$actualType = $scope->getNativeType($node->args[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
-			} elseif ($functionName === 'PHPStan\\Analyser\\assertVariableCertainty') {
-				$certainty = $node->args[0]->value;
-				if (!$certainty instanceof StaticCall) {
-					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
-				}
-				if (!$certainty->class instanceof Node\Name) {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
-				}
-
-				if ($certainty->class->toString() !== 'PHPStan\\TrinaryLogic') {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
-				}
-
-				if (!$certainty->name instanceof Node\Identifier) {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
-				}
-
-				// @phpstan-ignore-next-line
-				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
-				$variable = $node->args[1]->value;
-				if (!$variable instanceof Node\Expr\Variable) {
-					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
-				}
-				if (!is_string($variable->name)) {
-					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
-				}
-
-				$actualCertaintyValue = $scope->hasVariableType($variable->name);
-				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name];
 			} else {
 				return;
 			}
@@ -10209,15 +10079,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			if (count($node->args) !== 2) {
 				$this->fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
-					$functionName,
+					$assertTypeFunctionName,
 					$node->getLine()
 				));
 			}
 
-			$asserts[$file . ':' . $node->getLine()] = $assert;
+			$types[$file . ':' . $node->getLine()] = [$file, $expectedType, $actualType, $node->getLine()];
 		});
 
-		return $asserts;
+		return $types;
 	}
 
 	public function dataInferPrivatePropertyTypeFromConstructor(): array
@@ -10688,7 +10558,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @param string $file
-	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
+	 * @param \Closure(\PhpParser\Node $node, Scope $scope): void $callback
 	 * @param DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
 	 * @param DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
 	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
@@ -10697,7 +10567,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 */
 	private function processFile(
 		string $file,
-		callable $callback,
+		\Closure $callback,
 		array $dynamicMethodReturnTypeExtensions = [],
 		array $dynamicStaticMethodReturnTypeExtensions = [],
 		array $methodTypeSpecifyingExtensions = [],

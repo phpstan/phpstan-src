@@ -1785,15 +1785,18 @@ class NodeScopeResolver
 			} elseif ($expr->class instanceof Class_) {
 				$this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
 				$this->processStmtNode($expr->class, $scope, $nodeCallback);
-			} elseif ($this->reflectionProvider->hasClass($expr->class->toString())) {
-				$classReflection = $this->reflectionProvider->getClass($expr->class->toString());
-				if ($classReflection->hasConstructor()) {
-					$constructorReflection = $classReflection->getConstructor();
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->args,
-						$constructorReflection->getVariants()
-					);
+			} else {
+				$className = $scope->resolveName($expr->class);
+				if ($this->reflectionProvider->hasClass($className)) {
+					$classReflection = $this->reflectionProvider->getClass($className);
+					if ($classReflection->hasConstructor()) {
+						$constructorReflection = $classReflection->getConstructor();
+						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+							$scope,
+							$expr->args,
+							$constructorReflection->getVariants()
+						);
+					}
 				}
 			}
 			$result = $this->processArgs($constructorReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);

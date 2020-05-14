@@ -287,6 +287,54 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
 		$parser = $this->getParser();
 		$cache = new Cache(new MemoryCacheStorage());
+		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
+		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
+		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
+		$fileHelper = new FileHelper($currentWorkingDirectory);
+		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
+		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
+		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
+		$fileTypeMapper = new FileTypeMapper($setterReflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
+		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
+		$functionReflectionFactory = $this->getFunctionReflectionFactory(
+			$functionCallStatementFinder,
+			$cache
+		);
+		$reflectionProvider = new RuntimeReflectionProvider(
+			$classReflectionExtensionRegistryProvider,
+			$functionReflectionFactory,
+			$fileTypeMapper,
+			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
+			self::getContainer()->getByType(Standard::class),
+			$anonymousClassNameHelper,
+			self::getContainer()->getByType(Parser::class),
+			$fileHelper,
+			$relativePathHelper,
+			self::getContainer()->getByType(StubPhpDocProvider::class)
+		);
+		$this->setUpReflectionProvider(
+			$reflectionProvider,
+			$setterReflectionProviderProvider,
+			$classReflectionExtensionRegistryProvider,
+			$functionCallStatementFinder,
+			$parser,
+			$cache,
+			$fileTypeMapper
+		);
+
+		return $reflectionProvider;
+	}
+
+	private function setUpReflectionProvider(
+		ReflectionProvider $reflectionProvider,
+		ReflectionProvider\SetterReflectionProviderProvider $setterReflectionProviderProvider,
+		DirectClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
+		FunctionCallStatementFinder $functionCallStatementFinder,
+		\PHPStan\Parser\Parser $parser,
+		Cache $cache,
+		FileTypeMapper $fileTypeMapper
+	): void
+	{
 		$methodReflectionFactory = new class($parser, $functionCallStatementFinder, $cache) implements PhpMethodReflectionFactory {
 
 			private \PHPStan\Parser\Parser $parser;
@@ -359,35 +407,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			}
 
 		};
-		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
-		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
-		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
-		$setterReflectionProvider = new ReflectionProvider\SetterReflectionProviderProvider();
-		$fileTypeMapper = new FileTypeMapper($setterReflectionProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension($fileTypeMapper);
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);
 		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
-		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
-		$functionReflectionFactory = $this->getFunctionReflectionFactory(
-			$functionCallStatementFinder,
-			$cache
-		);
-		$reflectionProvider = new RuntimeReflectionProvider(
-			$classReflectionExtensionRegistryProvider,
-			$functionReflectionFactory,
-			$fileTypeMapper,
-			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
-			self::getContainer()->getByType(Standard::class),
-			$anonymousClassNameHelper,
-			self::getContainer()->getByType(Parser::class),
-			$fileHelper,
-			$relativePathHelper,
-			self::getContainer()->getByType(StubPhpDocProvider::class)
-		);
 		$methodReflectionFactory->reflectionProvider = $reflectionProvider;
 		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $phpDocInheritanceResolver, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $reflectionProvider, true, []);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($phpExtension);
@@ -397,9 +420,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
 
-		$setterReflectionProvider->setReflectionProvider($reflectionProvider);
-
-		return $reflectionProvider;
+		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 	}
 
 	private function createStaticReflectionProvider(): ReflectionProvider
@@ -422,8 +443,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 		[$classReflector, $functionReflector, $constantReflector] = self::getReflectors();
 
+		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
+
 		$reflectionProvider = new BetterReflectionProvider(
-			$this->getClassReflectionExtensionRegistryProvider(),
+			$classReflectionExtensionRegistryProvider,
 			$classReflector,
 			$fileTypeMapper,
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
@@ -438,7 +461,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			$constantReflector
 		);
 
-		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
+		$this->setUpReflectionProvider(
+			$reflectionProvider,
+			$setterReflectionProviderProvider,
+			$classReflectionExtensionRegistryProvider,
+			$functionCallStatementFinder,
+			$parser,
+			$cache,
+			$fileTypeMapper
+		);
 
 		return $reflectionProvider;
 	}

@@ -17,7 +17,7 @@ class Bar extends Foo
 
 	use FooTrait;
 
-	public function doFoo()
+	public function doBar()
 	{
 		'inChildClass';
 	}
@@ -31,7 +31,7 @@ function (string $s) {
 trait FooTrait
 {
 
-	public function doFoo()
+	public function doBaz()
 	{
 		'inTrait';
 	}

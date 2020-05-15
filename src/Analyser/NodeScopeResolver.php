@@ -68,6 +68,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -313,6 +314,24 @@ class NodeScopeResolver
 			|| $stmt instanceof Return_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, $stmt->expr);
+		}
+
+		if ($stmt instanceof Node\Stmt\ClassMethod) {
+			if (!$scope->isInClass()) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			if (
+				$scope->isInTrait()
+				&& $scope->getClassReflection()->hasNativeMethod($stmt->name->toString())
+			) {
+				$methodReflection = $scope->getClassReflection()->getNativeMethod($stmt->name->toString());
+				if ($methodReflection instanceof PhpMethodReflection) {
+					$declaringTrait = $methodReflection->getDeclaringTrait();
+					if ($declaringTrait === null || $declaringTrait->getName() !== $scope->getTraitReflection()->getName()) {
+						return new StatementResult($scope, false, false, []);
+					}
+				}
+			}
 		}
 
 		$nodeCallback($stmt, $scope);

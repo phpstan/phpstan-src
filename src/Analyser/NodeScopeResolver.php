@@ -327,7 +327,7 @@ class NodeScopeResolver
 				$methodReflection = $scope->getClassReflection()->getNativeMethod($stmt->name->toString());
 				if ($methodReflection instanceof PhpMethodReflection) {
 					$declaringTrait = $methodReflection->getDeclaringTrait();
-					if ($declaringTrait === null || $declaringTrait->getName() !== $scope->getTraitReflection()->getName()) {
+					if ($declaringTrait === null) {
 						return new StatementResult($scope, false, false, []);
 					}
 				}

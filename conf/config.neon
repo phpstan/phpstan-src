@@ -69,6 +69,7 @@ parameters:
 		- ../stubs/WeakReference.stub
 		- ../stubs/ext-ds.stub
 		- ../stubs/PDOStatement.stub
+		- ../stubs/spl.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

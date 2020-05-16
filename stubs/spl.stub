@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @template TValue
+ * @implements \Iterator<int, TValue>
+ * @implements \ArrayAccess<int, TValue>
+ */
+class SplDoublyLinkedList implements \Iterator, \ArrayAccess {
+	/**
+	 * @param int $index
+	 * @param TValue $newval
+	 * @return void
+	 */
+	public function add($index, $newval) {}
+
+	/**
+	 * @return TValue
+	 */
+	public function pop () {}
+
+	/**
+	 * @return TValue
+	 */
+	public function shift () {}
+
+	/**
+	 * @param TValue $value
+	 * @return void
+	 */
+	public function push ($value) {}
+
+	/**
+	 * @param TValue $value
+	 * @return void
+	 */
+	public function unshift ($value) {}
+
+	/**
+	 * @return TValue
+	 */
+	public function top () {}
+
+	/**
+	 * @return TValue
+	 */
+	public function bottom () {}
+}
+
+/**
+ * @template TValue
+ * @extends \SplDoublyLinkedList<TValue>
+ */
+class SplQueue extends \SplDoublyLinkedList {
+	/**
+	 * @param TValue $value
+	 * @return void
+	 */
+	public function enqueue ($value) {}
+
+	/**
+	 * @return TValue
+	 */
+	public function dequeue () {}
+}
+
+/**
+ * @template TPriority
+ * @template TValue
+ *
+ * @implements \Iterator<int, TValue>
+ */
+class SplPriorityQueue implements \Iterator {
+	/**
+	 * @param TPriority $priority1
+	 * @param TPriority $priority2
+	 * @return int
+	 */
+	public function compare ($priority1, $priority2) {}
+
+	/**
+	 * @param TValue $value
+	 * @param TPriority $priority
+	 * @return true
+	 */
+	public function insert ($value, $priority) {}
+
+	/**
+	 * @return TPriority|TValue|array{priority: TPriority, data: TValue}
+	 */
+	public function top () {}
+
+	/**
+	 * @return TPriority|TValue|array{priority: TPriority, data: TValue}
+	 */
+	public function extract () {}
+
+	/**
+	 * @return TPriority|TValue|array{priority: TPriority, data: TValue}
+	 */
+	public function current () {}
+}

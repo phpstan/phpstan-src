@@ -73,6 +73,7 @@ parameters:
 		- ../stubs/date.stub
 		- ../stubs/zip.stub
 		- ../stubs/dom.stub
+		- ../stubs/spl.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

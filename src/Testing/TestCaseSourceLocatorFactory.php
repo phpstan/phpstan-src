@@ -8,8 +8,10 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use Roave\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
@@ -23,19 +25,23 @@ class TestCaseSourceLocatorFactory
 
 	private \PhpParser\Parser $phpParser;
 
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
+	private SourceStubber $sourceStubber;
+
+	private ReflectionSourceStubber $reflectionSourceStubber;
 
 	public function __construct(
 		Container $container,
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		\PhpParser\Parser $phpParser,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber
+		SourceStubber $sourceStubber,
+		ReflectionSourceStubber $reflectionSourceStubber
 	)
 	{
 		$this->container = $container;
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->phpParser = $phpParser;
-		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
+		$this->sourceStubber = $sourceStubber;
+		$this->reflectionSourceStubber = $reflectionSourceStubber;
 	}
 
 	public function create(): SourceLocator
@@ -62,8 +68,9 @@ class TestCaseSourceLocatorFactory
 			return $this->container->getService('testCaseFunctionReflector');
 		});
 
+		$locators[] = new PhpInternalSourceLocator($astLocator, $this->sourceStubber);
+		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
 		$locators[] = new AutoloadSourceLocator($astLocator);
-		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

@@ -63,8 +63,11 @@ use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
+use Roave\BetterReflection\SourceLocator\SourceStubber\AggregateSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use Roave\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 
@@ -522,8 +525,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$astLocator = new Locator($phpParser, static function () use (&$functionReflector): FunctionReflector {
 			return $functionReflector;
 		});
+		$reflectionSourceStubber = new ReflectionSourceStubber();
+		$sourceStubber = new AggregateSourceStubber(
+			new PhpStormStubsSourceStubber($phpParser),
+			$reflectionSourceStubber
+		);
+		$locators[] = new PhpInternalSourceLocator($astLocator, $sourceStubber);
+		$locators[] = new EvaledCodeSourceLocator($astLocator, $reflectionSourceStubber);
 		$locators[] = new AutoloadSourceLocator($astLocator);
-		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($phpParser));
 		$sourceLocator = new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 
 		$classReflector = new MemoizingClassReflector($sourceLocator);

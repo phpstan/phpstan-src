@@ -1138,14 +1138,6 @@ services:
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 
-	-
-		class: Roave\BetterReflection\SourceLocator\SourceStubber\AggregateSourceStubber
-		arguments:
-			- @Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
-			- @Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
-		autowired:
-			- Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber
-
 	# Error formatters
 
 	errorFormatter.raw:

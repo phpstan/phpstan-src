@@ -9,6 +9,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLo
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
+use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
@@ -23,8 +24,8 @@ class BetterReflectionSourceLocatorFactory
 	/** @var \PhpParser\Parser */
 	private $parser;
 
-	/** @var SourceStubber */
-	private $sourceStubber;
+	/** @var PhpStormStubsSourceStubber */
+	private $phpstormStubsSourceStubber;
 
 	/** @var ReflectionSourceStubber */
 	private $reflectionSourceStubber;
@@ -69,7 +70,7 @@ class BetterReflectionSourceLocatorFactory
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
-		SourceStubber $sourceStubber,
+		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
@@ -84,7 +85,7 @@ class BetterReflectionSourceLocatorFactory
 	)
 	{
 		$this->parser = $parser;
-		$this->sourceStubber = $sourceStubber;
+		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 		$this->reflectionSourceStubber = $reflectionSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
@@ -141,9 +142,10 @@ class BetterReflectionSourceLocatorFactory
 		$astLocator = new Locator($this->parser, function (): FunctionReflector {
 			return $this->container->getService('betterReflectionFunctionReflector');
 		});
-		$locators[] = new PhpInternalSourceLocator($astLocator, $this->sourceStubber);
-		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
+		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber);
 		$locators[] = new AutoloadSourceLocator($astLocator);
+		$locators[] = new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber);
+		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

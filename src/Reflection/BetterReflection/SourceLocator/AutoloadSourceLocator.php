@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 use PHPStan\File\FileReader;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionFunction;
 use Roave\BetterReflection\Identifier\Identifier;
 use Roave\BetterReflection\Identifier\IdentifierType;
 use Roave\BetterReflection\Reflection\Reflection;
@@ -54,6 +55,22 @@ class AutoloadSourceLocator implements SourceLocator
 	 */
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
+		if ($identifier->isFunction()) {
+			$functionName = $identifier->getName();
+			if (!function_exists($functionName)) {
+				return null;
+			}
+
+			$reflection = new ReflectionFunction($functionName);
+			$reflectionFileName = $reflection->getFileName();
+
+			if (!is_string($reflectionFileName)) {
+				return null;
+			}
+
+			return $this->findReflection($reflector, $reflectionFileName, $identifier);
+		}
+
 		if (!$identifier->isClass()) {
 			return null;
 		}
@@ -64,19 +81,24 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 		[$potentiallyLocatedFile, $className] = $locateResult;
 
+		return $this->findReflection($reflector, $potentiallyLocatedFile, new Identifier($className, $identifier->getType()));
+	}
+
+	private function findReflection(Reflector $reflector, string $file, Identifier $identifier): ?Reflection
+	{
 		try {
-			$fileContents = FileReader::read($potentiallyLocatedFile);
+			$fileContents = FileReader::read($file);
 		} catch (\PHPStan\File\CouldNotReadFileException $e) {
 			return null;
 		}
 
 		$locatedSource = new LocatedSource(
 			$fileContents,
-			$potentiallyLocatedFile
+			$file
 		);
 
 		try {
-			return $this->astLocator->findReflection($reflector, $locatedSource, new Identifier($className, $identifier->getType()));
+			return $this->astLocator->findReflection($reflector, $locatedSource, $identifier);
 		} catch (IdentifierNotFound $exception) {
 			return null;
 		}

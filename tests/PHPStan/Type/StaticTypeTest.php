@@ -59,52 +59,52 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 	public function dataIsSuperTypeOf(): array
 	{
 		return [
-			[
+			0 => [
 				new StaticType('UnknownClassA'),
 				new ObjectType('UnknownClassB'),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			1 => [
 				new StaticType(\ArrayAccess::class),
 				new ObjectType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			2 => [
 				new StaticType(\Countable::class),
 				new ObjectType(\Countable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			3 => [
 				new StaticType(\DateTimeImmutable::class),
 				new ObjectType(\DateTimeImmutable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			4 => [
 				new StaticType(\Traversable::class),
 				new ObjectType(\ArrayObject::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			5 => [
 				new StaticType(\Traversable::class),
 				new ObjectType(\Iterator::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			6 => [
 				new StaticType(\ArrayObject::class),
 				new ObjectType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			7 => [
 				new StaticType(\Iterator::class),
 				new ObjectType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			8 => [
 				new StaticType(\ArrayObject::class),
 				new ObjectType(\DateTimeImmutable::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			9 => [
 				new StaticType(\DateTimeImmutable::class),
 				new UnionType([
 					new ObjectType(\DateTimeImmutable::class),
@@ -112,7 +112,7 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			10 => [
 				new StaticType(\DateTimeImmutable::class),
 				new UnionType([
 					new ObjectType(\ArrayObject::class),
@@ -120,57 +120,57 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createNo(),
 			],
-			[
+			11 => [
 				new StaticType(\LogicException::class),
 				new ObjectType(\InvalidArgumentException::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			12 => [
 				new StaticType(\InvalidArgumentException::class),
 				new ObjectType(\LogicException::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			13 => [
 				new StaticType(\ArrayAccess::class),
 				new StaticType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			14 => [
 				new StaticType(\Countable::class),
 				new StaticType(\Countable::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			15 => [
 				new StaticType(\DateTimeImmutable::class),
 				new StaticType(\DateTimeImmutable::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			16 => [
 				new StaticType(\Traversable::class),
 				new StaticType(\ArrayObject::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			17 => [
 				new StaticType(\Traversable::class),
 				new StaticType(\Iterator::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			18 => [
 				new StaticType(\ArrayObject::class),
 				new StaticType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			19 => [
 				new StaticType(\Iterator::class),
 				new StaticType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			20 => [
 				new StaticType(\ArrayObject::class),
 				new StaticType(\DateTimeImmutable::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			21 => [
 				new StaticType(\DateTimeImmutable::class),
 				new UnionType([
 					new StaticType(\DateTimeImmutable::class),
@@ -178,7 +178,7 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createYes(),
 			],
-			[
+			22 => [
 				new StaticType(\DateTimeImmutable::class),
 				new UnionType([
 					new StaticType(\DateTimeImmutable::class),
@@ -186,7 +186,7 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			23 => [
 				new StaticType(\DateTimeImmutable::class),
 				new UnionType([
 					new StaticType(\ArrayObject::class),
@@ -194,32 +194,32 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createNo(),
 			],
-			[
+			24 => [
 				new StaticType(\LogicException::class),
 				new StaticType(\InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			25 => [
 				new StaticType(\InvalidArgumentException::class),
 				new StaticType(\LogicException::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			26 => [
 				new StaticType(\stdClass::class),
 				new ObjectWithoutClassType(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			27 => [
 				new ObjectWithoutClassType(),
 				new StaticType(\stdClass::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			28 => [
 				new ThisType(\stdClass::class),
 				new ObjectWithoutClassType(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			29 => [
 				new ObjectWithoutClassType(),
 				new ThisType(\stdClass::class),
 				TrinaryLogic::createYes(),

@@ -66,52 +66,52 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 	public function dataIsSuperTypeOf(): array
 	{
 		return [
-			[
+			0 => [
 				new ObjectType('UnknownClassA'),
 				new ObjectType('UnknownClassB'),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			1 => [
 				new ObjectType(\ArrayAccess::class),
 				new ObjectType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			2 => [
 				new ObjectType(\Countable::class),
 				new ObjectType(\Countable::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			3 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new ObjectType(\DateTimeImmutable::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			4 => [
 				new ObjectType(\Traversable::class),
 				new ObjectType(\ArrayObject::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			5 => [
 				new ObjectType(\Traversable::class),
 				new ObjectType(\Iterator::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			6 => [
 				new ObjectType(\ArrayObject::class),
 				new ObjectType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			7 => [
 				new ObjectType(\Iterator::class),
 				new ObjectType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			8 => [
 				new ObjectType(\ArrayObject::class),
 				new ObjectType(\DateTimeImmutable::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			9 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new UnionType([
 					new ObjectType(\DateTimeImmutable::class),
@@ -119,7 +119,7 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			10 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new UnionType([
 					new ObjectType(\ArrayObject::class),
@@ -127,57 +127,57 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createNo(),
 			],
-			[
+			11 => [
 				new ObjectType(\LogicException::class),
 				new ObjectType(\InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			12 => [
 				new ObjectType(\InvalidArgumentException::class),
 				new ObjectType(\LogicException::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			13 => [
 				new ObjectType(\ArrayAccess::class),
 				new StaticType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			14 => [
 				new ObjectType(\Countable::class),
 				new StaticType(\Countable::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			15 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new StaticType(\DateTimeImmutable::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			16 => [
 				new ObjectType(\Traversable::class),
 				new StaticType(\ArrayObject::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			17 => [
 				new ObjectType(\Traversable::class),
 				new StaticType(\Iterator::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			18 => [
 				new ObjectType(\ArrayObject::class),
 				new StaticType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			19 => [
 				new ObjectType(\Iterator::class),
 				new StaticType(\Traversable::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			20 => [
 				new ObjectType(\ArrayObject::class),
 				new StaticType(\DateTimeImmutable::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			21 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new UnionType([
 					new StaticType(\DateTimeImmutable::class),
@@ -185,7 +185,7 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			22 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new UnionType([
 					new StaticType(\ArrayObject::class),
@@ -193,42 +193,42 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createNo(),
 			],
-			[
+			23 => [
 				new ObjectType(\LogicException::class),
 				new StaticType(\InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			24 => [
 				new ObjectType(\InvalidArgumentException::class),
 				new StaticType(\LogicException::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			25 => [
 				new ObjectType(\stdClass::class),
 				new ClosureType([], new MixedType(), false),
 				TrinaryLogic::createNo(),
 			],
-			[
+			26 => [
 				new ObjectType(\Closure::class),
 				new ClosureType([], new MixedType(), false),
 				TrinaryLogic::createYes(),
 			],
-			[
+			27 => [
 				new ObjectType(\Countable::class),
 				new IterableType(new MixedType(), new MixedType()),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			28 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new HasMethodType('format'),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			29 => [
 				new ObjectType(\Closure::class),
 				new HasMethodType('format'),
 				TrinaryLogic::createNo(),
 			],
-			[
+			30 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new UnionType([
 					new HasMethodType('format'),
@@ -236,17 +236,17 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			31 => [
 				new ObjectType(\DateInterval::class),
 				new HasPropertyType('d'),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			32 => [
 				new ObjectType(\Closure::class),
 				new HasPropertyType('d'),
 				TrinaryLogic::createNo(),
 			],
-			[
+			33 => [
 				new ObjectType(\DateInterval::class),
 				new UnionType([
 					new HasPropertyType('d'),
@@ -254,67 +254,67 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			34 => [
 				new ObjectType('Exception'),
 				new ObjectWithoutClassType(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			35 => [
 				new ObjectType('Exception'),
 				new ObjectWithoutClassType(new ObjectType('Exception')),
 				TrinaryLogic::createNo(),
 			],
-			[
+			36 => [
 				new ObjectType('Exception'),
 				new ObjectWithoutClassType(new ObjectType(\InvalidArgumentException::class)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			37 => [
 				new ObjectType(\InvalidArgumentException::class),
 				new ObjectWithoutClassType(new ObjectType('Exception')),
 				TrinaryLogic::createNo(),
 			],
-			[
+			38 => [
 				new ObjectType(\Throwable::class, new ObjectType(\InvalidArgumentException::class)),
 				new ObjectType(\InvalidArgumentException::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			39 => [
 				new ObjectType(\Throwable::class, new ObjectType(\InvalidArgumentException::class)),
 				new ObjectType('Exception'),
 				TrinaryLogic::createYes(),
 			],
-			[
+			40 => [
 				new ObjectType(\Throwable::class, new ObjectType('Exception')),
 				new ObjectType(\InvalidArgumentException::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			41 => [
 				new ObjectType(\Throwable::class, new ObjectType('Exception')),
 				new ObjectType('Exception'),
 				TrinaryLogic::createNo(),
 			],
-			[
+			42 => [
 				new ObjectType(\Throwable::class, new ObjectType('Exception')),
 				new ObjectType(\Throwable::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			43 => [
 				new ObjectType(\Throwable::class),
 				new ObjectType(\Throwable::class, new ObjectType('Exception')),
 				TrinaryLogic::createYes(),
 			],
-			[
+			44 => [
 				new ObjectType(\Throwable::class),
 				new ObjectType(\Throwable::class, new ObjectType('Exception')),
 				TrinaryLogic::createYes(),
 			],
-			[
+			45 => [
 				new ObjectType('Exception'),
 				new ObjectType(\Throwable::class, new ObjectType('Exception')),
 				TrinaryLogic::createNo(),
 			],
-			[
+			46 => [
 				new ObjectType(\DateTimeInterface::class),
 				TemplateTypeFactory::create(
 					TemplateTypeScope::createWithClass(\DateTimeInterface::class),
@@ -324,7 +324,7 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				),
 				TrinaryLogic::createYes(),
 			],
-			[
+			47 => [
 				new ObjectType(\DateTimeInterface::class),
 				TemplateTypeFactory::create(
 					TemplateTypeScope::createWithClass(\DateTime::class),
@@ -334,7 +334,7 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 				),
 				TrinaryLogic::createYes(),
 			],
-			[
+			48 => [
 				new ObjectType(\DateTime::class),
 				TemplateTypeFactory::create(
 					TemplateTypeScope::createWithClass(\DateTimeInterface::class),

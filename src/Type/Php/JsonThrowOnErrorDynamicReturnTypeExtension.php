@@ -6,9 +6,11 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Type;
@@ -23,11 +25,18 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 		'json_decode' => 3,
 	];
 
+	private ReflectionProvider $reflectionProvider;
+
+	public function __construct(ReflectionProvider $reflectionProvider)
+	{
+		$this->reflectionProvider = $reflectionProvider;
+	}
+
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection
 	): bool
 	{
-		return defined('JSON_THROW_ON_ERROR') && in_array(
+		return $this->reflectionProvider->hasConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
 			$functionReflection->getName(),
 			[
 				'json_encode',
@@ -61,7 +70,13 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 		}
 
 		$value = $valueType->getValue();
-		if (($value & JSON_THROW_ON_ERROR) !== JSON_THROW_ON_ERROR) {
+		$throwOnErrorType = $this->reflectionProvider->getConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null)->getValueType();
+		if (!$throwOnErrorType instanceof ConstantIntegerType) {
+			return $defaultReturnType;
+		}
+
+		$throwOnErrorValue = $throwOnErrorType->getValue();
+		if (($value & $throwOnErrorValue) !== $throwOnErrorValue) {
 			return $defaultReturnType;
 		}
 

@@ -10299,7 +10299,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'array<int, string>',
+				self::$useStaticReflectionProvider ? 'array<int, string>' : 'mixed',
 				'password_algos()',
 			],
 		];

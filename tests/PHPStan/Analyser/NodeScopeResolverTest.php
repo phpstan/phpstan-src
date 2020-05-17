@@ -9015,6 +9015,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
+		require_once __DIR__ . '/data/dynamic-constant.php';
 		$this->assertTypes(
 			__DIR__ . '/data/dynamic-constant.php',
 			$description,

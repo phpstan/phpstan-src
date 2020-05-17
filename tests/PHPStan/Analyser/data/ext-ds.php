@@ -100,9 +100,10 @@ class Foo
 }
 
 /**
+ * @implements \Iterator<int, int>
  * @implements \Ds\Collection<int, int>
  */
-abstract class Bar implements \Ds\Collection, \Iterator
+abstract class Bar implements \Iterator, \Ds\Collection
 {
 
 	public function doFoo()

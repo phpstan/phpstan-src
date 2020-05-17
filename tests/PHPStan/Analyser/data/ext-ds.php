@@ -102,7 +102,7 @@ class Foo
 /**
  * @implements \Ds\Collection<int, int>
  */
-abstract class Bar implements \Iterator, \Ds\Collection
+abstract class Bar implements \Ds\Collection, \Iterator
 {
 
 	public function doFoo()

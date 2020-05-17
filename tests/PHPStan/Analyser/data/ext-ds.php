@@ -98,3 +98,16 @@ class Foo
 		assertType('Ds\Set<ExtDs\A|ExtDs\B>', $a->xor($b));
 	}
 }
+
+/**
+ * @extends Map<int, int>
+ */
+class Bar extends Map
+{
+
+	public function doFoo()
+	{
+		assertType('int', $this->get(1));
+	}
+
+}

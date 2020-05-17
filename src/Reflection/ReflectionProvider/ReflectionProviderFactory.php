@@ -7,13 +7,11 @@ use PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector;
-use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
-use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 
@@ -77,13 +75,10 @@ class ReflectionProviderFactory
 		$astLocator = new Locator($this->parser, static function () use (&$functionReflector): FunctionReflector {
 			return $functionReflector;
 		});
-		$sourceLocator = new MemoizingSourceLocator(new AggregateSourceLocator([
-			new AutoloadSourceLocator($astLocator),
-			new PhpInternalSourceLocator(
-				$astLocator,
-				$this->phpStormStubsSourceStubber
-			),
-		]));
+		$sourceLocator = new MemoizingSourceLocator(new PhpInternalSourceLocator(
+			$astLocator,
+			$this->phpStormStubsSourceStubber
+		));
 		$classReflector = new MemoizingClassReflector($sourceLocator);
 		$functionReflector = new MemoizingFunctionReflector($sourceLocator, $classReflector);
 		$constantReflector = new MemoizingConstantReflector($sourceLocator, $classReflector);

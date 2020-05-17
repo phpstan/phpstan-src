@@ -95,14 +95,8 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			return $type->isSubTypeOf($this);
 		}
 
-		$isSuperTypeOf = $this->getBound()->isSuperTypeOf($type);
-		if ($isSuperTypeOf->yes()) {
-			return TrinaryLogic::createMaybe();
-		}
-		if ($isSuperTypeOf->maybe()) {
-			return TrinaryLogic::createNo();
-		}
-		return $isSuperTypeOf;
+		return $this->getBound()->isSuperTypeOf($type)
+			->and(TrinaryLogic::createMaybe());
 	}
 
 	public function isSubTypeOf(Type $type): TrinaryLogic
@@ -116,15 +110,24 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		}
 
 		if (!$type instanceof TemplateType) {
-			return $type->isSuperTypeOf($this->getBound());
+			if ($this->getBound()->equals($type)) {
+				return TrinaryLogic::createYes();
+			}
+
+			return $type->isSuperTypeOf($this->getBound())
+				->and(TrinaryLogic::createMaybe());
 		}
 
 		if ($this->equals($type)) {
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->getBound()->isSuperTypeOf($this->getBound())
-			->and(TrinaryLogic::createMaybe());
+		if ($type->getBound()->isSuperTypeOf($this->getBound())->no() &&
+			$this->getBound()->isSuperTypeOf($type->getBound())->no()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic

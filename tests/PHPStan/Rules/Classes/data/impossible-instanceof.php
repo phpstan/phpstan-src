@@ -392,3 +392,15 @@ class CheckInstanceofInIterableForeach
 	}
 
 }
+
+class CheckInstanceofWithTemplates
+{
+	/**
+	 * @template T of \Exception
+	 * @param T $e
+	 */
+	public function test(\Throwable $t, $e): void {
+		if ($t instanceof $e) return;
+		if ($e instanceof $t) return;
+	}
+}

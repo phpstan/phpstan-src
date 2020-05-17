@@ -77,25 +77,30 @@ class GenericClassStringType extends ClassStringType
 
 		if ($type instanceof ConstantStringType) {
 			$genericType = $this->type;
-			if ($genericType instanceof TemplateType) {
-				$isSuperTypeOf = $genericType->isSuperTypeOf(new ObjectType($type->getValue()));
-				if ($isSuperTypeOf->maybe()) {
-					return TrinaryLogic::createYes();
-				}
-				return $isSuperTypeOf;
-			}
 			if ($genericType instanceof MixedType) {
 				return TrinaryLogic::createYes();
 			}
+
 			if ($genericType instanceof StaticType) {
 				$genericType = $genericType->getStaticObjectType();
 			}
 
-			$isSuperType = $genericType->isSuperTypeOf(new ObjectType($type->getValue()));
+			// We are transforming constant class-string to ObjectType. But we need to filter out
+			// an uncertainty originating in possible ObjectType's class subtypes.
+			$objectType = new ObjectType($type->getValue());
+
+			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
+			// uncertainty into account.
+			if ($genericType instanceof TemplateType) {
+				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
+			} else {
+				$isSuperType = $genericType->isSuperTypeOf($objectType);
+			}
+
+			// Explicitly handle the uncertainty for Maybe.
 			if ($isSuperType->maybe()) {
 				return TrinaryLogic::createNo();
 			}
-
 			return $isSuperType;
 		} elseif ($type instanceof self) {
 			return $this->type->isSuperTypeOf($type->type);

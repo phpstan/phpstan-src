@@ -90,14 +90,8 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			return $type->isSubTypeOf($this);
 		}
 
-		$isSuperTypeOf = $this->getBound()->isSuperTypeOf($type);
-		if ($isSuperTypeOf->yes()) {
-			return TrinaryLogic::createMaybe();
-		}
-		if ($isSuperTypeOf->maybe()) {
-			return TrinaryLogic::createNo();
-		}
-		return $isSuperTypeOf;
+		return $this->getBound()->isSuperTypeOf($type)
+			->and(TrinaryLogic::createMaybe());
 	}
 
 	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic

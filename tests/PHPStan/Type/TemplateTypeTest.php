@@ -134,8 +134,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 			4 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new ObjectType('DateTimeInterface'),
-				TrinaryLogic::createNo(), // (T of DateTime) isSuperTypeTo DateTimeInterface
-				TrinaryLogic::createYes(), // DateTimeInterface isSuperTypeTo (T of DateTime)
+				TrinaryLogic::createMaybe(), // (T of DateTime) isSuperTypeTo DateTimeInterface
+				TrinaryLogic::createMaybe(), // DateTimeInterface isSuperTypeTo (T of DateTime)
 			],
 			5 => [
 				$templateType('T', new ObjectType('DateTime')),
@@ -173,8 +173,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 					new NullType(),
 					new ObjectType('DateTimeInterface'),
 				]),
-				TrinaryLogic::createNo(), // (T of DateTime) isSuperTypeTo (DateTimeInterface|null)
-				TrinaryLogic::createYes(), // (DateTimeInterface|null) isSuperTypeTo (T of DateTime)
+				TrinaryLogic::createMaybe(), // (T of DateTime) isSuperTypeTo (DateTimeInterface|null)
+				TrinaryLogic::createMaybe(), // (DateTimeInterface|null) isSuperTypeTo (T of DateTime)
 			],
 			10 => [
 				$templateType('T', null),
@@ -187,6 +187,12 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 				new ObjectWithoutClassType(),
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createYes(),
+			],
+			12 => [
+				$templateType('T', new ObjectType(\Throwable::class)),
+				new ObjectType(\Exception::class),
+				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}

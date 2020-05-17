@@ -100,14 +100,17 @@ class Foo
 }
 
 /**
- * @extends Map<int, int>
+ * @implements \Ds\Collection<int, int>
  */
-class Bar extends Map
+abstract class Bar implements \Iterator, \Ds\Collection
 {
 
 	public function doFoo()
 	{
-		assertType('int', $this->get(1));
+		foreach ($this as $key => $val) {
+			assertType('int', $key);
+			assertType('int', $val);
+		}
 	}
 
 }

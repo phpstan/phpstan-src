@@ -19,47 +19,47 @@ class ConstantStringTypeTest extends TestCase
 	public function dataIsSuperTypeOf(): array
 	{
 		return [
-			[
+			0 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			1 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new ObjectType(\Throwable::class)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			2 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
 				TrinaryLogic::createNo(),
 			],
-			[
+			3 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new ObjectType(\stdClass::class)),
 				TrinaryLogic::createNo(),
 			],
-			[
+			4 => [
 				new ConstantStringType(\Exception::class),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			5 => [
 				new ConstantStringType(\Exception::class),
 				new ConstantStringType(\InvalidArgumentException::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			6 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			7 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new ObjectType(\stdClass::class)),
 				TrinaryLogic::createNo(),
 			],
-			[
+			8 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
@@ -69,7 +69,7 @@ class ConstantStringTypeTest extends TestCase
 				)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			9 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
@@ -79,7 +79,7 @@ class ConstantStringTypeTest extends TestCase
 				)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			10 => [
 				new ConstantStringType(\InvalidArgumentException::class),
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
@@ -89,7 +89,7 @@ class ConstantStringTypeTest extends TestCase
 				)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			11 => [
 				new ConstantStringType(\Throwable::class),
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
@@ -99,7 +99,7 @@ class ConstantStringTypeTest extends TestCase
 				)),
 				TrinaryLogic::createNo(),
 			],
-			[
+			12 => [
 				new ConstantStringType(\stdClass::class),
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
@@ -109,17 +109,17 @@ class ConstantStringTypeTest extends TestCase
 				)),
 				TrinaryLogic::createNo(),
 			],
-			[
+			13 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new StaticType(\Exception::class)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			14 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new StaticType(\InvalidArgumentException::class)),
 				TrinaryLogic::createNo(),
 			],
-			[
+			15 => [
 				new ConstantStringType(\Exception::class),
 				new GenericClassStringType(new StaticType(\Throwable::class)),
 				TrinaryLogic::createMaybe(),

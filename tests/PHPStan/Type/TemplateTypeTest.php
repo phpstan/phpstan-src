@@ -107,49 +107,49 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 		};
 
 		return [
-			[
+			0 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new ObjectType('DateTime'),
 				TrinaryLogic::createMaybe(), // (T of DateTime) isSuperTypeTo DateTime
 				TrinaryLogic::createYes(), // DateTime isSuperTypeTo (T of DateTime)
 			],
-			[
+			1 => [
 				$templateType('T', new ObjectType('DateTime')),
 				$templateType('T', new ObjectType('DateTime')),
 				TrinaryLogic::createYes(),
 				TrinaryLogic::createYes(),
 			],
-			[
+			2 => [
 				$templateType('T', new ObjectType('DateTime'), 'a'),
 				$templateType('T', new ObjectType('DateTime'), 'b'),
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			3 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new StringType(),
 				TrinaryLogic::createNo(), // (T of DateTime) isSuperTypeTo string
 				TrinaryLogic::createNo(), // string isSuperTypeTo (T of DateTime)
 			],
-			[
+			4 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new ObjectType('DateTimeInterface'),
 				TrinaryLogic::createNo(), // (T of DateTime) isSuperTypeTo DateTimeInterface
 				TrinaryLogic::createYes(), // DateTimeInterface isSuperTypeTo (T of DateTime)
 			],
-			[
+			5 => [
 				$templateType('T', new ObjectType('DateTime')),
 				$templateType('T', new ObjectType('DateTimeInterface')),
 				TrinaryLogic::createMaybe(), // (T of DateTime) isSuperTypeTo (T of DateTimeInterface)
 				TrinaryLogic::createMaybe(), // (T of DateTimeInterface) isSuperTypeTo (T of DateTime)
 			],
-			[
+			6 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new NullType(),
 				TrinaryLogic::createNo(), // (T of DateTime) isSuperTypeTo null
 				TrinaryLogic::createNo(), // null isSuperTypeTo (T of DateTime)
 			],
-			[
+			7 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new UnionType([
 					new NullType(),
@@ -158,7 +158,7 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createMaybe(), // (T of DateTime) isSuperTypeTo (DateTime|null)
 				TrinaryLogic::createYes(), // (DateTime|null) isSuperTypeTo (T of DateTime)
 			],
-			[
+			8 => [
 				$templateType('T', new ObjectType('DateTimeInterface')),
 				new UnionType([
 					new NullType(),
@@ -167,7 +167,7 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createMaybe(), // (T of DateTimeInterface) isSuperTypeTo (DateTime|null)
 				TrinaryLogic::createMaybe(), // (DateTime|null) isSuperTypeTo (T of DateTimeInterface)
 			],
-			[
+			9 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new UnionType([
 					new NullType(),
@@ -176,13 +176,13 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createNo(), // (T of DateTime) isSuperTypeTo (DateTimeInterface|null)
 				TrinaryLogic::createYes(), // (DateTimeInterface|null) isSuperTypeTo (T of DateTime)
 			],
-			[
+			10 => [
 				$templateType('T', null),
 				new MixedType(true),
 				TrinaryLogic::createMaybe(), // T isSuperTypeTo mixed
 				TrinaryLogic::createYes(), // mixed isSuperTypeTo T
 			],
-			[
+			11 => [
 				$templateType('T', new ObjectWithoutClassType()),
 				new ObjectWithoutClassType(),
 				TrinaryLogic::createMaybe(),

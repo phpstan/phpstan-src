@@ -19,62 +19,57 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 	public function dataIsSuperTypeOf(): array
 	{
 		return [
-			[
+			0 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new ClassStringType(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			1 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new StringType(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			2 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				TrinaryLogic::createYes(),
 			],
-			[
+			3 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new GenericClassStringType(new ObjectType(\Throwable::class)),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			4 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
 				TrinaryLogic::createYes(),
 			],
-			[
+			5 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new GenericClassStringType(new ObjectType(\stdClass::class)),
 				TrinaryLogic::createNo(),
 			],
-			[
+			6 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			7 => [
 				new GenericClassStringType(new ObjectType(\Throwable::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			8 => [
 				new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createNo(),
 			],
-			[
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new ConstantStringType(\Exception::class),
-				TrinaryLogic::createYes(),
-			],
-			[
+			9 => [
 				new GenericClassStringType(new ObjectType(\stdClass::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			10 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
@@ -84,7 +79,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			11 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
@@ -94,7 +89,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			12 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
@@ -104,7 +99,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new ConstantStringType(\stdClass::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			13 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
@@ -114,7 +109,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new ConstantStringType(\InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			14 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
@@ -124,17 +119,17 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new ConstantStringType(\Throwable::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			15 => [
 				new GenericClassStringType(new StaticType(\Exception::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			16 => [
 				new GenericClassStringType(new StaticType(\InvalidArgumentException::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			17 => [
 				new GenericClassStringType(new StaticType(\Throwable::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
@@ -158,37 +153,37 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 	public function dataAccepts(): array
 	{
 		return [
-			[
+			0 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new ConstantStringType(\Throwable::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			1 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			2 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new ConstantStringType(\InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
 			],
-			[
+			3 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new StringType(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			4 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new ObjectType(\Exception::class),
 				TrinaryLogic::createNo(),
 			],
-			[
+			5 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				TrinaryLogic::createYes(),
 			],
-			[
+			6 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
@@ -198,7 +193,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new ConstantStringType('NonexistentClass'),
 				TrinaryLogic::createNo(),
 			],
-			[
+			7 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',
@@ -211,7 +206,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createYes(),
 			],
-			[
+			8 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',
@@ -221,7 +216,7 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				new ClassStringType(),
 				TrinaryLogic::createYes(),
 			],
-			[
+			9 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',

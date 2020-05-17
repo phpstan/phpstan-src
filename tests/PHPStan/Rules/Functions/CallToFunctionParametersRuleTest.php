@@ -250,7 +250,21 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test skipped on 7.4.');
 		}
 
-		$this->analyse([__DIR__ . '/data/implode-74.php'], []);
+		$errors = [];
+		if (self::$useStaticReflectionProvider) {
+			$errors = [
+				[
+					'Parameter #1 $glue of function implode expects string, array given.',
+					8,
+				],
+				[
+					'Parameter #2 $pieces of function implode expects array, string given.',
+					8,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/implode-74.php'], $errors);
 	}
 
 	public function testVariableIsNotNullAfterSeriesOfConditions(): void

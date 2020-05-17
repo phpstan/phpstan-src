@@ -10299,7 +10299,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'mixed',
+				'array<int, string>',
 				'password_algos()',
 			],
 		];

@@ -13,7 +13,6 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -72,23 +71,30 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	{
 		if ($type instanceof GenericClassStringType) {
 			$genericType = $type->getGenericType();
-			if ($genericType instanceof MixedType && !$genericType instanceof TemplateMixedType) {
+			if ($genericType instanceof MixedType) {
 				return TrinaryLogic::createMaybe();
 			}
 			if ($genericType instanceof StaticType) {
 				$genericType = $genericType->getStaticObjectType();
 			}
 
-			$isSuperType = $genericType->isSuperTypeOf(new ObjectType($this->getValue()));
+			// We are transforming constant class-string to ObjectType. But we need to filter out
+			// an uncertainty originating in possible ObjectType's class subtypes.
+			$objectType = new ObjectType($this->getValue());
+
+			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
+			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {
-				return $isSuperType;
+				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
+			} else {
+				$isSuperType = $genericType->isSuperTypeOf($objectType);
 			}
 
-			if ($isSuperType->maybe()) {
-				return TrinaryLogic::createNo();
+			// Explicitly handle the uncertainty for Yes & Maybe.
+			if ($isSuperType->yes()) {
+				return TrinaryLogic::createMaybe();
 			}
-
-			return $isSuperType->and(TrinaryLogic::createMaybe());
+			return TrinaryLogic::createNo();
 		}
 		if ($type instanceof ClassStringType) {
 			$broker = Broker::getInstance();

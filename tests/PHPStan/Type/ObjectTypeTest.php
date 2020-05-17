@@ -332,7 +332,7 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 					new ObjectType(\DateTime::class),
 					TemplateTypeVariance::createInvariant()
 				),
-				TrinaryLogic::createYes(),
+				TrinaryLogic::createMaybe(),
 			],
 			48 => [
 				new ObjectType(\DateTime::class),

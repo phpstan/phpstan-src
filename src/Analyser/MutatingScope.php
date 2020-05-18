@@ -1371,7 +1371,18 @@ class MutatingScope implements Scope
 
 			return $generatorSendType;
 		} elseif ($node instanceof Expr\YieldFrom) {
-			return new NullType();
+			$yieldFromType = $this->getType($node->expr);
+
+			if (!$yieldFromType instanceof TypeWithClassName) {
+				return new MixedType();
+			}
+
+			$generatorReturnType = GenericTypeVariableResolver::getType($yieldFromType, \Generator::class, 'TReturn');
+			if ($generatorReturnType === null) {
+				return new MixedType();
+			}
+
+			return $generatorReturnType;
 		}
 
 		$exprString = $this->getNodeKey($node);

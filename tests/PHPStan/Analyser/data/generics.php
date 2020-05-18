@@ -1016,7 +1016,7 @@ function getGenerator(): \Generator
 function testYieldFrom()
 {
 	$yield = yield from getGenerator();
-	assertType('null', $yield);
+	assertType('Exception', $yield);
 }
 
 /**

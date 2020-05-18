@@ -7,6 +7,9 @@ use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\StreamOutput;
 
+/**
+ * @group exec
+ */
 class CommandHelperTest extends TestCase
 {
 

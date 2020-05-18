@@ -9904,6 +9904,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3276.php');
 	}
 
+	public function dataShadowedTraitMethods(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/shadowed-trait-methods.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9952,6 +9957,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3269
 	 * @dataProvider dataAssignNestedArray
 	 * @dataProvider dataBug3276
+	 * @dataProvider dataShadowedTraitMethods
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

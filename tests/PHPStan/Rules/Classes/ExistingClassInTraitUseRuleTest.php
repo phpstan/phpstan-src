@@ -33,6 +33,10 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testTraitUseError(): void
 	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
+		}
+
 		$this->analyse([__DIR__ . '/data/trait-use-error.php'], [
 			[
 				'Class TraitUseError\Foo uses unknown trait TraitUseError\FooTrait.',

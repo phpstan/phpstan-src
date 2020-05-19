@@ -44,6 +44,8 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
+use PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension;
+use PHPStan\Reflection\Mixin\MixinPropertiesClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -424,8 +426,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new PhpDefectClassReflectionExtension(self::getContainer()->getByType(TypeStringResolver::class), $annotationsPropertiesClassReflectionExtension));
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new UniversalObjectCratesClassReflectionExtension([\stdClass::class]));
+		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new MixinPropertiesClassReflectionExtension([]));
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($annotationsPropertiesClassReflectionExtension);
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($phpExtension);
+		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension(new MixinMethodsClassReflectionExtension([]));
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
 
 		$setterReflectionProviderProvider->setReflectionProvider($actualReflectionProvider);

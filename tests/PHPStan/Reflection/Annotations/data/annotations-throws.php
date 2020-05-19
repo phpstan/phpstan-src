@@ -83,3 +83,10 @@ trait FooTrait
 	}
 
 }
+
+trait BarTrait
+{
+
+	use FooTrait;
+
+}

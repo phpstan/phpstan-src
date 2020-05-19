@@ -567,6 +567,10 @@ class PhpClassReflectionExtension
 		if ($propertyReflection instanceof ReflectionProperty) {
 			$declaringClass = $propertyReflection->getBetterReflection()->getDeclaringClass();
 			if ($declaringClass->isTrait()) {
+				if ($propertyReflection->getDeclaringClass()->isTrait() && $propertyReflection->getDeclaringClass()->getName() === $declaringClass->getName()) {
+					return null;
+				}
+
 				return $declaringClass->getName();
 			}
 
@@ -617,6 +621,10 @@ class PhpClassReflectionExtension
 		if ($methodReflection->getReflection() instanceof ReflectionMethod) {
 			$declaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
 			if ($declaringClass->isTrait()) {
+				if ($methodReflection->getDeclaringClass()->isTrait() && $declaringClass->getName() === $methodReflection->getDeclaringClass()->getName()) {
+					return null;
+				}
+
 				return $declaringClass->getName();
 			}
 

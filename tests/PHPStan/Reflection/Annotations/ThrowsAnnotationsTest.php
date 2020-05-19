@@ -40,6 +40,15 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 
 				],
 			],
+			[
+				\ThrowsAnnotations\BarTrait::class,
+				[
+					'withoutThrows' => null,
+					'throwsRuntime' => \RuntimeException::class,
+					'staticThrowsRuntime' => \RuntimeException::class,
+
+				],
+			],
 		];
 	}
 

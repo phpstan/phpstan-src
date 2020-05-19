@@ -440,7 +440,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$cache = new Cache(new MemoryCacheStorage());
 		$fileHelper = new FileHelper($currentWorkingDirectory);
 		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
-		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
+		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
 		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
 		$fileTypeMapper = new FileTypeMapper($setterReflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
 		$functionCallStatementFinder = new FunctionCallStatementFinder();

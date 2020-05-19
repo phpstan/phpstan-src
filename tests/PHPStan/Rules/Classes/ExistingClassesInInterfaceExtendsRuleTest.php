@@ -15,7 +15,8 @@ class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTes
 	{
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInInterfaceExtendsRule(
-			new ClassCaseSensitivityCheck($broker)
+			new ClassCaseSensitivityCheck($broker),
+			$broker
 		);
 	}
 
@@ -25,6 +26,28 @@ class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTes
 			[
 				'Interface ExtendsImplements\FooInterface referenced with incorrect case: ExtendsImplements\FOOInterface.',
 				30,
+			],
+		]);
+	}
+
+	public function testRuleExtendsError(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
+		}
+
+		$this->analyse([__DIR__ . '/data/interface-extends-error.php'], [
+			[
+				'Interface InterfaceExtendsError\Foo extends unknown interface InterfaceExtendsError\Bar.',
+				5,
+			],
+			[
+				'Interface InterfaceExtendsError\Lorem extends class InterfaceExtendsError\BazClass.',
+				15,
+			],
+			[
+				'Interface InterfaceExtendsError\Ipsum extends trait InterfaceExtendsError\DolorTrait.',
+				25,
 			],
 		]);
 	}

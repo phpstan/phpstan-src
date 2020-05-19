@@ -119,7 +119,7 @@ class StubValidator
 		return new Registry([
 			// level 0
 			new ExistingClassesInClassImplementsRule($classCaseSensitivityCheck, $reflectionProvider),
-			new ExistingClassesInInterfaceExtendsRule($classCaseSensitivityCheck),
+			new ExistingClassesInInterfaceExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassInClassExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassInTraitUseRule($classCaseSensitivityCheck),
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),

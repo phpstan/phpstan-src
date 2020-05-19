@@ -122,7 +122,11 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	public function analyse(array $files, array $expectedErrors): void
 	{
 		$files = array_map([$this->getFileHelper(), 'normalizePath'], $files);
-		$actualErrors = $this->getAnalyser()->analyse($files)->getUnorderedErrors();
+		$analyserResult = $this->getAnalyser()->analyse($files);
+		if (count($analyserResult->getInternalErrors()) > 0) {
+			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
+		}
+		$actualErrors = $analyserResult->getUnorderedErrors();
 
 		$strictlyTypedSprintf = static function (int $line, string $message, ?string $tip): string {
 			$message = sprintf('%02d: %s', $line, $message);

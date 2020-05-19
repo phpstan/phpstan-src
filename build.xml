@@ -238,7 +238,7 @@
 			executable="${phpunit.executable}"
 			logoutput="true"
 			passthru="true"
-			checkreturn="false"
+			checkreturn="true"
 		>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>

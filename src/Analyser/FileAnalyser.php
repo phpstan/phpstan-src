@@ -188,14 +188,11 @@ class FileAnalyser
 				$unmatchedLineIgnores = $linesToIgnoreKeys;
 				foreach ($temporaryFileErrors as $tmpFileError) {
 					$line = $tmpFileError->getLine();
-					if ($line === null) {
-						continue;
-					}
-					if (!$tmpFileError->canBeIgnored()) {
-						continue;
-					}
-
-					if (array_key_exists($line, $linesToIgnoreKeys)) {
+					if (
+						$line !== null
+						&& $tmpFileError->canBeIgnored()
+						&& array_key_exists($line, $linesToIgnoreKeys)
+					) {
 						unset($unmatchedLineIgnores[$line]);
 						continue;
 					}

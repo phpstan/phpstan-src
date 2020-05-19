@@ -461,6 +461,11 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->reflection->isTrait();
 	}
 
+	public function isClass(): bool
+	{
+		return !$this->isInterface() && !$this->isTrait();
+	}
+
 	public function isAnonymous(): bool
 	{
 		return $this->anonymousFilename !== null;

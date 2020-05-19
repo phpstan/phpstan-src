@@ -40,20 +40,33 @@ class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
 		}
 		$extendedClassName = (string) $node->extends;
 		$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($extendedClassName, $node->extends)]);
-		if (
-			!$this->reflectionProvider->hasClass($extendedClassName)
-			&& !$scope->isInClassExists($extendedClassName)
-		) {
-			$currentClassName = null;
-			if (isset($node->namespacedName)) {
-				$currentClassName = (string) $node->namespacedName;
+		$currentClassName = null;
+		if (isset($node->namespacedName)) {
+			$currentClassName = (string) $node->namespacedName;
+		}
+		if (!$this->reflectionProvider->hasClass($extendedClassName)) {
+			if (!$scope->isInClassExists($extendedClassName)) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s extends unknown class %s.',
+					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+					$extendedClassName
+				))->nonIgnorable()->build();
 			}
-
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'%s extends unknown class %s.',
-				$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-				$extendedClassName
-			))->nonIgnorable()->build();
+		} else {
+			$reflection = $this->reflectionProvider->getClass($extendedClassName);
+			if ($reflection->isInterface()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s extends interface %s.',
+					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+					$extendedClassName
+				))->nonIgnorable()->build();
+			} elseif ($reflection->isTrait()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s extends trait %s.',
+					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+					$extendedClassName
+				))->nonIgnorable()->build();
+			}
 		}
 
 		return $messages;

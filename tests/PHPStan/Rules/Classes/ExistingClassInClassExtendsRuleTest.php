@@ -41,6 +41,18 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Class ExtendsError\Foo extends unknown class ExtendsError\Bar.',
 				5,
 			],
+			[
+				'Class ExtendsError\Lorem extends interface ExtendsError\BazInterface.',
+				15,
+			],
+			[
+				'Class ExtendsError\Ipsum extends trait ExtendsError\DolorTrait.',
+				25,
+			],
+			[
+				'Anonymous class extends trait ExtendsError\DolorTrait.',
+				30,
+			],
 		]);
 	}
 

@@ -30,3 +30,13 @@ class Ipsum extends DolorTrait
 new class extends DolorTrait {
 
 };
+
+final class FinalFoo
+{
+
+}
+
+class Sit extends FinalFoo
+{
+
+}

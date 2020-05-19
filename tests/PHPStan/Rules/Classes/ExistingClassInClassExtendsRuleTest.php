@@ -53,6 +53,10 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Anonymous class extends trait ExtendsError\DolorTrait.',
 				30,
 			],
+			[
+				'Class ExtendsError\Sit extends final class ExtendsError\FinalFoo.',
+				39,
+			],
 		]);
 	}
 

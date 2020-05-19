@@ -120,7 +120,7 @@ class StubValidator
 			// level 0
 			new ExistingClassesInClassImplementsRule($classCaseSensitivityCheck),
 			new ExistingClassesInInterfaceExtendsRule($classCaseSensitivityCheck),
-			new ExistingClassInClassExtendsRule($classCaseSensitivityCheck),
+			new ExistingClassInClassExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassInTraitUseRule($classCaseSensitivityCheck),
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),

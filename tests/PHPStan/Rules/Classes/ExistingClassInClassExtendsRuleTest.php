@@ -15,7 +15,8 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassInClassExtendsRule(
-			new ClassCaseSensitivityCheck($broker)
+			new ClassCaseSensitivityCheck($broker),
+			$broker
 		);
 	}
 
@@ -25,6 +26,20 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Class ExtendsImplements\Foo referenced with incorrect case: ExtendsImplements\FOO.',
 				15,
+			],
+		]);
+	}
+
+	public function testRuleExtendsError(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
+		}
+
+		$this->analyse([__DIR__ . '/data/extends-error.php'], [
+			[
+				'Class ExtendsError\Foo extends unknown class ExtendsError\Bar.',
+				5,
 			],
 		]);
 	}

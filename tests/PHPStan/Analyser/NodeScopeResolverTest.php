@@ -10306,7 +10306,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				self::$useStaticReflectionProvider ? 'array<int, string>' : 'mixed',
+				PHP_VERSION_ID < 70400 ? 'mixed' : 'array<int, string>',
 				'password_algos()',
 			],
 		];
@@ -10336,7 +10336,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'array<int, string>',
+				PHP_VERSION_ID >= 70400 ? 'array<int, string>' : 'mixed',
 				'password_algos()',
 			],
 		];

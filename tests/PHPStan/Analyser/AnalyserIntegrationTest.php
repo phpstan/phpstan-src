@@ -182,6 +182,10 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	{
 		restore_error_handler();
 		$errors = $this->runAnalyse(__DIR__ . '/data/declaration-warning.php');
+		if (self::$useStaticReflectionProvider) {
+			$this->assertCount(0, $errors);
+			return;
+		}
 		$this->assertCount(1, $errors);
 		$this->assertSame('Declaration of DeclarationWarning\Bar::doFoo(int $i): void should be compatible with DeclarationWarning\Foo::doFoo(): void', $errors[0]->getMessage());
 		$this->assertSame(__DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'declaration-warning.php', $errors[0]->getFile());

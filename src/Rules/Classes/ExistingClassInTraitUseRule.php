@@ -4,8 +4,10 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\TraitUse>
@@ -15,9 +17,15 @@ class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
 
 	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	public function __construct(ClassCaseSensitivityCheck $classCaseSensitivityCheck)
+	private ReflectionProvider $reflectionProvider;
+
+	public function __construct(
+		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		ReflectionProvider $reflectionProvider
+	)
 	{
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
+		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -27,11 +35,49 @@ class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return $this->classCaseSensitivityCheck->checkClassNames(
+		$messages = $this->classCaseSensitivityCheck->checkClassNames(
 			array_map(static function (Node\Name $traitName): ClassNameNodePair {
 				return new ClassNameNodePair((string) $traitName, $traitName);
 			}, $node->traits)
 		);
+
+		if (!$scope->isInClass()) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$classReflection = $scope->getClassReflection();
+		if ($classReflection->isInterface()) {
+			if (!$scope->isInTrait()) {
+				foreach ($node->traits as $trait) {
+					$messages[] = RuleErrorBuilder::message(sprintf('Interface %s uses trait %s.', $classReflection->getName(), (string) $trait))->nonIgnorable()->build();
+				}
+			}
+		} else {
+			if ($scope->isInTrait()) {
+				$currentName = sprintf('Trait %s', $scope->getTraitReflection()->getName());
+			} else {
+				if ($classReflection->isAnonymous()) {
+					$currentName = 'Anonymous class';
+				} else {
+					$currentName = sprintf('Class %s', $classReflection->getName());
+				}
+			}
+			foreach ($node->traits as $trait) {
+				$traitName = (string) $trait;
+				if (!$this->reflectionProvider->hasClass($traitName)) {
+					$messages[] = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))->nonIgnorable()->build();
+				} else {
+					$reflection = $this->reflectionProvider->getClass($traitName);
+					if ($reflection->isClass()) {
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $traitName))->nonIgnorable()->build();
+					} elseif ($reflection->isInterface()) {
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $traitName))->nonIgnorable()->build();
+					}
+				}
+			}
+		}
+
+		return $messages;
 	}
 
 }

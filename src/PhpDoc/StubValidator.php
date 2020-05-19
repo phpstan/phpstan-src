@@ -121,7 +121,7 @@ class StubValidator
 			new ExistingClassesInClassImplementsRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassesInInterfaceExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassInClassExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
-			new ExistingClassInTraitUseRule($classCaseSensitivityCheck),
+			new ExistingClassInTraitUseRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, true, false),

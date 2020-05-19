@@ -15,7 +15,8 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassInTraitUseRule(
-			new ClassCaseSensitivityCheck($broker)
+			new ClassCaseSensitivityCheck($broker),
+			$broker
 		);
 	}
 
@@ -26,6 +27,36 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Trait TraitUseCase\FooTrait referenced with incorrect case: TraitUseCase\FOOTrait.',
 				13,
+			],
+		]);
+	}
+
+	public function testTraitUseError(): void
+	{
+		$this->analyse([__DIR__ . '/data/trait-use-error.php'], [
+			[
+				'Class TraitUseError\Foo uses unknown trait TraitUseError\FooTrait.',
+				8,
+			],
+			/*[
+				'Trait TraitUseError\BarTrait uses class TraitUseError\Foo.',
+				15,
+			],
+			[
+				'Trait TraitUseError\BarTrait uses unknown trait TraitUseError\FooTrait. ',
+				15,
+			],*/
+			[
+				'Interface TraitUseError\Baz uses trait TraitUseError\BarTrait.',
+				22,
+			],
+			[
+				'Anonymous class uses unknown trait TraitUseError\FooTrait.',
+				27,
+			],
+			[
+				'Anonymous class uses interface TraitUseError\Baz.',
+				28,
 			],
 		]);
 	}

@@ -34,8 +34,10 @@ php;
 		$interfaces = [];
 		foreach ($ruleErrorTypes as $typeNumber => [$interface, $propertyName, $nativePropertyType, $phpDocPropertyType]) {
 			if (($typeCombination & $typeNumber) === $typeNumber) {
-				$properties[] = [$propertyName, $nativePropertyType, $phpDocPropertyType];
 				$interfaces[] = '\\' . $interface;
+				if ($propertyName !== null && $nativePropertyType !== null && $phpDocPropertyType !== null) {
+					$properties[] = [$propertyName, $nativePropertyType, $phpDocPropertyType];
+				}
 			}
 		}
 

@@ -11,6 +11,7 @@ class RuleErrorBuilder
 	private const TYPE_TIP = 8;
 	private const TYPE_IDENTIFIER = 16;
 	private const TYPE_METADATA = 32;
+	private const TYPE_NON_IGNORABLE = 64;
 
 	private int $type;
 
@@ -24,7 +25,7 @@ class RuleErrorBuilder
 	}
 
 	/**
-	 * @return array<int, array{string, string}>
+	 * @return array<int, array{string, string|null, string|null, string|null}>
 	 */
 	public static function getRuleErrorTypes(): array
 	{
@@ -64,6 +65,12 @@ class RuleErrorBuilder
 				'metadata',
 				'array',
 				'mixed[]',
+			],
+			self::TYPE_NON_IGNORABLE => [
+				NonIgnorableRuleError::class,
+				null,
+				null,
+				null,
 			],
 		];
 	}
@@ -112,6 +119,13 @@ class RuleErrorBuilder
 	{
 		$this->properties['metadata'] = $metadata;
 		$this->type |= self::TYPE_METADATA;
+
+		return $this;
+	}
+
+	public function nonIgnorable(): self
+	{
+		$this->type |= self::TYPE_NON_IGNORABLE;
 
 		return $this;
 	}

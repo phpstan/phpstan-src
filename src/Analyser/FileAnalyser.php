@@ -12,6 +12,7 @@ use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
+use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\TipRuleError;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -97,6 +98,7 @@ class FileAnalyser
 						foreach ($ruleErrors as $ruleError) {
 							$nodeLine = $node->getLine();
 							$line = $nodeLine;
+							$canBeIgnored = true;
 							$fileName = $scope->getFileDescription();
 							$filePath = $scope->getFile();
 							$traitFilePath = null;
@@ -139,12 +141,16 @@ class FileAnalyser
 								if ($ruleError instanceof MetadataRuleError) {
 									$metadata = $ruleError->getMetadata();
 								}
+
+								if ($ruleError instanceof NonIgnorableRuleError) {
+									$canBeIgnored = false;
+								}
 							}
 							$temporaryFileErrors[] = new Error(
 								$message,
 								$fileName,
 								$line,
-								true,
+								$canBeIgnored,
 								$filePath,
 								$traitFilePath,
 								$tip,

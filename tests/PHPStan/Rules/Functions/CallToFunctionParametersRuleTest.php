@@ -232,7 +232,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
-		$this->analyse([__DIR__ . '/data/implode-74.php'], [
+		$errors = [
 			[
 				'Parameter #1 $glue of function implode expects string, array given.',
 				8,
@@ -241,7 +241,12 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #2 $pieces of function implode expects array, string given.',
 				8,
 			],
-		]);
+		];
+		if (PHP_VERSION_ID < 70400) {
+			$errors = [];
+		}
+
+		$this->analyse([__DIR__ . '/data/implode-74.php'], $errors);
 	}
 
 	public function testImplodeOnLessThanPhp74(): void
@@ -251,7 +256,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 
 		$errors = [];
-		if (self::$useStaticReflectionProvider) {
+		if (PHP_VERSION_ID >= 70400) {
 			$errors = [
 				[
 					'Parameter #1 $glue of function implode expects string, array given.',

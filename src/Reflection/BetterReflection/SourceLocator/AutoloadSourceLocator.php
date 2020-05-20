@@ -2,6 +2,10 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\File\FileReader;
 use ReflectionClass;
 use ReflectionException;
@@ -9,6 +13,7 @@ use ReflectionFunction;
 use Roave\BetterReflection\Identifier\Identifier;
 use Roave\BetterReflection\Identifier\IdentifierType;
 use Roave\BetterReflection\Reflection\Reflection;
+use Roave\BetterReflection\Reflection\ReflectionConstant;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\Reflector\Reflector;
 use Roave\BetterReflection\SourceLocator\Ast\Exception\ParseToAstFailure;
@@ -69,6 +74,27 @@ class AutoloadSourceLocator implements SourceLocator
 			}
 
 			return $this->findReflection($reflector, $reflectionFileName, $identifier);
+		}
+
+		if ($identifier->isConstant()) {
+			$constantName = $identifier->getName();
+			if (!defined($constantName)) {
+				return null;
+			}
+
+			$reflection = ReflectionConstant::createFromNode(
+				$reflector,
+				new FuncCall(new Name('define'), [
+					new Arg(new String_($constantName)),
+					new Arg(new String_('')), // not actually used
+				]),
+				new LocatedSource('', null),
+				null,
+				null
+			);
+			$reflection->populateValue(constant($constantName));
+
+			return $reflection;
 		}
 
 		if (!$identifier->isClass()) {

@@ -1,9 +1,9 @@
 parameters:
 	featureToggles:
 		# these are needed only with "partial static reflection"
-		disableRobotLoader: true
-		disableRuntimeReflectionProvider: false
-		enableScanningPaths: false
+		#disableRobotLoader: true
+		#disableRuntimeReflectionProvider: false
+		#enableScanningPaths: false
 
 services:
 	-
@@ -45,12 +45,12 @@ services:
 		autowired: false
 
 	# total static reflection without RuntimeReflectionProvider involved
-	#reflectionProvider:
-	#	factory: @testCaseBetterReflectionProvider
-	#	autowired:
-	#		- PHPStan\Reflection\ReflectionProvider
+	reflectionProvider:
+		factory: @testCaseBetterReflectionProvider
+		autowired:
+			- PHPStan\Reflection\ReflectionProvider
 
 	# partial static reflection with RuntimeReflectionProvider involved
-	phpParserReflectionProvider:
-		factory: @testCaseBetterReflectionProvider
-		arguments!: []
+	#phpParserReflectionProvider:
+	#	factory: @testCaseBetterReflectionProvider
+	#	arguments!: []

@@ -165,10 +165,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		if (self::$useStaticReflectionProvider) {
 			$staticReflectionProvider = $this->createStaticReflectionProvider();
 			return $this->createReflectionProviderByParameters(
-				$this->createRuntimeReflectionProvider($staticReflectionProvider),
+				$this->createMock(RuntimeReflectionProvider::class),
 				$staticReflectionProvider,
 				true,
-				false
+				true
 			);
 		}
 

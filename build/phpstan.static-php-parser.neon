@@ -1,8 +1,10 @@
 includes:
 	- phpstan.neon
+	- ../conf/staticReflection.neon
 
 parameters:
 	featureToggles:
 		staticReflectionForPhpParser: true
+		enableScanningPaths: false
 	excludes_analyse:
 		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php

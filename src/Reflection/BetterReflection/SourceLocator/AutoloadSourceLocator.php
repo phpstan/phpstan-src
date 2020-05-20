@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+require_once __DIR__ . '/AutoloadSourceLocatorException.php'; // phpcs:disable
+
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -21,6 +23,7 @@ use Roave\BetterReflection\SourceLocator\Ast\Locator as AstLocator;
 use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 use function file_exists;
+use function restore_error_handler;
 
 /**
  * Use PHP's built in autoloader to locate a class, without actually loading.
@@ -170,8 +173,8 @@ class AutoloadSourceLocator implements SourceLocator
 
 		self::$autoloadLocatedFile = null;
 		self::$currentAstLocator = $this->astLocator; // passing the locator on to the implicitly instantiated `self`
-		$previousErrorHandler = set_error_handler(static function (int $errno, string $errstr): bool {
-			return true;
+		set_error_handler(static function (int $errno, string $errstr): bool {
+			throw new \PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocatorException();
 		});
 		stream_wrapper_unregister('file');
 		stream_wrapper_unregister('phar');
@@ -180,10 +183,12 @@ class AutoloadSourceLocator implements SourceLocator
 
 		try {
 			class_exists($className);
+		} catch (\PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocatorException $e) {
+			// $autoloadLocatedFile should be known at this point
 		} finally {
 			stream_wrapper_restore('file');
 			stream_wrapper_restore('phar');
-			set_error_handler($previousErrorHandler);
+			restore_error_handler();
 		}
 
 		/** @var string|null $autoloadLocatedFile */

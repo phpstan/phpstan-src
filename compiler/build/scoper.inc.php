@@ -153,5 +153,6 @@ return [
 		'PHPStan\*',
 		'PhpParser\*',
 		'Hoa\*',
+		'Composer\Autoload\ClassLoader',
 	],
 ];

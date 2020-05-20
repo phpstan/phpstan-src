@@ -1283,6 +1283,43 @@ function arrayOfGenericClassStrings(array $a): void
 
 /**
  * @template T
+ * @template U of \Exception
+ * @template V of \DateTimeInterface
+ * @param T $a
+ * @param U $b
+ * @param U|V $c
+ * @param \Iterator<\DateTimeInterface> $d
+ */
+function getClassOnTemplateType($a, $b, $c, $d)
+{
+	assertType(
+		'class-string<T (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>|false',
+		get_class($a)
+	);
+	assertType(
+		'class-string<U of Exception (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>',
+		get_class($b)
+	);
+	assertType(
+		'class-string<U of Exception (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>|' .
+		'class-string<V of DateTimeInterface (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>',
+		get_class($c)
+	);
+	assertType('class-string<Iterator<mixed, DateTimeInterface>>', get_class($d));
+
+	$objectB = new $b;
+	assertType(
+		'U of Exception (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)',
+		$objectB
+	);
+	assertType(
+		'class-string<U of Exception (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>',
+		get_class($objectB)
+	);
+}
+
+/**
+ * @template T
  */
 class TagMergingGrandparent
 {

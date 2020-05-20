@@ -10,10 +10,14 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\ObjectType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
+use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeWithClassName;
+use PHPStan\Type\UnionType;
 
 class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -35,17 +39,33 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		}
 
 		$argType = $scope->getType($args[0]->value);
-		$classNames = TypeUtils::getDirectClassNames($argType);
-		if (count($classNames) === 0) {
-			return new ClassStringType();
-		}
 
-		$types = [];
-		foreach ($classNames as $className) {
-			$types[] = new GenericClassStringType(new ObjectType($className));
-		}
+		return TypeTraverser::map(
+			$argType,
+			static function (Type $type, callable $traverse): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
 
-		return TypeCombinator::union(...$types);
+				if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
+					return new UnionType([
+						new GenericClassStringType($type),
+						new ConstantBooleanType(false),
+					]);
+				} elseif ($type instanceof MixedType) {
+					return new UnionType([
+						new ClassStringType(),
+						new ConstantBooleanType(false),
+					]);
+				} elseif ($type instanceof StaticType) {
+					return new GenericClassStringType($type->getStaticObjectType());
+				} elseif ($type instanceof TypeWithClassName) {
+					return new GenericClassStringType($type);
+				}
+
+				return new ConstantBooleanType(false);
+			}
+		);
 	}
 
 }

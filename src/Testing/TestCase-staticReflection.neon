@@ -1,8 +1,3 @@
-parameters:
-	featureToggles:
-		# these are needed only with "partial static reflection"
-		#disableRuntimeReflectionProvider: false
-
 services:
 	-
 		class: PHPStan\Testing\TestCaseSourceLocatorFactory
@@ -42,13 +37,7 @@ services:
 		factory: @PHPStan\Testing\TestCaseSourceLocatorFactory::create()
 		autowired: false
 
-	# total static reflection without RuntimeReflectionProvider involved
 	reflectionProvider:
 		factory: @testCaseBetterReflectionProvider
 		autowired:
 			- PHPStan\Reflection\ReflectionProvider
-
-	# partial static reflection with RuntimeReflectionProvider involved
-	#phpParserReflectionProvider:
-	#	factory: @testCaseBetterReflectionProvider
-	#	arguments!: []

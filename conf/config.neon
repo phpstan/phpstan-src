@@ -6,7 +6,6 @@ parameters:
 	level: null
 	paths: []
 	featureToggles:
-		staticReflectionForPhpParser: true
 		disableRuntimeReflectionProvider: false
 		closureUsesThis: false
 		randomIntParameters: false
@@ -133,7 +132,6 @@ parametersSchema:
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	featureToggles: structure([
-		staticReflectionForPhpParser: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		closureUsesThis: bool(),
 		randomIntParameters: bool(),
@@ -1043,22 +1041,13 @@ services:
 		class: PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory
 		arguments:
 			runtimeReflectionProvider: @runtimeReflectionProvider
-			parser: @phpParserDecorator
-			phpParserReflectionProvider: @phpParserReflectionProvider
-			enableStaticReflectionForPhpParser: %featureToggles.staticReflectionForPhpParser%
+			staticReflectionProvider: @betterReflectionProvider
 			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	reflectionProvider:
 		factory: @PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory::create
 		autowired:
 			- PHPStan\Reflection\ReflectionProvider
-
-	phpParserReflectionProvider:
-		class: PHPStan\Reflection\ReflectionProvider\ClassWhitelistReflectionProvider
-		arguments:
-			reflectionProvider: @betterReflectionProvider
-			patterns: %staticReflectionClassNamePatterns%
-		autowired: false
 
 	betterReflectionSourceLocator:
 		class: Roave\BetterReflection\SourceLocator\Type\SourceLocator
@@ -1103,8 +1092,14 @@ services:
 			streamName: 'hoa://Library/Regex/Grammar.pp'
 
 	runtimeReflectionProvider:
-		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider
+		class: PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider
+		arguments:
+			reflectionProvider: @innerRuntimeReflectionProvider
+			patterns: %staticReflectionClassNamePatterns%
 		autowired: false
+
+	innerRuntimeReflectionProvider:
+		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider
 
 	-
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory

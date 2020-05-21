@@ -24,12 +24,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
 	private array $classNodes = [];
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
-	private array $functionNodes = [];
-
-	/** @var array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>> */
-	private array $constantNodes = [];
-
 	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
 	private array $locatedSourcesByFile;
 
@@ -87,12 +81,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			$this->locatedSourcesByFile[$file] = $locatedSource;
 			foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNode) {
 				$this->classNodes[$identifierName] = $fetchedClassNode;
-			}
-			foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-				$this->functionNodes[$identifierName] = $fetchedFunctionNode;
-			}
-			foreach ($fetchedNodesResult->getConstantNodes() as $identifierName => $fetchedConstantNode) {
-				$this->constantNodes[$identifierName] = $fetchedConstantNode;
 			}
 		}
 

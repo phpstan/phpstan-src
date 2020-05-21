@@ -324,6 +324,15 @@
 				></append>
 			</then>
 		</if>
+		<if>
+			<os family="windows"/>
+			<then>
+				<append
+					destFile="${phpstan.config}"
+					text=", ignore-windows-runtime.neon"
+				></append>
+			</then>
+		</if>
 		<append
 			destFile="${phpstan.config}"
 			text=" ]"

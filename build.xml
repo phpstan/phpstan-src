@@ -360,6 +360,67 @@
 		</exec>
 	</target>
 
+	<target name="phpstan-static-reflection">
+		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
+		<touch file="${phpstan.config}"/>
+		<append
+			destFile="${phpstan.config}"
+			text="includes: [ phpstan.neon"
+			append="false"
+		></append>
+		<if>
+			<equals arg1="${isPHP74}" arg2="true" />
+			<then>
+				<append
+					destFile="${phpstan.config}"
+					text=", ignore-gte-php7.4-errors.neon"
+				></append>
+			</then>
+		</if>
+		<append
+			destFile="${phpstan.config}"
+			text=", ignore-hoa.neon"
+		></append>
+		<append
+			destFile="${phpstan.config}"
+			text=", ../conf/staticReflection.neon"
+		></append>
+		<append
+			destFile="${phpstan.config}"
+			text=" ]"
+		></append>
+		<exec
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg path="bin/phpstan"/>
+			<arg value="clear-result-cache"/>
+			<arg value="-c"/>
+			<arg path="${phpstan.config}"/>
+			<arg value="-q"/>
+		</exec>
+		<exec
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg value="-d"/>
+			<arg value="memory_limit=512M"/>
+			<arg path="bin/phpstan"/>
+			<arg value="analyse"/>
+			<arg value="-c"/>
+			<arg path="${phpstan.config}"/>
+			<arg value="-l"/>
+			<arg value="8"/>
+			<arg path="build/PHPStan"/>
+			<arg path="src"/>
+			<arg path="tests"/>
+		</exec>
+	</target>
+
 	<target name="phpstan-result-cache">
 		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>

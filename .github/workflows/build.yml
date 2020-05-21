@@ -287,8 +287,8 @@ jobs:
       - name: "PHPStan"
         run: "vendor/bin/phing phpstan"
 
-  static-analysis-with-runtime-reflection:
-    name: "PHPStan with runtime reflection"
+  static-analysis-with-different-reflection:
+    name: "PHPStan with different reflection"
 
     runs-on: ${{ matrix.operating-system }}
 
@@ -301,6 +301,9 @@ jobs:
           - "7.3"
           - "7.4"
         operating-system: [ubuntu-latest, windows-latest]
+        script:
+          - "vendor/bin/phing phpstan-runtime-reflection"
+          - "vendor/bin/phing phpstan-static-reflection"
 
     steps:
       - name: "Checkout"
@@ -331,8 +334,8 @@ jobs:
         if: matrix.php-version != '7.4'
         run: php bin/transform-source.php
 
-      - name: "PHPStan with static PHP-Parser"
-        run: "vendor/bin/phing phpstan-runtime-reflection"
+      - name: "PHPStan"
+        run: ${{ matrix.script }}
 
   static-analysis-with-result-cache:
     name: "PHPStan with result cache"

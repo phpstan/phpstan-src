@@ -3,7 +3,5 @@ includes:
 	- ../conf/staticReflection.neon
 
 parameters:
-	featureToggles:
-		enableScanningPaths: false
 	excludes_analyse:
 		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php

@@ -303,12 +303,12 @@
 		</exec>
 	</target>
 
-	<target name="phpstan-static-php-parser">
+	<target name="phpstan-runtime-reflection">
 		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>
 		<append
 			destFile="${phpstan.config}"
-			text="includes: [ phpstan.static-php-parser.neon"
+			text="includes: [ phpstan.runtime-reflection.neon"
 			append="false"
 		></append>
 		<if>

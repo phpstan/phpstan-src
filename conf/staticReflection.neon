@@ -3,9 +3,3 @@
 parameters:
 	featureToggles:
 		disableRuntimeReflectionProvider: true
-
-services:
-	reflectionProvider:
-		factory: @betterReflectionProvider
-		autowired:
-			- PHPStan\Reflection\ReflectionProvider

@@ -1,0 +1,8 @@
+includes:
+	- phpstan.neon
+
+services:
+	reflectionProvider:
+		factory: @innerRuntimeReflectionProvider
+		autowired:
+			- PHPStan\Reflection\ReflectionProvider

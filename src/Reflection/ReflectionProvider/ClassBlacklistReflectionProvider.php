@@ -9,7 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 
-class ClassWhitelistReflectionProvider implements ReflectionProvider
+class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
 
 	private ReflectionProvider $reflectionProvider;
@@ -33,7 +33,7 @@ class ClassWhitelistReflectionProvider implements ReflectionProvider
 	public function hasClass(string $className): bool
 	{
 		foreach ($this->patterns as $pattern) {
-			if (Strings::match($className, $pattern) === null) {
+			if (Strings::match($className, $pattern) !== null) {
 				continue;
 			}
 
@@ -61,44 +61,39 @@ class ClassWhitelistReflectionProvider implements ReflectionProvider
 		return $this->reflectionProvider->getClassName($className);
 	}
 
-	public function supportsAnonymousClasses(): bool
-	{
-		return false;
-	}
-
 	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		return $this->reflectionProvider->getAnonymousClassReflection($classNode, $scope);
 	}
 
 	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
 	{
-		return false;
+		return $this->reflectionProvider->hasFunction($nameNode, $scope);
 	}
 
 	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection
 	{
-		throw new \PHPStan\Broker\FunctionNotFoundException((string) $nameNode);
+		return $this->reflectionProvider->getFunction($nameNode, $scope);
 	}
 
 	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
-		return null;
+		return $this->reflectionProvider->resolveFunctionName($nameNode, $scope);
 	}
 
 	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
 	{
-		return false;
+		return $this->reflectionProvider->hasConstant($nameNode, $scope);
 	}
 
 	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
 	{
-		throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
+		return $this->reflectionProvider->getConstant($nameNode, $scope);
 	}
 
 	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
-		return null;
+		return $this->reflectionProvider->resolveConstantName($nameNode, $scope);
 	}
 
 }

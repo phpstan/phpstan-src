@@ -1,7 +1,0 @@
-includes:
-	- phpstan.neon
-	- ../conf/staticReflection.neon
-
-parameters:
-	excludes_analyse:
-		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php

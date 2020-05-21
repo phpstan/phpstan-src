@@ -287,8 +287,8 @@ jobs:
       - name: "PHPStan"
         run: "vendor/bin/phing phpstan"
 
-  static-analysis-with-static-php-parser:
-    name: "PHPStan with static PHP parser"
+  static-analysis-with-runtime-reflection:
+    name: "PHPStan with runtime reflection"
 
     runs-on: ${{ matrix.operating-system }}
 
@@ -332,7 +332,7 @@ jobs:
         run: php bin/transform-source.php
 
       - name: "PHPStan with static PHP-Parser"
-        run: "vendor/bin/phing phpstan-static-php-parser"
+        run: "vendor/bin/phing phpstan-runtime-reflection"
 
   static-analysis-with-result-cache:
     name: "PHPStan with result cache"

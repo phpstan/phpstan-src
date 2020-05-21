@@ -308,7 +308,7 @@ class BetterReflectionProvider implements ReflectionProvider
 				// pass
 			}
 
-			return $this->nativeFunctionReflectionProvider->findFunctionReflection($name) !== null;
+			return false;
 		}, $scope);
 	}
 

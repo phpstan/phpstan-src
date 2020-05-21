@@ -5929,6 +5929,9 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
+		if (!function_exists('dio_stat')) {
+			$this->markTestSkipped('This test requires DIO extension.');
+		}
 		$this->assertTypes(
 			__DIR__ . '/data/dio-functions.php',
 			$description,

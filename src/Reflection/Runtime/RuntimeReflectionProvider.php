@@ -345,13 +345,13 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
-		return $this->resolveName($nameNode, function (string $name): bool {
+		return $this->resolveName($nameNode, static function (string $name): bool {
 			$exists = function_exists($name);
 			if ($exists) {
 				return true;
 			}
 
-			return $this->nativeFunctionReflectionProvider->findFunctionReflection($name) !== null;
+			return false;
 		}, $scope);
 	}
 

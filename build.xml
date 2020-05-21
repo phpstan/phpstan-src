@@ -449,6 +449,10 @@
 		</if>
 		<append
 			destFile="${phpstan.config}"
+			text=", ignore-hoa.neon"
+		></append>
+		<append
+			destFile="${phpstan.config}"
 			text=" ]"
 		></append>
 		<exec

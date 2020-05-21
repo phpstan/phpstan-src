@@ -9,7 +9,6 @@ parameters:
 		disableRobotLoader: false
 		staticReflectionForPhpParser: true
 		disableRuntimeReflectionProvider: false
-		enableScanningPaths: false
 		closureUsesThis: false
 		randomIntParameters: false
 		nullCoalesce: false
@@ -138,7 +137,6 @@ parametersSchema:
 		disableRobotLoader: bool(),
 		staticReflectionForPhpParser: bool(),
 		disableRuntimeReflectionProvider: bool(),
-		enableScanningPaths: bool(),
 		closureUsesThis: bool(),
 		randomIntParameters: bool(),
 		nullCoalesce: bool()
@@ -467,8 +465,6 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
-		arguments:
-			enableScanningPaths: %featureToggles.enableScanningPaths%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory
@@ -1121,7 +1117,6 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
-			enableScanningPaths: %featureToggles.enableScanningPaths%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

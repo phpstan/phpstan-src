@@ -6,7 +6,6 @@ parameters:
 	level: null
 	paths: []
 	featureToggles:
-		disableRobotLoader: false
 		staticReflectionForPhpParser: true
 		disableRuntimeReflectionProvider: false
 		closureUsesThis: false
@@ -134,7 +133,6 @@ parametersSchema:
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	featureToggles: structure([
-		disableRobotLoader: bool(),
 		staticReflectionForPhpParser: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		closureUsesThis: bool(),

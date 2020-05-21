@@ -2,7 +2,6 @@
 
 parameters:
 	featureToggles:
-		disableRobotLoader: true
 		disableRuntimeReflectionProvider: true
 
 services:

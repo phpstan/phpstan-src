@@ -1,9 +1,7 @@
 parameters:
 	featureToggles:
 		# these are needed only with "partial static reflection"
-		#disableRobotLoader: true
 		#disableRuntimeReflectionProvider: false
-		#enableScanningPaths: false
 
 services:
 	-

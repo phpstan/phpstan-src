@@ -307,36 +307,6 @@ class CommandHelper
 			})($parameterAutoloadFile);
 		}
 
-		$autoloadDirectories = $container->getParameter('autoload_directories');
-		$featureToggles = $container->getParameter('featureToggles');
-		if (count($autoloadDirectories) > 0 && !$featureToggles['disableRobotLoader']) {
-			$robotLoader = new \Nette\Loaders\RobotLoader();
-			$robotLoader->acceptFiles = array_map(static function (string $extension): string {
-				return sprintf('*.%s', $extension);
-			}, $container->getParameter('fileExtensions'));
-
-			$robotLoader->setTempDirectory($tmpDir);
-			foreach ($autoloadDirectories as $directory) {
-				if (!file_exists($directory)) {
-					$errorOutput->writeLineFormatted(sprintf('Autoload directory %s does not exist.', $directory));
-					throw new \PHPStan\Command\InceptionNotSuccessfulException();
-				}
-				$robotLoader->addDirectory($directory);
-			}
-
-			foreach ($container->getParameter('excludes_analyse') as $directory) {
-				$robotLoader->excludeDirectory($directory);
-			}
-
-			$ignoreDirs = $robotLoader->ignoreDirs;
-			foreach ($container->getParameter('stubFiles') as $stubFile) {
-				$ignoreDirs[] = $stubFile;
-			}
-			$robotLoader->ignoreDirs = $ignoreDirs;
-
-			$robotLoader->register();
-		}
-
 		$bootstrapFile = $container->getParameter('bootstrap');
 		if ($bootstrapFile !== null) {
 			if (!is_file($bootstrapFile)) {

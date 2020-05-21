@@ -9468,6 +9468,44 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	public function dataPhp73FunctionsIn72(): array
+	{
+		return [
+			[
+				'*ERROR*',
+				'array_key_first($literalArray)',
+			],
+			[
+				'*ERROR*',
+				'array_key_last($anotherLiteralArray)',
+			],
+			[
+				'*ERROR*',
+				'$hrtime1',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataPhp73FunctionsIn72
+	 * @param string $description
+	 * @param string $expression
+	 */
+	public function testPhp73FunctionsIn72(
+		string $description,
+		string $expression
+	): void
+	{
+		if (PHP_VERSION_ID >= 70300) {
+			$this->markTestSkipped('Test does not run on PHP 7.3 or later');
+		}
+		$this->assertTypes(
+			__DIR__ . '/data/php73_functions.php',
+			$description,
+			$expression
+		);
+	}
+
 	public function dataUnionMethods(): array
 	{
 		return [

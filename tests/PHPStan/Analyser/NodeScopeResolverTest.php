@@ -10306,7 +10306,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				PHP_VERSION_ID < 70400 ? 'mixed' : 'array<int, string>',
+				'*ERROR*',
 				'password_algos()',
 			],
 		];
@@ -10322,7 +10322,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
+		if (PHP_VERSION_ID >= 70400) {
 			$this->markTestSkipped('Test does not run on PHP >= 7.4.');
 		}
 		$this->assertTypes(
@@ -10336,7 +10336,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				PHP_VERSION_ID >= 70400 ? 'array<int, string>' : 'mixed',
+				'array<int, string>',
 				'password_algos()',
 			],
 		];
@@ -10352,7 +10352,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		string $expression
 	): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
+		if (PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->assertTypes(

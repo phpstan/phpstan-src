@@ -6,3 +6,7 @@ const CONSOLE_PATH = __DIR__ . '/../../bin/console';
 	'schedule' => '0 */6 * * *',
 	'output'   => 'logs/update-popular-today.log',
 ];
+
+define('ANOTHER_PATH', 'test');
+
+echo ANOTHER_PATH;

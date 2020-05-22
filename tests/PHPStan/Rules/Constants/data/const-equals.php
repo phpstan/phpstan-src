@@ -8,3 +8,11 @@ const CONSOLE_PATH = __DIR__ . '/../../bin/console';
 	'schedule' => '0 */6 * * *',
 	'output'   => 'logs/update-popular-today.log',
 ];
+
+define('ConstEquals\\ANOTHER_PATH', 'test');
+
+echo ANOTHER_PATH;
+
+define('DiffNamespace\\ANOTHER_PATH', 'test');
+
+echo \DiffNamespace\ANOTHER_PATH;

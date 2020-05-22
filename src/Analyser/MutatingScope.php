@@ -357,6 +357,13 @@ class MutatingScope implements Scope
 
 	public function hasConstant(Name $name): bool
 	{
+		if ($this->getNamespace() !== null) {
+			$node = new ConstFetch(new Name\FullyQualified([$this->getNamespace(), $name->toString()]));
+			if ($this->isSpecified($node)) {
+				return true;
+			}
+		}
+
 		$node = new ConstFetch(new Name\FullyQualified($name->toString()));
 		if ($this->isSpecified($node)) {
 			return true;

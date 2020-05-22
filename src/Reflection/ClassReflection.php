@@ -694,6 +694,11 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->isDeprecated;
 	}
 
+	public function isBuiltin(): bool
+	{
+		return $this->reflection->isInternal();
+	}
+
 	public function isInternal(): bool
 	{
 		if ($this->isInternal === null) {

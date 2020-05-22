@@ -28,7 +28,7 @@ class ClassCaseSensitivityCheck
 				continue;
 			}
 			$classReflection = $this->reflectionProvider->getClass($className);
-			if ($classReflection->getFileName() === false) {
+			if ($classReflection->isBuiltin()) {
 				continue; // skip built-in classes
 			}
 			$realClassName = $classReflection->getName();

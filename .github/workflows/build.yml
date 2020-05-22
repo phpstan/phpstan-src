@@ -426,7 +426,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer update --no-dev --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
         run: php bin/transform-source.php

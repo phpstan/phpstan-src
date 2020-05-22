@@ -404,3 +404,40 @@ class CheckInstanceofWithTemplates
 		if ($e instanceof $t) return;
 	}
 }
+
+class CheckGenericClassString
+{
+	/**
+	 * @param \DateTimeInterface $a
+	 * @param class-string<\DateTimeInterface> $b
+	 * @param class-string<\DateTimeInterface> $c
+	 */
+	function test($a, $b, $c): void
+	{
+		if ($a instanceof $b) return;
+		if ($b instanceof $a) return;
+		if ($b instanceof $c) return;
+	}
+}
+
+class CheckGenericClassStringWithConstantString
+{
+	/**
+	 * @param class-string<\DateTimeInterface> $a
+	 * @param \DateTimeInterface $b
+	 */
+	function test($a, $b): void
+	{
+		$t = \DateTimeInterface::class;
+		if ($a instanceof $t) return;
+		if ($b instanceof $t) return;
+	}
+}
+
+class CheckInstanceOfLsp
+{
+	function test(\DateTimeInterface $a, \DateTimeInterface $b): void {
+		if ($a instanceof $b) return;
+		if ($b instanceof $a) return;
+	}
+}

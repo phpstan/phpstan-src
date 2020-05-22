@@ -222,10 +222,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				'#^PhpParser\\\\#',
 				'#^PHPStan\\\\#',
 				'#^Hoa\\\\#',
-				'#^DateTime(?:Interface|Immutable)?$#',
-				'#^Soap(?:Client|Var|Server|Fault|Param|Header)$#',
-				'#^Serializable$#',
-				'#^XMLReader#',
 			]
 		);
 		$this->setUpReflectionProvider(

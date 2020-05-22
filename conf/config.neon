@@ -69,6 +69,7 @@ parameters:
 		- ../stubs/WeakReference.stub
 		- ../stubs/ext-ds.stub
 		- ../stubs/PDOStatement.stub
+		- ../stubs/ReflectionFunctionAbstract.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
@@ -76,10 +77,6 @@ parameters:
 		- '#^PhpParser\\#'
 		- '#^PHPStan\\#'
 		- '#^Hoa\\#'
-		- '#^DateTime(?:Interface|Immutable)?$#'
-		- '#^Soap(?:Client|Var|Server|Fault|Param|Header)$#'
-		- '#^Serializable$#'
-		- '#^XMLReader#'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION

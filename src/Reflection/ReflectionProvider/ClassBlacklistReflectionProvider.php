@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use function array_key_exists;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
@@ -32,6 +33,10 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
+		if ($className !== 'PDO' && array_key_exists($className, \JetBrains\PHPStormStub\PhpStormStubsMap::CLASSES)) {
+			return false;
+		}
+
 		foreach ($this->patterns as $pattern) {
 			if (Strings::match($className, $pattern) !== null) {
 				return false;

@@ -1,0 +1,11 @@
+<?php
+
+abstract class ReflectionFunctionAbstract
+{
+
+	/**
+	 * @return string|false
+	 */
+	public function getFileName () {}
+
+}

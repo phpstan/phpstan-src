@@ -158,3 +158,18 @@ class GenericClassInTemplateBound
 	}
 
 }
+
+class SerializableImpl implements \Serializable
+{
+
+	public function serialize(): string
+	{
+		return serialize([]);
+	}
+
+	public function unserialize($serialized): void
+	{
+
+	}
+
+}

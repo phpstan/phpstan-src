@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\PhpDefect;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Type\VerbosityLevel;
-use XMLReader;
 use ZipArchive;
 
 class PhpDefectClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
@@ -27,7 +26,6 @@ class PhpDefectClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataDomTextProperties
 	 * @dataProvider dataDomProcessingInstructionProperties
 	 * @dataProvider dataDomXPathProperties
-	 * @dataProvider dataXmlReaderProperties
 	 * @dataProvider dataZipArchiveProperties
 	 * @dataProvider dataLibXMLErrorProperties
 	 * @param string $className
@@ -545,32 +543,6 @@ class PhpDefectClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
 				\DOMXPath::class,
 				[
 					'document' => \DOMDocument::class,
-				],
-			],
-		];
-	}
-
-	public function dataXmlReaderProperties(): array
-	{
-		return [
-			[
-				XMLReader::class,
-				XMLReader::class,
-				[
-					'attributeCount' => 'int',
-					'baseURI' => 'string',
-					'depth' => 'int',
-					'hasAttributes' => 'bool',
-					'hasValue' => 'bool',
-					'isDefault' => 'bool',
-					'isEmptyElement' => 'bool',
-					'localName' => 'string',
-					'name' => 'string',
-					'namespaceURI' => 'string',
-					'nodeType' => 'int',
-					'prefix' => 'string',
-					'value' => 'string',
-					'xmlLang' => 'string',
 				],
 			],
 		];

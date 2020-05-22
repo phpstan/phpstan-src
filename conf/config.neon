@@ -78,6 +78,8 @@ parameters:
 		- '#^Hoa\\#'
 		- '#^DateTime(?:Interface|Immutable)?$#'
 		- '#^Soap(?:Client|Var|Server|Fault|Param|Header)$#'
+		- '#^Serializable$#'
+		- '#^XMLReader#'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION

@@ -36,6 +36,8 @@ use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 class BetterReflectionProvider implements ReflectionProvider
 {
 
+	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
+
 	private \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
 	private \Roave\BetterReflection\Reflector\ClassReflector $classReflector;
@@ -72,6 +74,7 @@ class BetterReflectionProvider implements ReflectionProvider
 	private static array $anonymousClasses = [];
 
 	public function __construct(
+		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		ClassReflector $classReflector,
 		FileTypeMapper $fileTypeMapper,
@@ -87,6 +90,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		ConstantReflector $constantReflector
 	)
 	{
+		$this->reflectionProviderProvider = $reflectionProviderProvider;
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->classReflector = $classReflector;
 		$this->fileTypeMapper = $fileTypeMapper;
@@ -137,7 +141,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		$classReflection = new ClassReflection(
-			$this,
+			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->fileTypeMapper,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
@@ -203,7 +207,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		);
 
 		self::$anonymousClasses[$className] = new ClassReflection(
-			$this,
+			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->fileTypeMapper,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),

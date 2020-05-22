@@ -206,6 +206,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		);
 		$reflectionProvider = new ClassBlacklistReflectionProvider(
 			new RuntimeReflectionProvider(
+				$setterReflectionProviderProvider,
 				$classReflectionExtensionRegistryProvider,
 				$functionReflectionFactory,
 				$fileTypeMapper,
@@ -223,6 +224,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				'#^Hoa\\\\#',
 				'#^DateTime(?:Interface|Immutable)?$#',
 				'#^Soap(?:Client|Var|Server|Fault|Param|Header)$#',
+				'#^Serializable$#',
+				'#^XMLReader#',
 			]
 		);
 		$this->setUpReflectionProvider(
@@ -362,6 +365,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
 
 		$reflectionProvider = new BetterReflectionProvider(
+			$setterReflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$classReflector,
 			$fileTypeMapper,

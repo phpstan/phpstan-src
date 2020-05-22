@@ -42,6 +42,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 
 		$setterReflectionProviderProvider = new SetterReflectionProviderProvider();
 		$reflectionProvider = new RuntimeReflectionProvider(
+			$setterReflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$this->createMock(FunctionReflectionFactory::class),
 			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),

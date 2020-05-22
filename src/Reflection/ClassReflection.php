@@ -481,7 +481,11 @@ class ClassReflection implements ReflectionWithFilename
 			return $this->subclasses[$className] = false;
 		}
 
-		return $this->subclasses[$className] = $this->reflection->isSubclassOf($className);
+		try {
+			return $this->subclasses[$className] = $this->reflection->isSubclassOf($className);
+		} catch (\ReflectionException $e) {
+			return $this->subclasses[$className] = false;
+		}
 	}
 
 	/**

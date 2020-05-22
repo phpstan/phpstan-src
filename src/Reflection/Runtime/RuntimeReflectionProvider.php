@@ -26,6 +26,8 @@ use ReflectionClass;
 class RuntimeReflectionProvider implements ReflectionProvider
 {
 
+	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
+
 	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
 	/** @var \PHPStan\Reflection\ClassReflection[] */
@@ -62,6 +64,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	private static array $anonymousClasses = [];
 
 	public function __construct(
+		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
@@ -74,6 +77,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		StubPhpDocProvider $stubPhpDocProvider
 	)
 	{
+		$this->reflectionProviderProvider = $reflectionProviderProvider;
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->functionReflectionFactory = $functionReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
@@ -194,7 +198,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$className = $reflectionClass->getName();
 		if (!isset($this->classReflections[$className])) {
 			$classReflection = new ClassReflection(
-				$this,
+				$this->reflectionProviderProvider->getReflectionProvider(),
 				$this->fileTypeMapper,
 				$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 				$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),

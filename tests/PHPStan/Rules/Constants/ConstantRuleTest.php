@@ -49,4 +49,14 @@ class ConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testConstEquals(): void
+	{
+		$this->analyse([__DIR__ . '/data/const-equals.php'], []);
+	}
+
+	public function testConstEqualsNoNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/const-equals-no-namespace.php'], []);
+	}
+
 }

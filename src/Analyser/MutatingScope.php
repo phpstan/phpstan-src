@@ -771,19 +771,23 @@ class MutatingScope implements Scope
 				return new ConstantBooleanType(false);
 			}
 
+			$uncertainty = false;
+
 			if ($node->class instanceof Node\Name) {
 				$className = $this->resolveName($node->class);
 				$classType = new ObjectType($className);
 			} else {
 				$classType = $this->getType($node->class);
-				$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse): Type {
+				$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
 					if ($type instanceof UnionType || $type instanceof IntersectionType) {
 						return $traverse($type);
 					}
 					if ($type instanceof TypeWithClassName) {
+						$uncertainty = true;
 						return $type;
 					}
 					if ($type instanceof GenericClassStringType) {
+						$uncertainty = true;
 						return $type->getGenericType();
 					}
 					if ($type instanceof ConstantStringType) {
@@ -801,7 +805,7 @@ class MutatingScope implements Scope
 
 			if ($isSuperType->no()) {
 				return new ConstantBooleanType(false);
-			} elseif ($isSuperType->yes()) {
+			} elseif ($isSuperType->yes() && !$uncertainty) {
 				return new ConstantBooleanType(true);
 			}
 

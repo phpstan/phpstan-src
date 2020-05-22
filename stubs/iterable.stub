@@ -128,55 +128,6 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable
 
 }
 
-class DOMDocument
-{
-
-	/**
-	 * @return DOMNodeList<DOMElement>
-	 */
-	public function getElementsByTagName ($name) {}
-
-	/**
-	 * @return DOMNodeList<DOMElement>
-	 */
-	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
-
-}
-
-class DOMNode
-{
-
-}
-
-class DOMElement extends DOMNode
-{
-
-	/**
-	 * @return DOMNodeList<DOMElement>
-	 */
-	public function getElementsByTagName ($name) {}
-
-	/**
-	 * @return DOMNodeList<DOMElement>
-	 */
-	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
-
-}
-
-/**
- * @template-covariant TNode as DOMNode
- * @implements Traversable<int, TNode>
- */
-class DOMNodeList implements Traversable
-{
-
-	/**
-	 * @return TNode|null
-	 */
-	public function item ($index) {}
-
-}
-
 /**
  * @template T of \Traversable
  * @mixin T

@@ -1,0 +1,31 @@
+<?php
+
+class ZipArchive
+{
+
+    /**
+     * @var int
+     */
+    public $status;
+
+    /**
+     * @var int
+     */
+    public $statusSys;
+
+    /**
+     * @var int
+     */
+    public $numFiles;
+
+    /**
+     * @var string
+     */
+    public $filename;
+
+    /**
+     * @var string
+     */
+    public $comment;
+
+}

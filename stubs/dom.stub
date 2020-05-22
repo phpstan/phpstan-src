@@ -1,0 +1,144 @@
+<?php
+
+class DOMDocument
+{
+
+	/** @var DOMDocumentType|null */
+	public $doctype;
+
+	/** @var DOMElement|null */
+	public $documentElement;
+
+	/** @var null */
+	public $ownerDocument;
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagName ($name) {}
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
+
+}
+
+class DOMNode
+{
+
+}
+
+class DOMElement extends DOMNode
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagName ($name) {}
+
+	/**
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
+
+}
+
+/**
+ * @template-covariant TNode as DOMNode
+ * @implements Traversable<int, TNode>
+ */
+class DOMNodeList implements Traversable
+{
+
+	/**
+	 * @return TNode|null
+	 */
+	public function item ($index) {}
+
+}
+
+class DOMAttr
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+}
+
+class DOMCharacterData
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+}
+
+class DOMCharacterData
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+}
+
+class DOMDocumentType
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+}
+
+class DOMEntity
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+}
+
+class DOMNotation
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+}
+
+class DOMProcessingInstruction
+{
+
+	/** @var DOMDocument */
+	public $ownerDocument;
+
+	/**
+	 * @var string
+	 */
+	public $target;
+
+	/**
+	 * @var string
+	 */
+	public $data;
+
+}
+
+/**
+ * @property-read int $length
+ */
+class DOMNamedNodeMap
+{
+
+}
+
+class DOMText
+{
+
+	/** @var string */
+	public $wholeText;
+
+}

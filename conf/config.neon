@@ -70,6 +70,9 @@ parameters:
 		- ../stubs/ext-ds.stub
 		- ../stubs/PDOStatement.stub
 		- ../stubs/ReflectionFunctionAbstract.stub
+		- ../stubs/date.stub
+		- ../stubs/zip.stub
+		- ../stubs/dom.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
@@ -495,9 +498,6 @@ services:
 		arguments:
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
-
-	-
-		class: PHPStan\Reflection\PhpDefect\PhpDefectClassReflectionExtension
 
 	-
 		implement: PHPStan\Reflection\Php\PhpMethodReflectionFactory

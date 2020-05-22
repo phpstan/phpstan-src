@@ -8,7 +8,6 @@ use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflectionExtensionRegistry;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
-use PHPStan\Reflection\PhpDefect\PhpDefectClassReflectionExtension;
 
 class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
@@ -28,11 +27,10 @@ class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExt
 			$phpClassReflectionExtension = $this->container->getByType(PhpClassReflectionExtension::class);
 			$annotationsMethodsClassReflectionExtension = $this->container->getByType(AnnotationsMethodsClassReflectionExtension::class);
 			$annotationsPropertiesClassReflectionExtension = $this->container->getByType(AnnotationsPropertiesClassReflectionExtension::class);
-			$phpDefectClassReflectionExtension = $this->container->getByType(PhpDefectClassReflectionExtension::class);
 
 			$this->registry = new ClassReflectionExtensionRegistry(
 				$this->container->getByType(Broker::class),
-				array_merge([$phpClassReflectionExtension, $phpDefectClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsPropertiesClassReflectionExtension]),
+				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsPropertiesClassReflectionExtension]),
 				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsMethodsClassReflectionExtension])
 			);
 		}

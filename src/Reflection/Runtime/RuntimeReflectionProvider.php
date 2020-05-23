@@ -363,7 +363,8 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 		return new RuntimeConstantReflection(
 			$constantName,
-			ConstantTypeHelper::getTypeFromValue(constant($constantName))
+			ConstantTypeHelper::getTypeFromValue(constant($constantName)),
+			null
 		);
 	}
 

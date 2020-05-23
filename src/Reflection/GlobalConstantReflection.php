@@ -18,4 +18,6 @@ interface GlobalConstantReflection
 
 	public function isInternal(): TrinaryLogic;
 
+	public function getFileName(): ?string;
+
 }

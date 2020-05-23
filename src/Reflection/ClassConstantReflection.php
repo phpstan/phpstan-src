@@ -39,6 +39,16 @@ class ClassConstantReflection implements ConstantReflection
 		return $this->reflection->getName();
 	}
 
+	public function getFileName(): ?string
+	{
+		$fileName = $this->declaringClass->getFileName();
+		if ($fileName === false) {
+			return null;
+		}
+
+		return $fileName;
+	}
+
 	/**
 	 * @return mixed
 	 */

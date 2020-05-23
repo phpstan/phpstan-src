@@ -26,6 +26,11 @@ class DummyConstantReflection implements ConstantReflection
 		return $broker->getClass(\stdClass::class);
 	}
 
+	public function getFileName(): ?string
+	{
+		return null;
+	}
+
 	public function isStatic(): bool
 	{
 		return true;

@@ -13,10 +13,17 @@ class RuntimeConstantReflection implements GlobalConstantReflection
 
 	private Type $valueType;
 
-	public function __construct(string $name, Type $valueType)
+	private ?string $fileName;
+
+	public function __construct(
+		string $name,
+		Type $valueType,
+		?string $fileName
+	)
 	{
 		$this->name = $name;
 		$this->valueType = $valueType;
+		$this->fileName = $fileName;
 	}
 
 	public function getName(): string
@@ -27,6 +34,11 @@ class RuntimeConstantReflection implements GlobalConstantReflection
 	public function getValueType(): Type
 	{
 		return $this->valueType;
+	}
+
+	public function getFileName(): ?string
+	{
+		return $this->fileName;
 	}
 
 	public function isDeprecated(): TrinaryLogic

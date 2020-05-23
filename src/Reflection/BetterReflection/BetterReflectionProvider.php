@@ -322,13 +322,16 @@ class BetterReflectionProvider implements ReflectionProvider
 		try {
 			$constantValue = $constantReflection->getValue();
 			$constantValueType = ConstantTypeHelper::getTypeFromValue($constantValue);
+			$fileName = $constantReflection->getFileName();
 		} catch (UnableToCompileNode $e) {
 			$constantValueType = new MixedType();
+			$fileName = null;
 		}
 
 		return new RuntimeConstantReflection(
 			$constantName,
-			$constantValueType
+			$constantValueType,
+			$fileName
 		);
 	}
 

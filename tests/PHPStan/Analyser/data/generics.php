@@ -1285,12 +1285,16 @@ function arrayOfGenericClassStrings(array $a): void
  * @template T
  * @template U of \Exception
  * @template V of \DateTimeInterface
+ * @template W of object
  * @param T $a
  * @param U $b
  * @param U|V $c
  * @param \Iterator<\DateTimeInterface> $d
+ * @param object $object
+ * @param mixed $mixed
+ * @param W $tObject
  */
-function getClassOnTemplateType($a, $b, $c, $d)
+function getClassOnTemplateType($a, $b, $c, $d, $object, $mixed, $tObject)
 {
 	assertType(
 		'class-string<T (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>|false',
@@ -1316,6 +1320,10 @@ function getClassOnTemplateType($a, $b, $c, $d)
 		'class-string<U of Exception (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>',
 		get_class($objectB)
 	);
+
+	assertType('class-string', get_class($object));
+	assertType('class-string|false', get_class($mixed));
+	assertType('class-string<W of object (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>', get_class($tObject));
 }
 
 /**

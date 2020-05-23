@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -48,6 +49,10 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 				}
 
 				if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
+					if ($type instanceof ObjectWithoutClassType) {
+						return new GenericClassStringType($type);
+					}
+
 					return new UnionType([
 						new GenericClassStringType($type),
 						new ConstantBooleanType(false),
@@ -61,6 +66,8 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 					return new GenericClassStringType($type->getStaticObjectType());
 				} elseif ($type instanceof TypeWithClassName) {
 					return new GenericClassStringType($type);
+				} elseif ($type instanceof ObjectWithoutClassType) {
+					return new ClassStringType();
 				}
 
 				return new ConstantBooleanType(false);

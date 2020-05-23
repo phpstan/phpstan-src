@@ -13,7 +13,7 @@ class FetchedNodesResult
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
 	private array $functionNodes;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>> */
+	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
 	private array $constantNodes;
 
 	private \Roave\BetterReflection\SourceLocator\Located\LocatedSource $locatedSource;
@@ -21,7 +21,7 @@ class FetchedNodesResult
 	/**
 	 * @param array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> $classNodes
 	 * @param array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> $functionNodes
-	 * @param array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>> $constantNodes
+	 * @param array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> $constantNodes
 	 * @param \Roave\BetterReflection\SourceLocator\Located\LocatedSource $locatedSource
 	 */
 	public function __construct(
@@ -54,7 +54,7 @@ class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>>
+	 * @return array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>>
 	 */
 	public function getConstantNodes(): array
 	{

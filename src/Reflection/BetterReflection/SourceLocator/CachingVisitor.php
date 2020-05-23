@@ -19,7 +19,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
 	private array $functionNodes;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>> */
+	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
 	private array $constantNodes;
 
 	private ?\PhpParser\Node\Stmt\Namespace_ $currentNamespaceNode = null;
@@ -53,13 +53,11 @@ class CachingVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof \PhpParser\Node\Stmt\Const_) {
-			foreach ($node->consts as $constNode) {
-				$this->constantNodes[$constNode->namespacedName->toString()] = new FetchedNode(
-					$constNode,
-					$this->currentNamespaceNode,
-					$this->fileName
-				);
-			}
+			$this->constantNodes[] = new FetchedNode(
+				$node,
+				$this->currentNamespaceNode,
+				$this->fileName
+			);
 
 			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
@@ -85,14 +83,7 @@ class CachingVisitor extends NodeVisitorAbstract
 				$this->currentNamespaceNode,
 				$this->fileName
 			);
-			$this->constantNodes[$constantName] = $constantNode;
-
-			if (count($node->args) === 3
-				&& $node->args[2]->value instanceof \PhpParser\Node\Expr\ConstFetch
-				&& $node->args[2]->value->name->toLowerString() === 'true'
-			) {
-				$this->constantNodes[strtolower($constantName)] = $constantNode;
-			}
+			$this->constantNodes[] = $constantNode;
 
 			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
@@ -131,7 +122,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, FetchedNode<\PhpParser\Node\Const_|\PhpParser\Node\Expr\FuncCall>>
+	 * @return array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>>
 	 */
 	public function getConstantNodes(): array
 	{

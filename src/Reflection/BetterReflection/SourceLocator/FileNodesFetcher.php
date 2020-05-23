@@ -40,25 +40,10 @@ class FileNodesFetcher
 		$this->cachingVisitor->reset($fileName);
 		$nodeTraverser->traverse($ast);
 
-		$classNodes = [];
-		foreach ($this->cachingVisitor->getClassNodes() as $className => $fetchedClassNode) {
-			$classNodes[$className] = $fetchedClassNode;
-		}
-
-		$functionNodes = [];
-		foreach ($this->cachingVisitor->getFunctionNodes() as $functionName => $fetchedFunctionNode) {
-			$functionNodes[$functionName] = $fetchedFunctionNode;
-		}
-
-		$constantNodes = [];
-		foreach ($this->cachingVisitor->getConstantNodes() as $constantName => $fetchedConstantNode) {
-			$constantNodes[$constantName] = $fetchedConstantNode;
-		}
-
 		return new FetchedNodesResult(
-			$classNodes,
-			$functionNodes,
-			$constantNodes,
+			$this->cachingVisitor->getClassNodes(),
+			$this->cachingVisitor->getFunctionNodes(),
+			$this->cachingVisitor->getConstantNodes(),
 			$locatedSource
 		);
 	}

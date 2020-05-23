@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node\Expr\FuncCall;
 use Roave\BetterReflection\Identifier\Identifier;
 use Roave\BetterReflection\Identifier\IdentifierType;
 use Roave\BetterReflection\Reflection\Reflection;
@@ -76,21 +77,50 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 
 		if ($identifier->isConstant()) {
 			$constantNodes = $this->fetchedNodesResult->getConstantNodes();
-			if (!array_key_exists($identifier->getName(), $constantNodes)) {
-				return null;
+			foreach ($constantNodes as $stmtConst) {
+				if ($stmtConst->getNode() instanceof FuncCall) {
+					$constantReflection = $nodeToReflection->__invoke(
+						$reflector,
+						$stmtConst->getNode(),
+						$this->fetchedNodesResult->getLocatedSource(),
+						$stmtConst->getNamespace()
+					);
+					if ($constantReflection === null) {
+						continue;
+					}
+					if (!$constantReflection instanceof ReflectionConstant) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+					if ($constantReflection->getName() !== $identifier->getName()) {
+						continue;
+					}
+
+					return $constantReflection;
+				}
+
+				foreach (array_keys($stmtConst->getNode()->consts) as $i) {
+					$constantReflection = $nodeToReflection->__invoke(
+						$reflector,
+						$stmtConst->getNode(),
+						$this->fetchedNodesResult->getLocatedSource(),
+						$stmtConst->getNamespace(),
+						$i
+					);
+					if ($constantReflection === null) {
+						continue;
+					}
+					if (!$constantReflection instanceof ReflectionConstant) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+					if ($constantReflection->getName() !== $identifier->getName()) {
+						continue;
+					}
+
+					return $constantReflection;
+				}
 			}
 
-			$constantReflection = $nodeToReflection->__invoke(
-				$reflector,
-				$constantNodes[$identifier->getName()]->getNode(),
-				$this->fetchedNodesResult->getLocatedSource(),
-				$constantNodes[$identifier->getName()]->getNamespace()
-			);
-			if (!$constantReflection instanceof ReflectionConstant) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-
-			return $constantReflection;
+			return null;
 		}
 
 		throw new \PHPStan\ShouldNotHappenException();

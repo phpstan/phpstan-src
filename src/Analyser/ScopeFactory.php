@@ -13,6 +13,7 @@ interface ScopeFactory
 	/**
 	 * @param \PHPStan\Analyser\ScopeContext $context
 	 * @param bool $declareStrictTypes
+	 * @param array<string, Type> $constantTypes
 	 * @param \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null $function
 	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
@@ -29,6 +30,7 @@ interface ScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
+		array $constantTypes = [],
 		$function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],

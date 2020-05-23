@@ -8,7 +8,6 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
-use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
@@ -43,8 +42,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private AnonymousClassNameHelper $anonymousClassNameHelper;
 
-	private Parser $parser;
-
 	private \PHPStan\File\FileHelper $fileHelper;
 
 	private RelativePathHelper $relativePathHelper;
@@ -71,7 +68,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		\PhpParser\PrettyPrinter\Standard $printer,
 		AnonymousClassNameHelper $anonymousClassNameHelper,
-		Parser $parser,
 		FileHelper $fileHelper,
 		RelativePathHelper $relativePathHelper,
 		StubPhpDocProvider $stubPhpDocProvider
@@ -84,7 +80,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
 		$this->printer = $printer;
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
-		$this->parser = $parser;
 		$this->fileHelper = $fileHelper;
 		$this->relativePathHelper = $relativePathHelper;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
@@ -374,25 +369,9 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
-		return $this->resolveName($nameNode, function (string $name) use ($scope): bool {
-			$isCompilerHaltOffset = $name === '__COMPILER_HALT_OFFSET__';
-			if ($isCompilerHaltOffset && $scope !== null && $this->fileHasCompilerHaltStatementCalls($scope->getFile())) {
-				return true;
-			}
+		return $this->resolveName($nameNode, static function (string $name): bool {
 			return defined($name);
 		}, $scope);
-	}
-
-	private function fileHasCompilerHaltStatementCalls(string $pathToFile): bool
-	{
-		$nodes = $this->parser->parseFile($pathToFile);
-		foreach ($nodes as $node) {
-			if ($node instanceof Node\Stmt\HaltCompiler) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**

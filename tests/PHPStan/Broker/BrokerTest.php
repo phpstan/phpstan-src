@@ -10,7 +10,6 @@ use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryPro
 use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
-use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -49,7 +48,6 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
 			self::getContainer()->getByType(\PhpParser\PrettyPrinter\Standard::class),
 			$anonymousClassNameHelper,
-			self::getContainer()->getByType(Parser::class),
 			$fileHelper,
 			$relativePathHelper,
 			self::getContainer()->getByType(StubPhpDocProvider::class)

@@ -25,6 +25,7 @@ use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\EncapsedStringPart;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -112,12 +113,17 @@ class MutatingScope implements Scope
 
 	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
+	private Parser $parser;
+
 	private \PHPStan\Analyser\ScopeContext $context;
 
 	/** @var \PHPStan\Type\Type[] */
 	private array $resolvedTypes = [];
 
 	private bool $declareStrictTypes;
+
+	/** @var array<string, Type> */
+	private array $constantTypes;
 
 	/** @var \PHPStan\Reflection\FunctionReflection|MethodReflection|null */
 	private $function;
@@ -158,8 +164,10 @@ class MutatingScope implements Scope
 	 * @param \PhpParser\PrettyPrinter\Standard $printer
 	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder
+	 * @param Parser $parser
 	 * @param \PHPStan\Analyser\ScopeContext $context
 	 * @param bool $declareStrictTypes
+	 * @param array<string, Type> $constantTypes
 	 * @param \PHPStan\Reflection\FunctionReflection|MethodReflection|null $function
 	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
@@ -181,8 +189,10 @@ class MutatingScope implements Scope
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
+		Parser $parser,
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
+		array $constantTypes = [],
 		$function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
@@ -208,8 +218,10 @@ class MutatingScope implements Scope
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
+		$this->parser = $parser;
 		$this->context = $context;
 		$this->declareStrictTypes = $declareStrictTypes;
+		$this->constantTypes = $constantTypes;
 		$this->function = $function;
 		$this->namespace = $namespace;
 		$this->variableTypes = $variablesTypes;
@@ -357,18 +369,41 @@ class MutatingScope implements Scope
 
 	public function hasConstant(Name $name): bool
 	{
-		if ($this->getNamespace() !== null) {
-			$node = new ConstFetch(new Name\FullyQualified([$this->getNamespace(), $name->toString()]));
-			if ($this->isSpecified($node)) {
+		$isCompilerHaltOffset = $name->toString() === '__COMPILER_HALT_OFFSET__';
+		if ($isCompilerHaltOffset) {
+			return $this->fileHasCompilerHaltStatementCalls();
+		}
+		if ($name->isFullyQualified()) {
+			if (array_key_exists($name->toCodeString(), $this->constantTypes)) {
 				return true;
 			}
 		}
 
-		$node = new ConstFetch(new Name\FullyQualified($name->toString()));
-		if ($this->isSpecified($node)) {
+		if ($this->getNamespace() !== null) {
+			$constantName = new FullyQualified([$this->getNamespace(), $name->toString()]);
+			if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+				return true;
+			}
+		}
+
+		$constantName = new FullyQualified($name->toString());
+		if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
 			return true;
 		}
+
 		return $this->reflectionProvider->hasConstant($name, $this);
+	}
+
+	private function fileHasCompilerHaltStatementCalls(): bool
+	{
+		$nodes = $this->parser->parseFile($this->getFile());
+		foreach ($nodes as $node) {
+			if ($node instanceof \PhpParser\Node\Stmt\HaltCompiler) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public function isInAnonymousFunction(): bool
@@ -1398,13 +1433,32 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof ConstFetch) {
-			$constName = strtolower((string) $node->name);
-			if ($constName === 'true') {
+			$constName = (string) $node->name;
+			$loweredConstName = strtolower($constName);
+			if ($loweredConstName === 'true') {
 				return new \PHPStan\Type\Constant\ConstantBooleanType(true);
-			} elseif ($constName === 'false') {
+			} elseif ($loweredConstName === 'false') {
 				return new \PHPStan\Type\Constant\ConstantBooleanType(false);
-			} elseif ($constName === 'null') {
+			} elseif ($loweredConstName === 'null') {
 				return new NullType();
+			}
+
+			if ($node->name->isFullyQualified()) {
+				if (array_key_exists($node->name->toCodeString(), $this->constantTypes)) {
+					return $this->resolveConstantType($node->name->toString(), $this->constantTypes[$node->name->toCodeString()]);
+				}
+			}
+
+			if ($this->getNamespace() !== null) {
+				$constantName = new FullyQualified([$this->getNamespace(), $constName]);
+				if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+					return $this->resolveConstantType($constantName->toString(), $this->constantTypes[$constantName->toCodeString()]);
+				}
+			}
+
+			$constantName = new FullyQualified($constName);
+			if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+				return $this->resolveConstantType($constantName->toString(), $this->constantTypes[$constantName->toCodeString()]);
 			}
 
 			if ($this->reflectionProvider->hasConstant($node->name, $this)) {
@@ -1433,10 +1487,8 @@ class MutatingScope implements Scope
 				}
 
 				$constantType = $this->reflectionProvider->getConstant($node->name, $this)->getValueType();
-				if ($constantType instanceof ConstantType && in_array($resolvedConstantName, $this->dynamicConstantNames, true)) {
-					return $constantType->generalize();
-				}
-				return $constantType;
+
+				return $this->resolveConstantType($resolvedConstantName, $constantType);
 			}
 
 			return new ErrorType();
@@ -1773,6 +1825,15 @@ class MutatingScope implements Scope
 		return new MixedType();
 	}
 
+	private function resolveConstantType(string $constantName, Type $constantType): Type
+	{
+		if ($constantType instanceof ConstantType && in_array($constantName, $this->dynamicConstantNames, true)) {
+			return $constantType->generalize();
+		}
+
+		return $constantType;
+	}
+
 	public function getNativeType(Expr $expr): Type
 	{
 		$key = $this->getNodeKey($expr);
@@ -1798,8 +1859,10 @@ class MutatingScope implements Scope
 			$this->printer,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
+			$this->parser,
 			$this->context,
 			$this->declareStrictTypes,
+			$this->constantTypes,
 			$this->function,
 			$this->namespace,
 			$this->variableTypes,
@@ -1836,6 +1899,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->declareStrictTypes,
+			$this->constantTypes,
 			$this->function,
 			$this->namespace,
 			$variableTypes,
@@ -2056,6 +2120,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -2077,6 +2142,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -2117,6 +2183,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context->enterClass($classReflection),
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			null,
 			$this->getNamespace(),
 			[
@@ -2130,6 +2197,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context->enterTrait($traitReflection),
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -2289,6 +2357,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$functionReflection,
 			$this->getNamespace(),
 			$variableTypes,
@@ -2306,6 +2375,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context->beginFile(),
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			null,
 			$namespaceName
 		);
@@ -2328,6 +2398,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
@@ -2349,6 +2420,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
@@ -2366,6 +2438,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
@@ -2449,6 +2522,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
@@ -2492,6 +2566,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
@@ -2632,6 +2707,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -2653,6 +2729,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -2705,6 +2782,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
@@ -2732,6 +2810,7 @@ class MutatingScope implements Scope
 			return $this->scopeFactory->create(
 				$this->context,
 				$this->isDeclareStrictTypes(),
+				$this->constantTypes,
 				$this->getFunction(),
 				$this->getNamespace(),
 				$variableTypes,
@@ -2772,6 +2851,28 @@ class MutatingScope implements Scope
 			return $this;
 		}
 
+		if ($expr instanceof ConstFetch) {
+			$constantTypes = $this->constantTypes;
+			$constantName = new FullyQualified($expr->name->toString());
+			$constantTypes[$constantName->toCodeString()] = $type;
+
+			return $this->scopeFactory->create(
+				$this->context,
+				$this->isDeclareStrictTypes(),
+				$constantTypes,
+				$this->getFunction(),
+				$this->getNamespace(),
+				$this->getVariableTypes(),
+				$this->moreSpecificTypes,
+				$this->inClosureBindScopeClass,
+				$this->anonymousFunctionReflection,
+				$this->inFirstLevelStatement,
+				$this->currentlyAssignedExpressions,
+				$this->nativeExpressionTypes,
+				$this->inFunctionCallsStack
+			);
+		}
+
 		$exprString = $this->getNodeKey($expr);
 
 		$scope = $this;
@@ -2788,6 +2889,7 @@ class MutatingScope implements Scope
 			return $this->scopeFactory->create(
 				$this->context,
 				$this->isDeclareStrictTypes(),
+				$this->constantTypes,
 				$this->getFunction(),
 				$this->getNamespace(),
 				$variableTypes,
@@ -2862,6 +2964,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -2970,6 +3073,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -3003,6 +3107,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
@@ -3031,6 +3136,10 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			array_map($variableHolderToType, $this->generalizeVariableTypeHolders(
+				array_map($typeToVariableHolder, $this->constantTypes),
+				array_map($typeToVariableHolder, $otherScope->constantTypes)
+			)),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->mergeVariableHolders($this->getVariableTypes(), $otherScope->getVariableTypes()),
@@ -3088,6 +3197,11 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			array_map($variableHolderToType, $this->processFinallyScopeVariableTypeHolders(
+				array_map($typeToVariableHolder, $this->constantTypes),
+				array_map($typeToVariableHolder, $finallyScope->constantTypes),
+				array_map($typeToVariableHolder, $originalFinallyScope->constantTypes)
+			)),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->processFinallyScopeVariableTypeHolders(
@@ -3189,6 +3303,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
@@ -3235,6 +3350,7 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypeHolders,
@@ -3274,6 +3390,10 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
+			array_map($variableHolderToType, $this->generalizeVariableTypeHolders(
+				array_map($typeToVariableHolder, $this->constantTypes),
+				array_map($typeToVariableHolder, $otherScope->constantTypes)
+			)),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypeHolders,
@@ -3485,9 +3605,18 @@ class MutatingScope implements Scope
 			return new VariableTypeHolder($type, TrinaryLogic::createYes());
 		};
 
-		return $this->compareVariableTypeHolders(
+		$nativeExpressionTypesResult = $this->compareVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
+		);
+
+		if (!$nativeExpressionTypesResult) {
+			return false;
+		}
+
+		return $this->compareVariableTypeHolders(
+			array_map($typeToVariableHolder, $this->constantTypes),
+			array_map($typeToVariableHolder, $otherScope->constantTypes)
 		);
 	}
 
@@ -3584,6 +3713,10 @@ class MutatingScope implements Scope
 				$typeHolder->getCertainty()->describe()
 			);
 			$descriptions[$key] = $typeHolder->getType()->describe(VerbosityLevel::precise());
+		}
+		foreach ($this->constantTypes as $name => $type) {
+			$key = sprintf('const %s', $name);
+			$descriptions[$key] = $type->describe(VerbosityLevel::precise());
 		}
 
 		return $descriptions;

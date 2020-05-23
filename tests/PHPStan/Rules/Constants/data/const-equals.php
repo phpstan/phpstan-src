@@ -16,3 +16,9 @@ echo ANOTHER_PATH;
 define('DiffNamespace\\ANOTHER_PATH', 'test');
 
 echo \DiffNamespace\ANOTHER_PATH;
+
+function () {
+	echo CONSOLE_PATH;
+	echo ANOTHER_PATH;
+	echo \DiffNamespace\ANOTHER_PATH;
+};

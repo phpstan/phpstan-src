@@ -10,3 +10,8 @@ const CONSOLE_PATH = __DIR__ . '/../../bin/console';
 define('ANOTHER_PATH', 'test');
 
 echo ANOTHER_PATH;
+
+function () {
+	echo CONSOLE_PATH;
+	echo ANOTHER_PATH;
+};

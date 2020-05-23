@@ -746,6 +746,7 @@ class PhpClassReflectionExtension
 		$classScope = $this->scopeFactory->create(
 			ScopeContext::create($fileName),
 			false,
+			[],
 			$constructor,
 			$namespace
 		)->enterClass($declaringClass);

@@ -9912,6 +9912,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/shadowed-trait-methods.php');
 	}
 
+	public function dataConstInFunctions(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/const-in-functions.php');
+	}
+
+	public function dataConstInFunctionsNamespaced(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/const-in-functions-namespaced.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9961,6 +9971,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataAssignNestedArray
 	 * @dataProvider dataBug3276
 	 * @dataProvider dataShadowedTraitMethods
+	 * @dataProvider dataConstInFunctions
+	 * @dataProvider dataConstInFunctionsNamespaced
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

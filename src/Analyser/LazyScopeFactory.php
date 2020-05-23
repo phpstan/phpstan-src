@@ -37,6 +37,7 @@ class LazyScopeFactory implements ScopeFactory
 	/**
 	 * @param \PHPStan\Analyser\ScopeContext $context
 	 * @param bool $declareStrictTypes
+	 * @param array<string, Type> $constantTypes
 	 * @param \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null $function
 	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
@@ -53,6 +54,7 @@ class LazyScopeFactory implements ScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
+		array $constantTypes = [],
 		$function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
@@ -78,8 +80,10 @@ class LazyScopeFactory implements ScopeFactory
 			$this->container->getByType(Standard::class),
 			$this->container->getByType(TypeSpecifier::class),
 			$this->container->getByType(PropertyReflectionFinder::class),
+			$this->container->getByType(\PHPStan\Parser\Parser::class),
 			$context,
 			$declareStrictTypes,
+			$constantTypes,
 			$function,
 			$namespace,
 			$variablesTypes,

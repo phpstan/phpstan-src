@@ -30,6 +30,8 @@ class DirectScopeFactory implements ScopeFactory
 
 	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
+	private \PHPStan\Parser\Parser $parser;
+
 	private bool $treatPhpDocTypesAsCertain;
 
 	/** @var string[] */
@@ -43,6 +45,7 @@ class DirectScopeFactory implements ScopeFactory
 		\PhpParser\PrettyPrinter\Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
+		\PHPStan\Parser\Parser $parser,
 		bool $treatPhpDocTypesAsCertain,
 		Container $container
 	)
@@ -54,6 +57,7 @@ class DirectScopeFactory implements ScopeFactory
 		$this->printer = $printer;
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
+		$this->parser = $parser;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 	}
@@ -61,6 +65,7 @@ class DirectScopeFactory implements ScopeFactory
 	/**
 	 * @param \PHPStan\Analyser\ScopeContext $context
 	 * @param bool $declareStrictTypes
+	 * @param  array<string, Type> $constantTypes
 	 * @param \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null $function
 	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
@@ -77,6 +82,7 @@ class DirectScopeFactory implements ScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
+		array $constantTypes = [],
 		$function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
@@ -102,8 +108,10 @@ class DirectScopeFactory implements ScopeFactory
 			$this->printer,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
+			$this->parser,
 			$context,
 			$declareStrictTypes,
+			$constantTypes,
 			$function,
 			$namespace,
 			$variablesTypes,

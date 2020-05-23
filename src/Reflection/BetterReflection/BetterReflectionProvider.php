@@ -8,7 +8,6 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
-use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
@@ -60,8 +59,6 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	private \PhpParser\PrettyPrinter\Standard $printer;
 
-	private Parser $parser;
-
 	private \PHPStan\File\FileHelper $fileHelper;
 
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
@@ -84,7 +81,6 @@ class BetterReflectionProvider implements ReflectionProvider
 		RelativePathHelper $relativePathHelper,
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		Standard $printer,
-		Parser $parser,
 		FileHelper $fileHelper,
 		FunctionReflector $functionReflector,
 		ConstantReflector $constantReflector
@@ -100,7 +96,6 @@ class BetterReflectionProvider implements ReflectionProvider
 		$this->relativePathHelper = $relativePathHelper;
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 		$this->printer = $printer;
-		$this->parser = $parser;
 		$this->fileHelper = $fileHelper;
 		$this->functionReflector = $functionReflector;
 		$this->constantReflector = $constantReflector;
@@ -339,12 +334,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
-		return $this->resolveName($nameNode, function (string $name) use ($scope): bool {
-			$isCompilerHaltOffset = $name === '__COMPILER_HALT_OFFSET__';
-			if ($isCompilerHaltOffset && $scope !== null) {
-				return $this->fileHasCompilerHaltStatementCalls($scope->getFile());
-			}
-
+		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->constantReflector->reflect($name);
 				return true;
@@ -355,18 +345,6 @@ class BetterReflectionProvider implements ReflectionProvider
 			}
 			return false;
 		}, $scope);
-	}
-
-	private function fileHasCompilerHaltStatementCalls(string $pathToFile): bool
-	{
-		$nodes = $this->parser->parseFile($pathToFile);
-		foreach ($nodes as $node) {
-			if ($node instanceof \PhpParser\Node\Stmt\HaltCompiler) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**

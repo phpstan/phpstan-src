@@ -211,7 +211,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
 				self::getContainer()->getByType(Standard::class),
 				$anonymousClassNameHelper,
-				self::getContainer()->getByType(Parser::class),
 				$fileHelper,
 				$relativePathHelper,
 				self::getContainer()->getByType(StubPhpDocProvider::class)
@@ -368,7 +367,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			$relativePathHelper,
 			$anonymousClassNameHelper,
 			self::getContainer()->getByType(Standard::class),
-			$parser,
 			$fileHelper,
 			$functionReflector,
 			$constantReflector
@@ -536,6 +534,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			new \PhpParser\PrettyPrinter\Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
+			$this->getParser(),
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container
 		);

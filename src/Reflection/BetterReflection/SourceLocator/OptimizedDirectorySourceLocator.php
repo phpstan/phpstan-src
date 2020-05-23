@@ -6,7 +6,6 @@ use PHPStan\File\FileFinder;
 use Roave\BetterReflection\Identifier\Identifier;
 use Roave\BetterReflection\Identifier\IdentifierType;
 use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflector\Reflector;
 use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
@@ -24,8 +23,14 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, string>|null */
 	private ?array $classToFile = null;
 
+	/** @var array<string, string>|null */
+	private ?array $functionToFile = null;
+
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
 	private array $classNodes = [];
+
+	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	private array $functionNodes = [];
 
 	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
 	private array $locatedSourcesByFile;
@@ -68,44 +73,63 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			return $this->nodeToReflection($reflector, $this->classNodes[$className]);
 		}
 
+		if ($identifier->isFunction()) {
+			$functionName = $identifier->getName();
+			if (array_key_exists($functionName, $this->functionNodes)) {
+				return $this->nodeToReflection($reflector, $this->functionNodes[$functionName]);
+			}
+
+			$file = $this->findFileByFunction($functionName);
+			if ($file === null) {
+				return null;
+			}
+
+			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
+			$locatedSource = $fetchedNodesResult->getLocatedSource();
+			$this->locatedSourcesByFile[$file] = $locatedSource;
+			foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
+				$this->functionNodes[$identifierName] = $fetchedFunctionNode;
+			}
+
+			if (!array_key_exists($functionName, $this->functionNodes)) {
+				return null;
+			}
+
+			return $this->nodeToReflection($reflector, $this->functionNodes[$functionName]);
+		}
+
 		return null;
 	}
 
 	/**
 	 * @param Reflector $reflector
-	 * @param FetchedNode<\PhpParser\Node\Stmt\ClassLike> $fetchedNode
+	 * @param FetchedNode<\PhpParser\Node\Stmt\ClassLike>|FetchedNode<\PhpParser\Node\Stmt\Function_> $fetchedNode
 	 * @return Reflection
 	 */
 	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode): Reflection
 	{
 		$nodeToReflection = new NodeToReflection();
-		$classReflection = $nodeToReflection->__invoke(
+		$reflection = $nodeToReflection->__invoke(
 			$reflector,
 			$fetchedNode->getNode(),
 			$this->locatedSourcesByFile[$fetchedNode->getFileName()],
 			$fetchedNode->getNamespace()
 		);
 
-		if (!$classReflection instanceof ReflectionClass) {
+		if ($reflection === null) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		return $classReflection;
+		return $reflection;
 	}
 
 	private function findFileByClass(string $className): ?string
 	{
 		if ($this->classToFile === null) {
-			$fileFinderResult = $this->fileFinder->findFiles([$this->directory]);
-			$classToFile = [];
-			foreach ($fileFinderResult->getFiles() as $file) {
-				$classesInFile = $this->findClasses($file);
-				foreach ($classesInFile as $classInFile) {
-					$classToFile[$classInFile] = $file;
-				}
+			$this->init();
+			if ($this->classToFile === null) {
+				throw new \PHPStan\ShouldNotHappenException();
 			}
-
-			$this->classToFile = $classToFile;
 		}
 
 		if (!array_key_exists($className, $this->classToFile)) {
@@ -115,22 +139,59 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		return $this->classToFile[$className];
 	}
 
+	private function findFileByFunction(string $functionName): ?string
+	{
+		if ($this->functionToFile === null) {
+			$this->init();
+			if ($this->functionToFile === null) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+		}
+
+		if (!array_key_exists($functionName, $this->functionToFile)) {
+			return null;
+		}
+
+		return $this->functionToFile[$functionName];
+	}
+
+	private function init(): void
+	{
+		$fileFinderResult = $this->fileFinder->findFiles([$this->directory]);
+		$classToFile = [];
+		$functionToFile = [];
+		foreach ($fileFinderResult->getFiles() as $file) {
+			$symbols = $this->findSymbols($file);
+			$classesInFile = $symbols['classes'];
+			$functionsInFile = $symbols['functions'];
+			foreach ($classesInFile as $classInFile) {
+				$classToFile[$classInFile] = $file;
+			}
+			foreach ($functionsInFile as $functionInFile) {
+				$functionToFile[$functionInFile] = $file;
+			}
+		}
+
+		$this->classToFile = $classToFile;
+		$this->functionToFile = $functionToFile;
+	}
+
 	/**
 	 * Inspired by Composer\Autoload\ClassMapGenerator::findClasses()
 	 * @link https://github.com/composer/composer/blob/45d3e133a4691eccb12e9cd6f9dfd76eddc1906d/src/Composer/Autoload/ClassMapGenerator.php#L216
 	 *
 	 * @param string $file
-	 * @return string[]
+	 * @return array{classes: string[], functions: string[]}
 	 */
-	private function findClasses(string $file): array
+	private function findSymbols(string $file): array
 	{
 		$contents = @php_strip_whitespace($file);
 		if ($contents === '') {
-			return [];
+			return ['classes' => [], 'functions' => []];
 		}
 
-		if (!preg_match('{\b(?:class|interface|trait)\s}i', $contents)) {
-			return [];
+		if (!preg_match('{\b(?:class|interface|trait|function)\s}i', $contents)) {
+			return ['classes' => [], 'functions' => []];
 		}
 
 		// strip heredocs/nowdocs
@@ -141,7 +202,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		if (substr($contents, 0, 2) !== '<?') {
 			$contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
 			if ($replacements === 0) {
-				return [];
+				return ['classes' => [], 'functions' => []];
 			}
 		}
 		// strip non-php blocks in the file
@@ -158,12 +219,13 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 		preg_match_all('{
             (?:
-                 \b(?<![\$:>])(?P<type>class|interface|trait) \s++ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
+                 \b(?<![\$:>])(?P<type>class|interface|trait|function) \s++ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
                | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]
             )
         }ix', $contents, $matches);
 
 		$classes = [];
+		$functions = [];
 		$namespace = '';
 
 		for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
@@ -175,21 +237,20 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				if ($name === 'extends' || $name === 'implements') {
 					continue;
 				}
-				if ($name[0] === ':') {
-					// This is an XHP class, https://github.com/facebook/xhp
-					$name = 'xhp' . substr(str_replace(['-', ':'], ['_', '__'], $name), 1);
-				} elseif ($matches['type'][$i] === 'enum') {
-					// In Hack, something like:
-					//   enum Foo: int { HERP = '123'; }
-					// The regex above captures the colon, which isn't part of
-					// the class name.
-					$name = rtrim($name, ':');
+				$namespacedName = ltrim($namespace . $name, '\\');
+
+				if ($matches['type'][$i] === 'function') {
+					$functions[] = $namespacedName;
+				} else {
+					$classes[] = $namespacedName;
 				}
-				$classes[] = ltrim($namespace . $name, '\\');
 			}
 		}
 
-		return $classes;
+		return [
+			'classes' => $classes,
+			'functions' => $functions,
+		];
 	}
 
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array

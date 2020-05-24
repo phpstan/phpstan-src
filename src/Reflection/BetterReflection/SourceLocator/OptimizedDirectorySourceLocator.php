@@ -23,8 +23,8 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, string>|null */
 	private ?array $classToFile = null;
 
-	/** @var array<string, string>|null */
-	private ?array $functionToFile = null;
+	/** @var array<string, array<int, string>>|null */
+	private ?array $functionToFiles = null;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
 	private array $classNodes = [];
@@ -79,16 +79,14 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				return $this->nodeToReflection($reflector, $this->functionNodes[$functionName]);
 			}
 
-			$file = $this->findFileByFunction($functionName);
-			if ($file === null) {
-				return null;
-			}
-
-			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-			$locatedSource = $fetchedNodesResult->getLocatedSource();
-			$this->locatedSourcesByFile[$file] = $locatedSource;
-			foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-				$this->functionNodes[$identifierName] = $fetchedFunctionNode;
+			$files = $this->findFilesByFunction($functionName);
+			foreach ($files as $file) {
+				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
+				$locatedSource = $fetchedNodesResult->getLocatedSource();
+				$this->locatedSourcesByFile[$file] = $locatedSource;
+				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
+					$this->functionNodes[$identifierName] = $fetchedFunctionNode;
+				}
 			}
 
 			if (!array_key_exists($functionName, $this->functionNodes)) {
@@ -139,27 +137,31 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		return $this->classToFile[$className];
 	}
 
-	private function findFileByFunction(string $functionName): ?string
+	/**
+	 * @param string $functionName
+	 * @return string[]
+	 */
+	private function findFilesByFunction(string $functionName): array
 	{
-		if ($this->functionToFile === null) {
+		if ($this->functionToFiles === null) {
 			$this->init();
-			if ($this->functionToFile === null) {
+			if ($this->functionToFiles === null) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 		}
 
-		if (!array_key_exists($functionName, $this->functionToFile)) {
-			return null;
+		if (!array_key_exists($functionName, $this->functionToFiles)) {
+			return [];
 		}
 
-		return $this->functionToFile[$functionName];
+		return $this->functionToFiles[$functionName];
 	}
 
 	private function init(): void
 	{
 		$fileFinderResult = $this->fileFinder->findFiles([$this->directory]);
 		$classToFile = [];
-		$functionToFile = [];
+		$functionToFiles = [];
 		foreach ($fileFinderResult->getFiles() as $file) {
 			$symbols = $this->findSymbols($file);
 			$classesInFile = $symbols['classes'];
@@ -168,12 +170,15 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				$classToFile[$classInFile] = $file;
 			}
 			foreach ($functionsInFile as $functionInFile) {
-				$functionToFile[$functionInFile] = $file;
+				if (!array_key_exists($functionInFile, $functionToFiles)) {
+					$functionToFiles[$functionInFile] = [];
+				}
+				$functionToFiles[$functionInFile][] = $file;
 			}
 		}
 
 		$this->classToFile = $classToFile;
-		$this->functionToFile = $functionToFile;
+		$this->functionToFiles = $functionToFiles;
 	}
 
 	/**

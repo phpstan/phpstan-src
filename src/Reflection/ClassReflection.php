@@ -358,8 +358,7 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		if (!isset($this->methods[$key])) {
-			$filename = $this->getFileName();
-			throw new \PHPStan\Reflection\MissingMethodFromReflectionException($this->getName(), $methodName, $filename !== false ? $filename : null);
+			throw new \PHPStan\Reflection\MissingMethodFromReflectionException($this->getName(), $methodName);
 		}
 
 		return $this->methods[$key];
@@ -373,8 +372,7 @@ class ClassReflection implements ReflectionWithFilename
 	public function getNativeMethod(string $methodName): MethodReflection
 	{
 		if (!$this->hasNativeMethod($methodName)) {
-			$filename = $this->getFileName();
-			throw new \PHPStan\Reflection\MissingMethodFromReflectionException($this->getName(), $methodName, $filename !== false ? $filename : null);
+			throw new \PHPStan\Reflection\MissingMethodFromReflectionException($this->getName(), $methodName);
 		}
 		return $this->getPhpExtension()->getNativeMethod($this, $methodName);
 	}
@@ -424,8 +422,7 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		if (!isset($this->properties[$key])) {
-			$filename = $this->getFileName();
-			throw new \PHPStan\Reflection\MissingPropertyFromReflectionException($this->getName(), $propertyName, $filename !== false ? $filename : null);
+			throw new \PHPStan\Reflection\MissingPropertyFromReflectionException($this->getName(), $propertyName);
 		}
 
 		return $this->properties[$key];
@@ -439,8 +436,7 @@ class ClassReflection implements ReflectionWithFilename
 	public function getNativeProperty(string $propertyName): PhpPropertyReflection
 	{
 		if (!$this->hasNativeProperty($propertyName)) {
-			$filename = $this->getFileName();
-			throw new \PHPStan\Reflection\MissingPropertyFromReflectionException($this->getName(), $propertyName, $filename !== false ? $filename : null);
+			throw new \PHPStan\Reflection\MissingPropertyFromReflectionException($this->getName(), $propertyName);
 		}
 
 		return $this->getPhpExtension()->getNativeProperty($this, $propertyName);
@@ -623,8 +619,7 @@ class ClassReflection implements ReflectionWithFilename
 		if (!isset($this->constants[$name])) {
 			$reflectionConstant = $this->getNativeReflection()->getReflectionConstant($name);
 			if ($reflectionConstant === false) {
-				$fileName = $this->getFileName();
-				throw new \PHPStan\Reflection\MissingConstantFromReflectionException($this->getName(), $name, $fileName !== false ? $fileName : null);
+				throw new \PHPStan\Reflection\MissingConstantFromReflectionException($this->getName(), $name);
 			}
 
 			$deprecatedDescription = null;

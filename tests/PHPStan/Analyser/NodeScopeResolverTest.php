@@ -8444,7 +8444,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$this->conflictingProperty',
 			],
 			[
-				self::$useStaticReflectionProvider ? 'TraitPhpDocs\AmbiguousPropertyType' : 'TraitPhpDocsTwo\AmbiguousPropertyType',
+				'TraitPhpDocs\AmbiguousPropertyType',
 				'$this->bogusProperty',
 			],
 			[
@@ -10540,6 +10540,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 		$resolver = new NodeScopeResolver(
 			$broker,
+			self::getReflectors()[0],
+			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,
 			$phpDocInheritanceResolver,

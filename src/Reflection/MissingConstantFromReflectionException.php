@@ -2,30 +2,21 @@
 
 namespace PHPStan\Reflection;
 
-class MissingConstantFromReflectionException extends \PHPStan\AnalysedCodeException
+class MissingConstantFromReflectionException extends \Exception
 {
 
 	public function __construct(
 		string $className,
-		string $constantName,
-		?string $currentFilename
+		string $constantName
 	)
 	{
 		parent::__construct(
 			sprintf(
-				'Constant %s was not found in reflection of class %s - probably the wrong version of class is autoloaded.%s',
+				'Constant %s was not found in reflection of class %s.',
 				$constantName,
-				$className,
-				$currentFilename !== null
-					? sprintf(' The currently loaded version is at: %s', $currentFilename)
-					: ''
+				$className
 			)
 		);
-	}
-
-	public function getTip(): ?string
-	{
-		return null;
 	}
 
 }

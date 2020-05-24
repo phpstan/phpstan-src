@@ -388,7 +388,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	/**
 	 * @return array{ClassReflector, FunctionReflector, ConstantReflector}
 	 */
-	private static function getReflectors(): array
+	public static function getReflectors(): array
 	{
 		if (self::$reflectors !== null) {
 			return self::$reflectors;
@@ -513,7 +513,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		};
 	}
 
-	private function getClassReflectionExtensionRegistryProvider(): DirectClassReflectionExtensionRegistryProvider
+	public function getClassReflectionExtensionRegistryProvider(): DirectClassReflectionExtensionRegistryProvider
 	{
 		if ($this->classReflectionExtensionRegistryProvider === null) {
 			$this->classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);

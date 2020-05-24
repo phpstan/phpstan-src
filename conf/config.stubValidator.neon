@@ -12,6 +12,9 @@ services:
 			parser: @phpParserDecorator
 			stubFiles: %stubFiles%
 
+	nodeScopeResolverClassReflector:
+		factory: @stubClassReflector
+
 	stubBetterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:

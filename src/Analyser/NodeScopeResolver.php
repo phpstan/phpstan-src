@@ -45,7 +45,9 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
+use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileReader;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -95,6 +97,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
+use Roave\BetterReflection\Reflector\ClassReflector;
+use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
+use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 
 class NodeScopeResolver
 {
@@ -103,6 +109,10 @@ class NodeScopeResolver
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+
+	private ClassReflector $classReflector;
+
+	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
 	private \PHPStan\Parser\Parser $parser;
 
@@ -131,6 +141,7 @@ class NodeScopeResolver
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
+	 * @param ClassReflector $classReflector
 	 * @param Parser $parser
 	 * @param FileTypeMapper $fileTypeMapper
 	 * @param PhpDocInheritanceResolver $phpDocInheritanceResolver
@@ -144,6 +155,8 @@ class NodeScopeResolver
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
+		ClassReflector $classReflector,
+		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		Parser $parser,
 		FileTypeMapper $fileTypeMapper,
 		PhpDocInheritanceResolver $phpDocInheritanceResolver,
@@ -157,6 +170,8 @@ class NodeScopeResolver
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
+		$this->classReflector = $classReflector;
+		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->parser = $parser;
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
@@ -505,7 +520,30 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\ClassLike) {
 			$hasYield = false;
 			if (isset($stmt->namespacedName)) {
-				$classScope = $scope->enterClass($this->reflectionProvider->getClass((string) $stmt->namespacedName));
+				$nodeToReflection = new NodeToReflection();
+				$betterReflectionClass = $nodeToReflection->__invoke(
+					$this->classReflector,
+					$stmt,
+					new LocatedSource(FileReader::read($scope->getFile()), $scope->getFile()),
+					$scope->getNamespace() !== null ? new Node\Stmt\Namespace_(new Name($scope->getNamespace())) : null,
+					null
+				);
+				if (!$betterReflectionClass instanceof \Roave\BetterReflection\Reflection\ReflectionClass) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+				$classScope = $scope->enterClass(
+					new ClassReflection(
+						$this->reflectionProvider,
+						$this->fileTypeMapper,
+						$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
+						$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
+						$betterReflectionClass->getName(),
+						new ReflectionClass($betterReflectionClass),
+						null,
+						null,
+						null
+					)
+				);
 			} elseif ($stmt instanceof Class_) {
 				if ($stmt->name === null) {
 					throw new \PHPStan\ShouldNotHappenException();

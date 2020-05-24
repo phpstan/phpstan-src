@@ -2,30 +2,21 @@
 
 namespace PHPStan\Reflection;
 
-class MissingMethodFromReflectionException extends \PHPStan\AnalysedCodeException
+class MissingMethodFromReflectionException extends \Exception
 {
 
 	public function __construct(
 		string $className,
-		string $methodName,
-		?string $currentFilename
+		string $methodName
 	)
 	{
 		parent::__construct(
 			sprintf(
-				'Method %s() was not found in reflection of class %s - probably the wrong version of class is autoloaded.%s',
+				'Method %s() was not found in reflection of class %s.',
 				$methodName,
-				$className,
-				$currentFilename !== null
-					? sprintf(' The currently loaded version is at: %s', $currentFilename)
-					: ''
+				$className
 			)
 		);
-	}
-
-	public function getTip(): ?string
-	{
-		return null;
 	}
 
 }

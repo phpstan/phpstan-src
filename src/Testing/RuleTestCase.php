@@ -69,6 +69,8 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 			$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 			$nodeScopeResolver = new NodeScopeResolver(
 				$broker,
+				self::getReflectors()[0],
+				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),
 				$fileTypeMapper,
 				$phpDocInheritanceResolver,

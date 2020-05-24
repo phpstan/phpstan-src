@@ -330,6 +330,7 @@ services:
 	-
 		class: PHPStan\Analyser\NodeScopeResolver
 		arguments:
+			classReflector: @nodeScopeResolverClassReflector
 			polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
 			polluteCatchScopeWithTryAssignments: %polluteCatchScopeWithTryAssignments%
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
@@ -1057,6 +1058,10 @@ services:
 		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector
 		arguments:
 			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
+	nodeScopeResolverClassReflector:
+		factory: @betterReflectionClassReflector
 		autowired: false
 
 	betterReflectionFunctionReflector:

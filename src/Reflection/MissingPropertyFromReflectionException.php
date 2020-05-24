@@ -2,30 +2,21 @@
 
 namespace PHPStan\Reflection;
 
-class MissingPropertyFromReflectionException extends \PHPStan\AnalysedCodeException
+class MissingPropertyFromReflectionException extends \Exception
 {
 
 	public function __construct(
 		string $className,
-		string $propertyName,
-		?string $currentFilename
+		string $propertyName
 	)
 	{
 		parent::__construct(
 			sprintf(
-				'Property $%s was not found in reflection of class %s - probably the wrong version of class is autoloaded.%s',
+				'Property $%s was not found in reflection of class %s.',
 				$propertyName,
-				$className,
-				$currentFilename !== null
-					? sprintf(' The currently loaded version is at: %s', $currentFilename)
-					: ''
+				$className
 			)
 		);
-	}
-
-	public function getTip(): ?string
-	{
-		return null;
 	}
 
 }

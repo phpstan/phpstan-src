@@ -39,7 +39,8 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				24,
 			],
 			[
-				'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',
+				//'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',
+				'PHPDoc tag @template T for class ClassTemplateType\Lorem has invalid bound type ClassTemplateType\baz.',
 				32,
 			],
 			[

@@ -196,6 +196,11 @@ parameters:
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: tests/PHPStan/Analyser/AnalyserTest.php
+
+		-
 			message: "#^Class PHPStan\\\\Analyser\\\\AnonymousClassNameRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Analyser/AnonymousClassNameRule.php

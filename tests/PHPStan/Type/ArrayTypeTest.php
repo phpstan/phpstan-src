@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Broker\Broker;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -91,6 +92,8 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 
 	public function dataAccepts(): array
 	{
+		$reflectionProvider = Broker::getInstance();
+
 		return [
 			[
 				new ArrayType(new MixedType(), new StringType()),
@@ -120,14 +123,14 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 						new ConstantIntegerType(0),
 						new ConstantIntegerType(1),
 					], [
-						new ThisType(self::class),
+						new ThisType($reflectionProvider->getClass(self::class)),
 						new ConstantStringType('dataAccepts'),
 					]),
 					new ConstantArrayType([
 						new ConstantIntegerType(0),
 						new ConstantIntegerType(1),
 					], [
-						new ThisType(self::class),
+						new ThisType($reflectionProvider->getClass(self::class)),
 						new ConstantStringType('dataIsSuperTypeOf'),
 					]),
 				]),

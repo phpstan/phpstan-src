@@ -2,32 +2,45 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 
 class ThisType extends StaticType
 {
 
-	protected static function createStaticObjectType(string $className): ObjectType
+	private ClassReflection $classReflection;
+
+	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
+
+	public function __construct(ClassReflection $classReflection)
 	{
-		$broker = Broker::getInstance();
-		if (!$broker->hasClass($className)) {
-			return new ObjectType($className);
+		parent::__construct($classReflection->getName());
+		$this->classReflection = $classReflection;
+	}
+
+	public function getStaticObjectType(): ObjectType
+	{
+		if ($this->staticObjectType === null) {
+			if ($this->classReflection->isGeneric()) {
+				$typeMap = $this->classReflection->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
+					return TemplateTypeHelper::toArgument($type);
+				});
+				return $this->staticObjectType = new GenericObjectType(
+					$this->classReflection->getName(),
+					$this->classReflection->typeMapToList($typeMap)
+				);
+			}
+
+			return $this->staticObjectType = new ObjectType($this->classReflection->getName(), null, $this->classReflection);
 		}
 
-		$classReflection = $broker->getClass($className);
-		if ($classReflection->isGeneric()) {
-			$typeMap = $classReflection->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
-				return TemplateTypeHelper::toArgument($type);
-			});
-			return new GenericObjectType(
-				$className,
-				$classReflection->typeMapToList($typeMap)
-			);
-		}
+		return $this->staticObjectType;
+	}
 
-		return new ObjectType($className);
+	public function changeBaseClass(ClassReflection $classReflection): StaticType
+	{
+		return new self($classReflection);
 	}
 
 	public function describe(VerbosityLevel $level): string

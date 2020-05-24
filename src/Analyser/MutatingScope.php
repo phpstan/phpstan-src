@@ -2201,7 +2201,7 @@ class MutatingScope implements Scope
 			null,
 			$this->getNamespace(),
 			[
-				'this' => VariableTypeHolder::createYes(new ThisType($classReflection->getName())),
+				'this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
 			]
 		);
 	}
@@ -3889,10 +3889,10 @@ class MutatingScope implements Scope
 		$transformedCalledOnType = TypeTraverser::map($calledOnType, function (Type $type, callable $traverse) use ($calledOnThis): Type {
 			if ($type instanceof StaticType) {
 				if ($calledOnThis && $this->isInClass()) {
-					return $traverse($type->changeBaseClass($this->getClassReflection()->getName()));
+					return $traverse($type->changeBaseClass($this->getClassReflection()));
 				}
 				if ($this->isInClass()) {
-					return $traverse($type->changeBaseClass($this->getClassReflection()->getName())->getStaticObjectType());
+					return $traverse($type->changeBaseClass($this->getClassReflection())->getStaticObjectType());
 				}
 			}
 
@@ -3902,7 +3902,7 @@ class MutatingScope implements Scope
 		return TypeTraverser::map($methodReturnType, function (Type $returnType, callable $traverse) use ($transformedCalledOnType, $calledOnThis): Type {
 			if ($returnType instanceof StaticType) {
 				if ($calledOnThis && $this->isInClass()) {
-					return $traverse($returnType->changeBaseClass($this->getClassReflection()->getName()));
+					return $traverse($returnType->changeBaseClass($this->getClassReflection()));
 				}
 
 				return $traverse($transformedCalledOnType);
@@ -3945,10 +3945,10 @@ class MutatingScope implements Scope
 		$transformedFetchedOnType = TypeTraverser::map($fetchedOnType, function (Type $type, callable $traverse) use ($fetchedOnThis): Type {
 			if ($type instanceof StaticType) {
 				if ($fetchedOnThis && $this->isInClass()) {
-					return $traverse($type->changeBaseClass($this->getClassReflection()->getName()));
+					return $traverse($type->changeBaseClass($this->getClassReflection()));
 				}
 				if ($this->isInClass()) {
-					return $traverse($type->changeBaseClass($this->getClassReflection()->getName())->getStaticObjectType());
+					return $traverse($type->changeBaseClass($this->getClassReflection())->getStaticObjectType());
 				}
 			}
 
@@ -3958,7 +3958,7 @@ class MutatingScope implements Scope
 		return TypeTraverser::map($propertyType, function (Type $propertyType, callable $traverse) use ($transformedFetchedOnType, $fetchedOnThis): Type {
 			if ($propertyType instanceof StaticType) {
 				if ($fetchedOnThis && $this->isInClass()) {
-					return $traverse($propertyType->changeBaseClass($this->getClassReflection()->getName()));
+					return $traverse($propertyType->changeBaseClass($this->getClassReflection()));
 				}
 
 				return $traverse($transformedFetchedOnType);

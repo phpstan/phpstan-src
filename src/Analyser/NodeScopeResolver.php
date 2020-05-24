@@ -408,10 +408,10 @@ class NodeScopeResolver
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 
-				$className = $scope->getClassReflection()->getName();
-				$phpDocReturnType = TypeTraverser::map($phpDocReturnType, static function (Type $type, callable $traverse) use ($className): Type {
+				$classReflection = $scope->getClassReflection();
+				$phpDocReturnType = TypeTraverser::map($phpDocReturnType, static function (Type $type, callable $traverse) use ($classReflection): Type {
 					if ($type instanceof StaticType) {
-						return $traverse($type->changeBaseClass($className));
+						return $traverse($type->changeBaseClass($classReflection));
 					}
 
 					return $traverse($type);

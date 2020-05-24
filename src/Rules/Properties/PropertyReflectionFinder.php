@@ -48,10 +48,10 @@ class PropertyReflectionFinder
 		$transformedPropertyHolderType = TypeTraverser::map($propertyHolderType, static function (Type $type, callable $traverse) use ($scope, $fetchedOnThis): Type {
 			if ($type instanceof StaticType) {
 				if ($fetchedOnThis && $scope->isInClass()) {
-					return $traverse($type->changeBaseClass($scope->getClassReflection()->getName()));
+					return $traverse($type->changeBaseClass($scope->getClassReflection()));
 				}
 				if ($scope->isInClass()) {
-					return $traverse($type->changeBaseClass($scope->getClassReflection()->getName())->getStaticObjectType());
+					return $traverse($type->changeBaseClass($scope->getClassReflection())->getStaticObjectType());
 				}
 			}
 
@@ -78,7 +78,7 @@ class PropertyReflectionFinder
 		return TypeTraverser::map($propertyType, static function (Type $propertyType, callable $traverse) use ($transformedPropertyHolderType, $scope, $fetchedOnThis): Type {
 			if ($propertyType instanceof StaticType) {
 				if ($fetchedOnThis && $scope->isInClass()) {
-					return $traverse($propertyType->changeBaseClass($scope->getClassReflection()->getName()));
+					return $traverse($propertyType->changeBaseClass($scope->getClassReflection()));
 				}
 
 				return $traverse($transformedPropertyHolderType);

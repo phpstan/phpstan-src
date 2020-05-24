@@ -25,17 +25,21 @@ final class GenericObjectType extends ObjectType
 	/** @var array<int, Type> */
 	private array $types;
 
+	private ?ClassReflection $classReflection;
+
 	/**
 	 * @param array<int, Type> $types
 	 */
 	public function __construct(
 		string $mainType,
 		array $types,
-		?Type $subtractedType = null
+		?Type $subtractedType = null,
+		?ClassReflection $classReflection = null
 	)
 	{
-		parent::__construct($mainType, $subtractedType);
+		parent::__construct($mainType, $subtractedType, $classReflection);
 		$this->types = $types;
+		$this->classReflection = $classReflection;
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -168,12 +172,16 @@ final class GenericObjectType extends ObjectType
 
 	public function getClassReflection(): ?ClassReflection
 	{
+		if ($this->classReflection !== null) {
+			return $this->classReflection;
+		}
+
 		$broker = Broker::getInstance();
 		if (!$broker->hasClass($this->getClassName())) {
 			return null;
 		}
 
-		return $broker->getClass($this->getClassName())->withTypes($this->types);
+		return $this->classReflection = $broker->getClass($this->getClassName())->withTypes($this->types);
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Broker\Broker;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -121,6 +122,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 
 	public function dataRemoveNull(): array
 	{
+		$reflectionProvider = Broker::getInstance();
 		return [
 			[
 				new MixedType(),
@@ -180,11 +182,11 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				new UnionType([
-					new ThisType('Foo'),
+					new ThisType($reflectionProvider->getClass(\Exception::class)),
 					new NullType(),
 				]),
 				ThisType::class,
-				'$this(Foo)',
+				'$this(Exception)',
 			],
 			[
 				new UnionType([

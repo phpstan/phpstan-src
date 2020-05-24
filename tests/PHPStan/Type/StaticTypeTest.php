@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Broker\Broker;
 use PHPStan\TrinaryLogic;
 
 class StaticTypeTest extends \PHPStan\Testing\TestCase
@@ -58,6 +59,7 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 
 	public function dataIsSuperTypeOf(): array
 	{
+		$broker = $this->createBroker();
 		return [
 			0 => [
 				new StaticType('UnknownClassA'),
@@ -215,13 +217,13 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createYes(),
 			],
 			28 => [
-				new ThisType(\stdClass::class),
+				new ThisType($broker->getClass(\stdClass::class)),
 				new ObjectWithoutClassType(),
 				TrinaryLogic::createMaybe(),
 			],
 			29 => [
 				new ObjectWithoutClassType(),
-				new ThisType(\stdClass::class),
+				new ThisType($broker->getClass(\stdClass::class)),
 				TrinaryLogic::createYes(),
 			],
 		];
@@ -245,25 +247,27 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 
 	public function dataEquals(): array
 	{
+		$reflectionProvider = Broker::getInstance();
+
 		return [
 			[
-				new ThisType('Foo'),
-				new ThisType('Foo'),
+				new ThisType($reflectionProvider->getClass(\Exception::class)),
+				new ThisType($reflectionProvider->getClass(\Exception::class)),
 				true,
 			],
 			[
-				new ThisType('Foo'),
-				new ThisType('Bar'),
+				new ThisType($reflectionProvider->getClass(\Exception::class)),
+				new ThisType($reflectionProvider->getClass(\InvalidArgumentException::class)),
 				false,
 			],
 			[
-				new ThisType('Foo'),
-				new StaticType('Foo'),
+				new ThisType($reflectionProvider->getClass(\Exception::class)),
+				new StaticType(\Exception::class),
 				false,
 			],
 			[
-				new ThisType('Foo'),
-				new StaticType('Bar'),
+				new ThisType($reflectionProvider->getClass(\Exception::class)),
+				new StaticType(\InvalidArgumentException::class),
 				false,
 			],
 		];

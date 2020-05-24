@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
@@ -20,14 +21,9 @@ class StaticType implements TypeWithClassName
 
 	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
 
-	final public function __construct(string $baseClass)
+	public function __construct(string $baseClass)
 	{
 		$this->baseClass = $baseClass;
-	}
-
-	protected static function createStaticObjectType(string $className): ObjectType
-	{
-		return new ObjectType($className);
 	}
 
 	public function getClassName(): string
@@ -43,7 +39,7 @@ class StaticType implements TypeWithClassName
 	public function getStaticObjectType(): ObjectType
 	{
 		if ($this->staticObjectType === null) {
-			$this->staticObjectType = static::createStaticObjectType($this->baseClass);
+			$this->staticObjectType = new ObjectType($this->baseClass);
 		}
 
 		return $this->staticObjectType;
@@ -157,14 +153,9 @@ class StaticType implements TypeWithClassName
 		return $this->getStaticObjectType()->getConstant($constantName);
 	}
 
-	/**
-	 * @param string $className
-	 * @return static
-	 */
-	public function changeBaseClass(string $className): self
+	public function changeBaseClass(ClassReflection $classReflection): self
 	{
-		$thisClass = static::class;
-		return new $thisClass($className);
+		return new self($classReflection->getName());
 	}
 
 	public function isIterable(): TrinaryLogic
@@ -267,7 +258,7 @@ class StaticType implements TypeWithClassName
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		return new static($properties['baseClass']);
+		return new self($properties['baseClass']);
 	}
 
 }

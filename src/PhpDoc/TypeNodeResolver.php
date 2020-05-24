@@ -216,8 +216,11 @@ class TypeNodeResolver
 
 	private function resolveThisTypeNode(ThisTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		if ($nameScope->getClassName() !== null) {
-			return new ThisType($nameScope->getClassName());
+		$className = $nameScope->getClassName();
+		if ($className !== null) {
+			if ($this->getReflectionProvider()->hasClass($className)) {
+				return new ThisType($this->getReflectionProvider()->getClass($className));
+			}
 		}
 
 		return new ErrorType();

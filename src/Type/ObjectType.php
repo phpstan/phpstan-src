@@ -31,6 +31,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private ?\PHPStan\Type\Type $subtractedType;
 
+	private ?ClassReflection $classReflection;
+
 	private ?GenericObjectType $genericObjectType = null;
 
 	/** @var array<string, \PHPStan\TrinaryLogic> */
@@ -38,11 +40,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function __construct(
 		string $className,
-		?Type $subtractedType = null
+		?Type $subtractedType = null,
+		?ClassReflection $classReflection = null
 	)
 	{
 		$this->className = $className;
 		$this->subtractedType = $subtractedType;
+		$this->classReflection = $classReflection;
 	}
 
 	private static function createFromReflection(ClassReflection $reflection): self
@@ -178,11 +182,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$broker = Broker::getInstance();
 
-		if (!$broker->hasClass($thisClassName) || !$broker->hasClass($thatClassName)) {
+		if ($this->getClassReflection() === null || !$broker->hasClass($thatClassName)) {
 			return $this->superTypes[$description] = TrinaryLogic::createMaybe();
 		}
 
-		$thisClassReflection = $broker->getClass($thisClassName);
+		$thisClassReflection = $this->getClassReflection();
 		$thatClassReflection = $broker->getClass($thatClassName);
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
@@ -241,11 +245,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$broker = Broker::getInstance();
 
-		if (!$broker->hasClass($this->className) || !$broker->hasClass($thatClass)) {
+		if ($this->getClassReflection() === null || !$broker->hasClass($thatClass)) {
 			return TrinaryLogic::createNo();
 		}
 
-		$thisReflection = $broker->getClass($this->className);
+		$thisReflection = $this->getClassReflection();
 		$thatReflection = $broker->getClass($thatClass);
 
 		if ($thisReflection->getName() === $thatReflection->getName()) {
@@ -814,6 +818,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getClassReflection(): ?ClassReflection
 	{
+		if ($this->classReflection !== null) {
+			return $this->classReflection;
+		}
 		$broker = Broker::getInstance();
 		if (!$broker->hasClass($this->className)) {
 			return null;
@@ -821,10 +828,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$classReflection = $broker->getClass($this->className);
 		if ($classReflection->isGeneric()) {
-			return $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()));
+			return $this->classReflection = $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()));
 		}
 
-		return $classReflection;
+		return $this->classReflection = $classReflection;
 	}
 
 	/**
@@ -838,11 +845,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return null;
 		}
 		$theirReflection = $broker->getClass($className);
-
-		if (!$broker->hasClass($this->getClassName())) {
+		$thisReflection = $this->getClassReflection();
+		if ($thisReflection === null) {
 			return null;
 		}
-		$thisReflection = $broker->getClass($this->getClassName());
 
 		if ($theirReflection->getName() === $thisReflection->getName()) {
 			return $this;

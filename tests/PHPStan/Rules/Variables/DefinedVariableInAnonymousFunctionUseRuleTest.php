@@ -21,11 +21,11 @@ class DefinedVariableInAnonymousFunctionUseRuleTest extends \PHPStan\Testing\Rul
 		$this->checkMaybeUndefinedVariables = true;
 		$this->analyse([__DIR__ . '/data/defined-variables-anonymous-function-use.php'], [
 			[
-				'Undefined variable: $bar',
+				'Variable $bar might not be defined.',
 				5,
 			],
 			[
-				'Undefined variable: $wrongErrorHandler',
+				'Variable $wrongErrorHandler might not be defined.',
 				22,
 			],
 			[

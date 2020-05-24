@@ -13,10 +13,14 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testUndefinedVariableFromAssignErrorHasLine(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/undefined-variable-assign.php');
-		$this->assertCount(1, $errors);
+		$this->assertCount(2, $errors);
 		$error = $errors[0];
 		$this->assertSame('Undefined variable: $bar', $error->getMessage());
 		$this->assertSame(3, $error->getLine());
+
+		$error = $errors[1];
+		$this->assertSame('Variable $foo might not be defined.', $error->getMessage());
+		$this->assertSame(6, $error->getLine());
 	}
 
 	public function testMissingPropertyAndMethod(): void

@@ -334,7 +334,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/function-with-int-parameter-that-created-by-addition.php'], [
 			[
 				'Parameter #1 $decimal_number of function dechex expects int, float|int given.',
-				20,
+				9,
+			],
+			[
+				'Parameter #1 $decimal_number of function dechex expects int, float|int given.',
+				40,
 			],
 		]);
 	}

@@ -1,3 +1,6 @@
 <?php
+function () {
+	$foo = $bar;
+};
 
-$foo = $bar;
+echo $foo;

@@ -333,6 +333,10 @@ class MutatingScope implements Scope
 		}
 
 		if (!isset($this->variableTypes[$variableName])) {
+			if ($this->function === null && !$this->isInAnonymousFunction()) {
+				return TrinaryLogic::createMaybe();
+			}
+
 			return TrinaryLogic::createNo();
 		}
 
@@ -347,6 +351,10 @@ class MutatingScope implements Scope
 
 		if ($this->hasVariableType($variableName)->no()) {
 			throw new \PHPStan\Analyser\UndefinedVariableException($this, $variableName);
+		}
+
+		if (!array_key_exists($variableName, $this->variableTypes)) {
+			return new MixedType();
 		}
 
 		return $this->variableTypes[$variableName]->getType();

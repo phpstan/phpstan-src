@@ -289,7 +289,7 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/cli-arguments-variables.php'], [
 			[
-				'Undefined variable: $argc',
+				'Variable $argc might not be defined.',
 				3,
 			],
 			[
@@ -732,6 +732,16 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/global-variables.php'], []);
+	}
+
+	public function testRootScopeMaybeDefined(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteCatchScopeWithTryAssignments = false;
+		$this->checkMaybeUndefinedVariables = false;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/root-scope-maybe.php'], []);
 	}
 
 }

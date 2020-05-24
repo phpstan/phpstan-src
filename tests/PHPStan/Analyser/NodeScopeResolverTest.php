@@ -4546,7 +4546,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'*ERROR*',
+				'mixed',
 				'$var',
 				'new \OverwritingVariable\Bar()',
 			],
@@ -9922,6 +9922,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/const-in-functions-namespaced.php');
 	}
 
+	public function dataRootScopeMaybeDefined(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/root-scope-maybe-defined.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -9973,6 +9978,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataShadowedTraitMethods
 	 * @dataProvider dataConstInFunctions
 	 * @dataProvider dataConstInFunctionsNamespaced
+	 * @dataProvider dataRootScopeMaybeDefined
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

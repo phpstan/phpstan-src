@@ -78,6 +78,10 @@ class IssetRuleTest extends RuleTestCase
 				'Static property IssetRule\FooCoalesce::$staticString (string) in isset() is not nullable.',
 				124,
 			],
+			[
+				'Offset string on array(1, 2, 3) in isset() does not exist.',
+				149,
+			],
 		]);
 	}
 

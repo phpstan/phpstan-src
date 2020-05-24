@@ -7,6 +7,7 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -282,9 +283,18 @@ class ArrayType implements Type
 			}
 
 			if ($offsetType instanceof ConstantScalarType) {
-				/** @var int|string $offsetValue */
-				$offsetValue = key([$offsetType->getValue() => null]);
-				return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
+				/** @var int|string $castedOffsetValue */
+				$castedOffsetValue = key([$offsetType->getValue() => null]);
+
+				if (is_string($castedOffsetValue)) {
+					return new ConstantStringType($castedOffsetValue);
+				}
+
+				if ($castedOffsetValue !== $offsetType->getValue()) {
+					return new ConstantNumericStringType($castedOffsetValue);
+				}
+
+				return new ConstantIntegerType($castedOffsetValue);
 			}
 
 			if ($offsetType instanceof IntegerType) {

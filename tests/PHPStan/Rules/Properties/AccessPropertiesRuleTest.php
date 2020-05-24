@@ -365,9 +365,6 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testDateIntervalChildProperties(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/date-interval-child-properties.php'], [

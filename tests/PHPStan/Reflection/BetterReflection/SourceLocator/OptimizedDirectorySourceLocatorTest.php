@@ -16,9 +16,21 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 		return [
 			[
 				AFoo::class,
+				AFoo::class,
 				'a.php',
 			],
 			[
+				'testdirectorySourceLocator\aFoo',
+				AFoo::class,
+				'a.php',
+			],
+			[
+				\BFoo::class,
+				\BFoo::class,
+				'b.php',
+			],
+			[
+				'bfOO',
 				\BFoo::class,
 				'b.php',
 			],
@@ -30,13 +42,13 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 	 * @param string $className
 	 * @param string $file
 	 */
-	public function testClass(string $className, string $file): void
+	public function testClass(string $className, string $expectedClassName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->create(__DIR__ . '/data/directory');
 		$classReflector = new ClassReflector($locator);
 		$classReflection = $classReflector->reflect($className);
-		$this->assertSame($className, $classReflection->getName());
+		$this->assertSame($expectedClassName, $classReflection->getName());
 		$this->assertNotNull($classReflection->getFileName());
 		$this->assertSame($file, basename($classReflection->getFileName()));
 	}
@@ -46,13 +58,26 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 		return [
 			[
 				'TestDirectorySourceLocator\\doLorem',
+				'TestDirectorySourceLocator\\doLorem',
+				'a.php',
+			],
+			[
+				'testdirectorysourcelocator\\doLorem',
+				'TestDirectorySourceLocator\\doLorem',
 				'a.php',
 			],
 			[
 				'doBar',
+				'doBar',
 				'b.php',
 			],
 			[
+				'doBaz',
+				'doBaz',
+				'b.php',
+			],
+			[
+				'dobaz',
 				'doBaz',
 				'b.php',
 			],
@@ -62,16 +87,17 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 	/**
 	 * @dataProvider dataFunctionExists
 	 * @param string $functionName
+	 * @param string $expectedFunctionName
 	 * @param string $file
 	 */
-	public function testFunctionExists(string $functionName, string $file): void
+	public function testFunctionExists(string $functionName, string $expectedFunctionName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->create(__DIR__ . '/data/directory');
 		$classReflector = new ClassReflector($locator);
 		$functionReflector = new FunctionReflector($locator, $classReflector);
 		$functionReflection = $functionReflector->reflect($functionName);
-		$this->assertSame($functionName, $functionReflection->getName());
+		$this->assertSame($expectedFunctionName, $functionReflection->getName());
 		$this->assertNotNull($functionReflection->getFileName());
 		$this->assertSame($file, basename($functionReflection->getFileName()));
 	}

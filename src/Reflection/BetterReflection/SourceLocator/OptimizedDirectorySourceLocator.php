@@ -49,7 +49,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($identifier->isClass()) {
-			$className = $identifier->getName();
+			$className = strtolower($identifier->getName());
 			if (array_key_exists($className, $this->classNodes)) {
 				return $this->nodeToReflection($reflector, $this->classNodes[$className]);
 			}
@@ -63,7 +63,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			$locatedSource = $fetchedNodesResult->getLocatedSource();
 			$this->locatedSourcesByFile[$file] = $locatedSource;
 			foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNode) {
-				$this->classNodes[$identifierName] = $fetchedClassNode;
+				$this->classNodes[strtolower($identifierName)] = $fetchedClassNode;
 			}
 
 			if (!array_key_exists($className, $this->classNodes)) {
@@ -74,7 +74,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		}
 
 		if ($identifier->isFunction()) {
-			$functionName = $identifier->getName();
+			$functionName = strtolower($identifier->getName());
 			if (array_key_exists($functionName, $this->functionNodes)) {
 				return $this->nodeToReflection($reflector, $this->functionNodes[$functionName]);
 			}
@@ -85,7 +85,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				$locatedSource = $fetchedNodesResult->getLocatedSource();
 				$this->locatedSourcesByFile[$file] = $locatedSource;
 				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-					$this->functionNodes[$identifierName] = $fetchedFunctionNode;
+					$this->functionNodes[strtolower($identifierName)] = $fetchedFunctionNode;
 				}
 			}
 
@@ -242,7 +242,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				if ($name === 'extends' || $name === 'implements') {
 					continue;
 				}
-				$namespacedName = ltrim($namespace . $name, '\\');
+				$namespacedName = strtolower(ltrim($namespace . $name, '\\'));
 
 				if ($matches['type'][$i] === 'function') {
 					$functions[] = $namespacedName;

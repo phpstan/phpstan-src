@@ -518,6 +518,7 @@
 			<arg path="src"/>
 			<arg path="tests"/>
 			<arg value="--generate-baseline"/>
+			<arg value="-vvv"/>
 		</exec>
 	</target>
 

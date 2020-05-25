@@ -211,8 +211,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 			$streamOutput = $this->createStreamOutput();
 			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
-			$output = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
-			$baselineErrorFormatter->formatErrors($analysisResult, $output);
+			$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
+			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
 
 			$stream = $streamOutput->getStream();
 			rewind($stream);
@@ -243,6 +243,12 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 				if (!$fileSpecificError->canBeIgnored()) {
 					$unignorableCount++;
+					if ($output->isVeryVerbose()) {
+						$inceptionResult->getStdOutput()->writeLineFormatted("Unignorable could not be added to the baseline:");
+						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
+						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
+						$inceptionResult->getStdOutput()->writeLineFormatted('');
+					}
 					continue;
 				}
 

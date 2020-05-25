@@ -6309,7 +6309,7 @@ return [
 'mb_check_encoding' => ['bool', 'var='=>'string', 'encoding='=>'string'],
 'mb_chr' => ['string|false', 'cp'=>'int', 'encoding='=>'string'],
 'mb_convert_case' => ['string', 'sourcestring'=>'string', 'mode'=>'int', 'encoding='=>'string'],
-'mb_convert_encoding' => ['string|array', 'val'=>'string|array', 'to_encoding'=>'string', 'from_encoding='=>'mixed'],
+'mb_convert_encoding' => ['string|array<int, string>', 'val'=>'string|array<int, string>', 'to_encoding'=>'string', 'from_encoding='=>'mixed'],
 'mb_convert_kana' => ['string', 'str'=>'string', 'option='=>'string', 'encoding='=>'string'],
 'mb_convert_variables' => ['string|false', 'to_encoding'=>'string', 'from_encoding'=>'array|string', '&rw_vars'=>'string|array|object', '&...rw_vars='=>'string|array|object'],
 'mb_decode_mimeheader' => ['string', 'string'=>'string'],

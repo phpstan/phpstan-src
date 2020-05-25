@@ -13,7 +13,7 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\Rul
 
 	protected function getRule(): Rule
 	{
-		return new DefaultValueTypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true));
+		return new DefaultValueTypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
 	}
 
 	public function testDefaultValueTypesAssignedToProperties(): void

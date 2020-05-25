@@ -15,7 +15,7 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		return new AppendedArrayItemTypeRule(
 			new PropertyReflectionFinder(),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true)
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)
 		);
 	}
 

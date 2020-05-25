@@ -16,7 +16,7 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new AccessStaticPropertiesRule(
 			$broker,
-			new RuleLevelHelper($broker, true, false, true),
+			new RuleLevelHelper($broker, true, false, true, false),
 			new ClassCaseSensitivityCheck($broker)
 		);
 	}

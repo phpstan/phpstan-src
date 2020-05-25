@@ -19,7 +19,7 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new AccessPropertiesRule($broker, new RuleLevelHelper($broker, true, $this->checkThisOnly, $this->checkUnionTypes), true);
+		return new AccessPropertiesRule($broker, new RuleLevelHelper($broker, true, $this->checkThisOnly, $this->checkUnionTypes, false), true);
 	}
 
 	public function testAccessProperties(): void

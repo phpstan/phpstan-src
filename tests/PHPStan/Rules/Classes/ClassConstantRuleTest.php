@@ -15,7 +15,7 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ClassConstantRule($broker, new RuleLevelHelper($broker, true, false, true), new ClassCaseSensitivityCheck($broker));
+		return new ClassConstantRule($broker, new RuleLevelHelper($broker, true, false, true, false), new ClassCaseSensitivityCheck($broker));
 	}
 
 	public function testClassConstant(): void

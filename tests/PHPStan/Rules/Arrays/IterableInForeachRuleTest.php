@@ -12,7 +12,7 @@ class IterableInForeachRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new IterableInForeachRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true));
+		return new IterableInForeachRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
 	}
 
 	public function testCheckWithMaybes(): void

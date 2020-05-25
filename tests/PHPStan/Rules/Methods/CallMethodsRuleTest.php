@@ -21,10 +21,13 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var bool */
 	private $checkUnionTypes;
 
+	/** @var bool */
+	private $checkExplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes);
+		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
 			new FunctionCallParametersCheck($ruleLevelHelper, true, true, true, true),
@@ -1327,6 +1330,28 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/shadowed-trait-method.php'], []);
+	}
+
+	public function testExplicitMixed(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/check-explicit-mixed.php'], [
+			[
+				'Cannot call method foo() on mixed.',
+				17,
+			],
+			[
+				'Parameter #1 $i of method CheckExplicitMixedMethodCall\Bar::doBar() expects int, mixed given.',
+				43,
+			],
+			[
+				'Parameter #1 $i of method CheckExplicitMixedMethodCall\Bar::doBar() expects int, T given.',
+				65,
+			],
+		]);
 	}
 
 }

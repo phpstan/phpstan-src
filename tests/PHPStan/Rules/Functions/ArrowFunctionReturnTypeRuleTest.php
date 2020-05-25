@@ -19,7 +19,8 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 			$this->createReflectionProvider(),
 			true,
 			false,
-			true
+			true,
+			false
 		)));
 	}
 

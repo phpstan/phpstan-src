@@ -12,7 +12,7 @@ class VariableCloningRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new VariableCloningRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true));
+		return new VariableCloningRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
 	}
 
 	public function testClone(): void

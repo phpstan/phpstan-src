@@ -15,7 +15,7 @@ class EchoRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new EchoRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true)
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)
 		);
 	}
 

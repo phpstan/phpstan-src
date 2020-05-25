@@ -14,7 +14,7 @@ class InvalidBinaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		return new InvalidBinaryOperationRule(
 			new \PhpParser\PrettyPrinter\Standard(),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true)
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)
 		);
 	}
 

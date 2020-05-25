@@ -16,7 +16,7 @@ class OffsetAccessAssignOpRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false);
 		return new OffsetAccessAssignOpRule($ruleLevelHelper);
 	}
 

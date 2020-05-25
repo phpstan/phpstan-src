@@ -13,7 +13,7 @@ class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new InvalidCastRule($broker, new RuleLevelHelper($broker, true, false, true));
+		return new InvalidCastRule($broker, new RuleLevelHelper($broker, true, false, true, false));
 	}
 
 	public function testRule(): void

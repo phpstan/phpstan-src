@@ -13,7 +13,7 @@ class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new ClosureReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true)));
+		return new ClosureReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)));
 	}
 
 	public function testClosureReturnTypeRule(): void

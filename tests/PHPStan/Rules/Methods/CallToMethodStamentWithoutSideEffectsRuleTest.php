@@ -14,7 +14,7 @@ class CallToMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToMethodStamentWithoutSideEffectsRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true));
+		return new CallToMethodStamentWithoutSideEffectsRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
 	}
 
 	public function testRule(): void

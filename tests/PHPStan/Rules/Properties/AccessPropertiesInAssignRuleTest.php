@@ -16,7 +16,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	{
 		$broker = $this->createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
-			new AccessPropertiesRule($broker, new RuleLevelHelper($broker, true, false, true), true)
+			new AccessPropertiesRule($broker, new RuleLevelHelper($broker, true, false, true, false), true)
 		);
 	}
 

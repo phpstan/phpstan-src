@@ -16,6 +16,7 @@ parameters:
 	checkAlwaysTrueInstanceof: false
 	checkAlwaysTrueStrictComparison: false
 	checkClassCaseSensitivity: false
+	checkExplicitMixed: false
 	checkFunctionArgumentTypes: false
 	checkFunctionNameCase: false
 	checkGenericClassInNonGenericObjectType: false
@@ -145,6 +146,7 @@ parametersSchema:
 	checkAlwaysTrueInstanceof: bool()
 	checkAlwaysTrueStrictComparison: bool()
 	checkClassCaseSensitivity: bool()
+	checkExplicitMixed: bool()
 	checkFunctionArgumentTypes: bool()
 	checkFunctionNameCase: bool()
 	checkGenericClassInNonGenericObjectType: bool()
@@ -596,6 +598,7 @@ services:
 			checkNullables: %checkNullables%
 			checkThisOnly: %checkThisOnly%
 			checkUnionTypes: %checkUnionTypes%
+			checkExplicitMixed: %checkExplicitMixed%
 
 	-
 		class: PHPStan\Rules\UnusedFunctionParametersCheck

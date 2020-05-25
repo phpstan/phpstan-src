@@ -8,11 +8,13 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -29,17 +31,21 @@ class RuleLevelHelper
 
 	private bool $checkUnionTypes;
 
+	private bool $checkExplicitMixed;
+
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		bool $checkNullables,
 		bool $checkThisOnly,
-		bool $checkUnionTypes
+		bool $checkUnionTypes,
+		bool $checkExplicitMixed
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->checkNullables = $checkNullables;
 		$this->checkThisOnly = $checkThisOnly;
 		$this->checkUnionTypes = $checkUnionTypes;
+		$this->checkExplicitMixed = $checkExplicitMixed;
 	}
 
 	public function isThis(Expr $expression): bool
@@ -49,6 +55,14 @@ class RuleLevelHelper
 
 	public function accepts(Type $acceptingType, Type $acceptedType, bool $strictTypes): bool
 	{
+		if (
+			$this->checkExplicitMixed
+			&& $acceptedType instanceof MixedType
+			&& $acceptedType->isExplicitMixed()
+		) {
+			$acceptedType = new StrictMixedType();
+		}
+
 		if (
 			!$this->checkNullables
 			&& !$acceptingType instanceof NullType
@@ -111,6 +125,15 @@ class RuleLevelHelper
 		if (!$this->checkNullables && !$type instanceof NullType) {
 			$type = \PHPStan\Type\TypeCombinator::removeNull($type);
 		}
+		if (
+			$this->checkExplicitMixed
+			&& $type instanceof MixedType
+			&& !$type instanceof TemplateMixedType
+			&& $type->isExplicitMixed()
+		) {
+			return new FoundTypeResult(new StrictMixedType(), [], []);
+		}
+
 		if ($type instanceof MixedType || $type instanceof NeverType) {
 			return new FoundTypeResult(new ErrorType(), [], []);
 		}

@@ -12,7 +12,7 @@ class ThrowTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new ThrowTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true));
+		return new ThrowTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
 	}
 
 	public function testRule(): void

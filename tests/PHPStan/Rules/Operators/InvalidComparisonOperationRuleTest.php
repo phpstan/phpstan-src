@@ -13,7 +13,7 @@ class InvalidComparisonOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new InvalidComparisonOperationRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true)
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)
 		);
 	}
 

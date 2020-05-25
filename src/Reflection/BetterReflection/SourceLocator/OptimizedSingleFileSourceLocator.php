@@ -39,15 +39,16 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 		$nodeToReflection = new NodeToReflection();
 		if ($identifier->isClass()) {
 			$classNodes = $this->fetchedNodesResult->getClassNodes();
-			if (!array_key_exists($identifier->getName(), $classNodes)) {
+			$className = strtolower($identifier->getName());
+			if (!array_key_exists($className, $classNodes)) {
 				return null;
 			}
 
 			$classReflection = $nodeToReflection->__invoke(
 				$reflector,
-				$classNodes[$identifier->getName()]->getNode(),
+				$classNodes[$className]->getNode(),
 				$this->fetchedNodesResult->getLocatedSource(),
-				$classNodes[$identifier->getName()]->getNamespace()
+				$classNodes[$className]->getNamespace()
 			);
 			if (!$classReflection instanceof ReflectionClass) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -58,15 +59,16 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 
 		if ($identifier->isFunction()) {
 			$functionNodes = $this->fetchedNodesResult->getFunctionNodes();
-			if (!array_key_exists($identifier->getName(), $functionNodes)) {
+			$functionName = strtolower($identifier->getName());
+			if (!array_key_exists($functionName, $functionNodes)) {
 				return null;
 			}
 
 			$functionReflection = $nodeToReflection->__invoke(
 				$reflector,
-				$functionNodes[$identifier->getName()]->getNode(),
+				$functionNodes[$functionName]->getNode(),
 				$this->fetchedNodesResult->getLocatedSource(),
-				$functionNodes[$identifier->getName()]->getNamespace()
+				$functionNodes[$functionName]->getNamespace()
 			);
 			if (!$functionReflection instanceof ReflectionFunction) {
 				throw new \PHPStan\ShouldNotHappenException();

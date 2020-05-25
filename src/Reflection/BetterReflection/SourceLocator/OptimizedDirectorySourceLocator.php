@@ -63,7 +63,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			$locatedSource = $fetchedNodesResult->getLocatedSource();
 			$this->locatedSourcesByFile[$file] = $locatedSource;
 			foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNode) {
-				$this->classNodes[strtolower($identifierName)] = $fetchedClassNode;
+				$this->classNodes[$identifierName] = $fetchedClassNode;
 			}
 
 			if (!array_key_exists($className, $this->classNodes)) {
@@ -85,7 +85,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				$locatedSource = $fetchedNodesResult->getLocatedSource();
 				$this->locatedSourcesByFile[$file] = $locatedSource;
 				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-					$this->functionNodes[strtolower($identifierName)] = $fetchedFunctionNode;
+					$this->functionNodes[$identifierName] = $fetchedFunctionNode;
 				}
 			}
 

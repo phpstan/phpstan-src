@@ -21,7 +21,17 @@ class OptimizedSingleFileSourceLocatorTest extends TestCase
 				__DIR__ . '/data/a.php',
 			],
 			[
+				'testSinglefileSourceLocator\\afoo',
+				AFoo::class,
+				__DIR__ . '/data/a.php',
+			],
+			[
 				\SingleFileSourceLocatorTestClass::class,
+				\SingleFileSourceLocatorTestClass::class,
+				__DIR__ . '/data/b.php',
+			],
+			[
+				'SinglefilesourceLocatortestClass',
 				\SingleFileSourceLocatorTestClass::class,
 				__DIR__ . '/data/b.php',
 			],
@@ -52,7 +62,17 @@ class OptimizedSingleFileSourceLocatorTest extends TestCase
 				__DIR__ . '/data/a.php',
 			],
 			[
+				'testSingleFilesourcelocatOR\\dofoo',
+				'TestSingleFileSourceLocator\\doFoo',
+				__DIR__ . '/data/a.php',
+			],
+			[
 				'singleFileSourceLocatorTestFunction',
+				'singleFileSourceLocatorTestFunction',
+				__DIR__ . '/data/b.php',
+			],
+			[
+				'singlefileSourceLocatORTestfunCTion',
 				'singleFileSourceLocatorTestFunction',
 				__DIR__ . '/data/b.php',
 			],

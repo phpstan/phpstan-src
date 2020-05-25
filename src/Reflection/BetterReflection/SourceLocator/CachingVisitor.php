@@ -32,7 +32,7 @@ class CachingVisitor extends NodeVisitorAbstract
 
 		if ($node instanceof \PhpParser\Node\Stmt\ClassLike) {
 			if ($node->name !== null) {
-				$this->classNodes[$node->namespacedName->toString()] = new FetchedNode(
+				$this->classNodes[strtolower($node->namespacedName->toString())] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
 					$this->fileName
@@ -43,7 +43,7 @@ class CachingVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof \PhpParser\Node\Stmt\Function_) {
-			$this->functionNodes[$node->namespacedName->toString()] = new FetchedNode(
+			$this->functionNodes[strtolower($node->namespacedName->toString())] = new FetchedNode(
 				$node,
 				$this->currentNamespaceNode,
 				$this->fileName

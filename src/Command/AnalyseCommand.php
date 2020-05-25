@@ -244,7 +244,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				if (!$fileSpecificError->canBeIgnored()) {
 					$unignorableCount++;
 					if ($output->isVeryVerbose()) {
-						$inceptionResult->getStdOutput()->writeLineFormatted("Unignorable could not be added to the baseline:");
+						$inceptionResult->getStdOutput()->writeLineFormatted('Unignorable could not be added to the baseline:');
 						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
 						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
 						$inceptionResult->getStdOutput()->writeLineFormatted('');

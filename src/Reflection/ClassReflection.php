@@ -68,6 +68,8 @@ class ClassReflection implements ReflectionWithFilename
 
 	private ?ResolvedPhpDocBlock $stubPhpDocBlock;
 
+	private ?string $extraCacheKey;
+
 	/** @var array<string,ClassReflection>|null */
 	private ?array $ancestors = null;
 
@@ -88,6 +90,7 @@ class ClassReflection implements ReflectionWithFilename
 	 * @param \ReflectionClass $reflection
 	 * @param string|null $anonymousFilename
 	 * @param ResolvedPhpDocBlock|null $stubPhpDocBlock
+	 * @param string|null $extraCacheKey
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -98,7 +101,8 @@ class ClassReflection implements ReflectionWithFilename
 		\ReflectionClass $reflection,
 		?string $anonymousFilename,
 		?TemplateTypeMap $resolvedTemplateTypeMap,
-		?ResolvedPhpDocBlock $stubPhpDocBlock
+		?ResolvedPhpDocBlock $stubPhpDocBlock,
+		?string $extraCacheKey = null
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -110,6 +114,7 @@ class ClassReflection implements ReflectionWithFilename
 		$this->anonymousFilename = $anonymousFilename;
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap;
 		$this->stubPhpDocBlock = $stubPhpDocBlock;
+		$this->extraCacheKey = $extraCacheKey;
 	}
 
 	public function getNativeReflection(): \ReflectionClass
@@ -230,6 +235,10 @@ class ClassReflection implements ReflectionWithFilename
 			$cacheKey .= '<' . implode(',', array_map(static function (Type $type): string {
 				return $type->describe(VerbosityLevel::cache());
 			}, $this->resolvedTemplateTypeMap->getTypes())) . '>';
+		}
+
+		if ($this->extraCacheKey !== null) {
+			$cacheKey .= '-' . $this->extraCacheKey;
 		}
 
 		$this->cacheKey = $cacheKey;

@@ -541,7 +541,8 @@ class NodeScopeResolver
 						new ReflectionClass($betterReflectionClass),
 						null,
 						null,
-						null
+						null,
+						sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine())
 					)
 				);
 			} elseif ($stmt instanceof Class_) {

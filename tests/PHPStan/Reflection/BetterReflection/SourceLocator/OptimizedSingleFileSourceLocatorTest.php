@@ -6,9 +6,74 @@ use PHPStan\Testing\TestCase;
 use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use Roave\BetterReflection\Reflector\FunctionReflector;
+use TestSingleFileSourceLocator\AFoo;
 
 class OptimizedSingleFileSourceLocatorTest extends TestCase
 {
+
+	public function dataClass(): array
+	{
+		return [
+			[
+				AFoo::class,
+				AFoo::class,
+				__DIR__ . '/data/a.php',
+			],
+			[
+				\SingleFileSourceLocatorTestClass::class,
+				\SingleFileSourceLocatorTestClass::class,
+				__DIR__ . '/data/b.php',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataClass
+	 * @param string $className
+	 * @param string $expectedClassName
+	 * @param string $file
+	 */
+	public function testClass(string $className, string $expectedClassName, string $file): void
+	{
+		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
+		$locator = $factory->create($file);
+		$classReflector = new ClassReflector($locator);
+		$classReflection = $classReflector->reflect($className);
+		$this->assertSame($expectedClassName, $classReflection->getName());
+	}
+
+	public function dataFunction(): array
+	{
+		return [
+			[
+				'TestSingleFileSourceLocator\\doFoo',
+				'TestSingleFileSourceLocator\\doFoo',
+				__DIR__ . '/data/a.php',
+			],
+			[
+				'singleFileSourceLocatorTestFunction',
+				'singleFileSourceLocatorTestFunction',
+				__DIR__ . '/data/b.php',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataFunction
+	 * @param string $functionName
+	 * @param string $expectedFunctionName
+	 * @param string $file
+	 */
+	public function testFunction(string $functionName, string $expectedFunctionName, string $file): void
+	{
+		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
+		$locator = $factory->create($file);
+		$classReflector = new ClassReflector($locator);
+		$functionReflector = new FunctionReflector($locator, $classReflector);
+		$functionReflection = $functionReflector->reflect($functionName);
+		$this->assertSame($expectedFunctionName, $functionReflection->getName());
+	}
 
 	public function dataConst(): array
 	{

@@ -20,6 +20,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -389,6 +390,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$result = TrinaryLogic::createNo();
 		foreach ($this->keyTypes as $i => $keyType) {
+			if (
+				$keyType instanceof ConstantIntegerType
+				&& $offsetType instanceof StringType
+				&& !$offsetType instanceof ConstantStringType
+			) {
+				return TrinaryLogic::createMaybe();
+			}
+
 			$has = $keyType->isSuperTypeOf($offsetType);
 			if ($has->yes()) {
 				if ($this->isOptionalKey($i)) {

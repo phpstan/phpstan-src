@@ -141,3 +141,22 @@ function (SomeMagicProperties $foo, \stdClass $std): void {
 
 	echo isset($std->foo) ? $std->foo : null;
 };
+
+function numericStringOffset(string $code): string
+{
+	$array = [1, 2, 3];
+
+	if (isset($array[$code])) {
+		return (string) $array[$code];
+	}
+
+	$mappings = [
+		'21021200' => '21028800',
+	];
+
+	if (isset($mappings[$code])) {
+		return (string) $mappings[$code];
+	}
+
+	throw new \RuntimeException();
+}

@@ -74,6 +74,7 @@ class Foo extends BarParent
 	 */
 	public function testExprInstanceof($subject, string $classString, $union, $intersection, string $other, $instance, $objectT, $objectTString, $mixedTString, string $string, $object)
 	{
+		assertType('bool', $subject instanceof $classString);
 		if ($subject instanceof $classString) {
 			assertType('InstanceOfNamespace\Foo', $subject);
 			assertType('true', $subject instanceof Foo);
@@ -86,6 +87,7 @@ class Foo extends BarParent
 
 		$constantString = 'InstanceOfNamespace\BarParent';
 
+		assertType('bool', $subject instanceof $constantString);
 		if ($subject instanceof $constantString) {
 			assertType('InstanceOfNamespace\BarParent', $subject);
 			assertType('true', $subject instanceof BarParent);
@@ -96,6 +98,7 @@ class Foo extends BarParent
 			assertType('false', $subject instanceof $constantString);
 		}
 
+		assertType('bool', $subject instanceof $union);
 		if ($subject instanceof $union) {
 			assertType('InstanceOfNamespace\BarInterface|InstanceOfNamespace\Foo', $subject);
 			assertType('true', $subject instanceof $union);

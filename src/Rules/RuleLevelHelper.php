@@ -38,7 +38,7 @@ class RuleLevelHelper
 		bool $checkNullables,
 		bool $checkThisOnly,
 		bool $checkUnionTypes,
-		bool $checkExplicitMixed
+		bool $checkExplicitMixed = false
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

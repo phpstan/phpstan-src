@@ -192,16 +192,21 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier): ?Reflection
 	{
-		$result = $this->fileNodesFetcher->fetchNodes($file);
-		$this->locatedSourcesByFile[$file] = $result->getLocatedSource();
-		foreach ($result->getClassNodes() as $className => $fetchedClassNode) {
-			$this->classNodes[$className] = $fetchedClassNode;
-		}
-		foreach ($result->getFunctionNodes() as $functionName => $fetchedFunctionNode) {
-			$this->functionNodes[$functionName] = $fetchedFunctionNode;
-		}
-		foreach ($result->getConstantNodes() as $fetchedConstantNode) {
-			$this->constantNodes[] = $fetchedConstantNode;
+		if (!array_key_exists($file, $this->locatedSourcesByFile)) {
+			$result = $this->fileNodesFetcher->fetchNodes($file);
+			$this->locatedSourcesByFile[$file] = $result->getLocatedSource();
+			foreach ($result->getClassNodes() as $className => $fetchedClassNode) {
+				$this->classNodes[$className] = $fetchedClassNode;
+			}
+			foreach ($result->getFunctionNodes() as $functionName => $fetchedFunctionNode) {
+				$this->functionNodes[$functionName] = $fetchedFunctionNode;
+			}
+			foreach ($result->getConstantNodes() as $fetchedConstantNode) {
+				$this->constantNodes[] = $fetchedConstantNode;
+			}
+			$locatedSource = $result->getLocatedSource();
+		} else {
+			$locatedSource = $this->locatedSourcesByFile[$file];
 		}
 
 		$nodeToReflection = new NodeToReflection();
@@ -214,7 +219,7 @@ class AutoloadSourceLocator implements SourceLocator
 			return $nodeToReflection->__invoke(
 				$reflector,
 				$this->classNodes[$identifierName]->getNode(),
-				$result->getLocatedSource(),
+				$locatedSource,
 				$this->classNodes[$identifierName]->getNamespace()
 			);
 		}
@@ -227,7 +232,7 @@ class AutoloadSourceLocator implements SourceLocator
 			return $nodeToReflection->__invoke(
 				$reflector,
 				$this->functionNodes[$identifierName]->getNode(),
-				$result->getLocatedSource(),
+				$locatedSource,
 				$this->functionNodes[$identifierName]->getNamespace()
 			);
 		}

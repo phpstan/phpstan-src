@@ -29,7 +29,7 @@ class AutoloadSourceLocatorTest extends TestCase
 		$this->assertSame('a.php', basename($aFoo->getFileName()));
 
 		$testFunctionReflection = $functionReflector->reflect('PHPStan\\Reflection\\BetterReflection\\SourceLocator\testFunctionForLocator');
-		$this->assertSame(__FILE__, $testFunctionReflection->getFileName());
+		$this->assertSame(str_replace('\\', '/', __FILE__), $testFunctionReflection->getFileName());
 
 		$someConstant = $constantReflector->reflect('TestSingleFileSourceLocator\\SOME_CONSTANT');
 		$this->assertNotNull($someConstant->getFileName());

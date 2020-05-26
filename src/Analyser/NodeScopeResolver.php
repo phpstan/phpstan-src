@@ -531,20 +531,20 @@ class NodeScopeResolver
 				if (!$betterReflectionClass instanceof \Roave\BetterReflection\Reflection\ReflectionClass) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
-				$classScope = $scope->enterClass(
-					new ClassReflection(
-						$this->reflectionProvider,
-						$this->fileTypeMapper,
-						$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
-						$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
-						$betterReflectionClass->getName(),
-						new ReflectionClass($betterReflectionClass),
-						null,
-						null,
-						null,
-						sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine())
-					)
+				$classReflection = new ClassReflection(
+					$this->reflectionProvider,
+					$this->fileTypeMapper,
+					$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
+					$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
+					$betterReflectionClass->getName(),
+					new ReflectionClass($betterReflectionClass),
+					null,
+					null,
+					null,
+					sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine())
 				);
+				$this->reflectionProvider->hasClass($classReflection->getName());
+				$classScope = $scope->enterClass($classReflection);
 			} elseif ($stmt instanceof Class_) {
 				if ($stmt->name === null) {
 					throw new \PHPStan\ShouldNotHappenException();

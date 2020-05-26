@@ -33,7 +33,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	private array $functionNodes = [];
 
 	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
-	private array $locatedSourcesByFile;
+	private array $locatedSourcesByFile = [];
 
 	public function __construct(
 		FileNodesFetcher $fileNodesFetcher,

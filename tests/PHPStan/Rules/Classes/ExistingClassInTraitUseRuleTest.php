@@ -22,7 +22,6 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testClassWithWrongCase(): void
 	{
-		require_once __DIR__ . '/data/trait-use.php';
 		$this->analyse([__DIR__ . '/data/trait-use.php'], [
 			[
 				'Trait TraitUseCase\FooTrait referenced with incorrect case: TraitUseCase\FOOTrait.',

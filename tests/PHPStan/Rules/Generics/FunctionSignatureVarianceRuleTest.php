@@ -22,7 +22,6 @@ class FunctionSignatureVarianceRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		require_once __DIR__ . '/data/function-signature-variance.php';
 		$this->analyse([__DIR__ . '/data/function-signature-variance.php'], [
 			[
 				'Template type T is declared as covariant, but occurs in contravariant position in parameter a of function FunctionSignatureVariance\f().',

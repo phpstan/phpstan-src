@@ -64,8 +64,14 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-unknown-class.php');
 		$this->assertCount(1, $errors);
-		$this->assertSame(5, $errors[0]->getLine());
-		$this->assertSame('Class ExtendingUnknownClass\Foo extends unknown class ExtendingUnknownClass\Bar.', $errors[0]->getMessage());
+
+		if (self::$useStaticReflectionProvider) {
+			$this->assertSame(5, $errors[0]->getLine());
+			$this->assertSame('Class ExtendingUnknownClass\Foo extends unknown class ExtendingUnknownClass\Bar.', $errors[0]->getMessage());
+		} else {
+			$this->assertNull($errors[0]->getLine());
+			$this->assertSame('Class ExtendingUnknownClass\Bar not found and could not be autoloaded.', $errors[0]->getMessage());
+		}
 	}
 
 	public function testExtendingKnownClassWithCheck(): void
@@ -201,11 +207,11 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 
 		$error = $errors[1];
 		$this->assertSame('Property TwoSame\Foo::$prop (int) does not accept default value of type string.', $error->getMessage());
-		$this->assertSame(17, $error->getLine());
+		$this->assertSame(18, $error->getLine());
 
 		$error = $errors[2];
 		$this->assertSame('Property TwoSame\Foo::$prop2 (int) does not accept default value of type string.', $error->getMessage());
-		$this->assertSame(20, $error->getLine());
+		$this->assertSame(21, $error->getLine());
 	}
 
 	/**

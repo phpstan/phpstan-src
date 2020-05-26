@@ -38,6 +38,7 @@ use PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
+use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension;
@@ -429,7 +430,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		});
 		$reflectionSourceStubber = new ReflectionSourceStubber();
 		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($phpParser));
-		$locators[] = new AutoloadSourceLocator($astLocator);
+		$locators[] = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
 		$locators[] = new PhpInternalSourceLocator($astLocator, $reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $reflectionSourceStubber);
 		$sourceLocator = new MemoizingSourceLocator(new AggregateSourceLocator($locators));

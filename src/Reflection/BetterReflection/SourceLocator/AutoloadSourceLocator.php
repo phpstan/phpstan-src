@@ -20,6 +20,7 @@ use Roave\BetterReflection\SourceLocator\Ast\Exception\ParseToAstFailure;
 use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
+use function array_key_exists;
 use function file_exists;
 use function restore_error_handler;
 
@@ -39,6 +40,18 @@ class AutoloadSourceLocator implements SourceLocator
 	private static ?string $autoloadLocatedFile = null;
 
 	private static ?FileNodesFetcher $currentFileNodesFetcher = null;
+
+	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
+	private array $classNodes = [];
+
+	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	private array $functionNodes = [];
+
+	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
+	private array $constantNodes = [];
+
+	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
+	private array $locatedSourcesByFile = [];
 
 	/**
 	 * Note: the constructor has been made a 0-argument constructor because `\stream_wrapper_register`
@@ -63,6 +76,16 @@ class AutoloadSourceLocator implements SourceLocator
 	{
 		if ($identifier->isFunction()) {
 			$functionName = $identifier->getName();
+			$loweredFunctionName = strtolower($functionName);
+			if (array_key_exists($loweredFunctionName, $this->functionNodes)) {
+				$nodeToReflection = new NodeToReflection();
+				return $nodeToReflection->__invoke(
+					$reflector,
+					$this->functionNodes[$loweredFunctionName]->getNode(),
+					$this->locatedSourcesByFile[$this->functionNodes[$loweredFunctionName]->getFileName()],
+					$this->functionNodes[$loweredFunctionName]->getNamespace()
+				);
+			}
 			if (!function_exists($functionName)) {
 				return null;
 			}
@@ -79,6 +102,51 @@ class AutoloadSourceLocator implements SourceLocator
 
 		if ($identifier->isConstant()) {
 			$constantName = $identifier->getName();
+			$nodeToReflection = new NodeToReflection();
+			foreach ($this->constantNodes as $stmtConst) {
+				if ($stmtConst->getNode() instanceof FuncCall) {
+					$constantReflection = $nodeToReflection->__invoke(
+						$reflector,
+						$stmtConst->getNode(),
+						$this->locatedSourcesByFile[$stmtConst->getFileName()],
+						$stmtConst->getNamespace()
+					);
+					if ($constantReflection === null) {
+						continue;
+					}
+					if (!$constantReflection instanceof ReflectionConstant) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+					if ($constantReflection->getName() !== $identifier->getName()) {
+						continue;
+					}
+
+					return $constantReflection;
+				}
+
+				foreach (array_keys($stmtConst->getNode()->consts) as $i) {
+					$constantReflection = $nodeToReflection->__invoke(
+						$reflector,
+						$stmtConst->getNode(),
+						$this->locatedSourcesByFile[$stmtConst->getFileName()],
+						$stmtConst->getNamespace(),
+						$i
+					);
+					if ($constantReflection === null) {
+						continue;
+					}
+					if (!$constantReflection instanceof ReflectionConstant) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+					if ($constantReflection->getName() !== $identifier->getName()) {
+						continue;
+					}
+
+					return $constantReflection;
+				}
+			}
+
+
 			if (!defined($constantName)) {
 				return null;
 			}
@@ -102,6 +170,17 @@ class AutoloadSourceLocator implements SourceLocator
 			return null;
 		}
 
+		$loweredClassName = strtolower($identifier->getName());
+		if (array_key_exists($loweredClassName, $this->classNodes)) {
+			$nodeToReflection = new NodeToReflection();
+			return $nodeToReflection->__invoke(
+				$reflector,
+				$this->classNodes[$loweredClassName]->getNode(),
+				$this->locatedSourcesByFile[$this->classNodes[$loweredClassName]->getFileName()],
+				$this->classNodes[$loweredClassName]->getNamespace()
+			);
+		}
+
 		$locateResult = $this->locateClassByName($identifier->getName());
 		if ($locateResult === null) {
 			return null;
@@ -114,36 +193,43 @@ class AutoloadSourceLocator implements SourceLocator
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier): ?Reflection
 	{
 		$result = $this->fileNodesFetcher->fetchNodes($file);
+		$this->locatedSourcesByFile[$file] = $result->getLocatedSource();
+		foreach ($result->getClassNodes() as $className => $fetchedClassNode) {
+			$this->classNodes[$className] = $fetchedClassNode;
+		}
+		foreach ($result->getFunctionNodes() as $functionName => $fetchedFunctionNode) {
+			$this->functionNodes[$functionName] = $fetchedFunctionNode;
+		}
+		foreach ($result->getConstantNodes() as $fetchedConstantNode) {
+			$this->constantNodes[] = $fetchedConstantNode;
+		}
+
 		$nodeToReflection = new NodeToReflection();
 		if ($identifier->isClass()) {
-			foreach ($result->getClassNodes() as $fetchedFunctionNode) {
-				$reflection = $nodeToReflection->__invoke(
-					$reflector,
-					$fetchedFunctionNode->getNode(),
-					$result->getLocatedSource(),
-					$fetchedFunctionNode->getNamespace()
-				);
-				if ($reflection === null) {
-					continue;
-				}
-
-				return $reflection;
+			$identifierName = strtolower($identifier->getName());
+			if (!array_key_exists($identifierName, $this->classNodes)) {
+				return null;
 			}
+
+			return $nodeToReflection->__invoke(
+				$reflector,
+				$this->classNodes[$identifierName]->getNode(),
+				$result->getLocatedSource(),
+				$this->classNodes[$identifierName]->getNamespace()
+			);
 		}
 		if ($identifier->isFunction()) {
-			foreach ($result->getFunctionNodes() as $fetchedFunctionNode) {
-				$reflection = $nodeToReflection->__invoke(
-					$reflector,
-					$fetchedFunctionNode->getNode(),
-					$result->getLocatedSource(),
-					$fetchedFunctionNode->getNamespace()
-				);
-				if ($reflection === null) {
-					continue;
-				}
-
-				return $reflection;
+			$identifierName = strtolower($identifier->getName());
+			if (!array_key_exists($identifierName, $this->functionNodes)) {
+				return null;
 			}
+
+			return $nodeToReflection->__invoke(
+				$reflector,
+				$this->functionNodes[$identifierName]->getNode(),
+				$result->getLocatedSource(),
+				$this->functionNodes[$identifierName]->getNamespace()
+			);
 		}
 
 		return null;

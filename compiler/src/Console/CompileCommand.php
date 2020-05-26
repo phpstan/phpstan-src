@@ -135,7 +135,8 @@ final class CompileCommand extends Command
 			$patchPath = $patchFile->getRelativePathname();
 			$stubPath = realpath($stubsDirectory . '/' . dirname($patchPath) . '/' . basename($patchPath, '.patch'));
 			if ($stubPath === false) {
-				throw new \PHPStan\ShouldNotHappenException(sprintf('Stub %s not found.', $stubPath));
+				$output->writeln(sprintf('Stub %s not found.', $stubPath));
+				continue;
 			}
 			$this->patchFile($output, $stubPath, $absolutePatchPath);
 		}

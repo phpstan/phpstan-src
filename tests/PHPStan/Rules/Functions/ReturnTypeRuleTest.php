@@ -59,4 +59,14 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testReturnTypeRulePhp70(): void
+	{
+		$this->analyse([__DIR__ . '/data/returnTypes-7.0.php'], [
+			[
+				'Function ReturnTypes\Php70\returnInteger() should return int but empty return statement found.',
+				7,
+			],
+		]);
+	}
+
 }

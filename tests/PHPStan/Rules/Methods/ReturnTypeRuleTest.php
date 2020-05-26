@@ -373,4 +373,17 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testReturnTypeRulePhp70(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+		$this->analyse([__DIR__ . '/data/returnTypes-7.0.php'], [
+			[
+				'Method ReturnTypes\FooPhp70::returnInteger() should return int but empty return statement found.',
+				10,
+			],
+		]);
+	}
+
 }

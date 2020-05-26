@@ -42,6 +42,20 @@ class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testClosureReturnTypeRulePhp70(): void
+	{
+		$this->analyse([__DIR__ . '/data/closureReturnTypes-7.0.php'], [
+			[
+				'Anonymous function should return int but empty return statement found.',
+				4,
+			],
+			[
+				'Anonymous function should return string but empty return statement found.',
+				8,
+			],
+		]);
+	}
+
 	public function testClosureReturnTypePhp71Typehints(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-7.1ReturnTypes.php'], [

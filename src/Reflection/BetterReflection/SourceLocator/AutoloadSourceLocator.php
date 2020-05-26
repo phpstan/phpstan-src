@@ -8,7 +8,6 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
-use PHPStan\File\FileReader;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
@@ -16,10 +15,9 @@ use Roave\BetterReflection\Identifier\Identifier;
 use Roave\BetterReflection\Identifier\IdentifierType;
 use Roave\BetterReflection\Reflection\Reflection;
 use Roave\BetterReflection\Reflection\ReflectionConstant;
-use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\Reflector\Reflector;
 use Roave\BetterReflection\SourceLocator\Ast\Exception\ParseToAstFailure;
-use Roave\BetterReflection\SourceLocator\Ast\Locator as AstLocator;
+use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 use function file_exists;
@@ -36,24 +34,24 @@ use function restore_error_handler;
 class AutoloadSourceLocator implements SourceLocator
 {
 
-	private AstLocator $astLocator;
+	private FileNodesFetcher $fileNodesFetcher;
 
 	private static ?string $autoloadLocatedFile = null;
 
-	private static ?AstLocator $currentAstLocator = null;
+	private static ?FileNodesFetcher $currentFileNodesFetcher = null;
 
 	/**
 	 * Note: the constructor has been made a 0-argument constructor because `\stream_wrapper_register`
 	 *       is a piece of trash, and doesn't accept instances, just class names.
 	 */
-	public function __construct(?AstLocator $astLocator = null)
+	public function __construct(?FileNodesFetcher $fileNodesFetcher = null)
 	{
-		$validLocator = $astLocator ?? self::$currentAstLocator;
-		if ($validLocator === null) {
+		$validFetcher = $fileNodesFetcher ?? self::$currentFileNodesFetcher;
+		if ($validFetcher === null) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$this->astLocator = $validLocator;
+		$this->fileNodesFetcher = $validFetcher;
 	}
 
 	/**
@@ -115,22 +113,40 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier): ?Reflection
 	{
-		try {
-			$fileContents = FileReader::read($file);
-		} catch (\PHPStan\File\CouldNotReadFileException $e) {
-			return null;
+		$result = $this->fileNodesFetcher->fetchNodes($file);
+		$nodeToReflection = new NodeToReflection();
+		if ($identifier->isClass()) {
+			foreach ($result->getClassNodes() as $fetchedFunctionNode) {
+				$reflection = $nodeToReflection->__invoke(
+					$reflector,
+					$fetchedFunctionNode->getNode(),
+					$result->getLocatedSource(),
+					$fetchedFunctionNode->getNamespace()
+				);
+				if ($reflection === null) {
+					continue;
+				}
+
+				return $reflection;
+			}
+		}
+		if ($identifier->isFunction()) {
+			foreach ($result->getFunctionNodes() as $fetchedFunctionNode) {
+				$reflection = $nodeToReflection->__invoke(
+					$reflector,
+					$fetchedFunctionNode->getNode(),
+					$result->getLocatedSource(),
+					$fetchedFunctionNode->getNamespace()
+				);
+				if ($reflection === null) {
+					continue;
+				}
+
+				return $reflection;
+			}
 		}
 
-		$locatedSource = new LocatedSource(
-			$fileContents,
-			$file
-		);
-
-		try {
-			return $this->astLocator->findReflection($reflector, $locatedSource, $identifier);
-		} catch (IdentifierNotFound $exception) {
-			return null;
-		}
+		return null;
 	}
 
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
@@ -172,7 +188,7 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 
 		self::$autoloadLocatedFile = null;
-		self::$currentAstLocator = $this->astLocator; // passing the locator on to the implicitly instantiated `self`
+		self::$currentFileNodesFetcher = $this->fileNodesFetcher; // passing the locator on to the implicitly instantiated `self`
 		set_error_handler(static function (int $errno, string $errstr): bool {
 			throw new \PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocatorException();
 		});

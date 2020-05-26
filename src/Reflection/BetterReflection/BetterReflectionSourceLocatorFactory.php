@@ -39,6 +39,9 @@ class BetterReflectionSourceLocatorFactory
 	/** @var ComposerJsonAndInstalledJsonSourceLocatorMaker */
 	private $composerJsonAndInstalledJsonSourceLocatorMaker;
 
+	/** @var AutoloadSourceLocator */
+	private $autoloadSourceLocator;
+
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
 
@@ -71,6 +74,7 @@ class BetterReflectionSourceLocatorFactory
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
+		AutoloadSourceLocator $autoloadSourceLocator,
 		Container $container,
 		array $autoloadDirectories,
 		array $autoloadFiles,
@@ -85,6 +89,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
+		$this->autoloadSourceLocator = $autoloadSourceLocator;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
 		$this->autoloadFiles = $autoloadFiles;
@@ -135,7 +140,7 @@ class BetterReflectionSourceLocatorFactory
 			return $this->container->getService('betterReflectionFunctionReflector');
 		});
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber);
-		$locators[] = new AutoloadSourceLocator($astLocator);
+		$locators[] = $this->autoloadSourceLocator;
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
 

@@ -33,7 +33,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		if ($className !== 'PDO' && array_key_exists($className, \JetBrains\PHPStormStub\PhpStormStubsMap::CLASSES)) {
+		if (array_key_exists($className, \JetBrains\PHPStormStub\PhpStormStubsMap::CLASSES)) {
 			return false;
 		}
 

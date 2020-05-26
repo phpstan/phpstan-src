@@ -62,6 +62,7 @@ final class CompileCommand extends Command
 		);
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
+		$this->patchPhpStormStubs($output);
 		$this->transformSource();
 
 		$this->processFactory->create(['php', 'box.phar', 'compile', '--no-parallel'], $this->dataDir);
@@ -122,6 +123,21 @@ final class CompileCommand extends Command
 		$putSuccess = file_put_contents($directory . '/PhpStormStubsMap.php', $stubsMapContents);
 		if ($putSuccess === false) {
 			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
+		}
+	}
+
+	private function patchPhpStormStubs(OutputInterface $output): void
+	{
+		$stubFinder = \Symfony\Component\Finder\Finder::create();
+		$stubsDirectory = __DIR__ . '/../../../vendor/jetbrains/phpstorm-stubs';
+		foreach ($stubFinder->files()->name('*.patch')->in(__DIR__ . '/../../patches/stubs') as $patchFile) {
+			$absolutePatchPath = $patchFile->getPathname();
+			$patchPath = $patchFile->getRelativePathname();
+			$stubPath = realpath($stubsDirectory . '/' . dirname($patchPath) . '/' . basename($patchPath, '.patch'));
+			if ($stubPath === false) {
+				throw new \PHPStan\ShouldNotHappenException(sprintf('Stub %s not found.', $stubPath));
+			}
+			$this->patchFile($output, $stubPath, $absolutePatchPath);
 		}
 	}
 

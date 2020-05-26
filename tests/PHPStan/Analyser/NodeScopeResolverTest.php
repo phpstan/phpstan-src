@@ -5278,7 +5278,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_search(new stdClass, $generalStringKeys, true)',
 			],
 			[
-				'mixed',
+				'int|string|false',
 				'array_search($mixed, $array, true)',
 			],
 			[
@@ -5342,8 +5342,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_search(\'id\', doFoo() ? $thisDoesNotExistAndIsMixedInUnion : false, true)',
 			],
 			[
-				'mixed',
+				'int|string|false',
 				'array_search(1, $generalIntegers, true)',
+			],
+			[
+				'int|string|false',
+				'array_search(1, $generalIntegers, false)',
+			],
+			[
+				'int|string|false',
+				'array_search(1, $generalIntegers)',
 			],
 			[
 				'array<string, int>',

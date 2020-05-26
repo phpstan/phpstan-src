@@ -5262,6 +5262,14 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_search(9, $generalStringKeys, true)',
 			],
 			[
+				'string|false',
+				'array_search(9, $generalStringKeys, false)',
+			],
+			[
+				'string|false',
+				'array_search(9, $generalStringKeys)',
+			],
+			[
 				'null',
 				'array_search(999, $integer, true)',
 			],
@@ -5274,7 +5282,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_search($mixed, $array, true)',
 			],
 			[
-				'int|string|false|null',
+				'int|string|false',
 				'array_search($mixed, $array, false)',
 			],
 			[
@@ -5298,7 +5306,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_search($generalIntegerOrString, $clonedConditionalArray, true)',
 			],
 			[
-				'int|string|false|null',
+				'int|string|false',
 				'array_search($generalIntegerOrString, $generalIntegerOrStringKeys, false)',
 			],
 			[

@@ -42,12 +42,14 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		}
 
 		if ($argsCount < 3) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false));
 		}
 
 		$strictArgType = $scope->getType($functionCall->args[2]->value);
-		if (!($strictArgType instanceof ConstantBooleanType) || $strictArgType->getValue() === false) {
+		if (!($strictArgType instanceof ConstantBooleanType)) {
 			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false), new NullType());
+		} elseif ($strictArgType->getValue() === false) {
+			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false));
 		}
 
 		$needleArgType = $scope->getType($functionCall->args[0]->value);

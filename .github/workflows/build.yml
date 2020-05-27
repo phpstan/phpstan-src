@@ -24,6 +24,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
 
     steps:
       - name: "Checkout"
@@ -159,6 +160,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing tests"
@@ -253,6 +255,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing phpstan"

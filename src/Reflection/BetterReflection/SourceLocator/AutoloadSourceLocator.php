@@ -2,8 +2,6 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-require_once __DIR__ . '/AutoloadSourceLocatorException.php'; // phpcs:disable
-
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -37,10 +35,6 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private FileNodesFetcher $fileNodesFetcher;
 
-	private static ?string $autoloadLocatedFile = null;
-
-	private static ?FileNodesFetcher $currentFileNodesFetcher = null;
-
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
 	private array $classNodes = [];
 
@@ -53,18 +47,9 @@ class AutoloadSourceLocator implements SourceLocator
 	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
 	private array $locatedSourcesByFile = [];
 
-	/**
-	 * Note: the constructor has been made a 0-argument constructor because `\stream_wrapper_register`
-	 *       is a piece of trash, and doesn't accept instances, just class names.
-	 */
-	public function __construct(?FileNodesFetcher $fileNodesFetcher = null)
+	public function __construct(FileNodesFetcher $fileNodesFetcher)
 	{
-		$validFetcher = $fileNodesFetcher ?? self::$currentFileNodesFetcher;
-		if ($validFetcher === null) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
-		$this->fileNodesFetcher = $validFetcher;
+		$this->fileNodesFetcher = $fileNodesFetcher;
 	}
 
 	/**
@@ -146,7 +131,6 @@ class AutoloadSourceLocator implements SourceLocator
 				}
 			}
 
-
 			if (!defined($constantName)) {
 				return null;
 			}
@@ -193,6 +177,9 @@ class AutoloadSourceLocator implements SourceLocator
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier): ?Reflection
 	{
 		if (!array_key_exists($file, $this->locatedSourcesByFile)) {
+			if ($this->fileNodesFetcher === null) {
+				throw new \PHPStan\ShouldNotHappenException('FileNodesFetcher is not present.');
+			}
 			$result = $this->fileNodesFetcher->fetchNodes($file);
 			$this->locatedSourcesByFile[$file] = $result->getLocatedSource();
 			foreach ($result->getClassNodes() as $className => $fetchedClassNode) {
@@ -278,93 +265,38 @@ class AutoloadSourceLocator implements SourceLocator
 			return [$filename, $reflection->getName()];
 		}
 
-		self::$autoloadLocatedFile = null;
-		self::$currentFileNodesFetcher = $this->fileNodesFetcher; // passing the locator on to the implicitly instantiated `self`
-		set_error_handler(static function (int $errno, string $errstr): bool {
-			throw new \PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocatorException();
-		});
-		stream_wrapper_unregister('file');
-		stream_wrapper_unregister('phar');
-		stream_wrapper_register('file', self::class);
-		stream_wrapper_register('phar', self::class);
+		$this->silenceErrors();
 
 		try {
-			class_exists($className);
-		} catch (\PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocatorException $e) {
-			// $autoloadLocatedFile should be known at this point
+			return FileReadTrapStreamWrapper::withStreamWrapperOverride(
+				static function () use ($className): ?array {
+					foreach (spl_autoload_functions() as $preExistingAutoloader) {
+						$preExistingAutoloader($className);
+
+						/**
+						 * This static variable is populated by the side-effect of the stream wrapper
+						 * trying to read the file path when `include()` is used by an autoloader.
+						 *
+						 * This will not be `null` when the autoloader tried to read a file.
+						 */
+						if (FileReadTrapStreamWrapper::$autoloadLocatedFile !== null) {
+							return [FileReadTrapStreamWrapper::$autoloadLocatedFile, $className];
+						}
+					}
+
+					return null;
+				}
+			);
 		} finally {
-			stream_wrapper_restore('file');
-			stream_wrapper_restore('phar');
 			restore_error_handler();
 		}
-
-		/** @var string|null $autoloadLocatedFile */
-		$autoloadLocatedFile = self::$autoloadLocatedFile;
-		if ($autoloadLocatedFile === null) {
-			return null;
-		}
-
-		return [$autoloadLocatedFile, $className];
 	}
 
-	/**
-	 * Our wrapper simply records which file we tried to load and returns
-	 * boolean false indicating failure.
-	 *
-	 * @see https://php.net/manual/en/class.streamwrapper.php
-	 * @see https://php.net/manual/en/streamwrapper.stream-open.php
-	 *
-	 * @param string $path
-	 * @param string $mode
-	 * @param int    $options
-	 * @param string $opened_path
-	 *
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 */
-	public function stream_open($path, $mode, $options, &$opened_path): bool
+	private function silenceErrors(): void
 	{
-		self::$autoloadLocatedFile = $path;
-
-		return false;
-	}
-
-	/**
-	 * url_stat is triggered by calls like "file_exists". The call to "file_exists" must not be overloaded.
-	 * This function restores the original "file" stream, issues a call to "stat" to get the real results,
-	 * and then re-registers the AutoloadSourceLocator stream wrapper.
-	 *
-	 * @see https://php.net/manual/en/class.streamwrapper.php
-	 * @see https://php.net/manual/en/streamwrapper.url-stat.php
-	 *
-	 * @param string $path
-	 * @param int $flags
-	 *
-	 * @return mixed[]|bool
-	 *
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 */
-	public function url_stat($path, $flags)
-	{
-		stream_wrapper_restore('file');
-		stream_wrapper_restore('phar');
-
-		if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
-			set_error_handler(static function (): bool {
-				// Use native error handler
-				return false;
-			});
-			$result = @stat($path);
-			restore_error_handler();
-		} else {
-			$result = stat($path);
-		}
-
-		stream_wrapper_unregister('file');
-		stream_wrapper_unregister('phar');
-		stream_wrapper_register('file', self::class);
-		stream_wrapper_register('phar', self::class);
-
-		return $result;
+		set_error_handler(static function (): bool {
+			return true;
+		});
 	}
 
 }

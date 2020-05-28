@@ -9964,6 +9964,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/mixed-typehint.php');
 	}
 
+	public function dataCallUserFunc(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/call-user-func.php');
+	}
+
+	public function dataCallUserFuncArray(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/call-user-func-array.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10019,6 +10029,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3336
 	 * @dataProvider dataCatchWithoutVariable
 	 * @dataProvider dataMixedTypehint
+	 * @dataProvider dataCallUserFunc
+	 * @dataProvider dataCallUserFuncArray
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

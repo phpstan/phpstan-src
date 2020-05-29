@@ -177,9 +177,6 @@ class AutoloadSourceLocator implements SourceLocator
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier): ?Reflection
 	{
 		if (!array_key_exists($file, $this->locatedSourcesByFile)) {
-			if ($this->fileNodesFetcher === null) {
-				throw new \PHPStan\ShouldNotHappenException('FileNodesFetcher is not present.');
-			}
 			$result = $this->fileNodesFetcher->fetchNodes($file);
 			$this->locatedSourcesByFile[$file] = $result->getLocatedSource();
 			foreach ($result->getClassNodes() as $className => $fetchedClassNode) {
@@ -268,9 +265,15 @@ class AutoloadSourceLocator implements SourceLocator
 		$this->silenceErrors();
 
 		try {
+			/** @var array{string, string}|null */
 			return FileReadTrapStreamWrapper::withStreamWrapperOverride(
 				static function () use ($className): ?array {
-					foreach (spl_autoload_functions() as $preExistingAutoloader) {
+					$functions = spl_autoload_functions();
+					if ($functions === false) {
+						return null;
+					}
+
+					foreach ($functions as $preExistingAutoloader) {
 						$preExistingAutoloader($className);
 
 						/**

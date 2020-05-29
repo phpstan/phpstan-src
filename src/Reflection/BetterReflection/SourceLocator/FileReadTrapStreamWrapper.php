@@ -121,7 +121,7 @@ final class FileReadTrapStreamWrapper
 			stream_wrapper_restore($protocol);
 		}
 
-		if ($flags & STREAM_URL_STAT_QUIET) {
+		if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
 			$result = @stat($path);
 		} else {
 			$result = stat($path);

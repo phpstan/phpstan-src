@@ -27,4 +27,10 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3349(): void
+	{
+		require_once __DIR__ . '/data/define-bug-3349.php';
+		$this->analyse([__DIR__ . '/data/bug-3349.php'], []);
+	}
+
 }

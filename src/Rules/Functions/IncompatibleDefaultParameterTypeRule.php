@@ -3,50 +3,36 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
-use PhpParser\Node\FunctionLike;
-use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\FunctionLike>
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InFunctionNode>
  */
 class IncompatibleDefaultParameterTypeRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
-	{
-		$this->reflectionProvider = $reflectionProvider;
-	}
-
 	public function getNodeType(): string
 	{
-		return FunctionLike::class;
+		return InFunctionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!($node instanceof Function_)) {
+		$function = $scope->getFunction();
+		if (!$function instanceof PhpFunctionFromParserNodeReflection) {
 			return [];
 		}
-
-		$name = $node->namespacedName;
-		if (!$this->reflectionProvider->hasFunction($name, $scope)) {
-			return [];
-		}
-
-		$function = $this->reflectionProvider->getFunction($name, $scope);
 		$parameters = ParametersAcceptorSelector::selectSingle($function->getVariants());
 
 		$errors = [];
-		foreach ($node->getParams() as $paramI => $param) {
+		foreach ($node->getOriginalNode()->getParams() as $paramI => $param) {
 			if ($param->default === null) {
 				continue;
 			}

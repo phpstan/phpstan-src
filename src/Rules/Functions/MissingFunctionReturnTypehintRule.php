@@ -3,50 +3,42 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ * @implements \PHPStan\Rules\Rule<InFunctionNode>
  */
 final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
 	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
 
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
 		MissingTypehintCheck $missingTypehintCheck
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\Function_::class;
+		return InFunctionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$functionName = $node->name->name;
-		if (isset($node->namespacedName)) {
-			$functionName = (string) $node->namespacedName;
-		}
-		$functionNameName = new Name($functionName);
-		if (!$this->reflectionProvider->hasFunction($functionNameName, null)) {
+		$functionReflection = $scope->getFunction();
+		if (!$functionReflection instanceof PhpFunctionFromParserNodeReflection) {
 			return [];
 		}
-		$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
+
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
 		if ($returnType instanceof MixedType && !$returnType->isExplicitMixed()) {

@@ -3,12 +3,13 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InFunctionNode;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ * @implements \PHPStan\Rules\Rule<InFunctionNode>
  */
 class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 {
@@ -22,20 +23,27 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return Function_::class;
+		return InFunctionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$scope->getFunction() instanceof PhpFunctionFromParserNodeReflection) {
+			return [];
+		}
+
+		$functionName = $scope->getFunction()->getName();
+
 		return $this->check->checkFunction(
-			$node,
+			$node->getOriginalNode(),
+			$scope->getFunction(),
 			sprintf(
 				'Parameter $%%s of function %s() has invalid typehint type %%s.',
-				(string) $node->namespacedName
+				$functionName
 			),
 			sprintf(
 				'Return typehint of function %s() has invalid type %%s.',
-				(string) $node->namespacedName
+				$functionName
 			)
 		);
 	}

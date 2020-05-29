@@ -4,11 +4,11 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
-use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -51,20 +51,11 @@ class FunctionDefinitionCheck
 	 */
 	public function checkFunction(
 		Function_ $function,
+		FunctionReflection $functionReflection,
 		string $parameterMessage,
 		string $returnMessage
 	): array
 	{
-		$functionName = $function->name->name;
-		if (isset($function->namespacedName)) {
-			$functionName = (string) $function->namespacedName;
-		}
-		$functionNameName = new Name($functionName);
-		if (!$this->reflectionProvider->hasFunction($functionNameName, null)) {
-			return [];
-		}
-
-		$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
 		return $this->checkParametersAcceptor(

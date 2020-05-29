@@ -3,44 +3,37 @@
 namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ * @implements \PHPStan\Rules\Rule<InFunctionNode>
  */
 class FunctionSignatureVarianceRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
 	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
 
-	public function __construct(ReflectionProvider $reflectionProvider, VarianceCheck $varianceCheck)
+	public function __construct(VarianceCheck $varianceCheck)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 		$this->varianceCheck = $varianceCheck;
 	}
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Function_::class;
+		return InFunctionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$functionName = $node->name->name;
-		if (isset($node->namespacedName)) {
-			$functionName = (string) $node->namespacedName;
-		}
-		$functionNameName = new Name($functionName);
-		if (!$this->reflectionProvider->hasFunction($functionNameName, null)) {
+		$functionReflection = $scope->getFunction();
+		if ($functionReflection === null) {
 			return [];
 		}
-		$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
+
+		$functionName = $functionReflection->getName();
 
 		return $this->varianceCheck->checkParametersAcceptor(
 			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants()),

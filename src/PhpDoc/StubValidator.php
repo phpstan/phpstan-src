@@ -130,7 +130,7 @@ class StubValidator
 			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck),
 			new ClassTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
-			new FunctionSignatureVarianceRule($reflectionProvider, $varianceCheck),
+			new FunctionSignatureVarianceRule($varianceCheck),
 			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck),
 			new InterfaceTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
@@ -148,8 +148,8 @@ class StubValidator
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 
 			// level 6
-			new MissingFunctionParameterTypehintRule($reflectionProvider, $missingTypehintCheck),
-			new MissingFunctionReturnTypehintRule($reflectionProvider, $missingTypehintCheck),
+			new MissingFunctionParameterTypehintRule($missingTypehintCheck),
+			new MissingFunctionReturnTypehintRule($missingTypehintCheck),
 			new MissingMethodParameterTypehintRule($missingTypehintCheck),
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),

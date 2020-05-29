@@ -13,9 +13,7 @@ class FunctionSignatureVarianceRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
 		return new FunctionSignatureVarianceRule(
-			$broker,
 			self::getContainer()->getByType(VarianceCheck::class)
 		);
 	}

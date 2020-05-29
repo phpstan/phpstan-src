@@ -45,4 +45,9 @@ class SymfonyOutput implements Output
 		return $this->style;
 	}
 
+	public function isVerbose(): bool
+	{
+		return $this->symfonyOutput->isVerbose();
+	}
+
 }

@@ -13,4 +13,6 @@ interface Output
 
 	public function getStyle(): OutputStyle;
 
+	public function isVerbose(): bool;
+
 }

@@ -13,7 +13,7 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IncompatibleDefaultParameterTypeRule($this->createReflectionProvider());
+		return new IncompatibleDefaultParameterTypeRule();
 	}
 
 	public function testFunctions(): void

@@ -29,12 +29,6 @@ final class FileReadTrapStreamWrapper
 	/** @var string[]|null */
 	private static ?array $registeredStreamWrapperProtocols;
 
-	/**
-	 * Read this property to determine the last file on which reads were attempted
-	 *
-	 * @psalm-readonly
-	 * @psalm-allow-private-mutation
-	 */
 	public static ?string $autoloadLocatedFile;
 
 	/**

@@ -51,6 +51,7 @@ class AutoloadFilesTest extends TestCase
 			'symfony/polyfill-ctype/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-mbstring/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary
+			'symfony/polyfill-php80/bootstrap.php', // afaik polyfills aren't necessary
 		];
 
 		$expectedFiles = array_map(static function (string $path) use ($fileHelper): string {

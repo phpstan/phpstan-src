@@ -80,3 +80,8 @@ class Bar
 	private $baz;
 
 }
+
+$foo = new class() {
+	/** @var float */
+	private $dateTime;
+};

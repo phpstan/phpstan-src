@@ -216,6 +216,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$relativePathHelper,
 				self::getContainer()->getByType(StubPhpDocProvider::class)
 			),
+			new PhpStormStubsSourceStubber(new PhpParserDecorator($parser)),
 			[
 				'#^PhpParser\\\\#',
 				'#^PHPStan\\\\#',

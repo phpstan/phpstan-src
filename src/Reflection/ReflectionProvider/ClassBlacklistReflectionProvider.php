@@ -8,12 +8,14 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use function array_key_exists;
+use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
 
 	private ReflectionProvider $reflectionProvider;
+
+	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
 	/** @var string[] */
 	private array $patterns;
@@ -24,16 +26,18 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
+		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		array $patterns
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
+		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->patterns = $patterns;
 	}
 
 	public function hasClass(string $className): bool
 	{
-		if (array_key_exists($className, \JetBrains\PHPStormStub\PhpStormStubsMap::CLASSES)) {
+		if ($this->phpStormStubsSourceStubber->hasClass($className)) {
 			return false;
 		}
 

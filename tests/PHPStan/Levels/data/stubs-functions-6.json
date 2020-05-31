@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Function StubsIntegrationTest\\foo() has no return typehint specified.",
+        "line": 5,
+        "ignorable": true
+    },
+    {
+        "message": "Function StubsIntegrationTest\\foo() has parameter $i with no typehint specified.",
+        "line": 5,
+        "ignorable": true
+    }
+]

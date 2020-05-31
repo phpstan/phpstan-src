@@ -7,6 +7,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
+use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -139,7 +140,7 @@ class BetterReflectionSourceLocatorFactory
 		$astLocator = new Locator($this->parser, function (): FunctionReflector {
 			return $this->container->getService('betterReflectionFunctionReflector');
 		});
-		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber);
+		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber));
 		$locators[] = $this->autoloadSourceLocator;
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);

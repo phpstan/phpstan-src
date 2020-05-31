@@ -1,12 +1,6 @@
 includes:
 	- phpstan.neon
 
-parameters:
-	ignoreErrors:
-		-
-			message: '#Function PHPStan\\Reflection\\BetterReflection\\SourceLocator\\testFunctionForLocator not found while trying to analyse it - autoloading is probably not configured properly\.#'
-			path: ../tests/PHPStan/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocatorTest.php
-
 services:
 	reflectionProvider:
 		factory: @innerRuntimeReflectionProvider

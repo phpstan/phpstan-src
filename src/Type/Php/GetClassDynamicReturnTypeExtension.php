@@ -49,19 +49,9 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 				}
 
 				if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
-					if ($type instanceof ObjectWithoutClassType) {
-						return new GenericClassStringType($type);
-					}
-
-					return new UnionType([
-						new GenericClassStringType($type),
-						new ConstantBooleanType(false),
-					]);
+					return new GenericClassStringType($type);
 				} elseif ($type instanceof MixedType) {
-					return new UnionType([
-						new ClassStringType(),
-						new ConstantBooleanType(false),
-					]);
+					return new ClassStringType();
 				} elseif ($type instanceof StaticType) {
 					return new GenericClassStringType($type->getStaticObjectType());
 				} elseif ($type instanceof TypeWithClassName) {

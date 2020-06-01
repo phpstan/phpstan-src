@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -13,8 +14,14 @@ class ThisType extends StaticType
 
 	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
 
-	public function __construct(ClassReflection $classReflection)
+	/**
+	 * @param string|ClassReflection $classReflection
+	 */
+	public function __construct($classReflection)
 	{
+		if (is_string($classReflection)) {
+			$classReflection = Broker::getInstance()->getClass($classReflection);
+		}
 		parent::__construct($classReflection->getName());
 		$this->classReflection = $classReflection;
 	}

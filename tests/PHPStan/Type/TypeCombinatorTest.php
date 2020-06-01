@@ -190,6 +190,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				new UnionType([
+					new ThisType(\Exception::class),
+					new NullType(),
+				]),
+				ThisType::class,
+				'$this(Exception)',
+			],
+			[
+				new UnionType([
 					new IterableType(new MixedType(), new StringType()),
 					new NullType(),
 				]),

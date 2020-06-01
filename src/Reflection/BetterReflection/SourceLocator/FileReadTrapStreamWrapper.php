@@ -29,7 +29,7 @@ final class FileReadTrapStreamWrapper
 	/** @var string[]|null */
 	private static ?array $registeredStreamWrapperProtocols;
 
-	public static ?string $autoloadLocatedFile;
+	public static ?string $autoloadLocatedFile = null;
 
 	/**
 	 * @param string[] $streamWrapperProtocols

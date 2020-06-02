@@ -163,7 +163,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=768M
+          ini-values: memory_limit=512M
 
       - name: "Cache dependencies"
         uses: "actions/cache@v1.1.2"

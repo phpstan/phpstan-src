@@ -84,6 +84,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	/** @var array{ClassReflector, FunctionReflector, ConstantReflector}|null */
 	private static $reflectors;
 
+	/** @var PhpStormStubsSourceStubber|null */
+	private static $phpStormStubsSourceStubber;
+
 	public static function getContainer(): Container
 	{
 		$additionalConfigFiles = static::getAdditionalConfigFiles();
@@ -185,6 +188,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return $reflectionProvider;
 	}
 
+	private static function getPhpStormStubsSourceStubber(): PhpStormStubsSourceStubber
+	{
+		if (self::$phpStormStubsSourceStubber === null) {
+			self::$phpStormStubsSourceStubber = new PhpStormStubsSourceStubber(new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class)));
+		}
+
+		return self::$phpStormStubsSourceStubber;
+	}
+
 	private function createRuntimeReflectionProvider(ReflectionProvider $actualReflectionProvider): ReflectionProvider
 	{
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
@@ -216,7 +228,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$relativePathHelper,
 				self::getContainer()->getByType(StubPhpDocProvider::class)
 			),
-			new PhpStormStubsSourceStubber(new PhpParserDecorator($parser)),
+			self::getPhpStormStubsSourceStubber(),
 			[
 				'#^PhpParser\\\\#',
 				'#^PHPStan\\\\#',
@@ -430,7 +442,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			return $functionReflector;
 		});
 		$reflectionSourceStubber = new ReflectionSourceStubber();
-		$locators[] = new PhpInternalSourceLocator($astLocator, new PhpStormStubsSourceStubber($phpParser));
+		$locators[] = new PhpInternalSourceLocator($astLocator, self::getPhpStormStubsSourceStubber());
 		$locators[] = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
 		$locators[] = new PhpInternalSourceLocator($astLocator, $reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $reflectionSourceStubber);

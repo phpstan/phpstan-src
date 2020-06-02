@@ -175,7 +175,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=512M
+          ini-values: memory_limit=768M
 
       - name: "Change PHP version in composer.json"
         #if: matrix.php-version != '7.4'

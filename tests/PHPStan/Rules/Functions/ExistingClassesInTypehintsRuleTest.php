@@ -143,4 +143,17 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testVoidParameterTypehint(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection');
+		}
+		$this->analyse([__DIR__ . '/data/void-parameter-typehint.php'], [
+			[
+				'Parameter $param of function VoidParameterTypehint\doFoo() has invalid typehint type void.',
+				9,
+			],
+		]);
+	}
+
 }

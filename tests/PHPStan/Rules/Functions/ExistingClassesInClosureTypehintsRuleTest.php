@@ -69,4 +69,17 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 		$this->analyse([__DIR__ . '/data/closure-7.2-typehints.php'], []);
 	}
 
+	public function testVoidParameterTypehint(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection');
+		}
+		$this->analyse([__DIR__ . '/data/void-parameter-typehint.php'], [
+			[
+				'Parameter $param of anonymous function has invalid typehint type void.',
+				5,
+			],
+		]);
+	}
+
 }

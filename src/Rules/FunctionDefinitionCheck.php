@@ -18,6 +18,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\VerbosityLevel;
+use PHPStan\Type\VoidType;
 
 class FunctionDefinitionCheck
 {
@@ -87,12 +88,15 @@ class FunctionDefinitionCheck
 			if ($param->type === null) {
 				continue;
 			}
+			if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
 			$type = $scope->getFunctionType($param->type, false, $param->variadic);
+			if ($type instanceof VoidType) {
+				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, 'void'))->line($param->type->getLine())->nonIgnorable()->build();
+			}
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class) || $this->reflectionProvider->getClass($class)->isTrait()) {
-					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-						throw new \PHPStan\ShouldNotHappenException();
-					}
 					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, $class))->line($param->type->getLine())->build();
 				} elseif ($this->checkClassCaseSensitivity) {
 					$errors = array_merge(
@@ -178,6 +182,16 @@ class FunctionDefinitionCheck
 
 				return $parameterNode;
 			};
+			if (
+				$parameter instanceof ParameterReflectionWithPhpDocs
+				&& $parameter->getNativeType() instanceof VoidType
+			) {
+				$parameterVar = $parameterNodeCallback()->var;
+				if (!$parameterVar instanceof Variable || !is_string($parameterVar->name)) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameterVar->name, 'void'))->line($parameterNodeCallback()->getLine())->nonIgnorable()->build();
+			}
 			foreach ($referencedClasses as $class) {
 				if ($this->reflectionProvider->hasClass($class) && !$this->reflectionProvider->getClass($class)->isTrait()) {
 					continue;

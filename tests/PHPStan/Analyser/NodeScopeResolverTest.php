@@ -4938,6 +4938,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$mappedStrings[0]',
 			],
 			[
+				'array(mixed, mixed, mixed)',
+				'$mappedStringsViaFoo',
+			],
+			[
 				'1|2|3',
 				'$filteredIntegers[0]',
 			],

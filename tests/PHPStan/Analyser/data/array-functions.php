@@ -7,6 +7,10 @@ $mappedStrings = array_map(function (): string {
 
 }, $integers);
 
+function foo(): string {}
+
+$mappedStringsViaFoo = array_map('foo', $integers);
+
 $filteredIntegers = array_filter($integers, function (): bool {
 
 });

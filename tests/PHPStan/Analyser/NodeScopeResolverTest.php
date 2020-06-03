@@ -6945,7 +6945,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$foo->misleadingIntReturnType()',
 			],
 			[
-				'MisleadingTypes\mixed',
+				'mixed',
 				'$foo->misleadingMixedReturnType()',
 			],
 		];

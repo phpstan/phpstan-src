@@ -44,6 +44,7 @@ parameters:
 		maximumNumberOfProcesses: 32
 		minimumNumberOfJobsPerProcess: 2
 		buffer: 134217728 # 128 MB
+	phpVersion: null
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	polluteCatchScopeWithTryAssignments: false
@@ -175,6 +176,7 @@ parametersSchema:
 		minimumNumberOfJobsPerProcess: int(),
 		buffer: int()
 	])
+	phpVersion: schema(anyOf(schema(int(), min(70100), max(80000))), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
 	polluteCatchScopeWithTryAssignments: bool()
@@ -260,6 +262,15 @@ services:
 		class: PHPStan\Broker\AnonymousClassNameHelper
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+
+	-
+		class: PHPStan\Php\PhpVersion
+		factory: @PHPStan\Php\PhpVersionFactory::create
+
+	-
+		class: PHPStan\Php\PhpVersionFactory
+		arguments:
+			versionId: %phpVersion%
 
 	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer

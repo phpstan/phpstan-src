@@ -141,6 +141,8 @@
 			<arg path="tests/PHPStan/Rules/Classes/data/interface-extends-error.php"/>
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Classes/data/trait-use-error.php"/>
+			<arg value="--exclude"/>
+			<arg path="tests/PHPStan/Rules/Properties/data/default-value-for-native-property-type.php"/>
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />

@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\Property;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -41,12 +42,13 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
-			if ($property->default instanceof Node\Expr\ConstFetch && (string) $property->default->name === 'null') {
-				continue;
-			}
-
 			$propertyReflection = $classReflection->getNativeProperty($property->name->name);
 			$propertyType = $propertyReflection->getWritableType();
+			if ($propertyReflection->getNativeType() instanceof MixedType) {
+				if ($property->default instanceof Node\Expr\ConstFetch && (string) $property->default->name === 'null') {
+					continue;
+				}
+			}
 			$defaultValueType = $scope->getType($property->default);
 			if ($this->ruleLevelHelper->accepts($propertyType, $defaultValueType, $scope->isDeclareStrictTypes())) {
 				continue;

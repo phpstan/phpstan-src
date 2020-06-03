@@ -34,4 +34,17 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\Rul
 		]);
 	}
 
+	public function testDefaultValueForNativePropertyType(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+		$this->analyse([__DIR__ . '/data/default-value-for-native-property-type.php'], [
+			[
+				'Property DefaultValueForNativePropertyType\Foo::$foo (DateTime) does not accept default value of type null.',
+				8,
+			],
+		]);
+	}
+
 }

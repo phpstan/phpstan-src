@@ -978,10 +978,6 @@ class NodeScopeResolver
 
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
-				if (!is_string($catchNode->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
-				}
-
 				if (!$this->polluteCatchScopeWithTryAssignments) {
 					$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($tryScope), $nodeCallback);
 					$catchScopeForFinally = $catchScopeResult->getScope();
@@ -1106,11 +1102,16 @@ class NodeScopeResolver
 		\Closure $nodeCallback
 	): StatementResult
 	{
-		if (!is_string($catchNode->var->name)) {
-			throw new \PHPStan\ShouldNotHappenException();
+		$variableName = null;
+		if ($catchNode->var !== null) {
+			if (!is_string($catchNode->var->name)) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$variableName = $catchNode->var->name;
 		}
 
-		$catchScope = $catchScope->enterCatch($catchNode->types, $catchNode->var->name);
+		$catchScope = $catchScope->enterCatch($catchNode->types, $variableName);
 		return $this->processStmtNodes($catchNode, $catchNode->stmts, $catchScope, $nodeCallback);
 	}
 

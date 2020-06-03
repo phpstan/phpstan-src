@@ -9917,7 +9917,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	public function dataBug3276(): array
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
+			return [];
 		}
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3276.php');
 	}
@@ -9945,6 +9945,19 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	public function dataBug3336(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3336.php');
+	}
+
+	public function dataCatchWithoutVariable(): array
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
+			return [];
+		}
+		return $this->gatherAssertTypes(__DIR__ . '/data/catch-without-variable.php');
+	}
+
+	public function dataMixedTypehint(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/mixed-typehint.php');
 	}
 
 	/**
@@ -10000,6 +10013,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataConstInFunctionsNamespaced
 	 * @dataProvider dataRootScopeMaybeDefined
 	 * @dataProvider dataBug3336
+	 * @dataProvider dataCatchWithoutVariable
+	 * @dataProvider dataMixedTypehint
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

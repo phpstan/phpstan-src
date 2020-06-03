@@ -2701,11 +2701,15 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param \PhpParser\Node\Name[] $classes
-	 * @param string $variableName
+	 * @param string|null $variableName
 	 * @return self
 	 */
-	public function enterCatch(array $classes, string $variableName): self
+	public function enterCatch(array $classes, ?string $variableName): self
 	{
+		if ($variableName === null) {
+			return $this;
+		}
+
 		$type = TypeCombinator::union(...array_map(static function (string $class): ObjectType {
 			return new ObjectType($class);
 		}, $classes));

@@ -1,0 +1,34 @@
+<?php
+
+namespace MixedTypehint;
+
+use function PHPStan\Analyser\assertType;
+
+class Foo
+{
+
+	public function doFoo(mixed $foo)
+	{
+		assertType('mixed', $foo);
+		assertType('mixed', $this->doBar());
+	}
+
+	public function doBar(): mixed
+	{
+
+	}
+
+}
+
+function doFoo(mixed $foo)
+{
+	assertType('mixed', $foo);
+}
+
+function (mixed $foo) {
+	assertType('mixed', $foo);
+	$f = function (): mixed {
+
+	};
+	assertType('mixed', $f());
+};

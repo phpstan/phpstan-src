@@ -160,14 +160,6 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				371,
 			],
 			[
-				'Method ReturnTypes\Foo::misleadingMixedReturnType() should return ReturnTypes\mixed but returns int.',
-				381,
-			],
-			[
-				'Method ReturnTypes\Foo::misleadingMixedReturnType() should return ReturnTypes\mixed but returns true.',
-				384,
-			],
-			[
 				'Method ReturnTypes\Stock::getAnotherStock() should return ReturnTypes\Stock but returns ReturnTypes\Stock|null.',
 				429,
 			],
@@ -304,14 +296,6 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Method FooWithoutNamespace::misleadingIntReturnType() should return integer but returns true.',
 				28,
-			],
-			[
-				'Method FooWithoutNamespace::misleadingMixedReturnType() should return mixed but returns int.',
-				39,
-			],
-			[
-				'Method FooWithoutNamespace::misleadingMixedReturnType() should return mixed but returns true.',
-				43,
 			],
 		]);
 	}

@@ -1482,8 +1482,8 @@ class NodeScopeResolver
 				$originalArrayType = $scope->getType($arrayArg);
 				$constantArrays = TypeUtils::getConstantArrays($originalArrayType);
 				if (
-					$functionReflection->getName() === 'array_push'
-					|| ($originalArrayType->isArray()->yes() && count($constantArrays) === 0)
+					$originalArrayType->isArray()->yes()
+					&& count($constantArrays) === 0
 				) {
 					$arrayType = $originalArrayType;
 					foreach ($argumentTypes as $argType) {
@@ -1512,6 +1512,9 @@ class NodeScopeResolver
 						$arrayTypes[] = $arrayType;
 					}
 
+					if ($arrayArg instanceof Expr\ArrayDimFetch && $arrayArg->dim !== null) {
+						$arrayArg = $arrayArg->var;
+					}
 					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
 						$arrayArg,
 						TypeCombinator::union(...$arrayTypes)

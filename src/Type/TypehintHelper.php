@@ -30,6 +30,8 @@ class TypehintHelper
 				return new VoidType();
 			case 'object':
 				return new ObjectWithoutClassType();
+			case 'mixed':
+				return new MixedType(true);
 			case 'self':
 				return $selfClass !== null ? new ObjectType($selfClass) : new ErrorType();
 			case 'parent':
@@ -64,6 +66,9 @@ class TypehintHelper
 		$reflectionTypeString = $reflectionType->getName();
 		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\object')) {
 			$reflectionTypeString = 'object';
+		}
+		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\mixed')) {
+			$reflectionTypeString = 'mixed';
 		}
 
 		$type = self::getTypeObjectFromTypehint($reflectionTypeString, $selfClass);

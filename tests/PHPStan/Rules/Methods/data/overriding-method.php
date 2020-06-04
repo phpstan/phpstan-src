@@ -71,3 +71,23 @@ class Bar extends Foo
 	}
 
 }
+
+class Baz
+{
+
+	public function __construct(int $i)
+	{
+
+	}
+
+}
+
+class Lorem extends Baz
+{
+
+	public function __construct(string $s)
+	{
+
+	}
+
+}

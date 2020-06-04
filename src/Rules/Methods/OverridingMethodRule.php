@@ -46,6 +46,29 @@ class OverridingMethodRule implements Rule
 			);
 		}
 
+		if ($prototype->isPublic()) {
+			if (!$method->isPublic()) {
+				$messages[] = sprintf(
+					'%s method %s::%s() overriding public method %s::%s() should also be public.',
+					$method->isPrivate() ? 'Private' : 'Protected',
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				);
+			}
+		} else {
+			if ($method->isPrivate()) {
+				$messages[] = sprintf(
+					'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				);
+			}
+		}
+
 		return $messages;
 	}
 

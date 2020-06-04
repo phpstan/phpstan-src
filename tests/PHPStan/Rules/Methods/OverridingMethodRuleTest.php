@@ -22,7 +22,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires static reflection.');
 		}
 
-		$this->analyse([__DIR__ . '/data/overriding-final-method.php'], [
+		$this->analyse([__DIR__ . '/data/overriding-method.php'], [
 			[
 				'Method OverridingFinalMethod\Bar::doFoo() overrides final method OverridingFinalMethod\Foo::doFoo().',
 				43,

@@ -158,11 +158,13 @@ class PhpMethodReflection implements MethodReflection
 			$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
 
 			return new MethodPrototypeReflection(
+				$prototypeMethod->getName(),
 				$prototypeDeclaringClass,
 				$prototypeMethod->isStatic(),
 				$prototypeMethod->isPrivate(),
 				$prototypeMethod->isPublic(),
-				$prototypeMethod->isAbstract()
+				$prototypeMethod->isAbstract(),
+				$prototypeMethod->isFinal()
 			);
 		} catch (\ReflectionException $e) {
 			return $this;

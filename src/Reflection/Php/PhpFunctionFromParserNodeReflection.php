@@ -210,7 +210,11 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 	public function isFinal(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->isFinal);
+		$finalMethod = false;
+		if ($this->functionLike instanceof ClassMethod) {
+			$finalMethod = $this->functionLike->isFinal();
+		}
+		return TrinaryLogic::createFromBoolean($finalMethod || $this->isFinal);
 	}
 
 	public function getThrowType(): ?Type

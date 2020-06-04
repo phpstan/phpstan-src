@@ -25,6 +25,16 @@ class Foo
 
 	}
 
+	public static function doIpsum()
+	{
+
+	}
+
+	public function doDolor()
+	{
+
+	}
+
 }
 
 class Bar extends Foo
@@ -46,6 +56,16 @@ class Bar extends Foo
 	}
 
 	private function doLorem()
+	{
+
+	}
+
+	public function doIpsum()
+	{
+
+	}
+
+	public static function doDolor()
 	{
 
 	}

@@ -58,16 +58,34 @@ class OverridingMethodRule implements Rule
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}
-		} else {
-			if ($method->isPrivate()) {
+		} elseif ($method->isPrivate()) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
+				$method->getDeclaringClass()->getName(),
+				$method->getName(),
+				$prototype->getDeclaringClass()->getName(),
+				$prototype->getName()
+			))->nonIgnorable()->build();
+		}
+
+		if ($prototype->isStatic()) {
+			if (!$method->isStatic()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
-					'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
+					'Non-static method %s::%s() overrides static method %s::%s().',
 					$method->getDeclaringClass()->getName(),
 					$method->getName(),
 					$prototype->getDeclaringClass()->getName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}
+		} elseif ($method->isStatic()) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Static method %s::%s() overrides non-static method %s::%s().',
+				$method->getDeclaringClass()->getName(),
+				$method->getName(),
+				$prototype->getDeclaringClass()->getName(),
+				$prototype->getName()
+			))->nonIgnorable()->build();
 		}
 
 		return $messages;

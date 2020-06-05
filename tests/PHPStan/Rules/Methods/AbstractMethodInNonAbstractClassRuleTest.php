@@ -33,4 +33,9 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTraitProblem(): void
+	{
+		$this->analyse([__DIR__ . '/data/trait-method-problem.php'], []);
+	}
+
 }

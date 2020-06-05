@@ -22,19 +22,3 @@ interface Baz
 	abstract public function doBar(): void;
 
 }
-
-trait X
-{
-
-	abstract public static function a(self $b): void;
-
-}
-
-class Y
-{
-
-	use X;
-
-	public static function a(self $b): void {}
-
-}

@@ -17,4 +17,9 @@ class PhpVersion
 		return $this->versionId >= 70400;
 	}
 
+	public function supportsParameterContravariance(): bool
+	{
+		return $this->versionId >= 70400;
+	}
+
 }

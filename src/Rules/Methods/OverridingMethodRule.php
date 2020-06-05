@@ -5,16 +5,33 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodPrototypeReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Reflection\Php\PhpParameterReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\IterableType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\VerbosityLevel;
 
 /**
  * @implements Rule<InClassMethodNode>
  */
 class OverridingMethodRule implements Rule
 {
+
+	private PhpVersion $phpVersion;
+
+	public function __construct(PhpVersion $phpVersion)
+	{
+		$this->phpVersion = $phpVersion;
+	}
 
 	public function getNodeType(): string
 	{
@@ -85,6 +102,194 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototype->getDeclaringClass()->getName(),
 				$prototype->getName()
+			))->nonIgnorable()->build();
+		}
+
+		if (strtolower($method->getName()) === '__construct') {
+			if (!$prototype->isAbstract()) {
+				return $messages;
+			}
+		}
+
+		$prototypeVariants = $prototype->getVariants();
+		if (count($prototypeVariants) !== 1) {
+			return $messages;
+		}
+
+		$prototypeVariant = $prototypeVariants[0];
+
+		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
+		$methodParameters = $methodVariant->getParameters();
+
+		foreach ($prototypeVariant->getParameters() as $i => $prototypeParameter) {
+			if (!array_key_exists($i, $methodParameters)) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Method %s::%s() overrides method %s::%s() but misses parameter #%d $%s.',
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName(),
+					$i + 1,
+					$prototypeParameter->getName()
+				))->nonIgnorable()->build();
+				continue;
+			}
+
+			$methodParameter = $methodParameters[$i];
+			if ($prototypeParameter->passedByReference()->no()) {
+				if (!$methodParameter->passedByReference()->no()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Parameter #%d $%s of method %s::%s() is passed by reference but parameter #%d $%s of method %s::%s() is not passed by reference.',
+						$i + 1,
+						$methodParameter->getName(),
+						$method->getDeclaringClass()->getName(),
+						$method->getName(),
+						$i + 1,
+						$prototypeParameter->getName(),
+						$prototype->getDeclaringClass()->getName(),
+						$prototype->getName()
+					))->nonIgnorable()->build();
+				}
+			} elseif ($methodParameter->passedByReference()->no()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s of method %s::%s() is not passed by reference but parameter #%d $%s of method %s::%s() is passed by reference.',
+					$i + 1,
+					$methodParameter->getName(),
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$i + 1,
+					$prototypeParameter->getName(),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+			}
+
+			if ($prototypeParameter->isVariadic()) {
+				if (!$methodParameter->isVariadic()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Parameter #%d $%s of method %s::%s() is not variadic but parameter #%d $%s of method %s::%s() is variadic.',
+						$i + 1,
+						$methodParameter->getName(),
+						$method->getDeclaringClass()->getName(),
+						$method->getName(),
+						$i + 1,
+						$prototypeParameter->getName(),
+						$prototype->getDeclaringClass()->getName(),
+						$prototype->getName()
+					))->nonIgnorable()->build();
+					continue;
+				}
+			} elseif ($methodParameter->isVariadic()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s of method %s::%s() is variadic but parameter #%d $%s of method %s::%s() is not variadic.',
+					$i + 1,
+					$methodParameter->getName(),
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$i + 1,
+					$prototypeParameter->getName(),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+				continue;
+			}
+
+			if ($prototypeParameter->isOptional() && !$methodParameter->isOptional()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s of method %s::%s() is required but parameter #%d $%s of method %s::%s() is optional.',
+					$i + 1,
+					$methodParameter->getName(),
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$i + 1,
+					$prototypeParameter->getName(),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+			}
+
+			$methodParameterType = $methodParameter->getNativeType();
+			if ($methodParameterType instanceof MixedType) {
+				continue;
+			}
+
+			if ($prototypeParameter instanceof PhpParameterReflection) {
+				$prototypeParameterType = $prototypeParameter->getNativeType();
+			} elseif ($prototypeParameter instanceof NativeParameterReflection) {
+				$prototypeParameterType = $prototypeParameter->getType();
+			} else {
+				continue;
+			}
+
+			if (!$this->phpVersion->supportsParameterContravariance()) {
+				$originalPrototypeParameterType = $prototypeParameterType;
+				if (TypeCombinator::containsNull($methodParameterType)) {
+					$prototypeParameterType = TypeCombinator::removeNull($prototypeParameterType);
+				}
+				$originalMethodParameterType = $methodParameterType;
+				$methodParameterType = TypeCombinator::removeNull($methodParameterType);
+				if ($methodParameterType->equals($prototypeParameterType)) {
+					continue;
+				}
+
+				if ($methodParameterType instanceof IterableType) {
+					if ($prototypeParameterType instanceof ArrayType) {
+						continue;
+					}
+					if ($prototypeParameterType instanceof ObjectType && $prototypeParameterType->getClassName() === \Traversable::class) {
+						continue;
+					}
+				}
+
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s (%s) of method %s::%s() is not compatible with parameter #%d $%s (%s) of method %s::%s().',
+					$i + 1,
+					$methodParameter->getName(),
+					$originalMethodParameterType->describe(VerbosityLevel::typeOnly()),
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$i + 1,
+					$prototypeParameter->getName(),
+					$originalPrototypeParameterType->describe(VerbosityLevel::typeOnly()),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+			} elseif (!$methodParameterType->isSuperTypeOf($prototypeParameterType)->yes()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
+					$i + 1,
+					$methodParameter->getName(),
+					$methodParameterType->describe(VerbosityLevel::typeOnly()),
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$i + 1,
+					$prototypeParameter->getName(),
+					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+			}
+		}
+
+		if (!isset($i)) {
+			$i = -1;
+		}
+
+		foreach ($methodParameters as $j => $methodParameter) {
+			if ($j <= $i) {
+				continue;
+			}
+
+			if ($methodParameter->isOptional()) {
+				continue;
+			}
+
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Parameter #%d $%s of method %s::%s() is not optional.',
+				$j + 1,
+				$methodParameter->getName(),
+				$method->getDeclaringClass()->getName(),
+				$method->getName()
 			))->nonIgnorable()->build();
 		}
 

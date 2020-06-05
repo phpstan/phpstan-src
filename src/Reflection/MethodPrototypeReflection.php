@@ -19,6 +19,19 @@ class MethodPrototypeReflection implements ClassMemberReflection
 
 	private bool $isFinal;
 
+	/** @var ParametersAcceptor[] */
+	private array $variants;
+
+	/**
+	 * @param string $name
+	 * @param ClassReflection $declaringClass
+	 * @param bool $isStatic
+	 * @param bool $isPrivate
+	 * @param bool $isPublic
+	 * @param bool $isAbstract
+	 * @param bool $isFinal
+	 * @param ParametersAcceptor[] $variants
+	 */
 	public function __construct(
 		string $name,
 		ClassReflection $declaringClass,
@@ -26,7 +39,8 @@ class MethodPrototypeReflection implements ClassMemberReflection
 		bool $isPrivate,
 		bool $isPublic,
 		bool $isAbstract,
-		bool $isFinal
+		bool $isFinal,
+		array $variants
 	)
 	{
 		$this->name = $name;
@@ -36,6 +50,7 @@ class MethodPrototypeReflection implements ClassMemberReflection
 		$this->isPublic = $isPublic;
 		$this->isAbstract = $isAbstract;
 		$this->isFinal = $isFinal;
+		$this->variants = $variants;
 	}
 
 	public function getName(): string
@@ -76,6 +91,14 @@ class MethodPrototypeReflection implements ClassMemberReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	/**
+	 * @return ParametersAcceptor[]
+	 */
+	public function getVariants(): array
+	{
+		return $this->variants;
 	}
 
 }

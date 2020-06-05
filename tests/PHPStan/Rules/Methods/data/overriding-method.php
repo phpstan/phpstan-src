@@ -91,3 +91,150 @@ class Lorem extends Baz
 	}
 
 }
+
+abstract class Ipsum
+{
+
+	abstract public function __construct(int $i);
+
+	public function doFoo(int $i)
+	{
+
+	}
+
+}
+
+class Dolor extends Ipsum
+{
+
+	public function __construct(string $s)
+	{
+
+	}
+
+	public function doFoo()
+	{
+
+	}
+
+}
+
+class FixedArray extends \SplFixedArray
+{
+
+	public function setSize(string $size): bool
+	{
+
+	}
+
+}
+
+class Sit
+{
+
+	public function doFoo(int $i, int $j = null)
+	{
+
+	}
+
+	public function doBar(int ...$j)
+	{
+
+	}
+
+	public function doBaz(int $j)
+	{
+
+	}
+
+}
+
+class Amet extends Sit
+{
+
+	public function doFoo(int $i = null, int $j = null)
+	{
+
+	}
+
+	public function doBar(int $j)
+	{
+
+	}
+
+	public function doBaz(int ...$j)
+	{
+
+	}
+
+}
+
+class Consecteur extends Sit
+{
+
+	public function doFoo(int $i, ?int $j)
+	{
+
+	}
+
+}
+
+class Etiam
+{
+
+	public function doFoo(int &$i, int $j)
+	{
+
+	}
+
+}
+
+class Lacus extends Etiam
+{
+
+	public function doFoo(int $i, int &$j)
+	{
+
+	}
+
+}
+
+class BazBaz extends Foo
+{
+
+	public function doBar(int $i)
+	{
+
+	}
+
+}
+
+class BazBazBaz extends Foo
+{
+
+	public function doBar(int $i = null)
+	{
+
+	}
+
+}
+
+class FooFoo extends Ipsum
+{
+
+	public function doFoo(int $i, int $j)
+	{
+
+	}
+
+}
+
+class FooFooFoo extends Ipsum
+{
+
+	public function doFoo(int $i, int $j = null)
+	{
+
+	}
+
+}

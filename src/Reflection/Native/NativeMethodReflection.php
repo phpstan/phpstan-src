@@ -90,7 +90,8 @@ class NativeMethodReflection implements MethodReflection
 				$prototypeMethod->isPrivate(),
 				$prototypeMethod->isPublic(),
 				$prototypeMethod->isAbstract(),
-				$prototypeMethod->isFinal()
+				$prototypeMethod->isFinal(),
+				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants()
 			);
 		} catch (\ReflectionException $e) {
 			return $this;

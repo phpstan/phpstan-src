@@ -6,6 +6,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use const PHP_VERSION_ID;
+use function array_reverse;
 
 class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 {
@@ -180,11 +181,16 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 			return;
 		}
 		$this->assertCount(2, $errors);
-		$this->assertSame('Declaration of DeclarationWarning\Bar::doFoo(int $i): void should be compatible with DeclarationWarning\Foo::doFoo(): void', $errors[0]->getMessage());
-		$this->assertSame(__DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'declaration-warning.php', $errors[0]->getFile());
-		$this->assertSame(PHP_VERSION_ID >= 70400 ? 22 : 27, $errors[0]->getLine());
-		$this->assertSame('Parameter #1 $i of method DeclarationWarning\Bar::doFoo() is not optional.', $errors[1]->getMessage());
-		$this->assertSame(22, $errors[1]->getLine());
+		$messages = [
+			'Declaration of DeclarationWarning\Bar::doFoo(int $i): void should be compatible with DeclarationWarning\Foo::doFoo(): void',
+			'Parameter #1 $i of method DeclarationWarning\Bar::doFoo() is not optional.',
+		];
+		if (PHP_VERSION_ID < 70400) {
+			$messages = array_reverse($messages);
+		}
+		foreach ($messages as $i => $message) {
+			$this->assertSame($message, $errors[$i]->getMessage());
+		}
 	}
 
 	public function testPropertyAssignIntersectionStaticTypeBug(): void

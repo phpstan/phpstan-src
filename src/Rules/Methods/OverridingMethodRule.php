@@ -59,9 +59,9 @@ class OverridingMethodRule implements Rule
 		if ($prototype->isFinal()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() overrides final method %s::%s().',
-				$method->getDeclaringClass()->getName(),
+				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getName(),
+				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName()
 			))->nonIgnorable()->build();
 		}
@@ -71,18 +71,18 @@ class OverridingMethodRule implements Rule
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s method %s::%s() overriding public method %s::%s() should also be public.',
 					$method->isPrivate() ? 'Private' : 'Protected',
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}
 		} elseif ($method->isPrivate()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
-				$method->getDeclaringClass()->getName(),
+				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getName(),
+				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName()
 			))->nonIgnorable()->build();
 		}
@@ -91,18 +91,18 @@ class OverridingMethodRule implements Rule
 			if (!$method->isStatic()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Non-static method %s::%s() overrides static method %s::%s().',
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}
 		} elseif ($method->isStatic()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Static method %s::%s() overrides non-static method %s::%s().',
-				$method->getDeclaringClass()->getName(),
+				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getName(),
+				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName()
 			))->nonIgnorable()->build();
 		}
@@ -127,9 +127,9 @@ class OverridingMethodRule implements Rule
 			if (!array_key_exists($i, $methodParameters)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Method %s::%s() overrides method %s::%s() but misses parameter #%d $%s.',
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
 					$i + 1,
 					$prototypeParameter->getName()
@@ -144,11 +144,11 @@ class OverridingMethodRule implements Rule
 						'Parameter #%d $%s of method %s::%s() is passed by reference but parameter #%d $%s of method %s::%s() is not passed by reference.',
 						$i + 1,
 						$methodParameter->getName(),
-						$method->getDeclaringClass()->getName(),
+						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
 						$i + 1,
 						$prototypeParameter->getName(),
-						$prototype->getDeclaringClass()->getName(),
+						$prototype->getDeclaringClass()->getDisplayName(),
 						$prototype->getName()
 					))->nonIgnorable()->build();
 				}
@@ -157,11 +157,11 @@ class OverridingMethodRule implements Rule
 					'Parameter #%d $%s of method %s::%s() is not passed by reference but parameter #%d $%s of method %s::%s() is passed by reference.',
 					$i + 1,
 					$methodParameter->getName(),
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}
@@ -172,11 +172,11 @@ class OverridingMethodRule implements Rule
 						'Parameter #%d $%s of method %s::%s() is not variadic but parameter #%d $%s of method %s::%s() is variadic.',
 						$i + 1,
 						$methodParameter->getName(),
-						$method->getDeclaringClass()->getName(),
+						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
 						$i + 1,
 						$prototypeParameter->getName(),
-						$prototype->getDeclaringClass()->getName(),
+						$prototype->getDeclaringClass()->getDisplayName(),
 						$prototype->getName()
 					))->nonIgnorable()->build();
 					continue;
@@ -186,11 +186,11 @@ class OverridingMethodRule implements Rule
 					'Parameter #%d $%s of method %s::%s() is variadic but parameter #%d $%s of method %s::%s() is not variadic.',
 					$i + 1,
 					$methodParameter->getName(),
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 				continue;
@@ -201,11 +201,11 @@ class OverridingMethodRule implements Rule
 					'Parameter #%d $%s of method %s::%s() is required but parameter #%d $%s of method %s::%s() is optional.',
 					$i + 1,
 					$methodParameter->getName(),
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}
@@ -230,12 +230,12 @@ class OverridingMethodRule implements Rule
 					$i + 1,
 					$methodParameter->getName(),
 					$methodParameterType->describe(VerbosityLevel::typeOnly()),
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			} else {
@@ -244,12 +244,12 @@ class OverridingMethodRule implements Rule
 					$i + 1,
 					$methodParameter->getName(),
 					$methodParameterType->describe(VerbosityLevel::typeOnly()),
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}
@@ -272,7 +272,7 @@ class OverridingMethodRule implements Rule
 				'Parameter #%d $%s of method %s::%s() is not optional.',
 				$j + 1,
 				$methodParameter->getName(),
-				$method->getDeclaringClass()->getName(),
+				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName()
 			))->nonIgnorable()->build();
 		}
@@ -290,20 +290,20 @@ class OverridingMethodRule implements Rule
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with return type %s of method %s::%s().',
 					$methodReturnType->describe(VerbosityLevel::typeOnly()),
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			} else {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not compatible with return type %s of method %s::%s().',
 					$methodReturnType->describe(VerbosityLevel::typeOnly()),
-					$method->getDeclaringClass()->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
 			}

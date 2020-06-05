@@ -17,6 +17,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
@@ -209,9 +210,6 @@ class OverridingMethodRule implements Rule
 			}
 
 			$methodParameterType = $methodParameter->getNativeType();
-			if ($methodParameterType instanceof MixedType) {
-				continue;
-			}
 
 			if ($prototypeParameter instanceof PhpParameterReflection) {
 				$prototypeParameterType = $prototypeParameter->getNativeType();
@@ -221,42 +219,27 @@ class OverridingMethodRule implements Rule
 				continue;
 			}
 
-			if (!$this->phpVersion->supportsParameterContravariance()) {
-				$originalPrototypeParameterType = $prototypeParameterType;
-				if (TypeCombinator::containsNull($methodParameterType)) {
-					$prototypeParameterType = TypeCombinator::removeNull($prototypeParameterType);
-				}
-				$originalMethodParameterType = $methodParameterType;
-				$methodParameterType = TypeCombinator::removeNull($methodParameterType);
-				if ($methodParameterType->equals($prototypeParameterType)) {
-					continue;
-				}
+			if ($this->isTypeCompatible($methodParameterType, $prototypeParameterType, $this->phpVersion->supportsParameterContravariance())) {
+				continue;
+			}
 
-				if ($methodParameterType instanceof IterableType) {
-					if ($prototypeParameterType instanceof ArrayType) {
-						continue;
-					}
-					if ($prototypeParameterType instanceof ObjectType && $prototypeParameterType->getClassName() === \Traversable::class) {
-						continue;
-					}
-				}
-
+			if ($this->phpVersion->supportsParameterContravariance()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s (%s) of method %s::%s() is not compatible with parameter #%d $%s (%s) of method %s::%s().',
+					'Parameter #%d $%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
 					$i + 1,
 					$methodParameter->getName(),
-					$originalMethodParameterType->describe(VerbosityLevel::typeOnly()),
+					$methodParameterType->describe(VerbosityLevel::typeOnly()),
 					$method->getDeclaringClass()->getName(),
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$originalPrototypeParameterType->describe(VerbosityLevel::typeOnly()),
+					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getName(),
 					$prototype->getName()
 				))->nonIgnorable()->build();
-			} elseif (!$methodParameterType->isSuperTypeOf($prototypeParameterType)->yes()) {
+			} else {
 				$messages[] = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
+					'Parameter #%d $%s (%s) of method %s::%s() is not compatible with parameter #%d $%s (%s) of method %s::%s().',
 					$i + 1,
 					$methodParameter->getName(),
 					$methodParameterType->describe(VerbosityLevel::typeOnly()),
@@ -294,6 +277,36 @@ class OverridingMethodRule implements Rule
 		}
 
 		return $messages;
+	}
+
+	private function isTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
+	{
+		if ($methodParameterType instanceof MixedType) {
+			return true;
+		}
+
+		if (!$supportsContravariance) {
+			if (TypeCombinator::containsNull($methodParameterType)) {
+				$prototypeParameterType = TypeCombinator::removeNull($prototypeParameterType);
+			}
+			$methodParameterType = TypeCombinator::removeNull($methodParameterType);
+			if ($methodParameterType->equals($prototypeParameterType)) {
+				return true;
+			}
+
+			if ($methodParameterType instanceof IterableType) {
+				if ($prototypeParameterType instanceof ArrayType) {
+					return true;
+				}
+				if ($prototypeParameterType instanceof ObjectType && $prototypeParameterType->getClassName() === \Traversable::class) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		return $methodParameterType->isSuperTypeOf($prototypeParameterType)->yes();
 	}
 
 }

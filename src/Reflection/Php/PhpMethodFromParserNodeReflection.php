@@ -13,6 +13,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
 
 class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements MethodReflection
@@ -78,7 +79,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		}
 		if ($name === '__set_state') {
 			$realReturnTypePresent = true;
-			$realReturnType = new ObjectWithoutClassType();
+			$realReturnType = TypeCombinator::intersect(new ObjectWithoutClassType(), $realReturnType);
 		}
 
 		parent::__construct(

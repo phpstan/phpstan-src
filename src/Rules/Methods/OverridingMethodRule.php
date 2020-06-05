@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -274,6 +275,38 @@ class OverridingMethodRule implements Rule
 				$method->getDeclaringClass()->getName(),
 				$method->getName()
 			))->nonIgnorable()->build();
+		}
+
+		$methodReturnType = $methodVariant->getNativeReturnType();
+
+		if ($prototypeVariant instanceof FunctionVariantWithPhpDocs) {
+			$prototypeReturnType = $prototypeVariant->getNativeReturnType();
+		} else {
+			$prototypeReturnType = $prototypeVariant->getReturnType();
+		}
+
+		if (!$this->isTypeCompatible($prototypeReturnType, $methodReturnType, $this->phpVersion->supportsReturnCovariance())) {
+			if ($this->phpVersion->supportsReturnCovariance()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Return type %s of method %s::%s() is not covariant with return type %s of method %s::%s().',
+					$methodReturnType->describe(VerbosityLevel::typeOnly()),
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+			} else {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Return type %s of method %s::%s() is not compatible with return type %s of method %s::%s().',
+					$methodReturnType->describe(VerbosityLevel::typeOnly()),
+					$method->getDeclaringClass()->getName(),
+					$method->getName(),
+					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
+					$prototype->getDeclaringClass()->getName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+			}
 		}
 
 		return $messages;

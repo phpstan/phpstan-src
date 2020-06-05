@@ -216,4 +216,66 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([$file], $expectedErrors);
 	}
 
+	public function dataReturnTypeCovariance(): array
+	{
+		return [
+			[
+				70300,
+				[
+					[
+						'Return type iterable of method ReturnTypeCovariance\Bar::doBar() is not compatible with return type array of method ReturnTypeCovariance\Foo::doBar().',
+						38,
+					],
+					[
+						'Return type InvalidArgumentException of method ReturnTypeCovariance\Bar::doBaz() is not compatible with return type Exception of method ReturnTypeCovariance\Foo::doBaz().',
+						43,
+					],
+					[
+						'Return type Exception of method ReturnTypeCovariance\Bar::doLorem() is not compatible with return type InvalidArgumentException of method ReturnTypeCovariance\Foo::doLorem().',
+						48,
+					],
+					[
+						'Return type mixed of method ReturnTypeCovariance\B::foo() is not compatible with return type stdClass|null of method ReturnTypeCovariance\A::foo().',
+						66,
+					],
+				],
+			],
+			[
+				70400,
+				[
+					[
+						'Return type iterable of method ReturnTypeCovariance\Bar::doBar() is not covariant with return type array of method ReturnTypeCovariance\Foo::doBar().',
+						38,
+					],
+					[
+						'Return type Exception of method ReturnTypeCovariance\Bar::doLorem() is not covariant with return type InvalidArgumentException of method ReturnTypeCovariance\Foo::doLorem().',
+						48,
+					],
+					[
+						'Return type mixed of method ReturnTypeCovariance\B::foo() is not covariant with return type stdClass|null of method ReturnTypeCovariance\A::foo().',
+						66,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataReturnTypeCovariance
+	 * @param int $phpVersion
+	 * @param mixed[] $expectedErrors
+	 */
+	public function testReturnTypeCovariance(
+		int $phpVersion,
+		array $expectedErrors
+	): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->phpVersionId = $phpVersion;
+		$this->analyse([__DIR__ . '/data/return-type-covariance.php'], $expectedErrors);
+	}
+
 }

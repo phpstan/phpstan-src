@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<OverridingMethodRule>
@@ -21,13 +20,32 @@ class OverridingMethodRuleTest extends RuleTestCase
 		return new OverridingMethodRule(new PhpVersion($this->phpVersionId));
 	}
 
-	public function testOverridingFinalMethod(): void
+	public function dataOverridingFinalMethod(): array
+	{
+		return [
+			[
+				70300,
+				'compatible',
+			],
+			[
+				70400,
+				'contravariant',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataOverridingFinalMethod
+	 * @param int $phpVersion
+	 * @param string $message
+	 */
+	public function testOverridingFinalMethod(int $phpVersion, string $message): void
 	{
 		if (!self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires static reflection.');
 		}
 
-		$this->phpVersionId = PHP_VERSION_ID;
+		$this->phpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/overriding-method.php'], [
 			[
 				'Method OverridingFinalMethod\Bar::doFoo() overrides final method OverridingFinalMethod\Foo::doFoo().',
@@ -54,7 +72,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				68,
 			],
 			[
-				'Parameter #1 $s (string) of method OverridingFinalMethod\Dolor::__construct() is not contravariant with parameter #1 $i (int) of method OverridingFinalMethod\Ipsum::__construct().',
+				'Parameter #1 $s (string) of method OverridingFinalMethod\Dolor::__construct() is not ' . $message . ' with parameter #1 $i (int) of method OverridingFinalMethod\Ipsum::__construct().',
 				110,
 			],
 			[
@@ -62,7 +80,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				115,
 			],
 			[
-				'Parameter #1 $size (string) of method OverridingFinalMethod\FixedArray::setSize() is not contravariant with parameter #1 $size (int) of method SplFixedArray::setSize().',
+				'Parameter #1 $size (string) of method OverridingFinalMethod\FixedArray::setSize() is not ' . $message . ' with parameter #1 $size (int) of method SplFixedArray::setSize().',
 				125,
 			],
 			[

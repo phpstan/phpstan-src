@@ -53,6 +53,7 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClassMethodNode;
+use PHPStan\Node\InClassNode;
 use PHPStan\Node\InClosureNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\LiteralArrayItem;
@@ -545,11 +546,14 @@ class NodeScopeResolver
 				);
 				$this->reflectionProvider->hasClass($classReflection->getName());
 				$classScope = $scope->enterClass($classReflection);
+				$nodeCallback(new InClassNode($stmt, $classReflection), $classScope);
 			} elseif ($stmt instanceof Class_) {
 				if ($stmt->name === null) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
-				$classScope = $scope->enterClass($this->reflectionProvider->getClass($stmt->name->toString()));
+				$classReflection = $this->reflectionProvider->getClass($stmt->name->toString());
+				$classScope = $scope->enterClass($classReflection);
+				$nodeCallback(new InClassNode($stmt, $classReflection), $classScope);
 			} else {
 				throw new \PHPStan\ShouldNotHappenException();
 			}

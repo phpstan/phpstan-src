@@ -386,6 +386,19 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->getPhpExtension()->getNativeMethod($this, $methodName);
 	}
 
+	/**
+	 * @return MethodReflection[]
+	 */
+	public function getNativeMethods(): array
+	{
+		$methods = [];
+		foreach ($this->reflection->getMethods() as $method) {
+			$methods[] = $this->getNativeMethod($method->getName());
+		}
+
+		return $methods;
+	}
+
 	public function hasConstructor(): bool
 	{
 		return $this->reflection->getConstructor() !== null;

@@ -30,6 +30,7 @@ rules:
 	- PHPStan\Rules\Functions\PrintfParametersRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Methods\OverridingMethodRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule

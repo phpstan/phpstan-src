@@ -8,10 +8,9 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
-use PHPStan\Reflection\Php\PhpParameterReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
@@ -212,13 +211,11 @@ class OverridingMethodRule implements Rule
 
 			$methodParameterType = $methodParameter->getNativeType();
 
-			if ($prototypeParameter instanceof PhpParameterReflection) {
-				$prototypeParameterType = $prototypeParameter->getNativeType();
-			} elseif ($prototypeParameter instanceof NativeParameterReflection) {
-				$prototypeParameterType = $prototypeParameter->getType();
-			} else {
+			if (!$prototypeParameter instanceof ParameterReflectionWithPhpDocs) {
 				continue;
 			}
+
+			$prototypeParameterType = $prototypeParameter->getNativeType();
 
 			if ($this->isTypeCompatible($methodParameterType, $prototypeParameterType, $this->phpVersion->supportsParameterContravariance())) {
 				continue;
@@ -279,11 +276,11 @@ class OverridingMethodRule implements Rule
 
 		$methodReturnType = $methodVariant->getNativeReturnType();
 
-		if ($prototypeVariant instanceof FunctionVariantWithPhpDocs) {
-			$prototypeReturnType = $prototypeVariant->getNativeReturnType();
-		} else {
-			$prototypeReturnType = $prototypeVariant->getReturnType();
+		if (!$prototypeVariant instanceof FunctionVariantWithPhpDocs) {
+			return $messages;
 		}
+
+		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
 
 		if (!$this->isTypeCompatible($prototypeReturnType, $methodReturnType, $this->phpVersion->supportsReturnCovariance())) {
 			if ($this->phpVersion->supportsReturnCovariance()) {

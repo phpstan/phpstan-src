@@ -20,7 +20,7 @@ class NativeMethodReflection implements MethodReflection
 
 	private BuiltinMethodReflection $reflection;
 
-	/** @var \PHPStan\Reflection\ParametersAcceptor[] */
+	/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] */
 	private array $variants;
 
 	private TrinaryLogic $hasSideEffects;
@@ -31,7 +31,7 @@ class NativeMethodReflection implements MethodReflection
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
 	 * @param BuiltinMethodReflection $reflection
-	 * @param \PHPStan\Reflection\ParametersAcceptor[] $variants
+	 * @param \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] $variants
 	 * @param TrinaryLogic $hasSideEffects
 	 * @param string|null $stubPhpDocString
 	 */
@@ -104,7 +104,7 @@ class NativeMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array
 	{

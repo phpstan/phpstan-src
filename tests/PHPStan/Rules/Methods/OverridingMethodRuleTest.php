@@ -80,7 +80,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				115,
 			],
 			[
-				'Parameter #1 $size (string) of method OverridingFinalMethod\FixedArray::setSize() is not ' . $message . ' with parameter #1 $size (int) of method SplFixedArray::setSize().',
+				'Parameter #1 $size (int) of method OverridingFinalMethod\FixedArray::setSize() is not ' . $message . ' with parameter #1 $size (mixed) of method SplFixedArray::setSize().',
 				125,
 			],
 			[

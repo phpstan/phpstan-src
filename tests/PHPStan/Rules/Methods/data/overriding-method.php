@@ -122,7 +122,7 @@ class Dolor extends Ipsum
 class FixedArray extends \SplFixedArray
 {
 
-	public function setSize(string $size): bool
+	public function setSize(int $size): bool
 	{
 
 	}
@@ -235,6 +235,21 @@ class FooFooFoo extends Ipsum
 	public function doFoo(int $i, int $j = null)
 	{
 
+	}
+
+}
+
+/**
+ * @implements \IteratorAggregate<int, Foo>
+ */
+class SomeIterator implements \IteratorAggregate
+{
+	/**
+	 * @return \Traversable<int, Foo>
+	 */
+	public function getIterator()
+	{
+		yield new Foo;
 	}
 
 }

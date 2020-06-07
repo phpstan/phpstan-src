@@ -1,5 +1,6 @@
 parameters:
 	bootstrap: null
+	bootstrapFiles: []
 	excludes_analyse: []
 	autoload_directories: []
 	autoload_files: []
@@ -132,6 +133,7 @@ extensions:
 
 parametersSchema:
 	bootstrap: schema(string(), nullable())
+	bootstrapFiles: listOf(string())
 	excludes_analyse: listOf(string())
 	autoload_directories: listOf(string())
 	autoload_files: listOf(string())

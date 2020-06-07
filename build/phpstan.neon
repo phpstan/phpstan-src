@@ -7,7 +7,8 @@ includes:
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
 parameters:
-	bootstrap: %rootDir%/tests/phpstan-bootstrap.php
+	bootstrapFiles:
+		- %rootDir%/tests/phpstan-bootstrap.php
 	excludes_analyse:
 		- %rootDir%/src/Reflection/SignatureMap/functionMap.php
 		- %rootDir%/src/Reflection/SignatureMap/functionMetadata.php

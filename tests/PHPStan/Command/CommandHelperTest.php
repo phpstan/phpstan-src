@@ -166,6 +166,9 @@ class CommandHelperTest extends TestCase
 				__DIR__ . '/relative-paths/root.neon',
 				[
 					'bootstrap' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
+					'bootstrapFiles' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
+					],
 					'autoload_files' => [
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',

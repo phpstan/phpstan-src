@@ -1,5 +1,7 @@
 parameters:
 	bootstrap: here.php
+	bootstrapFiles:
+		- here.php
 	autoload_files:
 		- here.php
 		- test/there.php

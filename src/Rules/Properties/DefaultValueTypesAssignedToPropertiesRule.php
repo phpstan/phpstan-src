@@ -50,7 +50,7 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 				}
 			}
 			$defaultValueType = $scope->getType($property->default);
-			if ($this->ruleLevelHelper->accepts($propertyType, $defaultValueType, $scope->isDeclareStrictTypes())) {
+			if ($this->ruleLevelHelper->accepts($propertyType, $defaultValueType, true)) {
 				continue;
 			}
 

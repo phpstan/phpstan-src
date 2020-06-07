@@ -41,6 +41,7 @@ parameters:
 	reportStaticMethodSignatures: false
 	mixinExcludeClasses: []
 	scanFiles: []
+	scanDirectories: []
 	parallel:
 		jobSize: 20
 		processTimeout: 60.0
@@ -228,6 +229,7 @@ parametersSchema:
 	cliArgumentsVariablesRegistered: bool()
 	mixinExcludeClasses: listOf(string())
 	scanFiles: listOf(string())
+	scanDirectories: listOf(string())
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -1148,6 +1150,7 @@ services:
 			autoloadDirectories: %autoload_directories%
 			autoloadFiles: %autoload_files%
 			scanFiles: %scanFiles%
+			scanDirectories: %scanDirectories%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%

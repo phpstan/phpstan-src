@@ -561,22 +561,25 @@ class PhpClassReflectionExtension
 		?Type $phpDocReturnType
 	): FunctionVariantWithPhpDocs
 	{
+		$parameters = [];
+		foreach ($methodSignature->getParameters() as $parameterSignature) {
+			$parameters[] = new NativeParameterWithPhpDocsReflection(
+				$parameterSignature->getName(),
+				$parameterSignature->isOptional(),
+				$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? $parameterSignature->getType(),
+				$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? new MixedType(),
+				new MixedType(true), // todo
+				$parameterSignature->passedByReference(),
+				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
+				null,
+				isset($stubPhpDocParameterTypes[$parameterSignature->getName()])
+			);
+		}
+
 		return new FunctionVariantWithPhpDocs(
 			TemplateTypeMap::createEmpty(),
 			null,
-			array_map(static function (ParameterSignature $parameterSignature) use ($stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity): NativeParameterWithPhpDocsReflection {
-				return new NativeParameterWithPhpDocsReflection(
-					$parameterSignature->getName(),
-					$parameterSignature->isOptional(),
-					$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? $parameterSignature->getType(),
-					$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? new MixedType(),
-					new MixedType(true), // todo
-					$parameterSignature->passedByReference(),
-					$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
-					null,
-					isset($stubPhpDocParameterTypes[$parameterSignature->getName()])
-				);
-			}, $methodSignature->getParameters()),
+			$parameters,
 			$methodSignature->isVariadic(),
 			$phpDocReturnType ?? $methodSignature->getReturnType(),
 			$phpDocReturnType ?? new MixedType(),

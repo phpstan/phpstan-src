@@ -317,6 +317,20 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('');
 		}
 
+		$autoloadDirectories = $container->getParameter('autoload_directories');
+		if (count($autoloadDirectories) > 0) {
+			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_directories</>. ⚠️️');
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted('You might not need it anymore - try removing it from your');
+			$errorOutput->writeLineFormatted('configuration file and run PHPStan again.');
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted('If the analysis fails, replace it with <fg=cyan>scanDirectories</>.');
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted('Read more about this in PHPStan\'s documentation:');
+			$errorOutput->writeLineFormatted('https://phpstan.org/user-guide/discovering-symbols');
+			$errorOutput->writeLineFormatted('');
+		}
+
 		foreach ($autoloadFiles as $parameterAutoloadFile) {
 			if (!file_exists($parameterAutoloadFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Autoload file %s does not exist.', $parameterAutoloadFile));

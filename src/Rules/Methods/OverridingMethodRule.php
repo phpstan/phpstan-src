@@ -352,7 +352,7 @@ class OverridingMethodRule implements Rule
 
 	/**
 	 * @param RuleError[] $errors
-	 * @return RuleError[]
+	 * @return (string|RuleError)[]
 	 */
 	private function addErrors(
 		array $errors,

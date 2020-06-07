@@ -205,6 +205,11 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 				return $inceptionResult->handleReturn(1);
 			}
+			if ($analysisResult->hasInternalErrors()) {
+				$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
+
+				return $inceptionResult->handleReturn(1);
+			}
 
 			$baselineFileDirectory = dirname($generateBaselineFile);
 			$baselineErrorFormatter = new BaselineNeonErrorFormatter(new ParentDirectoryRelativePathHelper($baselineFileDirectory));

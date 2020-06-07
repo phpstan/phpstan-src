@@ -20,19 +20,23 @@ class AnalysisResult
 
 	private ?string $projectConfigFile;
 
+	private bool $hasInternalErrors;
+
 	/**
 	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
 	 * @param string[] $warnings
 	 * @param bool $defaultLevelUsed
 	 * @param string|null $projectConfigFile
+	 * @param bool $hasInternalErrors
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
 		array $notFileSpecificErrors,
 		array $warnings,
 		bool $defaultLevelUsed,
-		?string $projectConfigFile
+		?string $projectConfigFile,
+		bool $hasInternalErrors
 	)
 	{
 		usort(
@@ -55,6 +59,7 @@ class AnalysisResult
 		$this->warnings = $warnings;
 		$this->defaultLevelUsed = $defaultLevelUsed;
 		$this->projectConfigFile = $projectConfigFile;
+		$this->hasInternalErrors = $hasInternalErrors;
 	}
 
 	public function hasErrors(): bool
@@ -104,6 +109,11 @@ class AnalysisResult
 	public function getProjectConfigFile(): ?string
 	{
 		return $this->projectConfigFile;
+	}
+
+	public function hasInternalErrors(): bool
+	{
+		return $this->hasInternalErrors;
 	}
 
 }

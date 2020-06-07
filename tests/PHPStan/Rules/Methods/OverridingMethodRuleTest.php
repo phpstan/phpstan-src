@@ -30,10 +30,12 @@ class OverridingMethodRuleTest extends RuleTestCase
 			[
 				70300,
 				'compatible',
+				'compatible',
 			],
 			[
 				70400,
 				'contravariant',
+				'covariant',
 			],
 		];
 	}
@@ -41,9 +43,9 @@ class OverridingMethodRuleTest extends RuleTestCase
 	/**
 	 * @dataProvider dataOverridingFinalMethod
 	 * @param int $phpVersion
-	 * @param string $message
+	 * @param string $contravariantMessage
 	 */
-	public function testOverridingFinalMethod(int $phpVersion, string $message): void
+	public function testOverridingFinalMethod(int $phpVersion, string $contravariantMessage): void
 	{
 		if (!self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires static reflection.');
@@ -76,7 +78,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				68,
 			],
 			[
-				'Parameter #1 $s (string) of method OverridingFinalMethod\Dolor::__construct() is not ' . $message . ' with parameter #1 $i (int) of method OverridingFinalMethod\Ipsum::__construct().',
+				'Parameter #1 $s (string) of method OverridingFinalMethod\Dolor::__construct() is not ' . $contravariantMessage . ' with parameter #1 $i (int) of method OverridingFinalMethod\Ipsum::__construct().',
 				110,
 			],
 			[
@@ -84,7 +86,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				115,
 			],
 			[
-				'Parameter #1 $size (int) of method OverridingFinalMethod\FixedArray::setSize() is not ' . $message . ' with parameter #1 $size (mixed) of method SplFixedArray::setSize().',
+				'Parameter #1 $size (int) of method OverridingFinalMethod\FixedArray::setSize() is not ' . $contravariantMessage . ' with parameter #1 $size (mixed) of method SplFixedArray::setSize().',
 				125,
 			],
 			[
@@ -282,20 +284,26 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/return-type-covariance.php'], $expectedErrors);
 	}
 
-	public function testParle(): void
+	/**
+	 * @dataProvider dataOverridingFinalMethod
+	 * @param int $phpVersion
+	 * @param string $contravariantMessage
+	 * @param string $covariantMessage
+	 */
+	public function testParle(int $phpVersion, string $contravariantMessage, string $covariantMessage): void
 	{
 		if (!self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires static reflection.');
 		}
 
-		$this->phpVersionId = PHP_VERSION_ID;
+		$this->phpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/parle.php'], [
 			[
-				'Parameter #1 $state (int) of method OverridingParle\Foo::pushState() is not contravariant with parameter #1 $state (string) of method Parle\RLexer::pushState().',
+				'Parameter #1 $state (int) of method OverridingParle\Foo::pushState() is not ' . $contravariantMessage . ' with parameter #1 $state (string) of method Parle\RLexer::pushState().',
 				8,
 			],
 			[
-				'Return type string of method OverridingParle\Foo::pushState() is not covariant with return type int of method Parle\RLexer::pushState().',
+				'Return type string of method OverridingParle\Foo::pushState() is not ' . $covariantMessage . ' with return type int of method Parle\RLexer::pushState().',
 				8,
 			],
 		]);

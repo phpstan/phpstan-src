@@ -26,6 +26,7 @@ use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SignatureMap\FunctionSignature;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\TrinaryLogic;
@@ -444,27 +445,7 @@ class PhpClassReflectionExtension
 						}
 					}
 				}
-				$variants[] = new FunctionVariantWithPhpDocs(
-					TemplateTypeMap::createEmpty(),
-					null,
-					array_map(static function (ParameterSignature $parameterSignature) use ($stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity): NativeParameterWithPhpDocsReflection {
-						return new NativeParameterWithPhpDocsReflection(
-							$parameterSignature->getName(),
-							$parameterSignature->isOptional(),
-							$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? $parameterSignature->getType(),
-							$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? new MixedType(),
-							new MixedType(true), // todo
-							$parameterSignature->passedByReference(),
-							$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
-							null,
-							isset($stubPhpDocParameterTypes[$parameterSignature->getName()])
-						);
-					}, $methodSignature->getParameters()),
-					$methodSignature->isVariadic(),
-					$phpDocReturnType ?? $methodSignature->getReturnType(),
-					$phpDocReturnType ?? new MixedType(),
-					new MixedType(true) // todo $methodSignature->getNativeReturnType()
-				);
+				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $phpDocReturnType);
 			}
 
 			if ($this->signatureMapProvider->hasFunctionMetadata($signatureMapMethodName)) {
@@ -563,6 +544,43 @@ class PhpClassReflectionExtension
 			$isInternal,
 			$isFinal,
 			$stubPhpDocString
+		);
+	}
+
+	/**
+	 * @param FunctionSignature $methodSignature
+	 * @param array<string, Type> $stubPhpDocParameterTypes
+	 * @param array<string, bool> $stubPhpDocParameterVariadicity
+	 * @param Type|null $phpDocReturnType
+	 * @return FunctionVariantWithPhpDocs
+	 */
+	private function createNativeMethodVariant(
+		FunctionSignature $methodSignature,
+		array $stubPhpDocParameterTypes,
+		array $stubPhpDocParameterVariadicity,
+		?Type $phpDocReturnType
+	): FunctionVariantWithPhpDocs
+	{
+		return new FunctionVariantWithPhpDocs(
+			TemplateTypeMap::createEmpty(),
+			null,
+			array_map(static function (ParameterSignature $parameterSignature) use ($stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity): NativeParameterWithPhpDocsReflection {
+				return new NativeParameterWithPhpDocsReflection(
+					$parameterSignature->getName(),
+					$parameterSignature->isOptional(),
+					$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? $parameterSignature->getType(),
+					$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? new MixedType(),
+					new MixedType(true), // todo
+					$parameterSignature->passedByReference(),
+					$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
+					null,
+					isset($stubPhpDocParameterTypes[$parameterSignature->getName()])
+				);
+			}, $methodSignature->getParameters()),
+			$methodSignature->isVariadic(),
+			$phpDocReturnType ?? $methodSignature->getReturnType(),
+			$phpDocReturnType ?? new MixedType(),
+			new MixedType(true) // todo $methodSignature->getNativeReturnType()
 		);
 	}
 

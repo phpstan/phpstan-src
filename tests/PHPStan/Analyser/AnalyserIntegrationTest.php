@@ -69,7 +69,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 			$this->assertSame('Class ExtendingUnknownClass\Foo extends unknown class ExtendingUnknownClass\Bar.', $errors[0]->getMessage());
 		} else {
 			$this->assertNull($errors[0]->getLine());
-			$this->assertSame('Class ExtendingUnknownClass\Bar not found and could not be autoloaded.', $errors[0]->getMessage());
+			$this->assertSame('Class ExtendingUnknownClass\Bar not found.', $errors[0]->getMessage());
 		}
 	}
 

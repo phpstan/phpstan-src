@@ -14,14 +14,14 @@ class ClassAutoloadingException extends \PHPStan\AnalysedCodeException
 	{
 		if ($previous !== null) {
 			parent::__construct(sprintf(
-				'%s (%s) thrown while autoloading class %s.',
+				'%s (%s) thrown while looking for class %s.',
 				get_class($previous),
 				$previous->getMessage(),
 				$functionName
 			), 0, $previous);
 		} else {
 			parent::__construct(sprintf(
-				'Class %s not found and could not be autoloaded.',
+				'Class %s not found.',
 				$functionName
 			), 0);
 		}
@@ -36,7 +36,7 @@ class ClassAutoloadingException extends \PHPStan\AnalysedCodeException
 
 	public function getTip(): ?string
 	{
-		return 'Learn more at https://phpstan.org/user-guide/autoloading';
+		return 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
 	}
 
 }

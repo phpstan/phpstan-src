@@ -74,7 +74,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 	public function testFunctionNotFound(): void
 	{
 		$this->expectException(\PHPStan\Broker\FunctionNotFoundException::class);
-		$this->expectExceptionMessage('Function nonexistentFunction not found while trying to analyse it - autoloading is probably not configured properly.');
+		$this->expectExceptionMessage('Function nonexistentFunction not found while trying to analyse it - discovering symbols is probably not configured properly.');
 
 		$scope = $this->createMock(Scope::class);
 		$scope->method('getNamespace')
@@ -85,7 +85,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 	public function testClassAutoloadingException(): void
 	{
 		$this->expectException(\PHPStan\Broker\ClassAutoloadingException::class);
-		$this->expectExceptionMessage("ParseError (syntax error, unexpected '{') thrown while autoloading class NonexistentClass.");
+		$this->expectExceptionMessage("ParseError (syntax error, unexpected '{') thrown while looking for class NonexistentClass.");
 		spl_autoload_register(static function (): void {
 			require_once __DIR__ . '/../Analyser/data/parse-error.php';
 		}, true, true);

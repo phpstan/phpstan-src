@@ -20,7 +20,7 @@ class ConstantNotFoundException extends \PHPStan\AnalysedCodeException
 
 	public function getTip(): ?string
 	{
-		return 'Learn more at https://phpstan.org/user-guide/autoloading';
+		return 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
 	}
 
 }

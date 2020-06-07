@@ -18,6 +18,9 @@ rules:
 	- PHPStan\Rules\Variables\ThrowTypeRule
 	- PHPStan\Rules\Variables\VariableCloningRule
 
+parameters:
+	checkPhpDocMethodSignatures: true
+
 services:
 	-
 		class: PHPStan\Rules\Arrays\AppendedArrayKeyTypeRule
@@ -58,13 +61,5 @@ services:
 		class: PHPStan\Rules\Generators\YieldInGeneratorRule
 		arguments:
 			reportMaybes: %reportMaybes%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Methods\MethodSignatureRule
-		arguments:
-			reportMaybes: %reportMaybesInMethodSignatures%
-			reportStatic: %reportStaticMethodSignatures%
 		tags:
 			- phpstan.rules.rule

@@ -2,8 +2,11 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Php\PhpVersion;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MethodSignatureRule>
+ * @extends \PHPStan\Testing\RuleTestCase<OverridingMethodRule>
  */
 class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 {
@@ -16,7 +19,11 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new MethodSignatureRule($this->reportMaybes, $this->reportStatic);
+		return new OverridingMethodRule(
+			new PhpVersion(PHP_VERSION_ID),
+			new MethodSignatureRule($this->reportMaybes, $this->reportStatic),
+			true
+		);
 	}
 
 	public function testReturnTypeRule(): void

@@ -17,7 +17,11 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new OverridingMethodRule(new PhpVersion($this->phpVersionId));
+		return new OverridingMethodRule(
+			new PhpVersion($this->phpVersionId),
+			new MethodSignatureRule(true, true),
+			false
+		);
 	}
 
 	public function dataOverridingFinalMethod(): array

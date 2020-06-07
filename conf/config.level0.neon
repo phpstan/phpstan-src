@@ -31,7 +31,6 @@ rules:
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
-	- PHPStan\Rules\Methods\OverridingMethodRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
 	- PHPStan\Rules\Variables\ThisVariableRule
@@ -77,6 +76,13 @@ services:
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
 			reportMagicMethods: %reportMagicMethods%
+
+	-
+		class: PHPStan\Rules\Methods\OverridingMethodRule
+		arguments:
+			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule

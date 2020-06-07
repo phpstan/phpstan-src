@@ -29,6 +29,7 @@ parameters:
 	checkUnionTypes: false
 	checkExplicitMixedMissingReturn: false
 	checkPhpDocMissingReturn: false
+	checkPhpDocMethodSignatures: false
 	checkExtraArguments: false
 	checkMissingClosureNativeReturnTypehintRule: false
 	checkMissingTypehints: false
@@ -160,6 +161,7 @@ parametersSchema:
 	checkUnionTypes: bool()
 	checkExplicitMixedMissingReturn: bool()
 	checkPhpDocMissingReturn: bool()
+	checkPhpDocMethodSignatures: bool()
 	checkExtraArguments: bool()
 	checkMissingClosureNativeReturnTypehintRule: bool()
 	checkMissingTypehints: bool()
@@ -590,6 +592,13 @@ services:
 
 	-
 		class: PHPStan\Rules\IssetCheck
+
+	-
+		# checked as part of OverridingMethodRule
+		class: PHPStan\Rules\Methods\MethodSignatureRule
+		arguments:
+			reportMaybes: %reportMaybesInMethodSignatures%
+			reportStatic: %reportStaticMethodSignatures%
 
 	-
 		class: PHPStan\Rules\MissingTypehintCheck

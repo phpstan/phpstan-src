@@ -12,6 +12,7 @@ use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IterableType;
@@ -29,9 +30,19 @@ class OverridingMethodRule implements Rule
 
 	private PhpVersion $phpVersion;
 
-	public function __construct(PhpVersion $phpVersion)
+	private MethodSignatureRule $methodSignatureRule;
+
+	private bool $checkPhpDocMethodSignatures;
+
+	public function __construct(
+		PhpVersion $phpVersion,
+		MethodSignatureRule $methodSignatureRule,
+		bool $checkPhpDocMethodSignatures
+	)
 	{
 		$this->phpVersion = $phpVersion;
+		$this->methodSignatureRule = $methodSignatureRule;
+		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
 	}
 
 	public function getNodeType(): string
@@ -108,13 +119,13 @@ class OverridingMethodRule implements Rule
 
 		if (strtolower($method->getName()) === '__construct') {
 			if (!$prototype->isAbstract()) {
-				return $messages;
+				return $this->addErrors($messages, $node->getOriginalNode(), $scope);
 			}
 		}
 
 		$prototypeVariants = $prototype->getVariants();
 		if (count($prototypeVariants) !== 1) {
-			return $messages;
+			return $this->addErrors($messages, $node->getOriginalNode(), $scope);
 		}
 
 		$prototypeVariant = $prototypeVariants[0];
@@ -277,7 +288,7 @@ class OverridingMethodRule implements Rule
 		$methodReturnType = $methodVariant->getNativeReturnType();
 
 		if (!$prototypeVariant instanceof FunctionVariantWithPhpDocs) {
-			return $messages;
+			return $this->addErrors($messages, $node->getOriginalNode(), $scope);
 		}
 
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
@@ -306,7 +317,7 @@ class OverridingMethodRule implements Rule
 			}
 		}
 
-		return $messages;
+		return $this->addErrors($messages, $node->getOriginalNode(), $scope);
 	}
 
 	private function isTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
@@ -337,6 +348,27 @@ class OverridingMethodRule implements Rule
 		}
 
 		return $methodParameterType->isSuperTypeOf($prototypeParameterType)->yes();
+	}
+
+	/**
+	 * @param RuleError[] $errors
+	 * @return RuleError[]
+	 */
+	private function addErrors(
+		array $errors,
+		Node\Stmt\ClassMethod $classMethod,
+		Scope $scope
+	): array
+	{
+		if (count($errors) > 0) {
+			return $errors;
+		}
+
+		if (!$this->checkPhpDocMethodSignatures) {
+			return $errors;
+		}
+
+		return $this->methodSignatureRule->processNode($classMethod, $scope);
 	}
 
 }

@@ -253,3 +253,33 @@ class SomeIterator implements \IteratorAggregate
 	}
 
 }
+
+class SomeException extends \Exception
+{
+
+	private function __construct()
+	{
+
+	}
+
+}
+
+class OtherException extends \Exception
+{
+
+	final public function __construct()
+	{
+
+	}
+
+}
+
+class SomeOtherException extends OtherException
+{
+
+	public function __construct()
+	{
+
+	}
+
+}

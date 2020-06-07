@@ -117,6 +117,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 				'Parameter #2 $j of method OverridingFinalMethod\FooFoo::doFoo() is not optional.',
 				225,
 			],
+			[
+				'Method OverridingFinalMethod\SomeOtherException::__construct() overrides final method OverridingFinalMethod\OtherException::__construct().',
+				280,
+			],
 		]);
 	}
 

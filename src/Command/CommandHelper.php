@@ -356,6 +356,26 @@ class CommandHelper
 			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
 		}
 
+		foreach ($container->getParameter('scanFiles') as $scannedFile) {
+			if (is_file($scannedFile)) {
+				continue;
+			}
+
+			$errorOutput->writeLineFormatted(sprintf('Scanned file %s does not exist.', $scannedFile));
+
+			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		}
+
+		foreach ($container->getParameter('scanDirectories') as $scannedDirectory) {
+			if (is_dir($scannedDirectory)) {
+				continue;
+			}
+
+			$errorOutput->writeLineFormatted(sprintf('Scanned directory %s does not exist.', $scannedDirectory));
+
+			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		}
+
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getByType(FileFinder::class);
 

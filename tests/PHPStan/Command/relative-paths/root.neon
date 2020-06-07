@@ -10,6 +10,14 @@ parameters:
 		- src
 		- .
 		- %rootDir%/conf
+	scanFiles:
+		- here.php
+		- test/there.php
+		- ../up.php
+	scanDirectories:
+		- src
+		- .
+		- %rootDir%/conf
 	paths:
 		- src
 	memoryLimitFile: .memory_limit

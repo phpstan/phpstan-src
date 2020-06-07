@@ -179,6 +179,16 @@ class CommandHelperTest extends TestCase
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths',
 						realpath(__DIR__ . '/../../../') . '/conf',
 					],
+					'scanFiles' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'up.php',
+					],
+					'scanDirectories' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths',
+						realpath(__DIR__ . '/../../../') . '/conf',
+					],
 					'paths' => [
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
 					],

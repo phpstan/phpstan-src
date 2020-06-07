@@ -14,7 +14,7 @@ use PHPStan\File\FileReader;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v8';
+	public const CACHE_KEY = 'v10';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -96,6 +96,8 @@ class NeonAdapter implements Adapter
 				'[parameters][ignoreErrors][][path]',
 				'[parameters][bootstrap]',
 				'[parameters][bootstrapFiles][]',
+				'[parameters][scanFiles][]',
+				'[parameters][scanDirectories][]',
 				'[parameters][tmpDir]',
 				'[parameters][memoryLimitFile]',
 				'[parameters][benchmarkFile]',

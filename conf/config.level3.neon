@@ -10,7 +10,6 @@ rules:
 	- PHPStan\Rules\Arrays\UnpackIterableInArrayRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
 	- PHPStan\Rules\Functions\ClosureReturnTypeRule
-	- PHPStan\Rules\Functions\ReturnTypeRule
 	- PHPStan\Rules\Generators\YieldTypeRule
 	- PHPStan\Rules\Methods\ReturnTypeRule
 	- PHPStan\Rules\Properties\DefaultValueTypesAssignedToPropertiesRule
@@ -47,6 +46,13 @@ services:
 		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule
 		arguments:
 			reportMaybes: %reportMaybes%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Functions\ReturnTypeRule
+		arguments:
+			functionReflector: @betterReflectionFunctionReflector
 		tags:
 			- phpstan.rules.rule
 

@@ -9,6 +9,8 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use Roave\BetterReflection\Reflector\FunctionReflector;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Return_>
@@ -18,9 +20,15 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 
 	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
 
-	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
+	private FunctionReflector $functionReflector;
+
+	public function __construct(
+		FunctionReturnTypeCheck $returnTypeCheck,
+		FunctionReflector $functionReflector
+	)
 	{
 		$this->returnTypeCheck = $returnTypeCheck;
+		$this->functionReflector = $functionReflector;
 	}
 
 	public function getNodeType(): string
@@ -49,6 +57,12 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 		$reflection = null;
 		if (function_exists($function->getName())) {
 			$reflection = new \ReflectionFunction($function->getName());
+		} else {
+			try {
+				$reflection = $this->functionReflector->reflect($function->getName());
+			} catch (IdentifierNotFound $e) {
+				// pass
+			}
 		}
 
 		return $this->returnTypeCheck->checkReturnType(

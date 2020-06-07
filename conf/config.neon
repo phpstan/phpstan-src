@@ -40,6 +40,7 @@ parameters:
 	reportMaybesInMethodSignatures: false
 	reportStaticMethodSignatures: false
 	mixinExcludeClasses: []
+	scanFiles: []
 	parallel:
 		jobSize: 20
 		processTimeout: 60.0
@@ -226,6 +227,7 @@ parametersSchema:
 	currentWorkingDirectory: string()
 	cliArgumentsVariablesRegistered: bool()
 	mixinExcludeClasses: listOf(string())
+	scanFiles: listOf(string())
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -1145,6 +1147,7 @@ services:
 			parser: @phpParserDecorator
 			autoloadDirectories: %autoload_directories%
 			autoloadFiles: %autoload_files%
+			scanFiles: %scanFiles%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%

@@ -11,6 +11,7 @@ use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
@@ -309,23 +310,7 @@ class CommandHelper
 
 		$bootstrapFile = $container->getParameter('bootstrap');
 		if ($bootstrapFile !== null) {
-			if (!is_file($bootstrapFile)) {
-				$errorOutput->writeLineFormatted(sprintf('Bootstrap file %s does not exist.', $bootstrapFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
-			try {
-				(static function (string $file) use ($container): void {
-					require_once $file;
-				})($bootstrapFile);
-			} catch (\Throwable $e) {
-				$errorOutput->writeLineFormatted(sprintf('%s thrown in %s on line %d while loading bootstrap file %s: %s', get_class($e), $e->getFile(), $e->getLine(), $bootstrapFile, $e->getMessage()));
-
-				if ($debugEnabled) {
-					$errorOutput->writeLineFormatted($e->getTraceAsString());
-				}
-
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
+			self::executeBootstrapFile($bootstrapFile, $container, $errorOutput, $debugEnabled);
 		}
 
 		/** @var FileFinder $fileFinder */
@@ -349,6 +334,32 @@ class CommandHelper
 			$projectConfigFile,
 			$generateBaselineFile
 		);
+	}
+
+	private static function executeBootstrapFile(
+		string $file,
+		Container $container,
+		Output $errorOutput,
+		bool $debugEnabled
+	): void
+	{
+		if (!is_file($file)) {
+			$errorOutput->writeLineFormatted(sprintf('Bootstrap file %s does not exist.', $file));
+			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		}
+		try {
+			(static function (string $file) use ($container): void {
+				require_once $file;
+			})($file);
+		} catch (\Throwable $e) {
+			$errorOutput->writeLineFormatted(sprintf('%s thrown in %s on line %d while loading bootstrap file %s: %s', get_class($e), $e->getFile(), $e->getLine(), $file, $e->getMessage()));
+
+			if ($debugEnabled) {
+				$errorOutput->writeLineFormatted($e->getTraceAsString());
+			}
+
+			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		}
 	}
 
 	private static function setUpSignalHandler(Output $output, ?string $memoryLimitFile): void

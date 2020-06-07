@@ -278,4 +278,23 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/return-type-covariance.php'], $expectedErrors);
 	}
 
+	public function testParle(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/parle.php'], [
+			[
+				'Parameter #1 $state (int) of method OverridingParle\Foo::pushState() is not contravariant with parameter #1 $state (string) of method Parle\RLexer::pushState().',
+				8,
+			],
+			[
+				'Return type string of method OverridingParle\Foo::pushState() is not covariant with return type int of method Parle\RLexer::pushState().',
+				8,
+			],
+		]);
+	}
+
 }

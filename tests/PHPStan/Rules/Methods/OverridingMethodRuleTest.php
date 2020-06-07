@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<OverridingMethodRule>
@@ -311,6 +312,12 @@ class OverridingMethodRuleTest extends RuleTestCase
 				8,
 			],
 		]);
+	}
+
+	public function testVariadicParameterIsAlwaysOptional(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/variadic-always-optional.php'], []);
 	}
 
 }

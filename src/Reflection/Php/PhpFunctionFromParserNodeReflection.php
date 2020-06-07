@@ -151,7 +151,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 			}
 			$parameters[] = new PhpParameterFromParserNodeReflection(
 				$parameter->var->name,
-				$isOptional,
+				$isOptional || $parameter->variadic,
 				$this->realParameterTypes[$parameter->var->name],
 				$this->phpDocParameterTypes[$parameter->var->name] ?? null,
 				$parameter->byRef

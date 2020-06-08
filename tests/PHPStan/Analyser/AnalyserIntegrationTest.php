@@ -222,6 +222,12 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertSame(21, $error->getLine());
 	}
 
+	public function testBug3405(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3405.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

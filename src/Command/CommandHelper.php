@@ -299,7 +299,7 @@ class CommandHelper
 		}
 
 		$autoloadFiles = $container->getParameter('autoload_files');
-		if (count($autoloadFiles) > 0) {
+		if ($manageMemoryLimitFile && count($autoloadFiles) > 0) {
 			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_files</>. ⚠️️');
 			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted('You might not need it anymore - try removing it from your');
@@ -318,7 +318,7 @@ class CommandHelper
 		}
 
 		$autoloadDirectories = $container->getParameter('autoload_directories');
-		if (count($autoloadDirectories) > 0) {
+		if (count($autoloadDirectories) > 0 && $manageMemoryLimitFile) {
 			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_directories</>. ⚠️️');
 			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted('You might not need it anymore - try removing it from your');
@@ -343,11 +343,13 @@ class CommandHelper
 
 		$bootstrapFile = $container->getParameter('bootstrap');
 		if ($bootstrapFile !== null) {
-			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>bootstrap</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('This option has been replaced with <fg=cyan>bootstrapFiles</> which accepts a list of files');
-			$errorOutput->writeLineFormatted('to execute before the analysis.');
-			$errorOutput->writeLineFormatted('');
+			if ($manageMemoryLimitFile) {
+				$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>bootstrap</>. ⚠️️');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('This option has been replaced with <fg=cyan>bootstrapFiles</> which accepts a list of files');
+				$errorOutput->writeLineFormatted('to execute before the analysis.');
+				$errorOutput->writeLineFormatted('');
+			}
 
 			self::executeBootstrapFile($bootstrapFile, $container, $errorOutput, $debugEnabled);
 		}

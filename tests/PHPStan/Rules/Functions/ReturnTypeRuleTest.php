@@ -70,4 +70,13 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testIsGenerator(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->analyse([__DIR__ . '/data/is-generator.php'], []);
+	}
+
 }

@@ -49,4 +49,9 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3402(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3402.php'], []);
+	}
+
 }

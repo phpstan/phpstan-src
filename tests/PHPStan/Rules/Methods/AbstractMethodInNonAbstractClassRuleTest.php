@@ -54,7 +54,7 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 		$this->assertSame(ClassFoo::class, $reflection->getNativeMethod('myBar')->getDeclaringClass()->getName());
 	}
 
-	public function testbug3406_2(): void
+	public function testbug3406AnotherCase(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3406_2.php'], []);
 	}

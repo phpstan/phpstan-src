@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Methods;
 
+use Bug3406\AbstractFoo;
+use Bug3406\ClassFoo;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -36,6 +38,20 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 	public function testTraitProblem(): void
 	{
 		$this->analyse([__DIR__ . '/data/trait-method-problem.php'], []);
+	}
+
+	public function testBug3406(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3406.php'], []);
+	}
+
+	public function testBug3406ReflectionCheck(): void
+	{
+		$this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
+		$reflection = $reflectionProvider->getClass(ClassFoo::class);
+		$this->assertSame(AbstractFoo::class, $reflection->getNativeMethod('myFoo')->getDeclaringClass()->getName());
+		$this->assertSame(ClassFoo::class, $reflection->getNativeMethod('myBar')->getDeclaringClass()->getName());
 	}
 
 }

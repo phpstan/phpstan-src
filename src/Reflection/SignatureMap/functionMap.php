@@ -2983,6 +2983,7 @@ return [
 'FilterIterator::rewind' => ['void'],
 'FilterIterator::valid' => ['bool'],
 'finfo::__construct' => ['void', 'options='=>'int', 'magic_file='=>'string'],
+'finfo::finfo' => ['void', 'options='=>'int', 'magic_file='=>'string'],
 'finfo::buffer' => ['string|false', 'string'=>'string', 'options='=>'int', 'context='=>'resource'],
 'finfo::file' => ['string|false', 'file_name'=>'string', 'options='=>'int', 'context='=>'resource'],
 'finfo::set_flags' => ['bool', 'options'=>'int'],

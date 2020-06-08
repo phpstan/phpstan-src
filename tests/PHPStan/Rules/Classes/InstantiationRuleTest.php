@@ -208,4 +208,14 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/instantiation-class-exists.php'], []);
 	}
 
+	public function testBug3404(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3404.php'], [
+			[
+				'Class finfo constructor invoked with 3 parameters, 0-2 required.',
+				7,
+			],
+		]);
+	}
+
 }

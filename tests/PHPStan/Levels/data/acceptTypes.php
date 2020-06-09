@@ -151,18 +151,22 @@ class Foo
 	}
 
 	/**
+	 * @template T of FooCountableInterface
 	 * @param iterable<mixed> $iterable
 	 * @param mixed[] $array
+	 * @param T $generic
 	 * @param string $string
 	 */
 	public function iterableCountable(
 		iterable $iterable,
 		array $array,
+		$generic,
 		string $string
 	)
 	{
 		echo count($iterable);
 		echo count($array);
+		echo count($generic);
 		echo count($string);
 	}
 
@@ -184,6 +188,11 @@ interface ParentFooInterface
 }
 
 interface FooInterface extends ParentFooInterface
+{
+
+}
+
+interface FooCountableInterface extends \Countable
 {
 
 }

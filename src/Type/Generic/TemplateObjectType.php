@@ -110,12 +110,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		}
 
 		if (!$type instanceof TemplateType) {
-			if ($this->getBound()->equals($type)) {
-				return TrinaryLogic::createYes();
-			}
-
-			return $type->isSuperTypeOf($this->getBound())
-				->and(TrinaryLogic::createMaybe());
+			return $type->isSuperTypeOf($this->getBound());
 		}
 
 		if ($this->equals($type)) {

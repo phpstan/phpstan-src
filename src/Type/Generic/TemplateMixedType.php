@@ -106,8 +106,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		}
 
 		if (!$type instanceof TemplateType) {
-			return $type->isSuperTypeOf($this->getBound())
-				->and(TrinaryLogic::createMaybe());
+			return $type->isSuperTypeOf($this->getBound());
 		}
 
 		if ($this->equals($type)) {

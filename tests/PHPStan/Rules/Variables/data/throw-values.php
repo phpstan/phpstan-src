@@ -6,7 +6,12 @@ class InvalidException {};
 interface InvalidInterfaceException {};
 interface ValidInterfaceException extends \Throwable {};
 
-function () {
+/**
+ * @template T of \Exception
+ * @param class-string<T> $genericExceptionClassName
+ * @param T $genericException
+ */
+function test($genericExceptionClassName, $genericException) {
 	/** @var ValidInterfaceException $validInterface */
 	$validInterface = new \Exception();
 	/** @var InvalidInterfaceException $invalidInterface */
@@ -38,7 +43,13 @@ function () {
 	if (rand(0, 1)) {
 		throw new NonexistentClass();
 	}
-};
+	if (rand(0, 1)) {
+		throw new $genericExceptionClassName;
+	}
+	if (rand(0, 1)) {
+		throw $genericException;
+	}
+}
 
 function (\stdClass $foo) {
 	/** @var \Exception $foo */

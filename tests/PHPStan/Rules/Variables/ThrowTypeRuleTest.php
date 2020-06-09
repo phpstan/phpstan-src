@@ -22,23 +22,23 @@ class ThrowTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				[
 					'Invalid type int to throw.',
-					24,
+					29,
 				],
 				[
 					'Invalid type ThrowValues\InvalidException to throw.',
-					27,
+					32,
 				],
 				[
 					'Invalid type ThrowValues\InvalidInterfaceException to throw.',
-					30,
+					35,
 				],
 				[
 					'Invalid type Exception|null to throw.',
-					33,
+					38,
 				],
 				[
 					'Throwing object of an unknown class ThrowValues\NonexistentClass.',
-					39,
+					44,
 				],
 			]
 		);

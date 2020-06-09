@@ -135,13 +135,8 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 			return $type->isSuperTypeOf($this);
 		}
 
-		if ($type instanceof ObjectWithoutClassType && !$type instanceof self) {
-			return TrinaryLogic::createYes();
-		}
-
 		if (!$type instanceof TemplateType) {
-			return $type->isSuperTypeOf($this->getBound())
-				->and(TrinaryLogic::createMaybe());
+			return $type->isSuperTypeOf($this->getBound());
 		}
 
 		if ($this->equals($type)) {

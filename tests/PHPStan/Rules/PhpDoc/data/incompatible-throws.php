@@ -103,3 +103,11 @@ function voidUnionThrows()
 function voidUnionWithNotThrowableThrows()
 {
 }
+
+/**
+ * @template T of \Exception
+ * @throws T
+ */
+function exceptionTemplateThrows()
+{
+}

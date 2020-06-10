@@ -37,7 +37,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		if ($this->phpStormStubsSourceStubber->hasClass($className)) {
+		if ($this->phpStormStubsSourceStubber->hasClass($className) && $className !== \Generator::class) {
 			// check that userland class isn't aliased to the same name as a class from stubs
 			if (!class_exists($className, false)) {
 				return false;

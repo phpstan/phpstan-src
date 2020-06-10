@@ -130,7 +130,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 					'callable(%s): %s',
 					implode(', ', array_map(
 						static function (NativeParameterReflection $param) use ($level): string {
-							return $param->getType()->describe($level);
+							return sprintf('%s%s', $param->isVariadic() ? '...' : '', $param->getType()->describe($level));
 						},
 						$this->getParameters()
 					)),

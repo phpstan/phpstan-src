@@ -5,6 +5,8 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\StringType;
@@ -35,8 +37,17 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$values[] = $argType->getValue();
 		}
 
+		if (count($values) === 0) {
+			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		}
+
+		$format = array_shift($values);
+		if (!is_string($format)) {
+			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		}
+
 		try {
-			$value = @sprintf(...$values);
+			$value = @sprintf($format, ...$values);
 		} catch (\Throwable $e) {
 			return $returnType;
 		}

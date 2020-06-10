@@ -84,6 +84,13 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 
 			} else {
 				$nativeParamType = $nativeParameterTypes[$parameterName];
+				if (
+					$phpDocParamTag->isVariadic()
+					&& $phpDocParamType instanceof ArrayType
+					&& !$nativeParamType instanceof ArrayType
+				) {
+					$phpDocParamType = $phpDocParamType->getItemType();
+				}
 				$isParamSuperType = $nativeParamType->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocParamType));
 
 				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
@@ -105,14 +112,6 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 						$parameterName
 					)
 				));
-
-				if (
-					$phpDocParamTag->isVariadic()
-					&& $nativeParamType instanceof ArrayType
-					&& $nativeParamType->getItemType() instanceof ArrayType
-				) {
-					continue;
-				}
 
 				if ($isParamSuperType->no()) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -187,7 +186,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 			$nativeParameterTypes[$parameter->var->name] = $scope->getFunctionType(
 				$parameter->type,
 				$isNullable,
-				$parameter->variadic
+				false
 			);
 		}
 

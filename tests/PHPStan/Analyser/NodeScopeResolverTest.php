@@ -1441,11 +1441,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$callable',
 			],
 			[
-				'callable(int, array<int, string>): void',
+				'callable(int, ...string): void',
 				'$callableWithTypes',
 			],
 			[
-				'Closure(int, array<int, string>): void',
+				'Closure(int, ...string): void',
 				'$closureWithTypes',
 			],
 			[
@@ -9960,6 +9960,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/mixed-typehint.php');
 	}
 
+	public function dataVariadics(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2600.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10015,6 +10020,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3336
 	 * @dataProvider dataCatchWithoutVariable
 	 * @dataProvider dataMixedTypehint
+	 * @dataProvider dataVariadics
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

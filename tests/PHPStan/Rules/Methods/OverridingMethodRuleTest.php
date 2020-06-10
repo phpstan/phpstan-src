@@ -320,4 +320,14 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/variadic-always-optional.php'], []);
 	}
 
+	/**
+	 * @dataProvider dataOverridingFinalMethod
+	 * @param int $phpVersion
+	 */
+	public function testBug3403(int $phpVersion): void
+	{
+		$this->phpVersionId = $phpVersion;
+		$this->analyse([__DIR__ . '/data/bug-3403.php'], []);
+	}
+
 }

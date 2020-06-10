@@ -4,8 +4,6 @@ namespace PHPStan\Reflection\Native;
 
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 
 class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhpDocs
@@ -27,8 +25,6 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 
 	private ?\PHPStan\Type\Type $defaultValue;
 
-	private bool $variadicParameterAlreadyExpanded;
-
 	public function __construct(
 		string $name,
 		bool $optional,
@@ -37,8 +33,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		Type $nativeType,
 		PassedByReference $passedByReference,
 		bool $variadic,
-		?Type $defaultValue,
-		bool $variadicParameterAlreadyExpanded = false
+		?Type $defaultValue
 	)
 	{
 		$this->name = $name;
@@ -49,7 +44,6 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		$this->passedByReference = $passedByReference;
 		$this->variadic = $variadic;
 		$this->defaultValue = $defaultValue;
-		$this->variadicParameterAlreadyExpanded = $variadicParameterAlreadyExpanded;
 	}
 
 	public function getName(): string
@@ -64,12 +58,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 
 	public function getType(): Type
 	{
-		$type = $this->type;
-		if ($this->variadic && !$this->variadicParameterAlreadyExpanded) {
-			$type = new ArrayType(new IntegerType(), $type);
-		}
-
-		return $type;
+		return $this->type;
 	}
 
 	public function getPhpDocType(): Type

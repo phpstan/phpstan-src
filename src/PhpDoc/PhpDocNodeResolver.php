@@ -22,10 +22,8 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -288,15 +286,6 @@ class PhpDocNodeResolver
 				$parameterType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 				if ($this->shouldSkipType($tagName, $parameterType)) {
 					continue;
-				}
-
-				if ($tagValue->isVariadic) {
-					if (!$parameterType instanceof ArrayType) {
-						$parameterType = new ArrayType(new IntegerType(), $parameterType);
-
-					} elseif ($parameterType->getKeyType() instanceof MixedType) {
-						$parameterType = new ArrayType(new IntegerType(), $parameterType->getItemType());
-					}
 				}
 
 				$resolved[$parameterName] = new ParamTag(

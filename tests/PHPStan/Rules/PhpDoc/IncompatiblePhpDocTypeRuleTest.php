@@ -43,11 +43,11 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				75,
 			],
 			[
-				'PHPDoc tag @param for parameter $strings with type array<int> is incompatible with native type array<int, string>.',
+				'PHPDoc tag @param for parameter $strings with type array<int> is incompatible with native type string.',
 				91,
 			],
 			[
-				'PHPDoc tag @param for parameter $numbers with type array<int, string> is incompatible with native type array<int, int>.',
+				'PHPDoc tag @param for parameter $numbers with type string is incompatible with native type int.',
 				99,
 			],
 			[

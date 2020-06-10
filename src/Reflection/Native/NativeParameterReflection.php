@@ -4,8 +4,6 @@ namespace PHPStan\Reflection\Native;
 
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 
 class NativeParameterReflection implements ParameterReflection
@@ -23,16 +21,13 @@ class NativeParameterReflection implements ParameterReflection
 
 	private ?\PHPStan\Type\Type $defaultValue;
 
-	private bool $variadicParameterAlreadyExpanded;
-
 	public function __construct(
 		string $name,
 		bool $optional,
 		Type $type,
 		PassedByReference $passedByReference,
 		bool $variadic,
-		?Type $defaultValue,
-		bool $variadicParameterAlreadyExpanded = false
+		?Type $defaultValue
 	)
 	{
 		$this->name = $name;
@@ -41,7 +36,6 @@ class NativeParameterReflection implements ParameterReflection
 		$this->passedByReference = $passedByReference;
 		$this->variadic = $variadic;
 		$this->defaultValue = $defaultValue;
-		$this->variadicParameterAlreadyExpanded = $variadicParameterAlreadyExpanded;
 	}
 
 	public function getName(): string
@@ -56,12 +50,7 @@ class NativeParameterReflection implements ParameterReflection
 
 	public function getType(): Type
 	{
-		$type = $this->type;
-		if ($this->variadic && !$this->variadicParameterAlreadyExpanded) {
-			$type = new ArrayType(new IntegerType(), $type);
-		}
-
-		return $type;
+		return $this->type;
 	}
 
 	public function passedByReference(): PassedByReference

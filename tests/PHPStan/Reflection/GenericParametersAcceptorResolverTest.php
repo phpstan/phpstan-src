@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameter;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -288,7 +287,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\TestCase
 						),
 						new DummyParameter(
 							'b',
-							new ArrayType(new MixedType(), $templateType('U')),
+							$templateType('U'),
 							false,
 							PassedByReference::createNo(),
 							true,
@@ -315,13 +314,10 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\TestCase
 						),
 						new DummyParameter(
 							'b',
-							new ArrayType(
-								new MixedType(),
-								new IntegerType()
-							),
+							new IntegerType(),
 							false,
 							PassedByReference::createNo(),
-							false,
+							true,
 							null
 						),
 					],

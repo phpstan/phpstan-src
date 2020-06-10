@@ -125,10 +125,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 					new NativeParameterReflection(
 						'event|args',
 						true,
-						new UnionType([
-							new ArrayType(new IntegerType(), new MixedType()),
-							new StringType(),
-						]),
+						new MixedType(),
 						PassedByReference::createNo(),
 						true,
 						null
@@ -264,6 +261,15 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			],
 			$variadicVariants,
 			true,
+			$variadicVariants[0],
+		];
+
+		yield [
+			[
+				new IntegerType(),
+			],
+			$variadicVariants,
+			false,
 			ParametersAcceptorSelector::combineAcceptors($variadicVariants),
 		];
 

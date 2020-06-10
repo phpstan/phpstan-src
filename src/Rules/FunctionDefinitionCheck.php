@@ -91,7 +91,7 @@ class FunctionDefinitionCheck
 			if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			$type = $scope->getFunctionType($param->type, false, $param->variadic);
+			$type = $scope->getFunctionType($param->type, false, false);
 			if ($type instanceof VoidType) {
 				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, 'void'))->line($param->type->getLine())->nonIgnorable()->build();
 			}

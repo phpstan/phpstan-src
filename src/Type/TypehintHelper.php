@@ -56,6 +56,9 @@ class TypehintHelper
 	): Type
 	{
 		if ($reflectionType === null) {
+			if ($isVariadic && $phpDocType instanceof ArrayType) {
+				$phpDocType = $phpDocType->getItemType();
+			}
 			return $phpDocType ?? new MixedType();
 		}
 
@@ -76,10 +79,6 @@ class TypehintHelper
 			$type = TypeCombinator::addNull($type);
 		} elseif ($phpDocType !== null) {
 			$phpDocType = TypeCombinator::removeNull($phpDocType);
-		}
-
-		if ($isVariadic) {
-			$type = new ArrayType(new IntegerType(), $type);
 		}
 
 		return self::decideType($type, $phpDocType);

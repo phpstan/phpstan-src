@@ -2289,7 +2289,7 @@ class MutatingScope implements Scope
 			$realParameterTypes[$parameter->var->name] = $this->getFunctionType(
 				$parameter->type,
 				$this->isParameterValueNullable($parameter),
-				$parameter->variadic
+				false
 			);
 		}
 
@@ -2368,7 +2368,11 @@ class MutatingScope implements Scope
 		$variableTypes = $this->getVariableTypes();
 		$nativeExpressionTypes = [];
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
-			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameter->getType());
+			$parameterType = $parameter->getType();
+			if ($parameter->isVariadic()) {
+				$parameterType = new ArrayType(new IntegerType(), $parameterType);
+			}
+			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameterType);
 			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
 		}
 

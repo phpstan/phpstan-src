@@ -4,10 +4,7 @@ namespace PHPStan\Rules;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\IterableType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -149,44 +146,20 @@ class FunctionCallParametersCheck
 				}
 
 				$parameter = $parameters[count($parameters) - 1];
-				$parameterType = $parameter->getType();
-				if (!($parameterType instanceof ArrayType)) {
-					break;
-				}
-
-				if (!$argument->unpack) {
-					$parameterType = $parameterType->getItemType();
-				}
 			} else {
 				$parameter = $parameters[$i];
-				$parameterType = $parameter->getType();
-				if ($parameter->isVariadic()) {
-					if ($parameterType instanceof ArrayType && !$argument->unpack) {
-						$parameterType = $parameterType->getItemType();
-					}
-				} elseif ($argument->unpack) {
-					continue;
-				}
 			}
+
+			$parameterType = $parameter->getType();
 
 			$argumentValueType = $scope->getType($argument->value);
-			$secondAccepts = null;
-			if ($parameterType->isIterable()->yes() && $parameter->isVariadic()) {
-				$secondAccepts = $this->ruleLevelHelper->accepts(
-					new IterableType(
-						new MixedType(),
-						$parameterType->getIterableValueType()
-					),
-					$argumentValueType,
-					$scope->isDeclareStrictTypes()
-				);
+			if ($argument->unpack) {
+				$argumentValueType = $argumentValueType->getIterableValueType();
 			}
-
 			if (
 				$this->checkArgumentTypes
 				&& !$parameter->passedByReference()->createsNewVariable()
 				&& !$this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes())
-				&& ($secondAccepts === null || !$secondAccepts)
 			) {
 				$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType);
 				$errors[] = RuleErrorBuilder::message(sprintf(

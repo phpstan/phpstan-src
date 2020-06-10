@@ -857,8 +857,28 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				42,
 			],
 			[
-				'Parameter #4 ...$strings of method CallVariadicMethods\Foo::doVariadicString() expects array<int, string>, array<int, int> given.',
+				'Parameter #4 ...$strings of method CallVariadicMethods\Foo::doVariadicString() expects string, int given.',
 				42,
+			],
+			[
+				'Parameter #1 $foo of method CallVariadicMethods\Foo::doIntegerParameters() expects int, string given.',
+				43,
+			],
+			[
+				'Parameter #1 ...$strings of method CallVariadicMethods\Bar::variadicStrings() expects string, int given.',
+				85,
+			],
+			[
+				'Parameter #2 ...$strings of method CallVariadicMethods\Bar::variadicStrings() expects string, int given.',
+				85,
+			],
+			[
+				'Parameter #1 ...$strings of method CallVariadicMethods\Bar::anotherVariadicStrings() expects string, int given.',
+				88,
+			],
+			[
+				'Parameter #2 ...$strings of method CallVariadicMethods\Bar::anotherVariadicStrings() expects string, int given.',
+				88,
 			],
 		]);
 	}
@@ -1360,6 +1380,19 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-3409.php'], []);
+	}
+
+	public function testBug2600(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-2600.php'], [
+			[
+				'Method Bug2600\Foo::doBar() invoked with 3 parameters, 0-1 required.',
+				10,
+			],
+		]);
 	}
 
 }

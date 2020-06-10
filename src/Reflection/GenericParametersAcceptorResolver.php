@@ -3,12 +3,9 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Generic\ResolvedFunctionVariant;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 
 class GenericParametersAcceptorResolver
 {
@@ -24,11 +21,7 @@ class GenericParametersAcceptorResolver
 
 		foreach ($parametersAcceptor->getParameters() as $i => $param) {
 			if (isset($argTypes[$i])) {
-				if ($param->isVariadic()) {
-					$argType = new ArrayType(new MixedType(), TypeCombinator::union(...array_slice($argTypes, $i)));
-				} else {
-					$argType = $argTypes[$i];
-				}
+				$argType = $argTypes[$i];
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
 			} else {

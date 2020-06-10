@@ -40,8 +40,8 @@ class Foo
 
 		$integers = [1, 2, 3];
 		$this->doVariadicString(1, 'foo', 1, ...$integers);
-		$this->doIntegerParameters(...$strings); // cannot perform check in this case
-		$this->doIntegerParameters(...$integers); // cannot perform check in this case
+		$this->doIntegerParameters(...$strings);
+		$this->doIntegerParameters(...$integers);
 	}
 
 	public function doVariadicString(int $int, string ...$strings)
@@ -57,6 +57,36 @@ class Foo
 	public function doIntegerParameters(int $foo, int $bar)
 	{
 
+	}
+
+}
+
+class Bar
+{
+
+	/**
+	 * @param string[] ...$strings
+	 */
+	function variadicStrings(string ...$strings)
+	{
+
+	}
+
+	/**
+	 * @param string[] ...$strings
+	 */
+	function anotherVariadicStrings(...$strings)
+	{
+
+	}
+
+	public function doFoo()
+	{
+		$this->variadicStrings(1, 2);
+		$this->variadicStrings('foo', 'bar');
+
+		$this->anotherVariadicStrings(1, 2);
+		$this->anotherVariadicStrings('foo', 'bar');
 	}
 
 }

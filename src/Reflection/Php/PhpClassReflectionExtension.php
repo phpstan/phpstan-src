@@ -580,8 +580,7 @@ class PhpClassReflectionExtension
 			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$reflectionMethod->getReturnType(),
 				null,
-				null,
-				false
+				null
 			);
 		}
 		foreach ($methodSignature->getParameters() as $i => $parameterSignature) {
@@ -606,8 +605,7 @@ class PhpClassReflectionExtension
 				$nativeParameterType,
 				$parameterSignature->passedByReference(),
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
-				null,
-				isset($stubPhpDocParameterTypes[$parameterSignature->getName()])
+				null
 			);
 		}
 

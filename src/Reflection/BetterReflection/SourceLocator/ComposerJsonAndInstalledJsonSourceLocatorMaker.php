@@ -40,11 +40,20 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			return null;
 		}
 
-		$composerJsonContents = FileReader::read($composerJsonPath);
-		$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
+		try {
+			$composerJsonContents = FileReader::read($composerJsonPath);
+			$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
+		} catch (\PHPStan\File\CouldNotReadFileException | \Nette\Utils\JsonException $e) {
+			return null;
+		}
 
-		$installedJsonContents = FileReader::read($installedJsonPath);
-		$installedJson = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
+		try {
+			$installedJsonContents = FileReader::read($installedJsonPath);
+			$installedJson = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
+		} catch (\PHPStan\File\CouldNotReadFileException | \Nette\Utils\JsonException $e) {
+			return null;
+		}
+
 		$installed = $installedJson['packages'] ?? $installedJson;
 
 		$classMapPaths = array_merge(

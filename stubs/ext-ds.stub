@@ -111,6 +111,7 @@ final class Map implements Collection
 
 	/**
 	 * @param callable(TKey, TValue): TValue $callback
+	 * @return void
 	 */
 	public function apply(callable $callback)
 	{
@@ -228,6 +229,7 @@ final class Map implements Collection
 	/**
 	 * @param TKey $key
 	 * @param TValue $value
+	 * @return void
 	 */
 	public function put($key, $value)
 	{
@@ -235,6 +237,7 @@ final class Map implements Collection
 
 	/**
 	 * @param iterable<TKey, TValue> $values
+	 * @return void
 	 */
 	public function putAll(iterable $values)
 	{
@@ -277,6 +280,7 @@ final class Map implements Collection
 
 	/**
 	 * @param (callable(TValue, TValue): int)|null $comparator
+	 * @return void
 	 */
 	public function sort(callable $comparator = null)
 	{
@@ -292,6 +296,7 @@ final class Map implements Collection
 
 	/**
 	 * @param (callable(TKey, TKey): int)|null $comparator
+	 * @return void
 	 */
 	public function ksort(callable $comparator = null)
 	{
@@ -380,6 +385,7 @@ interface Sequence extends Collection
 {
 	/**
 	 * @param callable(TValue): TValue $callback
+	 * @return void
 	 */
 	public function apply(callable $callback);
 
@@ -415,6 +421,7 @@ interface Sequence extends Collection
 	/**
 	 * @param TValue ...$values
 	 * @throws \OutOfRangeException
+	 * @return void
 	 */
 	public function insert(int $index, ...$values);
 
@@ -452,6 +459,7 @@ interface Sequence extends Collection
 
 	/**
 	 * @param TValue ...$values
+	 * @return void
 	 */
 	public function push(...$values);
 
@@ -477,6 +485,7 @@ interface Sequence extends Collection
 	/**
 	 * @param TValue $value
 	 * @throws \OutOfRangeException
+	 * @return void
 	 */
 	public function set(int $index, $value);
 
@@ -493,6 +502,7 @@ interface Sequence extends Collection
 
 	/**
 	 * @param (callable(TValue, TValue): int)|null $comparator
+	 * @return void
 	 */
 	public function sort(callable $comparator = null);
 
@@ -504,6 +514,7 @@ interface Sequence extends Collection
 
 	/**
 	 * @param TValue ...$values
+	 * @return void
 	 */
 	public function unshift(...$values);
 }
@@ -558,7 +569,7 @@ final class Vector implements Sequence
 	public function filter(callable $callback = null): Vector
 	{
 	}
-	
+
 	/**
 	 * @template TNewValue
 	 * @param callable(TValue): TNewValue $callback
@@ -567,7 +578,7 @@ final class Vector implements Sequence
 	public function map(callable $callback): Vector
 	{
 	}
-	
+
 	/**
 	 * @template TValue2
 	 * @param iterable<TValue2> $values
@@ -771,6 +782,7 @@ final class Stack implements Collection
 
 	/**
 	 * @param TValue ...$values
+	 * @return void
 	 */
 	public function push(...$values): void
 	{

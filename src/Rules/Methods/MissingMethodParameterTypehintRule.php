@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -13,7 +14,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ * @implements \PHPStan\Rules\Rule<InClassMethodNode>
  */
 final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 {
@@ -27,16 +28,15 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\ClassMethod::class;
+		return InClassMethodNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+		$methodReflection = $scope->getFunction();
+		if (!$methodReflection instanceof MethodReflection) {
+			return [];
 		}
-
-		$methodReflection = $scope->getClassReflection()->getNativeMethod($node->name->name);
 
 		$messages = [];
 

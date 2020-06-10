@@ -32,8 +32,6 @@ use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Generics\TraitTemplateTypeRule;
 use PHPStan\Rules\Generics\VarianceCheck;
 use PHPStan\Rules\Methods\ExistingClassesInTypehintsRule;
-use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
-use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
@@ -150,8 +148,6 @@ class StubValidator
 			// level 6
 			new MissingFunctionParameterTypehintRule($missingTypehintCheck),
 			new MissingFunctionReturnTypehintRule($missingTypehintCheck),
-			new MissingMethodParameterTypehintRule($missingTypehintCheck),
-			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 		]);
 	}

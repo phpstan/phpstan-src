@@ -4,11 +4,13 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassMethodNode;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ * @implements \PHPStan\Rules\Rule<InClassMethodNode>
  */
 class MethodSignatureVarianceRule implements Rule
 {
@@ -22,25 +24,21 @@ class MethodSignatureVarianceRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\ClassMethod::class;
+		return InClassMethodNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+		$method = $scope->getFunction();
+		if (!$method instanceof MethodReflection) {
+			return [];
 		}
-
-		$classReflection = $scope->getClassReflection();
-		$className = $classReflection->getDisplayName();
-		$methodName = $node->name->toString();
-		$method = $classReflection->getNativeMethod($methodName);
 
 		return $this->varianceCheck->checkParametersAcceptor(
 			ParametersAcceptorSelector::selectSingle($method->getVariants()),
-			sprintf('in parameter %%s of method %s::%s()', $className, $methodName),
-			sprintf('in return type of method %s::%s()', $className, $methodName),
-			$methodName === '__construct' || $method->isStatic()
+			sprintf('in parameter %%s of method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
+			sprintf('in return type of method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
+			$method->getName() === '__construct' || $method->isStatic()
 		);
 	}
 

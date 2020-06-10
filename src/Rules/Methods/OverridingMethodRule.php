@@ -109,11 +109,11 @@ class OverridingMethodRule implements Rule
 							$parent->getDisplayName(),
 							$parentConstructor->getName()
 						))->nonIgnorable()->build(),
-					], $node->getOriginalNode(), $scope);
+					], $node, $scope);
 				}
 			}
 			if (!$prototype->isAbstract()) {
-				return $this->addErrors($messages, $node->getOriginalNode(), $scope);
+				return $this->addErrors($messages, $node, $scope);
 			}
 		}
 
@@ -140,7 +140,7 @@ class OverridingMethodRule implements Rule
 
 		$prototypeVariants = $prototype->getVariants();
 		if (count($prototypeVariants) !== 1) {
-			return $this->addErrors($messages, $node->getOriginalNode(), $scope);
+			return $this->addErrors($messages, $node, $scope);
 		}
 
 		$prototypeVariant = $prototypeVariants[0];
@@ -303,7 +303,7 @@ class OverridingMethodRule implements Rule
 		$methodReturnType = $methodVariant->getNativeReturnType();
 
 		if (!$prototypeVariant instanceof FunctionVariantWithPhpDocs) {
-			return $this->addErrors($messages, $node->getOriginalNode(), $scope);
+			return $this->addErrors($messages, $node, $scope);
 		}
 
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
@@ -332,7 +332,7 @@ class OverridingMethodRule implements Rule
 			}
 		}
 
-		return $this->addErrors($messages, $node->getOriginalNode(), $scope);
+		return $this->addErrors($messages, $node, $scope);
 	}
 
 	private function isTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
@@ -371,7 +371,7 @@ class OverridingMethodRule implements Rule
 	 */
 	private function addErrors(
 		array $errors,
-		Node\Stmt\ClassMethod $classMethod,
+		InClassMethodNode $classMethod,
 		Scope $scope
 	): array
 	{

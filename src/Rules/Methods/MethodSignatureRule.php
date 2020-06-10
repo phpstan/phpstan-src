@@ -3,9 +3,10 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,7 +17,7 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ * @implements \PHPStan\Rules\Rule<InClassMethodNode>
  */
 class MethodSignatureRule implements \PHPStan\Rules\Rule
 {
@@ -36,22 +37,20 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return ClassMethod::class;
+		return InClassMethodNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$methodName = (string) $node->name;
-
-		if ($methodName === '__construct') {
+		$method = $scope->getFunction();
+		if (!$method instanceof MethodReflection) {
 			return [];
 		}
 
-		$class = $scope->getClassReflection();
-		if ($class === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+		$methodName = $method->getName();
+		if ($methodName === '__construct') {
+			return [];
 		}
-		$method = $class->getNativeMethod($methodName);
 		if (!$this->reportStatic && $method->isStatic()) {
 			return [];
 		}
@@ -61,7 +60,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 		$parameters = ParametersAcceptorSelector::selectSingle($method->getVariants());
 
 		$errors = [];
-		foreach ($this->collectParentMethods($methodName, $class, $scope) as $parentMethod) {
+		foreach ($this->collectParentMethods($methodName, $method->getDeclaringClass(), $scope) as $parentMethod) {
 			$parentParameters = ParametersAcceptorSelector::selectFromTypes(array_map(static function (ParameterReflection $parameter): Type {
 				return $parameter->getType();
 			}, $parameters->getParameters()), $parentMethod->getVariants(), false);

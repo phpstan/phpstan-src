@@ -6,13 +6,12 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
 use PHPStan\Type\ClosureType;
@@ -49,16 +48,13 @@ class DependencyResolver
 					$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 				}
 			}
-		} elseif ($node instanceof ClassMethod) {
-			if (!$scope->isInClass()) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-			$nativeMethod = $scope->getClassReflection()->getNativeMethod($node->name->name);
-			if ($nativeMethod instanceof PhpMethodReflection) {
-				/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
+		} elseif ($node instanceof InClassMethodNode) {
+			$nativeMethod = $scope->getFunction();
+			if ($nativeMethod !== null) {
 				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($nativeMethod->getVariants());
-
-				$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+				if ($parametersAcceptor instanceof \PHPStan\Reflection\ParametersAcceptorWithPhpDocs) {
+					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+				}
 			}
 		} elseif ($node instanceof Function_) {
 			$functionName = $node->name->name;

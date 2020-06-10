@@ -13,6 +13,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
@@ -106,7 +107,11 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				$className = $this->reflectionProvider->getClass($className)->getName();
 			}
 
-			$classType = new ObjectType($className);
+			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
+				$classType = new ThisType($scope->getClassReflection());
+			} else {
+				$classType = new ObjectType($className);
+			}
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
@@ -127,6 +132,9 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 		}
 
 		$typeForDescribe = $classType;
+		if ($classType instanceof ThisType) {
+			$typeForDescribe = $classType->getStaticObjectType();
+		}
 		$classType = TypeCombinator::remove($classType, new StringType());
 
 		if (!$classType->canAccessConstants()->yes()) {

@@ -4,7 +4,9 @@ namespace PHPStan\Dependency;
 
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Foreach_;
@@ -176,7 +178,10 @@ class DependencyResolver
 			foreach ($exprType->getIterableValueType()->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
-		} elseif ($node instanceof Array_) {
+		} elseif (
+			$node instanceof Array_
+			&& $this->considerArrayForCallableTest($node)
+		) {
 			$arrayType = $scope->getType($node);
 			if (!$arrayType->isCallable()->no()) {
 				foreach ($arrayType->getCallableParametersAcceptors($scope) as $variant) {
@@ -257,4 +262,13 @@ class DependencyResolver
 		}
 	}
 
+	private function considerArrayForCallableTest(Array_ $arrayNode): bool
+	{
+		if (!isset($arrayNode->items[0])) {
+			return false;
+		}
+
+		$item = $arrayNode->items[0];
+		return $item->value instanceof ClassConstFetch && $item->value->name->name === "class";
+	}
 }

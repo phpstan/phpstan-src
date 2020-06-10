@@ -232,6 +232,18 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertCount(0, $errors);
 	}
 
+	public function testBug3415(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Methods/data/bug-3415.php');
+		$this->assertCount(0, $errors);
+	}
+
+	public function testBug3415Two(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Methods/data/bug-3415-2.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]
@@ -246,7 +258,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		/** @var \PHPStan\Analyser\Error[] $errors */
 		$errors = $analyser->analyse([$file])->getErrors();
 		foreach ($errors as $error) {
-			$this->assertSame($fileHelper->normalizePath($file), $error->getFile());
+			$this->assertSame($fileHelper->normalizePath($file), $error->getFilePath());
 		}
 
 		return $errors;

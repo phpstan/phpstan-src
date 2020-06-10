@@ -59,10 +59,6 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				117,
 			],
 			[
-				'PHPDoc tag @return contains unresolvable type.',
-				117,
-			],
-			[
 				'PHPDoc tag @param for parameter $foo contains unresolvable type.',
 				126,
 			],

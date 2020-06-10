@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
-use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Foreach_;
@@ -269,6 +268,7 @@ class DependencyResolver
 		}
 
 		$item = $arrayNode->items[0];
-		return $item->value instanceof ClassConstFetch && $item->value->name->name === "class";
+		return $item->value instanceof ClassConstFetch && $item->value->name->name === 'class';
 	}
+
 }

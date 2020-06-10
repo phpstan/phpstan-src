@@ -666,4 +666,5 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 			TrinaryLogic::createNo(),
 		];
 	}
+
 }

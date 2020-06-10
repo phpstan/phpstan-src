@@ -589,4 +589,81 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	/**
+	 * @dataProvider dataIsCallable
+	 * @group solo
+	 */
+	public function testIsCallable(ConstantArrayType $type, TrinaryLogic $expectedResult): void
+	{
+		$actualResult = $type->isCallable();
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+		);
+	}
+
+	public function dataIsCallable(): iterable
+	{
+		yield 'zero items' => [
+			new ConstantArrayType([], []),
+			TrinaryLogic::createNo(),
+		];
+
+		yield 'function name' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+			], [
+				new ConstantStringType('strlen'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		yield 'existing static method' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ConstantStringType(\Closure::class, true),
+				new ConstantStringType('bind'),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield 'non-existing static method' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ConstantStringType(\Closure::class, true),
+				new ConstantStringType('foobar'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		/**
+		 * @see https://github.com/phpstan/phpstan/issues/3428
+		 */
+		yield 'existing static method but not a class string' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ConstantStringType('Closure'),
+				new ConstantStringType('foobar'),
+			]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield 'existing static method but with string keys' => [
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new ConstantStringType(\Closure::class, true),
+				new ConstantStringType('bind'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+	}
 }

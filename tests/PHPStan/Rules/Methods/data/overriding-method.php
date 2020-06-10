@@ -283,3 +283,26 @@ class SomeOtherException extends OtherException
 	}
 
 }
+
+class FinalWithAnnotation
+{
+
+	/**
+	 * @final
+	 */
+	public function doFoo()
+	{
+
+	}
+
+}
+
+class ExtendsFinalWithAnnotation extends FinalWithAnnotation
+{
+
+	public function doFoo()
+	{
+
+	}
+
+}

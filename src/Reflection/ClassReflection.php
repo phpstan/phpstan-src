@@ -737,6 +737,11 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->isFinal;
 	}
 
+	public function isFinalByKeyword(): bool
+	{
+		return $this->reflection->isFinal();
+	}
+
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		if ($this->templateTypeMap !== null) {

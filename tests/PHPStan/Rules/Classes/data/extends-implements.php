@@ -31,3 +31,16 @@ interface BazInterface extends FOOInterface
 {
 
 }
+
+/**
+ * @final
+ */
+class FinalWithAnnotation
+{
+
+}
+
+class ExtendsFinalWithAnnotation extends FinalWithAnnotation
+{
+
+}

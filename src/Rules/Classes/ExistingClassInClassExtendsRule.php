@@ -66,7 +66,7 @@ class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$extendedClassName
 				))->nonIgnorable()->build();
-			} elseif ($reflection->isFinal()) {
+			} elseif ($reflection->isFinalByKeyword()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends final class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',

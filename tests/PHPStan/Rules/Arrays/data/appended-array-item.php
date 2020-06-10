@@ -19,6 +19,7 @@ class Foo
 		$this->callables[] = [$this, 'doFoo'];
 		$this->callables[] = [1, 2, 3];
 		$this->callables[] = ['Closure', 'bind'];
+		$this->callables[] = [\Closure::class, 'bind'];
 		$this->callables[] = 'strpos';
 		$this->callables[] = [__CLASS__, 'classMethod'];
 		$world = 'world';

@@ -21,7 +21,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 				TypeCombinator::union(
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-						[new ConstantStringType('Closure'), new ConstantStringType('bind')]
+						[new ConstantStringType('Closure', true), new ConstantStringType('bind')]
 					),
 					new ConstantStringType('array_push')
 				),

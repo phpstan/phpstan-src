@@ -8598,8 +8598,12 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$closure()',
 			],
 			[
+				'mixed',
+				'$arrayWithStringLiteralAndStaticMethod()',
+			],
+			[
 				'Callables\\Bar',
-				'$arrayWithStaticMethod()',
+				'$arrayWithClassStringAndStaticMethod()',
 			],
 			[
 				'float',

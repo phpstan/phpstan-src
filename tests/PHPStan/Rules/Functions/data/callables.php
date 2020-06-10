@@ -37,6 +37,8 @@ class Foo
 	{
 		['CallCallables\Foo', 'doStaticBaz']();
 		['CallCallables\Foo', 'doStaticBaz']('foo');
+		[Foo::class, 'doStaticBaz']();
+		[Foo::class, 'doStaticBaz']('foo');
 		'CallCallables\Foo::doStaticBaz'();
 		'CallCallables\Foo::doStaticBaz'('foo');
 	}

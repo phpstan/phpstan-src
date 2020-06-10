@@ -33,24 +33,28 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 					20,
 				],
 				[
+					'Array (array<callable(): mixed>) does not accept array(\'Closure\', \'bind\').',
+					21,
+				],
+				[
 					'Array (array<callable(): mixed>) does not accept array(\'AppendedArrayItem\\\\Foo\', \'classMethod\').',
-					23,
+					24,
 				],
 				[
 					'Array (array<callable(): mixed>) does not accept array(\'Foo\', \'Hello world\').',
-					25,
+					26,
 				],
 				[
 					'Array (array<int>) does not accept string.',
-					30,
+					31,
 				],
 				[
 					'Array (array<callable(): string>) does not accept Closure(): int.',
-					43,
+					44,
 				],
 				[
 					'Array (array<AppendedArrayItem\Lorem>) does not accept AppendedArrayItem\Baz.',
-					77,
+					78,
 				],
 			]
 		);

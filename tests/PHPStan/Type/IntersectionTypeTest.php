@@ -78,7 +78,7 @@ class IntersectionTypeTest extends \PHPStan\Testing\TestCase
 				new IntersectionType([
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-						[new ConstantStringType('Closure'), new ConstantStringType('bind')]
+						[new ConstantStringType('Closure', true), new ConstantStringType('bind')]
 					),
 					new IterableType(new MixedType(), new ObjectType('Item')),
 				]),

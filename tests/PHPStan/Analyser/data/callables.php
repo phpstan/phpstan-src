@@ -11,7 +11,8 @@ class Foo
 
 		};
 		$foo = $this;
-		$arrayWithStaticMethod = ['Callables\\Foo', 'doBar'];
+		$arrayWithStringLiteralAndStaticMethod = ['Callables\\Foo', 'doBar'];
+		$arrayWithClassStringAndStaticMethod = [Foo::class, 'doBar'];
 		$stringWithStaticMethod = 'Callables\\Foo::doFoo';
 		$arrayWithInstanceMethod = [$this, 'doFoo'];
 		die;

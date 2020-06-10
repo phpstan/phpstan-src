@@ -47,80 +47,88 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				33,
 			],
 			[
-				'Callable array(\'CallCallables\\\\Foo\', \'doStaticBaz\') invoked with 1 parameter, 0 required.',
+				'Trying to invoke array(\'CallCallables\\\\Foo\', \'doStaticBaz\') but it might not be a callable.',
+				38,
+			],
+			[
+				'Trying to invoke array(\'CallCallables\\\\Foo\', \'doStaticBaz\') but it might not be a callable.',
 				39,
 			],
 			[
-				'Callable \'CallCallables\\\\Foo:…\' invoked with 1 parameter, 0 required.',
+				'Callable array(\'CallCallables\\\\Foo\', \'doStaticBaz\') invoked with 1 parameter, 0 required.',
 				41,
 			],
 			[
+				'Callable \'CallCallables\\\\Foo:…\' invoked with 1 parameter, 0 required.',
+				43,
+			],
+			[
 				'Call to private method privateFooMethod() of class CallCallables\Foo.',
-				52,
+				54,
 			],
 			[
 				'Closure invoked with 0 parameters, 1-2 required.',
-				58,
+				60,
 			],
 			[
 				'Result of closure (void) is used.',
-				59,
+				61,
 			],
 			[
 				'Closure invoked with 0 parameters, at least 1 required.',
-				64,
+				66,
 			],
 			[
 				'Parameter #1 $i of closure expects int, string given.',
-				70,
+				72,
 			],
 			[
-				'Parameter #1 $str of callable class@anonymous/tests/PHPStan/Rules/Functions/data/callables.php:75 expects string, int given.',
-				81,
+				'Parameter #1 $str of callable class@anonymous/tests/PHPStan/Rules/Functions/data/callables.php:77 expects string, int given.',
+				83,
 			],
 			[
 				'Trying to invoke \'\' but it\'s not a callable.',
-				86,
+				88,
 			],
 			[
 				'Invoking callable on an unknown class CallCallables\Bar.',
-				90,
+				92,
 			],
 			[
 				'Parameter #1 ...$foo of closure expects CallCallables\Foo, array<CallCallables\Foo> given.',
-				106,
+				108,
 			],
 			[
 				'Trying to invoke CallCallables\Baz but it might not be a callable.',
-				113,
+				115,
 			],
 			[
 				'Trying to invoke array(object, \'bar\') but it might not be a callable.',
-				131,
+				133,
 			],
 			[
 				'Closure invoked with 0 parameters, 3 required.',
-				146,
-			],
-			[
-				'Closure invoked with 1 parameter, 3 required.',
-				147,
-			],
-			[
-				'Closure invoked with 2 parameters, 3 required.',
 				148,
 			],
 			[
-				'Trying to invoke array(object, \'yo\') but it might not be a callable.',
-				163,
+				'Closure invoked with 1 parameter, 3 required.',
+				149,
+			],
+			[
+				'Closure invoked with 2 parameters, 3 required.',
+				150,
 			],
 			[
 				'Trying to invoke array(object, \'yo\') but it might not be a callable.',
-				167,
+				165,
+			],
+			[
+				'Trying to invoke array(object, \'yo\') but it might not be a callable.',
+				169,
 			],
 			[
 				'Trying to invoke array(\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\') but it might not be a callable.',
-				179,
+				181,
 			],
 		]);
 	}

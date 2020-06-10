@@ -352,7 +352,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return ConstantArrayTypeAndMethod::createUnknown();
 		}
 
-		if ($classOrObject instanceof ConstantStringType && $classOrObject->isClassString()) {
+		if ($classOrObject instanceof ConstantStringType) {
 			$broker = Broker::getInstance();
 			if (!$broker->hasClass($classOrObject->getValue())) {
 				return ConstantArrayTypeAndMethod::createUnknown();

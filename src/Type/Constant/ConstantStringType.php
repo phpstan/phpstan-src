@@ -45,11 +45,6 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return $this->value;
 	}
 
-	public function isClassString(): bool
-	{
-		return $this->isClassString;
-	}
-
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(

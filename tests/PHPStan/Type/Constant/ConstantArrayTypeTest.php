@@ -591,7 +591,6 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @dataProvider dataIsCallable
-	 * @group solo
 	 */
 	public function testIsCallable(ConstantArrayType $type, TrinaryLogic $expectedResult): void
 	{
@@ -641,18 +640,15 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 			TrinaryLogic::createNo(),
 		];
 
-		/**
-		 * @see https://github.com/phpstan/phpstan/issues/3428
-		 */
 		yield 'existing static method but not a class string' => [
 			new ConstantArrayType([
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
 			], [
 				new ConstantStringType('Closure'),
-				new ConstantStringType('foobar'),
+				new ConstantStringType('bind'),
 			]),
-			TrinaryLogic::createMaybe(),
+			TrinaryLogic::createYes(),
 		];
 
 		yield 'existing static method but with string keys' => [

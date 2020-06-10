@@ -59,6 +59,7 @@ vendor/bin/phing tests
 
 1. Make sure XDebug is installed and configured.
 2. Add `--xdebug` option when running PHPStan. Without it PHPStan turns the debugger off at runtime.
+3. If you're not debugging the [result cache](https://phpstan.org/user-guide/result-cache), also add the `--debug` option.
 
 ## Code of Conduct
 

@@ -31,3 +31,20 @@ final class Collection implements CollectionInterface
 	}
 
 }
+
+interface TranslatorInterface{
+
+	/**
+	 * @param array<int,mixed> $additionalParametersToInjectIntoTranslation
+	 */
+	public function translate(string $translationKey, bool $upperCaseFirst = true, ...$additionalParametersToInjectIntoTranslation) : string;
+}
+
+class Translator implements TranslatorInterface
+{
+
+	public function translate(string $translationKey, bool $upperCaseFirst = true, ...$additionalParametersToInjectIntoTranslation) : string
+	{
+		return 'some fancy translation with possibly some parameters injected';
+	}
+}

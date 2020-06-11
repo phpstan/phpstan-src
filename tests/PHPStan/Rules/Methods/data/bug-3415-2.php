@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug3415;
+namespace Bug3415Two;
 
 trait Foo {
 	public function bar(): void {

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use const PHP_VERSION_ID;
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<CallMethodsRule>
@@ -1413,6 +1414,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testBug3445(): void
 	{
+		if (!self::$useStaticReflectionProvider) {
+			if (PHP_VERSION_ID < 70300) {
+				$this->markTestSkipped('PHP looks at the parameter value non-lazily before PHP 7.3.');
+			}
+		}
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;

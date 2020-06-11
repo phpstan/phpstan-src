@@ -330,4 +330,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3403.php'], []);
 	}
 
+	public function testBug3443(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-3443.php'], []);
+	}
+
 }

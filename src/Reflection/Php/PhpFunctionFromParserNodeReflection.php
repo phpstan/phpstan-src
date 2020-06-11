@@ -142,7 +142,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 		/** @var \PhpParser\Node\Param $parameter */
 		foreach (array_reverse($this->functionLike->getParams()) as $parameter) {
-			if (!$isOptional || $parameter->default === null) {
+			if ($parameter->default === null && !$parameter->variadic) {
 				$isOptional = false;
 			}
 
@@ -151,7 +151,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 			}
 			$parameters[] = new PhpParameterFromParserNodeReflection(
 				$parameter->var->name,
-				$isOptional || $parameter->variadic,
+				$isOptional,
 				$this->realParameterTypes[$parameter->var->name],
 				$this->phpDocParameterTypes[$parameter->var->name] ?? null,
 				$parameter->byRef

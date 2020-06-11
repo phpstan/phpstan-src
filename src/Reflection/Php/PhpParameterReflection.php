@@ -47,7 +47,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 			$this->type = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getType(),
 				$phpDocType,
-				$this->reflection->getDeclaringClass() !== null ? $this->reflection->getDeclaringClass()->getName() : null,
+				null,
 				$this->isVariadic()
 			);
 		}

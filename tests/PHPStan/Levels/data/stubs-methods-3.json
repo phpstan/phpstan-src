@@ -10,6 +10,11 @@
         "ignorable": true
     },
     {
+        "message": "Return type (string) of method StubsIntegrationTest\\AnotherClassExtendingInterfaceWithStubPhpDoc::doFoo() should be compatible with return type (int) of method StubsIntegrationTest\\InterfaceWithStubPhpDoc::doFoo()",
+        "line": 99,
+        "ignorable": true
+    },
+    {
         "message": "Return type (string) of method StubsIntegrationTest\\YetAnotherClassExtendingInterfaceWithStubPhpDoc::doFoo() should be compatible with return type (int) of method StubsIntegrationTest\\InterfaceWithStubPhpDoc::doFoo()",
         "line": 119,
         "ignorable": true

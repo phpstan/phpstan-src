@@ -244,7 +244,8 @@ class PhpMethodReflection implements MethodReflection
 			$this->parameters = array_map(function (\ReflectionParameter $reflection): PhpParameterReflection {
 				return new PhpParameterReflection(
 					$reflection,
-					$this->phpDocParameterTypes[$reflection->getName()] ?? null
+					$this->phpDocParameterTypes[$reflection->getName()] ?? null,
+					$this->getDeclaringClass()->getName()
 				);
 			}, $this->reflection->getParameters());
 		}

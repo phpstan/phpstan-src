@@ -156,7 +156,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 			static function (Error $error) use ($strictlyTypedSprintf): string {
 				$line = $error->getLine();
 				if ($line === null) {
-					throw new \PHPStan\ShouldNotHappenException(sprintf('Error (%s) line should not be null.', $error->getMessage()));
+					return $strictlyTypedSprintf(-1, $error->getMessage(), $error->getTip());
 				}
 				return $strictlyTypedSprintf($line, $error->getMessage(), $error->getTip());
 			},

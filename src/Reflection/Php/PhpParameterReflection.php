@@ -20,10 +20,17 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 
 	private ?\PHPStan\Type\Type $nativeType = null;
 
-	public function __construct(\ReflectionParameter $reflection, ?Type $phpDocType)
+	private ?string $declaringClassName;
+
+	public function __construct(
+		\ReflectionParameter $reflection,
+		?Type $phpDocType,
+		?string $declaringClassName
+	)
 	{
 		$this->reflection = $reflection;
 		$this->phpDocType = $phpDocType;
+		$this->declaringClassName = $declaringClassName;
 	}
 
 	public function isOptional(): bool
@@ -47,7 +54,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 			$this->type = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getType(),
 				$phpDocType,
-				null,
+				$this->declaringClassName,
 				$this->isVariadic()
 			);
 		}
@@ -82,7 +89,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 			$this->nativeType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getType(),
 				null,
-				$this->reflection->getDeclaringClass() !== null ? $this->reflection->getDeclaringClass()->getName() : null,
+				$this->declaringClassName,
 				$this->isVariadic()
 			);
 		}
@@ -93,7 +100,13 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 	public function getDefaultValue(): ?Type
 	{
 		if ($this->reflection->isDefaultValueAvailable()) {
-			return ConstantTypeHelper::getTypeFromValue($this->reflection->getDefaultValue());
+			try {
+				$defaultValue = $this->reflection->getDefaultValue();
+			} catch (\Throwable $e) {
+				return null;
+			}
+
+			return ConstantTypeHelper::getTypeFromValue($defaultValue);
 		}
 
 		return null;

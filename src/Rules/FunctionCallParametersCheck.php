@@ -146,6 +146,9 @@ class FunctionCallParametersCheck
 				}
 
 				$parameter = $parameters[count($parameters) - 1];
+				if (!$parameter->isVariadic()) {
+					break; // func_get_args
+				}
 			} else {
 				$parameter = $parameters[$i];
 			}

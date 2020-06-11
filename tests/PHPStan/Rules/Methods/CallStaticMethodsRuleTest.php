@@ -345,4 +345,19 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/static-methods-class-exists.php'], []);
 	}
 
+	public function testBug3448(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-3448.php'], [
+			[
+				'Parameter #1 $lall of static method Bug3448\Foo::add() expects int, string given.',
+				21,
+			],
+			[
+				'Parameter #1 $lall of static method Bug3448\Foo::add() expects int, string given.',
+				22,
+			],
+		]);
+	}
+
 }

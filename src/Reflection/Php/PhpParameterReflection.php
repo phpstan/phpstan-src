@@ -47,8 +47,14 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 	{
 		if ($this->type === null) {
 			$phpDocType = $this->phpDocType;
-			if ($phpDocType !== null && $this->reflection->isDefaultValueAvailable() && $this->reflection->getDefaultValue() === null) {
-				$phpDocType = \PHPStan\Type\TypeCombinator::addNull($phpDocType);
+			if ($phpDocType !== null) {
+				try {
+					if ($this->reflection->isDefaultValueAvailable() && $this->reflection->getDefaultValue() === null) {
+						$phpDocType = \PHPStan\Type\TypeCombinator::addNull($phpDocType);
+					}
+				} catch (\Throwable $e) {
+					// pass
+				}
 			}
 
 			$this->type = TypehintHelper::decideTypeFromReflection(
@@ -99,14 +105,13 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 
 	public function getDefaultValue(): ?Type
 	{
-		if ($this->reflection->isDefaultValueAvailable()) {
-			try {
+		try {
+			if ($this->reflection->isDefaultValueAvailable()) {
 				$defaultValue = $this->reflection->getDefaultValue();
-			} catch (\Throwable $e) {
-				return null;
+				return ConstantTypeHelper::getTypeFromValue($defaultValue);
 			}
-
-			return ConstantTypeHelper::getTypeFromValue($defaultValue);
+		} catch (\Throwable $e) {
+			return null;
 		}
 
 		return null;

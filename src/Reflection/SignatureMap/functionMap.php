@@ -9870,7 +9870,7 @@ return [
 'RegexIterator::setMode' => ['bool', 'new_mode'=>'int'],
 'RegexIterator::setPregFlags' => ['bool', 'new_flags'=>'int'],
 'register_event_handler' => ['bool', 'event_handler_func'=>'event_handler_func', 'handler_register_name'=>'handler_register_name', 'event_type_mask'=>'event_type_mask'],
-'register_shutdown_function' => ['void', 'function'=>'callable(): void', '...parameter='=>'mixed'],
+'register_shutdown_function' => ['void', 'function'=>'callable', '...parameter='=>'mixed'],
 'register_tick_function' => ['bool', 'function'=>'callable(): void', '...args='=>'mixed'],
 'rename' => ['bool', 'old_name'=>'string', 'new_name'=>'string', 'context='=>'resource'],
 'rename_function' => ['bool', 'original_name'=>'string', 'new_name'=>'string'],

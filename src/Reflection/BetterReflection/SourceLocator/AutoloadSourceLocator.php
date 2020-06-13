@@ -35,8 +35,11 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private FileNodesFetcher $fileNodesFetcher;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
+	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
 	private array $classNodes = [];
+
+	/** @var array<string, Reflection|null> */
+	private array $classReflections = [];
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
 	private array $functionNodes = [];
@@ -82,7 +85,7 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			return $this->findReflection($reflector, $reflectionFileName, $identifier);
+			return $this->findReflection($reflector, $reflectionFileName, $identifier, null);
 		}
 
 		if ($identifier->isConstant()) {
@@ -155,32 +158,28 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 
 		$loweredClassName = strtolower($identifier->getName());
-		if (array_key_exists($loweredClassName, $this->classNodes)) {
-			$nodeToReflection = new NodeToReflection();
-			return $nodeToReflection->__invoke(
-				$reflector,
-				$this->classNodes[$loweredClassName]->getNode(),
-				$this->locatedSourcesByFile[$this->classNodes[$loweredClassName]->getFileName()],
-				$this->classNodes[$loweredClassName]->getNamespace()
-			);
+		if (array_key_exists($loweredClassName, $this->classReflections)) {
+			return $this->classReflections[$loweredClassName];
 		}
 
 		$locateResult = $this->locateClassByName($identifier->getName());
 		if ($locateResult === null) {
 			return null;
 		}
-		[$potentiallyLocatedFile, $className] = $locateResult;
+		[$potentiallyLocatedFile, $className, $startLine] = $locateResult;
 
-		return $this->findReflection($reflector, $potentiallyLocatedFile, new Identifier($className, $identifier->getType()));
+		return $this->findReflection($reflector, $potentiallyLocatedFile, new Identifier($className, $identifier->getType()), $startLine);
 	}
 
-	private function findReflection(Reflector $reflector, string $file, Identifier $identifier): ?Reflection
+	private function findReflection(Reflector $reflector, string $file, Identifier $identifier, ?int $startLine): ?Reflection
 	{
 		if (!array_key_exists($file, $this->locatedSourcesByFile)) {
 			$result = $this->fileNodesFetcher->fetchNodes($file);
 			$this->locatedSourcesByFile[$file] = $result->getLocatedSource();
-			foreach ($result->getClassNodes() as $className => $fetchedClassNode) {
-				$this->classNodes[$className] = $fetchedClassNode;
+			foreach ($result->getClassNodes() as $className => $fetchedClassNodes) {
+				foreach ($fetchedClassNodes as $fetchedClassNode) {
+					$this->classNodes[$className][] = $fetchedClassNode;
+				}
 			}
 			foreach ($result->getFunctionNodes() as $functionName => $fetchedFunctionNode) {
 				$this->functionNodes[$functionName] = $fetchedFunctionNode;
@@ -196,16 +195,27 @@ class AutoloadSourceLocator implements SourceLocator
 		$nodeToReflection = new NodeToReflection();
 		if ($identifier->isClass()) {
 			$identifierName = strtolower($identifier->getName());
+			if (array_key_exists($identifierName, $this->classReflections)) {
+				return $this->classReflections[$identifierName];
+			}
 			if (!array_key_exists($identifierName, $this->classNodes)) {
 				return null;
 			}
 
-			return $nodeToReflection->__invoke(
-				$reflector,
-				$this->classNodes[$identifierName]->getNode(),
-				$locatedSource,
-				$this->classNodes[$identifierName]->getNamespace()
-			);
+			foreach ($this->classNodes[$identifierName] as $classNode) {
+				if ($startLine !== null && $startLine !== $classNode->getNode()->getStartLine()) {
+					continue;
+				}
+
+				return $this->classReflections[$identifierName] = $nodeToReflection->__invoke(
+					$reflector,
+					$classNode->getNode(),
+					$locatedSource,
+					$classNode->getNamespace()
+				);
+			}
+
+			return null;
 		}
 		if ($identifier->isFunction()) {
 			$identifierName = strtolower($identifier->getName());
@@ -243,7 +253,7 @@ class AutoloadSourceLocator implements SourceLocator
 	 * error handler temporarily.
 	 *
 	 * @throws ReflectionException
-	 * @return array{string, string}|null
+	 * @return array{string, string, int|null}|null
 	 */
 	private function locateClassByName(string $className): ?array
 	{
@@ -259,13 +269,13 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			return [$filename, $reflection->getName()];
+			return [$filename, $reflection->getName(), $reflection->getStartLine() !== false ? $reflection->getStartLine() : null];
 		}
 
 		$this->silenceErrors();
 
 		try {
-			/** @var array{string, string}|null */
+			/** @var array{string, string, null}|null */
 			return FileReadTrapStreamWrapper::withStreamWrapperOverride(
 				static function () use ($className): ?array {
 					$functions = spl_autoload_functions();
@@ -283,7 +293,7 @@ class AutoloadSourceLocator implements SourceLocator
 						 * This will not be `null` when the autoloader tried to read a file.
 						 */
 						if (FileReadTrapStreamWrapper::$autoloadLocatedFile !== null) {
-							return [FileReadTrapStreamWrapper::$autoloadLocatedFile, $className];
+							return [FileReadTrapStreamWrapper::$autoloadLocatedFile, $className, null];
 						}
 					}
 

@@ -44,17 +44,19 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 				return null;
 			}
 
-			$classReflection = $nodeToReflection->__invoke(
-				$reflector,
-				$classNodes[$className]->getNode(),
-				$this->fetchedNodesResult->getLocatedSource(),
-				$classNodes[$className]->getNamespace()
-			);
-			if (!$classReflection instanceof ReflectionClass) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
+			foreach ($classNodes[$className] as $classNode) {
+				$classReflection = $nodeToReflection->__invoke(
+					$reflector,
+					$classNode->getNode(),
+					$this->fetchedNodesResult->getLocatedSource(),
+					$classNode->getNamespace()
+				);
+				if (!$classReflection instanceof ReflectionClass) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
 
-			return $classReflection;
+				return $classReflection;
+			}
 		}
 
 		if ($identifier->isFunction()) {

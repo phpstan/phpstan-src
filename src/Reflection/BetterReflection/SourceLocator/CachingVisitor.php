@@ -13,7 +13,7 @@ class CachingVisitor extends NodeVisitorAbstract
 
 	private string $fileName;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
+	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
 	private array $classNodes;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
@@ -32,7 +32,7 @@ class CachingVisitor extends NodeVisitorAbstract
 
 		if ($node instanceof \PhpParser\Node\Stmt\ClassLike) {
 			if ($node->name !== null) {
-				$this->classNodes[strtolower($node->namespacedName->toString())] = new FetchedNode(
+				$this->classNodes[strtolower($node->namespacedName->toString())][] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
 					$this->fileName
@@ -106,7 +106,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>>
+	 * @return array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>>
 	 */
 	public function getClassNodes(): array
 	{

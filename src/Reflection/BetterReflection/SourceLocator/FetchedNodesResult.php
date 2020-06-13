@@ -7,7 +7,7 @@ use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 class FetchedNodesResult
 {
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
+	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
 	private array $classNodes;
 
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
@@ -19,7 +19,7 @@ class FetchedNodesResult
 	private \Roave\BetterReflection\SourceLocator\Located\LocatedSource $locatedSource;
 
 	/**
-	 * @param array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> $classNodes
+	 * @param array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> $classNodes
 	 * @param array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> $functionNodes
 	 * @param array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> $constantNodes
 	 * @param \Roave\BetterReflection\SourceLocator\Located\LocatedSource $locatedSource
@@ -38,7 +38,7 @@ class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>>
+	 * @return array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>>
 	 */
 	public function getClassNodes(): array
 	{

@@ -3,10 +3,12 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\Testing\TestCase;
+use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use TestSingleFileSourceLocator\AFoo;
+use TestSingleFileSourceLocator\InCondition;
 
 function testFunctionForLocator(): void // phpcs:disable
 {
@@ -45,6 +47,16 @@ class AutoloadSourceLocatorTest extends TestCase
 		$this->assertSame('TestSingleFileSourceLocator\\doFoo', $doFooFunctionReflection->getName());
 		$this->assertNotNull($doFooFunctionReflection->getFileName());
 		$this->assertSame('a.php', basename($doFooFunctionReflection->getFileName()));
+
+		class_exists(InCondition::class);
+		$classInCondition = $classReflector->reflect(InCondition::class);
+		$classInConditionFilename = $classInCondition->getFileName();
+		$this->assertNotNull($classInConditionFilename);
+		$this->assertSame('a.php', basename($classInConditionFilename));
+		$this->assertSame(InCondition::class, $classInCondition->getName());
+		$this->assertSame(25, $classInCondition->getStartLine());
+		$this->assertInstanceOf(ReflectionClass::class, $classInCondition->getParentClass());
+		$this->assertSame(AFoo::class, $classInCondition->getParentClass()->getName());
 	}
 
 }

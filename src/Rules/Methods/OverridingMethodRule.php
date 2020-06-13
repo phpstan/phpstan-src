@@ -59,8 +59,27 @@ class OverridingMethodRule implements Rule
 
 		$prototype = $method->getPrototype();
 		if ($prototype->getDeclaringClass()->getName() === $method->getDeclaringClass()->getName()) {
+			if (strtolower($method->getName()) === '__construct') {
+				$parent = $method->getDeclaringClass()->getParentClass();
+				if ($parent !== false && $parent->hasConstructor()) {
+					$parentConstructor = $parent->getConstructor();
+					if ($parentConstructor->isFinal()->yes()) {
+						return $this->addErrors([
+							RuleErrorBuilder::message(sprintf(
+								'Method %s::%s() overrides final method %s::%s().',
+								$method->getDeclaringClass()->getDisplayName(),
+								$method->getName(),
+								$parent->getDisplayName(),
+								$parentConstructor->getName()
+							))->nonIgnorable()->build(),
+						], $node, $scope);
+					}
+				}
+			}
+
 			return [];
 		}
+
 		if (!$prototype instanceof MethodPrototypeReflection) {
 			return [];
 		}
@@ -94,27 +113,6 @@ class OverridingMethodRule implements Rule
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName()
 			))->nonIgnorable()->build();
-		}
-
-		if (strtolower($method->getName()) === '__construct') {
-			$parent = $method->getDeclaringClass()->getParentClass();
-			if ($parent !== false && $parent->hasConstructor()) {
-				$parentConstructor = $parent->getConstructor();
-				if ($parentConstructor->isFinal()->yes()) {
-					return $this->addErrors([
-						RuleErrorBuilder::message(sprintf(
-							'Method %s::%s() overrides final method %s::%s().',
-							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName(),
-							$parent->getDisplayName(),
-							$parentConstructor->getName()
-						))->nonIgnorable()->build(),
-					], $node, $scope);
-				}
-			}
-			if (!$prototype->isAbstract()) {
-				return $this->addErrors($messages, $node, $scope);
-			}
 		}
 
 		if ($prototype->isPublic()) {

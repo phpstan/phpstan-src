@@ -164,6 +164,17 @@ class AutoloadSourceLocator implements SourceLocator
 
 		$locateResult = $this->locateClassByName($identifier->getName());
 		if ($locateResult === null) {
+			if (array_key_exists($loweredClassName, $this->classNodes)) {
+				foreach ($this->classNodes[$loweredClassName] as $classNode) {
+					$nodeToReflection = new NodeToReflection();
+					return $this->classReflections[$loweredClassName] = $nodeToReflection->__invoke(
+						$reflector,
+						$classNode->getNode(),
+						$this->locatedSourcesByFile[$classNode->getFileName()],
+						$classNode->getNamespace()
+					);
+				}
+			}
 			return null;
 		}
 		[$potentiallyLocatedFile, $className, $startLine] = $locateResult;

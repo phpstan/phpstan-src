@@ -36,10 +36,12 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 			[
 				'Access to offset \'bar\' on an unknown class NonexistentOffset\Bar.',
 				101,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Access to an offset on an unknown class NonexistentOffset\Bar.',
 				102,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Offset 0 does not exist on array<string, string>.',

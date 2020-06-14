@@ -129,7 +129,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 							'Call to static method %s() on an unknown class %s.',
 							$methodName,
 							$className
-						))->build(),
+						))->discoveringSymbolsTip()->build(),
 					];
 				} else {
 					$errors = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);

@@ -60,6 +60,7 @@ class MixinRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @mixin contains unknown class MixinRule\UnknownestClass.',
 				50,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'PHPDoc tag @mixin contains invalid type MixinRule\FooTrait.',
@@ -68,6 +69,7 @@ class MixinRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @mixin contains unknown class MixinRule\U.',
 				59,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Generic type MixinRule\Consecteur<MixinRule\Foo> in PHPDoc tag @mixin does not specify all template types of class MixinRule\Consecteur: T, U',

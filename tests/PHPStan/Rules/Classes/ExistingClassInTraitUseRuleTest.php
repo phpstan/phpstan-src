@@ -40,6 +40,7 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Class TraitUseError\Foo uses unknown trait TraitUseError\FooTrait.',
 				8,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			/*[
 				'Trait TraitUseError\BarTrait uses class TraitUseError\Foo.',
@@ -56,6 +57,7 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Anonymous class uses unknown trait TraitUseError\FooTrait.',
 				27,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Anonymous class uses interface TraitUseError\Baz.',

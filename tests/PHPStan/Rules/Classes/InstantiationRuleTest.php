@@ -45,6 +45,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instantiated class TestInstantiation\FooBarInstantiation not found.',
 					27,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Class TestInstantiation\BarInstantiation constructor invoked with 0 parameters, 1 required.',
@@ -61,6 +62,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instantiated class Test not found.',
 					33,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Class DatePeriod constructor invoked with 0 parameters, 1-4 required.',
@@ -153,14 +155,17 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instantiated class UndefinedClass1 not found.',
 					169,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Instantiated class UndefinedClass2 not found.',
 					172,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Instantiated class UndefinedClass3 not found.',
 					179,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Class TestInstantiation\FinalClass does not have a constructor and must be instantiated without any parameters.',

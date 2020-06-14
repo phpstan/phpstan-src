@@ -76,7 +76,7 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 	private function checkConstant(Node\Name $name): ?RuleError
 	{
 		if (!$this->reflectionProvider->hasConstant($name, null)) {
-			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))->line($name->getLine())->build();
+			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))->discoveringSymbolsTip()->line($name->getLine())->build();
 		}
 
 		return null;
@@ -85,7 +85,7 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 	private function checkFunction(Node\Name $name): ?RuleError
 	{
 		if (!$this->reflectionProvider->hasFunction($name, null)) {
-			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))->line($name->getLine())->build();
+			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))->discoveringSymbolsTip()->line($name->getLine())->build();
 		}
 
 		if ($this->checkFunctionNameCase) {

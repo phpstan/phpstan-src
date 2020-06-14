@@ -50,7 +50,7 @@ class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
 					'%s extends unknown class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$extendedClassName
-				))->nonIgnorable()->build();
+				))->nonIgnorable()->discoveringSymbolsTip()->build();
 			}
 		} else {
 			$reflection = $this->reflectionProvider->getClass($extendedClassName);

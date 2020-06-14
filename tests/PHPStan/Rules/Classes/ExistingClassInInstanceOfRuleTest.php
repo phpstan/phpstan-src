@@ -32,6 +32,7 @@ class ExistingClassInInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Class InstanceOfNamespace\Bar not found.',
 					7,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Using self outside of class scope.',

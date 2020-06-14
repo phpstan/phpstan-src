@@ -30,6 +30,8 @@ class CaughtExceptionExistenceRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Caught class FooCatchException not found.',
 				29,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+
 			],
 			[
 				'Class TestCatch\MyCatchException referenced with incorrect case: TestCatch\MyCatchEXCEPTION.',

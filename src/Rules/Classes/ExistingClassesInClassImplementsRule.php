@@ -54,7 +54,7 @@ class ExistingClassesInClassImplementsRule implements \PHPStan\Rules\Rule
 						'%s implements unknown interface %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 						$implementedClassName
-					))->nonIgnorable()->build();
+					))->nonIgnorable()->discoveringSymbolsTip()->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($implementedClassName);

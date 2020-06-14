@@ -85,6 +85,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Invoking callable on an unknown class CallCallables\Bar.',
 				90,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Parameter #1 ...$foo of closure expects CallCallables\Foo, array<CallCallables\Foo> given.',

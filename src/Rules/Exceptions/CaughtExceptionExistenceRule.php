@@ -47,7 +47,7 @@ class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 				if ($scope->isInClassExists($className)) {
 					continue;
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))->line($class->getLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))->line($class->getLine())->discoveringSymbolsTip()->build();
 				continue;
 			}
 

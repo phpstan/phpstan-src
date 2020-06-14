@@ -22,10 +22,12 @@ class ConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Constant NONEXISTENT_CONSTANT not found.',
 				10,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Constant DEFINED_CONSTANT not found.',
 				13,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			/*[
 				'Constant DEFINED_CONSTANT_IF not found.',
@@ -45,6 +47,8 @@ class ConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Constant __COMPILER_HALT_OFFSET__ not found.',
 				3,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+
 			],
 		]);
 	}

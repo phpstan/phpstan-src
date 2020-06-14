@@ -37,6 +37,7 @@ class VariableCloningRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Cloning object of an unknown class VariableCloning\Bar.',
 				23,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

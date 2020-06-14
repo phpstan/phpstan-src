@@ -32,26 +32,32 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Property PropertiesTypes\Foo::$bar has unknown class PropertiesTypes\Bar as its type.',
 					12,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$bars has unknown class PropertiesTypes\Bar as its type.',
 					18,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Dolor as its type.',
 					21,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Ipsum as its type.',
 					21,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\BAR as its type.',
 					24,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\Fooo as its type.',
 					24,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Class PropertiesTypes\Foo referenced with incorrect case: PropertiesTypes\FOO.',
@@ -64,10 +70,12 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Property PropertiesTypes\Foo::$nonexistentClassInGenericObjectType has unknown class PropertiesTypes\Foooo as its type.',
 					33,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$nonexistentClassInGenericObjectType has unknown class PropertiesTypes\Barrrr as its type.',
 					33,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 			]
 		);
@@ -83,14 +91,17 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Property PropertiesNativeTypes\Foo::$bar has unknown class PropertiesNativeTypes\Bar as its type.',
 				10,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Property PropertiesNativeTypes\Foo::$baz has unknown class PropertiesNativeTypes\Baz as its type.',
 				13,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Property PropertiesNativeTypes\Foo::$baz has unknown class PropertiesNativeTypes\Baz as its type.',
 				13,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

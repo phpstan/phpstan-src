@@ -120,7 +120,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				}
 
 				return [
-					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))->build(),
+					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))->discoveringSymbolsTip()->build(),
 				];
 			} else {
 				$messages = $this->classCaseSensitivityCheck->checkClassNames([

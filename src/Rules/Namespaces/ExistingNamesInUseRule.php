@@ -73,7 +73,7 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $use->name))->line($use->name->getLine())->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $use->name))->line($use->name->getLine())->discoveringSymbolsTip()->build();
 		}
 
 		return $errors;
@@ -88,7 +88,7 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 		$errors = [];
 		foreach ($uses as $use) {
 			if (!$this->reflectionProvider->hasFunction($use->name, null)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $use->name))->line($use->name->getLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $use->name))->line($use->name->getLine())->discoveringSymbolsTip()->build();
 			} elseif ($this->checkFunctionNameCase) {
 				$functionReflection = $this->reflectionProvider->getFunction($use->name, null);
 				$realName = $functionReflection->getName();

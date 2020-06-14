@@ -23,10 +23,12 @@ class ExistingNamesInUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Used function Uses\bar not found.',
 				7,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Used constant Uses\OTHER_CONSTANT not found.',
 				8,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Function Uses\foo used with incorrect case: Uses\Foo.',

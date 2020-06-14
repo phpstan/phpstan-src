@@ -91,14 +91,14 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 
 					if (strtolower($constantName) === 'class') {
 						return [
-							RuleErrorBuilder::message(sprintf('Class %s not found.', $className))->build(),
+							RuleErrorBuilder::message(sprintf('Class %s not found.', $className))->discoveringSymbolsTip()->build(),
 						];
 					}
 
 					return [
 						RuleErrorBuilder::message(
 							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className)
-						)->build(),
+						)->discoveringSymbolsTip()->build(),
 					];
 				} else {
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);

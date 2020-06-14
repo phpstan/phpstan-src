@@ -40,6 +40,7 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Class ExtendsError\Foo extends unknown class ExtendsError\Bar.',
 				5,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Class ExtendsError\Lorem extends interface ExtendsError\BazInterface.',

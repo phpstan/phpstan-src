@@ -29,6 +29,7 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Class ClassConstantNamespace\Bar not found.',
 					6,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Using self outside of class scope.',
@@ -53,6 +54,7 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Access to constant FOO on an unknown class ClassConstantNamespace\UnknownClass.',
 					21,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Class ClassConstantNamespace\Foo referenced with incorrect case: ClassConstantNamespace\FOO.',
@@ -123,10 +125,12 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Access to constant FOO on an unknown class ClassConstantVisibility\UnknownClassFirst.',
 				112,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Access to constant FOO on an unknown class ClassConstantVisibility\UnknownClassSecond.',
 				112,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Cannot access constant FOO on int|string.',
@@ -149,14 +153,17 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Class UnknownClass\Bar not found.',
 				24,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Class UnknownClass\Foo not found.',
 				26,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Class UnknownClass\Foo not found.',
 				29,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

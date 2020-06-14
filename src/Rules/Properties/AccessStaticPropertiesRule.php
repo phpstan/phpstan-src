@@ -113,7 +113,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 							'Access to static property $%s on an unknown class %s.',
 							$name,
 							$class
-						))->build(),
+						))->discoveringSymbolsTip()->build(),
 					];
 				} else {
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);

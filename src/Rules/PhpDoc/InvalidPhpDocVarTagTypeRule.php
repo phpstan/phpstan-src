@@ -144,7 +144,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					sprintf('%s contains unknown class %%s.', $identifier),
 					$referencedClass
-				))->build();
+				))->discoveringSymbolsTip()->build();
 			}
 
 			if (!$this->checkClassCaseSensitivity) {

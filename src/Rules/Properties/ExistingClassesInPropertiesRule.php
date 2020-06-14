@@ -77,7 +77,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->name->name,
 				$referencedClass
-			))->build();
+			))->discoveringSymbolsTip()->build();
 		}
 
 		if ($this->checkClassCaseSensitivity) {

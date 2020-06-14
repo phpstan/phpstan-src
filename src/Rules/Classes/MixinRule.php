@@ -110,7 +110,7 @@ class MixinRule implements Rule
 
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
 				} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))->build();
 				} elseif ($this->checkClassCaseSensitivity) {

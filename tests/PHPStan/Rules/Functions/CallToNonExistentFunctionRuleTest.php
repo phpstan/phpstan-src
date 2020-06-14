@@ -30,6 +30,8 @@ class CallToNonExistentFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Function foobarNonExistentFunction not found.',
 				5,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+
 			],
 		]);
 	}
@@ -40,6 +42,8 @@ class CallToNonExistentFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Function barNonExistentFunction not found.',
 				5,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+
 			],
 		]);
 	}

@@ -104,6 +104,11 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	public function discoveringSymbolsTip(): self
+	{
+		return $this->tip('Learn more at https://phpstan.org/user-guide/discovering-symbols');
+	}
+
 	public function identifier(string $identifier): self
 	{
 		$this->properties['identifier'] = $identifier;

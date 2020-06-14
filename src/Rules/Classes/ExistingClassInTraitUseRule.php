@@ -65,7 +65,7 @@ class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
 			foreach ($node->traits as $trait) {
 				$traitName = (string) $trait;
 				if (!$this->reflectionProvider->hasClass($traitName)) {
-					$messages[] = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))->nonIgnorable()->build();
+					$messages[] = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))->nonIgnorable()->discoveringSymbolsTip()->build();
 				} else {
 					$reflection = $this->reflectionProvider->getClass($traitName);
 					if ($reflection->isClass()) {

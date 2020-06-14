@@ -50,7 +50,7 @@ class ExistingClassesInInterfaceExtendsRule implements \PHPStan\Rules\Rule
 						'Interface %s extends unknown interface %s.',
 						$currentInterfaceName,
 						$extendedInterfaceName
-					))->nonIgnorable()->build();
+					))->nonIgnorable()->discoveringSymbolsTip()->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($extendedInterfaceName);

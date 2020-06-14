@@ -54,6 +54,7 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Access to static property $test on an unknown class UnknownStaticProperties.',
 				47,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Access to an undefined static property IpsumAccessStaticProperties::$baz.',
@@ -114,6 +115,7 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Access to static property $test on an unknown class NonexistentClass.',
 				97,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Access to an undefined static property FooAccessStaticProperties&SomeInterface::$nonexistent.',
@@ -174,6 +176,7 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Access to static property $foo on an unknown class TraitWithStaticProperty.',
 				209,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

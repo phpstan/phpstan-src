@@ -68,6 +68,7 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Access to property $foo on an unknown class TestAccessProperties\UnknownClass.',
 					63,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyBaz.',
@@ -96,10 +97,12 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Access to property $test on an unknown class TestAccessProperties\FirstUnknownClass.',
 					146,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Access to property $test on an unknown class TestAccessProperties\SecondUnknownClass.',
 					146,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Access to an undefined property TestAccessProperties\WithFooAndBarProperty|TestAccessProperties\WithFooProperty::$bar.',
@@ -215,6 +218,7 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Access to property $foo on an unknown class TestAccessProperties\UnknownClass.',
 					63,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyBaz.',
@@ -243,10 +247,12 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Access to property $test on an unknown class TestAccessProperties\FirstUnknownClass.',
 					146,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Access to property $test on an unknown class TestAccessProperties\SecondUnknownClass.',
 					146,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Access to an undefined property TestAccessProperties\SomeInterface&TestAccessProperties\WithFooProperty::$bar.',
@@ -384,18 +390,22 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Bar.',
 				15,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Baz.',
 				15,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Baz.',
 				18,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Access to property $lorem on an unknown class AccessPropertiesClassExists\Bar.',
 				22,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

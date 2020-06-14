@@ -27,6 +27,7 @@ class ExistingNamesInGroupUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Used function Uses\baz not found.',
 				7,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Interface Uses\Lorem referenced with incorrect case: Uses\LOREM.',
@@ -39,6 +40,7 @@ class ExistingNamesInGroupUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Used constant Uses\OTHER_CONSTANT not found.',
 				15,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

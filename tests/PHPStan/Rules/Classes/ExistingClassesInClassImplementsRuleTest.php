@@ -40,6 +40,7 @@ class ExistingClassesInClassImplementsRuleTest extends \PHPStan\Testing\RuleTest
 			[
 				'Class ImplementsError\Foo implements unknown interface ImplementsError\Bar.',
 				5,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Class ImplementsError\Lorem implements class ImplementsError\Foo.',

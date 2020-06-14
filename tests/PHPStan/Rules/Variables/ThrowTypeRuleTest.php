@@ -39,6 +39,7 @@ class ThrowTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Throwing object of an unknown class ThrowValues\NonexistentClass.',
 					44,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 			]
 		);

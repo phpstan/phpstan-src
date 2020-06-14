@@ -40,6 +40,7 @@ class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTes
 			[
 				'Interface InterfaceExtendsError\Foo extends unknown interface InterfaceExtendsError\Bar.',
 				5,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Interface InterfaceExtendsError\Lorem extends class InterfaceExtendsError\BazClass.',

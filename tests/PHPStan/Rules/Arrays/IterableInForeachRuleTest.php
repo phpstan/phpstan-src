@@ -29,6 +29,7 @@ class IterableInForeachRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Iterating over an object of an unknown class IterablesInForeach\Bar.',
 				47,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

@@ -24,7 +24,7 @@ class ConstantRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Constant %s not found.',
 					(string) $node->name
-				))->build(),
+				))->discoveringSymbolsTip()->build(),
 			];
 		}
 

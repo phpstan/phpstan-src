@@ -71,6 +71,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to static method loremIpsum() on an unknown class CallStaticMethods\UnknownStaticMethodClass.',
 				67,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Call to private method __construct() of class CallStaticMethods\ClassWithConstructor.',
@@ -223,6 +224,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to static method doFoo() on an unknown class CallStaticMethods\TraitWithStaticMethod.',
 				328,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

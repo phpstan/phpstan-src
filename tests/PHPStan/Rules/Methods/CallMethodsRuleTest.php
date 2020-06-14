@@ -71,6 +71,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to method doFoo() on an unknown class Test\UnknownClass.',
 				63,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Result of method Test\Bar::returnsVoid() (void) is used.',
@@ -195,10 +196,12 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to method test() on an unknown class Test\FirstUnknownClass.',
 				312,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Call to method test() on an unknown class Test\SecondUnknownClass.',
 				312,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Cannot call method ipsum() on Test\Foo|null.',

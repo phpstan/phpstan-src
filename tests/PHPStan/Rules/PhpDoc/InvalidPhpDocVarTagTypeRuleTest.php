@@ -43,6 +43,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var for variable $test contains unknown class InvalidVarTagType\aray.',
 				20,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'PHPDoc tag @var for variable $value contains unresolvable type.',

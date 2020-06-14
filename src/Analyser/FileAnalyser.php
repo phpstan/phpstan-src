@@ -91,7 +91,7 @@ class FileAnalyser
 							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), false, null, null, $e->getTip());
 							continue;
 						} catch (IdentifierNotFound $e) {
-							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), false);
+							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), false, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
 							continue;
 						}
 
@@ -232,7 +232,7 @@ class FileAnalyser
 			} catch (\PHPStan\AnalysedCodeException $e) {
 				$fileErrors[] = new Error($e->getMessage(), $file, null, false, null, null, $e->getTip());
 			} catch (IdentifierNotFound $e) {
-				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, false);
+				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, false, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
 			}
 		} elseif (is_dir($file)) {
 			$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);

@@ -16,7 +16,6 @@ use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionWithFilename;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -218,10 +217,6 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 
 	private function getReturnType(): Type
 	{
-		if ($this->reflection->getName() === 'count') {
-			return new IntegerType();
-		}
-
 		return TypehintHelper::decideTypeFromReflection(
 			$this->reflection->getReturnType(),
 			$this->phpDocReturnType

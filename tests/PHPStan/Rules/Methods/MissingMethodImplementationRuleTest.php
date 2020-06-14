@@ -38,4 +38,9 @@ class MissingMethodImplementationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3469(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3469.php'], []);
+	}
+
 }

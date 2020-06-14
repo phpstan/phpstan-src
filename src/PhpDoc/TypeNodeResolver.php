@@ -43,6 +43,10 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateStarType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
@@ -58,8 +62,11 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VoidType;
+use Roave\BetterReflection\Identifier\IdentifierType;
+
 
 class TypeNodeResolver
 {
@@ -179,6 +186,9 @@ class TypeNodeResolver
 
 			case 'list':
 				return new ArrayType(new IntegerType(), new MixedType());
+
+			case 'star':
+				return new ConstantStringType('star');
 		}
 
 		if ($nameScope->getClassName() !== null) {
@@ -379,32 +389,46 @@ class TypeNodeResolver
 					}
 				}
 
-				if (!$mainType->isIterable()->yes()) {
-					return new GenericObjectType($mainType->getClassName(), $genericTypes);
-				}
-
-				if (
-					count($genericTypes) !== 1
-					|| $classReflection->getTemplateTypeMap()->count() === 1
-				) {
-					return new GenericObjectType($mainType->getClassName(), $genericTypes);
-				}
+//				if (!$mainType->isIterable()->yes()) {
+//					return new GenericObjectType($mainType->getClassName(), $genericTypes);
+//				}
+//
+//				if (
+//					count($genericTypes) !== 1
+//					|| $classReflection->getTemplateTypeMap()->count() === 1
+//				) {
+//					return new GenericObjectType($mainType->getClassName(), $genericTypes);
+//				}
 			}
 		}
 
-		if ($mainType->isIterable()->yes()) {
-			if (count($genericTypes) === 1) { // Foo<ValueType>
-				return TypeCombinator::intersect(
-					$mainType,
-					new IterableType(new MixedType(true), $genericTypes[0])
-				);
-			}
+//		if ($mainType->isIterable()->yes()) {
+//			if (count($genericTypes) === 1) { // Foo<ValueType>
+//				return TypeCombinator::intersect(
+//					$mainType,
+//					new IterableType(new MixedType(true), $genericTypes[0])
+//				);
+//			}
+//
+//			if (count($genericTypes) === 2) { // Foo<KeyType, ValueType>
+//				return TypeCombinator::intersect(
+//					$mainType,
+//					new IterableType($genericTypes[0], $genericTypes[1])
+//				);
+//			}
+//		}
 
-			if (count($genericTypes) === 2) { // Foo<KeyType, ValueType>
-				return TypeCombinator::intersect(
-					$mainType,
-					new IterableType($genericTypes[0], $genericTypes[1])
-				);
+		$templateTypeMap = array_values($classReflection->getTemplateTypeMap()->getTypes());
+		foreach ($genericTypes as $i => &$genericType) {
+			if ($genericType instanceof ConstantStringType && $genericType->getValue() === 'star' && array_key_exists($i, $templateTypeMap)) {
+					$templateType = $templateTypeMap[$i];
+					assert($templateType instanceof TemplateType);
+					$genericType = TemplateTypeFactory::create(
+						$templateType->getScope(),
+						$templateType->getName(),
+						$templateType->getBound(),
+						TemplateTypeVariance::createCovariant()
+					);
 			}
 		}
 

@@ -1365,3 +1365,12 @@ class TagMergingChild extends TagMergingParent
 		assertType('float', $this->property);
 	}
 }
+
+
+/**
+ * @param StdClassCollection<star, star> $collection
+ */
+function testStarProjection(StdClassCollection $collection): void {
+	assertType('int', count($collection->getAll()));
+	assertType('array<TKey (class PHPStan\Generics\FunctionsAssertType\StdClassCollection, argument), TValue of stdClass (class PHPStan\Generics\FunctionsAssertType\StdClassCollection, argument)>', $collection->getAll());
+}

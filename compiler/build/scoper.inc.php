@@ -173,4 +173,6 @@ return [
 		'PhpParser\*',
 		'Hoa\*',
 	],
+	'whitelist-global-functions' => false,
+	'whitelist-global-classes' => false,
 ];

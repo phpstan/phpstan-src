@@ -54,7 +54,17 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			}
 		}
 
-		return $this->reflectionProvider->hasClass($className);
+		$has = $this->reflectionProvider->hasClass($className);
+		if (!$has) {
+			return false;
+		}
+
+		$classReflection = $this->reflectionProvider->getClass($className);
+		if ($classReflection->isSubclassOf(\DateInterval::class) || $classReflection->isSubclassOf(\DatePeriod::class)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public function getClass(string $className): ClassReflection

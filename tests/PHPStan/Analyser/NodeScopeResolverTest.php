@@ -9965,6 +9965,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2600.php');
 	}
 
+	public function dataArrayTypehintWithoutNullInPhpDoc(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/array-typehint-without-null-in-phpdoc.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10021,6 +10026,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataCatchWithoutVariable
 	 * @dataProvider dataMixedTypehint
 	 * @dataProvider dataVariadics
+	 * @dataProvider dataArrayTypehintWithoutNullInPhpDoc
 	 * @param ConstantStringType $expectedType
 	 * @param Type $actualType
 	 */

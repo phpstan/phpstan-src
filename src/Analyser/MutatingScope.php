@@ -2263,7 +2263,6 @@ class MutatingScope implements Scope
 					return TemplateTypeHelper::toArgument($type);
 				}, $phpDocParameterTypes),
 				$this->getRealParameterDefaultValues($classMethod),
-				$classMethod->returnType !== null,
 				$this->getFunctionType($classMethod->returnType, $classMethod->returnType === null, false),
 				$phpDocReturnType !== null ? TemplateTypeHelper::toArgument($phpDocReturnType) : null,
 				$throwType,
@@ -2349,7 +2348,6 @@ class MutatingScope implements Scope
 					return TemplateTypeHelper::toArgument($type);
 				}, $phpDocParameterTypes),
 				$this->getRealParameterDefaultValues($function),
-				$function->returnType !== null,
 				$this->getFunctionType($function->returnType, $function->returnType === null, false),
 				$phpDocReturnType !== null ? TemplateTypeHelper::toArgument($phpDocReturnType) : null,
 				$throwType,

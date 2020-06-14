@@ -28,7 +28,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	 * @param \PHPStan\Type\Type[] $realParameterTypes
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
 	 * @param \PHPStan\Type\Type[] $realParameterDefaultValues
-	 * @param bool $realReturnTypePresent
 	 * @param Type $realReturnType
 	 * @param Type|null $phpDocReturnType
 	 * @param Type|null $throwType
@@ -44,7 +43,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		array $realParameterTypes,
 		array $phpDocParameterTypes,
 		array $realParameterDefaultValues,
-		bool $realReturnTypePresent,
 		Type $realReturnType,
 		?Type $phpDocReturnType,
 		?Type $throwType,
@@ -62,23 +60,18 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			|| $name === '__wakeup'
 			|| $name === '__clone'
 		) {
-			$realReturnTypePresent = true;
 			$realReturnType = new VoidType();
 		}
 		if ($name === '__tostring') {
-			$realReturnTypePresent = true;
 			$realReturnType = new StringType();
 		}
 		if ($name === '__isset') {
-			$realReturnTypePresent = true;
 			$realReturnType = new BooleanType();
 		}
 		if ($name === '__sleep') {
-			$realReturnTypePresent = true;
 			$realReturnType = new ArrayType(new IntegerType(), new StringType());
 		}
 		if ($name === '__set_state') {
-			$realReturnTypePresent = true;
 			$realReturnType = TypeCombinator::intersect(new ObjectWithoutClassType(), $realReturnType);
 		}
 
@@ -88,7 +81,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$realParameterTypes,
 			$phpDocParameterTypes,
 			$realParameterDefaultValues,
-			$realReturnTypePresent,
 			$realReturnType,
 			$phpDocReturnType,
 			$throwType,

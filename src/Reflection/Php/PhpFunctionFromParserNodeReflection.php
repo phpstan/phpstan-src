@@ -11,7 +11,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 
@@ -30,8 +29,6 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 	/** @var \PHPStan\Type\Type[] */
 	private array $realParameterDefaultValues;
-
-	private bool $realReturnTypePresent;
 
 	private \PHPStan\Type\Type $realReturnType;
 
@@ -56,7 +53,6 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	 * @param \PHPStan\Type\Type[] $realParameterTypes
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
 	 * @param \PHPStan\Type\Type[] $realParameterDefaultValues
-	 * @param bool $realReturnTypePresent
 	 * @param Type $realReturnType
 	 * @param Type|null $phpDocReturnType
 	 * @param Type|null $throwType
@@ -71,7 +67,6 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		array $realParameterTypes,
 		array $phpDocParameterTypes,
 		array $realParameterDefaultValues,
-		bool $realReturnTypePresent,
 		Type $realReturnType,
 		?Type $phpDocReturnType = null,
 		?Type $throwType = null,
@@ -86,7 +81,6 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		$this->realParameterTypes = $realParameterTypes;
 		$this->phpDocParameterTypes = $phpDocParameterTypes;
 		$this->realParameterDefaultValues = $realParameterDefaultValues;
-		$this->realReturnTypePresent = $realReturnTypePresent;
 		$this->realReturnType = $realReturnType;
 		$this->phpDocReturnType = $phpDocReturnType;
 		$this->throwType = $throwType;
@@ -178,15 +172,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 	protected function getReturnType(): Type
 	{
-		$phpDocReturnType = $this->phpDocReturnType;
-		if (
-			$this->realReturnTypePresent
-			&& $phpDocReturnType !== null
-			&& TypeCombinator::containsNull($this->realReturnType) !== TypeCombinator::containsNull($phpDocReturnType)
-		) {
-			$phpDocReturnType = null;
-		}
-		return TypehintHelper::decideType($this->realReturnType, $phpDocReturnType);
+		return TypehintHelper::decideType($this->realReturnType, $this->phpDocReturnType);
 	}
 
 	public function getDeprecatedDescription(): ?string

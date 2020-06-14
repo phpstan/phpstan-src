@@ -378,6 +378,16 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
+		foreach ($container->getParameter('stubFiles') as $stubFile) {
+			if (is_file($stubFile)) {
+				continue;
+			}
+
+			$errorOutput->writeLineFormatted(sprintf('Stub file %s does not exist.', $stubFile));
+
+			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		}
+
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getByType(FileFinder::class);
 

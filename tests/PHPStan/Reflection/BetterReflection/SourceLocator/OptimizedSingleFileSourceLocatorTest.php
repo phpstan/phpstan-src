@@ -112,7 +112,7 @@ class OptimizedSingleFileSourceLocatorTest extends TestCase
 			],
 			[
 				'const_with_dir_const',
-				__DIR__ . '/data',
+				str_replace('\\', '/', __DIR__ . '/data'),
 			],
 		];
 	}

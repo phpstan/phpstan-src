@@ -15,6 +15,7 @@ use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantStringType;
 
 class DependencyResolver
 {
@@ -172,7 +173,10 @@ class DependencyResolver
 			foreach ($exprType->getIterableValueType()->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
-		} elseif ($node instanceof Array_) {
+		} elseif (
+			$node instanceof Array_
+			&& $this->considerArrayForCallableTest($scope, $node)
+		) {
 			$arrayType = $scope->getType($node);
 			if (!$arrayType->isCallable()->no()) {
 				foreach ($arrayType->getCallableParametersAcceptors($scope) as $variant) {
@@ -185,6 +189,20 @@ class DependencyResolver
 		}
 
 		return $dependenciesReflections;
+	}
+
+	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool
+	{
+		if (!isset($arrayNode->items[0])) {
+			return false;
+		}
+
+		$itemType = $scope->getType($arrayNode->items[0]->value);
+		if (!$itemType instanceof ConstantStringType) {
+			return true;
+		}
+
+		return $itemType->isClassString();
 	}
 
 	/**

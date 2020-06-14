@@ -110,6 +110,10 @@ class OptimizedSingleFileSourceLocatorTest extends TestCase
 				'ConstFile\\ANOTHER_NAME',
 				'bar_images',
 			],
+			[
+				'const_with_dir_const',
+				__DIR__ . '/data',
+			],
 		];
 	}
 

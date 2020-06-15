@@ -9832,10 +9832,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			return [];
 		}
 
-		if (self::$useStaticReflectionProvider) {
-			return [];
-		}
-
 		return $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');
 	}
 

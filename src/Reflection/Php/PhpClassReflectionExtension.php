@@ -415,13 +415,13 @@ class PhpClassReflectionExtension
 			$stubPhpDocString = null;
 			$variants = [];
 			$reflectionMethod = null;
-			if (class_exists($classReflection->getName(), false)) {
+			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
+				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
+			} elseif (class_exists($classReflection->getName(), false)) {
 				$reflectionClass = new \ReflectionClass($classReflection->getName());
 				if ($reflectionClass->hasMethod($methodReflection->getName())) {
 					$reflectionMethod = $reflectionClass->getMethod($methodReflection->getName());
 				}
-			} else {
-				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			}
 			foreach ($variantNames as $innerVariantName) {
 				$methodSignature = $this->signatureMapProvider->getFunctionSignature($innerVariantName, $declaringClassName);

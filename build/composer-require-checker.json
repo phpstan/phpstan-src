@@ -21,6 +21,7 @@
     "pcntl",
     "mbstring",
     "hash",
-    "tokenizer"
+    "tokenizer",
+    "dom"
   ]
 }

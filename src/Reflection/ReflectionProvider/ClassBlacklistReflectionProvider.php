@@ -60,7 +60,9 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		}
 
 		$classReflection = $this->reflectionProvider->getClass($className);
-		if ($classReflection->isSubclassOf(\DateInterval::class) || $classReflection->isSubclassOf(\DatePeriod::class)) {
+		if ($classReflection->isSubclassOf(\DateInterval::class)
+			|| $classReflection->isSubclassOf(\DatePeriod::class)
+			|| $classReflection->isSubclassOf(\DOMDocument::class)) {
 			return false;
 		}
 

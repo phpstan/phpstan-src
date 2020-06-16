@@ -9828,7 +9828,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	public function dataExtDs(): array
 	{
-		if (!extension_loaded('ds')) {
+		if (!self::$useStaticReflectionProvider && !extension_loaded('ds')) {
 			return [];
 		}
 

@@ -1901,7 +1901,6 @@ class MutatingScope implements Scope
 		$variableTypes = $this->variableTypes;
 		foreach ($this->nativeExpressionTypes as $expressionType => $type) {
 			if (substr($expressionType, 0, 1) !== '$') {
-				var_dump($expressionType);
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 

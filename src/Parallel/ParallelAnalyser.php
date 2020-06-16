@@ -7,11 +7,10 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
-use PHPStan\Command\AnalyseCommand;
+use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
 use Symfony\Component\Console\Input\InputInterface;
-use function escapeshellarg;
 use function parse_url;
 
 class ParallelAnalyser
@@ -105,11 +104,16 @@ class ParallelAnalyser
 			}
 
 			$processIdentifier = Random::generate();
-			$process = new Process($this->getWorkerCommand(
+			$process = new Process(ProcessHelper::getWorkerCommand(
 				$mainScript,
+				'worker',
 				$projectConfigFile,
-				$serverPort,
-				$processIdentifier,
+				[
+					'--port',
+					(string) $serverPort,
+					'--identifier',
+					$processIdentifier,
+				],
 				$input
 			), $loop, $this->processTimeout);
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
@@ -169,70 +173,6 @@ class ParallelAnalyser
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$reachedInternalErrorsCountLimit
 		);
-	}
-
-	private function getWorkerCommand(
-		string $mainScript,
-		?string $projectConfigFile,
-		int $port,
-		string $identifier,
-		InputInterface $input
-	): string
-	{
-		$processCommandArray = [
-			escapeshellarg(PHP_BINARY),
-		];
-
-		if ($input->getOption('memory-limit') === null) {
-			$processCommandArray[] = '-d';
-			$processCommandArray[] = 'memory_limit=' . ini_get('memory_limit');
-		}
-
-		foreach ([$mainScript, 'worker'] as $arg) {
-			$processCommandArray[] = escapeshellarg($arg);
-		}
-
-		if ($projectConfigFile !== null) {
-			$processCommandArray[] = '--configuration';
-			$processCommandArray[] = escapeshellarg($projectConfigFile);
-		}
-
-		$options = [
-			'paths-file',
-			AnalyseCommand::OPTION_LEVEL,
-			'autoload-file',
-			'memory-limit',
-			'xdebug',
-		];
-		foreach ($options as $optionName) {
-			/** @var bool|string|null $optionValue */
-			$optionValue = $input->getOption($optionName);
-			if (is_bool($optionValue)) {
-				if ($optionValue === true) {
-					$processCommandArray[] = sprintf('--%s', $optionName);
-				}
-				continue;
-			}
-			if ($optionValue === null) {
-				continue;
-			}
-
-			$processCommandArray[] = sprintf('--%s=%s', $optionName, escapeshellarg($optionValue));
-		}
-
-		$processCommandArray[] = sprintf('--port');
-		$processCommandArray[] = $port;
-
-		$processCommandArray[] = sprintf('--identifier');
-		$processCommandArray[] = escapeshellarg($identifier);
-
-		/** @var string[] $paths */
-		$paths = $input->getArgument('paths');
-		foreach ($paths as $path) {
-			$processCommandArray[] = escapeshellarg($path);
-		}
-
-		return implode(' ', $processCommandArray);
 	}
 
 }

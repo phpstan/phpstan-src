@@ -161,7 +161,7 @@ class ResultCacheManager
 		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $filteredErrors, $invertedDependenciesToReturn);
 	}
 
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache): AnalyserResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, bool $save): AnalyserResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -169,7 +169,7 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$save = function (array $errorsByFile, ?array $dependencies) use ($internalErrors, $resultCache): void {
+		$doSave = function (array $errorsByFile, ?array $dependencies) use ($internalErrors, $resultCache): void {
 			if ($dependencies === null) {
 				return;
 			}
@@ -192,7 +192,9 @@ class ResultCacheManager
 		};
 
 		if ($resultCache->isFullAnalysis()) {
-			$save($freshErrorsByFile, $analyserResult->getDependencies());
+			if ($save) {
+				$doSave($freshErrorsByFile, $analyserResult->getDependencies());
+			}
 
 			return $analyserResult;
 		}
@@ -200,7 +202,9 @@ class ResultCacheManager
 		$errorsByFile = $this->mergeErrors($resultCache, $freshErrorsByFile);
 		$dependencies = $this->mergeDependencies($resultCache, $analyserResult->getDependencies());
 
-		$save($errorsByFile, $dependencies);
+		if ($save) {
+			$doSave($errorsByFile, $dependencies);
+		}
 
 		$flatErrors = [];
 		foreach ($errorsByFile as $fileErrors) {

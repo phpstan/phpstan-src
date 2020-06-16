@@ -63,6 +63,10 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		if ($classReflection->isSubclassOf(\DateInterval::class)
 			|| $classReflection->isSubclassOf(\DatePeriod::class)
 			|| $classReflection->isSubclassOf(\DOMDocument::class)
+			|| $classReflection->isSubclassOf(\DOMNode::class)
+			|| $classReflection->isSubclassOf(\DOMNamedNodeMap::class)
+			|| $classReflection->isSubclassOf(\DOMNodeList::class)
+			|| $classReflection->isSubclassOf(\DOMCharacterData::class)
 		) {
 			return false;
 		}

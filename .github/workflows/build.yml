@@ -39,7 +39,7 @@ jobs:
         run: "composer validate"
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -79,7 +79,7 @@ jobs:
         run: "composer validate"
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -122,7 +122,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -166,7 +166,7 @@ jobs:
           ini-values: memory_limit=512M
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -200,7 +200,7 @@ jobs:
           extensions: ds
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-7.4-composer-${{ hashFiles('**/composer.json') }}"
@@ -251,7 +251,7 @@ jobs:
           extensions: mbstring
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -290,7 +290,7 @@ jobs:
           extensions: mbstring
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -300,7 +300,7 @@ jobs:
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Cache Result cache"
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ./tmp
           key: "result-cache-v4"
@@ -350,7 +350,7 @@ jobs:
           ini-values: memory_limit=256M
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -384,7 +384,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -426,7 +426,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
@@ -469,7 +469,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
 
       - name: "Cache dependencies"
-        uses: "actions/cache@v1.1.2"
+        uses: "actions/cache@v2"
         with:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"

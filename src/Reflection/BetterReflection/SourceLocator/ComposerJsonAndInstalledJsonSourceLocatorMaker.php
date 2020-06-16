@@ -109,10 +109,16 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		);
 
 		foreach ($classMapDirectories as $classMapDirectory) {
+			if (!is_dir($classMapDirectory)) {
+				continue;
+			}
 			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
 		}
 
 		foreach (array_merge($classMapFiles, $filePaths) as $file) {
+			if (!is_file($file)) {
+				continue;
+			}
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($file);
 		}
 

@@ -8123,7 +8123,7 @@ return [
 'openssl_spki_export_challenge' => ['string|null', 'spkac'=>'string'],
 'openssl_spki_new' => ['string|null', 'privkey'=>'resource', 'challenge'=>'string', 'algorithm='=>'int'],
 'openssl_spki_verify' => ['bool', 'spkac'=>'string'],
-'openssl_verify' => ['int', 'data'=>'string', 'signature'=>'string', 'pub_key_id'=>'resource|string', 'signature_alg='=>'int|string'],
+'openssl_verify' => ['-1|0|1', 'data'=>'string', 'signature'=>'string', 'pub_key_id'=>'resource|string', 'signature_alg='=>'int|string'],
 'openssl_x509_check_private_key' => ['bool', 'cert'=>'string|resource', 'key'=>'string|resource|array'],
 'openssl_x509_checkpurpose' => ['bool|int', 'x509cert'=>'string|resource', 'purpose'=>'int', 'cainfo='=>'array', 'untrustedfile='=>'string'],
 'openssl_x509_export' => ['bool', 'x509'=>'string|resource', '&w_output'=>'string', 'notext='=>'bool'],

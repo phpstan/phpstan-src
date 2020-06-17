@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ReflectionWithFilename;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
@@ -20,6 +21,8 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	/** @var string[] */
 	private array $patterns;
 
+	private ?string $singleReflectionFile;
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param string[] $patterns
@@ -27,12 +30,14 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
-		array $patterns
+		array $patterns,
+		?string $singleReflectionFile
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->patterns = $patterns;
+		$this->singleReflectionFile = $singleReflectionFile;
 	}
 
 	public function hasClass(string $className): bool
@@ -60,6 +65,11 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		}
 
 		$classReflection = $this->reflectionProvider->getClass($className);
+		if ($this->singleReflectionFile !== null) {
+			if ($classReflection->getFileName() === $this->singleReflectionFile) {
+				return false;
+			}
+		}
 		if ($classReflection->isSubclassOf(\DateInterval::class)
 			|| $classReflection->isSubclassOf(\DatePeriod::class)
 			|| $classReflection->isSubclassOf(\DOMDocument::class)
@@ -99,7 +109,21 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 
 	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
 	{
-		return $this->reflectionProvider->hasFunction($nameNode, $scope);
+		$has = $this->reflectionProvider->hasFunction($nameNode, $scope);
+		if (!$has) {
+			return false;
+		}
+
+		if ($this->singleReflectionFile === null) {
+			return true;
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($nameNode, $scope);
+		if (!$functionReflection instanceof ReflectionWithFilename) {
+			return true;
+		}
+
+		return $functionReflection->getFileName() !== $this->singleReflectionFile;
 	}
 
 	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection

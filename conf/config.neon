@@ -245,6 +245,9 @@ parametersSchema:
 	usedLevel: string()
 	cliAutoloadFile: schema(string(), nullable())
 
+	# internal - static reflection
+	singleReflectionFile: schema(string(), nullable())
+
 services:
 	-
 		class: PhpParser\BuilderFactory
@@ -1154,6 +1157,7 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
+			singleReflectionFile: %singleReflectionFile%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

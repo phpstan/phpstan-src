@@ -46,6 +46,7 @@ class ContainerFactory
 	 * @param string $usedLevel
 	 * @param string|null $generateBaselineFile
 	 * @param string|null $cliAutoloadFile
+	 * @param string|null $singleReflectionFile
 	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(
@@ -57,7 +58,8 @@ class ContainerFactory
 		array $allCustomConfigFiles = [],
 		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
 		?string $generateBaselineFile = null,
-		?string $cliAutoloadFile = null
+		?string $cliAutoloadFile = null,
+		?string $singleReflectionFile = null
 	): Container
 	{
 		$configurator = new Configurator(new LoaderFactory(
@@ -84,6 +86,9 @@ class ContainerFactory
 			'allCustomConfigFiles' => $allCustomConfigFiles,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
+		]);
+		$configurator->addDynamicParameters([
+			'singleReflectionFile' => $singleReflectionFile,
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {

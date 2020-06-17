@@ -67,6 +67,9 @@ class BetterReflectionSourceLocatorFactory
 	/** @var string[] */
 	private $analysedPathsFromConfig;
 
+	/** @var string|null */
+	private $singleReflectionFile;
+
 	/**
 	 * @param string[] $autoloadDirectories
 	 * @param string[] $autoloadFiles
@@ -75,6 +78,7 @@ class BetterReflectionSourceLocatorFactory
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
+	 * @param string|null $singleReflectionFile
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
@@ -91,7 +95,8 @@ class BetterReflectionSourceLocatorFactory
 		array $scanDirectories,
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths,
-		array $analysedPathsFromConfig
+		array $analysedPathsFromConfig,
+		?string $singleReflectionFile
 	)
 	{
 		$this->parser = $parser;
@@ -109,11 +114,16 @@ class BetterReflectionSourceLocatorFactory
 		$this->analysedPaths = $analysedPaths;
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
+		$this->singleReflectionFile = $singleReflectionFile;
 	}
 
 	public function create(): SourceLocator
 	{
 		$locators = [];
+
+		if ($this->singleReflectionFile !== null) {
+			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
+		}
 
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);

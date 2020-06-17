@@ -449,7 +449,7 @@ class MutatingScope implements Scope
 		return $this->resolvedTypes[$key];
 	}
 
-	private function getNodeKey(Expr $node): string
+	public function getNodeKey(Expr $node): string
 	{
 		/** @var string|null $key */
 		$key = $node->getAttribute('phpstan_cache_printer');

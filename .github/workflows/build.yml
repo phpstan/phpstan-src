@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -113,7 +113,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -154,7 +154,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -189,7 +189,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -241,7 +241,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -280,7 +280,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -339,7 +339,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -375,7 +375,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -417,7 +417,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"
@@ -458,7 +458,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.2.0"
+        uses: "actions/checkout@v2.3.0"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@2.3.0"

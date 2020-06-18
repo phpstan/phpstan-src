@@ -22,8 +22,8 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$classScope = $scope->getClassReflection();
-		if ($classScope === null) {
+		$classReflection = $scope->getClassReflection();
+		if ($classReflection === null) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
@@ -37,7 +37,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 				if (array_key_exists($const->name->name, $declaredClassConstants)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Cannot redeclare constant %s::%s.',
-						$classScope->getDisplayName(),
+						$classReflection->getDisplayName(),
 						$const->name->name
 					))->line($const->getLine())->nonIgnorable()->build();
 				} else {
@@ -52,7 +52,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 				if (array_key_exists($property->name->name, $declaredProperties)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Cannot redeclare property %s::$%s.',
-						$classScope->getDisplayName(),
+						$classReflection->getDisplayName(),
 						$property->name->name
 					))->line($property->getLine())->nonIgnorable()->build();
 				} else {
@@ -66,7 +66,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 			if (array_key_exists($method->name->name, $declaredFunctions)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Cannot redeclare method %s::%s().',
-					$classScope->getDisplayName(),
+					$classReflection->getDisplayName(),
 					$method->name->name
 				))->line($method->getStartLine())->nonIgnorable()->build();
 			} else {

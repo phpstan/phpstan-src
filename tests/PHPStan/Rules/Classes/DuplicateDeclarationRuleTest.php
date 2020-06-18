@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends \PHPStan\Testing\RuleTestCase<\PHPStan\Rules\Classes\DuplicateDeclarationRule>
+ */
 class DuplicateDeclarationRuleTest extends RuleTestCase
 {
 

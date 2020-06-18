@@ -23,15 +23,24 @@ class InvalidUnaryOperationRule implements \PHPStan\Rules\Rule
 		if (
 			!$node instanceof \PhpParser\Node\Expr\UnaryPlus
 			&& !$node instanceof \PhpParser\Node\Expr\UnaryMinus
+			&& !$node instanceof \PhpParser\Node\Expr\BitwiseNot
 		) {
 			return [];
 		}
 
 		if ($scope->getType($node) instanceof ErrorType) {
+
+			if ($node instanceof \PhpParser\Node\Expr\UnaryPlus) {
+				$operator = '+';
+			} elseif ($node instanceof \PhpParser\Node\Expr\UnaryMinus) {
+				$operator = '-';
+			} else {
+				$operator = '~';
+			}
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Unary operation "%s" on %s results in an error.',
-					$node instanceof \PhpParser\Node\Expr\UnaryPlus ? '+' : '-',
+					$operator,
 					$scope->getType($node->expr)->describe(VerbosityLevel::value())
 				))->line($node->expr->getLine())->build(),
 			];

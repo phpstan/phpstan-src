@@ -570,6 +570,29 @@ class MutatingScope implements Scope
 			return new BooleanType();
 		}
 
+		if ($node instanceof \PhpParser\Node\Expr\BitwiseNot) {
+			if ($this->treatPhpDocTypesAsCertain) {
+				$exprType = $this->getType($node->expr);
+			} else {
+				$exprType = $this->getNativeType($node->expr);
+			}
+			return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+				if ($type instanceof ConstantStringType) {
+					return new ConstantStringType(~$type->getValue());
+				}
+				if ($type instanceof StringType) {
+					return new StringType();
+				}
+				if ($type instanceof IntegerType || $type instanceof FloatType) {
+					return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE
+				}
+				return new ErrorType();
+			});
+		}
+
 		if (
 			$node instanceof \PhpParser\Node\Expr\BinaryOp\BooleanAnd
 			|| $node instanceof \PhpParser\Node\Expr\BinaryOp\LogicalAnd

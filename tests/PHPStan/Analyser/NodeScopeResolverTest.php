@@ -9975,6 +9975,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/override-root-scope-variable.php');
 	}
 
+	public function dataBitwiseNot(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bitwise-not.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10033,6 +10038,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataVariadics
 	 * @dataProvider dataArrayTypehintWithoutNullInPhpDoc
 	 * @dataProvider dataOverrideVariableCertaintyInRootScope
+	 * @dataProvider dataBitwiseNot
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

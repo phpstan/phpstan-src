@@ -39,7 +39,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 						'Cannot redeclare constant %s::%s.',
 						$classScope->getName(),
 						$const->name->name
-					))->line($const->getLine())->build();
+					))->line($const->getLine())->nonIgnorable()->build();
 				} else {
 					$declaredClassConstants[$const->name->name] = true;
 				}
@@ -54,7 +54,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 						'Cannot redeclare property %s::$%s.',
 						$classScope->getName(),
 						$property->name->name
-					))->line($property->getLine())->build();
+					))->line($property->getLine())->nonIgnorable()->build();
 				} else {
 					$declaredProperties[$property->name->name] = true;
 				}
@@ -68,7 +68,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 					'Cannot redeclare method %s::%s().',
 					$classScope->getName(),
 					$method->name->name
-				))->line($method->getStartLine())->build();
+				))->line($method->getStartLine())->nonIgnorable()->build();
 			} else {
 				$declaredFunctions[$method->name->name] = true;
 			}

@@ -134,6 +134,8 @@
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Arrays/data/offset-access-without-dim-for-reading.php"/>
 			<arg value="--exclude"/>
+			<arg path="tests/PHPStan/Rules/Classes/data/duplicate-declarations.php"/>
+			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Classes/data/extends-error.php"/>
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Classes/data/implements-error.php"/>

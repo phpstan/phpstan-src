@@ -16,6 +16,7 @@ rules:
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
 	- PHPStan\Rules\Classes\ClassConstantDeclarationRule
 	- PHPStan\Rules\Classes\ClassConstantRule
+	- PHPStan\Rules\Classes\DuplicateDeclarationRule
 	- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
 	- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule

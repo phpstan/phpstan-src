@@ -18,6 +18,10 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 
 	public function testDuplicateDeclarations(): void
 	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
+		}
+
 		$this->analyse(
 			[
 				__DIR__ . '/data/duplicate-declarations.php',

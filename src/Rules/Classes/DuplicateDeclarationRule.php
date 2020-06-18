@@ -27,8 +27,6 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		/** @var InClassNode $node */
-
 		$errors = [];
 
 		$declaredClassConstants = [];

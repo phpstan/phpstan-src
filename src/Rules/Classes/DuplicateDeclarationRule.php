@@ -8,6 +8,7 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_key_exists;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InClassNode>
@@ -61,14 +62,14 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 
 		$declaredFunctions = [];
 		foreach ($node->getOriginalNode()->getMethods() as $method) {
-			if (array_key_exists($method->name->name, $declaredFunctions)) {
+			if (array_key_exists(strtolower($method->name->name), $declaredFunctions)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Cannot redeclare method %s::%s().',
 					$classReflection->getDisplayName(),
 					$method->name->name
 				))->line($method->getStartLine())->nonIgnorable()->build();
 			} else {
-				$declaredFunctions[$method->name->name] = true;
+				$declaredFunctions[strtolower($method->name->name)] = true;
 			}
 		}
 

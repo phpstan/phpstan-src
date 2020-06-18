@@ -31,4 +31,6 @@ class Foo{
 	public function func2() : int{
 		return 2;
 	}
+
+	public function Func1() : void{}
 }

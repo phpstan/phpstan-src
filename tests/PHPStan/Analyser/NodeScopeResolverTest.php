@@ -9970,6 +9970,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/array-typehint-without-null-in-phpdoc.php');
 	}
 
+	public function dataOverrideVariableCertaintyInRootScope(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/override-root-scope-variable.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10027,6 +10032,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataMixedTypehint
 	 * @dataProvider dataVariadics
 	 * @dataProvider dataArrayTypehintWithoutNullInPhpDoc
+	 * @dataProvider dataOverrideVariableCertaintyInRootScope
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

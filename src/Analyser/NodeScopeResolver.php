@@ -73,6 +73,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
@@ -2455,6 +2456,10 @@ class NodeScopeResolver
 			$certainty = $scope->hasVariableType($name);
 			if ($certainty->no()) {
 				continue;
+			}
+
+			if ($scope->getFunction() === null && !$scope->isInAnonymousFunction()) {
+				$certainty = TrinaryLogic::createYes();
 			}
 
 			$scope = $scope->assignVariable($name, $varTag->getType(), $certainty);

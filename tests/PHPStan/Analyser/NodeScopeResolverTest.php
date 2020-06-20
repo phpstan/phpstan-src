@@ -10027,23 +10027,35 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataMixedTypehint
 	 * @dataProvider dataVariadics
 	 * @dataProvider dataArrayTypehintWithoutNullInPhpDoc
-	 * @param ConstantStringType $expectedType
-	 * @param Type $actualType
+	 * @param string $assertType
+	 * @param string $file
+	 * @param mixed ...$args
 	 */
 	public function testFileAsserts(
+		string $assertType,
 		string $file,
-		ConstantStringType $expectedType,
-		Type $actualType,
-		int $line
+		...$args
 	): void
 	{
-		$expected = $expectedType->getValue();
-		$actual = $actualType->describe(VerbosityLevel::precise());
-		$this->assertSame(
-			$expected,
-			$actual,
-			sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $line)
-		);
+		if ($assertType === 'type') {
+			$expectedType = $args[0];
+			$expected = $expectedType->getValue();
+			$actualType = $args[1];
+			$actual = $actualType->describe(VerbosityLevel::precise());
+			$this->assertSame(
+				$expected,
+				$actual,
+				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2])
+			);
+		} elseif ($assertType === 'variableCertainty') {
+			$expectedCertainty = $args[0];
+			$actualCertainty = $args[1];
+			$variableName = $args[2];
+			$this->assertTrue(
+				$expectedCertainty->equals($actualCertainty),
+				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
+			);
+		}
 	}
 
 	/**
@@ -10052,8 +10064,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 */
 	private function gatherAssertTypes(string $file): array
 	{
-		$types = [];
-		$this->processFile($file, function (Node $node, Scope $scope) use (&$types, $file): void {
+		$asserts = [];
+		$this->processFile($file, function (Node $node, Scope $scope) use (&$asserts, $file): void {
 			if (!$node instanceof Node\Expr\FuncCall) {
 				return;
 			}
@@ -10065,13 +10077,41 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 			$functionName = $nameNode->toString();
 			if ($functionName === 'PHPStan\\Analyser\\assertType') {
-				$assertTypeFunctionName = 'PHPStan\\Analyser\\assertType';
 				$expectedType = $scope->getType($node->args[0]->value);
 				$actualType = $scope->getType($node->args[1]->value);
+				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Analyser\\assertNativeType') {
-				$assertTypeFunctionName = 'PHPStan\\Analyser\\assertNativeType';
 				$expectedType = $scope->getNativeType($node->args[0]->value);
 				$actualType = $scope->getNativeType($node->args[1]->value);
+				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
+			} elseif ($functionName === 'PHPStan\\Analyser\\assertVariableCertainty') {
+				$certainty = $node->args[0]->value;
+				if (!$certainty instanceof StaticCall) {
+					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
+				}
+				if (!$certainty->class instanceof Node\Name) {
+					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+				}
+
+				if ($certainty->class->toString() !== 'PHPStan\\TrinaryLogic') {
+					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+				}
+
+				if (!$certainty->name instanceof Node\Identifier) {
+					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+				}
+
+				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
+				$variable = $node->args[1]->value;
+				if (!$variable instanceof Node\Expr\Variable) {
+					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
+				}
+				if (!is_string($variable->name)) {
+					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
+				}
+
+				$actualCertaintyValue = $scope->hasVariableType($variable->name);
+				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name];
 			} else {
 				return;
 			}
@@ -10079,15 +10119,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			if (count($node->args) !== 2) {
 				$this->fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
-					$assertTypeFunctionName,
+					$functionName,
 					$node->getLine()
 				));
 			}
 
-			$types[$file . ':' . $node->getLine()] = [$file, $expectedType, $actualType, $node->getLine()];
+			$asserts[$file . ':' . $node->getLine()] = $assert;
 		});
 
-		return $types;
+		return $asserts;
 	}
 
 	public function dataInferPrivatePropertyTypeFromConstructor(): array

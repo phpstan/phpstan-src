@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\TrinaryLogic;
+
 /**
  * Asserts the static type of a value.
  *
@@ -22,5 +24,13 @@ function assertType(string $type, $value): void // phpcs:ignore
  * @param mixed $value
  */
 function assertNativeType(string $type, $value): void // phpcs:ignore
+{
+}
+
+/**
+ * @param TrinaryLogic $certainty
+ * @param mixed $variable
+ */
+function assertVariableCertainty(TrinaryLogic $certainty, $variable): void // phpcs:ignore
 {
 }

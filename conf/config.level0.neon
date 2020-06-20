@@ -33,7 +33,6 @@ rules:
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
-	- PHPStan\Rules\Variables\ThisVariableRule
 	- PHPStan\Rules\Variables\UnsetRule
 
 services:

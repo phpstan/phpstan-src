@@ -571,11 +571,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof \PhpParser\Node\Expr\BitwiseNot) {
-			if ($this->treatPhpDocTypesAsCertain) {
-				$exprType = $this->getType($node->expr);
-			} else {
-				$exprType = $this->getNativeType($node->expr);
-			}
+			$exprType = $this->getType($node->expr);
 			return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);

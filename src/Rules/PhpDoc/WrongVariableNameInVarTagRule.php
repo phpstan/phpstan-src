@@ -281,10 +281,6 @@ class WrongVariableNameInVarTagRule implements Rule
 				continue;
 			}
 
-			if ($scope->getFunction() === null && !$scope->isInAnonymousFunction()) {
-				continue;
-			}
-
 			$errors[] = RuleErrorBuilder::message(sprintf('Variable $%s in PHPDoc tag @var does not exist.', $name))->build();
 		}
 

@@ -53,16 +53,11 @@ class VariableCertaintyNullCoalesceRule implements \PHPStan\Rules\Rule
 
 		$certainty = $scope->hasVariableType($var->name);
 		if ($certainty->no()) {
-			if (
-				$scope->getFunction() !== null
-				|| $scope->isInAnonymousFunction()
-			) {
-				return [RuleErrorBuilder::message(sprintf(
-					'Variable $%s on left side of %s is never defined.',
-					$var->name,
-					$description
-				))->build()];
-			}
+			return [RuleErrorBuilder::message(sprintf(
+				'Variable $%s on left side of %s is never defined.',
+				$var->name,
+				$description
+			))->build()];
 		} elseif ($certainty->yes() && !$isSubNode) {
 			$variableType = $scope->getVariableType($var->name);
 			if ($variableType->isSuperTypeOf(new NullType())->no()) {

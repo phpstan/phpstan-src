@@ -87,6 +87,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function array_key_exists;
 
 class MutatingScope implements Scope
 {
@@ -2269,7 +2270,8 @@ class MutatingScope implements Scope
 				$isDeprecated,
 				$isInternal,
 				$isFinal
-			)
+			),
+			!$classMethod->isStatic()
 		);
 	}
 
@@ -2354,12 +2356,14 @@ class MutatingScope implements Scope
 				$isDeprecated,
 				$isInternal,
 				$isFinal
-			)
+			),
+			false
 		);
 	}
 
 	private function enterFunctionLike(
-		PhpFunctionFromParserNodeReflection $functionReflection
+		PhpFunctionFromParserNodeReflection $functionReflection,
+		bool $preserveThis
 	): self
 	{
 		$variableTypes = $this->getVariableTypes();
@@ -2371,6 +2375,10 @@ class MutatingScope implements Scope
 			}
 			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameterType);
 			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
+		}
+
+		if (!$preserveThis && array_key_exists('this', $variableTypes)) {
+			unset($variableTypes['this']);
 		}
 
 		return $this->scopeFactory->create(

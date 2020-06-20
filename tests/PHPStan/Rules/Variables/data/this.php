@@ -8,14 +8,14 @@ class Foo
 	public function doFoo()
 	{
 		$this->test;
-		$foo->test;
+
 	}
 
 	public static function doBar()
 	{
 		$this->test;
-		$foo->test;
-		$$bar->test;
+
+
 
 		$this->blabla = 'fooo';
 	}

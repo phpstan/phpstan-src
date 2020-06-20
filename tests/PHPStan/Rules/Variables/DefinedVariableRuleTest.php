@@ -744,4 +744,50 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/root-scope-maybe.php'], []);
 	}
 
+	public function testRootScopeMaybeDefinedCheck(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteCatchScopeWithTryAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/root-scope-maybe.php'], [
+			[
+				'Variable $maybe might not be defined.',
+				3,
+			],
+			[
+				'Variable $this might not be defined.',
+				5,
+			],
+		]);
+	}
+
+	public function testFormerThisVariableRule(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteCatchScopeWithTryAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/this.php'], [
+			[
+				'Undefined variable: $this',
+				16,
+			],
+			[
+				'Undefined variable: $this',
+				20,
+			],
+			[
+				'Undefined variable: $this',
+				26,
+			],
+			[
+				'Undefined variable: $this',
+				38,
+			],
+		]);
+	}
+
 }

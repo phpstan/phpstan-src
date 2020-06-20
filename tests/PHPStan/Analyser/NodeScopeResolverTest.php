@@ -10066,7 +10066,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @param string $file
-	 * @return array<string, array{string, Type, Type, int}>
+	 * @return array<string, mixed[]>
 	 */
 	private function gatherAssertTypes(string $file): array
 	{
@@ -10107,6 +10107,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
 				}
 
+				// @phpstan-ignore-next-line
 				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 				$variable = $node->args[1]->value;
 				if (!$variable instanceof Node\Expr\Variable) {

@@ -1,6 +1,7 @@
 <?php
 
 use PHPStan\TrinaryLogic;
+use function PHPStan\Analyser\assertType;
 use function PHPStan\Analyser\assertVariableCertainty;
 
 assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
@@ -40,3 +41,11 @@ function (): void {
 
 	assertVariableCertainty(TrinaryLogic::createYes(), $bar);
 };
+
+/** @var Foo $lorem */
+/** @var Bar $ipsum */
+
+assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+assertType('Foo', $lorem);
+assertVariableCertainty(TrinaryLogic::createYes(), $ipsum);
+assertType('Bar', $ipsum);

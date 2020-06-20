@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
@@ -2431,38 +2432,38 @@ class NodeScopeResolver
 
 	private function processStmtVarAnnotation(MutatingScope $scope, Node\Stmt $stmt, ?Expr $defaultExpr): MutatingScope
 	{
-		$comment = CommentHelper::getDocComment($stmt);
-		if ($comment === null) {
-			return $scope;
-		}
-
 		$function = $scope->getFunction();
-
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$scope->getFile(),
-			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$function !== null ? $function->getName() : null,
-			$comment
-		);
-
 		$variableLessTags = [];
-		foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
-			if (is_int($name)) {
-				$variableLessTags[] = $varTag;
+
+		foreach ($stmt->getComments() as $comment) {
+			if (!$comment instanceof Doc) {
 				continue;
 			}
 
-			$certainty = $scope->hasVariableType($name);
-			if ($certainty->no()) {
-				continue;
-			}
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText()
+			);
+			foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
+				if (is_int($name)) {
+					$variableLessTags[] = $varTag;
+					continue;
+				}
 
-			if ($scope->getFunction() === null && !$scope->isInAnonymousFunction()) {
-				$certainty = TrinaryLogic::createYes();
-			}
+				$certainty = $scope->hasVariableType($name);
+				if ($certainty->no()) {
+					continue;
+				}
 
-			$scope = $scope->assignVariable($name, $varTag->getType(), $certainty);
+				if ($scope->getFunction() === null && !$scope->isInAnonymousFunction()) {
+					$certainty = TrinaryLogic::createYes();
+				}
+
+				$scope = $scope->assignVariable($name, $varTag->getType(), $certainty);
+			}
 		}
 
 		if (count($variableLessTags) === 1 && $defaultExpr !== null) {

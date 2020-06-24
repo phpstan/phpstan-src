@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use Composer\Autoload\ClassLoader;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\MutatingScope;
@@ -36,6 +37,7 @@ use PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
@@ -407,9 +409,31 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			return self::$reflectors;
 		}
 
+		if (!class_exists(ClassLoader::class)) {
+			self::fail('Composer ClassLoader is unknown');
+		}
+
+		$classLoaderReflection = new \ReflectionClass(ClassLoader::class);
+		if ($classLoaderReflection->getFileName() === false) {
+			self::fail('Unknown ClassLoader filename');
+		}
+
+		$composerProjectPath = dirname($classLoaderReflection->getFileName(), 3);
+		if (!is_file($composerProjectPath . '/composer.json')) {
+			self::fail(sprintf('composer.json not found in directory %s', $composerProjectPath));
+		}
+
+		$composerJsonAndInstalledJsonSourceLocatorMaker = self::getContainer()->getByType(ComposerJsonAndInstalledJsonSourceLocatorMaker::class);
+		$composerSourceLocator = $composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
+		if ($composerSourceLocator === null) {
+			self::fail('Could not create composer source locator');
+		}
+
 		// these need to be synced with TestCase-staticReflection.neon file and TestCaseSourceLocatorFactory
 
-		$locators = [];
+		$locators = [
+			$composerSourceLocator,
+		];
 
 		$phpParser = new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class));
 

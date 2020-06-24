@@ -77,7 +77,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			|| $classReflection->isSubclassOf(\DOMNamedNodeMap::class)
 			|| $classReflection->isSubclassOf(\DOMNodeList::class)
 			|| $classReflection->isSubclassOf(\DOMCharacterData::class)
-			|| $classReflection->isSubclassOf(\PDO::class)
+			|| $classReflection->isSubclassOf('PDO')
 		) {
 			return false;
 		}

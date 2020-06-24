@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\BetterReflection;
 
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\ClassBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
@@ -70,6 +71,9 @@ class BetterReflectionSourceLocatorFactory
 	/** @var string|null */
 	private $singleReflectionFile;
 
+	/** @var string[] */
+	private array $staticReflectionClassNamePatterns;
+
 	/**
 	 * @param string[] $autoloadDirectories
 	 * @param string[] $autoloadFiles
@@ -78,7 +82,8 @@ class BetterReflectionSourceLocatorFactory
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
-	 * @param string|null $singleReflectionFile
+	 * @param string|null $singleReflectionFile,
+	 * @param string[] $staticReflectionClassNamePatterns
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
@@ -96,7 +101,8 @@ class BetterReflectionSourceLocatorFactory
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths,
 		array $analysedPathsFromConfig,
-		?string $singleReflectionFile
+		?string $singleReflectionFile,
+		array $staticReflectionClassNamePatterns
 	)
 	{
 		$this->parser = $parser;
@@ -115,6 +121,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
 		$this->singleReflectionFile = $singleReflectionFile;
+		$this->staticReflectionClassNamePatterns = $staticReflectionClassNamePatterns;
 	}
 
 	public function create(): SourceLocator
@@ -123,14 +130,6 @@ class BetterReflectionSourceLocatorFactory
 
 		if ($this->singleReflectionFile !== null) {
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
-		}
-
-		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
-			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
-			if ($locator === null) {
-				continue;
-			}
-			$locators[] =  $locator;
 		}
 
 		$analysedDirectories = [];
@@ -163,7 +162,14 @@ class BetterReflectionSourceLocatorFactory
 			return $this->container->getService('betterReflectionFunctionReflector');
 		});
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber));
-		$locators[] = $this->autoloadSourceLocator;
+		$locators[] = new ClassBlacklistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);
+		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
+			if ($locator === null) {
+				continue;
+			}
+			$locators[] = $locator;
+		}
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
 

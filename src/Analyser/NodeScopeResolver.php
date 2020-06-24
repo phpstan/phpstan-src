@@ -2587,7 +2587,7 @@ class NodeScopeResolver
 	private function processNodesForTraitUse($node, ClassReflection $traitReflection, MutatingScope $scope, \Closure $nodeCallback): void
 	{
 		if ($node instanceof Node) {
-			if ($node instanceof Node\Stmt\Trait_ && $traitReflection->getName() === (string) $node->namespacedName) {
+			if ($node instanceof Node\Stmt\Trait_ && $traitReflection->getName() === (string) $node->namespacedName && $traitReflection->getNativeReflection()->getStartLine() === $node->getStartLine()) {
 				$this->processStmtNodes($node, $node->stmts, $scope->enterTrait($traitReflection), $nodeCallback);
 				return;
 			}

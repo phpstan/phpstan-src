@@ -36,9 +36,6 @@ parameters:
 	stubFiles:
 		- stubs/ReactChildProcess.php
 		- stubs/ReactStreams.php
-	staticReflectionClassNamePatterns!:
-		- '#^PhpParser\\#'
-		- '#^Hoa\\#'
 services:
 	-
 		class: PHPStan\Build\ServiceLocatorDynamicReturnTypeExtension

@@ -2306,7 +2306,7 @@ return [
 'enchant_broker_get_dict_path' => ['string', 'broker'=>'resource', 'dict_type'=>'int'],
 'enchant_broker_get_error' => ['string', 'broker'=>'resource'],
 'enchant_broker_init' => ['resource'],
-'enchant_broker_list_dicts' => ['string', 'broker'=>'resource'],
+'enchant_broker_list_dicts' => ['array<int,array{lang_tag:string,provider_name:string,provider_desc:string,provider_file:string}>|false', 'broker'=>'resource'],
 'enchant_broker_request_dict' => ['resource', 'broker'=>'resource', 'tag'=>'string'],
 'enchant_broker_request_pwl_dict' => ['resource', 'broker'=>'resource', 'filename'=>'string'],
 'enchant_broker_set_dict_path' => ['bool', 'broker'=>'resource', 'dict_type'=>'int', 'value'=>'string'],

@@ -9402,7 +9402,7 @@ return [
 'Redis::sRemove' => ['int', 'key'=>'string', 'member1'=>'string', '...other_members='=>'string'],
 'Redis::sScan' => ['array|bool', 'key'=>'string', '&iterator'=>'int', 'pattern='=>'string', 'count='=>'int'],
 'Redis::strLen' => ['int', 'key'=>'string'],
-'Redis::subscribe' => ['', 'channels'=>'array', 'callback'=>'string'],
+'Redis::subscribe' => ['mixed|null', 'channels'=>'array', 'callback'=>'string|array'],
 'Redis::substr' => ['', 'key'=>'string', 'start'=>'int', 'end'=>'int'],
 'Redis::sUnion' => ['array', 'key'=>'string', '...other_keys='=>'string'],
 'Redis::sUnionStore' => ['int', 'dstKey'=>'string', 'key'=>'string', '...other_keys='=>'string'],

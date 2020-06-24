@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\BetterReflection;
 
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
@@ -37,9 +36,6 @@ class BetterReflectionSourceLocatorFactory
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository */
 	private $optimizedDirectorySourceLocatorRepository;
 
-	/** @var ComposerJsonAndInstalledJsonSourceLocatorMaker */
-	private $composerJsonAndInstalledJsonSourceLocatorMaker;
-
 	/** @var AutoloadSourceLocator */
 	private $autoloadSourceLocator;
 
@@ -62,9 +58,6 @@ class BetterReflectionSourceLocatorFactory
 	private $analysedPaths;
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
-
-	/** @var string[] */
 	private $analysedPathsFromConfig;
 
 	/** @var string|null */
@@ -76,7 +69,6 @@ class BetterReflectionSourceLocatorFactory
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
 	 * @param string[] $analysedPaths
-	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
 	 * @param string|null $singleReflectionFile
 	 */
@@ -86,7 +78,6 @@ class BetterReflectionSourceLocatorFactory
 		ReflectionSourceStubber $reflectionSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
-		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
 		Container $container,
 		array $autoloadDirectories,
@@ -94,7 +85,6 @@ class BetterReflectionSourceLocatorFactory
 		array $scanFiles,
 		array $scanDirectories,
 		array $analysedPaths,
-		array $composerAutoloaderProjectPaths,
 		array $analysedPathsFromConfig,
 		?string $singleReflectionFile
 	)
@@ -104,7 +94,6 @@ class BetterReflectionSourceLocatorFactory
 		$this->reflectionSourceStubber = $reflectionSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
-		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->autoloadSourceLocator = $autoloadSourceLocator;
 		$this->container = $container;
 		$this->autoloadDirectories = $autoloadDirectories;
@@ -112,7 +101,6 @@ class BetterReflectionSourceLocatorFactory
 		$this->scanFiles = $scanFiles;
 		$this->scanDirectories = $scanDirectories;
 		$this->analysedPaths = $analysedPaths;
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
 		$this->singleReflectionFile = $singleReflectionFile;
 	}
@@ -156,13 +144,6 @@ class BetterReflectionSourceLocatorFactory
 		});
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber));
 		$locators[] = $this->autoloadSourceLocator;
-		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
-			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
-			if ($locator === null) {
-				continue;
-			}
-			$locators[] =  $locator;
-		}
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
 

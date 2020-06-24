@@ -149,16 +149,6 @@ return [
 			return \Nette\Neon\Neon::encode($updatedNeon, \Nette\Neon\Neon::BLOCK);
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if (!in_array($filePath, [
-				'src/Testing/TestCaseSourceLocatorFactory.php',
-				'src/Testing/TestCase.php',
-			], true)) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\Composer\\Autoload\\ClassLoader', $prefix), 'Composer\\Autoload\\ClassLoader', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 				return $content;
 			}

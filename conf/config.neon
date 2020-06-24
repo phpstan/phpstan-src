@@ -491,9 +491,6 @@ services:
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
 
 	-
-		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
-
-	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory
 
 	-
@@ -1152,7 +1149,6 @@ services:
 			scanFiles: %scanFiles%
 			scanDirectories: %scanDirectories%
 			analysedPaths: %analysedPaths%
-			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
 			singleReflectionFile: %singleReflectionFile%
 

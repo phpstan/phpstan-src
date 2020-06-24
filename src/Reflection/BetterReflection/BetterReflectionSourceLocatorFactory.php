@@ -125,6 +125,14 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
 		}
 
+		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
+			if ($locator === null) {
+				continue;
+			}
+			$locators[] =  $locator;
+		}
+
 		$analysedDirectories = [];
 		$analysedFiles = [];
 
@@ -156,13 +164,6 @@ class BetterReflectionSourceLocatorFactory
 		});
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber));
 		$locators[] = $this->autoloadSourceLocator;
-		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
-			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
-			if ($locator === null) {
-				continue;
-			}
-			$locators[] =  $locator;
-		}
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
 

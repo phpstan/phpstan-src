@@ -1216,3 +1216,9 @@ services:
 		class: PHPStan\Command\ErrorFormatter\GitlabErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+
+	errorFormatter.github:
+		class: PHPStan\Command\ErrorFormatter\GithubErrorFormatter
+		arguments:
+			relativePathHelper: @simpleRelativePathHelper
+			tableErrorformatter: '@errorFormatter.table'

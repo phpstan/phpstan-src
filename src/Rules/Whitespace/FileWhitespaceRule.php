@@ -78,7 +78,7 @@ class FileWhitespaceRule implements Rule
 			$lastNodes[] = $nodes[count($nodes) - 1];
 		}
 		foreach ($lastNodes as $lastNode) {
-			if (!$lastNode instanceof Node\Stmt\InlineHTML || Strings::match($lastNode->value, '#(\s+)#') === null) {
+			if (!$lastNode instanceof Node\Stmt\InlineHTML || Strings::match($lastNode->value, '#^(\s+)$#') === null) {
 				continue;
 			}
 

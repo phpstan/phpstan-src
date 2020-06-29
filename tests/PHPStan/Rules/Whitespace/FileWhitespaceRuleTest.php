@@ -51,4 +51,9 @@ class FileWhitespaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testHtmlAfterClose(): void
+	{
+		$this->analyse([__DIR__ . '/data/html-after-close.php'], []);
+	}
+
 }

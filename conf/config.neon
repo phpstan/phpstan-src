@@ -11,6 +11,7 @@ parameters:
 		closureUsesThis: false
 		randomIntParameters: false
 		nullCoalesce: false
+		fileWhitespace: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -145,7 +146,8 @@ parametersSchema:
 		disableRuntimeReflectionProvider: bool(),
 		closureUsesThis: bool(),
 		randomIntParameters: bool(),
-		nullCoalesce: bool()
+		nullCoalesce: bool(),
+		fileWhitespace: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

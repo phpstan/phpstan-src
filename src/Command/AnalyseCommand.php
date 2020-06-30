@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use OndraM\CiDetector\CiDetector;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
@@ -51,7 +52,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				new InputOption(ErrorsConsoleStyle::OPTION_NO_PROGRESS, null, InputOption::VALUE_NONE, 'Do not show progress bar, only results'),
 				new InputOption('debug', null, InputOption::VALUE_NONE, 'Show debug information - which file is analysed, do not catch internal errors'),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
-				new InputOption('error-format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result of the analysis', 'table'),
+				new InputOption('error-format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result of the analysis', null),
 				new InputOption('generate-baseline', null, InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
@@ -134,6 +135,20 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 		if (!is_string($errorFormat) && $errorFormat !== null) {
 			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		if ($errorFormat === null) {
+			$errorFormat = 'table';
+			$ciDetector = new CiDetector();
+
+			try {
+				$ci = $ciDetector->detect();
+				if ($ci->getCiName() === CiDetector::CI_GITHUB_ACTIONS) {
+					$errorFormat = 'github';
+				}
+			} catch (\OndraM\CiDetector\Exception\CiNotDetectedException $e) {
+				// pass
+			}
 		}
 
 		$container = $inceptionResult->getContainer();

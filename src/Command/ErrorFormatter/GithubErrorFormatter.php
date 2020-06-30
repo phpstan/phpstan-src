@@ -55,6 +55,13 @@ class GithubErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 		}
 
+		foreach ($analysisResult->getWarnings() as $warning) {
+			$line = sprintf('::warning ::%s', $warning);
+
+			$output->writeRaw($line);
+			$output->writeLineFormatted('');
+		}
+
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}
 

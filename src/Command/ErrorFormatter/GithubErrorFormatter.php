@@ -48,6 +48,13 @@ class GithubErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 		}
 
+		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
+			$line = sprintf('::error ::%s', $notFileSpecificError);
+
+			$output->writeRaw($line);
+			$output->writeLineFormatted('');
+		}
+
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}
 

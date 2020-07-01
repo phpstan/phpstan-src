@@ -64,6 +64,12 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			}
 		}
 
+		foreach ($classReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
+			if ($this->isClassBlacklisted($interfaceName)) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 

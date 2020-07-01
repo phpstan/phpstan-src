@@ -9,16 +9,12 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
-use Roave\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
-use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
 
 	private ReflectionProvider $reflectionProvider;
-
-	private ReflectionProvider $otherReflectionProvider;
 
 	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
@@ -33,14 +29,12 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		?ReflectionProvider $otherReflectionProvider,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		array $patterns,
 		?string $singleReflectionFile
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
-		$this->otherReflectionProvider = $otherReflectionProvider ?? $reflectionProvider;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->patterns = $patterns;
 		$this->singleReflectionFile = $singleReflectionFile;
@@ -52,25 +46,6 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			return false;
 		}
 
-		try {
-			if ($this->otherReflectionProvider->hasClass($className)) {
-				$staticClassReflection = $this->otherReflectionProvider->getClass($className);
-				foreach ($staticClassReflection->getParentClassesNames() as $parentClassName) {
-					if ($this->isClassBlacklisted($parentClassName)) {
-						return false;
-					}
-				}
-
-				foreach ($staticClassReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
-					if ($this->isClassBlacklisted($interfaceName)) {
-						return false;
-					}
-				}
-			}
-		} catch (IdentifierNotFound | UnableToCompileNode $e) {
-			// pass
-		}
-
 		$has = $this->reflectionProvider->hasClass($className);
 		if (!$has) {
 			return false;
@@ -79,6 +54,18 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		$classReflection = $this->reflectionProvider->getClass($className);
 		if ($this->singleReflectionFile !== null) {
 			if ($classReflection->getFileName() === $this->singleReflectionFile) {
+				return false;
+			}
+		}
+
+		foreach ($classReflection->getParentClassesNames() as $parentClassName) {
+			if ($this->isClassBlacklisted($parentClassName)) {
+				return false;
+			}
+		}
+
+		foreach ($classReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
+			if ($this->isClassBlacklisted($interfaceName)) {
 				return false;
 			}
 		}

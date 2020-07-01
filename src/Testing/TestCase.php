@@ -228,7 +228,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$relativePathHelper,
 				self::getContainer()->getByType(StubPhpDocProvider::class)
 			),
-			null,
 			self::getPhpStormStubsSourceStubber(),
 			[
 				'#^PhpParser\\\\#',

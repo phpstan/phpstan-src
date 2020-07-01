@@ -9,12 +9,16 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
+use Roave\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
+use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
 
 	private ReflectionProvider $reflectionProvider;
+
+	private ReflectionProvider $otherReflectionProvider;
 
 	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
@@ -29,12 +33,14 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
+		?ReflectionProvider $otherReflectionProvider,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		array $patterns,
 		?string $singleReflectionFile
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
+		$this->otherReflectionProvider = $otherReflectionProvider ?? $reflectionProvider;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->patterns = $patterns;
 		$this->singleReflectionFile = $singleReflectionFile;
@@ -44,6 +50,30 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	{
 		if ($this->isClassBlacklisted($className)) {
 			return false;
+		}
+
+		$staticBlacklisted = false;
+		try {
+			if ($this->otherReflectionProvider->hasClass($className)) {
+				$staticClassReflection = $this->otherReflectionProvider->getClass($className);
+				foreach ($staticClassReflection->getParentClassesNames() as $parentClassName) {
+					if ($this->isClassBlacklisted($parentClassName)) {
+						$staticBlacklisted = true;
+						break;
+					}
+				}
+
+				if (!$staticBlacklisted) {
+					foreach ($staticClassReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
+						if ($this->isClassBlacklisted($interfaceName)) {
+							$staticBlacklisted = true;
+							break;
+						}
+					}
+				}
+			}
+		} catch (IdentifierNotFound | UnableToCompileNode $e) {
+			// pass
 		}
 
 		$has = $this->reflectionProvider->hasClass($className);
@@ -62,19 +92,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			return true;
 		}
 
-		foreach ($classReflection->getParentClassesNames() as $parentClassName) {
-			if ($this->isClassBlacklisted($parentClassName)) {
-				return false;
-			}
-		}
-
-		foreach ($classReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
-			if ($this->isClassBlacklisted($interfaceName)) {
-				return false;
-			}
-		}
-
-		return true;
+		return !$staticBlacklisted;
 	}
 
 	private function isClassBlacklisted(string $className): bool

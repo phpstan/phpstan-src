@@ -1142,6 +1142,7 @@ services:
 		class: PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider
 		arguments:
 			reflectionProvider: @innerRuntimeReflectionProvider
+			otherReflectionProvider: @betterReflectionProvider
 			patterns: %staticReflectionClassNamePatterns%
 		autowired: false
 

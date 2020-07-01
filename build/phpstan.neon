@@ -22,6 +22,8 @@ parameters:
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'
 		- '#Variable property access on PhpParser\\Node#'
 		- '#Test::data[a-zA-Z0-9_]+\(\) return type has no value type specified in iterable type#'
+		- '#unused ignore#'
+		- '#string|null#'
 		-
 			message: '#Fetching class constant class of deprecated class DeprecatedAnnotations\\DeprecatedFoo.#'
 			path: ../tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php

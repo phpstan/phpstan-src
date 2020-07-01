@@ -144,4 +144,9 @@ class TrinaryLogic
 		return self::create($properties['value']);
 	}
 
+	public function test()
+	{
+
+	}
+
 }

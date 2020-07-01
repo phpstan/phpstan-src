@@ -42,21 +42,8 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		if ($this->phpStormStubsSourceStubber->hasClass($className) && $className !== \Generator::class) {
-			// check that userland class isn't aliased to the same name as a class from stubs
-			if (!class_exists($className, false)) {
-				return false;
-			}
-			$reflection = new \ReflectionClass($className);
-			if ($reflection->getFileName() === false) {
-				return false;
-			}
-		}
-
-		foreach ($this->patterns as $pattern) {
-			if (Strings::match($className, $pattern) !== null) {
-				return false;
-			}
+		if ($this->isClassBlacklisted($className)) {
+			return false;
 		}
 
 		$has = $this->reflectionProvider->hasClass($className);
@@ -70,19 +57,46 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 				return false;
 			}
 		}
-		if ($classReflection->isSubclassOf(\DateInterval::class)
-			|| $classReflection->isSubclassOf(\DatePeriod::class)
-			|| $classReflection->isSubclassOf(\DOMDocument::class)
-			|| $classReflection->isSubclassOf(\DOMNode::class)
-			|| $classReflection->isSubclassOf(\DOMNamedNodeMap::class)
-			|| $classReflection->isSubclassOf(\DOMNodeList::class)
-			|| $classReflection->isSubclassOf(\DOMCharacterData::class)
-			|| $classReflection->isSubclassOf('PDO')
-		) {
-			return false;
+
+		if ($classReflection->isAnonymous()) {
+			return true;
+		}
+
+		foreach ($classReflection->getParentClassesNames() as $parentClassName) {
+			if ($this->isClassBlacklisted($parentClassName)) {
+				return false;
+			}
+		}
+
+		foreach ($classReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
+			if ($this->isClassBlacklisted($interfaceName)) {
+				return false;
+			}
 		}
 
 		return true;
+	}
+
+	private function isClassBlacklisted(string $className): bool
+	{
+		if ($this->phpStormStubsSourceStubber->hasClass($className) && $className !== \Generator::class) {
+			// check that userland class isn't aliased to the same name as a class from stubs
+			if (!class_exists($className, false)) {
+				return true;
+			}
+			$reflection = new \ReflectionClass($className);
+			if ($reflection->getFileName() === false) {
+				return true;
+			}
+		}
+
+		foreach ($this->patterns as $pattern) {
+			if (Strings::match($className, $pattern) !== null) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public function getClass(string $className): ClassReflection

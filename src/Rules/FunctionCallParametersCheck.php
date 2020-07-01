@@ -2,11 +2,14 @@
 
 namespace PHPStan\Rules;
 
+use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
@@ -66,10 +69,57 @@ class FunctionCallParametersCheck
 			$functionParametersMaxCount = -1;
 		}
 
-		$errors = [];
-		$invokedParametersCount = count($funcCall->args);
-		foreach ($funcCall->args as $arg) {
+		/** @var array<int, array{Expr, Type, bool}> $arguments */
+		$arguments = [];
+		/** @var array<int, \PhpParser\Node\Arg> $args */
+		$args = $funcCall->args;
+		foreach ($args as $i => $arg) {
+			$type = $scope->getType($arg->value);
 			if ($arg->unpack) {
+				$arrays = TypeUtils::getConstantArrays($type);
+				if (count($arrays) > 0) {
+					$minKeys = null;
+					foreach ($arrays as $array) {
+						$keysCount = count($array->getKeyTypes());
+						if ($minKeys !== null && $keysCount >= $minKeys) {
+							continue;
+						}
+
+						$minKeys = $keysCount;
+					}
+
+					for ($j = 0; $j < $minKeys; $j++) {
+						$types = [];
+						foreach ($arrays as $constantArray) {
+							$types[] = $constantArray->getValueTypes()[$j];
+						}
+						$arguments[] = [
+							$arg->value,
+							TypeCombinator::union(...$types),
+							false,
+						];
+					}
+				} else {
+					$arguments[] = [
+						$arg->value,
+						$type->getIterableValueType(),
+						true,
+					];
+				}
+				continue;
+			}
+
+			$arguments[] = [
+				$arg->value,
+				$type,
+				false,
+			];
+		}
+
+		$errors = [];
+		$invokedParametersCount = count($arguments);
+		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack]) {
+			if ($unpack) {
 				$invokedParametersCount = max($functionParametersMinCount, $functionParametersMaxCount);
 				break;
 			}
@@ -115,13 +165,11 @@ class FunctionCallParametersCheck
 
 		$parameters = $parametersAcceptor->getParameters();
 
-		/** @var array<int, \PhpParser\Node\Arg> $args */
-		$args = $funcCall->args;
-		foreach ($args as $i => $argument) {
-			if ($this->checkArgumentTypes && $argument->unpack) {
+		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack]) {
+			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
-					$argument->value,
+					$argumentValue,
 					'',
 					static function (Type $type): bool {
 						return $type->isIterable()->yes();
@@ -154,11 +202,6 @@ class FunctionCallParametersCheck
 			}
 
 			$parameterType = $parameter->getType();
-
-			$argumentValueType = $scope->getType($argument->value);
-			if ($argument->unpack) {
-				$argumentValueType = $argumentValueType->getIterableValueType();
-			}
 			if (
 				$this->checkArgumentTypes
 				&& !$parameter->passedByReference()->createsNewVariable()
@@ -177,10 +220,10 @@ class FunctionCallParametersCheck
 			if (
 				!$this->checkArgumentsPassedByReference
 				|| !$parameter->passedByReference()->yes()
-				|| $argument->value instanceof \PhpParser\Node\Expr\Variable
-				|| $argument->value instanceof \PhpParser\Node\Expr\ArrayDimFetch
-				|| $argument->value instanceof \PhpParser\Node\Expr\PropertyFetch
-				|| $argument->value instanceof \PhpParser\Node\Expr\StaticPropertyFetch
+				|| $argumentValue instanceof \PhpParser\Node\Expr\Variable
+				|| $argumentValue instanceof \PhpParser\Node\Expr\ArrayDimFetch
+				|| $argumentValue instanceof \PhpParser\Node\Expr\PropertyFetch
+				|| $argumentValue instanceof \PhpParser\Node\Expr\StaticPropertyFetch
 			) {
 				continue;
 			}

@@ -436,15 +436,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				1379,
 			],
 			[
-				'Only iterables can be unpacked, array<int>|null given in argument #3.',
+				'Only iterables can be unpacked, array<int>|null given in argument #5.',
 				1456,
 			],
 			[
-				'Only iterables can be unpacked, int given in argument #4.',
+				'Only iterables can be unpacked, int given in argument #6.',
 				1456,
 			],
 			[
-				'Only iterables can be unpacked, string given in argument #5.',
+				'Only iterables can be unpacked, string given in argument #7.',
 				1456,
 			],
 			[
@@ -865,8 +865,28 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				42,
 			],
 			[
+				'Parameter #5 ...$strings of method CallVariadicMethods\Foo::doVariadicString() expects string, int given.',
+				42,
+			],
+			[
+				'Parameter #6 ...$strings of method CallVariadicMethods\Foo::doVariadicString() expects string, int given.',
+				42,
+			],
+			[
+				'Method CallVariadicMethods\Foo::doIntegerParameters() invoked with 3 parameters, 2 required.',
+				43,
+			],
+			[
 				'Parameter #1 $foo of method CallVariadicMethods\Foo::doIntegerParameters() expects int, string given.',
 				43,
+			],
+			[
+				'Parameter #2 $bar of method CallVariadicMethods\Foo::doIntegerParameters() expects int, string given.',
+				43,
+			],
+			[
+				'Method CallVariadicMethods\Foo::doIntegerParameters() invoked with 3 parameters, 2 required.',
+				44,
 			],
 			[
 				'Parameter #1 ...$strings of method CallVariadicMethods\Bar::variadicStrings() expects string, int given.',
@@ -1429,6 +1449,23 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter #1 $test of method Bug3445\Foo::doFoo() expects Bug3445\Foo, $this(Bug3445\Bar) given.',
 				26,
+			],
+		]);
+	}
+
+	public function testBug3481(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3481.php'], [
+			[
+				'Method Bug3481\Foo::doSomething() invoked with 2 parameters, 3 required.',
+				34,
+			],
+			[
+				'Parameter #1 $a of method Bug3481\Foo::doSomething() expects string, int|string given.',
+				44,
 			],
 		]);
 	}

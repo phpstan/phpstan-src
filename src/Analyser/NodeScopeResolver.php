@@ -553,7 +553,11 @@ class NodeScopeResolver
 				if ($stmt->name === null) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
-				$classReflection = $this->reflectionProvider->getClass($stmt->name->toString());
+				if ($stmt->getAttribute('anonymousClass', false) === false) {
+					$classReflection = $this->reflectionProvider->getClass($stmt->name->toString());
+				} else {
+					$classReflection = $this->reflectionProvider->getAnonymousClassReflection($stmt, $scope);
+				}
 				$classScope = $scope->enterClass($classReflection);
 				$nodeCallback(new InClassNode($stmt, $classReflection), $classScope);
 			} else {

@@ -52,23 +52,18 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			return false;
 		}
 
-		$staticBlacklisted = false;
 		try {
 			if ($this->otherReflectionProvider->hasClass($className)) {
 				$staticClassReflection = $this->otherReflectionProvider->getClass($className);
 				foreach ($staticClassReflection->getParentClassesNames() as $parentClassName) {
 					if ($this->isClassBlacklisted($parentClassName)) {
-						$staticBlacklisted = true;
-						break;
+						return false;
 					}
 				}
 
-				if (!$staticBlacklisted) {
-					foreach ($staticClassReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
-						if ($this->isClassBlacklisted($interfaceName)) {
-							$staticBlacklisted = true;
-							break;
-						}
+				foreach ($staticClassReflection->getNativeReflection()->getInterfaceNames() as $interfaceName) {
+					if ($this->isClassBlacklisted($interfaceName)) {
+						return false;
 					}
 				}
 			}
@@ -88,11 +83,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			}
 		}
 
-		if ($classReflection->isAnonymous()) {
-			return true;
-		}
-
-		return !$staticBlacklisted;
+		return true;
 	}
 
 	private function isClassBlacklisted(string $className): bool

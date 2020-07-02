@@ -11,7 +11,8 @@ class Error implements \JsonSerializable
 
 	private ?int $line;
 
-	private bool $canBeIgnored;
+	/** @var bool|\Throwable */
+	private $canBeIgnored;
 
 	private ?string $filePath;
 
@@ -35,7 +36,7 @@ class Error implements \JsonSerializable
 	 * @param string $message
 	 * @param string $file
 	 * @param int|null $line
-	 * @param bool $canBeIgnored
+	 * @param bool|\Throwable $canBeIgnored
 	 * @param string|null $filePath
 	 * @param string|null $traitFilePath
 	 * @param string|null $tip
@@ -48,7 +49,7 @@ class Error implements \JsonSerializable
 		string $message,
 		string $file,
 		?int $line = null,
-		bool $canBeIgnored = true,
+		$canBeIgnored = true,
 		?string $filePath = null,
 		?string $traitFilePath = null,
 		?string $tip = null,
@@ -102,7 +103,12 @@ class Error implements \JsonSerializable
 
 	public function canBeIgnored(): bool
 	{
-		return $this->canBeIgnored;
+		return $this->canBeIgnored !== false;
+	}
+
+	public function hasNonIgnorableException(): bool
+	{
+		return $this->canBeIgnored instanceof \Throwable;
 	}
 
 	public function getTip(): ?string
@@ -164,7 +170,7 @@ class Error implements \JsonSerializable
 			'message' => $this->message,
 			'file' => $this->file,
 			'line' => $this->line,
-			'canBeIgnored' => $this->canBeIgnored,
+			'canBeIgnored' => $this->canBeIgnored !== false,
 			'filePath' => $this->filePath,
 			'traitFilePath' => $this->traitFilePath,
 			'tip' => $this->tip,

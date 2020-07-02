@@ -199,7 +199,7 @@ class ResultCacheManager
 
 			foreach ($errorsByFile as $errors) {
 				foreach ($errors as $error) {
-					if ($error->canBeIgnored()) {
+					if (!$error->hasNonIgnorableException()) {
 						continue;
 					}
 

@@ -86,7 +86,7 @@ class Analyser
 					"\n",
 					'https://github.com/phpstan/phpstan/issues/new'
 				);
-				$errors[] = new Error($internalErrorMessage, $file, null, false);
+				$errors[] = new Error($internalErrorMessage, $file, null, $t);
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
 					break;

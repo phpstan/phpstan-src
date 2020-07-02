@@ -88,10 +88,10 @@ class FileAnalyser
 							}
 
 							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
-							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), false, null, null, $e->getTip());
+							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
 							continue;
 						} catch (IdentifierNotFound $e) {
-							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), false, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
 							continue;
 						}
 
@@ -224,15 +224,15 @@ class FileAnalyser
 					}
 				}
 			} catch (\PhpParser\Error $e) {
-				$fileErrors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, false);
+				$fileErrors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e);
 			} catch (\PHPStan\Parser\ParserErrorsException $e) {
 				foreach ($e->getErrors() as $error) {
-					$fileErrors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, false);
+					$fileErrors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, $e);
 				}
 			} catch (\PHPStan\AnalysedCodeException $e) {
-				$fileErrors[] = new Error($e->getMessage(), $file, null, false, null, null, $e->getTip());
+				$fileErrors[] = new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip());
 			} catch (IdentifierNotFound $e) {
-				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, false, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
 			}
 		} elseif (is_dir($file)) {
 			$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);

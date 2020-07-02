@@ -4,7 +4,6 @@ namespace PHPStan\Command;
 
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
-use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\Container;
@@ -179,14 +178,14 @@ class WorkerCommand extends Command
 					}
 				} catch (\Throwable $t) {
 					$internalErrorsCount++;
-					$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
+					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
 					$internalErrorMessage .= sprintf(
 						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
 						"\n",
 						"\n",
 						'https://github.com/phpstan/phpstan/issues/new'
 					);
-					$errors[] = new Error($internalErrorMessage, $file, null, false);
+					$errors[] = $internalErrorMessage;
 				}
 			}
 

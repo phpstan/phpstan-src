@@ -9980,6 +9980,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bitwise-not.php');
 	}
 
+	public function dataGraphicsDrawReturnTypes(): array
+	{
+		if (!extension_loaded('gd')) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/graphics-draw-return-types.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10039,6 +10048,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataArrayTypehintWithoutNullInPhpDoc
 	 * @dataProvider dataOverrideVariableCertaintyInRootScope
 	 * @dataProvider dataBitwiseNot
+	 * @dataProvider dataGraphicsDrawReturnTypes
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

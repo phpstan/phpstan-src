@@ -98,7 +98,7 @@ class AnalyseApplication
 			$warnings = [];
 			$hasInternalErrors = false;
 		} else {
-			$resultCache = $this->resultCacheManager->restore($files, $debug);
+			$resultCache = $this->resultCacheManager->restore($files, $debug, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,

@@ -15,4 +15,6 @@ interface Output
 
 	public function isVerbose(): bool;
 
+	public function isDebug(): bool;
+
 }

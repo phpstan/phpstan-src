@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Command\Output;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use function array_fill_keys;
@@ -68,32 +69,50 @@ class ResultCacheManager
 	 * @param bool $debug
 	 * @return ResultCache
 	 */
-	public function restore(array $allAnalysedFiles, bool $debug): ResultCache
+	public function restore(array $allAnalysedFiles, bool $debug, Output $output): ResultCache
 	{
 		if ($debug) {
+			if ($output->isDebug()) {
+				$output->writeLineFormatted('Result cache not used because of debug mode.');
+			}
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 
 		if (!is_file($this->cacheFilePath)) {
+			if ($output->isDebug()) {
+				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
+			}
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 
 		try {
 			$data = require $this->cacheFilePath;
 		} catch (\Throwable $e) {
+			if ($output->isDebug()) {
+				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
+			}
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 
 		if (!is_array($data)) {
 			@unlink($this->cacheFilePath);
+			if ($output->isDebug()) {
+				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
+			}
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 
 		if ($data['meta'] !== $this->getMeta()) {
+			if ($output->isDebug()) {
+				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
+			}
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}
 
 		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
+			if ($output->isDebug()) {
+				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
+			}
 			// run full analysis if the result cache is older than 7 days
 			return new ResultCache($allAnalysedFiles, true, time(), [], []);
 		}

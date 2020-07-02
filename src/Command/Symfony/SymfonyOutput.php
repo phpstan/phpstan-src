@@ -50,4 +50,9 @@ class SymfonyOutput implements Output
 		return $this->symfonyOutput->isVerbose();
 	}
 
+	public function isDebug(): bool
+	{
+		return $this->symfonyOutput->isDebug();
+	}
+
 }

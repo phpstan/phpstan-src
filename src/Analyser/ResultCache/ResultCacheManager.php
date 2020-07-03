@@ -180,7 +180,7 @@ class ResultCacheManager
 		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $filteredErrors, $invertedDependenciesToReturn);
 	}
 
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, bool $save): AnalyserResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, bool $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -188,13 +188,13 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$doSave = function (array $errorsByFile, ?array $dependencies) use ($internalErrors, $resultCache): void {
+		$doSave = function (array $errorsByFile, ?array $dependencies) use ($internalErrors, $resultCache): bool {
 			if ($dependencies === null) {
-				return;
+				return false;
 			}
 
 			if (count($internalErrors) > 0) {
-				return;
+				return false;
 			}
 
 			foreach ($errorsByFile as $errors) {
@@ -203,26 +203,29 @@ class ResultCacheManager
 						continue;
 					}
 
-					return;
+					return false;
 				}
 			}
 
 			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $dependencies);
+			return true;
 		};
 
 		if ($resultCache->isFullAnalysis()) {
+			$saved = false;
 			if ($save) {
-				$doSave($freshErrorsByFile, $analyserResult->getDependencies());
+				$saved = $doSave($freshErrorsByFile, $analyserResult->getDependencies());
 			}
 
-			return $analyserResult;
+			return new ResultCacheProcessResult($analyserResult, $saved);
 		}
 
 		$errorsByFile = $this->mergeErrors($resultCache, $freshErrorsByFile);
 		$dependencies = $this->mergeDependencies($resultCache, $analyserResult->getDependencies());
 
+		$saved = false;
 		if ($save) {
-			$doSave($errorsByFile, $dependencies);
+			$saved = $doSave($errorsByFile, $dependencies);
 		}
 
 		$flatErrors = [];
@@ -232,12 +235,12 @@ class ResultCacheManager
 			}
 		}
 
-		return new AnalyserResult(
+		return new ResultCacheProcessResult(new AnalyserResult(
 			$flatErrors,
 			$internalErrors,
 			$dependencies,
 			$analyserResult->hasReachedInternalErrorsCountLimit()
-		);
+		), $saved);
 	}
 
 	/**

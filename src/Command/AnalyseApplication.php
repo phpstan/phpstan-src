@@ -108,7 +108,8 @@ class AnalyseApplication
 				$errorOutput,
 				$input
 			);
-			$analyserResult = $this->resultCacheManager->process($intermediateAnalyserResult, $resultCache, true);
+			$resultCacheResult = $this->resultCacheManager->process($intermediateAnalyserResult, $resultCache, true);
+			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
 			$warnings = $ignoredErrorHelperResult->getWarnings();

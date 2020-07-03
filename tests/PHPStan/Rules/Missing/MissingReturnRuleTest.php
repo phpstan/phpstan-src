@@ -30,7 +30,7 @@ class MissingReturnRuleTest extends RuleTestCase
 			],
 			[
 				'Method MissingReturn\Foo::doBar() should return int but return statement is missing.',
-				16,
+				15,
 			],
 			[
 				'Method MissingReturn\Foo::doBaz() should return int but return statement is missing.',

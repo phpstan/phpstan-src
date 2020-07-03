@@ -14,29 +14,34 @@ class AnalysisResult
 	private array $notFileSpecificErrors;
 
 	/** @var string[] */
+	private array $internalErrors;
+
+	/** @var string[] */
 	private array $warnings;
 
 	private bool $defaultLevelUsed;
 
 	private ?string $projectConfigFile;
 
-	private bool $hasInternalErrors;
+	private bool $savedResultCache;
 
 	/**
 	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
+	 * @param string[] $internalErrors
 	 * @param string[] $warnings
 	 * @param bool $defaultLevelUsed
 	 * @param string|null $projectConfigFile
-	 * @param bool $hasInternalErrors
+	 * @param bool $savedResultCache
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
 		array $notFileSpecificErrors,
+		array $internalErrors,
 		array $warnings,
 		bool $defaultLevelUsed,
 		?string $projectConfigFile,
-		bool $hasInternalErrors
+		bool $savedResultCache
 	)
 	{
 		usort(
@@ -56,10 +61,11 @@ class AnalysisResult
 
 		$this->fileSpecificErrors = $fileSpecificErrors;
 		$this->notFileSpecificErrors = $notFileSpecificErrors;
+		$this->internalErrors = $internalErrors;
 		$this->warnings = $warnings;
 		$this->defaultLevelUsed = $defaultLevelUsed;
 		$this->projectConfigFile = $projectConfigFile;
-		$this->hasInternalErrors = $hasInternalErrors;
+		$this->savedResultCache = $savedResultCache;
 	}
 
 	public function hasErrors(): bool
@@ -91,6 +97,14 @@ class AnalysisResult
 	/**
 	 * @return string[]
 	 */
+	public function getInternalErrors(): array
+	{
+		return $this->internalErrors;
+	}
+
+	/**
+	 * @return string[]
+	 */
 	public function getWarnings(): array
 	{
 		return $this->warnings;
@@ -113,7 +127,12 @@ class AnalysisResult
 
 	public function hasInternalErrors(): bool
 	{
-		return $this->hasInternalErrors;
+		return count($this->internalErrors) > 0;
+	}
+
+	public function isResultCacheSaved(): bool
+	{
+		return $this->savedResultCache;
 	}
 
 }

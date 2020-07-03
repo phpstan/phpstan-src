@@ -77,9 +77,10 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\TestCase
 			$fileErrors,
 			$genericErrors,
 			[],
+			[],
 			false,
 			null,
-			false
+			true
 		);
 	}
 

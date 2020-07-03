@@ -96,7 +96,8 @@ class AnalyseApplication
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			$errors = $ignoredErrorHelperResult->getErrors();
 			$warnings = [];
-			$hasInternalErrors = false;
+			$internalErrors = [];
+			$savedResultCache = false;
 		} else {
 			$resultCache = $this->resultCacheManager->restore($files, $debug, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(
@@ -113,7 +114,7 @@ class AnalyseApplication
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
 			$warnings = $ignoredErrorHelperResult->getWarnings();
-			$hasInternalErrors = count($internalErrors) > 0;
+			$savedResultCache = $resultCacheResult->isSaved();
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 				$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 			}
@@ -136,10 +137,11 @@ class AnalyseApplication
 		return new AnalysisResult(
 			$fileSpecificErrors,
 			$notFileSpecificErrors,
+			$internalErrors,
 			$warnings,
 			$defaultLevelUsed,
 			$projectConfigFile,
-			$hasInternalErrors
+			$savedResultCache
 		);
 	}
 

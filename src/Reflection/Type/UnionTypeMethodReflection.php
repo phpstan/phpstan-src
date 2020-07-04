@@ -108,7 +108,7 @@ class UnionTypeMethodReflection implements MethodReflection
 	{
 		$descriptions = [];
 		foreach ($this->methods as $method) {
-			if ($method->isDeprecated()->yes()) {
+			if (!$method->isDeprecated()->yes()) {
 				continue;
 			}
 			$description = $method->getDeprecatedDescription();

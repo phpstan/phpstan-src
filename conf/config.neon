@@ -64,9 +64,7 @@ parameters:
 		nodesByStringCountMax: 512
 	reportUnmatchedIgnoredErrors: true
 	scopeClass: PHPStan\Analyser\MutatingScope
-	typeAliases:
-		scalar: 'int|float|string|bool'
-		number: 'int|float'
+	typeAliases: []
 	universalObjectCratesClasses:
 		- stdClass
 	stubFiles:

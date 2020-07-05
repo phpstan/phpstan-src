@@ -145,6 +145,62 @@ class FileTypeMapperTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	public function testFileFriendPhpDocs(): void
+	{
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
+
+		$realpath = realpath(__DIR__ . '/data/friend-phpdocs.php');
+		if ($realpath === false) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \FriendPhpDocs\Foo::class, null, 'noFriends', '');
+		$this->assertSame([], $resolved->getFriends());
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \FriendPhpDocs\Foo::class, null, 'invalidFriends', '/**
+ * @friend
+ * @friend bool
+ */');
+		$this->assertSame([], $resolved->getFriends());
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \FriendPhpDocs\Foo::class, null, 'classAsFriend', '/**
+ * @friend Bar
+ */');
+		$this->assertCount(1, $resolved->getFriends());
+		$this->assertSame(
+			'FriendPhpDocs\Bar',
+			$resolved->getFriends()[0]->getType()->describe(VerbosityLevel::precise())
+		);
+		$this->assertNull($resolved->getFriends()[0]->getMethod());
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \FriendPhpDocs\Foo::class, null, 'methodAsFriend', '/**
+ * @friend Bar::baz
+ */');
+		$this->assertCount(1, $resolved->getFriends());
+		$this->assertSame(
+			'FriendPhpDocs\Bar',
+			$resolved->getFriends()[0]->getType()->describe(VerbosityLevel::precise())
+		);
+		$this->assertSame('baz', $resolved->getFriends()[0]->getMethod());
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \FriendPhpDocs\Foo::class, null, 'multipleFriends', '/**
+ * @friend Bar
+ * @friend Bar::baz
+ */');
+		$this->assertCount(2, $resolved->getFriends());
+		$this->assertSame(
+			'FriendPhpDocs\Bar',
+			$resolved->getFriends()[0]->getType()->describe(VerbosityLevel::precise())
+		);
+		$this->assertNull($resolved->getFriends()[0]->getMethod());
+		$this->assertSame(
+			'FriendPhpDocs\Bar',
+			$resolved->getFriends()[1]->getType()->describe(VerbosityLevel::precise())
+		);
+		$this->assertSame('baz', $resolved->getFriends()[1]->getMethod());
+	}
+
 	public function testFileWithCyclicPhpDocs(): void
 	{
 		self::getContainer()->getByType(\PHPStan\Broker\Broker::class);

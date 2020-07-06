@@ -1,6 +1,6 @@
 [
     {
-        "message": "Method StubValidator\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method StubValidator\\Foo::doFoo() has no return type specified.",
         "line": 15,
         "ignorable": true
     },
@@ -10,7 +10,7 @@
         "ignorable": true
     },
     {
-        "message": "Function StubValidator\\someFunction() has no return typehint specified.",
+        "message": "Function StubValidator\\someFunction() has no return type specified.",
         "line": 22,
         "ignorable": true
     },
@@ -20,12 +20,12 @@
         "ignorable": true
     },
     {
-        "message": "Method class@anonymous/stubValidator/stubs.php:27::doFoo() has no return typehint specified.",
+        "message": "Method class@anonymous/stubValidator/stubs.php:27::doFoo() has no return type specified.",
         "line": 30,
         "ignorable": true
     },
     {
-        "message": "Parameter $foo of method class@anonymous/stubValidator/stubs.php:27::doFoo() has invalid typehint type StubValidator\\Foooooooo.",
+        "message": "Parameter $foo of method class@anonymous/stubValidator/stubs.php:27::doFoo() has invalid type StubValidator\\Foooooooo.",
         "line": 30,
         "ignorable": true
     }

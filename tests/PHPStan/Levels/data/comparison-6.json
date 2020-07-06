@@ -1,6 +1,6 @@
 [
     {
-        "message": "Method Levels\\Comparison\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\Comparison\\Foo::doFoo() has no return type specified.",
         "line": 18,
         "ignorable": true
     }

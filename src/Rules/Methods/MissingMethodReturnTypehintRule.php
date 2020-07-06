@@ -42,7 +42,7 @@ final class MissingMethodReturnTypehintRule implements \PHPStan\Rules\Rule
 		if ($returnType instanceof MixedType && !$returnType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Method %s::%s() has no return typehint specified.',
+					'Method %s::%s() has no return type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName()
 				))->build(),

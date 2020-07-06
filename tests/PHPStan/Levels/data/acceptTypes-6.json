@@ -1,151 +1,151 @@
 [
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doFoo() has no return type specified.",
         "line": 15,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doBar() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doBar() has no return type specified.",
         "line": 30,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doBaz() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doBaz() has no return type specified.",
         "line": 41,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doLorem() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doLorem() has no return type specified.",
         "line": 60,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doIpsum() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doIpsum() has no return type specified.",
         "line": 68,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doFooArray() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doFooArray() has no return type specified.",
         "line": 80,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doBarArray() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doBarArray() has no return type specified.",
         "line": 98,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doBazArray() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doBazArray() has no return type specified.",
         "line": 103,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::doBazArrayUnionItemTypes() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::doBazArrayUnionItemTypes() has no return type specified.",
         "line": 127,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::callableArray() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::callableArray() has no return type specified.",
         "line": 138,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::expectCallable() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::expectCallable() has no return type specified.",
         "line": 148,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::iterableCountable() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::iterableCountable() has no return type specified.",
         "line": 160,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::benevolentUnionNotReported() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Foo::benevolentUnionNotReported() has no return type specified.",
         "line": 176,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doFoo() has no return type specified.",
         "line": 208,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doFooUnionClosures() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doFooUnionClosures() has no return type specified.",
         "line": 254,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doBar() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doBar() has no return type specified.",
         "line": 332,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doBaz() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doBaz() has no return type specified.",
         "line": 342,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::doFoo() has no return type specified.",
         "line": 409,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::doBar() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::doBar() has no return type specified.",
         "line": 418,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::doBaz() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::doBaz() has no return type specified.",
         "line": 423,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::doLorem() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::doLorem() has no return type specified.",
         "line": 437,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::doIpsum() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::doIpsum() has no return type specified.",
         "line": 445,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::doFooArray() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::doFooArray() has no return type specified.",
         "line": 490,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::doBarArray() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::doBarArray() has no return type specified.",
         "line": 502,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::testUnions() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::testUnions() has no return type specified.",
         "line": 524,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::testUnions2() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::testUnions2() has no return type specified.",
         "line": 535,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::requireArray() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::requireArray() has no return type specified.",
         "line": 549,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Baz::requireFoo() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\Baz::requireFoo() has no return type specified.",
         "line": 554,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has no return type specified.",
         "line": 570,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doBar() has no return typehint specified.",
+        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doBar() has no return type specified.",
         "line": 603,
         "ignorable": true
     }

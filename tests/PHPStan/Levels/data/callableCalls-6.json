@@ -1,11 +1,11 @@
 [
     {
-        "message": "Method Levels\\CallableCalls\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\CallableCalls\\Foo::doFoo() has no return type specified.",
         "line": 14,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\CallableCalls\\Foo::doBar() has no return typehint specified.",
+        "message": "Method Levels\\CallableCalls\\Foo::doBar() has no return type specified.",
         "line": 41,
         "ignorable": true
     }

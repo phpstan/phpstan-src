@@ -28,11 +28,11 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 		}
 		$this->analyse([__DIR__ . '/data/arrow-function-typehints.php'], [
 			[
-				'Parameter $bar of anonymous function has invalid typehint type ArrowFunctionExistingClassesInTypehints\Bar.',
+				'Parameter $bar of anonymous function has invalid type ArrowFunctionExistingClassesInTypehints\Bar.',
 				10,
 			],
 			[
-				'Return typehint of anonymous function has invalid type ArrowFunctionExistingClassesInTypehints\Baz.',
+				'Anonymous function has invalid return type ArrowFunctionExistingClassesInTypehints\Baz.',
 				10,
 			],
 		]);

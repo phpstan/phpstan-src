@@ -36,7 +36,7 @@
 		"phpstan/phpstan": "self.version"
 	},
 	"require-dev": {
-		"brianium/paratest": "^2.0",
+		"brianium/paratest": "^4.0",
 		"ergebnis/composer-normalize": "^2.0.2",
 		"nategood/httpful": "^0.2.20",
 		"phing/phing": "^2.16.0",

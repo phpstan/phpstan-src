@@ -52,7 +52,6 @@ function doFooPsalmPrefix(
 	$objectUsed,
 	$nullableInteger,
 	$nullableObject,
-	$anotherNullableObject = null,
 	$nullType,
 	$barObject,
 	Bar $conflictedObject,
@@ -68,7 +67,8 @@ function doFooPsalmPrefix(
 	bool $boolTrue,
 	bool $boolFalse,
 	bool $trueBoolean,
-	$parameterWithDefaultValueFalse = false
+	$parameterWithDefaultValueFalse = false,
+	$anotherNullableObject = null
 )
 {
 	$fooFunctionResult = doFoo();

@@ -52,7 +52,6 @@ function doFoo(
 	$objectUsed,
 	$nullableInteger,
 	$nullableObject,
-	$anotherNullableObject = null,
 	$nullType,
 	$barObject,
 	Bar $conflictedObject,
@@ -68,7 +67,8 @@ function doFoo(
 	bool $boolTrue,
 	bool $boolFalse,
 	bool $trueBoolean,
-	$parameterWithDefaultValueFalse = false
+	$parameterWithDefaultValueFalse = false,
+	$anotherNullableObject = null
 )
 {
 	$fooFunctionResult = doFoo();

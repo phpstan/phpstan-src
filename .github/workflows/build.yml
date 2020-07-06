@@ -14,7 +14,6 @@ env:
 jobs:
   lint:
     name: "Lint"
-
     runs-on: "ubuntu-latest"
 
     strategy:
@@ -24,6 +23,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
 
     steps:
       - name: "Checkout"
@@ -49,7 +49,7 @@ jobs:
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
-        if: matrix.php-version != '7.4'
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
         run: php bin/transform-source.php
 
       - name: "Lint"
@@ -89,7 +89,7 @@ jobs:
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
-        if: matrix.php-version != '7.4'
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
         run: php bin/transform-source.php
 
       - name: "Composer Normalize"
@@ -136,8 +136,8 @@ jobs:
 
   tests:
     name: "Tests"
-
     runs-on: ${{ matrix.operating-system }}
+    continue-on-error: ${{ matrix.php-version == '8.0' }}
 
     strategy:
       fail-fast: false
@@ -147,6 +147,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing tests"
@@ -175,8 +176,12 @@ jobs:
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
+      - name: "Update PHPUnit"
+        if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
+        run: "composer require --dev phpunit/phpunit:^9.1.5 --update-with-dependencies"
+
       - name: "Transform source code"
-        if: matrix.php-version != '7.4'
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
         run: php bin/transform-source.php
 
       - name: "Tests"
@@ -222,7 +227,6 @@ jobs:
 
   static-analysis:
     name: "PHPStan"
-
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
@@ -233,6 +237,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing phpstan"
@@ -261,7 +266,7 @@ jobs:
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
-        if: matrix.php-version != '7.4'
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
         run: php bin/transform-source.php
 
       - name: "PHPStan"

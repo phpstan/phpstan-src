@@ -22,7 +22,6 @@ class FooPhpDocsImplicitInheritanceChild extends Foo
 		$objectUsed,
 		$nullableInteger,
 		$nullableObject,
-		$anotherNullableObject = null,
 		$selfType,
 		$staticType,
 		$nullType,
@@ -40,9 +39,10 @@ class FooPhpDocsImplicitInheritanceChild extends Foo
 		bool $boolTrue,
 		bool $boolFalse,
 		bool $trueBoolean,
-		$parameterWithDefaultValueFalse = false,
 		$objectWithoutNativeTypehint,
-		object $objectWithNativeTypehint
+		object $objectWithNativeTypehint,
+		$parameterWithDefaultValueFalse = false,
+		$anotherNullableObject = null
 	)
 	{
 		$parent = new FooParent();

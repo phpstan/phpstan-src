@@ -1,26 +1,26 @@
 [
     {
-        "message": "Method StubsIntegrationTest\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method StubsIntegrationTest\\Foo::doFoo() has no return type specified.",
         "line": 8,
         "ignorable": true
     },
     {
-        "message": "Method StubsIntegrationTest\\Foo::doFoo() has parameter $i with no typehint specified.",
+        "message": "Method StubsIntegrationTest\\Foo::doFoo() has parameter $i with no type specified.",
         "line": 8,
         "ignorable": true
     },
     {
-        "message": "Method StubsIntegrationTest\\InterfaceWithStubPhpDoc2::doFoo() has no return typehint specified.",
+        "message": "Method StubsIntegrationTest\\InterfaceWithStubPhpDoc2::doFoo() has no return type specified.",
         "line": 151,
         "ignorable": true
     },
     {
-        "message": "Method StubsIntegrationTest\\YetAnotherFoo::doFoo() has no return typehint specified.",
+        "message": "Method StubsIntegrationTest\\YetAnotherFoo::doFoo() has no return type specified.",
         "line": 197,
         "ignorable": true
     },
     {
-        "message": "Method StubsIntegrationTest\\YetAnotherFoo::doFoo() has parameter $j with no typehint specified.",
+        "message": "Method StubsIntegrationTest\\YetAnotherFoo::doFoo() has parameter $j with no type specified.",
         "line": 197,
         "ignorable": true
     }

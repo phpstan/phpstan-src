@@ -1,6 +1,6 @@
 [
     {
-        "message": "Method Levels\\Casts\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\Casts\\Foo::doFoo() has no return type specified.",
         "line": 13,
         "ignorable": true
     }

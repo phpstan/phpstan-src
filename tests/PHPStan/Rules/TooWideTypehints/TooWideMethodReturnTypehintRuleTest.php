@@ -20,11 +20,11 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/tooWideMethodReturnType-private.php'], [
 			[
-				'Method TooWideMethodReturnType\Foo::bar() never returns string so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Foo::bar() never returns string so it can be removed from the return type.',
 				14,
 			],
 			[
-				'Method TooWideMethodReturnType\Foo::baz() never returns null so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Foo::baz() never returns null so it can be removed from the return type.',
 				18,
 			],
 			[
@@ -50,15 +50,15 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/tooWideMethodReturnType-public-protected.php'], [
 			[
-				'Method TooWideMethodReturnType\Bar::bar() never returns string so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Bar::bar() never returns string so it can be removed from the return type.',
 				14,
 			],
 			[
-				'Method TooWideMethodReturnType\Bar::baz() never returns null so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Bar::baz() never returns null so it can be removed from the return type.',
 				18,
 			],
 			[
-				'Method TooWideMethodReturnType\Bazz::lorem() never returns string so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Bazz::lorem() never returns string so it can be removed from the return type.',
 				35,
 			],
 		]);
@@ -68,11 +68,11 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/tooWideMethodReturnType-public-protected-inheritance.php'], [
 			[
-				'Method TooWideMethodReturnType\Baz::baz() never returns null so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Baz::baz() never returns null so it can be removed from the return type.',
 				27,
 			],
 			[
-				'Method TooWideMethodReturnType\BarClass::doFoo() never returns null so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\BarClass::doFoo() never returns null so it can be removed from the return type.',
 				51,
 			],
 		]);

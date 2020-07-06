@@ -61,19 +61,19 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				48,
 			],
 			[
-				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid typehint type parent.',
+				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid type parent.',
 				53,
 			],
 			[
-				'Return typehint of method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid type parent.',
+				'Return type of method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid type parent.',
 				53,
 			],
 			[
-				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid typehint type parent.',
+				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
 				62,
 			],
 			[
-				'Return typehint of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
+				'Return type of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
 				62,
 			],
 			[
@@ -131,11 +131,11 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/typehints-iterable.php'], [
 			[
-				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid typehint type TestMethodTypehints\NonexistentClass.',
+				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid type TestMethodTypehints\NonexistentClass.',
 				11,
 			],
 			[
-				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid typehint type TestMethodTypehints\AnotherNonexistentClass.',
+				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid type TestMethodTypehints\AnotherNonexistentClass.',
 				11,
 			],
 		]);

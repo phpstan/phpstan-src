@@ -134,9 +134,9 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/anonymous-class-wrong-filename-regression.php');
 		$this->assertCount(5, $errors);
-		$this->assertStringContainsString('Return typehint of method', $errors[0]->getMessage());
+		$this->assertStringContainsString('Return type of method', $errors[0]->getMessage());
 		$this->assertSame(16, $errors[0]->getLine());
-		$this->assertStringContainsString('Return typehint of method', $errors[1]->getMessage());
+		$this->assertStringContainsString('Return type of method', $errors[1]->getMessage());
 		$this->assertSame(16, $errors[1]->getLine());
 		$this->assertSame('Instantiated class AnonymousClassWrongFilename\Bar not found.', $errors[2]->getMessage());
 		$this->assertSame(18, $errors[2]->getLine());
@@ -168,7 +168,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertCount(2, $errors);
 		$this->assertSame('Property y\x::$baz has unknown class x\baz as its type.', $errors[0]->getMessage());
 		$this->assertSame(15, $errors[0]->getLine());
-		$this->assertSame('Parameter $baz of method y\x::__construct() has invalid typehint type x\baz.', $errors[1]->getMessage());
+		$this->assertSame('Parameter $baz of method y\x::__construct() has invalid type x\baz.', $errors[1]->getMessage());
 		$this->assertSame(16, $errors[1]->getLine());
 	}
 

@@ -39,7 +39,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 		if ($propertyType instanceof MixedType && !$propertyType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Property %s::$%s has no typehint specified.',
+					'Property %s::$%s has no type specified.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
 					$node->getName()
 				))->build(),

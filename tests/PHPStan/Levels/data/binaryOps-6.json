@@ -1,6 +1,6 @@
 [
     {
-        "message": "Method Levels\\BinaryOps\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\BinaryOps\\Foo::doFoo() has no return type specified.",
         "line": 14,
         "ignorable": true
     }

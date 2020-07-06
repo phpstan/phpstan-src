@@ -58,7 +58,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 					'errors' => 1,
 					'messages' => [
 						[
-							'message' => 'Method ParallelAnalyserIntegrationTest\\Bar::doFoo() has no return typehint specified.',
+							'message' => 'Method ParallelAnalyserIntegrationTest\\Bar::doFoo() has no return type specified.',
 							'line' => 8,
 							'ignorable' => true,
 						],
@@ -68,7 +68,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 					'errors' => 2,
 					'messages' => [
 						[
-							'message' => 'Method ParallelAnalyserIntegrationTest\\Foo::doFoo() has no return typehint specified.',
+							'message' => 'Method ParallelAnalyserIntegrationTest\\Foo::doFoo() has no return type specified.',
 							'line' => 8,
 							'ignorable' => true,
 						],

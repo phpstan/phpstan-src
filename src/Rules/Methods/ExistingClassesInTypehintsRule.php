@@ -40,12 +40,12 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 			$methodReflection,
 			$node->getOriginalNode(),
 			sprintf(
-				'Parameter $%%s of method %s::%s() has invalid typehint type %%s.',
+				'Parameter $%%s of method %s::%s() has invalid type %%s.',
 				$scope->getClassReflection()->getDisplayName(),
 				$methodReflection->getName()
 			),
 			sprintf(
-				'Return typehint of method %s::%s() has invalid type %%s.',
+				'Return type of method %s::%s() has invalid type %%s.',
 				$scope->getClassReflection()->getDisplayName(),
 				$methodReflection->getName()
 			),

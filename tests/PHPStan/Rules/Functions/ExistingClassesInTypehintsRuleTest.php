@@ -27,15 +27,15 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		require_once __DIR__ . '/data/typehints.php';
 		$this->analyse([__DIR__ . '/data/typehints.php'], [
 			[
-				'Return typehint of function TestFunctionTypehints\foo() has invalid type TestFunctionTypehints\NonexistentClass.',
+				'Return type of function TestFunctionTypehints\foo() has invalid type TestFunctionTypehints\NonexistentClass.',
 				15,
 			],
 			[
-				'Parameter $bar of function TestFunctionTypehints\bar() has invalid typehint type TestFunctionTypehints\BarFunctionTypehints.',
+				'Parameter $bar of function TestFunctionTypehints\bar() has invalid type TestFunctionTypehints\BarFunctionTypehints.',
 				20,
 			],
 			[
-				'Return typehint of function TestFunctionTypehints\returnParent() has invalid type TestFunctionTypehints\parent.',
+				'Return type of function TestFunctionTypehints\returnParent() has invalid type TestFunctionTypehints\parent.',
 				33,
 			],
 			[
@@ -63,27 +63,27 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				56,
 			],
 			[
-				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInNative() has invalid typehint type TestFunctionTypehints\SomeTrait.',
+				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInNative() has invalid type TestFunctionTypehints\SomeTrait.',
 				61,
 			],
 			[
-				'Return typehint of function TestFunctionTypehints\referencesTraitsInNative() has invalid type TestFunctionTypehints\SomeTrait.',
+				'Return type of function TestFunctionTypehints\referencesTraitsInNative() has invalid type TestFunctionTypehints\SomeTrait.',
 				61,
 			],
 			[
-				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid typehint type TestFunctionTypehints\SomeTrait.',
+				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid type TestFunctionTypehints\SomeTrait.',
 				70,
 			],
 			[
-				'Return typehint of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid type TestFunctionTypehints\SomeTrait.',
+				'Return type of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid type TestFunctionTypehints\SomeTrait.',
 				70,
 			],
 			[
-				'Parameter $string of function TestFunctionTypehints\genericClassString() has invalid typehint type TestFunctionTypehints\SomeNonexistentClass.',
+				'Parameter $string of function TestFunctionTypehints\genericClassString() has invalid type TestFunctionTypehints\SomeNonexistentClass.',
 				78,
 			],
 			[
-				'Parameter $string of function TestFunctionTypehints\genericTemplateClassString() has invalid typehint type TestFunctionTypehints\SomeNonexistentClass.',
+				'Parameter $string of function TestFunctionTypehints\genericTemplateClassString() has invalid type TestFunctionTypehints\SomeNonexistentClass.',
 				87,
 			],
 			[
@@ -98,15 +98,15 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		require_once __DIR__ . '/data/typehintsWithoutNamespace.php';
 		$this->analyse([__DIR__ . '/data/typehintsWithoutNamespace.php'], [
 			[
-				'Return typehint of function fooWithoutNamespace() has invalid type NonexistentClass.',
+				'Return type of function fooWithoutNamespace() has invalid type NonexistentClass.',
 				13,
 			],
 			[
-				'Parameter $bar of function barWithoutNamespace() has invalid typehint type BarFunctionTypehints.',
+				'Parameter $bar of function barWithoutNamespace() has invalid type BarFunctionTypehints.',
 				18,
 			],
 			[
-				'Return typehint of function returnParentWithoutNamespace() has invalid type parent.',
+				'Return type of function returnParentWithoutNamespace() has invalid type parent.',
 				31,
 			],
 			[
@@ -134,19 +134,19 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				54,
 			],
 			[
-				'Parameter $trait of function referencesTraitsInNativeWithoutNamespace() has invalid typehint type SomeTraitWithoutNamespace.',
+				'Parameter $trait of function referencesTraitsInNativeWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
 				59,
 			],
 			[
-				'Return typehint of function referencesTraitsInNativeWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
+				'Return type of function referencesTraitsInNativeWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
 				59,
 			],
 			[
-				'Parameter $trait of function referencesTraitsInPhpDocWithoutNamespace() has invalid typehint type SomeTraitWithoutNamespace.',
+				'Parameter $trait of function referencesTraitsInPhpDocWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
 				68,
 			],
 			[
-				'Return typehint of function referencesTraitsInPhpDocWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
+				'Return type of function referencesTraitsInPhpDocWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
 				68,
 			],
 		]);

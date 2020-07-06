@@ -21,11 +21,11 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 		require_once __DIR__ . '/data/tooWideFunctionReturnType.php';
 		$this->analyse([__DIR__ . '/data/tooWideFunctionReturnType.php'], [
 			[
-				'Function TooWideFunctionReturnType\bar() never returns string so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\bar() never returns string so it can be removed from the return type.',
 				11,
 			],
 			[
-				'Function TooWideFunctionReturnType\baz() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\baz() never returns null so it can be removed from the return type.',
 				15,
 			],
 			[

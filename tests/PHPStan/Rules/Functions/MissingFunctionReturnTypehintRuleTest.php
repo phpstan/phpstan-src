@@ -21,11 +21,11 @@ class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCas
 		require_once __DIR__ . '/data/missing-function-return-typehint.php';
 		$this->analyse([__DIR__ . '/data/missing-function-return-typehint.php'], [
 			[
-				'Function globalFunction1() has no return typehint specified.',
+				'Function globalFunction1() has no return type specified.',
 				5,
 			],
 			[
-				'Function MissingFunctionReturnTypehint\namespacedFunction1() has no return typehint specified.',
+				'Function MissingFunctionReturnTypehint\namespacedFunction1() has no return type specified.',
 				30,
 			],
 			[

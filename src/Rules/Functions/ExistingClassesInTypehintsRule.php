@@ -38,11 +38,11 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 			$node->getOriginalNode(),
 			$scope->getFunction(),
 			sprintf(
-				'Parameter $%%s of function %s() has invalid typehint type %%s.',
+				'Parameter $%%s of function %s() has invalid type %%s.',
 				$functionName
 			),
 			sprintf(
-				'Return typehint of function %s() has invalid type %%s.',
+				'Return type of function %s() has invalid type %%s.',
 				$functionName
 			),
 			sprintf('Function %s() uses native union types but they\'re supported only on PHP 8.0 and later.', $functionName),

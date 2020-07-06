@@ -103,7 +103,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 			}
 
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() never returns %s so it can be removed from the return typehint.',
+				'Method %s::%s() never returns %s so it can be removed from the return type.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$type->describe(VerbosityLevel::getRecommendedLevelByType($type))

@@ -20,15 +20,15 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/missing-property-typehint.php'], [
 			[
-				'Property MissingPropertyTypehint\MyClass::$prop1 has no typehint specified.',
+				'Property MissingPropertyTypehint\MyClass::$prop1 has no type specified.',
 				7,
 			],
 			[
-				'Property MissingPropertyTypehint\MyClass::$prop2 has no typehint specified.',
+				'Property MissingPropertyTypehint\MyClass::$prop2 has no type specified.',
 				9,
 			],
 			[
-				'Property MissingPropertyTypehint\MyClass::$prop3 has no typehint specified.',
+				'Property MissingPropertyTypehint\MyClass::$prop3 has no type specified.',
 				14,
 			],
 			[

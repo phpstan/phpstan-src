@@ -14,7 +14,6 @@ env:
 jobs:
   lint:
     name: "Lint"
-
     runs-on: "ubuntu-latest"
 
     strategy:
@@ -24,6 +23,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
 
     steps:
       - name: "Checkout"
@@ -136,8 +136,8 @@ jobs:
 
   tests:
     name: "Tests"
-
     runs-on: ${{ matrix.operating-system }}
+    continue-on-error: ${{ matrix.php-version == '8.0' }}
 
     strategy:
       fail-fast: false
@@ -147,6 +147,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing tests"
@@ -222,7 +223,6 @@ jobs:
 
   static-analysis:
     name: "PHPStan"
-
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
@@ -233,6 +233,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing phpstan"

@@ -7,12 +7,16 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
+use const PHP_VERSION_ID;
 
 class AutoloadFilesTest extends TestCase
 {
 
 	public function testExpectedFiles(): void
 	{
+		if (PHP_VERSION_ID >= 70400) {
+			$this->markTestSkipped();
+		}
 		$finder = new Finder();
 		$finder->followLinks();
 		$autoloadFiles = [];

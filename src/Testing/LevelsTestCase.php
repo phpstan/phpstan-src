@@ -143,7 +143,7 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 	{
 		if (count($expectedMessages) === 0) {
 			try {
-				$this->assertFileNotExists($expectedJsonFile);
+				self::assertFileNotExists($expectedJsonFile);
 				return null;
 			} catch (\PHPUnit\Framework\AssertionFailedError $e) {
 				unlink($expectedJsonFile);
@@ -164,6 +164,16 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 		}
 
 		return null;
+	}
+
+	public static function assertFileNotExists(string $filename, string $message = ''): void
+	{
+		if (method_exists(self::class, 'assertFileDoesNotExist')) {
+			self::assertFileDoesNotExist($filename, $message); // @phpstan-ignore-line
+			return;
+		}
+
+		parent::assertFileNotExists($filename, $message);
 	}
 
 }

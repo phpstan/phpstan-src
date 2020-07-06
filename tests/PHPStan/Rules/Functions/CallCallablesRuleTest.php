@@ -29,6 +29,9 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testRule(): void
 	{
+		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped();
+		}
 		$this->analyse([__DIR__ . '/data/callables.php'], [
 			[
 				'Trying to invoke string but it might not be a callable.',

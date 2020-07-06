@@ -144,6 +144,9 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 
 	public function testExtendsPdoStatementCrash(): void
 	{
+		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped();
+		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/extends-pdo-statement.php');
 		$this->assertCount(0, $errors);
 	}
@@ -172,6 +175,9 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 
 	public function testCollectWarnings(): void
 	{
+		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Fatal error in PHP 8.0');
+		}
 		restore_error_handler();
 		$errors = $this->runAnalyse(__DIR__ . '/data/declaration-warning.php');
 		if (self::$useStaticReflectionProvider) {

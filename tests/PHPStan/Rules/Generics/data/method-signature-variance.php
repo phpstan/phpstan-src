@@ -12,15 +12,17 @@ interface Invariant {
 
 /**
  * @template-covariant T
+ * @template-covariant W of \DateTimeInterface
  */
 class C {
 	/**
 	 * @param Out<T> $a
 	 * @param Invariant<T> $b
 	 * @param T $c
+	 * @param W $d
 	 * @return T
 	 */
-	function a($a, $b, $c) {
+	function a($a, $b, $c, $d) {
 		return $c;
 	}
 	/**

@@ -169,7 +169,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return new self(
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
-			TemplateTypeVariance::createInvariant(),
+			$this->variance,
 			$this->name,
 			$this->getClassName()
 		);

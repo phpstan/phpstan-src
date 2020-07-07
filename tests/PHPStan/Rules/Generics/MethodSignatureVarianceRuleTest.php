@@ -23,27 +23,31 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-signature-variance.php'], [
 			[
 				'Template type T is declared as covariant, but occurs in contravariant position in parameter a of method MethodSignatureVariance\C::a().',
-				23,
+				25,
 			],
 			[
 				'Template type T is declared as covariant, but occurs in invariant position in parameter b of method MethodSignatureVariance\C::a().',
-				23,
+				25,
 			],
 			[
 				'Template type T is declared as covariant, but occurs in contravariant position in parameter c of method MethodSignatureVariance\C::a().',
-				23,
+				25,
+			],
+			[
+				'Template type W is declared as covariant, but occurs in contravariant position in parameter d of method MethodSignatureVariance\C::a().',
+				25,
 			],
 			[
 				'Template type U is declared as covariant, but occurs in contravariant position in parameter a of method MethodSignatureVariance\C::b().',
-				33,
+				35,
 			],
 			[
 				'Template type U is declared as covariant, but occurs in invariant position in parameter b of method MethodSignatureVariance\C::b().',
-				33,
+				35,
 			],
 			[
 				'Template type U is declared as covariant, but occurs in contravariant position in parameter c of method MethodSignatureVariance\C::b().',
-				33,
+				35,
 			],
 		]);
 	}

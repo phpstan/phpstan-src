@@ -12,7 +12,6 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceL
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
@@ -27,7 +26,7 @@ class BetterReflectionSourceLocatorFactory
 	/** @var \PhpParser\Parser */
 	private $parser;
 
-	/** @var PhpStormStubsSourceStubber */
+	/** @var SourceStubber */
 	private $phpstormStubsSourceStubber;
 
 	/** @var ReflectionSourceStubber */
@@ -88,7 +87,7 @@ class BetterReflectionSourceLocatorFactory
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
-		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		SourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,

@@ -9,14 +9,14 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
 
 	private ReflectionProvider $reflectionProvider;
 
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
+	private SourceStubber $phpStormStubsSourceStubber;
 
 	/** @var string[] */
 	private array $patterns;
@@ -29,7 +29,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		SourceStubber $phpStormStubsSourceStubber,
 		array $patterns,
 		?string $singleReflectionFile
 	)

@@ -63,12 +63,15 @@ use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
+use Roave\BetterReflection\SourceLocator\SourceStubber\AggregateSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
+use const PHP_VERSION_ID;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -84,7 +87,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	/** @var array{ClassReflector, FunctionReflector, ConstantReflector}|null */
 	private static $reflectors;
 
-	/** @var PhpStormStubsSourceStubber|null */
+	/** @var SourceStubber|null */
 	private static $phpStormStubsSourceStubber;
 
 	public static function getContainer(): Container
@@ -188,10 +191,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return $reflectionProvider;
 	}
 
-	private static function getPhpStormStubsSourceStubber(): PhpStormStubsSourceStubber
+	private static function getPhpStormStubsSourceStubber(): SourceStubber
 	{
 		if (self::$phpStormStubsSourceStubber === null) {
-			self::$phpStormStubsSourceStubber = new PhpStormStubsSourceStubber(new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class)));
+			$stubber = new PhpStormStubsSourceStubber(new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class)));
+			if (PHP_VERSION_ID >= 80000) {
+				$stubber = new AggregateSourceStubber(new ReflectionSourceStubber(), $stubber);
+			}
+
+			self::$phpStormStubsSourceStubber = $stubber;
 		}
 
 		return self::$phpStormStubsSourceStubber;

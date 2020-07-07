@@ -1155,6 +1155,7 @@ services:
 		class: PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider
 		arguments:
 			reflectionProvider: @innerRuntimeReflectionProvider
+			phpStormStubsSourceStubber: @phpStormStubsSourceStubber
 			patterns: %staticReflectionClassNamePatterns%
 		autowired: false
 
@@ -1174,6 +1175,7 @@ services:
 			analysedPathsFromConfig: %analysedPathsFromConfig%
 			singleReflectionFile: %singleReflectionFile%
 			staticReflectionClassNamePatterns: %staticReflectionClassNamePatterns%
+			phpstormStubsSourceStubber: @phpStormStubsSourceStubber
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory
@@ -1182,6 +1184,7 @@ services:
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 		arguments:
 			phpParser: @phpParserDecorator
+			phpVersionId: %phpVersion%
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 
@@ -1189,6 +1192,13 @@ services:
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
+
+	phpStormStubsSourceStubber:
+		factory: @phpstormSourceStubberFactory::create()
+		autowired: false
+
+	phpstormSourceStubberFactory:
+		class: PHPStan\Reflection\BetterReflection\SourceLocator\PhpStormStubsSourceStubberFactory
 
 	# Error formatters
 

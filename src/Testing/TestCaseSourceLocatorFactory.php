@@ -8,7 +8,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
@@ -27,7 +27,7 @@ class TestCaseSourceLocatorFactory
 
 	private \PhpParser\Parser $phpParser;
 
-	private PhpStormStubsSourceStubber $phpstormStubsSourceStubber;
+	private SourceStubber $phpstormStubsSourceStubber;
 
 	private ReflectionSourceStubber $reflectionSourceStubber;
 
@@ -36,7 +36,7 @@ class TestCaseSourceLocatorFactory
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
 		\PhpParser\Parser $phpParser,
-		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		SourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber
 	)
 	{

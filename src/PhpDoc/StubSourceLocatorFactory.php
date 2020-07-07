@@ -6,7 +6,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
@@ -17,7 +17,7 @@ class StubSourceLocatorFactory
 
 	private \PhpParser\Parser $parser;
 
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
+	private SourceStubber $phpStormStubsSourceStubber;
 
 	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
@@ -31,7 +31,7 @@ class StubSourceLocatorFactory
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		SourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		Container $container,
 		array $stubFiles

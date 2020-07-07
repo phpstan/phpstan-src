@@ -3,6 +3,7 @@ services:
 		class: PHPStan\Testing\TestCaseSourceLocatorFactory
 		arguments:
 			phpParser: @phpParserDecorator
+			phpstormStubsSourceStubber: @phpStormStubsSourceStubber
 
 	phpParserLexer:
 		class: PhpParser\Lexer

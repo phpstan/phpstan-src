@@ -167,6 +167,13 @@ return [
 
 			return $content;
 		},
+		function (string $filePath, string $prefix, string $content): string {
+			if ($filePath !== 'src/Type/TypehintHelper.php') {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\ReflectionUnionType', $prefix), 'ReflectionUnionType', $content);
+		},
 	],
 	'whitelist' => [
 		'PHPStan\*',

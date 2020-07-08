@@ -10000,6 +10000,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/unionTypes.php');
 	}
 
+	public function dataNativeMixedType(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/mixedType.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577

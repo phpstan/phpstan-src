@@ -18,6 +18,7 @@ parameters:
 		- %rootDir%/tests/notAutoloaded/*
 		- %rootDir%/tests/PHPStan/Generics/functions.php
 		- %rootDir%/tests/PHPStan/Reflection/UnionTypesTest.php
+		- %rootDir%/tests/PHPStan/Reflection/MixedTypeTest.php
 	ignoreErrors:
 		- '#^Dynamic call to static method PHPUnit\\Framework\\\S+\(\)\.$#'
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'

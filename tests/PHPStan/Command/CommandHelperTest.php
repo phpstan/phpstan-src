@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\StreamOutput;
+use function realpath;
 
 /**
  * @group exec
@@ -170,6 +171,7 @@ class CommandHelperTest extends TestCase
 				[
 					'bootstrap' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 					'bootstrapFiles' => [
+						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php'),
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 					],
 					'autoload_files' => [

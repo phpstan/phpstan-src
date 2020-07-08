@@ -32,9 +32,11 @@ class HelloWorld extends ParentClass
 	}
 }
 
-$hw = new HelloWorld();
-assertType('string', $hw->sayHi());
-assertType('int', $hw->sayHello());
+function (): void {
+	$hw = new HelloWorld();
+	assertType('string', $hw->sayHi());
+	assertType('int', $hw->sayHello());
+};
 
 interface DecoratorInterface
 {
@@ -69,5 +71,7 @@ class Dummy
 	}
 }
 
-$dummy = new Dummy();
-assertType(FooDecorator::class, $dummy->getDecorator());
+function () {
+	$dummy = new Dummy();
+	assertType(FooDecorator::class, $dummy->getDecorator());
+};

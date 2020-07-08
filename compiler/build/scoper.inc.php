@@ -168,7 +168,10 @@ return [
 			return $content;
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'src/Type/TypehintHelper.php') {
+			if (!in_array($filePath, [
+				'src/Type/TypehintHelper.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionUnionType.php',
+			], true)) {
 				return $content;
 			}
 

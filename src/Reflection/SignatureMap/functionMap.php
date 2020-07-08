@@ -13052,7 +13052,7 @@ return [
 'XMLDiff\Memory::diff' => ['string', 'from'=>'string', 'to'=>'string'],
 'XMLDiff\Memory::merge' => ['string', 'src'=>'string', 'diff'=>'string'],
 'XMLReader::close' => ['bool'],
-'XMLReader::expand' => ['DOMNode', 'basenode='=>'DOMNode'],
+'XMLReader::expand' => ['DOMNode|false', 'basenode='=>'DOMNode'],
 'XMLReader::getAttribute' => ['string|null', 'name'=>'string'],
 'XMLReader::getAttributeNo' => ['string|null', 'index'=>'int'],
 'XMLReader::getAttributeNs' => ['string|null', 'name'=>'string', 'namespaceuri'=>'string'],

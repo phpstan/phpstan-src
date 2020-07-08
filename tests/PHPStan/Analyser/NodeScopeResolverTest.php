@@ -9989,6 +9989,17 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/graphics-draw-return-types.php');
 	}
 
+	public function dataNativeUnionTypes(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		require_once __DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php';
+
+		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/unionTypes.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10049,6 +10060,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataOverrideVariableCertaintyInRootScope
 	 * @dataProvider dataBitwiseNot
 	 * @dataProvider dataGraphicsDrawReturnTypes
+	 * @dataProvider dataNativeUnionTypes
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

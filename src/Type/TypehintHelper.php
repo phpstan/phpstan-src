@@ -5,6 +5,8 @@ namespace PHPStan\Type;
 use PHPStan\Broker\Broker;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionNamedType;
+use ReflectionType;
+use ReflectionUnionType;
 
 class TypehintHelper
 {
@@ -60,6 +62,14 @@ class TypehintHelper
 				$phpDocType = $phpDocType->getItemType();
 			}
 			return $phpDocType ?? new MixedType();
+		}
+
+		if ($reflectionType instanceof ReflectionUnionType) {
+			$type = TypeCombinator::union(...array_map(static function (ReflectionType $type) use ($selfClass): Type {
+				return self::decideTypeFromReflection($type, null, $selfClass, false);
+			}, $reflectionType->getTypes()));
+
+			return self::decideType($type, $phpDocType);
 		}
 
 		if (!$reflectionType instanceof ReflectionNamedType) {

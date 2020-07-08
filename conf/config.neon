@@ -1,6 +1,7 @@
 parameters:
 	bootstrap: null
-	bootstrapFiles: []
+	bootstrapFiles:
+		- ../stubs/runtime/ReflectionUnionType.php
 	excludes_analyse: []
 	autoload_directories: []
 	autoload_files: []

@@ -2,20 +2,25 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\Php\PhpVersion;
+
 class SignatureMapProvider
 {
 
 	private \PHPStan\Reflection\SignatureMap\SignatureMapParser $parser;
 
+	private PhpVersion $phpVersion;
+
 	/** @var mixed[]|null */
-	private static ?array $signatureMap = null;
+	private ?array $signatureMap = null;
 
 	/** @var array<string, array{hasSideEffects: bool}>|null */
-	private static ?array $functionMetadata = null;
+	private ?array $functionMetadata = null;
 
-	public function __construct(SignatureMapParser $parser)
+	public function __construct(SignatureMapParser $parser, PhpVersion $phpVersion)
 	{
 		$this->parser = $parser;
+		$this->phpVersion = $phpVersion;
 	}
 
 	public function hasFunctionSignature(string $name): bool
@@ -64,23 +69,23 @@ class SignatureMapProvider
 	/**
 	 * @return array<string, array{hasSideEffects: bool}>
 	 */
-	private static function getFunctionMetadataMap(): array
+	private function getFunctionMetadataMap(): array
 	{
-		if (self::$functionMetadata === null) {
+		if ($this->functionMetadata === null) {
 			/** @var array<string, array{hasSideEffects: bool}> $metadata */
 			$metadata = require __DIR__ . '/functionMetadata.php';
-			self::$functionMetadata = array_change_key_case($metadata, CASE_LOWER);
+			$this->functionMetadata = array_change_key_case($metadata, CASE_LOWER);
 		}
 
-		return self::$functionMetadata;
+		return $this->functionMetadata;
 	}
 
 	/**
 	 * @return mixed[]
 	 */
-	private static function getSignatureMap(): array
+	private function getSignatureMap(): array
 	{
-		if (self::$signatureMap === null) {
+		if ($this->signatureMap === null) {
 			$signatureMap = require __DIR__ . '/functionMap.php';
 			if (!is_array($signatureMap)) {
 				throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
@@ -88,7 +93,7 @@ class SignatureMapProvider
 
 			$signatureMap = array_change_key_case($signatureMap, CASE_LOWER);
 
-			if (PHP_VERSION_ID >= 70400) {
+			if ($this->phpVersion->getVersionId() >= 70400) {
 				$php74MapDelta = require __DIR__ . '/functionMap_php74delta.php';
 				if (!is_array($php74MapDelta)) {
 					throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
@@ -97,10 +102,10 @@ class SignatureMapProvider
 				$signatureMap = self::computeSignatureMap($signatureMap, $php74MapDelta);
 			}
 
-			self::$signatureMap = $signatureMap;
+			$this->signatureMap = $signatureMap;
 		}
 
-		return self::$signatureMap;
+		return $this->signatureMap;
 	}
 
 	/**
@@ -108,7 +113,7 @@ class SignatureMapProvider
 	 * @param array<string, array<string, mixed>> $delta
 	 * @return array<string, mixed>
 	 */
-	private static function computeSignatureMap(array $signatureMap, array $delta): array
+	private function computeSignatureMap(array $signatureMap, array $delta): array
 	{
 		foreach ($delta['old'] as $key) {
 			unset($signatureMap[strtolower($key)]);

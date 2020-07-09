@@ -12,6 +12,11 @@ class PhpVersion
 		$this->versionId = $versionId;
 	}
 
+	public function getVersionId(): int
+	{
+		return $this->versionId;
+	}
+
 	public function supportsNullCoalesceAssign(): bool
 	{
 		return $this->versionId >= 70400;

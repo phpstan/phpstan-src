@@ -7,7 +7,9 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\UnionType;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
@@ -27,6 +29,8 @@ class FunctionDefinitionCheck
 
 	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
+	private PhpVersion $phpVersion;
+
 	private bool $checkClassCaseSensitivity;
 
 	private bool $checkThisOnly;
@@ -34,12 +38,14 @@ class FunctionDefinitionCheck
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		PhpVersion $phpVersion,
 		bool $checkClassCaseSensitivity,
 		bool $checkThisOnly
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
+		$this->phpVersion = $phpVersion;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkThisOnly = $checkThisOnly;
 	}
@@ -48,13 +54,15 @@ class FunctionDefinitionCheck
 	 * @param \PhpParser\Node\Stmt\Function_ $function
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
+	 * @param string $unionTypesMessage
 	 * @return RuleError[]
 	 */
 	public function checkFunction(
 		Function_ $function,
 		FunctionReflection $functionReflection,
 		string $parameterMessage,
-		string $returnMessage
+		string $returnMessage,
+		string $unionTypesMessage
 	): array
 	{
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
@@ -63,7 +71,8 @@ class FunctionDefinitionCheck
 			$parametersAcceptor,
 			$function,
 			$parameterMessage,
-			$returnMessage
+			$returnMessage,
+			$unionTypesMessage
 		);
 	}
 
@@ -73,6 +82,7 @@ class FunctionDefinitionCheck
 	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $returnTypeNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
+	 * @param string $unionTypesMessage
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	public function checkAnonymousFunction(
@@ -80,13 +90,23 @@ class FunctionDefinitionCheck
 		array $parameters,
 		$returnTypeNode,
 		string $parameterMessage,
-		string $returnMessage
+		string $returnMessage,
+		string $unionTypesMessage
 	): array
 	{
 		$errors = [];
+		$unionTypeReported = false;
 		foreach ($parameters as $param) {
 			if ($param->type === null) {
 				continue;
+			}
+			if (
+				!$unionTypeReported
+				&& $param->type instanceof UnionType
+				&& !$this->phpVersion->supportsNativeUnionTypes()
+			) {
+				$errors[] = RuleErrorBuilder::message($unionTypesMessage)->line($param->getLine())->nonIgnorable()->build();
+				$unionTypeReported = true;
 			}
 			if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -113,6 +133,14 @@ class FunctionDefinitionCheck
 			return $errors;
 		}
 
+		if (
+			!$unionTypeReported
+			&& $returnTypeNode instanceof UnionType
+			&& !$this->phpVersion->supportsNativeUnionTypes()
+		) {
+			$errors[] = RuleErrorBuilder::message($unionTypesMessage)->line($returnTypeNode->getLine())->nonIgnorable()->build();
+		}
+
 		$returnType = $scope->getFunctionType($returnTypeNode, false, false);
 		foreach ($returnType->getReferencedClasses() as $returnTypeClass) {
 			if (!$this->reflectionProvider->hasClass($returnTypeClass) || $this->reflectionProvider->getClass($returnTypeClass)->isTrait()) {
@@ -135,13 +163,15 @@ class FunctionDefinitionCheck
 	 * @param ClassMethod $methodNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
+	 * @param string $unionTypesMessage
 	 * @return RuleError[]
 	 */
 	public function checkClassMethod(
 		PhpMethodFromParserNodeReflection $methodReflection,
 		ClassMethod $methodNode,
 		string $parameterMessage,
-		string $returnMessage
+		string $returnMessage,
+		string $unionTypesMessage
 	): array
 	{
 		/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
@@ -151,7 +181,8 @@ class FunctionDefinitionCheck
 			$parametersAcceptor,
 			$methodNode,
 			$parameterMessage,
-			$returnMessage
+			$returnMessage,
+			$unionTypesMessage
 		);
 	}
 
@@ -160,17 +191,36 @@ class FunctionDefinitionCheck
 	 * @param FunctionLike $functionNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
+	 * @param string $unionTypesMessage
 	 * @return RuleError[]
 	 */
 	private function checkParametersAcceptor(
 		ParametersAcceptor $parametersAcceptor,
 		FunctionLike $functionNode,
 		string $parameterMessage,
-		string $returnMessage
+		string $returnMessage,
+		string $unionTypesMessage
 	): array
 	{
 		$errors = [];
 		$parameterNodes = $functionNode->getParams();
+		if (!$this->phpVersion->supportsNativeUnionTypes()) {
+			$unionTypeReported = false;
+			foreach ($parameterNodes as $parameterNode) {
+				if (!$parameterNode->type instanceof UnionType) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message($unionTypesMessage)->line($parameterNode->getLine())->nonIgnorable()->build();
+				$unionTypeReported = true;
+				break;
+			}
+
+			if (!$unionTypeReported && $functionNode->getReturnType() instanceof UnionType) {
+				$errors[] = RuleErrorBuilder::message($unionTypesMessage)->line($functionNode->getReturnType()->getLine())->nonIgnorable()->build();
+			}
+		}
+
 		$returnTypeNode = $functionNode->getReturnType() ?? $functionNode;
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			$referencedClasses = $this->getParameterReferencedClasses($parameter);

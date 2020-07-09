@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
 
@@ -11,10 +12,13 @@ use PHPStan\Rules\FunctionDefinitionCheck;
 class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var int */
+	private $phpVersionId = PHP_VERSION_ID;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ExistingClassesInArrowFunctionTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker), true, false));
+		return new ExistingClassesInArrowFunctionTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker), new PhpVersion($this->phpVersionId), true, false));
 	}
 
 	public function testRule(): void
@@ -32,6 +36,40 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 				10,
 			],
 		]);
+	}
+
+	public function dataNativeUnionTypes(): array
+	{
+		return [
+			[
+				70400,
+				[
+					[
+						'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
+						23,
+					],
+					[
+						'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
+						24,
+					],
+				],
+			],
+			[
+				80000,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataNativeUnionTypes
+	 * @param int $phpVersionId
+	 * @param mixed[] $errors
+	 */
+	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
+	{
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
 }

@@ -48,7 +48,8 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 				'Return typehint of method %s::%s() has invalid type %%s.',
 				$scope->getClassReflection()->getDisplayName(),
 				$methodReflection->getName()
-			)
+			),
+			sprintf('Method %s::%s() uses native union types but they\'re supported only on PHP 8.0 and later.', $scope->getClassReflection()->getDisplayName(), $methodReflection->getName())
 		);
 	}
 

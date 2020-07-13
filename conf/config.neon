@@ -13,6 +13,7 @@ parameters:
 		randomIntParameters: false
 		nullCoalesce: false
 		fileWhitespace: false
+		unusedClassElements: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -146,7 +147,8 @@ parametersSchema:
 		closureUsesThis: bool(),
 		randomIntParameters: bool(),
 		nullCoalesce: bool(),
-		fileWhitespace: bool()
+		fileWhitespace: bool(),
+		unusedClassElements: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

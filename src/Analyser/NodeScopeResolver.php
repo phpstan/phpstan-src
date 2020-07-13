@@ -49,6 +49,7 @@ use PhpParser\Node\Stmt\While_;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -60,6 +61,8 @@ use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\MethodReturnStatementsNode;
+use PHPStan\Node\Property\PropertyRead;
+use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Parser\Parser;
@@ -564,7 +567,41 @@ class NodeScopeResolver
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $nodeCallback);
+			$properties = [];
+			$usages = [];
+			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$usages): void {
+				$nodeCallback($node, $scope);
+				if (!$scope->isInClass()) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+				if ($scope->getClassReflection()->getName() !== $classReflection->getName()) {
+					return;
+				}
+				if ($node instanceof Node\Stmt\Property) {
+					$properties[] = $node;
+					return;
+				}
+				if (!$node instanceof Expr) {
+					return;
+				}
+				if ($node instanceof Node\Scalar\EncapsedStringPart) {
+					return;
+				}
+				$inAssign = $scope->isInExpressionAssign($node);
+				while ($node instanceof ArrayDimFetch) {
+					$node = $node->var;
+				}
+				if (!$node instanceof PropertyFetch) {
+					return;
+				}
+
+				if ($inAssign) {
+					$usages[] = new PropertyWrite($node, $scope);
+				} else {
+					$usages[] = new PropertyRead($node, $scope);
+				}
+			});
+			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $usages), $classScope);
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			foreach ($stmt->props as $prop) {

@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Class PHPStan\\Generics\\Variance\\ConstructorAndStatic has a write-only property $data.",
+        "line": 134,
+        "ignorable": true
+    }
+]

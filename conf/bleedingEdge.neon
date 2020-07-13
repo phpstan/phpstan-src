@@ -4,3 +4,4 @@ parameters:
 		randomIntParameters: true
 		nullCoalesce: true
 		fileWhitespace: true
+		unusedClassElements: true

@@ -15,6 +15,8 @@ rules:
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
 
 conditionalTags:
+	PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule:
+		phpstan.rules.rule: %featureToggles.unusedClassElements%
 	PHPStan\Rules\Variables\IssetRule:
 		phpstan.rules.rule: %featureToggles.nullCoalesce%
 	PHPStan\Rules\Variables\NullCoalesceRule:
@@ -49,6 +51,9 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule
 
 	-
 		class: PHPStan\Rules\Comparison\ElseIfConstantConditionRule

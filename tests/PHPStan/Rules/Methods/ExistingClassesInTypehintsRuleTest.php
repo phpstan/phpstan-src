@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use const PHP_VERSION_ID;
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInTypehintsRule>
@@ -147,6 +148,10 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function dataNativeUnionTypes(): array
 	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
 		return [
 			[
 				70400,

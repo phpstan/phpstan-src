@@ -161,7 +161,17 @@ class FileTypeMapper
 		$cacheKey = sprintf('phpdocstring-%s', $phpDocString);
 		$phpDocNodeSerializedString = $this->cache->load($cacheKey, $phpDocParserVersion);
 		if ($phpDocNodeSerializedString !== null) {
-			return unserialize($phpDocNodeSerializedString);
+			$unserializeResult = @unserialize($phpDocNodeSerializedString);
+			if ($unserializeResult === false) {
+				$error = error_get_last();
+				if ($error !== null) {
+					throw new \PHPStan\ShouldNotHappenException(sprintf('unserialize() error: %s', $error['message']));
+				}
+
+				throw new \PHPStan\ShouldNotHappenException('Unknown unserialize() error');
+			}
+
+			return $unserializeResult;
 		}
 
 		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);

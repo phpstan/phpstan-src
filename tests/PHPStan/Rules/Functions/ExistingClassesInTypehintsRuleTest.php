@@ -159,7 +159,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 		$this->analyse([__DIR__ . '/data/void-parameter-typehint.php'], [
 			[
-				'Parameter $param of function VoidParameterTypehint\doFoo() has invalid typehint type void.',
+				'Parameter $param of function VoidParameterTypehint\doFoo() has invalid type void.',
 				9,
 			],
 		]);

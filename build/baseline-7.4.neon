@@ -1,0 +1,99 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Class PHPStan\\\\Command\\\\ErrorsConsoleStyle has an uninitialized property \\$progressBar\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Command/ErrorsConsoleStyle.php
+		-
+			message: "#^Class PHPStan\\\\DependencyInjection\\\\Reflection\\\\DirectClassReflectionExtensionRegistryProvider has an uninitialized property \\$broker\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/DependencyInjection/Reflection/DirectClassReflectionExtensionRegistryProvider.php
+		-
+			message: "#^Class PHPStan\\\\DependencyInjection\\\\Type\\\\DirectDynamicReturnTypeExtensionRegistryProvider has an uninitialized property \\$broker\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/DependencyInjection/Type/DirectDynamicReturnTypeExtensionRegistryProvider.php
+
+		-
+			message: "#^Class PHPStan\\\\DependencyInjection\\\\Type\\\\DirectDynamicReturnTypeExtensionRegistryProvider has an uninitialized property \\$reflectionProvider\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/DependencyInjection/Type/DirectDynamicReturnTypeExtensionRegistryProvider.php
+
+		-
+			message: "#^Class PHPStan\\\\DependencyInjection\\\\Type\\\\DirectOperatorTypeSpecifyingExtensionRegistryProvider has an uninitialized property \\$broker\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/DependencyInjection/Type/DirectOperatorTypeSpecifyingExtensionRegistryProvider.php
+
+		-
+			message: "#^Class PHPStan\\\\Parallel\\\\ParallelAnalyser has an uninitialized property \\$processPool\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Parallel/ParallelAnalyser.php
+
+		-
+			message: "#^Class PHPStan\\\\Parallel\\\\Process has an uninitialized property \\$process\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Parallel/Process.php
+		-
+			message: "#^Class PHPStan\\\\Parallel\\\\Process has an uninitialized property \\$in\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Parallel/Process.php
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$phpDocNode\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$phpDocString\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$filename\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$nameScope\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$templateTypeMap\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$templateTags\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$phpDocNodeResolver\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+		-
+			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$fileName\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
+
+		-
+			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$classNodes\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
+
+		-
+			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$functionNodes\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
+
+		-
+			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$constantNodes\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
+		-
+			message: "#^Class PHPStan\\\\Reflection\\\\ReflectionProvider\\\\SetterReflectionProviderProvider has an uninitialized property \\$reflectionProvider\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Reflection/ReflectionProvider/SetterReflectionProviderProvider.php
+		-
+			message: "#^Class class@anonymous/src/Testing/TestCase\\.php\\:262 has an uninitialized property \\$reflectionProvider\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/Testing/TestCase.php

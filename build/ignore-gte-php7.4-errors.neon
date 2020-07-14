@@ -1,3 +1,6 @@
+includes:
+	- baseline-7.4.neon
+
 parameters:
 	ignoreErrors:
 		-

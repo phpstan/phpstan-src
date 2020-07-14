@@ -97,7 +97,7 @@ class IgnoredErrorHelper
 					}
 
 					if ($validationResult->areAllErrorsIgnored()) {
-						$errors[] = sprintf("Ignored error %s has an unescaped '||' which leads to ignoring all errors. Use '\\|\\|' instead.", $ignoreMessage);
+						$errors[] = sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
 					}
 				} else {
 					$otherIgnoreErrors[] = [
@@ -117,7 +117,7 @@ class IgnoredErrorHelper
 					}
 
 					if ($validationResult->areAllErrorsIgnored()) {
-						$errors[] = sprintf("Ignored error %s has an unescaped '||' which leads to ignoring all errors. Use '\\|\\|' instead.", $ignoreMessage);
+						$errors[] = sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
 					}
 				}
 			} catch (\Nette\Utils\RegexpException $e) {

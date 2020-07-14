@@ -35,7 +35,13 @@ class IgnoredRegexValidator
 			$ast = $this->parser->parse($regex);
 		} catch (\Hoa\Exception\Exception $e) {
 			if (strpos($e->getMessage(), 'Unexpected token "|" (alternation) at line 1') === 0) {
-				return new IgnoredRegexValidatorResult([], false, true);
+				return new IgnoredRegexValidatorResult([], false, true, '||', '\|\|');
+			}
+			if (
+				strpos($regex, '()') !== false
+				&& strpos($e->getMessage(), 'Unexpected token ")" (_capturing) at line 1') === 0
+			) {
+				return new IgnoredRegexValidatorResult([], false, true, '()', '\(\)');
 			}
 			return new IgnoredRegexValidatorResult([], false, false);
 		}

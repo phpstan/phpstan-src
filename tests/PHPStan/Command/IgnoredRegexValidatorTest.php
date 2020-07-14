@@ -104,6 +104,12 @@ class IgnoredRegexValidatorTest extends TestCase
 				false,
 				true,
 			],
+			[
+				'#Method PragmaRX\Notified\Data\Repositories\Notified::firstOrCreateByEvent() should return PragmaRX\Notified\Data\Models\Notified but returns Illuminate\Database\Eloquent\Model|null#',
+				[],
+				false,
+				true,
+			],
 		];
 	}
 

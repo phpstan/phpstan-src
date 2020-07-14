@@ -12,6 +12,10 @@ class IgnoredRegexValidatorResult
 
 	private bool $allErrorsIgnored;
 
+	private ?string $wrongSequence;
+
+	private ?string $escapedWrongSequence;
+
 	/**
 	 * @param array<string, string> $ignoredTypes
 	 * @param bool $anchorsInTheMiddle
@@ -20,12 +24,16 @@ class IgnoredRegexValidatorResult
 	public function __construct(
 		array $ignoredTypes,
 		bool $anchorsInTheMiddle,
-		bool $allErrorsIgnored
+		bool $allErrorsIgnored,
+		?string $wrongSequence = null,
+		?string $escapedWrongSequence = null
 	)
 	{
 		$this->ignoredTypes = $ignoredTypes;
 		$this->anchorsInTheMiddle = $anchorsInTheMiddle;
 		$this->allErrorsIgnored = $allErrorsIgnored;
+		$this->wrongSequence = $wrongSequence;
+		$this->escapedWrongSequence = $escapedWrongSequence;
 	}
 
 	/**
@@ -44,6 +52,16 @@ class IgnoredRegexValidatorResult
 	public function areAllErrorsIgnored(): bool
 	{
 		return $this->allErrorsIgnored;
+	}
+
+	public function getWrongSequence(): ?string
+	{
+		return $this->wrongSequence;
+	}
+
+	public function getEscapedWrongSequence(): ?string
+	{
+		return $this->escapedWrongSequence;
 	}
 
 }

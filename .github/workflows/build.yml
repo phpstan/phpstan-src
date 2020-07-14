@@ -326,7 +326,7 @@ jobs:
         run: vendor\bin\phing phpstan-result-cache && php bin\phpstan clear-result-cache -c build/phpstan.neon && vendor\bin\phing phpstan-result-cache && echo. >> src\TrinaryLogic.php && vendor\bin\phing phpstan-result-cache && vendor\bin\phing phpstan-result-cache
 
       - name: "Upload result cache artifact"
-        uses: actions/upload-artifact@v2.0.1
+        uses: actions/upload-artifact@2.1.0
         with:
           name: resultCache-${{ matrix.operating-system }}.php
           path: tmp/resultCache.php

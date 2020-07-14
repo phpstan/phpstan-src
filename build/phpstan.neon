@@ -33,7 +33,6 @@ parameters:
 		-
 			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php
-		- '#^Class PHPStan\\Rules\\RuleErrors\\RuleError(?:\d+) has an uninitialized property (?:\$message|\$line|\$identifier|\$tip|\$file|\$metadata)#'
 		- '#Extension has an uninitialized property (?:\$typeSpecifier|\$broker)#'
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp

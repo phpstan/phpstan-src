@@ -22,3 +22,29 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->foo += 1;
+		$this->foo = 2;
+	}
+
+}
+
+class Baz
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->foo = 2;
+		$this->foo += 1;
+	}
+
+}

@@ -53,12 +53,10 @@ class UninitializedPropertyRule implements Rule
 			}
 		}
 
+		$errors = [];
 		if ($constructor !== null) {
 			$classType = new ObjectType($scope->getClassReflection()->getName());
 			foreach ($node->getPropertyUsages() as $usage) {
-				if (!$usage instanceof PropertyWrite) {
-					continue;
-				}
 				$usageScope = $usage->getScope();
 				if ($usageScope->getFunction() === null) {
 					continue;
@@ -90,11 +88,18 @@ class UninitializedPropertyRule implements Rule
 					continue;
 				}
 
-				unset($properties[$propertyName]);
+				if ($usage instanceof PropertyWrite) {
+					unset($properties[$propertyName]);
+				} elseif (array_key_exists($propertyName, $properties)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Access to an uninitialized property %s::$%s.',
+						$classReflection->getDisplayName(),
+						$propertyName
+					))->line($fetch->getLine())->build();
+				}
 			}
 		}
 
-		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Class %s has an uninitialized property $%s. Give it default value or assign it in the constructor.',

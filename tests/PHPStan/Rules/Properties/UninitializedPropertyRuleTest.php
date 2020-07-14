@@ -32,6 +32,10 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				'Class UninitializedProperty\Foo has an uninitialized property $baz. Give it default value or assign it in the constructor.',
 				12,
 			],
+			[
+				'Access to an uninitialized property UninitializedProperty\Bar::$foo.',
+				33,
+			],
 		]);
 	}
 

@@ -76,7 +76,7 @@ class PhpClassReflectionExtension
 	private array $propertiesIncludingAnnotations = [];
 
 	/** @var \PHPStan\Reflection\Php\PhpPropertyReflection[][] */
-	private array $nativeProperties;
+	private array $nativeProperties = [];
 
 	/** @var \PHPStan\Reflection\MethodReflection[][] */
 	private array $methodsIncludingAnnotations = [];

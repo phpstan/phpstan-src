@@ -143,7 +143,7 @@ class NodeScopeResolver
 	private array $earlyTerminatingFunctionCalls;
 
 	/** @var bool[] filePath(string) => bool(true) */
-	private array $analysedFiles;
+	private array $analysedFiles = [];
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider

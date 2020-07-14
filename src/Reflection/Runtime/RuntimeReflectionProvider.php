@@ -55,7 +55,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	private array $customFunctionReflections = [];
 
 	/** @var bool[] */
-	private array $hasClassCache;
+	private array $hasClassCache = [];
 
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private static array $anonymousClasses = [];

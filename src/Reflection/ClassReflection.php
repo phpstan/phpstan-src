@@ -45,7 +45,7 @@ class ClassReflection implements ReflectionWithFilename
 	private array $properties = [];
 
 	/** @var \PHPStan\Reflection\ConstantReflection[] */
-	private array $constants;
+	private array $constants = [];
 
 	/** @var int[]|null */
 	private ?array $classHierarchyDistances = null;

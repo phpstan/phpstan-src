@@ -11442,7 +11442,7 @@ return [
 'SQLite3Stmt::bindValue' => ['bool', 'parameter_name_or_number'=>'string|int', 'parameter'=>'mixed', 'type='=>'int'],
 'SQLite3Stmt::clear' => ['bool'],
 'SQLite3Stmt::close' => ['bool'],
-'SQLite3Stmt::execute' => ['bool|SQLite3Result'],
+'SQLite3Stmt::execute' => ['false|SQLite3Result'],
 'SQLite3Stmt::paramCount' => ['int'],
 'SQLite3Stmt::readOnly' => ['bool'],
 'SQLite3Stmt::reset' => ['bool'],

@@ -349,7 +349,7 @@ class Foo extends FooParent implements FooInterface
 		}
 	}
 
-	public function misleadingBoolReturnType(): boolean
+	public function misleadingBoolReturnType(): bool
 	{
 		if (rand(0, 1)) {
 			return true;
@@ -362,7 +362,7 @@ class Foo extends FooParent implements FooInterface
 		}
 	}
 
-	public function misleadingIntReturnType(): integer
+	public function misleadingIntReturnType(): int
 	{
 		if (rand(0, 1)) {
 			return 1;
@@ -747,7 +747,7 @@ class WrongMagicMethods
 		return 1;
 	}
 
-	public function __set_state(array $properties)
+	public static function __set_state(array $properties)
 	{
 		return ['foo' => 'bar'];
 	}

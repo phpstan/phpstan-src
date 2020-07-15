@@ -3483,7 +3483,7 @@ class MutatingScope implements Scope
 		return $variableTypeHolders;
 	}
 
-	private function generalizeType(Type $a, Type $b): Type
+	private static function generalizeType(Type $a, Type $b): Type
 	{
 		if ($a->equals($b)) {
 			return $a;
@@ -3601,8 +3601,8 @@ class MutatingScope implements Scope
 					&& count($bArrays) === 1
 					&& !$bArrays[0] instanceof ConstantArrayType
 				) {
-					$aDepth = $this->getArrayDepth($aArrays[0]);
-					$bDepth = $this->getArrayDepth($bArrays[0]);
+					$aDepth = self::getArrayDepth($aArrays[0]);
+					$bDepth = self::getArrayDepth($bArrays[0]);
 					if (
 						($aDepth > 2 || $bDepth > 2)
 						&& abs($aDepth - $bDepth) > 0
@@ -3622,7 +3622,7 @@ class MutatingScope implements Scope
 		return TypeCombinator::union(...$resultTypes, ...$otherTypes);
 	}
 
-	private function getArrayDepth(ArrayType $type): int
+	private static function getArrayDepth(ArrayType $type): int
 	{
 		$depth = 0;
 		while ($type instanceof ArrayType) {

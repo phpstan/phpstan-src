@@ -2,22 +2,31 @@
 
 namespace PHPStan\Node\Method;
 
+use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 
 class MethodCall
 {
 
-	private \PhpParser\Node\Expr\MethodCall $node;
+	/** @var \PhpParser\Node\Expr\MethodCall|StaticCall */
+	private $node;
 
 	private Scope $scope;
 
-	public function __construct(\PhpParser\Node\Expr\MethodCall $node, Scope $scope)
+	/**
+	 * @param \PhpParser\Node\Expr\MethodCall|StaticCall$node
+	 * @param Scope $scope
+	 */
+	public function __construct($node, Scope $scope)
 	{
 		$this->node = $node;
 		$this->scope = $scope;
 	}
 
-	public function getNode(): \PhpParser\Node\Expr\MethodCall
+	/**
+	 * @return \PhpParser\Node\Expr\MethodCall|StaticCall
+	 */
+	public function getNode()
 	{
 		return $this->node;
 	}

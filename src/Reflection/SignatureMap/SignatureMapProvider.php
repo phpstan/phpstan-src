@@ -25,7 +25,7 @@ class SignatureMapProvider
 
 	public function hasFunctionSignature(string $name): bool
 	{
-		$signatureMap = self::getSignatureMap();
+		$signatureMap = $this->getSignatureMap();
 		return array_key_exists(strtolower($name), $signatureMap);
 	}
 
@@ -47,7 +47,7 @@ class SignatureMapProvider
 
 	public function hasFunctionMetadata(string $name): bool
 	{
-		$signatureMap = self::getFunctionMetadataMap();
+		$signatureMap = $this->getFunctionMetadataMap();
 		return array_key_exists(strtolower($name), $signatureMap);
 	}
 
@@ -63,7 +63,7 @@ class SignatureMapProvider
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		return self::getFunctionMetadataMap()[$functionName];
+		return $this->getFunctionMetadataMap()[$functionName];
 	}
 
 	/**
@@ -99,7 +99,7 @@ class SignatureMapProvider
 					throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
 				}
 
-				$signatureMap = self::computeSignatureMap($signatureMap, $php74MapDelta);
+				$signatureMap = $this->computeSignatureMap($signatureMap, $php74MapDelta);
 			}
 
 			$this->signatureMap = $signatureMap;

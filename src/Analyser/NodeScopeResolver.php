@@ -49,6 +49,7 @@ use PhpParser\Node\Stmt\While_;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
@@ -568,9 +569,10 @@ class NodeScopeResolver
 			}
 
 			$properties = [];
+			$methods = [];
 			$methodCalls = [];
 			$usages = [];
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methodCalls, &$usages): void {
+			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methods, &$methodCalls, &$usages): void {
 				$nodeCallback($node, $scope);
 				if (!$scope->isInClass()) {
 					throw new \PHPStan\ShouldNotHappenException();
@@ -582,7 +584,11 @@ class NodeScopeResolver
 					$properties[] = $node;
 					return;
 				}
-				if ($node instanceof MethodCall) {
+				if ($node instanceof Node\Stmt\ClassMethod) {
+					$methods[] = $node;
+					return;
+				}
+				if ($node instanceof MethodCall || $node instanceof StaticCall) {
 					$methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
 					return;
 				}
@@ -607,6 +613,7 @@ class NodeScopeResolver
 				}
 			});
 			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $usages, $methodCalls), $classScope);
+			$nodeCallback(new ClassMethodsNode($stmt, $methods, $methodCalls), $classScope);
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			foreach ($stmt->props as $prop) {

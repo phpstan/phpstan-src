@@ -180,6 +180,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$originalCount = count($methods);
 		foreach ($methodCalls as $methodCall) {
 			$methodCallNode = $methodCall->getNode();
+			if (!$methodCallNode instanceof \PhpParser\Node\Expr\MethodCall) {
+				continue;
+			}
 			if (!$methodCallNode->name instanceof Identifier) {
 				continue;
 			}

@@ -65,14 +65,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		return $this->propertyUsages;
 	}
 
-	/**
-	 * @return array<int, MethodCall>
-	 */
-	public function getMethodCalls(): array
-	{
-		return $this->methodCalls;
-	}
-
 	public function getType(): string
 	{
 		return 'PHPStan_Node_ClassPropertiesNode';
@@ -123,7 +115,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return [$properties, []];
 		}
 		$classType = new ObjectType($scope->getClassReflection()->getName());
-		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->getMethodCalls(), [$constructor->getName()]);
+		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->methodCalls, [$constructor->getName()]);
 		$prematureAccess = [];
 		foreach ($this->getPropertyUsages() as $usage) {
 			$usageScope = $usage->getScope();

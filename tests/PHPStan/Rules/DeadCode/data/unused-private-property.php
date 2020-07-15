@@ -46,3 +46,34 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	private int $foo;
+
+	private int $bar; // do not report read-only, it's uninitialized
+
+	private $baz; // report read-only
+
+	public function __construct()
+	{
+		$this->foo = 1;
+	}
+
+	public function getFoo(): int
+	{
+		return $this->foo;
+	}
+
+	public function getBar(): int
+	{
+		return $this->bar;
+	}
+
+	public function getBaz(): int
+	{
+		return $this->baz;
+	}
+
+}

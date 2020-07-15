@@ -72,6 +72,8 @@ class UnusedPrivatePropertyRule implements Rule
 			}
 		}
 
+		[$uninitializedProperties] = $node->getUninitializedProperties($scope);
+
 		$errors = [];
 		foreach ($properties as $name => $data) {
 			if (!$data['read']) {
@@ -80,7 +82,7 @@ class UnusedPrivatePropertyRule implements Rule
 				} else {
 					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a write-only property $%s.', $scope->getClassReflection()->getDisplayName(), $name))->line($data['node']->getStartLine())->build();
 				}
-			} elseif (!$data['written']) {
+			} elseif (!$data['written'] && !array_key_exists($name, $uninitializedProperties)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a read-only property $%s.', $scope->getClassReflection()->getDisplayName(), $name))->line($data['node']->getStartLine())->build();
 			}
 		}

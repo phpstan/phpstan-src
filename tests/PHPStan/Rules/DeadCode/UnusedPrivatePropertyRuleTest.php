@@ -12,9 +12,18 @@ use const PHP_VERSION_ID;
 class UnusedPrivatePropertyRuleTest extends RuleTestCase
 {
 
+	/** @var string[] */
+	private $alwaysWrittenTags;
+
+	/** @var string[] */
+	private $alwaysReadTags;
+
 	protected function getRule(): Rule
 	{
-		return new UnusedPrivatePropertyRule();
+		return new UnusedPrivatePropertyRule(
+			$this->alwaysWrittenTags,
+			$this->alwaysReadTags
+		);
 	}
 
 	public function testRule(): void
@@ -22,6 +31,9 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires PHP 7.4 or static reflection.');
 		}
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
 
 		$this->analyse([__DIR__ . '/data/unused-private-property.php'], [
 			[
@@ -51,6 +63,22 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 			[
 				'Class UnusedPrivateProperty\Baz has a read-only static property $lorem.',
 				90,
+			],
+		]);
+	}
+
+	public function testAlwaysUsedTags(): void
+	{
+		$this->alwaysWrittenTags = ['@ORM\Column'];
+		$this->alwaysReadTags = ['@get'];
+		$this->analyse([__DIR__ . '/data/private-property-with-tags.php'], [
+			[
+				'Class PrivatePropertyWithTags\Foo has a write-only property $title.',
+				13,
+			],
+			[
+				'Class PrivatePropertyWithTags\Foo has a read-only property $text.',
+				18,
 			],
 		]);
 	}

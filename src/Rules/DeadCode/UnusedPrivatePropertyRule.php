@@ -17,6 +17,25 @@ use PHPStan\Type\ObjectType;
 class UnusedPrivatePropertyRule implements Rule
 {
 
+	/** @var string[] */
+	private array $alwaysWrittenTags;
+
+	/** @var string[] */
+	private array $alwaysReadTags;
+
+	/**
+	 * @param string[] $alwaysWrittenTags
+	 * @param string[] $alwaysReadTags
+	 */
+	public function __construct(
+		array $alwaysWrittenTags,
+		array $alwaysReadTags
+	)
+	{
+		$this->alwaysWrittenTags = $alwaysWrittenTags;
+		$this->alwaysReadTags = $alwaysReadTags;
+	}
+
 	public function getNodeType(): string
 	{
 		return ClassPropertiesNode::class;
@@ -37,10 +56,36 @@ class UnusedPrivatePropertyRule implements Rule
 			if (!$property->isPrivate()) {
 				continue;
 			}
+
+			$alwaysRead = false;
+			$alwaysWritten = false;
+			if ($property->getDocComment() !== null) {
+				$text = $property->getDocComment()->getText();
+				foreach ($this->alwaysReadTags as $tag) {
+					if (strpos($text, $tag) === false) {
+						continue;
+					}
+
+					$alwaysRead = true;
+					break;
+				}
+
+				foreach ($this->alwaysWrittenTags as $tag) {
+					if (strpos($text, $tag) === false) {
+						continue;
+					}
+
+					$alwaysWritten = true;
+					break;
+				}
+			}
+
 			foreach ($property->props as $propertyProperty) {
+				$read = $alwaysRead;
+				$written = $alwaysWritten || $propertyProperty->default !== null;
 				$properties[$propertyProperty->name->toString()] = [
-					'read' => false,
-					'written' => $propertyProperty->default !== null,
+					'read' => $read,
+					'written' => $written,
 					'node' => $property,
 				];
 			}

@@ -64,6 +64,9 @@ services:
 
 	-
 		class: PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule
+		arguments:
+			alwaysWrittenTags: %propertyAlwaysWrittenTags%
+			alwaysReadTags: %propertyAlwaysReadTags%
 
 	-
 		class: PHPStan\Rules\Comparison\ElseIfConstantConditionRule

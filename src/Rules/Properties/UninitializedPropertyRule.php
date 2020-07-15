@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertiesNode;
+use PHPStan\Node\Method\MethodCall;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
@@ -56,6 +57,7 @@ class UninitializedPropertyRule implements Rule
 		$errors = [];
 		if ($constructor !== null) {
 			$classType = new ObjectType($scope->getClassReflection()->getName());
+			$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $node->getMethodCalls(), [$constructor->getName()]);
 			foreach ($node->getPropertyUsages() as $usage) {
 				$usageScope = $usage->getScope();
 				if ($usageScope->getFunction() === null) {
@@ -68,7 +70,7 @@ class UninitializedPropertyRule implements Rule
 				if ($function->getDeclaringClass()->getName() !== $classReflection->getName()) {
 					continue;
 				}
-				if ($function->getName() !== $constructor->getName()) {
+				if (!in_array($function->getName(), $methodsCalledFromConstructor, true)) {
 					continue;
 				}
 
@@ -109,6 +111,53 @@ class UninitializedPropertyRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @param ObjectType $classType
+	 * @param MethodCall[] $methodCalls
+	 * @param string[] $methods
+	 * @return string[]
+	 */
+	private function getMethodsCalledFromConstructor(
+		ObjectType $classType,
+		array $methodCalls,
+		array $methods
+	): array
+	{
+		$originalCount = count($methods);
+		foreach ($methodCalls as $methodCall) {
+			$methodCallNode = $methodCall->getNode();
+			if (!$methodCallNode->name instanceof Node\Identifier) {
+				continue;
+			}
+			$callScope = $methodCall->getScope();
+			$calledOnType = $callScope->getType($methodCallNode->var);
+			if ($classType->isSuperTypeOf($calledOnType)->no()) {
+				continue;
+			}
+			if ($calledOnType instanceof MixedType) {
+				continue;
+			}
+			$methodName = $methodCallNode->name->toString();
+			if (in_array($methodName, $methods, true)) {
+				continue;
+			}
+			$inMethod = $callScope->getFunction();
+			if (!$inMethod instanceof MethodReflection) {
+				continue;
+			}
+			if (!in_array($inMethod->getName(), $methods, true)) {
+				continue;
+			}
+			$methods[] = $methodName;
+		}
+
+		if ($originalCount === count($methods)) {
+			return $methods;
+		}
+
+		return $this->getMethodsCalledFromConstructor($classType, $methodCalls, $methods);
 	}
 
 }

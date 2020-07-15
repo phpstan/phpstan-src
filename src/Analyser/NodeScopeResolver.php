@@ -568,8 +568,9 @@ class NodeScopeResolver
 			}
 
 			$properties = [];
+			$methodCalls = [];
 			$usages = [];
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$usages): void {
+			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methodCalls, &$usages): void {
 				$nodeCallback($node, $scope);
 				if (!$scope->isInClass()) {
 					throw new \PHPStan\ShouldNotHappenException();
@@ -579,6 +580,10 @@ class NodeScopeResolver
 				}
 				if ($node instanceof Node\Stmt\Property) {
 					$properties[] = $node;
+					return;
+				}
+				if ($node instanceof MethodCall) {
+					$methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
 					return;
 				}
 				if (!$node instanceof Expr) {
@@ -601,7 +606,7 @@ class NodeScopeResolver
 					$usages[] = new PropertyRead($node, $scope);
 				}
 			});
-			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $usages), $classScope);
+			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $usages, $methodCalls), $classScope);
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			foreach ($stmt->props as $prop) {

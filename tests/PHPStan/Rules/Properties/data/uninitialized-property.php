@@ -48,3 +48,38 @@ class Baz
 	}
 
 }
+
+class Lorem
+{
+
+	private int $foo;
+
+	private int $bar;
+
+	private int $baz;
+
+	private int $lorem;
+
+	private function assign()
+	{
+		$this->bar = 2;
+		$this->assignAgain();
+	}
+
+	public function __construct()
+	{
+		$this->foo = 1;
+		$this->assign();
+	}
+
+	private function assignAgain()
+	{
+		$this->lorem = 4;
+	}
+
+	public function notCalled()
+	{
+		$this->baz = 3;
+	}
+
+}

@@ -49,9 +49,11 @@ use PhpParser\Node\Stmt\While_;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClosureReturnStatementsNode;
+use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\InArrowFunctionNode;
@@ -571,8 +573,10 @@ class NodeScopeResolver
 			$properties = [];
 			$methods = [];
 			$methodCalls = [];
-			$usages = [];
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methods, &$methodCalls, &$usages): void {
+			$propertyUsages = [];
+			$constants = [];
+			$constantFetches = [];
+			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methods, &$methodCalls, &$propertyUsages, &$constants, &$constantFetches): void {
 				$nodeCallback($node, $scope);
 				if (!$scope->isInClass()) {
 					throw new \PHPStan\ShouldNotHappenException();
@@ -588,8 +592,16 @@ class NodeScopeResolver
 					$methods[] = $node;
 					return;
 				}
+				if ($node instanceof Node\Stmt\ClassConst) {
+					$constants[] = $node;
+					return;
+				}
 				if ($node instanceof MethodCall || $node instanceof StaticCall) {
 					$methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+					return;
+				}
+				if ($node instanceof Expr\ClassConstFetch) {
+					$constantFetches[] = new ClassConstantFetch($node, $scope);
 					return;
 				}
 				if (!$node instanceof Expr) {
@@ -607,13 +619,14 @@ class NodeScopeResolver
 				}
 
 				if ($inAssign) {
-					$usages[] = new PropertyWrite($node, $scope);
+					$propertyUsages[] = new PropertyWrite($node, $scope);
 				} else {
-					$usages[] = new PropertyRead($node, $scope);
+					$propertyUsages[] = new PropertyRead($node, $scope);
 				}
 			});
-			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $usages, $methodCalls), $classScope);
+			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $propertyUsages, $methodCalls), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $methods, $methodCalls), $classScope);
+			$nodeCallback(new ClassConstantsNode($stmt, $constants, $constantFetches), $classScope);
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			foreach ($stmt->props as $prop) {

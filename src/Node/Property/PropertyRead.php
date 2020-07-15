@@ -3,22 +3,33 @@
 namespace PHPStan\Node\Property;
 
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
 
 class PropertyRead
 {
 
-	private PropertyFetch $fetch;
+	/** @var PropertyFetch|StaticPropertyFetch */
+	private $fetch;
 
 	private Scope $scope;
 
-	public function __construct(PropertyFetch $fetch, Scope $scope)
+	/**
+	 * PropertyWrite constructor.
+	 *
+	 * @param PropertyFetch|StaticPropertyFetch $fetch
+	 * @param Scope $scope
+	 */
+	public function __construct($fetch, Scope $scope)
 	{
 		$this->fetch = $fetch;
 		$this->scope = $scope;
 	}
 
-	public function getFetch(): PropertyFetch
+	/**
+	 * @return PropertyFetch|StaticPropertyFetch
+	 */
+	public function getFetch()
 	{
 		return $this->fetch;
 	}

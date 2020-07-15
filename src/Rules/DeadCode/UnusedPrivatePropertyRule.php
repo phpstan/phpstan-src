@@ -34,9 +34,6 @@ class UnusedPrivatePropertyRule implements Rule
 
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
-			if ($property->isStatic()) {
-				continue;
-			}
 			if (!$property->isPrivate()) {
 				continue;
 			}
@@ -58,7 +55,16 @@ class UnusedPrivatePropertyRule implements Rule
 			if (!array_key_exists($propertyName, $properties)) {
 				continue;
 			}
-			$fetchedOnType = $usage->getScope()->getType($fetch->var);
+			if ($fetch instanceof Node\Expr\PropertyFetch) {
+				$fetchedOnType = $usage->getScope()->getType($fetch->var);
+			} else {
+				if (!$fetch->class instanceof Node\Name) {
+					continue;
+				}
+
+				$fetchedOnType = new ObjectType($usage->getScope()->resolveName($fetch->class));
+			}
+
 			if ($classType->isSuperTypeOf($fetchedOnType)->no()) {
 				continue;
 			}
@@ -76,14 +82,20 @@ class UnusedPrivatePropertyRule implements Rule
 
 		$errors = [];
 		foreach ($properties as $name => $data) {
+			$propertyNode = $data['node'];
+			if ($propertyNode->isStatic()) {
+				$propertyName = sprintf('static property $%s', $name);
+			} else {
+				$propertyName = sprintf('property $%s', $name);
+			}
 			if (!$data['read']) {
 				if (!$data['written']) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has an unused property $%s.', $scope->getClassReflection()->getDisplayName(), $name))->line($data['node']->getStartLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has an unused %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
 				} else {
-					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a write-only property $%s.', $scope->getClassReflection()->getDisplayName(), $name))->line($data['node']->getStartLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a write-only %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
 				}
 			} elseif (!$data['written'] && !array_key_exists($name, $uninitializedProperties)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a read-only property $%s.', $scope->getClassReflection()->getDisplayName(), $name))->line($data['node']->getStartLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a read-only %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
 			}
 		}
 

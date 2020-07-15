@@ -614,7 +614,7 @@ class NodeScopeResolver
 				while ($node instanceof ArrayDimFetch) {
 					$node = $node->var;
 				}
-				if (!$node instanceof PropertyFetch) {
+				if (!$node instanceof PropertyFetch && !$node instanceof StaticPropertyFetch) {
 					return;
 				}
 

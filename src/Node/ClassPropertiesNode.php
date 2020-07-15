@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
@@ -119,6 +120,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->methodCalls, [$constructor->getName()]);
 		$prematureAccess = [];
 		foreach ($this->getPropertyUsages() as $usage) {
+			$fetch = $usage->getFetch();
+			if (!$fetch instanceof PropertyFetch) {
+				continue;
+			}
 			$usageScope = $usage->getScope();
 			if ($usageScope->getFunction() === null) {
 				continue;
@@ -134,7 +139,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 
-			$fetch = $usage->getFetch();
 			if (!$fetch->name instanceof Identifier) {
 				continue;
 			}

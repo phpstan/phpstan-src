@@ -40,6 +40,18 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				'Class UnusedPrivateProperty\Bar has a read-only property $baz.',
 				57,
 			],
+			[
+				'Class UnusedPrivateProperty\Baz has a write-only static property $bar.',
+				86,
+			],
+			[
+				'Class UnusedPrivateProperty\Baz has an unused static property $baz.',
+				88,
+			],
+			[
+				'Class UnusedPrivateProperty\Baz has a read-only static property $lorem.',
+				90,
+			],
 		]);
 	}
 

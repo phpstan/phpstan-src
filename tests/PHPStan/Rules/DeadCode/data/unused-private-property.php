@@ -77,3 +77,32 @@ class Bar
 	}
 
 }
+
+class Baz
+{
+
+	private static $foo;
+
+	private static $bar; // write-only
+
+	private static $baz; // unused
+
+	private static $lorem; // read-only
+
+	public static function doFoo()
+	{
+		self::$foo = 1;
+		self::$bar = 2;
+	}
+
+	public static function getFoo()
+	{
+		return self::$foo;
+	}
+
+	public static function getLorem()
+	{
+		return self::$lorem;
+	}
+
+}

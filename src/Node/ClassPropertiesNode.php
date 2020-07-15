@@ -3,6 +3,7 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Property;
@@ -180,14 +181,18 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$originalCount = count($methods);
 		foreach ($methodCalls as $methodCall) {
 			$methodCallNode = $methodCall->getNode();
-			if (!$methodCallNode instanceof \PhpParser\Node\Expr\MethodCall) {
-				continue;
-			}
 			if (!$methodCallNode->name instanceof Identifier) {
 				continue;
 			}
 			$callScope = $methodCall->getScope();
-			$calledOnType = $callScope->getType($methodCallNode->var);
+			if ($methodCallNode instanceof \PhpParser\Node\Expr\MethodCall) {
+				$calledOnType = $callScope->getType($methodCallNode->var);
+			} else {
+				if (!$methodCallNode->class instanceof Name) {
+					continue;
+				}
+				$calledOnType = new ObjectType($callScope->resolveName($methodCallNode->class));
+			}
 			if ($classType->isSuperTypeOf($calledOnType)->no()) {
 				continue;
 			}

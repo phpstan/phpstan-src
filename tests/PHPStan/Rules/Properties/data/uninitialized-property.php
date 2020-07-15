@@ -60,10 +60,13 @@ class Lorem
 
 	private int $lorem;
 
+	private int $ipsum;
+
 	private function assign()
 	{
 		$this->bar = 2;
 		$this->assignAgain();
+		self::assignAgainAgain();
 	}
 
 	public function __construct()
@@ -75,6 +78,11 @@ class Lorem
 	private function assignAgain()
 	{
 		$this->lorem = 4;
+	}
+
+	private function assignAgainAgain()
+	{
+		$this->ipsum = 5;
 	}
 
 	public function notCalled()

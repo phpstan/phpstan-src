@@ -191,6 +191,10 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 	 */
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}

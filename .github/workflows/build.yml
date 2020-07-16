@@ -275,13 +275,12 @@ jobs:
   static-analysis-with-result-cache:
     name: "PHPStan with result cache"
 
-    runs-on: ${{ matrix.operating-system }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
         php-version:
           - "7.4"
-        operating-system: [ubuntu-latest, windows-latest]
 
     steps:
       - name: "Checkout"
@@ -311,7 +310,6 @@ jobs:
           key: "result-cache-v4"
 
       - name: "PHPStan with result cache"
-        if: matrix.operating-system == 'ubuntu-latest'
         run: |
           vendor/bin/phing phpstan-result-cache
           bin/phpstan clear-result-cache -c build/phpstan.neon
@@ -320,15 +318,10 @@ jobs:
           vendor/bin/phing phpstan-result-cache
           vendor/bin/phing phpstan-result-cache
 
-      - name: "PHPStan with result cache"
-        if: matrix.operating-system == 'windows-latest'
-        shell: cmd
-        run: vendor\bin\phing phpstan-result-cache && php bin\phpstan clear-result-cache -c build/phpstan.neon && vendor\bin\phing phpstan-result-cache && echo. >> src\TrinaryLogic.php && vendor\bin\phing phpstan-result-cache && vendor\bin\phing phpstan-result-cache
-
       - name: "Upload result cache artifact"
         uses: actions/upload-artifact@2.1.0
         with:
-          name: resultCache-${{ matrix.operating-system }}.php
+          name: resultCache-ubuntu-latest.php
           path: tmp/resultCache.php
 
   result-cache-e2e-tests:

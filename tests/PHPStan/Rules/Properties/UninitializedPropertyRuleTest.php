@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use UninitializedProperty\TestCase;
 use const PHP_VERSION_ID;
 
 /**
@@ -16,7 +15,7 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UninitializedPropertyRule([
-			TestCase::class . '::setUp',
+			'UninitializedProperty\\TestCase::setUp',
 		]);
 	}
 

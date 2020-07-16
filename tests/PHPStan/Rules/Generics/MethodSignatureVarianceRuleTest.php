@@ -38,15 +38,7 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				25,
 			],
 			[
-				'Template type U is declared as covariant, but occurs in contravariant position in parameter a of method MethodSignatureVariance\C::b().',
-				35,
-			],
-			[
-				'Template type U is declared as covariant, but occurs in invariant position in parameter b of method MethodSignatureVariance\C::b().',
-				35,
-			],
-			[
-				'Template type U is declared as covariant, but occurs in contravariant position in parameter c of method MethodSignatureVariance\C::b().',
+				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type U in in method MethodSignatureVariance\C::b().',
 				35,
 			],
 		]);

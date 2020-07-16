@@ -22,15 +22,7 @@ class FunctionSignatureVarianceRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/function-signature-variance.php'], [
 			[
-				'Template type T is declared as covariant, but occurs in contravariant position in parameter a of function FunctionSignatureVariance\f().',
-				20,
-			],
-			[
-				'Template type T is declared as covariant, but occurs in invariant position in parameter b of function FunctionSignatureVariance\f().',
-				20,
-			],
-			[
-				'Template type T is declared as covariant, but occurs in contravariant position in parameter c of function FunctionSignatureVariance\f().',
+				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type T in in function FunctionSignatureVariance\f().',
 				20,
 			],
 		]);

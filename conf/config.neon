@@ -14,7 +14,6 @@ parameters:
 		nullCoalesce: false
 		fileWhitespace: false
 		unusedClassElements: false
-		uninitializedProperties: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -39,6 +38,7 @@ parameters:
 	checkMissingClosureNativeReturnTypehintRule: false
 	checkMissingTypehints: false
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
+	checkUninitializedProperties: false
 	inferPrivatePropertyTypeFromConstructor: false
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
@@ -152,8 +152,7 @@ parametersSchema:
 		randomIntParameters: bool(),
 		nullCoalesce: bool(),
 		fileWhitespace: bool(),
-		unusedClassElements: bool(),
-		uninitializedProperties: bool()
+		unusedClassElements: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -178,6 +177,7 @@ parametersSchema:
 	checkMissingClosureNativeReturnTypehintRule: bool()
 	checkMissingTypehints: bool()
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
+	checkUninitializedProperties: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
 	tipsOfTheDay: bool()
 	reportMaybes: bool()

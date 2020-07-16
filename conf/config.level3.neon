@@ -17,10 +17,6 @@ rules:
 	- PHPStan\Rules\Variables\ThrowTypeRule
 	- PHPStan\Rules\Variables\VariableCloningRule
 
-conditionalTags:
-	PHPStan\Rules\Properties\UninitializedPropertyRule:
-		phpstan.rules.rule: %featureToggles.uninitializedProperties%
-
 parameters:
 	checkPhpDocMethodSignatures: true
 
@@ -73,8 +69,3 @@ services:
 			reportMaybes: %reportMaybes%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Properties\UninitializedPropertyRule
-		arguments:
-			additionalConstructors: %additionalConstructors%

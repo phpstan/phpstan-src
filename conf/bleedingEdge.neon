@@ -5,4 +5,3 @@ parameters:
 		nullCoalesce: true
 		fileWhitespace: true
 		unusedClassElements: true
-		uninitializedProperties: true

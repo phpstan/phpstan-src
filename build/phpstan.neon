@@ -9,6 +9,7 @@ includes:
 parameters:
 	bootstrapFiles:
 		- %rootDir%/tests/phpstan-bootstrap.php
+	checkUninitializedProperties: true
 	excludes_analyse:
 		- %rootDir%/src/Reflection/SignatureMap/functionMap.php
 		- %rootDir%/src/Reflection/SignatureMap/functionMetadata.php

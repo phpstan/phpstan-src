@@ -9,6 +9,8 @@ conditionalTags:
 		phpstan.rules.rule: %checkMissingClosureNativeReturnTypehintRule%
 	PHPStan\Rules\Whitespace\FileWhitespaceRule:
 		phpstan.rules.rule: %featureToggles.fileWhitespace%
+	PHPStan\Rules\Properties\UninitializedPropertyRule:
+		phpstan.rules.rule: %checkUninitializedProperties%
 
 parametersSchema:
 	missingClosureNativeReturnCheckObjectTypehint: bool()
@@ -139,6 +141,11 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+
+	-
+		class: PHPStan\Rules\Properties\UninitializedPropertyRule
+		arguments:
+			additionalConstructors: %additionalConstructors%
 
 	-
 		class: PHPStan\Rules\Properties\WritingToReadOnlyPropertiesRule

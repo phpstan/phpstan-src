@@ -1,3 +1,6 @@
+parameters:
+	phpVersion: 80000 # force Emulative lexer
+
 services:
 	-
 		class: PHPStan\Testing\TestCaseSourceLocatorFactory

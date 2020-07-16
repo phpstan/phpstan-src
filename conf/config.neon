@@ -264,7 +264,11 @@ services:
 		class: PhpParser\BuilderFactory
 
 	-
-		class: PhpParser\Lexer\Emulative
+		class: PhpParser\Lexer
+		factory: @PHPStan\Parser\LexerFactory::create()
+
+	-
+		class: PHPStan\Parser\LexerFactory
 
 	-
 		class: PhpParser\NodeTraverser

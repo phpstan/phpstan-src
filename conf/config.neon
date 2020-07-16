@@ -58,6 +58,7 @@ parameters:
 	polluteCatchScopeWithTryAssignments: false
 	propertyAlwaysWrittenTags: []
 	propertyAlwaysReadTags: []
+	additionalConstructors: []
 	treatPhpDocTypesAsCertain: true
 	tipsOfTheDay: true
 	reportMagicMethods: false
@@ -195,6 +196,7 @@ parametersSchema:
 	polluteCatchScopeWithTryAssignments: bool()
 	propertyAlwaysWrittenTags: listOf(string())
 	propertyAlwaysReadTags: listOf(string())
+	additionalConstructors: listOf(string())
 	treatPhpDocTypesAsCertain: bool()
 	reportMagicMethods: bool()
 	reportMagicProperties: bool()

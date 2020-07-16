@@ -91,3 +91,25 @@ class Lorem
 	}
 
 }
+
+class TestCase
+{
+
+	protected function setUp()
+	{
+
+	}
+
+}
+
+class MyTestCase extends TestCase
+{
+
+	private int $foo;
+
+	protected function setUp()
+	{
+		$this->foo = 1;
+	}
+
+}

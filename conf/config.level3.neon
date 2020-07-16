@@ -76,3 +76,5 @@ services:
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule
+		arguments:
+			additionalConstructors: %additionalConstructors%

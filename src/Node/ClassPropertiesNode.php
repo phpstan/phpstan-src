@@ -81,9 +81,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	}
 
 	/**
+	 * @param string[] $constructors
 	 * @return array{array<string, Property>, array<array{string, int}>}
 	 */
-	public function getUninitializedProperties(Scope $scope): array
+	public function getUninitializedProperties(
+		Scope $scope,
+		array $constructors
+	): array
 	{
 		if (!$this->getClass() instanceof Class_) {
 			return [[], []];
@@ -91,11 +95,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		if (!$scope->isInClass()) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
-		$constructor = null;
 		$classReflection = $scope->getClassReflection();
-		if ($classReflection->hasConstructor()) {
-			$constructor = $classReflection->getConstructor();
-		}
 
 		$properties = [];
 		foreach ($this->getProperties() as $property) {
@@ -113,11 +113,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 		}
 
-		if ($constructor === null) {
+		if ($constructors === []) {
 			return [$properties, []];
 		}
 		$classType = new ObjectType($scope->getClassReflection()->getName());
-		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->methodCalls, [$constructor->getName()]);
+		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->methodCalls, $constructors);
 		$prematureAccess = [];
 		foreach ($this->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();

@@ -7,7 +7,11 @@ use PHPStan\Command\DumpDependenciesCommand;
 use PHPStan\Command\WorkerCommand;
 
 (function () {
-	error_reporting(E_ALL);
+	if (PHP_VERSION_ID >= 80000) {
+		error_reporting(E_ALL & ~E_WARNING);
+	} else {
+		error_reporting(E_ALL);
+	}
 	ini_set('display_errors', 'stderr');
 	gc_disable(); // performance boost
 

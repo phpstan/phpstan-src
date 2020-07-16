@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -25,16 +26,16 @@ use PHPStan\Type\UnionType;
 class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
+	private ReflectionProvider $reflectionProvider;
+
 	private ConstantStringType $flagsString;
 
 	/** @var array<int, Type> */
 	private array $filterTypeMap;
 
-	public function __construct()
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
-		if (!defined('FILTER_SANITIZE_EMAIL')) {
-			return;
-		}
+		$this->reflectionProvider = $reflectionProvider;
 
 		$booleanType = new BooleanType();
 		$floatType = new FloatType();
@@ -42,38 +43,43 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$stringType = new StringType();
 
 		$this->filterTypeMap = [
-			FILTER_UNSAFE_RAW => $stringType,
-			FILTER_SANITIZE_EMAIL => $stringType,
-			FILTER_SANITIZE_ENCODED => $stringType,
-			FILTER_SANITIZE_NUMBER_FLOAT => $stringType,
-			FILTER_SANITIZE_NUMBER_INT => $stringType,
-			FILTER_SANITIZE_SPECIAL_CHARS => $stringType,
-			FILTER_SANITIZE_STRING => $stringType,
-			FILTER_SANITIZE_URL => $stringType,
-			FILTER_VALIDATE_BOOLEAN => $booleanType,
-			FILTER_VALIDATE_EMAIL => $stringType,
-			FILTER_VALIDATE_FLOAT => $floatType,
-			FILTER_VALIDATE_INT => $intType,
-			FILTER_VALIDATE_IP => $stringType,
-			FILTER_VALIDATE_MAC => $stringType,
-			FILTER_VALIDATE_REGEXP => $stringType,
-			FILTER_VALIDATE_URL => $stringType,
+			$this->getConstant('FILTER_UNSAFE_RAW') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_EMAIL') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_ENCODED') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_NUMBER_FLOAT') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_NUMBER_INT') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_SPECIAL_CHARS') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_STRING') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_URL') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_BOOLEAN') => $booleanType,
+			$this->getConstant('FILTER_VALIDATE_EMAIL') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_FLOAT') => $floatType,
+			$this->getConstant('FILTER_VALIDATE_INT') => $intType,
+			$this->getConstant('FILTER_VALIDATE_IP') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_MAC') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_REGEXP') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_URL') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_MAGIC_QUOTES') => $stringType,
+			$this->getConstant('FILTER_SANITIZE_ADD_SLASHES') => $stringType,
 		];
-
-		if (defined('FILTER_SANITIZE_MAGIC_QUOTES')) {
-			$this->filterTypeMap[FILTER_SANITIZE_MAGIC_QUOTES] = $stringType;
-		}
-
-		if (defined('FILTER_SANITIZE_ADD_SLASHES')) {
-			$this->filterTypeMap[FILTER_SANITIZE_ADD_SLASHES] = $stringType;
-		}
 
 		$this->flagsString = new ConstantStringType('flags');
 	}
 
+	private function getConstant(string $constantName): int
+	{
+		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
+		$valueType = $constant->getValueType();
+		if (!$valueType instanceof ConstantIntegerType) {
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+		}
+
+		return $valueType->getValue();
+	}
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return defined('FILTER_SANITIZE_EMAIL') && strtolower($functionReflection->getName()) === 'filter_var';
+		return strtolower($functionReflection->getName()) === 'filter_var';
 	}
 
 	public function getTypeFromFunctionCall(
@@ -86,7 +92,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$filterArg = $functionCall->args[1] ?? null;
 		if ($filterArg === null) {
-			$filterValue = FILTER_DEFAULT;
+			$filterValue = $this->getConstant('FILTER_DEFAULT');
 		} else {
 			$filterType = $scope->getType($filterArg->value);
 			if (!$filterType instanceof ConstantIntegerType) {
@@ -109,7 +115,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			}
 		}
 
-		if ($this->hasFlag(FILTER_FORCE_ARRAY, $flagsArg, $scope)) {
+		if ($this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsArg, $scope)) {
 			return new ArrayType(new MixedType(), $type);
 		}
 
@@ -119,13 +125,13 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function determineExactType(Type $in, int $filterValue): ?Type
 	{
-		if (($filterValue === FILTER_VALIDATE_BOOLEAN && $in instanceof BooleanType)
-			|| ($filterValue === FILTER_VALIDATE_INT && $in instanceof IntegerType)
-			|| ($filterValue === FILTER_VALIDATE_FLOAT && $in instanceof FloatType)) {
+		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in instanceof BooleanType)
+			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof IntegerType)
+			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof FloatType)) {
 			return $in;
 		}
 
-		if ($filterValue === FILTER_VALIDATE_FLOAT && $in instanceof IntegerType) {
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof IntegerType) {
 			return $in->toFloat();
 		}
 
@@ -144,7 +150,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			return $defaultType;
 		}
 
-		if ($this->hasFlag(FILTER_NULL_ON_FAILURE, $flagsArg, $scope)) {
+		if ($this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)) {
 			return new NullType();
 		}
 

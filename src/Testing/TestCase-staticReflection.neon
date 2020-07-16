@@ -1,11 +1,12 @@
-parameters:
-	phpVersion: 80000 # force Emulative lexer
-
 services:
 	-
 		class: PHPStan\Testing\TestCaseSourceLocatorFactory
 		arguments:
 			phpParser: @phpParserDecorator
+
+	phpParserLexer:
+		class: PhpParser\Lexer
+		factory: PhpParser\Lexer\Emulative
 
 	testCaseBetterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider

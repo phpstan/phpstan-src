@@ -264,10 +264,6 @@ services:
 		class: PhpParser\BuilderFactory
 
 	-
-		class: PhpParser\Lexer
-		factory: @PHPStan\Parser\LexerFactory::create()
-
-	-
 		class: PHPStan\Parser\LexerFactory
 
 	-
@@ -1081,6 +1077,10 @@ services:
 		arguments:
 			wrappedParser: @PHPStan\Parser\Parser
 		autowired: no
+
+	phpParserLexer:
+		class: PhpParser\Lexer
+		factory: @PHPStan\Parser\LexerFactory::create()
 
 	registry:
 		class: PHPStan\Rules\Registry

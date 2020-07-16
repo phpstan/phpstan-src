@@ -177,7 +177,7 @@
 					<arg value="--encoding=utf-8"/>
 					<arg value="--tab-width=4"/>
 					<arg value="--cache=tmp/cache/phpcs"/>
-					<arg value="--ignore=tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php"/>
+					<arg value="--ignore=tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter"/>
 					<arg value="-sp"/>
 					<arg path="src"/>
 					<arg path="tests"/>

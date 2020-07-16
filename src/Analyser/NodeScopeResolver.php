@@ -74,6 +74,7 @@ use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflectionWithNode;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
@@ -576,7 +577,7 @@ class NodeScopeResolver
 			$propertyUsages = [];
 			$constants = [];
 			$constantFetches = [];
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, static function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methods, &$methodCalls, &$propertyUsages, &$constants, &$constantFetches): void {
+			$customCallback = function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methods, &$methodCalls, &$propertyUsages, &$constants, &$constantFetches, &$customCallback, $classScope): void {
 				$nodeCallback($node, $scope);
 				if (!$scope->isInClass()) {
 					throw new \PHPStan\ShouldNotHappenException();
@@ -598,6 +599,20 @@ class NodeScopeResolver
 				}
 				if ($node instanceof MethodCall || $node instanceof StaticCall) {
 					$methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+					if ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
+						$calleeType = $scope->getType($node->var);
+						$methodName = $node->name->toString();
+						if ($calleeType->hasMethod($methodName)->yes()) {
+							$methodReflection = $calleeType->getMethod($methodName, $scope);
+							if (
+								$methodReflection instanceof MethodReflectionWithNode
+								&& $methodReflection->getDeclaringClass()->getName() === $classReflection->getName()
+								&& $methodReflection->getNode() !== null
+							) {
+								$this->processNodes([$methodReflection->getNode()], $classScope, $customCallback);
+							}
+						}
+					}
 					return;
 				}
 				if ($node instanceof Expr\ClassConstFetch) {
@@ -623,7 +638,8 @@ class NodeScopeResolver
 				} else {
 					$propertyUsages[] = new PropertyRead($node, $scope);
 				}
-			});
+			};
+			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $customCallback);
 			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $propertyUsages, $methodCalls), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $methods, $methodCalls), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $constants, $constantFetches), $classScope);

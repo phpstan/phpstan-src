@@ -10,8 +10,10 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeUtils;
 
 /**
  * @implements Rule<ClassMethodsNode>
@@ -57,11 +59,21 @@ class UnusedPrivateMethodRule implements Rule
 				$arrayCalls[] = $methodCall;
 				continue;
 			}
-			if (!$methodCallNode->name instanceof Identifier) {
-				continue;
-			}
-			$methodName = $methodCallNode->name->toString();
 			$callScope = $methodCall->getScope();
+			if ($methodCallNode->name instanceof Identifier) {
+				$methodNames = [$methodCallNode->name->toString()];
+			} else {
+				$methodNameType = $callScope->getType($methodCallNode->name);
+				$strings = TypeUtils::getConstantStrings($methodNameType);
+				if (count($strings) === 0) {
+					return [];
+				}
+
+				$methodNames = array_map(static function (ConstantStringType $type): string {
+					return $type->getValue();
+				}, $strings);
+			}
+
 			if ($methodCallNode instanceof Node\Expr\MethodCall) {
 				$calledOnType = $callScope->getType($methodCallNode->var);
 			} else {
@@ -80,10 +92,13 @@ class UnusedPrivateMethodRule implements Rule
 			if (!$inMethod instanceof MethodReflection) {
 				continue;
 			}
-			if ($inMethod->getName() === $methodName) {
-				continue;
+
+			foreach ($methodNames as $methodName) {
+				if ($inMethod->getName() === $methodName) {
+					continue;
+				}
+				unset($methods[$methodName]);
 			}
-			unset($methods[$methodName]);
 		}
 
 		if (count($methods) > 0) {

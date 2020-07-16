@@ -85,3 +85,39 @@ class Baz
 	}
 
 }
+
+class Lorem
+{
+
+	private function doFoo()
+	{
+
+	}
+
+	private function doBaz()
+	{
+
+	}
+
+	public function doBar()
+	{
+		$m = 'doFoo';
+		$this->{$m}();
+	}
+
+}
+
+class Ipsum
+{
+
+	private function doFoo()
+	{
+
+	}
+
+	public function doBar(string $s)
+	{
+		$this->{$s}();
+	}
+
+}

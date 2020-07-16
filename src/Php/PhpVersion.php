@@ -37,4 +37,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function deprecatesRequiredParameterAfterOptional(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

@@ -124,4 +124,42 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
+	public function dataRequiredParameterAfterOptional(): array
+	{
+		return [
+			[
+				70400,
+				[],
+			],
+			[
+				80000,
+				[
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						5,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						13,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataRequiredParameterAfterOptional
+	 * @param int $phpVersionId
+	 * @param mixed[] $errors
+	 */
+	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
+	{
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/required-parameter-after-optional-closures.php'], $errors);
+	}
+
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Param;
@@ -108,6 +109,7 @@ class FunctionDefinitionCheck
 				$errors[] = RuleErrorBuilder::message($unionTypesMessage)->line($param->getLine())->nonIgnorable()->build();
 				$unionTypeReported = true;
 			}
+
 			if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
@@ -127,6 +129,10 @@ class FunctionDefinitionCheck
 					);
 				}
 			}
+		}
+
+		if ($this->phpVersion->deprecatesRequiredParameterAfterOptional()) {
+			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($parameters));
 		}
 
 		if ($returnTypeNode === null) {
@@ -221,6 +227,10 @@ class FunctionDefinitionCheck
 			}
 		}
 
+		if ($this->phpVersion->deprecatesRequiredParameterAfterOptional()) {
+			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($parameterNodes));
+		}
+
 		$returnTypeNode = $functionNode->getReturnType() ?? $functionNode;
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			$referencedClasses = $this->getParameterReferencedClasses($parameter);
@@ -289,6 +299,52 @@ class FunctionDefinitionCheck
 		}
 		if ($parametersAcceptor->getReturnType() instanceof NonexistentParentClassType) {
 			$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $parametersAcceptor->getReturnType()->describe(VerbosityLevel::typeOnly())))->line($returnTypeNode->getLine())->build();
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param Param[] $parameterNodes
+	 * @return RuleError[]
+	 */
+	private function checkRequiredParameterAfterOptional(array $parameterNodes): array
+	{
+		/** @var string|null $optionalParameter */
+		$optionalParameter = null;
+		$errors = [];
+		foreach ($parameterNodes as $parameterNode) {
+			if (!$parameterNode->var instanceof Variable) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			if (!is_string($parameterNode->var->name)) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			$parameterName = $parameterNode->var->name;
+			if ($optionalParameter !== null && $parameterNode->default === null) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Deprecated in PHP 8.0: Required parameter $%s follows optional parameter $%s.', $parameterName, $optionalParameter))->line($parameterNode->getStartLine())->nonIgnorable()->build();
+				continue;
+			}
+			if ($parameterNode->default === null) {
+				continue;
+			}
+			if ($parameterNode->type === null) {
+				$optionalParameter = $parameterName;
+				continue;
+			}
+
+			$defaultValue = $parameterNode->default;
+			if (!$defaultValue instanceof ConstFetch) {
+				$optionalParameter = $parameterName;
+				continue;
+			}
+
+			$constantName = $defaultValue->name->toLowerString();
+			if ($constantName === 'null') {
+				continue;
+			}
+
+			$optionalParameter = $parameterName;
 		}
 
 		return $errors;

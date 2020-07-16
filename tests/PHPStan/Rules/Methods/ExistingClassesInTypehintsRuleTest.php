@@ -184,4 +184,42 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
+	public function dataRequiredParameterAfterOptional(): array
+	{
+		return [
+			[
+				70400,
+				[],
+			],
+			[
+				80000,
+				[
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						8,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataRequiredParameterAfterOptional
+	 * @param int $phpVersionId
+	 * @param mixed[] $errors
+	 */
+	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
+	{
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/required-parameter-after-optional.php'], $errors);
+	}
+
 }

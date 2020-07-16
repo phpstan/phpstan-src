@@ -5,12 +5,15 @@
 	<property name="url.composer-require-checker"
 			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.1.0/composer-require-checker.phar"/>
 	<if>
-		<os family="windows"/>
+		<and>
+			<not><os family="windows"/></not>
+			<available file="vendor/bin/paratest"/>
+		</and>
 		<then>
-			<property name="phpunit.executable" value="vendor/bin/phpunit"/>
+			<property name="phpunit.executable" value="vendor/bin/paratest"/>
 		</then>
 		<else>
-			<property name="phpunit.executable" value="vendor/bin/paratest"/>
+			<property name="phpunit.executable" value="vendor/bin/phpunit"/>
 		</else>
 	</if>
 	<php expression="PHP_VERSION_ID &gt;= 70400 ?'true':'false'" returnProperty="isPHP74" level="verbose" />

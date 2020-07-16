@@ -47,3 +47,41 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	private function doFoo()
+	{
+
+	}
+
+	private function doBaz()
+	{
+		$cb = [$this, 'doBaz'];
+		$cb();
+	}
+
+	public function doBar()
+	{
+		$cb = [$this, 'doFoo'];
+		$cb();
+	}
+
+}
+
+class Baz
+{
+
+	private function doFoo()
+	{
+
+	}
+
+	public function doBar(string $name)
+	{
+		$cb = [$this, $name];
+		$cb();
+	}
+
+}

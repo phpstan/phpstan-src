@@ -332,7 +332,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $method->getVariants();
 	}
 
-	private function findTypeAndMethodName(): ?ConstantArrayTypeAndMethod
+	public function findTypeAndMethodName(): ?ConstantArrayTypeAndMethod
 	{
 		if (count($this->keyTypes) !== 2) {
 			return null;

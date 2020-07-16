@@ -615,6 +615,10 @@ class NodeScopeResolver
 					}
 					return;
 				}
+				if ($node instanceof Array_ && count($node->items) === 2) {
+					$methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+					return;
+				}
 				if ($node instanceof Expr\ClassConstFetch) {
 					$constantFetches[] = new ClassConstantFetch($node, $scope);
 					return;

@@ -9,6 +9,7 @@ use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 
@@ -49,8 +50,13 @@ class UnusedPrivateMethodRule implements Rule
 			$methods[$method->name->toString()] = $method;
 		}
 
+		$arrayCalls = [];
 		foreach ($node->getMethodCalls() as $methodCall) {
 			$methodCallNode = $methodCall->getNode();
+			if ($methodCallNode instanceof Node\Expr\Array_) {
+				$arrayCalls[] = $methodCall;
+				continue;
+			}
 			if (!$methodCallNode->name instanceof Identifier) {
 				continue;
 			}
@@ -78,6 +84,43 @@ class UnusedPrivateMethodRule implements Rule
 				continue;
 			}
 			unset($methods[$methodName]);
+		}
+
+		if (count($methods) > 0) {
+			foreach ($arrayCalls as $arrayCall) {
+				/** @var Node\Expr\Array_ $array */
+				$array = $arrayCall->getNode();
+				$arrayScope = $arrayCall->getScope();
+				$arrayType = $scope->getType($array);
+				if (!$arrayType instanceof ConstantArrayType) {
+					continue;
+				}
+				$typeAndMethod = $arrayType->findTypeAndMethodName();
+				if ($typeAndMethod === null) {
+					continue;
+				}
+				if ($typeAndMethod->isUnknown()) {
+					return [];
+				}
+				if (!$typeAndMethod->getCertainty()->yes()) {
+					return [];
+				}
+				$calledOnType = $typeAndMethod->getType();
+				if ($classType->isSuperTypeOf($calledOnType)->no()) {
+					continue;
+				}
+				if ($calledOnType instanceof MixedType) {
+					continue;
+				}
+				$inMethod = $arrayScope->getFunction();
+				if (!$inMethod instanceof MethodReflection) {
+					continue;
+				}
+				if ($inMethod->getName() === $typeAndMethod->getMethod()) {
+					continue;
+				}
+				unset($methods[$typeAndMethod->getMethod()]);
+			}
 		}
 
 		$errors = [];

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -185,6 +186,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$originalCount = count($methods);
 		foreach ($methodCalls as $methodCall) {
 			$methodCallNode = $methodCall->getNode();
+			if ($methodCallNode instanceof Array_) {
+				continue;
+			}
 			if (!$methodCallNode->name instanceof Identifier) {
 				continue;
 			}

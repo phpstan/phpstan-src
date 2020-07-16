@@ -31,6 +31,10 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 				'Class UnusedPrivateMethod\Foo has an unused method unusedStaticMethod().',
 				44,
 			],
+			[
+				'Class UnusedPrivateMethod\Bar has an unused method doBaz().',
+				59,
+			],
 		]);
 	}
 

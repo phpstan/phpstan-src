@@ -106,3 +106,38 @@ class Baz
 	}
 
 }
+
+class Lorem
+{
+
+	private $foo = 'foo';
+
+	private $bar = 'bar';
+
+	private $baz = 'baz';
+
+	public function doFoo()
+	{
+		$nameProperties = [
+			'foo',
+			'bar',
+		];
+
+		foreach ($nameProperties as $nameProperty) {
+			echo "Hello, {$this->$nameProperty}";
+		}
+	}
+
+}
+
+class Ipsum
+{
+
+	private $foo = 'foo';
+
+	public function doBar(string $s)
+	{
+		echo $this->{$s};
+	}
+
+}

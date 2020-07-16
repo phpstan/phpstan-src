@@ -8,8 +8,10 @@ use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeUtils;
 
 /**
  * @implements Rule<ClassPropertiesNode>
@@ -93,12 +95,18 @@ class UnusedPrivatePropertyRule implements Rule
 
 		foreach ($node->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();
-			if (!$fetch->name instanceof Node\Identifier) {
-				continue;
-			}
-			$propertyName = $fetch->name->toString();
-			if (!array_key_exists($propertyName, $properties)) {
-				continue;
+			if ($fetch->name instanceof Node\Identifier) {
+				$propertyNames = [$fetch->name->toString()];
+			} else {
+				$propertyNameType = $usage->getScope()->getType($fetch->name);
+				$strings = TypeUtils::getConstantStrings($propertyNameType);
+				if (count($strings) === 0) {
+					return [];
+				}
+
+				$propertyNames = array_map(static function (ConstantStringType $type): string {
+					return $type->getValue();
+				}, $strings);
 			}
 			if ($fetch instanceof Node\Expr\PropertyFetch) {
 				$fetchedOnType = $usage->getScope()->getType($fetch->var);
@@ -116,10 +124,16 @@ class UnusedPrivatePropertyRule implements Rule
 			if ($fetchedOnType instanceof MixedType) {
 				continue;
 			}
-			if ($usage instanceof PropertyRead) {
-				$properties[$propertyName]['read'] = true;
-			} else {
-				$properties[$propertyName]['written'] = true;
+
+			foreach ($propertyNames as $propertyName) {
+				if (!array_key_exists($propertyName, $properties)) {
+					continue;
+				}
+				if ($usage instanceof PropertyRead) {
+					$properties[$propertyName]['read'] = true;
+				} else {
+					$properties[$propertyName]['written'] = true;
+				}
 			}
 		}
 

@@ -10023,6 +10023,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
 	}
 
+	public function dataClassPhpDocs(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10086,6 +10091,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataNativeUnionTypes
 	 * @dataProvider dataMinMaxReturnTypeWithArrays
 	 * @dataProvider dataNativeStaticReturnType
+	 * @dataProvider dataClassPhpDocs
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -6,7 +6,7 @@ class DirectReadWritePropertiesExtensionProvider implements ReadWritePropertiesE
 {
 
 	/** @var ReadWritePropertiesExtension[] */
-	private array $extensions;
+	private $extensions;
 
 	/**
 	 * @param ReadWritePropertiesExtension[] $extensions

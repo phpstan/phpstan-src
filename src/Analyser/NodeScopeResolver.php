@@ -454,7 +454,10 @@ class NodeScopeResolver
 				$isInternal,
 				$isFinal
 			);
-			$nodeCallback(new InClassMethodNode($stmt), $methodScope);
+
+			if (!$stmt->getAttribute('virtual', false)) {
+				$nodeCallback(new InClassMethodNode($stmt), $methodScope);
+			}
 
 			if ($stmt->stmts !== null) {
 				$gatheredReturnStatements = [];

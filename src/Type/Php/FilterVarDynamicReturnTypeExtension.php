@@ -59,8 +59,11 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$this->getConstant('FILTER_VALIDATE_MAC') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_REGEXP') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_URL') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_MAGIC_QUOTES') => $stringType,
 		];
+
+		if ($this->reflectionProvider->hasConstant(new Node\Name('FILTER_SANITIZE_MAGIC_QUOTES'), null)) {
+			$this->filterTypeMap[$this->getConstant('FILTER_SANITIZE_MAGIC_QUOTES')] = $stringType;
+		}
 
 		if ($this->reflectionProvider->hasConstant(new Node\Name('FILTER_SANITIZE_ADD_SLASHES'), null)) {
 			$this->filterTypeMap[$this->getConstant('FILTER_SANITIZE_ADD_SLASHES')] = $stringType;

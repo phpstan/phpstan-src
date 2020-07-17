@@ -8,6 +8,7 @@ parameters:
 	level: null
 	paths: []
 	featureToggles:
+		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		closureUsesThis: false
 		randomIntParameters: false
@@ -147,6 +148,7 @@ parametersSchema:
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	featureToggles: structure([
+		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		closureUsesThis: bool(),
 		randomIntParameters: bool(),

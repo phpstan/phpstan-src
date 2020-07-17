@@ -2,8 +2,10 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use UninitializedProperty\TestExtension;
 use const PHP_VERSION_ID;
 
 /**
@@ -14,9 +16,31 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UninitializedPropertyRule([
-			'UninitializedProperty\\TestCase::setUp',
-		]);
+		return new UninitializedPropertyRule(
+			new DirectReadWritePropertiesExtensionProvider([
+				new class() implements ReadWritePropertiesExtension {
+
+					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+					{
+						return false;
+					}
+
+					public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+					{
+						return false;
+					}
+
+					public function isInitialized(PropertyReflection $property, string $propertyName): bool
+					{
+						return $property->getDeclaringClass()->getName() === TestExtension::class && $propertyName === 'inited';
+					}
+
+				},
+			]),
+			[
+				'UninitializedProperty\\TestCase::setUp',
+			]
+		);
 	}
 
 	public function testRule(): void
@@ -41,6 +65,10 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 			[
 				'Class UninitializedProperty\Lorem has an uninitialized property $baz. Give it default value or assign it in the constructor.',
 				59,
+			],
+			[
+				'Class UninitializedProperty\TestExtension has an uninitialized property $uninited. Give it default value or assign it in the constructor.',
+				122,
 			],
 		]);
 	}

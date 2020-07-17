@@ -15,6 +15,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class UninitializedPropertyRule implements Rule
 {
 
+	private ReadWritePropertiesExtensionProvider $extensionProvider;
+
 	/** @var string[] */
 	private array $additionalConstructors;
 
@@ -24,8 +26,12 @@ class UninitializedPropertyRule implements Rule
 	/**
 	 * @param string[] $additionalConstructors
 	 */
-	public function __construct(array $additionalConstructors)
+	public function __construct(
+		ReadWritePropertiesExtensionProvider $extensionProvider,
+		array $additionalConstructors
+	)
 	{
+		$this->extensionProvider = $extensionProvider;
 		$this->additionalConstructors = $additionalConstructors;
 	}
 
@@ -40,7 +46,7 @@ class UninitializedPropertyRule implements Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
-		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->getConstructors($classReflection));
+		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->getConstructors($classReflection), $this->extensionProvider->getExtensions());
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {

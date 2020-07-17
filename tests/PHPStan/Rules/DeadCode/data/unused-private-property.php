@@ -141,3 +141,16 @@ class Ipsum
 	}
 
 }
+
+class TextExtension
+{
+
+	private $unused;
+
+	private $read;
+
+	private $written;
+
+	private $used;
+
+}

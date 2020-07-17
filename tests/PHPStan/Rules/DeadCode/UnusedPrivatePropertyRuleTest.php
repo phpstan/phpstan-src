@@ -2,8 +2,12 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use UnusedPrivateProperty\TextExtension;
 use const PHP_VERSION_ID;
 
 /**
@@ -21,6 +25,34 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UnusedPrivatePropertyRule(
+			new DirectReadWritePropertiesExtensionProvider([
+				new class() implements ReadWritePropertiesExtension {
+
+					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+					{
+						return $property->getDeclaringClass()->getName() === TextExtension::class
+							&& in_array($propertyName, [
+								'read',
+								'used',
+							], true);
+					}
+
+					public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+					{
+						return $property->getDeclaringClass()->getName() === TextExtension::class
+							&& in_array($propertyName, [
+								'written',
+								'used',
+							], true);
+					}
+
+					public function isInitialized(PropertyReflection $property, string $propertyName): bool
+					{
+						return false;
+					}
+
+				},
+			]),
 			$this->alwaysWrittenTags,
 			$this->alwaysReadTags,
 			true
@@ -68,6 +100,18 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 			[
 				'Class UnusedPrivateProperty\Lorem has a write-only property $baz.',
 				117,
+			],
+			[
+				'Class UnusedPrivateProperty\TextExtension has an unused property $unused.',
+				148,
+			],
+			[
+				'Class UnusedPrivateProperty\TextExtension has a read-only property $read.',
+				150,
+			],
+			[
+				'Class UnusedPrivateProperty\TextExtension has a write-only property $written.',
+				152,
 			],
 		]);
 	}

@@ -113,3 +113,12 @@ class MyTestCase extends TestCase
 	}
 
 }
+
+class TestExtension
+{
+
+	private int $inited;
+
+	private int $uninited;
+
+}

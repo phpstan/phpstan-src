@@ -15,6 +15,7 @@ use PHPStan\Node\Method\MethodCall;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 
@@ -83,11 +84,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param string[] $constructors
+	 * @param ReadWritePropertiesExtension[] $extensions
 	 * @return array{array<string, Property>, array<array{string, int}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
-		array $constructors
+		array $constructors,
+		array $extensions
 	): array
 	{
 		if (!$this->getClass() instanceof Class_) {
@@ -111,6 +114,20 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 					continue;
 				}
 				$properties[$prop->name->toString()] = $property;
+			}
+		}
+
+		foreach (array_keys($properties) as $name) {
+			foreach ($extensions as $extension) {
+				if (!$classReflection->hasNativeProperty($name)) {
+					continue;
+				}
+				$propertyReflection = $classReflection->getNativeProperty($name);
+				if (!$extension->isInitialized($propertyReflection, $name)) {
+					continue;
+				}
+				unset($properties[$name]);
+				break;
 			}
 		}
 

@@ -178,7 +178,7 @@ return [
 			return str_replace(sprintf('%s\\ReflectionUnionType', $prefix), 'ReflectionUnionType', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			return str_replace('final private', 'private', $content);
+			return str_replace('private static final', 'private static', $content);
 		},
 	],
 	'whitelist' => [

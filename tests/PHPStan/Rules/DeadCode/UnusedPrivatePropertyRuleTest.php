@@ -22,7 +22,8 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	{
 		return new UnusedPrivatePropertyRule(
 			$this->alwaysWrittenTags,
-			$this->alwaysReadTags
+			$this->alwaysReadTags,
+			true
 		);
 	}
 

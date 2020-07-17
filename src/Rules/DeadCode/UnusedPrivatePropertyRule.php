@@ -25,17 +25,21 @@ class UnusedPrivatePropertyRule implements Rule
 	/** @var string[] */
 	private array $alwaysReadTags;
 
+	private bool $checkUninitializedProperties;
+
 	/**
 	 * @param string[] $alwaysWrittenTags
 	 * @param string[] $alwaysReadTags
 	 */
 	public function __construct(
 		array $alwaysWrittenTags,
-		array $alwaysReadTags
+		array $alwaysReadTags,
+		bool $checkUninitializedProperties
 	)
 	{
 		$this->alwaysWrittenTags = $alwaysWrittenTags;
 		$this->alwaysReadTags = $alwaysReadTags;
+		$this->checkUninitializedProperties = $checkUninitializedProperties;
 	}
 
 	public function getNodeType(): string
@@ -159,7 +163,7 @@ class UnusedPrivatePropertyRule implements Rule
 				} else {
 					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a write-only %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
 				}
-			} elseif (!$data['written'] && !array_key_exists($name, $uninitializedProperties)) {
+			} elseif (!$data['written'] && (!array_key_exists($name, $uninitializedProperties) || !$this->checkUninitializedProperties)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a read-only %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
 			}
 		}

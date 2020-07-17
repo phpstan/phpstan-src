@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use UninitializedProperty\TestExtension;
 use const PHP_VERSION_ID;
 
 /**
@@ -32,7 +31,7 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 					public function isInitialized(PropertyReflection $property, string $propertyName): bool
 					{
-						return $property->getDeclaringClass()->getName() === TestExtension::class && $propertyName === 'inited';
+						return $property->getDeclaringClass()->getName() === 'UninitializedProperty\\TestExtension' && $propertyName === 'inited';
 					}
 
 				},

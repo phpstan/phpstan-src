@@ -7,7 +7,6 @@ use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use UnusedPrivateProperty\TextExtension;
 use const PHP_VERSION_ID;
 
 /**
@@ -30,7 +29,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
 					{
-						return $property->getDeclaringClass()->getName() === TextExtension::class
+						return $property->getDeclaringClass()->getName() === 'UnusedPrivateProperty\\TextExtension'
 							&& in_array($propertyName, [
 								'read',
 								'used',
@@ -39,7 +38,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 					public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
 					{
-						return $property->getDeclaringClass()->getName() === TextExtension::class
+						return $property->getDeclaringClass()->getName() === 'UnusedPrivateProperty\\TextExtension'
 							&& in_array($propertyName, [
 								'written',
 								'used',

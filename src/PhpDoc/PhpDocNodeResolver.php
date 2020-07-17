@@ -126,35 +126,41 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach ($phpDocNode->getMethodTagValues() as $tagValue) {
-			$parameters = [];
-			foreach ($tagValue->parameters as $parameterNode) {
-				$parameterName = substr($parameterNode->parameterName, 1);
-				$type = $parameterNode->type !== null ? $this->typeNodeResolver->resolve($parameterNode->type, $nameScope) : new MixedType();
-				if ($parameterNode->defaultValue instanceof ConstExprNullNode) {
-					$type = TypeCombinator::addNull($type);
-				}
-				$defaultValue = null;
-				if ($parameterNode->defaultValue !== null) {
-					$defaultValue = $this->constExprNodeResolver->resolve($parameterNode->defaultValue);
+		foreach (['@method', '@psalm-method', '@phpstan-method'] as $tagName) {
+			foreach ($phpDocNode->getMethodTagValues($tagName) as $tagValue) {
+				$parameters = [];
+				foreach ($tagValue->parameters as $parameterNode) {
+					$parameterName = substr($parameterNode->parameterName, 1);
+					$type = $parameterNode->type !== null
+						? $this->typeNodeResolver->resolve($parameterNode->type, $nameScope)
+						: new MixedType();
+					if ($parameterNode->defaultValue instanceof ConstExprNullNode) {
+						$type = TypeCombinator::addNull($type);
+					}
+					$defaultValue = null;
+					if ($parameterNode->defaultValue !== null) {
+						$defaultValue = $this->constExprNodeResolver->resolve($parameterNode->defaultValue);
+					}
+
+					$parameters[$parameterName] = new MethodTagParameter(
+						$type,
+						$parameterNode->isReference
+							? PassedByReference::createCreatesNewVariable()
+							: PassedByReference::createNo(),
+						$parameterNode->isVariadic || $parameterNode->defaultValue !== null,
+						$parameterNode->isVariadic,
+						$defaultValue
+					);
 				}
 
-				$parameters[$parameterName] = new MethodTagParameter(
-					$type,
-					$parameterNode->isReference
-						? PassedByReference::createCreatesNewVariable()
-						: PassedByReference::createNo(),
-					$parameterNode->isVariadic || $parameterNode->defaultValue !== null,
-					$parameterNode->isVariadic,
-					$defaultValue
+				$resolved[$tagValue->methodName] = new MethodTag(
+					$tagValue->returnType !== null
+						? $this->typeNodeResolver->resolve($tagValue->returnType, $nameScope)
+						: new MixedType(),
+					$tagValue->isStatic,
+					$parameters
 				);
 			}
-
-			$resolved[$tagValue->methodName] = new MethodTag(
-				$tagValue->returnType !== null ? $this->typeNodeResolver->resolve($tagValue->returnType, $nameScope) : new MixedType(),
-				$tagValue->isStatic,
-				$parameters
-			);
 		}
 
 		return $resolved;

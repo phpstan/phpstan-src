@@ -455,7 +455,7 @@ class NodeScopeResolver
 				$isFinal
 			);
 
-			if (!$stmt->getAttribute('virtual', false)) {
+			if ($stmt->getAttribute('virtual', false) === false) {
 				$nodeCallback(new InClassMethodNode($stmt), $methodScope);
 			}
 

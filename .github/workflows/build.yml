@@ -34,6 +34,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
 
       - name: "Validate Composer"
         run: "composer validate"
@@ -74,6 +75,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
 
       - name: "Validate Composer"
         run: "composer validate"
@@ -120,6 +122,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"
@@ -162,7 +165,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl
+          tools: pecl, composer:v2
           extensions: ds,mbstring
           ini-values: memory_limit=512M
 
@@ -201,7 +204,7 @@ jobs:
         with:
           coverage: "pcov"
           php-version: "7.4"
-          tools: pecl
+          tools: pecl, composer:v2
           extensions: ds
 
       - name: "Cache dependencies"
@@ -254,6 +257,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
+          tools: composer:v2
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"
@@ -296,6 +300,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
+          tools: composer:v2
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"
@@ -350,6 +355,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
           ini-values: memory_limit=256M
+          tools: composer:v2
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"
@@ -384,6 +390,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"
@@ -426,6 +433,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"
@@ -469,7 +477,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "7.4"
-          tools: ${{ matrix.tools }}
+          tools: ${{ matrix.tools }}, composer:v2
           extensions: ${{ matrix.extensions }}
 
       - name: "Cache dependencies"

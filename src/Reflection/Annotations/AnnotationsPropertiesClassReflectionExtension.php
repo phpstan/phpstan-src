@@ -5,33 +5,26 @@ namespace PHPStan\Reflection\Annotations;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 
 class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
 	/** @var \PHPStan\Reflection\PropertyReflection[][] */
 	private array $properties = [];
 
-	public function __construct(FileTypeMapper $fileTypeMapper)
-	{
-		$this->fileTypeMapper = $fileTypeMapper;
-	}
-
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
-		if (!isset($this->properties[$classReflection->getName()])) {
-			$this->properties[$classReflection->getName()] = $this->createProperties($classReflection, $classReflection);
+		if (!isset($this->properties[$classReflection->getCacheKey()])) {
+			$this->properties[$classReflection->getCacheKey()] = $this->createProperties($classReflection, $classReflection);
 		}
 
-		return isset($this->properties[$classReflection->getName()][$propertyName]);
+		return isset($this->properties[$classReflection->getCacheKey()][$propertyName]);
 	}
 
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
-		return $this->properties[$classReflection->getName()][$propertyName];
+		return $this->properties[$classReflection->getCacheKey()][$propertyName];
 	}
 
 	/**
@@ -69,11 +62,14 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 			return $properties;
 		}
 
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $classReflection->getName(), null, null, $docComment);
-		foreach ($resolvedPhpDoc->getPropertyTags() as $propertyName => $propertyTag) {
+		$propertyTags = $classReflection->getPropertyTags();
+		foreach ($propertyTags as $propertyName => $propertyTag) {
 			$properties[$propertyName] = new AnnotationPropertyReflection(
 				$declaringClass,
-				$propertyTag->getType(),
+				TemplateTypeHelper::resolveTemplateTypes(
+					$propertyTag->getType(),
+					$classReflection->getActiveTemplateTypeMap()
+				),
 				$propertyTag->isReadable(),
 				$propertyTag->isWritable()
 			);

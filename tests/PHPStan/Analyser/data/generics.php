@@ -1102,8 +1102,6 @@ function () {
 class GenericReflectionClass extends \ReflectionClass
 {
 
-	public $name;
-
 	public function newInstanceWithoutConstructor()
 	{
 		return parent::newInstanceWithoutConstructor();
@@ -1116,8 +1114,6 @@ class GenericReflectionClass extends \ReflectionClass
  */
 class SpecificReflectionClass extends \ReflectionClass
 {
-
-	public $name;
 
 	public function newInstanceWithoutConstructor()
 	{

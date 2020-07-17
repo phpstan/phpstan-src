@@ -5,7 +5,9 @@ namespace PHPStan\Reflection;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
+use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
@@ -977,6 +979,32 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		return $resolvedPhpDoc->getMixinTags();
+	}
+
+	/**
+	 * @return array<PropertyTag>
+	 */
+	public function getPropertyTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getPropertyTags();
+	}
+
+	/**
+	 * @return array<MethodTag>
+	 */
+	public function getMethodTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getMethodTags();
 	}
 
 	/**

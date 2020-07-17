@@ -5,33 +5,26 @@ namespace PHPStan\Reflection\Annotations;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
-use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
 	/** @var MethodReflection[][] */
 	private array $methods = [];
 
-	public function __construct(FileTypeMapper $fileTypeMapper)
-	{
-		$this->fileTypeMapper = $fileTypeMapper;
-	}
-
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool
 	{
-		if (!isset($this->methods[$classReflection->getName()])) {
-			$this->methods[$classReflection->getName()] = $this->createMethods($classReflection, $classReflection);
+		if (!isset($this->methods[$classReflection->getCacheKey()])) {
+			$this->methods[$classReflection->getCacheKey()] = $this->createMethods($classReflection, $classReflection);
 		}
 
-		return isset($this->methods[$classReflection->getName()][$methodName]);
+		return isset($this->methods[$classReflection->getCacheKey()][$methodName]);
 	}
 
 	public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
 	{
-		return $this->methods[$classReflection->getName()][$methodName];
+		return $this->methods[$classReflection->getCacheKey()][$methodName];
 	}
 
 	/**
@@ -68,8 +61,8 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 			return $methods;
 		}
 
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $classReflection->getName(), null, null, $docComment);
-		foreach ($resolvedPhpDoc->getMethodTags() as $methodName => $methodTag) {
+		$methodTags = $classReflection->getMethodTags();
+		foreach ($methodTags as $methodName => $methodTag) {
 			$parameters = [];
 			foreach ($methodTag->getParameters() as $parameterName => $parameterTag) {
 				$parameters[] = new AnnotationsMethodParameterReflection(
@@ -85,7 +78,10 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 			$methods[$methodName] = new AnnotationMethodReflection(
 				$methodName,
 				$declaringClass,
-				$methodTag->getReturnType(),
+				TemplateTypeHelper::resolveTemplateTypes(
+					$methodTag->getReturnType(),
+					$classReflection->getActiveTemplateTypeMap()
+				),
 				$parameters,
 				$methodTag->isStatic(),
 				$this->detectMethodVariadic($parameters)

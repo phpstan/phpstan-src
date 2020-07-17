@@ -155,6 +155,9 @@ jobs:
         script:
           - "vendor/bin/phing tests"
           - "vendor/bin/phing tests-fast-static-reflection"
+        exclude:
+          - operating-system: windows-latest
+            php-version: 8.0
 
     steps:
       - name: "Checkout"
@@ -180,7 +183,7 @@ jobs:
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Update PHPUnit"
-        if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
+        if: (matrix.php-version == '7.4' || matrix.php-version == '8.0') && matrix.operating-system != 'windows-latest'
         run: "composer remove --dev brianium/paratest && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
 
       - name: "Transform source code"
@@ -246,6 +249,9 @@ jobs:
           - "vendor/bin/phing phpstan"
           - "vendor/bin/phing phpstan-runtime-reflection"
           - "vendor/bin/phing phpstan-static-reflection"
+        exclude:
+          - operating-system: windows-latest
+            php-version: 8.0
 
     steps:
       - name: "Checkout"
@@ -270,7 +276,7 @@ jobs:
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Update PHPUnit"
-        if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
+        if: (matrix.php-version == '7.4' || matrix.php-version == '8.0') && matrix.operating-system != 'windows-latest'
         run: "composer remove --dev brianium/paratest && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
 
       - name: "Transform source code"

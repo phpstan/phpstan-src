@@ -1182,6 +1182,7 @@ services:
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 		arguments:
 			phpParser: @phpParserDecorator
+			phpVersionId: %phpVersion%
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 

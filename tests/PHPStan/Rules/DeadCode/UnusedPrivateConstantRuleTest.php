@@ -20,7 +20,7 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-private-constant.php'], [
 			[
-				'Class UnusedPrivateConstant\Foo has an unused constant BAR_CONST.',
+				'Constant UnusedPrivateConstant\Foo::BAR_CONST is unused.',
 				10,
 			],
 		]);

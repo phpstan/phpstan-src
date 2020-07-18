@@ -69,47 +69,47 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/unused-private-property.php'], [
 			[
-				'Class UnusedPrivateProperty\Foo has a write-only property $bar.',
+				'Property UnusedPrivateProperty\Foo::$bar is never read, only written.',
 				10,
 			],
 			[
-				'Class UnusedPrivateProperty\Foo has an unused property $baz.',
+				'Property UnusedPrivateProperty\Foo::$baz is unused.',
 				12,
 			],
 			[
-				'Class UnusedPrivateProperty\Foo has a read-only property $lorem.',
+				'Property UnusedPrivateProperty\Foo::$lorem is never written, only read.',
 				14,
 			],
 			[
-				'Class UnusedPrivateProperty\Bar has a read-only property $baz.',
+				'Property UnusedPrivateProperty\Bar::$baz is never written, only read.',
 				57,
 			],
 			[
-				'Class UnusedPrivateProperty\Baz has a write-only static property $bar.',
+				'Static property UnusedPrivateProperty\Baz::$bar is never read, only written.',
 				86,
 			],
 			[
-				'Class UnusedPrivateProperty\Baz has an unused static property $baz.',
+				'Static property UnusedPrivateProperty\Baz::$baz is unused.',
 				88,
 			],
 			[
-				'Class UnusedPrivateProperty\Baz has a read-only static property $lorem.',
+				'Static property UnusedPrivateProperty\Baz::$lorem is never written, only read.',
 				90,
 			],
 			[
-				'Class UnusedPrivateProperty\Lorem has a write-only property $baz.',
+				'Property UnusedPrivateProperty\Lorem::$baz is never read, only written.',
 				117,
 			],
 			[
-				'Class UnusedPrivateProperty\TextExtension has an unused property $unused.',
+				'Property UnusedPrivateProperty\TextExtension::$unused is unused.',
 				148,
 			],
 			[
-				'Class UnusedPrivateProperty\TextExtension has a read-only property $read.',
+				'Property UnusedPrivateProperty\TextExtension::$read is never written, only read.',
 				150,
 			],
 			[
-				'Class UnusedPrivateProperty\TextExtension has a write-only property $written.',
+				'Property UnusedPrivateProperty\TextExtension::$written is never read, only written.',
 				152,
 			],
 		]);
@@ -121,11 +121,11 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->alwaysReadTags = ['@get'];
 		$this->analyse([__DIR__ . '/data/private-property-with-tags.php'], [
 			[
-				'Class PrivatePropertyWithTags\Foo has a write-only property $title.',
+				'Property PrivatePropertyWithTags\Foo::$title is never read, only written.',
 				13,
 			],
 			[
-				'Class PrivatePropertyWithTags\Foo has a read-only property $text.',
+				'Property PrivatePropertyWithTags\Foo::$text is never written, only read.',
 				18,
 			],
 		]);

@@ -1361,3 +1361,32 @@ class TagMergingChild extends TagMergingParent
 		assertType('float', $this->property);
 	}
 }
+
+/**
+ * @template T
+ */
+interface GeneralFactoryInterface {
+	/**
+	 * @return T
+	 */
+	public static function create();
+}
+
+class Car {}
+
+/**
+ * @implements GeneralFactoryInterface<Car>
+ */
+class CarFactory implements GeneralFactoryInterface {
+	public static function create() { return new Car(); }
+}
+
+class CarFactoryProcessor {
+	/**
+	 * @param class-string<CarFactory> $class
+	 */
+	public function process($class): void {
+		$car = $class::create();
+		assertType(Car::class, $car);
+	}
+}

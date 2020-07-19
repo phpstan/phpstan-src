@@ -6,3 +6,4 @@ parameters:
 		nullCoalesce: true
 		fileWhitespace: true
 		unusedClassElements: true
+		readComposerPhpVersion: true

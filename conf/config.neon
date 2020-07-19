@@ -15,6 +15,7 @@ parameters:
 		nullCoalesce: false
 		fileWhitespace: false
 		unusedClassElements: false
+		readComposerPhpVersion: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -154,7 +155,8 @@ parametersSchema:
 		randomIntParameters: bool(),
 		nullCoalesce: bool(),
 		fileWhitespace: bool(),
-		unusedClassElements: bool()
+		unusedClassElements: bool(),
+		readComposerPhpVersion: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -293,8 +295,14 @@ services:
 
 	-
 		class: PHPStan\Php\PhpVersionFactory
+		factory: @PHPStan\Php\PhpVersionFactoryFactory::create
+
+	-
+		class: PHPStan\Php\PhpVersionFactoryFactory
 		arguments:
 			versionId: %phpVersion%
+			readComposerPhpVersion: %featureToggles.readComposerPhpVersion%
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer

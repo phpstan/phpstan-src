@@ -8441,7 +8441,7 @@ return [
 'PDO::cubrid_schema' => ['array', 'schema_type'=>'int', 'table_name='=>'string', 'col_name='=>'string'],
 'PDO::errorCode' => ['string'],
 'PDO::errorInfo' => ['array'],
-'PDO::exec' => ['int', 'query'=>'string'],
+'PDO::exec' => ['int|false', 'query'=>'string'],
 'PDO::getAttribute' => ['', 'attribute'=>'int'],
 'PDO::getAvailableDrivers' => ['array'],
 'PDO::inTransaction' => ['bool'],

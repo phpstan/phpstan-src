@@ -362,4 +362,15 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3641(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-3641.php'], [
+			[
+				'Static method Bug3641\Foo::bar() invoked with 1 parameter, 0 required.',
+				32,
+			],
+		]);
+	}
+
 }

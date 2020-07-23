@@ -39,10 +39,6 @@ class ClassTemplateTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node instanceof Node\Stmt\Class_) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
 		$docComment = $node->getDocComment();
 		if ($docComment === null) {
 			return [];

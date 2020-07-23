@@ -39,19 +39,13 @@ class ClassTemplateTypeRule implements Rule
 			return [];
 		}
 
-		$className = null;
-		$errorMessageClass = null;
-		if ($node->getAttribute('anonymousClass', false)) {
-			$className = $node->name->name;
-			$errorMessageClass = 'anonymous class';
-		}
-
 		if (isset($node->namespacedName)) {
 			$className = (string) $node->namespacedName;
 			$errorMessageClass = 'class ' . $className;
-		}
-
-		if ($className === null || $errorMessageClass === null) {
+		} elseif ($node->name !== null && (bool) $node->getAttribute('anonymousClass', false)) {
+			$className = $node->name->name;
+			$errorMessageClass = 'anonymous class';
+		} else {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 

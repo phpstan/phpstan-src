@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -18,13 +19,17 @@ class ClassTemplateTypeRule implements Rule
 
 	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
 
+	private \PHPStan\Broker\AnonymousClassNameHelper $anonymousClassNameHelper;
+
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
-		TemplateTypeCheck $templateTypeCheck
+		TemplateTypeCheck $templateTypeCheck,
+		AnonymousClassNameHelper $anonymousClassNameHelper
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->templateTypeCheck = $templateTypeCheck;
+		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 	}
 
 	public function getNodeType(): string
@@ -42,8 +47,12 @@ class ClassTemplateTypeRule implements Rule
 		if (isset($node->namespacedName)) {
 			$className = (string) $node->namespacedName;
 			$errorMessageClass = 'class ' . $className;
-		} elseif ($node->name !== null && (bool) $node->getAttribute('anonymousClass', false)) {
-			$className = $node->name->name;
+		} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
+			if (!$node instanceof Node\Stmt\Class_) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $scope->getFile());
 			$errorMessageClass = 'anonymous class';
 		} else {
 			throw new \PHPStan\ShouldNotHappenException();

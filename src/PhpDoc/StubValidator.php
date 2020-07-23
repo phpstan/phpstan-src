@@ -4,6 +4,7 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
@@ -115,6 +116,7 @@ class StubValidator
 		$classCaseSensitivityCheck = $container->getByType(ClassCaseSensitivityCheck::class);
 		$functionDefinitionCheck = $container->getByType(FunctionDefinitionCheck::class);
 		$missingTypehintCheck = $container->getByType(MissingTypehintCheck::class);
+		$anonymousClassNameHelper = $container->getByType(AnonymousClassNameHelper::class);
 
 		return new Registry([
 			// level 0
@@ -128,7 +130,7 @@ class StubValidator
 
 			// level 2
 			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck),
-			new ClassTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
+			new ClassTemplateTypeRule($fileTypeMapper, $templateTypeCheck, $anonymousClassNameHelper),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
 			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck),

@@ -46,6 +46,26 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template for class ClassTemplateType\Ipsum cannot have existing type alias TypeAlias as its name.',
 				40,
 			],
+			[
+				'PHPDoc tag @template for anonymous class cannot have existing class stdClass as its name.',
+				45,
+			],
+			[
+				'PHPDoc tag @template T for anonymous class has invalid bound type ClassTemplateType\Zazzzu.',
+				50,
+			],
+			[
+				'PHPDoc tag @template T for anonymous class with bound type int is not supported.',
+				55,
+			],
+			[
+				'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',
+				60,
+			],
+			[
+				'PHPDoc tag @template for anonymous class cannot have existing type alias TypeAlias as its name.',
+				65,
+			],
 		]);
 	}
 

@@ -39,11 +39,22 @@ class ClassTemplateTypeRule implements Rule
 			return [];
 		}
 
-		if (!isset($node->namespacedName)) {
+		$className = null;
+		$errorMessageClass = null;
+		if ($node->getAttribute('anonymousClass', false)) {
+			$className = $node->name->name;
+			$errorMessageClass = 'anonymous class';
+		}
+
+		if (isset($node->namespacedName)) {
+			$className = (string) $node->namespacedName;
+			$errorMessageClass = 'class ' . $className;
+		}
+
+		if ($className === null || $errorMessageClass === null) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$className = (string) $node->namespacedName;
 		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 			$scope->getFile(),
 			$className,
@@ -56,10 +67,10 @@ class ClassTemplateTypeRule implements Rule
 			$node,
 			TemplateTypeScope::createWithClass($className),
 			$resolvedPhpDoc->getTemplateTags(),
-			sprintf('PHPDoc tag @template for class %s cannot have existing class %%s as its name.', $className),
-			sprintf('PHPDoc tag @template for class %s cannot have existing type alias %%s as its name.', $className),
-			sprintf('PHPDoc tag @template %%s for class %s has invalid bound type %%s.', $className),
-			sprintf('PHPDoc tag @template %%s for class %s with bound type %%s is not supported.', $className)
+			sprintf('PHPDoc tag @template for %s cannot have existing class %%s as its name.', $errorMessageClass),
+			sprintf('PHPDoc tag @template for %s cannot have existing type alias %%s as its name.', $errorMessageClass),
+			sprintf('PHPDoc tag @template %%s for %s has invalid bound type %%s.', $errorMessageClass),
+			sprintf('PHPDoc tag @template %%s for %s with bound type %%s is not supported.', $errorMessageClass)
 		);
 	}
 

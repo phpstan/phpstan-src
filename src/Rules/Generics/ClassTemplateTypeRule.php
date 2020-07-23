@@ -39,6 +39,10 @@ class ClassTemplateTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$node instanceof Node\Stmt\Class_) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
 		$docComment = $node->getDocComment();
 		if ($docComment === null) {
 			return [];
@@ -48,10 +52,6 @@ class ClassTemplateTypeRule implements Rule
 			$className = (string) $node->namespacedName;
 			$errorMessageClass = 'class ' . $className;
 		} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
-			if (!$node instanceof Node\Stmt\Class_) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-
 			$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $scope->getFile());
 			$errorMessageClass = 'anonymous class';
 		} else {

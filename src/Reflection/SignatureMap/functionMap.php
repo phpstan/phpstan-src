@@ -6349,7 +6349,7 @@ return [
 'mb_scrub' => ['string', 'str'=>'string', 'enc='=>'string'],
 'mb_send_mail' => ['bool', 'to'=>'string', 'subject'=>'string', 'message'=>'string', 'additional_headers='=>'string|array|null', 'additional_parameter='=>'string'],
 'mb_split' => ['array', 'pattern'=>'string', 'string'=>'string', 'limit='=>'int'],
-'mb_strcut' => ['string', 'str'=>'string', 'start'=>'int', 'length='=>'int', 'encoding='=>'string'],
+'mb_strcut' => ['string', 'str'=>'string', 'start'=>'int', 'length='=>'?int', 'encoding='=>'string'],
 'mb_strimwidth' => ['string', 'str'=>'string', 'start'=>'int', 'width'=>'int', 'trimmarker='=>'string', 'encoding='=>'string'],
 'mb_stripos' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'encoding='=>'string'],
 'mb_stristr' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'part='=>'bool', 'encoding='=>'string'],

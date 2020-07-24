@@ -6,6 +6,7 @@ use PHPStan\LanguageServer\PhpstanDispatcherFactory;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -17,9 +18,16 @@ class LanguageServerCommand extends Command
 {
     const OPT_ADDRESS = 'address';
 
+    /**
+     * @var array<string>
+     */
     private array $composerAutoloaderProjectPaths;
+
     private const NAME = 'language-server';
 
+    /**
+     * @param array<string> $composerAutoloaderProjectPaths
+     */
     public function __construct(
         array $composerAutoloaderProjectPaths
     )
@@ -28,7 +36,7 @@ class LanguageServerCommand extends Command
         $this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName(self::NAME)
             ->setDescription('Start the Phpstan language server')
@@ -87,7 +95,10 @@ class LanguageServerCommand extends Command
         );
 
         if ($address = $input->getOption(self::OPT_ADDRESS)) {
-            $builder->tcpServer((string)$address);
+            if (!is_string($address)) {
+                throw new RuntimeException('Address must be a string');
+            }
+            $builder->tcpServer($address);
         }
 
         $builder->build()->run();

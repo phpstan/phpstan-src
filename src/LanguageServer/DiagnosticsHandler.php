@@ -40,7 +40,7 @@ class DiagnosticsHandler implements Handler, CanRegisterCapabilities
     }
 
     /**
-     * {@inheritDoc}
+     * @return array<string,string>
      */
     public function methods(): array
     {
@@ -91,7 +91,6 @@ class DiagnosticsHandler implements Handler, CanRegisterCapabilities
     private function buildDiagnostics(AnalysisResult $result): array
     {
         $diagnostics = [];
-        var_dump($result);
         foreach ($result->getFileSpecificErrors() as $error) {
 
             $diagnostics[] = new Diagnostic(

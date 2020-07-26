@@ -55,7 +55,6 @@ class PhpstanDispatcherFactory implements DispatcherFactory
 			new HandlerMiddleware(
 				new HandlerMethodRunner(
 					$handlers,
-					new HandlerMethodResolver(),
 					$argumentResolver,
 				)
 			)

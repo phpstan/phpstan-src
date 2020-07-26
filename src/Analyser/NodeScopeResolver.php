@@ -867,7 +867,7 @@ class NodeScopeResolver
 
 			return new StatementResult(
 				$finalScope,
-				$finalScopeResult->hasYield(),
+				$finalScopeResult->hasYield() || $condResult->hasYield(),
 				$isAlwaysTerminating,
 				[]
 			);

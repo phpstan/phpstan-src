@@ -396,6 +396,12 @@ class MissingReturnGenerators
 		return 2;
 	}
 
+	public function yieldInExpression(): \Generator
+	{
+		while($foo = yield 'foo') {
+		}
+	}
+
 }
 
 class VoidUnion

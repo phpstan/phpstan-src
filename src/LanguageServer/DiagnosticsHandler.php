@@ -1,18 +1,14 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace PHPStan\LanguageServer;
 
 use Amp\Promise;
 use Amp\Success;
-use PHPStan\Command\AnalyseApplication;
-use PHPStan\Command\AnalysisResult;
-use PHPStan\Command\InceptionResult;
+use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
+use Phpactor\LanguageServer\Core\Handler\Handler;
+use Phpactor\LanguageServer\Core\Server\RpcClient;
 use Phpactor\LanguageServerProtocol\Diagnostic;
 use Phpactor\LanguageServerProtocol\DiagnosticSeverity;
-use Phpactor\LanguageServerProtocol\DidChangeTextDocumentNotification;
-use Phpactor\LanguageServerProtocol\DidChangeTextDocumentParams;
-use Phpactor\LanguageServerProtocol\DidOpenTextDocumentNotification;
-use Phpactor\LanguageServerProtocol\DidOpenTextDocumentParams;
 use Phpactor\LanguageServerProtocol\DidSaveTextDocumentNotification;
 use Phpactor\LanguageServerProtocol\DidSaveTextDocumentParams;
 use Phpactor\LanguageServerProtocol\Position;
@@ -21,88 +17,92 @@ use Phpactor\LanguageServerProtocol\SaveOptions;
 use Phpactor\LanguageServerProtocol\ServerCapabilities;
 use Phpactor\LanguageServerProtocol\TextDocumentSyncKind;
 use Phpactor\LanguageServerProtocol\TextDocumentSyncOptions;
-use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
-use Phpactor\LanguageServer\Core\Handler\Handler;
-use Phpactor\LanguageServer\Core\Server\RpcClient;
+use PHPStan\Command\AnalyseApplication;
+use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\InceptionResult;
 use Symfony\Component\Console\Input\ArrayInput;
 
 class DiagnosticsHandler implements Handler, CanRegisterCapabilities
 {
-    private RpcClient $client;
-    private AnalyseApplication $analyser;
-    private InceptionResult $result;
 
-    public function __construct(RpcClient $client, AnalyseApplication $analyser, InceptionResult $result)
-    {
-        $this->client = $client;
-        $this->analyser = $analyser;
-        $this->result = $result;
-    }
+	private RpcClient $client;
 
-    /**
-     * @return array<string,string>
-     */
-    public function methods(): array
-    {
-        return [
-            DidSaveTextDocumentNotification::METHOD => 'didSave',
-        ];
-    }
+	private AnalyseApplication $analyser;
 
-    /**
-     * @return Promise<null>
-     */
-    public function didSave(DidSaveTextDocumentParams $didSave): Promise
-    {
-        $result = $this->analyser->analyse(
-            [
-                str_replace('file://', '', $didSave->textDocument->uri)
-            ],
-            false,
-            $this->result->getStdOutput(),
-            $this->result->getErrorOutput(),
-            true,
-            true,
-            null,
-            new ArrayInput([])
-        );
+	private InceptionResult $result;
 
-        $this->client->notification('textDocument/publishDiagnostics', [
-            'uri' => $didSave->textDocument->uri,
-            'version' => $didSave->textDocument->version,
-            'diagnostics' => $this->buildDiagnostics($result)
-        ]);
+	public function __construct(RpcClient $client, AnalyseApplication $analyser, InceptionResult $result)
+	{
+		$this->client = $client;
+		$this->analyser = $analyser;
+		$this->result = $result;
+	}
 
-        return new Success(null);
-    }
+	/**
+	 * @return array<string,string>
+	 */
+	public function methods(): array
+	{
+		return [
+			DidSaveTextDocumentNotification::METHOD => 'didSave',
+		];
+	}
 
-    public function registerCapabiltiies(ServerCapabilities $capabilities): void
-    {
-        $syncOptions = new TextDocumentSyncOptions();
-        $syncOptions->save = new SaveOptions(true);
-        $syncOptions->willSave = true;
-        $syncOptions->change = TextDocumentSyncKind::FULL;
-        $capabilities->textDocumentSync = $syncOptions;
-    }
+	/**
+	 * @return Promise<null>
+	 */
+	public function didSave(DidSaveTextDocumentParams $didSave): Promise
+	{
+		$result = $this->analyser->analyse(
+			[
+				str_replace('file://', '', $didSave->textDocument->uri),
+			],
+			false,
+			$this->result->getStdOutput(),
+			$this->result->getErrorOutput(),
+			true,
+			true,
+			null,
+			new ArrayInput([])
+		);
 
-    /**
-     * @return array<Diagnostic>
-     */
-    private function buildDiagnostics(AnalysisResult $result): array
-    {
-        $diagnostics = [];
-        foreach ($result->getFileSpecificErrors() as $error) {
+		$this->client->notification('textDocument/publishDiagnostics', [
+			'uri' => $didSave->textDocument->uri,
+			'version' => $didSave->textDocument->version,
+			'diagnostics' => $this->buildDiagnostics($result),
+		]);
 
-            $diagnostics[] = new Diagnostic(
-                new Range(
-                    new Position($error->getLine() - 1, 0),
-                    new Position($error->getLine() - 1, 100)
-                ),
-                $error->getMessage(),
-                DiagnosticSeverity::ERROR
-            );
-        }
+		return new Success(null);
+	}
 
-        return $diagnostics;
-    }
+	public function registerCapabiltiies(ServerCapabilities $capabilities): void
+	{
+		$syncOptions = new TextDocumentSyncOptions();
+		$syncOptions->save = new SaveOptions(true);
+		$syncOptions->willSave = true;
+		$syncOptions->change = TextDocumentSyncKind::FULL;
+		$capabilities->textDocumentSync = $syncOptions;
+	}
+
+	/**
+	 * @return array<Diagnostic>
+	 */
+	private function buildDiagnostics(AnalysisResult $result): array
+	{
+		$diagnostics = [];
+		foreach ($result->getFileSpecificErrors() as $error) {
+
+			$diagnostics[] = new Diagnostic(
+				new Range(
+					new Position($error->getLine() - 1, 0),
+					new Position($error->getLine() - 1, 100)
+				),
+				$error->getMessage(),
+				DiagnosticSeverity::ERROR
+			);
+		}
+
+		return $diagnostics;
+	}
+
 }

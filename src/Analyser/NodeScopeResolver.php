@@ -929,6 +929,7 @@ class NodeScopeResolver
 			return new StatementResult($finalScope, $bodyScopeResult->hasYield(), $alwaysTerminating, []);
 		} elseif ($stmt instanceof For_) {
 			$initScope = $scope;
+			$hasYield = false;
 			foreach ($stmt->init as $initExpr) {
 				$initScope = $this->processExprNode($initExpr, $initScope, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
 			}
@@ -955,8 +956,10 @@ class NodeScopeResolver
 					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 				}
 				foreach ($stmt->loop as $loopExpr) {
-					$bodyScope = $this->processExprNode($loopExpr, $bodyScope, static function (): void {
-					}, ExpressionContext::createTopLevel())->getScope();
+					$exprResult = $this->processExprNode($loopExpr, $bodyScope, static function (): void {
+					}, ExpressionContext::createTopLevel());
+					$bodyScope = $exprResult->getScope();
+					$hasYield = $hasYield || $exprResult->hasYield();
 				}
 
 				if ($bodyScope->equals($prevScope)) {
@@ -992,7 +995,12 @@ class NodeScopeResolver
 
 			$finalScope = $finalScope->mergeWith($scope);
 
-			return new StatementResult($finalScope, $finalScopeResult->hasYield(), false/* $finalScopeResult->isAlwaysTerminating() && $isAlwaysIterable*/, []);
+			return new StatementResult(
+				$finalScope,
+				$finalScopeResult->hasYield() || $hasYield,
+				false/* $finalScopeResult->isAlwaysTerminating() && $isAlwaysIterable*/,
+				[]
+			);
 		} elseif ($stmt instanceof Switch_) {
 			$scope = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep())->getScope();
 			$scopeForBranches = $scope;

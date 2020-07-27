@@ -924,9 +924,9 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			}
 			if (!$alwaysTerminating) {
-				$stmtResult = $this->processExprNode($stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep());
-				$hasYield = $stmtResult->hasYield();
-				$finalScope = $stmtResult->getFalseyScope();
+				$condResult = $this->processExprNode($stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep());
+				$hasYield = $condResult->hasYield();
+				$finalScope = $condResult->getFalseyScope();
 			}
 			foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);

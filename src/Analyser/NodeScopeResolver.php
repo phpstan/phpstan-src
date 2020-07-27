@@ -676,7 +676,7 @@ class NodeScopeResolver
 			$exitPoints = [];
 			$finalScope = null;
 			$alwaysTerminating = true;
-			$hasYield = false;
+			$hasYield = $condResult->hasYield();
 
 			$branchScopeStatementResult = $this->processStmtNodes($stmt, $stmt->stmts, $condResult->getTruthyScope(), $nodeCallback);
 
@@ -685,7 +685,7 @@ class NodeScopeResolver
 				$branchScope = $branchScopeStatementResult->getScope();
 				$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? null : $branchScope;
 				$alwaysTerminating = $branchScopeStatementResult->isAlwaysTerminating();
-				$hasYield = $branchScopeStatementResult->hasYield();
+				$hasYield = $branchScopeStatementResult->hasYield() || $hasYield;
 			}
 
 			$scope = $condResult->getFalseyScope();

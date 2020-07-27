@@ -1013,13 +1013,14 @@ class NodeScopeResolver
 				[]
 			);
 		} elseif ($stmt instanceof Switch_) {
-			$scope = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep())->getScope();
+			$condResult = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep());
+			$scope = $condResult->getScope();
 			$scopeForBranches = $scope;
 			$finalScope = null;
 			$prevScope = null;
 			$hasDefaultCase = false;
 			$alwaysTerminating = true;
-			$hasYield = false;
+			$hasYield = $condResult->hasYield();
 			foreach ($stmt->cases as $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);

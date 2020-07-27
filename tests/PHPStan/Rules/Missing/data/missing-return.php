@@ -426,6 +426,13 @@ class MissingReturnGenerators
 		}
 	}
 
+	public function yieldInSwitch(): \Generator
+	{
+		switch (yield 1) {
+			default:
+		}
+	}
+
 }
 
 class VoidUnion

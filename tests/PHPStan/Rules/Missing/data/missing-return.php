@@ -404,8 +404,14 @@ class MissingReturnGenerators
 
 	public function yieldInForCondition(): \Generator
 	{
-		for($foo = 0; $foo > 0; $foo = yield range(3, 0)) {
+		for($foo = 0; $foo > 0; $foo = yield 1) {
 		}
+	}
+
+	public function yieldInDoCondition(): \Generator
+	{
+		do {
+		} while(yield 1);
 	}
 
 }

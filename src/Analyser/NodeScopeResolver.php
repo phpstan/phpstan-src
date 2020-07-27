@@ -875,6 +875,8 @@ class NodeScopeResolver
 			$finalScope = null;
 			$bodyScope = $scope;
 			$count = 0;
+			$hasYield = false;
+
 			do {
 				$prevScope = $bodyScope;
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
@@ -920,13 +922,20 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			}
 			if (!$alwaysTerminating) {
-				$finalScope = $this->processExprNode($stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getFalseyScope();
+				$stmtResult = $this->processExprNode($stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep());
+				$hasYield = $stmtResult->hasYield();
+				$finalScope = $stmtResult->getFalseyScope();
 			}
 			foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			return new StatementResult($finalScope, $bodyScopeResult->hasYield(), $alwaysTerminating, []);
+			return new StatementResult(
+				$finalScope,
+				$bodyScopeResult->hasYield() || $hasYield,
+				$alwaysTerminating,
+				[]
+			);
 		} elseif ($stmt instanceof For_) {
 			$initScope = $scope;
 			$hasYield = false;

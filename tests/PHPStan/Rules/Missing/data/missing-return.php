@@ -420,6 +420,12 @@ class MissingReturnGenerators
 		}
 	}
 
+	public function yieldInIf(): \Generator
+	{
+		if (yield 1) {
+		}
+	}
+
 }
 
 class VoidUnion

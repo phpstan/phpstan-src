@@ -396,9 +396,15 @@ class MissingReturnGenerators
 		return 2;
 	}
 
-	public function yieldInExpression(): \Generator
+	public function yieldInWhileCondition(): \Generator
 	{
 		while($foo = yield 'foo') {
+		}
+	}
+
+	public function yieldInForCondition(): \Generator
+	{
+		for($foo = 0; $foo > 0; $foo = yield range(3, 0)) {
 		}
 	}
 

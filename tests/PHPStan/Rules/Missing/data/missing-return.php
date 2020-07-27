@@ -414,6 +414,12 @@ class MissingReturnGenerators
 		} while(yield 1);
 	}
 
+	public function yieldInForeach(): \Generator
+	{
+		foreach (yield 1 as $bar) {
+		}
+	}
+
 }
 
 class VoidUnion

@@ -754,8 +754,10 @@ class NodeScopeResolver
 			$hasYield = false;
 			$this->processTraitUse($stmt, $scope, $nodeCallback);
 		} elseif ($stmt instanceof Foreach_) {
-			$scope = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep())->getScope();
+			$condResult = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
+			$scope = $condResult->getScope();
 			$bodyScope = $this->enterForeach($scope, $stmt);
+			$hasYield = false;
 			$count = 0;
 			do {
 				$prevScope = $bodyScope;
@@ -801,7 +803,7 @@ class NodeScopeResolver
 
 			return new StatementResult(
 				$finalScope,
-				$finalScopeResult->hasYield(),
+				$finalScopeResult->hasYield() || $condResult->hasYield(),
 				$isIterableAtLeastOnce->yes() && $finalScopeResult->isAlwaysTerminating(),
 				[]
 			);

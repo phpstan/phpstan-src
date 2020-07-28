@@ -334,7 +334,7 @@ jobs:
           vendor/bin/phing phpstan-result-cache
 
       - name: "Upload result cache artifact"
-        uses: actions/upload-artifact@2.1.0
+        uses: actions/upload-artifact@v2.1.1
         with:
           name: resultCache-ubuntu-latest.php
           path: tmp/resultCache.php

@@ -8847,7 +8847,7 @@ return [
 'print_r' => ['string|true', 'var'=>'mixed', 'return='=>'bool'],
 'printf' => ['int', 'format'=>'string', '...args='=>'string|int|float'],
 'proc_close' => ['int', 'process'=>'resource'],
-'proc_get_status' => ['array', 'process'=>'resource'],
+'proc_get_status' => ['array|false', 'process'=>'resource'],
 'proc_nice' => ['bool', 'priority'=>'int'],
 'proc_open' => ['resource|false', 'command'=>'string', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
 'proc_terminate' => ['bool', 'process'=>'resource', 'signal='=>'int'],

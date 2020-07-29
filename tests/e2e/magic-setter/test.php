@@ -1,6 +1,4 @@
-<?php declare(strict_types = 1);
-
-// lint >= 7.4
+<?php // lint >= 7.4
 
 namespace MagicSetter;
 

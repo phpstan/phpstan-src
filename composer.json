@@ -80,7 +80,7 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/ondrejmirtes/utils.git"
+			"url": "git@github.com:ondrejmirtes/utils.git"
 		}
 	],
 	"minimum-stability": "dev",

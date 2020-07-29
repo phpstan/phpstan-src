@@ -34,7 +34,6 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:v2
 
       - name: "Validate Composer"
         run: "composer validate"

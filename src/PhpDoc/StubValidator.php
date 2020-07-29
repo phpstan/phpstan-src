@@ -128,7 +128,7 @@ class StubValidator
 
 			// level 2
 			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck),
-			new ClassTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
+			new ClassTemplateTypeRule($templateTypeCheck),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
 			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck),

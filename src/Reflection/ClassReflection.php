@@ -888,7 +888,7 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/** @return array<string,TemplateTag> */
-	private function getTemplateTags(): array
+	public function getTemplateTags(): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
 		if ($resolvedPhpDoc === null) {

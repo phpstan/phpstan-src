@@ -39,13 +39,6 @@ jobs:
       - name: "Validate Composer"
         run: "composer validate"
 
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
-
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -79,13 +72,6 @@ jobs:
 
       - name: "Validate Composer"
         run: "composer validate"
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -123,13 +109,6 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           tools: composer:v2
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -172,13 +151,6 @@ jobs:
           extensions: ds,mbstring
           ini-values: memory_limit=512M
 
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
-
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -209,13 +181,6 @@ jobs:
           php-version: "7.4"
           tools: pecl, composer:v2
           extensions: ds
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-7.4-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-7.4-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -265,13 +230,6 @@ jobs:
           extensions: mbstring
           tools: composer:v2
 
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
-
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -307,13 +265,6 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
           tools: composer:v2
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -362,13 +313,6 @@ jobs:
           extensions: mbstring
           ini-values: memory_limit=256M
           tools: composer:v2
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -440,13 +384,6 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: composer:v2
 
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
-
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -484,13 +421,6 @@ jobs:
           php-version: "7.4"
           tools: ${{ matrix.tools }}, composer:v2
           extensions: ${{ matrix.extensions }}
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"

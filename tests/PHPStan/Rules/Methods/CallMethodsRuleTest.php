@@ -1470,4 +1470,20 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3683(): void
+	{
+		if (self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires hybrid reflection.');
+		}
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3683.php'], [
+			[
+				'Parameter #1 $exception of method Generator<mixed,mixed,mixed,mixed>::throw() expects Throwable, int given.',
+				7,
+			],
+		]);
+	}
+
 }

@@ -184,7 +184,7 @@ jobs:
 
       - name: "Update PHPUnit"
         if: (matrix.php-version == '7.4' || matrix.php-version == '8.0') && matrix.operating-system != 'windows-latest'
-        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/type-resolver:'^1.3' && composer require phpdocumentor/reflection-docblock:'5.2.0 as 4.3.4' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
+        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/reflection-docblock:'5.2.0' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
@@ -277,7 +277,7 @@ jobs:
 
       - name: "Update PHPUnit"
         if: (matrix.php-version == '7.4' || matrix.php-version == '8.0') && matrix.operating-system != 'windows-latest'
-        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/type-resolver:'^1.3' && composer require phpdocumentor/reflection-docblock:'5.2.0 as 4.3.4' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
+        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/reflection-docblock:'5.2.0' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'

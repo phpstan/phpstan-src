@@ -18,7 +18,7 @@
 		"nette/finder": "^2.5",
 		"nette/neon": "^3.0",
 		"nette/schema": "^1.0",
-		"nette/utils": "dev-php-8 as 3.1.99",
+		"nette/utils": "dev-master as 3.1.99",
 		"nikic/php-parser": "4.7.0",
 		"ondram/ci-detector": "^3.4.0",
 		"ondrejmirtes/better-reflection": "4.3.20",
@@ -77,12 +77,6 @@
 			"tests/PHPStan"
 		]
 	},
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "git@github.com:ondrejmirtes/utils.git"
-		}
-	],
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"bin": [

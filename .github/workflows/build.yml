@@ -39,6 +39,9 @@ jobs:
       - name: "Validate Composer"
         run: "composer validate"
 
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
+
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -77,7 +80,7 @@ jobs:
         run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest -vvv"
+        run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
@@ -112,6 +115,9 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           tools: composer:v2
+
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -154,6 +160,9 @@ jobs:
           extensions: ds,mbstring
           ini-values: memory_limit=512M
 
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
+
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -184,6 +193,9 @@ jobs:
           php-version: "7.4"
           tools: pecl, composer:v2
           extensions: ds
+
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -233,6 +245,9 @@ jobs:
           extensions: mbstring
           tools: composer:v2
 
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
+
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -268,6 +283,9 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
           tools: composer:v2
+
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -317,6 +335,9 @@ jobs:
           ini-values: memory_limit=256M
           tools: composer:v2
 
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
+
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
@@ -350,6 +371,9 @@ jobs:
           path: "~/.composer/cache"
           key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
           restore-keys: "php-${{ matrix.php-version }}-composer-"
+
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
 
       - name: "Install dependencies"
         run: "composer update --no-dev --no-interaction --no-progress --no-suggest"
@@ -386,6 +410,9 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           tools: composer:v2
+
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -424,6 +451,9 @@ jobs:
           php-version: "7.4"
           tools: ${{ matrix.tools }}, composer:v2
           extensions: ${{ matrix.extensions }}
+
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"

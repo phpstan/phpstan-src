@@ -74,7 +74,7 @@ jobs:
         run: "composer validate"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer update --no-interaction --no-progress --no-suggest -vvv"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'

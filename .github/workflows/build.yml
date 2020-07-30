@@ -73,6 +73,9 @@ jobs:
       - name: "Validate Composer"
         run: "composer validate"
 
+      - name: "Set Composer GitHub access token"
+        run: "composer config -g github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}"
+
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest -vvv"
 

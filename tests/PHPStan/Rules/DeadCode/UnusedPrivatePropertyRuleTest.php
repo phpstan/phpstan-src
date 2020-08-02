@@ -131,4 +131,11 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTrait(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/private-property-trait.php'], []);
+	}
+
 }

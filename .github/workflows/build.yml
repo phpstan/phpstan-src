@@ -439,6 +439,8 @@ jobs:
             extensions: ""
           - script: "bin/phpstan analyse -l 8 -c tests/e2e/magic-setter/test.neon tests/e2e/magic-setter/test.php"
             extensions: ""
+          - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
+            extensions: ""
 
     steps:
       - name: "Checkout"

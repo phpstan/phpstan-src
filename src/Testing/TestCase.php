@@ -206,7 +206,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
 		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
 		$fileTypeMapper = new FileTypeMapper($setterReflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
@@ -222,10 +221,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$functionReflectionFactory,
 				$fileTypeMapper,
 				self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
-				self::getContainer()->getByType(Standard::class),
-				$anonymousClassNameHelper,
-				$fileHelper,
-				$relativePathHelper,
 				self::getContainer()->getByType(StubPhpDocProvider::class)
 			),
 			self::getPhpStormStubsSourceStubber(),

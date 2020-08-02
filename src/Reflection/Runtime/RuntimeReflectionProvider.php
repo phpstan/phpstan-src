@@ -4,10 +4,7 @@ namespace PHPStan\Reflection\Runtime;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
-use PHPStan\File\FileHelper;
-use PHPStan\File\RelativePathHelper;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
@@ -38,14 +35,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
-
-	private AnonymousClassNameHelper $anonymousClassNameHelper;
-
-	private \PHPStan\File\FileHelper $fileHelper;
-
-	private RelativePathHelper $relativePathHelper;
-
 	private StubPhpDocProvider $stubPhpDocProvider;
 
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
@@ -66,10 +55,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
-		\PhpParser\PrettyPrinter\Standard $printer,
-		AnonymousClassNameHelper $anonymousClassNameHelper,
-		FileHelper $fileHelper,
-		RelativePathHelper $relativePathHelper,
 		StubPhpDocProvider $stubPhpDocProvider
 	)
 	{
@@ -78,10 +63,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->functionReflectionFactory = $functionReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
-		$this->printer = $printer;
-		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
-		$this->fileHelper = $fileHelper;
-		$this->relativePathHelper = $relativePathHelper;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
 	}
 
@@ -137,50 +118,17 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		return $realName;
 	}
 
+	public function supportsAnonymousClasses(): bool
+	{
+		return false;
+	}
+
 	public function getAnonymousClassReflection(
 		\PhpParser\Node\Stmt\Class_ $classNode,
 		Scope $scope
 	): ClassReflection
 	{
-		if (isset($classNode->namespacedName)) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
-		if (!$scope->isInTrait()) {
-			$scopeFile = $scope->getFile();
-		} else {
-			$scopeFile = $scope->getTraitReflection()->getFileName();
-			if ($scopeFile === false) {
-				$scopeFile = $scope->getFile();
-			}
-		}
-
-		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile), '/');
-
-		$className = $this->anonymousClassNameHelper->getAnonymousClassName(
-			$classNode,
-			$scopeFile
-		);
-		$classNode->name = new \PhpParser\Node\Identifier($className);
-		$classNode->setAttribute('anonymousClass', true);
-
-		if (isset(self::$anonymousClasses[$className])) {
-			return self::$anonymousClasses[$className];
-		}
-
-		eval($this->printer->prettyPrint([$classNode]));
-
-		/** @var class-string $className */
-		$className = $className;
-
-		self::$anonymousClasses[$className] = $this->getClassFromReflection(
-			new \ReflectionClass($className),
-			sprintf('class@anonymous/%s:%s', $filename, $classNode->getLine()),
-			$scopeFile
-		);
-		$this->classReflections[$className] = self::$anonymousClasses[$className];
-
-		return self::$anonymousClasses[$className];
+		throw new \PHPStan\ShouldNotHappenException();
 	}
 
 	/**

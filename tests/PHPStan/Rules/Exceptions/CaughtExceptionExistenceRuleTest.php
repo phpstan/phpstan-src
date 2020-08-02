@@ -45,4 +45,9 @@ class CaughtExceptionExistenceRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/class-exists.php'], []);
 	}
 
+	public function testBug3690(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3690.php'], []);
+	}
+
 }

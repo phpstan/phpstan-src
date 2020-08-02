@@ -46,7 +46,11 @@ class UnusedPrivateMethodRule implements Rule
 			if (!$method->isPrivate()) {
 				continue;
 			}
-			if ($constructor !== null && $constructor->getName() === $method->name->toString()) {
+			$methodName = $method->name->toString();
+			if ($constructor !== null && $constructor->getName() === $methodName) {
+				continue;
+			}
+			if (strtolower($methodName) === '__clone') {
 				continue;
 			}
 			$methods[$method->name->toString()] = $method;

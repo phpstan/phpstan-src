@@ -20,7 +20,6 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
-use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -317,15 +316,28 @@ class PhpDocNodeResolver
 
 	public function resolveThrowsTags(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\ThrowsTag
 	{
-		$types = array_map(function (ThrowsTagValueNode $throwsTagValue) use ($nameScope): Type {
-			return $this->typeNodeResolver->resolve($throwsTagValue->type, $nameScope);
-		}, $phpDocNode->getThrowsTagValues());
+		$resolved = null;
 
-		if (count($types) === 0) {
-			return null;
+		foreach (['@phpstan-throws', '@throws'] as $tagName) {
+			$types = [];
+
+			foreach ($phpDocNode->getThrowsTagValues($tagName) as $tagValue) {
+				$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+				if ($this->shouldSkipType($tagName, $type)) {
+					continue;
+				}
+
+				$types[] = $type;
+			}
+
+			if (count($types) === 0) {
+				continue;
+			}
+
+			$resolved = new ThrowsTag(TypeCombinator::union(...$types));
 		}
 
-		return new ThrowsTag(TypeCombinator::union(...$types));
+		return $resolved;
 	}
 
 	/**

@@ -27,4 +27,12 @@ class Boo extends Baz
 		/** @phpstan-va */$a = $b; /** @phpstan-ignore-line */
 		$c = 'foo';
 	}
+
+	/**
+	 * @phpstan-throws void
+	 */
+	function any()
+	{
+
+	}
 }

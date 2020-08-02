@@ -56,6 +56,10 @@ class IntersectionType implements CompoundType
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
 	{
+		if ($otherType instanceof IntersectionType && $this->equals($otherType)) {
+			return TrinaryLogic::createYes();
+		}
+
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
 			$results[] = $innerType->isSuperTypeOf($otherType);

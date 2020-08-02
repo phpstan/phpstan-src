@@ -1679,6 +1679,22 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				UnionType::class,
 				'array(\'a\' => int, \'b\' => int)|array(\'b\' => int, \'c\' => int)',
 			],
+			[
+				[
+					TypeCombinator::intersect(new StringType(), new HasOffsetType(new IntegerType())),
+					TypeCombinator::intersect(new StringType(), new HasOffsetType(new IntegerType())),
+				],
+				IntersectionType::class,
+				'string&hasOffset(int)',
+			],
+			[
+				[
+					TypeCombinator::intersect(new ConstantStringType('abc'), new HasOffsetType(new IntegerType())),
+					TypeCombinator::intersect(new ConstantStringType('abc'), new HasOffsetType(new IntegerType())),
+				],
+				IntersectionType::class,
+				'\'abc\'&hasOffset(int)',
+			],
 		];
 	}
 
@@ -2733,6 +2749,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				ConstantArrayType::class,
 				'array(\'a\' => int, \'b\' => int)',
+			],
+			[
+				[
+					new StringType(),
+					new HasOffsetType(new IntegerType()),
+				],
+				IntersectionType::class,
+				'string&hasOffset(int)',
 			],
 		];
 	}

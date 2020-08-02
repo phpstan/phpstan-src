@@ -121,3 +121,30 @@ class Ipsum
 	}
 
 }
+
+trait FooTrait
+{
+
+	private function doFoo()
+	{
+
+	}
+
+	private function doBar()
+	{
+
+	}
+
+	public function doBaz()
+	{
+		$this->doFoo();
+	}
+
+}
+
+class UsingFooTrait
+{
+
+	use FooTrait;
+
+}

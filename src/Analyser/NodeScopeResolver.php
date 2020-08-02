@@ -585,6 +585,9 @@ class NodeScopeResolver
 				if (!$scope->isInClass()) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
+				if ($scope->isInTrait()) {
+					return;
+				}
 				if ($scope->getClassReflection()->getName() !== $classReflection->getName()) {
 					return;
 				}

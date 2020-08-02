@@ -227,7 +227,6 @@ jobs:
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing phpstan"
-          - "vendor/bin/phing phpstan-runtime-reflection"
           - "vendor/bin/phing phpstan-static-reflection"
         exclude:
           - operating-system: windows-latest

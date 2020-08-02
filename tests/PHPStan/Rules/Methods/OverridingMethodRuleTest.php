@@ -342,4 +342,13 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3478.php'], []);
 	}
 
+	public function testBug3629(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test require static reflection.');
+		}
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-3629.php'], []);
+	}
+
 }

@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PHPStan\Command\ErrorFormatter;
+
+use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\Output;
+use PHPStan\File\RelativePathHelper;
+
+/**
+ * @see https://www.jetbrains.com/help/teamcity/build-script-interaction-with-teamcity.html#Reporting+Inspections
+ */
+class TeamcityErrorFormatter implements ErrorFormatter
+{
+
+	private RelativePathHelper $relativePathHelper;
+
+	public function __construct(RelativePathHelper $relativePathHelper)
+	{
+		$this->relativePathHelper = $relativePathHelper;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
+	{
+		$result = '';
+		$fileSpecificErrors = $analysisResult->getFileSpecificErrors();
+		$notFileSpecificErrors = $analysisResult->getNotFileSpecificErrors();
+		$warnings = $analysisResult->getWarnings();
+
+		if (empty($fileSpecificErrors) && empty($notFileSpecificErrors) && empty($warnings)) {
+			return 0;
+		}
+
+		$result .= $this->createTeamCityLine('inspectionType', [
+			'id' => 'phpstan',
+			'name' => 'phpstan',
+			'category' => 'phpstan',
+			'description' => 'phpstan Inspection',
+		]);
+
+		foreach ($fileSpecificErrors as $fileSpecificError) {
+			$result .= $this->createTeamcityLine('inspection', [
+				'typeId' => 'phpstan',
+				'message' => $fileSpecificError->getMessage(),
+				'file' => $this->relativePathHelper->getRelativePath($fileSpecificError->getFile()),
+				'line' => $fileSpecificError->getLine(),
+				// additional attributes
+				'ignorable' => $fileSpecificError->canBeIgnored(),
+				'tip' => $fileSpecificError->getTip()
+			]);
+		}
+
+		foreach ($notFileSpecificErrors as $notFileSpecificError) {
+			$result .= $this->createTeamcityLine('inspection', [
+				'typeId' => 'phpstan',
+				'message' => $notFileSpecificError,
+				// the file is required
+				'file' => './'
+			]);
+		}
+
+		foreach ($warnings as $warning) {
+			$result .= $this->createTeamcityLine('inspection', [
+				'typeId' => 'phpstan',
+				'message' => $warning,
+				// the file is required
+				'file' => './'
+			]);
+		}
+
+		$output->writeRaw($result);
+
+		return $analysisResult->hasErrors() ? 1 : 0;
+	}
+
+	/**
+	 * Creates a Teamcity report line
+	 *
+	 * @param string $messageName The message name
+	 * @param mixed[] $keyValuePairs The key=>value pairs
+	 * @return string The TeamCity report line
+	 */
+	private function createTeamcityLine(string $messageName, array $keyValuePairs): string
+	{
+		$string = '##teamcity[' . $messageName;
+		foreach ($keyValuePairs as $key => $value) {
+			if (is_string($value)) {
+				$value = $this->escape($value);
+			}
+			$string .= ' ' . $key . '=\'' . $value . '\'';
+		}
+		return $string . ']' . PHP_EOL;
+	}
+
+	/**
+	 * Escapes the given string for TeamCity output
+	 *
+	 * @param $string string The string to escape
+	 * @return string The escaped string
+	 */
+	private function escape(string $string): string
+	{
+		$replacements = [
+			'~\n~' => '|n',
+			'~\r~' => '|r',
+			'~([\'\|\[\]])~' => '|$1'
+		];
+		return preg_replace(array_keys($replacements), array_values($replacements), $string);
+	}
+
+}

@@ -1248,3 +1248,8 @@ services:
 		class: PHPStan\Command\ErrorFormatter\GithubErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+
+	errorFormatter.teamcity:
+		class: PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter
+		arguments:
+			relativePathHelper: @simpleRelativePathHelper

@@ -21,9 +21,6 @@ class TeamcityErrorFormatter implements ErrorFormatter
 		$this->relativePathHelper = $relativePathHelper;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
 		$result = '';

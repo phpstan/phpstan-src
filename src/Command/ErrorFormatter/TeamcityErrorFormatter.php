@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Command\ErrorFormatter;
 
@@ -48,7 +46,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				// additional attributes
 				'SEVERITY' => 'ERROR',
 				'ignorable' => $fileSpecificError->canBeIgnored(),
-				'tip' => $fileSpecificError->getTip()
+				'tip' => $fileSpecificError->getTip(),
 			]);
 		}
 
@@ -58,7 +56,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				'message' => $notFileSpecificError,
 				// the file is required
 				'file' => './',
-				'SEVERITY' => 'ERROR'
+				'SEVERITY' => 'ERROR',
 			]);
 		}
 
@@ -68,7 +66,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				'message' => $warning,
 				// the file is required
 				'file' => './',
-				'SEVERITY' => 'WARNING'
+				'SEVERITY' => 'WARNING',
 			]);
 		}
 
@@ -107,7 +105,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 		$replacements = [
 			'~\n~' => '|n',
 			'~\r~' => '|r',
-			'~([\'\|\[\]])~' => '|$1'
+			'~([\'\|\[\]])~' => '|$1',
 		];
 		return (string) preg_replace(array_keys($replacements), array_values($replacements), $string);
 	}

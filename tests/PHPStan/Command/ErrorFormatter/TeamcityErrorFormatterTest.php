@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Command\ErrorFormatter;
 
@@ -109,4 +107,5 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 
 		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
 	}
+
 }

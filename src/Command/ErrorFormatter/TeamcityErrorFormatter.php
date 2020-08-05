@@ -49,6 +49,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				'file' => $this->relativePathHelper->getRelativePath($fileSpecificError->getFile()),
 				'line' => $fileSpecificError->getLine(),
 				// additional attributes
+				'SEVERITY' => 'ERROR',
 				'ignorable' => $fileSpecificError->canBeIgnored(),
 				'tip' => $fileSpecificError->getTip()
 			]);
@@ -59,7 +60,8 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				'typeId' => 'phpstan',
 				'message' => $notFileSpecificError,
 				// the file is required
-				'file' => './'
+				'file' => './',
+				'SEVERITY' => 'ERROR'
 			]);
 		}
 
@@ -68,7 +70,8 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				'typeId' => 'phpstan',
 				'message' => $warning,
 				// the file is required
-				'file' => './'
+				'file' => './',
+				'SEVERITY' => 'WARNING'
 			]);
 		}
 

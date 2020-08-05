@@ -145,6 +145,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				$ci = $ciDetector->detect();
 				if ($ci->getCiName() === CiDetector::CI_GITHUB_ACTIONS) {
 					$errorFormat = 'github';
+				} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
+					$errorFormat = 'teamcity';
 				}
 			} catch (\OndraM\CiDetector\Exception\CiNotDetectedException $e) {
 				// pass

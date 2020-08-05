@@ -21,12 +21,14 @@ rules:
 	- PHPStan\Rules\Generics\MethodTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
 	- PHPStan\Rules\Generics\TraitTemplateTypeRule
+	- PHPStan\Rules\Methods\FriendMethodCallRule
 	- PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
 	- PHPStan\Rules\Operators\InvalidBinaryOperationRule
 	- PHPStan\Rules\Operators\InvalidUnaryOperationRule
 	- PHPStan\Rules\Operators\InvalidComparisonOperationRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+	- PHPStan\Rules\PhpDoc\InvalidFriendTagTargetRule
 	- PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
 	- PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule

@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\PhpDoc\Tag\FriendTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
@@ -70,6 +71,9 @@ class ResolvedPhpDocBlock
 
 	private ?bool $isFinal = null;
 
+	/** @var array<FriendTag>|false */
+	private $friends = false;
+
 	private function __construct()
 	{
 	}
@@ -129,6 +133,7 @@ class ResolvedPhpDocBlock
 		$self->isDeprecated = false;
 		$self->isInternal = false;
 		$self->isFinal = false;
+		$self->friends = [];
 
 		return $self;
 	}
@@ -164,6 +169,7 @@ class ResolvedPhpDocBlock
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
+		$result->friends = self::mergeFriendsTags($this->getFriends(), $parents);
 		return $result;
 	}
 
@@ -204,6 +210,7 @@ class ResolvedPhpDocBlock
 		$self->isDeprecated = $this->isDeprecated;
 		$self->isInternal = $this->isInternal;
 		$self->isFinal = $this->isFinal;
+		$self->friends = $this->friends;
 
 		return $self;
 	}
@@ -402,6 +409,20 @@ class ResolvedPhpDocBlock
 		return $this->isFinal;
 	}
 
+	/**
+	 * @return array<FriendTag>
+	 */
+	public function getFriends(): array
+	{
+		if ($this->friends === false) {
+			$this->friends = $this->phpDocNodeResolver->resolveFriends(
+				$this->phpDocNode,
+				$this->nameScope
+			);
+		}
+		return $this->friends;
+	}
+
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->templateTypeMap;
@@ -542,6 +563,25 @@ class ResolvedPhpDocBlock
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param array<int, FriendTag> $friendsTag
+	 * @param array<int, self> $parents
+	 * @return array<int, FriendTag>
+	 */
+	private static function mergeFriendsTags(array $friendsTag, array $parents): array
+	{
+		$merged = [];
+		foreach ($friendsTag as $friendTag) {
+			$merged[(string) $friendTag] = $friendTag;
+		}
+		foreach ($parents as $parent) {
+			foreach ($parent->getFriends() as $inheritedFriend) {
+				$merged[(string) $inheritedFriend] = $inheritedFriend;
+			}
+		}
+		return array_values($merged);
 	}
 
 	/**

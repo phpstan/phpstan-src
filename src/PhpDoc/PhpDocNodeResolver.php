@@ -5,6 +5,7 @@ namespace PHPStan\PhpDoc;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
+use PHPStan\PhpDoc\Tag\FriendTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MethodTagParameter;
@@ -17,10 +18,13 @@ use PHPStan\PhpDoc\Tag\ThrowsTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -28,6 +32,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeWithClassName;
 
 class PhpDocNodeResolver
 {
@@ -371,6 +376,34 @@ class PhpDocNodeResolver
 		$finalTags = $phpDocNode->getTagsByName('@final');
 
 		return count($finalTags) > 0;
+	}
+
+	/**
+	 * @return array<FriendTag>
+	 */
+	public function resolveFriends(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$potentialFriends = array_map(function (PhpDocTagNode $node) use ($nameScope): ?FriendTag {
+			$genericTagValue = $node->value;
+			if (!$genericTagValue instanceof GenericTagValueNode) {
+				return null;
+			}
+			$type = $genericTagValue->value;
+			if ($type === '') {
+				return null;
+			}
+			$method = null;
+			if (strpos($type, '::') !== false) {
+				[$type, $method] = explode('::', $type, 2);
+			}
+			$type = $this->typeNodeResolver->resolve(new IdentifierTypeNode($type), $nameScope);
+			if (!$type instanceof TypeWithClassName) {
+				return null;
+			}
+			return new FriendTag($type, $method);
+		}, $phpDocNode->getTagsByName('@friend'));
+
+		return array_values(array_filter($potentialFriends));
 	}
 
 	private function shouldSkipType(string $tagName, Type $type): bool

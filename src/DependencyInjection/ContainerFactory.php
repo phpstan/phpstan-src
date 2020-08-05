@@ -7,6 +7,8 @@ use Phar;
 use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
+use Roave\BetterReflection\BetterReflection;
+use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class ContainerFactory
 {
@@ -96,6 +98,16 @@ class ContainerFactory
 		}
 
 		$container = $configurator->createContainer();
+
+		// @phpstan-ignore-next-line
+		BetterReflection::populate(
+			$container->getService('betterReflectionSourceLocator'),
+			$container->getService('betterReflectionClassReflector'),
+			$container->getService('betterReflectionFunctionReflector'),
+			$container->getService('betterReflectionConstantReflector'),
+			$container->getService('phpParserDecorator'),
+			$container->getByType(PhpStormStubsSourceStubber::class)
+		);
 
 		/** @var Broker $broker */
 		$broker = $container->getByType(Broker::class);

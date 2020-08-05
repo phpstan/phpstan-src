@@ -262,6 +262,17 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertCount(0, $errors);
 	}
 
+	public function testBug3379(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection');
+		}
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3379.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Constant SOME_UNKNOWN_CONST not found.', $errors[0]->getMessage());
+		$this->assertSame('Reflection error: Could not locate constant "SOME_UNKNOWN_CONST" while evaluating expression in Bug3379\Foo at line 8', $errors[1]->getMessage());
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

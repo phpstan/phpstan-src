@@ -31,11 +31,11 @@ class TeamcityErrorFormatter implements ErrorFormatter
 		$notFileSpecificErrors = $analysisResult->getNotFileSpecificErrors();
 		$warnings = $analysisResult->getWarnings();
 
-		if (empty($fileSpecificErrors) && empty($notFileSpecificErrors) && empty($warnings)) {
+		if (count($fileSpecificErrors) === 0 && count($notFileSpecificErrors) === 0 && count($warnings) === 0) {
 			return 0;
 		}
 
-		$result .= $this->createTeamCityLine('inspectionType', [
+		$result .= $this->createTeamcityLine('inspectionType', [
 			'id' => 'phpstan',
 			'name' => 'phpstan',
 			'category' => 'phpstan',
@@ -85,7 +85,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 	 *
 	 * @param string $messageName The message name
 	 * @param mixed[] $keyValuePairs The key=>value pairs
-	 * @return string The TeamCity report line
+	 * @return string The Teamcity report line
 	 */
 	private function createTeamcityLine(string $messageName, array $keyValuePairs): string
 	{
@@ -100,9 +100,9 @@ class TeamcityErrorFormatter implements ErrorFormatter
 	}
 
 	/**
-	 * Escapes the given string for TeamCity output
+	 * Escapes the given string for Teamcity output
 	 *
-	 * @param $string string The string to escape
+	 * @param string $string The string to escape
 	 * @return string The escaped string
 	 */
 	private function escape(string $string): string
@@ -112,7 +112,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 			'~\r~' => '|r',
 			'~([\'\|\[\]])~' => '|$1'
 		];
-		return preg_replace(array_keys($replacements), array_values($replacements), $string);
+		return (string) preg_replace(array_keys($replacements), array_values($replacements), $string);
 	}
 
 }

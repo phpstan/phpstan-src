@@ -138,6 +138,7 @@ trait FooTrait
 	public function doBaz()
 	{
 		$this->doFoo();
+		$this->doLorem();
 	}
 
 }
@@ -146,5 +147,10 @@ class UsingFooTrait
 {
 
 	use FooTrait;
+
+	private function doLorem()
+	{
+
+	}
 
 }

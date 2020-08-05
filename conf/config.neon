@@ -274,9 +274,13 @@ services:
 		class: PhpParser\NodeTraverser
 		setup:
 			- addVisitor(@PhpParser\NodeVisitor\NameResolver)
+			- addVisitor(@PhpParser\NodeVisitor\NodeConnectingVisitor)
 
 	-
 		class: PhpParser\NodeVisitor\NameResolver
+
+	-
+		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-
 		class: PhpParser\Parser\Php7

@@ -585,17 +585,14 @@ class NodeScopeResolver
 				if (!$scope->isInClass()) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
-				if ($scope->isInTrait()) {
-					return;
-				}
 				if ($scope->getClassReflection()->getName() !== $classReflection->getName()) {
 					return;
 				}
-				if ($node instanceof Node\Stmt\Property) {
+				if ($node instanceof Node\Stmt\Property && !$scope->isInTrait()) {
 					$properties[] = $node;
 					return;
 				}
-				if ($node instanceof Node\Stmt\ClassMethod) {
+				if ($node instanceof Node\Stmt\ClassMethod && !$scope->isInTrait()) {
 					$methods[] = $node;
 					return;
 				}

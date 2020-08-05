@@ -19,11 +19,23 @@ trait FooTrait
 		$this->prop1 = $prop1;
 	}
 
+	public function getProp3()
+	{
+		return $this->prop3;
+	}
+
 }
 
 class ClassUsingTrait
 {
 
 	use FooTrait;
+
+	private $prop3;
+
+	public function __construct(string $prop3)
+	{
+		$this->prop3 = $prop3;
+	}
 
 }

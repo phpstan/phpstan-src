@@ -231,6 +231,8 @@ jobs:
         exclude:
           - operating-system: windows-latest
             php-version: 8.0
+          - operating-system: windows-latest
+            script: "vendor/bin/phing phpstan-static-reflection"
 
     steps:
       - name: "Checkout"

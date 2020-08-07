@@ -14,7 +14,7 @@
 		"jean85/pretty-package-versions": "^1.0.3",
 		"jetbrains/phpstorm-stubs": "dev-master#d4db4b4834d8a9c8fc3c0aa6dc3c9bae723bbc9c",
 		"nette/bootstrap": "^3.0",
-		"nette/di": "dev-master#6f1109cc4324515c5f1ce20700381e82e59e4cb7",
+		"nette/di": "dev-master#5ddfaf1cbe26e3451838e3b2861842ac8d8e9aa5",
 		"nette/finder": "^2.5",
 		"nette/neon": "^3.0",
 		"nette/schema": "^1.0",

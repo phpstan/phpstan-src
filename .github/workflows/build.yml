@@ -143,9 +143,6 @@ jobs:
         script:
           - "vendor/bin/phing tests"
           - "vendor/bin/phing tests-fast-static-reflection"
-        exclude:
-          - operating-system: windows-latest
-            php-version: 8.0
 
     steps:
       - name: "Checkout"
@@ -229,8 +226,6 @@ jobs:
           - "vendor/bin/phing phpstan"
           - "vendor/bin/phing phpstan-static-reflection"
         exclude:
-          - operating-system: windows-latest
-            php-version: 8.0
           - operating-system: windows-latest
             script: "vendor/bin/phing phpstan-static-reflection"
 

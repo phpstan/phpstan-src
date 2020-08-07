@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use Nette\DI\Helpers;
 use Nette\Neon\Neon;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
@@ -54,9 +55,9 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 
 			foreach ($fileErrorsCounts as $message => $count) {
 				$errorsToOutput[] = [
-					'message' => '#^' . preg_quote($message, '#') . '$#',
+					'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
 					'count' => $count,
-					'path' => $this->relativePathHelper->getRelativePath($file),
+					'path' => Helpers::escape($this->relativePathHelper->getRelativePath($file)),
 				];
 			}
 		}

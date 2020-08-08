@@ -1371,6 +1371,38 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
+					new StringType(),
+					new CallableStringType(),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
+					new CallableStringType(),
+					new ConstantStringType('test_function'),
+				],
+				ClassStringType::class,
+				'callable-string',
+			],
+			[
+				[
+					new CallableStringType(),
+					new ConstantStringType('test_function'),
+				],
+				UnionType::class,
+				'\'test_function\'|callable-string',
+			],
+			[
+				[
+					new CallableStringType(),
+					new IntegerType(),
+				],
+				UnionType::class,
+				'callable-string|int',
+			],
+			[
+				[
 					IntegerRangeType::fromInterval(1, 3),
 					IntegerRangeType::fromInterval(2, 5),
 				],

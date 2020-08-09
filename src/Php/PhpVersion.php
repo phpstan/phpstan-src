@@ -17,6 +17,15 @@ class PhpVersion
 		return $this->versionId;
 	}
 
+	public function getVersionString(): string
+	{
+		$first = (int) floor($this->versionId / 10000);
+		$second = (int) floor(($this->versionId % 10000) / 100);
+		$third = (int) floor($this->versionId % 100);
+
+		return $first . '.' . $second . ($third !== 0 ? '.' . $third : '');
+	}
+
 	public function supportsNullCoalesceAssign(): bool
 	{
 		return $this->versionId >= 70400;

@@ -23,7 +23,6 @@ use Psr\Log\LoggerInterface;
 
 class PhpstanDispatcherFactory implements DispatcherFactory
 {
-
 	private InceptionResult $result;
 
 	private LoggerInterface $logger;
@@ -39,13 +38,13 @@ class PhpstanDispatcherFactory implements DispatcherFactory
 		$watcher = new DeferredResponseWatcher();
 		$client = new JsonRpcClient($transmitter, $watcher);
 
-		$handlers = new Handlers([
+		$handlers = new Handlers(
 			new DiagnosticsHandler(
 				$client,
 				$this->result->getContainer()->getByType(AnalyseApplication::class),
 				$this->result
 			),
-		]);
+		);
 
 		$argumentResolver = new LanguageSeverProtocolParamsResolver();
 

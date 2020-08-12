@@ -508,6 +508,15 @@ class ClassReflection implements ReflectionWithFilename
 		}
 	}
 
+	public function implementsInterface(string $className): bool
+	{
+		try {
+			return $this->reflection->implementsInterface($className);
+		} catch (\ReflectionException $e) {
+			return false;
+		}
+	}
+
 	/**
 	 * @return \PHPStan\Reflection\ClassReflection[]
 	 */

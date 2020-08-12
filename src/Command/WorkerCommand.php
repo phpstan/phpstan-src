@@ -178,10 +178,16 @@ class WorkerCommand extends Command
 					}
 				} catch (\Throwable $t) {
 					$internalErrorsCount++;
-					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
+					$internalErrorMessage = '';
+					while ($t !== null) {
+						$internalErrorMessage .= sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
+						$internalErrorMessage .= $t->getTraceAsString();
+						$internalErrorMessage .= "\n";
+						$t = $t->getPrevious();
+					}
+
 					$internalErrorMessage .= sprintf(
-						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
-						"\n",
+						'Run PHPStan with --debug option and post the stack trace to:%s%s',
 						"\n",
 						'https://github.com/phpstan/phpstan/issues/new'
 					);

@@ -629,6 +629,10 @@ class NodeScopeResolver
 				if (!$node instanceof Expr) {
 					return;
 				}
+				if ($node instanceof Expr\AssignOp) {
+					$customCallback($node->var, $scope);
+					return;
+				}
 				if ($node instanceof Node\Scalar\EncapsedStringPart) {
 					return;
 				}

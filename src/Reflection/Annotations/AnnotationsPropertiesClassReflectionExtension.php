@@ -57,11 +57,6 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 			return $properties;
 		}
 
-		$docComment = $classReflection->getNativeReflection()->getDocComment();
-		if ($docComment === false) {
-			return $properties;
-		}
-
 		$propertyTags = $classReflection->getPropertyTags();
 		foreach ($propertyTags as $propertyName => $propertyTag) {
 			$properties[$propertyName] = new AnnotationPropertyReflection(

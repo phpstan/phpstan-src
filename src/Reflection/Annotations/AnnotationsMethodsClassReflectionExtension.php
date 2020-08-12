@@ -56,11 +56,6 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 			return $methods;
 		}
 
-		$docComment = $classReflection->getNativeReflection()->getDocComment();
-		if ($docComment === false) {
-			return $methods;
-		}
-
 		$methodTags = $classReflection->getMethodTags();
 		foreach ($methodTags as $methodName => $methodTag) {
 			$parameters = [];

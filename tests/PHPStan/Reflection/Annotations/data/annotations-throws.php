@@ -75,6 +75,16 @@ class PhpstanFoo
 
 }
 
+/**
+ * @method void withoutThrows()
+ * @method void throwsRuntime()
+ * @method void staticThrowsRuntime()
+ */
+class FooWithMethodAnnotation extends Foo
+{
+
+}
+
 interface FooInterface
 {
 

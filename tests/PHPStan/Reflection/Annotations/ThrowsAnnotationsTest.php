@@ -32,6 +32,15 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 				],
 			],
 			[
+				\ThrowsAnnotations\FooWithMethodAnnotation::class,
+				[
+					'withoutThrows' => null,
+					'throwsRuntime' => \RuntimeException::class,
+					'staticThrowsRuntime' => \RuntimeException::class,
+
+				],
+			],
+			[
 				\ThrowsAnnotations\FooInterface::class,
 				[
 					'withoutThrows' => null,

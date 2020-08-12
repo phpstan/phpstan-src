@@ -580,8 +580,10 @@ class NodeScopeResolver
 			$propertyUsages = [];
 			$constants = [];
 			$constantFetches = [];
-			$customCallback = function (Node $node, Scope $scope) use ($classReflection, $nodeCallback, &$properties, &$methods, &$methodCalls, &$propertyUsages, &$constants, &$constantFetches, &$customCallback, $classScope): void {
-				$nodeCallback($node, $scope);
+
+			/** @var \Closure(Node, Scope): void $customCallback2 */
+			$customCallback2 = null;
+			$customCallback1 = function (Node $node, Scope $scope) use ($classReflection, &$properties, &$methods, &$methodCalls, &$propertyUsages, &$constants, &$constantFetches, &$customCallback1, &$customCallback2, $classScope): void {
 				if (!$scope->isInClass()) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
@@ -612,7 +614,7 @@ class NodeScopeResolver
 								&& $methodReflection->getDeclaringClass()->getName() === $classReflection->getName()
 								&& $methodReflection->getNode() !== null
 							) {
-								$this->processNodes([$methodReflection->getNode()], $classScope, $customCallback);
+								$this->processNodes([$methodReflection->getNode()], $classScope, $customCallback2);
 							}
 						}
 					}
@@ -629,8 +631,8 @@ class NodeScopeResolver
 				if (!$node instanceof Expr) {
 					return;
 				}
-				if ($node instanceof Expr\AssignOp) {
-					$customCallback($node->var, $scope);
+				if ($node instanceof Expr\AssignOp\Coalesce) {
+					$customCallback1($node->var, $scope);
 					return;
 				}
 				if ($node instanceof Node\Scalar\EncapsedStringPart) {
@@ -650,7 +652,11 @@ class NodeScopeResolver
 					$propertyUsages[] = new PropertyRead($node, $scope);
 				}
 			};
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $customCallback);
+			$customCallback2 = static function (Node $node, Scope $scope) use ($nodeCallback, $customCallback1): void {
+				$nodeCallback($node, $scope);
+				$customCallback1($node, $scope);
+			};
+			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $customCallback2);
 			$nodeCallback(new ClassPropertiesNode($stmt, $properties, $propertyUsages, $methodCalls), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $methods, $methodCalls), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $constants, $constantFetches), $classScope);

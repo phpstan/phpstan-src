@@ -31,7 +31,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\CallableStringType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
@@ -135,7 +134,7 @@ class TypeNodeResolver
 				return new ClassStringType();
 
 			case 'callable-string':
-				return new CallableStringType();
+				return new IntersectionType([new StringType(), new CallableType()]);
 
 			case 'array-key':
 				return new BenevolentUnionType([new IntegerType(), new StringType()]);

@@ -1371,6 +1371,30 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
+					new StringType(),
+					new IntersectionType([new StringType(), new CallableType()]),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new CallableType()]),
+					new ConstantStringType('test_function'),
+				],
+				UnionType::class,
+				'\'test_function\'|(callable(): mixed&string)',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new CallableType()]),
+					new IntegerType(),
+				],
+				UnionType::class,
+				'(callable(): mixed&string)|int',
+			],
+			[
+				[
 					IntegerRangeType::fromInterval(1, 3),
 					IntegerRangeType::fromInterval(2, 5),
 				],

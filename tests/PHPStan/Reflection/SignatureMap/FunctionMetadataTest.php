@@ -11,7 +11,7 @@ class FunctionMetadataTest extends TestCase
 
 	public function testSchema(): void
 	{
-		$data = require __DIR__ . '/../../../../src/Reflection/SignatureMap/functionMetadata.php';
+		$data = require __DIR__ . '/../../../../resources/functionMetadata.php';
 		$this->assertIsArray($data);
 
 		$processor = new Processor();

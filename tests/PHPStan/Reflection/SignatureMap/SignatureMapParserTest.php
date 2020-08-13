@@ -385,7 +385,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 	public function testParseAll(): void
 	{
 		$parser = self::getContainer()->getByType(SignatureMapParser::class);
-		$signatureMap = require __DIR__ . '/../../../../src/Reflection/SignatureMap/functionMap.php';
+		$signatureMap = require __DIR__ . '/../../../../resources/functionMap.php';
 
 		$count = 0;
 		foreach ($signatureMap as $functionName => $map) {

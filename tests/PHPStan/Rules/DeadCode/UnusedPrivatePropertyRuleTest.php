@@ -140,6 +140,9 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 	public function testBug3636(): void
 	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$this->analyse([__DIR__ . '/data/bug-3636.php'], [

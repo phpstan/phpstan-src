@@ -31,6 +31,6 @@ function dummy2(array $ints): void
  */
 function dummy3(array $ints): void
 {
-	assertType('(int|false)', min($ints));
-	assertType('(int|false)', max($ints));
+	assertType('int|false', min($ints));
+	assertType('int|false', max($ints));
 }

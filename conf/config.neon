@@ -275,6 +275,7 @@ services:
 		setup:
 			- addVisitor(@PhpParser\NodeVisitor\NameResolver)
 			- addVisitor(@PhpParser\NodeVisitor\NodeConnectingVisitor)
+			- addVisitor(@PHPStan\NodeVisitor\StatementOrderVisitor)
 
 	-
 		class: PhpParser\NodeVisitor\NameResolver
@@ -470,6 +471,9 @@ services:
 		class: PHPStan\File\FileFinder
 		arguments:
 			fileExtensions: %fileExtensions%
+
+	-
+		class: PHPStan\NodeVisitor\StatementOrderVisitor
 
 	-
 		class: PHPStan\Parallel\ParallelAnalyser

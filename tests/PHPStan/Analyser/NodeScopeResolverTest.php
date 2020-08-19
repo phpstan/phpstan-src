@@ -10008,16 +10008,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/mixedType.php');
 	}
-  
+
 	public function dataMinMaxReturnTypeWithArrays(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
 	}
-  
-  public function dataClassPhpDocs(): array
+
+	public function dataClassPhpDocs(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
-  }
+	}
 
 	/**
 	 * @dataProvider dataBug2574
@@ -10081,7 +10081,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataGraphicsDrawReturnTypes
 	 * @dataProvider dataNativeUnionTypes
 	 * @dataProvider dataMinMaxReturnTypeWithArrays
-   * @dataProvider dataClassPhpDocs
+	 * @dataProvider dataClassPhpDocs
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

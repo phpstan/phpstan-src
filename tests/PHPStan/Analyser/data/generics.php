@@ -1102,8 +1102,6 @@ function () {
 class GenericReflectionClass extends \ReflectionClass
 {
 
-	public $name;
-
 	public function newInstanceWithoutConstructor()
 	{
 		return parent::newInstanceWithoutConstructor();
@@ -1116,8 +1114,6 @@ class GenericReflectionClass extends \ReflectionClass
  */
 class SpecificReflectionClass extends \ReflectionClass
 {
-
-	public $name;
 
 	public function newInstanceWithoutConstructor()
 	{
@@ -1363,5 +1359,34 @@ class TagMergingChild extends TagMergingParent
 		assertType('float', $one);
 		assertType('int', $two);
 		assertType('float', $this->property);
+	}
+}
+
+/**
+ * @template T
+ */
+interface GeneralFactoryInterface {
+	/**
+	 * @return T
+	 */
+	public static function create();
+}
+
+class Car {}
+
+/**
+ * @implements GeneralFactoryInterface<Car>
+ */
+class CarFactory implements GeneralFactoryInterface {
+	public static function create() { return new Car(); }
+}
+
+class CarFactoryProcessor {
+	/**
+	 * @param class-string<CarFactory> $class
+	 */
+	public function process($class): void {
+		$car = $class::create();
+		assertType(Car::class, $car);
 	}
 }

@@ -162,8 +162,11 @@ php;
 		}
 		$output = '';
 		foreach ($finder->files()->name('*.php')->in([
+			$this->buildDir . '/src',
 			$vendorDir . '/nikic/php-parser/lib/PhpParser',
 			$vendorDir . '/phpstan/phpdoc-parser/src',
+		])->exclude([
+			'Testing',
 		]) as $phpFile) {
 			$realPath = $phpFile->getRealPath();
 			if ($realPath === false) {

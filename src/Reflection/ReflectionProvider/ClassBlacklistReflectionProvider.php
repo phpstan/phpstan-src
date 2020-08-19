@@ -42,6 +42,10 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
+		if (strtolower($className) === 'generator') {
+			return true;
+		}
+
 		if ($this->isClassBlacklisted($className)) {
 			return false;
 		}
@@ -113,9 +117,14 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		return $this->reflectionProvider->getClassName($className);
 	}
 
+	public function supportsAnonymousClasses(): bool
+	{
+		return false;
+	}
+
 	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
-		return $this->reflectionProvider->getAnonymousClassReflection($classNode, $scope);
+		throw new \PHPStan\ShouldNotHappenException();
 	}
 
 	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool

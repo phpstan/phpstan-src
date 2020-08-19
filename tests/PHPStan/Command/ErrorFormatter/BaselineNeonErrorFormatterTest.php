@@ -158,4 +158,39 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		);
 	}
 
+	public function testEscapeDiNeon(): void
+	{
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$result = new AnalysisResult(
+			[new Error('Test %value%', 'Testfile')],
+			[],
+			[],
+			[],
+			false,
+			null,
+			true
+		);
+
+		$formatter->formatErrors(
+			$result,
+			$this->getOutput()
+		);
+		self::assertSame(
+			trim(
+				Neon::encode([
+					'parameters' => [
+						'ignoreErrors' => [
+							[
+								'message' => '#^Test %%value%%$#',
+								'count' => 1,
+								'path' => 'Testfile',
+							],
+						],
+					],
+				], Neon::BLOCK)
+			),
+			trim($this->getOutputContent())
+		);
+	}
+
 }

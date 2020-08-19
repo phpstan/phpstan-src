@@ -747,7 +747,7 @@ class WrongMagicMethods
 		return 1;
 	}
 
-	public function __set_state(array $properties)
+	public static function __set_state(array $properties)
 	{
 		return ['foo' => 'bar'];
 	}

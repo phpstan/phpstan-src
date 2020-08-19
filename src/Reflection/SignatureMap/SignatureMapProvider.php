@@ -73,7 +73,7 @@ class SignatureMapProvider
 	{
 		if ($this->functionMetadata === null) {
 			/** @var array<string, array{hasSideEffects: bool}> $metadata */
-			$metadata = require __DIR__ . '/functionMetadata.php';
+			$metadata = require __DIR__ . '/../../../resources/functionMetadata.php';
 			$this->functionMetadata = array_change_key_case($metadata, CASE_LOWER);
 		}
 
@@ -86,7 +86,7 @@ class SignatureMapProvider
 	private function getSignatureMap(): array
 	{
 		if ($this->signatureMap === null) {
-			$signatureMap = require __DIR__ . '/functionMap.php';
+			$signatureMap = require __DIR__ . '/../../../resources/functionMap.php';
 			if (!is_array($signatureMap)) {
 				throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
 			}
@@ -94,7 +94,7 @@ class SignatureMapProvider
 			$signatureMap = array_change_key_case($signatureMap, CASE_LOWER);
 
 			if ($this->phpVersion->getVersionId() >= 70400) {
-				$php74MapDelta = require __DIR__ . '/functionMap_php74delta.php';
+				$php74MapDelta = require __DIR__ . '/../../../resources/functionMap_php74delta.php';
 				if (!is_array($php74MapDelta)) {
 					throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
 				}

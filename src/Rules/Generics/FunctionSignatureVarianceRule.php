@@ -39,6 +39,7 @@ class FunctionSignatureVarianceRule implements Rule
 			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants()),
 			sprintf('in parameter %%s of function %s()', $functionName),
 			sprintf('in return type of function %s()', $functionName),
+			sprintf('in function %s()', $functionName),
 			false
 		);
 	}

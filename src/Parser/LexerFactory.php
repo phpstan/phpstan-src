@@ -17,11 +17,13 @@ class LexerFactory
 
 	public function create(): Lexer
 	{
-		if ($this->phpVersion->getVersionId() <= PHP_VERSION_ID) {
+		if ($this->phpVersion->getVersionId() === PHP_VERSION_ID) {
 			return new Lexer();
 		}
 
-		return new Lexer\Emulative();
+		return new Lexer\Emulative([
+			'phpVersion' => $this->phpVersion->getVersionString(),
+		]);
 	}
 
 }

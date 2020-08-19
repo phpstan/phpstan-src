@@ -38,6 +38,7 @@ class MethodSignatureVarianceRule implements Rule
 			ParametersAcceptorSelector::selectSingle($method->getVariants()),
 			sprintf('in parameter %%s of method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
 			sprintf('in return type of method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
+			sprintf('in method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
 			$method->getName() === '__construct' || $method->isStatic()
 		);
 	}

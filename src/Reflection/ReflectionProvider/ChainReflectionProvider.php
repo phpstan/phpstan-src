@@ -63,9 +63,26 @@ class ChainReflectionProvider implements ReflectionProvider
 		throw new \PHPStan\Broker\ClassNotFoundException($className);
 	}
 
+	public function supportsAnonymousClasses(): bool
+	{
+		foreach ($this->providers as $provider) {
+			if (!$provider->supportsAnonymousClasses()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		foreach ($this->providers as $provider) {
+			if (!$provider->supportsAnonymousClasses()) {
+				continue;
+			}
+
 			return $provider->getAnonymousClassReflection($classNode, $scope);
 		}
 

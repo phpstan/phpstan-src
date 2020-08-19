@@ -17,6 +17,7 @@ class VarianceCheck
 		ParametersAcceptor $parametersAcceptor,
 		string $parameterTypeMessage,
 		string $returnTypeMessage,
+		string $generalMessage,
 		bool $isStatic
 	): array
 	{
@@ -31,6 +32,21 @@ class VarianceCheck
 			foreach ($this->check($variance, $type, $message) as $error) {
 				$errors[] = $error;
 			}
+		}
+
+		foreach ($parametersAcceptor->getTemplateTypeMap()->getTypes() as $templateType) {
+			if (!$templateType instanceof TemplateType
+				|| $templateType->getScope()->getFunctionName() === null
+				|| $templateType->getVariance()->invariant()
+			) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type %s in %s.',
+				$templateType->getName(),
+				$generalMessage
+			))->build();
 		}
 
 		$variance = TemplateTypeVariance::createCovariant();
@@ -49,7 +65,8 @@ class VarianceCheck
 
 		foreach ($type->getReferencedTemplateTypes($positionVariance) as $reference) {
 			$referredType = $reference->getType();
-			if ($this->isTemplateTypeVarianceValid($reference->getPositionVariance(), $referredType)) {
+			if (($referredType->getScope()->getFunctionName() !== null && !$referredType->getVariance()->invariant())
+				|| $this->isTemplateTypeVarianceValid($reference->getPositionVariance(), $referredType)) {
 				continue;
 			}
 

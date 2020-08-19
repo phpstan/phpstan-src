@@ -49,7 +49,17 @@ class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExte
 				continue;
 			}
 
-			return $type->getMethod($methodName, new OutOfClassScope());
+			$method = $type->getMethod($methodName, new OutOfClassScope());
+			$static = $method->isStatic();
+			if (
+				!$static
+				&& $classReflection->hasNativeMethod('__callStatic')
+				&& !$classReflection->hasNativeMethod('__call')
+			) {
+				$static = true;
+			}
+
+			return new MixinMethodReflection($method, $static);
 		}
 
 		foreach ($classReflection->getParents() as $parentClass) {

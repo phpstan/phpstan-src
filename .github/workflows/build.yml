@@ -27,23 +27,17 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:snapshot
 
       - name: "Validate Composer"
         run: "composer validate"
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -67,23 +61,17 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:snapshot
 
       - name: "Validate Composer"
         run: "composer validate"
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -113,20 +101,14 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
+          tools: composer:snapshot
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -155,30 +137,23 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl
+          tools: pecl, composer:snapshot
           extensions: ds,mbstring
           ini-values: memory_limit=512M
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Update PHPUnit"
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
-        run: "composer remove --dev brianium/paratest && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
+        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/reflection-docblock:'5.2.0' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
@@ -194,22 +169,15 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "pcov"
           php-version: "7.4"
-          tools: pecl
+          tools: pecl, composer:snapshot
           extensions: ds
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-7.4-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-7.4-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -241,33 +209,29 @@ jobs:
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "vendor/bin/phing phpstan"
-          - "vendor/bin/phing phpstan-runtime-reflection"
           - "vendor/bin/phing phpstan-static-reflection"
+        exclude:
+          - operating-system: windows-latest
+            script: "vendor/bin/phing phpstan-static-reflection"
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
+          tools: composer:snapshot
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Update PHPUnit"
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
-        run: "composer remove --dev brianium/paratest && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
+        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/reflection-docblock:'5.2.0' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
@@ -288,21 +252,15 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
+          tools: composer:snapshot
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -323,7 +281,7 @@ jobs:
           vendor/bin/phing phpstan-result-cache
 
       - name: "Upload result cache artifact"
-        uses: actions/upload-artifact@2.1.0
+        uses: actions/upload-artifact@v2
         with:
           name: resultCache-ubuntu-latest.php
           path: tmp/resultCache.php
@@ -341,22 +299,16 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
           ini-values: memory_limit=256M
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
+          tools: composer:snapshot
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -377,10 +329,10 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -419,20 +371,14 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
+          tools: composer:snapshot
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -459,25 +405,20 @@ jobs:
             extensions: ""
           - script: "bin/phpstan analyse -l 8 -c tests/e2e/magic-setter/test.neon tests/e2e/magic-setter/test.php"
             extensions: ""
+          - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
+            extensions: ""
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2.3.1"
+        uses: "actions/checkout@v2"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@2.3.1"
+        uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: "7.4"
-          tools: ${{ matrix.tools }}
+          tools: ${{ matrix.tools }}, composer:snapshot
           extensions: ${{ matrix.extensions }}
-
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"

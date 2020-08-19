@@ -20,26 +20,31 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-private-method.php'], [
 			[
-				'Class UnusedPrivateMethod\Foo has an unused method doFoo().',
+				'Method UnusedPrivateMethod\Foo::doFoo() is unused.',
 				8,
 			],
 			[
-				'Class UnusedPrivateMethod\Foo has an unused method doBar().',
+				'Method UnusedPrivateMethod\Foo::doBar() is unused.',
 				13,
 			],
 			[
-				'Class UnusedPrivateMethod\Foo has an unused method unusedStaticMethod().',
+				'Static method UnusedPrivateMethod\Foo::unusedStaticMethod() is unused.',
 				44,
 			],
 			[
-				'Class UnusedPrivateMethod\Bar has an unused method doBaz().',
+				'Method UnusedPrivateMethod\Bar::doBaz() is unused.',
 				59,
 			],
 			[
-				'Class UnusedPrivateMethod\Lorem has an unused method doBaz().',
+				'Method UnusedPrivateMethod\Lorem::doBaz() is unused.',
 				97,
 			],
 		]);
+	}
+
+	public function testBug3630(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3630.php'], []);
 	}
 
 }

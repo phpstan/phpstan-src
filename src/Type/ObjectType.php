@@ -259,7 +259,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($thisReflection->isInterface() && $thatReflection->isInterface()) {
 			return TrinaryLogic::createFromBoolean(
-				$thatReflection->getNativeReflection()->implementsInterface($this->className)
+				$thatReflection->implementsInterface($this->className)
 			);
 		}
 

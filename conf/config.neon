@@ -8,12 +8,14 @@ parameters:
 	level: null
 	paths: []
 	featureToggles:
+		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		closureUsesThis: false
 		randomIntParameters: false
 		nullCoalesce: false
 		fileWhitespace: false
 		unusedClassElements: false
+		readComposerPhpVersion: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -147,12 +149,14 @@ parametersSchema:
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	featureToggles: structure([
+		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		closureUsesThis: bool(),
 		randomIntParameters: bool(),
 		nullCoalesce: bool(),
 		fileWhitespace: bool(),
-		unusedClassElements: bool()
+		unusedClassElements: bool(),
+		readComposerPhpVersion: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -270,9 +274,14 @@ services:
 		class: PhpParser\NodeTraverser
 		setup:
 			- addVisitor(@PhpParser\NodeVisitor\NameResolver)
+			- addVisitor(@PhpParser\NodeVisitor\NodeConnectingVisitor)
+			- addVisitor(@PHPStan\NodeVisitor\StatementOrderVisitor)
 
 	-
 		class: PhpParser\NodeVisitor\NameResolver
+
+	-
+		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-
 		class: PhpParser\Parser\Php7
@@ -291,8 +300,14 @@ services:
 
 	-
 		class: PHPStan\Php\PhpVersionFactory
+		factory: @PHPStan\Php\PhpVersionFactoryFactory::create
+
+	-
+		class: PHPStan\Php\PhpVersionFactoryFactory
 		arguments:
 			versionId: %phpVersion%
+			readComposerPhpVersion: %featureToggles.readComposerPhpVersion%
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer
@@ -456,6 +471,9 @@ services:
 		class: PHPStan\File\FileFinder
 		arguments:
 			fileExtensions: %fileExtensions%
+
+	-
+		class: PHPStan\NodeVisitor\StatementOrderVisitor
 
 	-
 		class: PHPStan\Parallel\ParallelAnalyser
@@ -625,6 +643,9 @@ services:
 		arguments:
 			checkMissingIterableValueType: %checkMissingIterableValueType%
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
+
+	-
+		class: PHPStan\Rules\Properties\LazyReadWritePropertiesExtensionProvider
 
 	-
 		class: PHPStan\Rules\Properties\PropertyDescriptor
@@ -1182,6 +1203,7 @@ services:
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 		arguments:
 			phpParser: @phpParserDecorator
+			phpVersionId: %phpVersion%
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 
@@ -1232,5 +1254,10 @@ services:
 
 	errorFormatter.github:
 		class: PHPStan\Command\ErrorFormatter\GithubErrorFormatter
+		arguments:
+			relativePathHelper: @simpleRelativePathHelper
+
+	errorFormatter.teamcity:
+		class: PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper

@@ -67,6 +67,7 @@ services:
 		arguments:
 			alwaysWrittenTags: %propertyAlwaysWrittenTags%
 			alwaysReadTags: %propertyAlwaysReadTags%
+			checkUninitializedProperties: %checkUninitializedProperties%
 
 	-
 		class: PHPStan\Rules\Comparison\ElseIfConstantConditionRule

@@ -5,7 +5,9 @@ namespace PHPStan\Reflection;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
+use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
@@ -506,6 +508,15 @@ class ClassReflection implements ReflectionWithFilename
 		}
 	}
 
+	public function implementsInterface(string $className): bool
+	{
+		try {
+			return $this->reflection->implementsInterface($className);
+		} catch (\ReflectionException $e) {
+			return false;
+		}
+	}
+
 	/**
 	 * @return \PHPStan\Reflection\ClassReflection[]
 	 */
@@ -886,7 +897,7 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/** @return array<string,TemplateTag> */
-	private function getTemplateTags(): array
+	public function getTemplateTags(): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
 		if ($resolvedPhpDoc === null) {
@@ -977,6 +988,32 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		return $resolvedPhpDoc->getMixinTags();
+	}
+
+	/**
+	 * @return array<PropertyTag>
+	 */
+	public function getPropertyTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getPropertyTags();
+	}
+
+	/**
+	 * @return array<MethodTag>
+	 */
+	public function getMethodTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getMethodTags();
 	}
 
 	/**

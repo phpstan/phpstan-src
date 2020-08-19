@@ -58,7 +58,7 @@ class UnusedPrivateConstantRule implements Rule
 
 		$errors = [];
 		foreach ($constants as $constantName => $constantNode) {
-			$errors[] = RuleErrorBuilder::message(sprintf('Class %s has an unused constant %s.', $classReflection->getDisplayName(), $constantName))->line($constantNode->getLine())->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('Constant %s::%s is unused.', $classReflection->getDisplayName(), $constantName))->line($constantNode->getLine())->build();
 		}
 
 		return $errors;

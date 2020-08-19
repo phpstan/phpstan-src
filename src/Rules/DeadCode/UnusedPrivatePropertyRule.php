@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\Property\PropertyRead;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -19,23 +20,32 @@ use PHPStan\Type\TypeUtils;
 class UnusedPrivatePropertyRule implements Rule
 {
 
+	private ReadWritePropertiesExtensionProvider $extensionProvider;
+
 	/** @var string[] */
 	private array $alwaysWrittenTags;
 
 	/** @var string[] */
 	private array $alwaysReadTags;
 
+	private bool $checkUninitializedProperties;
+
 	/**
+	 * @param ReadWritePropertiesExtensionProvider $extensionProvider
 	 * @param string[] $alwaysWrittenTags
 	 * @param string[] $alwaysReadTags
 	 */
 	public function __construct(
+		ReadWritePropertiesExtensionProvider $extensionProvider,
 		array $alwaysWrittenTags,
-		array $alwaysReadTags
+		array $alwaysReadTags,
+		bool $checkUninitializedProperties
 	)
 	{
+		$this->extensionProvider = $extensionProvider;
 		$this->alwaysWrittenTags = $alwaysWrittenTags;
 		$this->alwaysReadTags = $alwaysReadTags;
+		$this->checkUninitializedProperties = $checkUninitializedProperties;
 	}
 
 	public function getNodeType(): string
@@ -51,7 +61,8 @@ class UnusedPrivatePropertyRule implements Rule
 		if (!$scope->isInClass()) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
-		$classType = new ObjectType($scope->getClassReflection()->getName());
+		$classReflection = $scope->getClassReflection();
+		$classType = new ObjectType($classReflection->getName());
 
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
@@ -83,9 +94,32 @@ class UnusedPrivatePropertyRule implements Rule
 			}
 
 			foreach ($property->props as $propertyProperty) {
+				$propertyName = $propertyProperty->name->toString();
+				if (!$alwaysRead || !$alwaysWritten) {
+					if (!$classReflection->hasNativeProperty($propertyName)) {
+						continue;
+					}
+
+					$propertyReflection = $classReflection->getNativeProperty($propertyName);
+
+					foreach ($this->extensionProvider->getExtensions() as $extension) {
+						if ($alwaysRead && $alwaysWritten) {
+							break;
+						}
+						if (!$alwaysRead && $extension->isAlwaysRead($propertyReflection, $propertyName)) {
+							$alwaysRead = true;
+						}
+						if ($alwaysWritten || !$extension->isAlwaysWritten($propertyReflection, $propertyName)) {
+							continue;
+						}
+
+						$alwaysWritten = true;
+					}
+				}
+
 				$read = $alwaysRead;
 				$written = $alwaysWritten || $propertyProperty->default !== null;
-				$properties[$propertyProperty->name->toString()] = [
+				$properties[$propertyName] = [
 					'read' => $read,
 					'written' => $written,
 					'node' => $property,
@@ -143,24 +177,24 @@ class UnusedPrivatePropertyRule implements Rule
 			$constructors[] = $classReflection->getConstructor()->getName();
 		}
 
-		[$uninitializedProperties] = $node->getUninitializedProperties($scope, $constructors);
+		[$uninitializedProperties] = $node->getUninitializedProperties($scope, $constructors, $this->extensionProvider->getExtensions());
 
 		$errors = [];
 		foreach ($properties as $name => $data) {
 			$propertyNode = $data['node'];
 			if ($propertyNode->isStatic()) {
-				$propertyName = sprintf('static property $%s', $name);
+				$propertyName = sprintf('Static property %s::$%s', $scope->getClassReflection()->getDisplayName(), $name);
 			} else {
-				$propertyName = sprintf('property $%s', $name);
+				$propertyName = sprintf('Property %s::$%s', $scope->getClassReflection()->getDisplayName(), $name);
 			}
 			if (!$data['read']) {
 				if (!$data['written']) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has an unused %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('%s is unused.', $propertyName))->line($propertyNode->getStartLine())->build();
 				} else {
-					$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a write-only %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))->line($propertyNode->getStartLine())->build();
 				}
-			} elseif (!$data['written'] && !array_key_exists($name, $uninitializedProperties)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Class %s has a read-only %s.', $scope->getClassReflection()->getDisplayName(), $propertyName))->line($propertyNode->getStartLine())->build();
+			} elseif (!$data['written'] && (!array_key_exists($name, $uninitializedProperties) || !$this->checkUninitializedProperties)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))->line($propertyNode->getStartLine())->build();
 			}
 		}
 

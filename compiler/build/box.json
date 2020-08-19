@@ -12,6 +12,7 @@
   "directories": [
     "conf",
     "src",
+    "resources",
     "stubs"
   ],
   "force-autodiscovery": true,

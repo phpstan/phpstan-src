@@ -133,6 +133,9 @@ class TypeNodeResolver
 			case 'class-string':
 				return new ClassStringType();
 
+			case 'callable-string':
+				return new IntersectionType([new StringType(), new CallableType()]);
+
 			case 'array-key':
 				return new BenevolentUnionType([new IntegerType(), new StringType()]);
 

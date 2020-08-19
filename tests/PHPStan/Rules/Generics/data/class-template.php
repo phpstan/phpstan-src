@@ -41,3 +41,28 @@ class Ipsum
 {
 
 }
+
+new /** @template stdClass */ class
+{
+
+};
+
+new /** @template T of Zazzzu */ class
+{
+
+};
+
+new /** @template T of int */ class
+{
+
+};
+
+new /** @template T of baz */ class
+{
+
+};
+
+new /** @template TypeAlias */ class
+{
+
+};

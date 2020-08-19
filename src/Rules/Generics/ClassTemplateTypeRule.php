@@ -4,62 +4,51 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Class_>
+ * @implements \PHPStan\Rules\Rule<InClassNode>
  */
 class ClassTemplateTypeRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
 	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
 
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
 		TemplateTypeCheck $templateTypeCheck
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 		$this->templateTypeCheck = $templateTypeCheck;
 	}
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Class_::class;
+		return InClassNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$docComment = $node->getDocComment();
-		if ($docComment === null) {
+		if (!$scope->isInClass()) {
 			return [];
 		}
-
-		if (!isset($node->namespacedName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+		$classReflection = $scope->getClassReflection();
+		$className = $classReflection->getName();
+		if ($classReflection->isAnonymous()) {
+			$displayName = 'anonymous class';
+		} else {
+			$displayName = 'class ' . $classReflection->getDisplayName();
 		}
-
-		$className = (string) $node->namespacedName;
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$scope->getFile(),
-			$className,
-			null,
-			null,
-			$docComment->getText()
-		);
 
 		return $this->templateTypeCheck->check(
 			$node,
 			TemplateTypeScope::createWithClass($className),
-			$resolvedPhpDoc->getTemplateTags(),
-			sprintf('PHPDoc tag @template for class %s cannot have existing class %%s as its name.', $className),
-			sprintf('PHPDoc tag @template for class %s cannot have existing type alias %%s as its name.', $className),
-			sprintf('PHPDoc tag @template %%s for class %s has invalid bound type %%s.', $className),
-			sprintf('PHPDoc tag @template %%s for class %s with bound type %%s is not supported.', $className)
+			$classReflection->getTemplateTags(),
+			sprintf('PHPDoc tag @template for %s cannot have existing class %%s as its name.', $displayName),
+			sprintf('PHPDoc tag @template for %s cannot have existing type alias %%s as its name.', $displayName),
+			sprintf('PHPDoc tag @template %%s for %s has invalid bound type %%s.', $displayName),
+			sprintf('PHPDoc tag @template %%s for %s with bound type %%s is not supported.', $displayName)
 		);
 	}
 

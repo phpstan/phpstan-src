@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
@@ -37,8 +38,15 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		if (count($functionCall->args) === 1) {
 			$argType = $scope->getType($functionCall->args[0]->value);
 			if ($argType->isArray()->yes()) {
+				$isIterable = $argType->isIterableAtLeastOnce();
+				if ($isIterable->no()) {
+					return new ConstantBooleanType(false);
+				}
 				$iterableValueType = $argType->getIterableValueType();
 				$argumentTypes = [];
+				if (!$isIterable->yes()) {
+					$argumentTypes[] = new ConstantBooleanType(false);
+				}
 				if ($iterableValueType instanceof UnionType) {
 					foreach ($iterableValueType->getTypes() as $innerType) {
 						$argumentTypes[] = $innerType;

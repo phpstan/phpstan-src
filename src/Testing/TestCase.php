@@ -206,7 +206,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
 		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
 		$fileTypeMapper = new FileTypeMapper($setterReflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
@@ -222,10 +221,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$functionReflectionFactory,
 				$fileTypeMapper,
 				self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
-				self::getContainer()->getByType(Standard::class),
-				$anonymousClassNameHelper,
-				$fileHelper,
-				$relativePathHelper,
 				self::getContainer()->getByType(StubPhpDocProvider::class)
 			),
 			self::getPhpStormStubsSourceStubber(),
@@ -332,8 +327,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 		};
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
-		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension($fileTypeMapper);
-		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension($fileTypeMapper);
+		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension();
+		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension();
 		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
 		$methodReflectionFactory->reflectionProvider = $actualReflectionProvider;
 		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $phpDocInheritanceResolver, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $actualReflectionProvider, true, []);

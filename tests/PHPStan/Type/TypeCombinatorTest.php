@@ -1371,6 +1371,30 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
+					new StringType(),
+					new IntersectionType([new StringType(), new CallableType()]),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new CallableType()]),
+					new ConstantStringType('test_function'),
+				],
+				UnionType::class,
+				'\'test_function\'|(callable(): mixed&string)',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new CallableType()]),
+					new IntegerType(),
+				],
+				UnionType::class,
+				'(callable(): mixed&string)|int',
+			],
+			[
+				[
 					IntegerRangeType::fromInterval(1, 3),
 					IntegerRangeType::fromInterval(2, 5),
 				],
@@ -1678,6 +1702,22 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				UnionType::class,
 				'array(\'a\' => int, \'b\' => int)|array(\'b\' => int, \'c\' => int)',
+			],
+			[
+				[
+					TypeCombinator::intersect(new StringType(), new HasOffsetType(new IntegerType())),
+					TypeCombinator::intersect(new StringType(), new HasOffsetType(new IntegerType())),
+				],
+				IntersectionType::class,
+				'string&hasOffset(int)',
+			],
+			[
+				[
+					TypeCombinator::intersect(new ConstantStringType('abc'), new HasOffsetType(new IntegerType())),
+					TypeCombinator::intersect(new ConstantStringType('abc'), new HasOffsetType(new IntegerType())),
+				],
+				IntersectionType::class,
+				'\'abc\'&hasOffset(int)',
 			],
 		];
 	}
@@ -2733,6 +2773,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				ConstantArrayType::class,
 				'array(\'a\' => int, \'b\' => int)',
+			],
+			[
+				[
+					new StringType(),
+					new HasOffsetType(new IntegerType()),
+				],
+				IntersectionType::class,
+				'string&hasOffset(int)',
 			],
 		];
 	}

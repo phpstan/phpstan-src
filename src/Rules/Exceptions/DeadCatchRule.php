@@ -43,7 +43,14 @@ class DeadCatchRule implements Rule
 					'Dead catch - %s is already caught by %s above.',
 					$secondType->describe(VerbosityLevel::typeOnly()),
 					$firstType->describe(VerbosityLevel::typeOnly())
-				))->line($node->catches[$j]->getLine())->build();
+				))->line($node->catches[$j]->getLine())
+					->identifier('deadCode.unreachableCatch')
+					->metadata([
+						'tryLine' => $node->getLine(),
+						'firstCatchOrder' => $i,
+						'deadCatchOrder' => $j,
+					])
+					->build();
 			}
 		}
 

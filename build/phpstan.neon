@@ -21,6 +21,8 @@ parameters:
 		- %rootDir%/tests/PHPStan/Reflection/UnionTypesTest.php
 		- %rootDir%/tests/PHPStan/Reflection/MixedTypeTest.php
 		- ../tests/e2e/magic-setter/*
+	featureToggles:
+		readComposerPhpVersion: false
 	ignoreErrors:
 		- '#^Dynamic call to static method PHPUnit\\Framework\\\S+\(\)\.$#'
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'

@@ -41,6 +41,40 @@ class Foo
 
 }
 
+class PhpstanFoo
+{
+	/**
+	 * @throws \RuntimeException
+	 *
+	 * @phpstan-throws void
+	 */
+	public function withoutThrows()
+	{
+
+	}
+
+	/**
+	 * @throws \Exception
+	 *
+	 * @phpstan-throws \RuntimeException
+	 */
+	public function throwsRuntime()
+	{
+
+	}
+
+	/**
+	 * @throws \Exception
+	 *
+	 * @phpstan-throws \RuntimeException
+	 */
+	public static function staticThrowsRuntime()
+	{
+
+	}
+
+}
+
 interface FooInterface
 {
 

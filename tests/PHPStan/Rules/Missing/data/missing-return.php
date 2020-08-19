@@ -396,6 +396,43 @@ class MissingReturnGenerators
 		return 2;
 	}
 
+	public function yieldInWhileCondition(): \Generator
+	{
+		while($foo = yield 'foo') {
+		}
+	}
+
+	public function yieldInForCondition(): \Generator
+	{
+		for($foo = 0; $foo > 0; $foo = yield 1) {
+		}
+	}
+
+	public function yieldInDoCondition(): \Generator
+	{
+		do {
+		} while(yield 1);
+	}
+
+	public function yieldInForeach(): \Generator
+	{
+		foreach (yield 1 as $bar) {
+		}
+	}
+
+	public function yieldInIf(): \Generator
+	{
+		if (yield 1) {
+		}
+	}
+
+	public function yieldInSwitch(): \Generator
+	{
+		switch (yield 1) {
+			default:
+		}
+	}
+
 }
 
 class VoidUnion

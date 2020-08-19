@@ -54,7 +54,16 @@ class UnreachableTernaryElseBranchRule implements Rule
 				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
 			};
 			return [
-				$addTip(RuleErrorBuilder::message('Else branch is unreachable because ternary operator condition is always true.'))->line($node->else->getLine())->build(),
+				$addTip(RuleErrorBuilder::message('Else branch is unreachable because ternary operator condition is always true.'))
+					->line($node->else->getLine())
+					->identifier('deadCode.unreachableTernaryElse')
+					->metadata([
+						'statementDepth' => $node->getAttribute('statementDepth'),
+						'statementOrder' => $node->getAttribute('statementOrder'),
+						'depth' => $node->getAttribute('expressionDepth'),
+						'order' => $node->getAttribute('expressionOrder'),
+					])
+					->build(),
 			];
 		}
 

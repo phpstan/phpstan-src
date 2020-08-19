@@ -52,7 +52,16 @@ class TernaryOperatorConstantConditionRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Ternary operator condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false'
-				)))->build(),
+				)))
+					->identifier('deadCode.ternaryConstantCondition')
+					->metadata([
+						'statementDepth' => $node->getAttribute('statementDepth'),
+						'statementOrder' => $node->getAttribute('statementOrder'),
+						'depth' => $node->getAttribute('expressionDepth'),
+						'order' => $node->getAttribute('expressionOrder'),
+						'value' => $exprType->getValue(),
+					])
+					->build(),
 			];
 		}
 

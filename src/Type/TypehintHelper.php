@@ -45,6 +45,8 @@ class TypehintHelper
 					}
 				}
 				return new NonexistentParentClassType();
+			case 'static':
+				return $selfClass !== null ? new StaticType($selfClass) : new ErrorType();
 			default:
 				return new ObjectType($typeString);
 		}

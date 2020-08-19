@@ -20,6 +20,7 @@ parameters:
 		- %rootDir%/tests/PHPStan/Generics/functions.php
 		- %rootDir%/tests/PHPStan/Reflection/UnionTypesTest.php
 		- %rootDir%/tests/PHPStan/Reflection/MixedTypeTest.php
+		- %rootDir%/tests/PHPStan/Reflection/StaticTypeTest.php
 		- ../tests/e2e/magic-setter/*
 	featureToggles:
 		readComposerPhpVersion: false

@@ -2667,6 +2667,11 @@ class MutatingScope implements Scope
 
 				return new NonexistentParentClassType();
 			}
+
+			if ($lowercasedClassName === 'static') {
+				return new StaticType($className);
+			}
+
 			return new ObjectType($className);
 		} elseif ($type instanceof Node\NullableType) {
 			return $this->getFunctionType($type->type, true, $isVariadic);

@@ -10009,6 +10009,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/mixedType.php');
 	}
 
+	public function dataNativeStaticReturnType(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/staticReturnType.php');
+	}
+
 	public function dataMinMaxReturnTypeWithArrays(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
@@ -10076,6 +10085,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataGraphicsDrawReturnTypes
 	 * @dataProvider dataNativeUnionTypes
 	 * @dataProvider dataMinMaxReturnTypeWithArrays
+	 * @dataProvider dataNativeStaticReturnType
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

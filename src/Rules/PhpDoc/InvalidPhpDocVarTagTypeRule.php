@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\TypeTraverserHelper;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -89,13 +90,16 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 		$errors = [];
 		foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
 			$varTagType = $varTag->getType();
+
 			$identifier = 'PHPDoc tag @var';
 			if (is_string($name)) {
 				$identifier .= sprintf(' for variable $%s', $name);
 			}
+
 			if (
 				$varTagType instanceof ErrorType
 				|| ($varTagType instanceof NeverType && !$varTagType->isExplicit())
+				|| TypeTraverserHelper::hasUnresolveableType($varTagType)
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getStartLine())->build();
 				continue;

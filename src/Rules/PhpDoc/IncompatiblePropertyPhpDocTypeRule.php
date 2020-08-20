@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\TypeTraverserHelper;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -48,6 +49,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		if (
 			$phpDocType instanceof ErrorType
 			|| ($phpDocType instanceof NeverType && !$phpDocType->isExplicit())
+			|| TypeTraverserHelper::hasUnresolveableType($phpDocType)
 		) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @var for property %s::$%s contains unresolvable type.',

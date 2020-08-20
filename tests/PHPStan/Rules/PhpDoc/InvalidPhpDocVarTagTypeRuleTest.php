@@ -91,6 +91,18 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 				61,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'PHPDoc tag @var for variable $test contains unresolvable type.',
+				66,
+			],
+			[
+				'PHPDoc tag @var for variable $test contains unresolvable type.',
+				72,
+			],
+			[
+				'PHPDoc tag @var for variable $test contains unresolvable type.',
+				78,
+			],
 		]);
 	}
 

@@ -310,7 +310,13 @@ class TypeNodeResolver
 			}
 
 			if (count($genericTypes) === 2) { // array<KeyType, ValueType>
-				return new ArrayType($genericTypes[0], $genericTypes[1]);
+				$keyType = $genericTypes[0];
+				$valueType = $genericTypes[1];
+
+				$allowedArrayKeyTypes = new UnionType([new IntegerType(), new StringType()]);
+				$keyType = TypeCombinator::intersect($allowedArrayKeyTypes, $keyType);
+
+				return new ArrayType($keyType, $valueType);
 			}
 
 		} elseif ($mainTypeName === 'list') {

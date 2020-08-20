@@ -13,6 +13,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverserHelper;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -67,6 +68,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 
 		foreach ($resolvedPhpDoc->getParamTags() as $parameterName => $phpDocParamTag) {
 			$phpDocParamType = $phpDocParamTag->getType();
+
 			if (!isset($nativeParameterTypes[$parameterName])) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param references unknown parameter: $%s',
@@ -76,6 +78,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 			} elseif (
 				$phpDocParamType instanceof ErrorType
 				|| ($phpDocParamType instanceof NeverType && !$phpDocParamType->isExplicit())
+				|| TypeTraverserHelper::hasUnresolveableType($phpDocParamType)
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param for parameter $%s contains unresolvable type.',
@@ -138,6 +141,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 			if (
 				$phpDocReturnType instanceof ErrorType
 				|| ($phpDocReturnType instanceof NeverType && !$phpDocReturnType->isExplicit())
+				|| TypeTraverserHelper::hasUnresolveableType($phpDocReturnType)
 			) {
 				$errors[] = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->build();
 

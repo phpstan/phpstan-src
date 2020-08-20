@@ -130,6 +130,22 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Type stdClass in generic type InvalidPhpDocDefinitions\FooGeneric<int, stdClass> in PHPDoc tag @param for parameter $x is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
 				242,
 			],
+			[
+				'PHPDoc tag @param for parameter $floatKey contains unresolvable type.',
+				250,
+			],
+			[
+				'PHPDoc tag @return contains unresolvable type.',
+				258,
+			],
+			[
+				'PHPDoc tag @param for parameter $floatKey contains unresolvable type.',
+				266,
+			],
+			[
+				'PHPDoc tag @return contains unresolvable type.',
+				274,
+			],
 		]);
 	}
 

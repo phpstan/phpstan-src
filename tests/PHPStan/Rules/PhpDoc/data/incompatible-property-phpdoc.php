@@ -44,4 +44,10 @@ class FooWithProperty
 	/** @var self::BLABLA */
 	private $unknownClassConstant2;
 
+	/** @var array<float, string> */
+	private $arrayFloatKey;
+
+	/** @var array<string, array<float, string>> */
+	private $arrayMultiFloatKey;
+
 }

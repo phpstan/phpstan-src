@@ -59,6 +59,24 @@ class Foo
 
 		/** @var \InvalidPhpDocDefinitions\FooGeneric $test */
 		$test = doFoo();
+
+		/** @var array<int|string, string> $test */
+		$test = [];
+
+		/** @var array<null, string> $test */
+		$test = [];
+
+		/** @var array<mixed, string> $test */
+		$test = [];
+
+		/** @var array<float, string> $test */
+		$test = [];
+
+		/** @var array<float|string, string> $test */
+		$test = [];
+
+		/** @var array<string, array<float, mixed>> $test */
+		$test = [];
 	}
 
 }

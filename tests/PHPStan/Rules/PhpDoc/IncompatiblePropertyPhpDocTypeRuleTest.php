@@ -55,6 +55,14 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCa
 				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$unknownClassConstant2 contains unresolvable type.',
 				45,
 			],
+			[
+				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$arrayFloatKey contains unresolvable type.',
+				48,
+			],
+			[
+				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$arrayMultiFloatKey contains unresolvable type.',
+				51,
+			],
 		]);
 	}
 

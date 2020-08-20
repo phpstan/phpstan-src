@@ -243,3 +243,35 @@ function genericGenerics($t, $u, $v, $w, $x)
 {
 
 }
+
+/**
+ * @param array<float, string> $floatKey
+ */
+function paramArrayFloatKey(array $floatKey)
+{
+
+}
+
+/**
+ * @return array<float, string>
+ */
+function returnArrayFloatKey(): array
+{
+
+}
+
+/**
+ * @param array<string, array<float, string>> $floatKey
+ */
+function paramMultiArrayFloatKey(array $floatKey)
+{
+
+}
+
+/**
+ * @return array<string, array<float, string>>
+ */
+function returnMultiArrayFloatKey(): array
+{
+
+}

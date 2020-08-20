@@ -18,7 +18,6 @@ parametersSchema:
 rules:
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
-	- PHPStan\Rules\Classes\ClassConstantDeclarationRule
 	- PHPStan\Rules\Classes\ClassConstantRule
 	- PHPStan\Rules\Classes\DuplicateDeclarationRule
 	- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule

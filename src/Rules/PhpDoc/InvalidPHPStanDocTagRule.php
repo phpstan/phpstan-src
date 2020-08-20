@@ -28,6 +28,7 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 		'@phpstan-throws',
 		'@phpstan-ignore-next-line',
 		'@phpstan-ignore-line',
+		'@phpstan-method',
 	];
 
 	private Lexer $phpDocLexer;

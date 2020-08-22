@@ -504,7 +504,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($this->isInstanceOf(\Iterator::class)->yes()) {
 			$tKey = GenericTypeVariableResolver::getType($this, \Iterator::class, 'TKey');
-			if($tKey !== null){
+			if ($tKey !== null) {
 				return $tKey;
 			}
 			return ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('key')->getVariants())->getReturnType();
@@ -539,7 +539,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($this->isInstanceOf(\Iterator::class)->yes()) {
 			$tValue = GenericTypeVariableResolver::getType($this, \Iterator::class, 'TValue');
-			if($tValue !== null){
+			if ($tValue !== null) {
 				return $tValue;
 			}
 			return ParametersAcceptorSelector::selectSingle(

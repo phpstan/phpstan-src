@@ -34,12 +34,12 @@ interface Iterator extends Traversable
 {
 
 	/**
-	 * @return TValue
+	 * @return TValue|null
 	 */
 	public function current();
 
 	/**
-	 * @return TKey
+	 * @return TKey|null
 	 */
 	public function key();
 

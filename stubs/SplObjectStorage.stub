@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * @template TObject of object
+ * @template TData
+ *
+ * @template-implements Iterator<int, TObject>
+ * @template-implements ArrayAccess<TObject, TData>
+ */
+class SplObjectStorage implements Countable, Iterator, Serializable, ArrayAccess
+{
+
+    /**
+     * @param \SplObjectStorage<TObject, TData> $storage
+     */
+    public function addAll(SplObjectStorage $storage): void { }
+
+    /**
+     * @param TObject $object
+     * @param TData $data
+     */
+    public function attach(object $object, $data = null): void { }
+
+    /**
+     * @param TObject $object
+     */
+    public function contains(object $object): bool { }
+
+    /**
+     * @param TObject $object
+     */
+    public function detach(object $object): void { }
+
+    /**
+     * @param TObject $object
+     */
+    public function detach(object $object): void { }
+
+    /**
+     * @param TObject $object
+     */
+    public function getHash(object $object): string { }
+
+    /**
+     * @return TData
+     */
+    public function getInfo() { }
+
+    /**
+     * @param \SplObjectStorage<object, mixed> $storage
+     */
+    public function removeAll(SplObjectStorage $storage): void { }
+
+    /**
+     * @param \SplObjectStorage<object, mixed> $storage
+     */
+    public function removeAllExcept(SplObjectStorage $storage): void { }
+
+    /**
+     * @param TData $data
+     */
+    public function setInfo($data): void { }
+
+}

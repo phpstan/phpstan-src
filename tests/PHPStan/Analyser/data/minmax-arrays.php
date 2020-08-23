@@ -17,12 +17,75 @@ function dummy(): void
  */
 function dummy2(array $ints): void
 {
+	if (count($ints) === 0) {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	} else {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	}
+	if (count($ints) === 1) {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	} else {
+		assertType('int|false', min($ints));
+		assertType('int|false', max($ints));
+	}
 	if (count($ints) !== 0) {
 		assertType('int', min($ints));
 		assertType('int', max($ints));
 	} else {
 		assertType('false', min($ints));
 		assertType('false', max($ints));
+	}
+	if (count($ints) !== 1) {
+		assertType('int|false', min($ints));
+		assertType('int|false', max($ints));
+	} else {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	}
+	if (count($ints) > 0) {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	} else {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	}
+	if (count($ints) >= 1) {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	} else {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	}
+	if (count($ints) >= 2) {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	} else {
+		assertType('int|false', min($ints));
+		assertType('int|false', max($ints));
+	}
+	if (count($ints) <= 0) {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	} else {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	}
+	if (count($ints) < 1) {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	} else {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	}
+	if (count($ints) < 2) {
+		assertType('int|false', min($ints));
+		assertType('int|false', max($ints));
+	} else {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
 	}
 }
 

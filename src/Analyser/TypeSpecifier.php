@@ -361,7 +361,41 @@ class TypeSpecifier
 			$leftType = $scope->getType($expr->left);
 			$rightType = $scope->getType($expr->right);
 
+			if (
+				$expr->left instanceof FuncCall
+				&& count($expr->left->args) === 1
+				&& $expr->left->name instanceof Name
+				&& strtolower((string) $expr->left->name) === 'count'
+				&& $rightType instanceof ConstantIntegerType
+			) {
+				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
+					? new Node\Expr\BinaryOp\SmallerOrEqual($expr->right, $expr->left)
+					: new Node\Expr\BinaryOp\Smaller($expr->right, $expr->left);
+
+				return $this->specifyTypesInCondition(
+					$scope,
+					new Node\Expr\BooleanNot($inverseOperator),
+					$context
+				);
+			}
+
 			$result = new SpecifiedTypes();
+
+			if (
+				!$context->null()
+				&& $expr->right instanceof FuncCall
+				&& count($expr->right->args) === 1
+				&& $expr->right->name instanceof Name
+				&& strtolower((string) $expr->right->name) === 'count'
+				&& $leftType instanceof ConstantIntegerType
+			) {
+				if ($context->truthy() || $leftType->getValue() + $offset === 1) {
+					$argType = $scope->getType($expr->right->args[0]->value);
+					if ((new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($argType)->yes()) {
+						$result = $result->unionWith($this->create($expr->right->args[0]->value, new NonEmptyArrayType(), $context));
+					}
+				}
+			}
 
 			if ($leftType instanceof ConstantIntegerType) {
 				if ($expr->right instanceof Expr\PostDec) {

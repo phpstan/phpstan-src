@@ -3,8 +3,10 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
@@ -229,6 +231,26 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 					new ObjectWithoutClassType(),
 					TemplateTypeVariance::createInvariant()
 				)),
+				TrinaryLogic::createMaybe(),
+			],
+			10 => [
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new ObjectWithoutClassType(),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new UnionType([new IntegerType(), new StringType()]),
+				TrinaryLogic::createMaybe(),
+			],
+			11 => [
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new ObjectWithoutClassType(),
+					TemplateTypeVariance::createInvariant()
+				)),
+				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				TrinaryLogic::createMaybe(),
 			],
 		];

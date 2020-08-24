@@ -33,13 +33,12 @@ class BenevolentUnionType extends UnionType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
+		$results = [];
 		foreach ($this->getTypes() as $innerType) {
-			if ($acceptingType->accepts($innerType, $strictTypes)->yes()) {
-				return TrinaryLogic::createYes();
-			}
+			$results[] = $acceptingType->accepts($innerType, $strictTypes);
 		}
 
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createNo()->or(...$results);
 	}
 
 }

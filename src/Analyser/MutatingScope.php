@@ -2879,7 +2879,8 @@ class MutatingScope implements Scope
 				$nativeTypes
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$constantArrays = TypeUtils::getConstantArrays($this->getType($expr->var));
+			$varType = $this->getType($expr->var);
+			$constantArrays = TypeUtils::getConstantArrays($varType);
 			if (count($constantArrays) > 0) {
 				$unsetArrays = [];
 				$dimType = $this->getType($expr->dim);
@@ -2894,7 +2895,13 @@ class MutatingScope implements Scope
 
 			$args = [new Node\Arg($expr->var)];
 
-			return $this->invalidateExpression($expr->var)
+			$arrays = TypeUtils::getArrays($varType);
+			$scope = $this;
+			if (count($arrays) > 0) {
+				$scope = $scope->specifyExpressionType($expr->var, TypeCombinator::union(...$arrays));
+			}
+
+			return $scope->invalidateExpression($expr->var)
 				->invalidateExpression(new FuncCall(new Name\FullyQualified('count'), $args))
 				->invalidateExpression(new FuncCall(new Name('count'), $args));
 		}

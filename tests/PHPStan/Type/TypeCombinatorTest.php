@@ -2782,6 +2782,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				IntersectionType::class,
 				'string&hasOffset(int)',
 			],
+			[
+				[
+					new BenevolentUnionType([new IntegerType(), new StringType()]),
+					new MixedType(),
+				],
+				BenevolentUnionType::class,
+				'(int|string)',
+			],
 		];
 	}
 

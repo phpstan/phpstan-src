@@ -9405,11 +9405,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_key_last($mixedArray)',
 			],
 			[
-				'int|string',
+				'(int|string)',
 				'array_key_first($nonEmptyArray)',
 			],
 			[
-				'int|string',
+				'(int|string)',
 				'array_key_last($nonEmptyArray)',
 			],
 			[
@@ -10028,6 +10028,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
 	}
 
+	public function dataNonEmptyArrayKeyType(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array-key-type.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10092,6 +10097,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataMinMaxReturnTypeWithArrays
 	 * @dataProvider dataNativeStaticReturnType
 	 * @dataProvider dataClassPhpDocs
+	 * @dataProvider dataNonEmptyArrayKeyType
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -620,6 +620,20 @@ class TypeCombinator
 
 	public static function intersect(Type ...$types): Type
 	{
+		usort($types, static function (Type $a, Type $b): int {
+			if (!$a instanceof UnionType || !$b instanceof UnionType) {
+				return 0;
+			}
+
+			if ($a instanceof BenevolentUnionType) {
+				return 1;
+			}
+			if ($b instanceof BenevolentUnionType) {
+				return -1;
+			}
+
+			return 0;
+		});
 		// transform A & (B | C) to (A & B) | (A & C)
 		foreach ($types as $i => $type) {
 			if ($type instanceof UnionType) {
@@ -632,7 +646,12 @@ class TypeCombinator
 					);
 				}
 
-				return self::union(...$topLevelUnionSubTypes);
+				$union = self::union(...$topLevelUnionSubTypes);
+				if ($type instanceof BenevolentUnionType) {
+					return TypeUtils::toBenevolentUnion($union);
+				}
+
+				return $union;
 			}
 		}
 

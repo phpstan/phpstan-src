@@ -339,4 +339,21 @@ class TypeUtils
 		return false;
 	}
 
+	public static function containsGeneralString(Type $type): bool
+	{
+		if ($type instanceof StringType && !$type instanceof ConstantType) {
+			return true;
+		}
+
+		if ($type instanceof UnionType) {
+			foreach ($type->getTypes() as $innerType) {
+				if ($innerType instanceof StringType && !$innerType instanceof ConstantType) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 }

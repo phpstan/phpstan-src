@@ -12,7 +12,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 
@@ -32,11 +31,6 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 	{
 		if ($context->null()) {
 			throw new \PHPStan\ShouldNotHappenException();
-		}
-
-		$argType = $scope->getType($node->args[0]->value);
-		if ($context->truthy() && !(new StringType())->isSuperTypeOf($argType)->no() && !$argType instanceof MixedType) {
-			return new SpecifiedTypes([], []);
 		}
 
 		$numericTypes = [

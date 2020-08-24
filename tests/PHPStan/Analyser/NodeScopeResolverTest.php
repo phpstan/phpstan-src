@@ -10033,6 +10033,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array-key-type.php');
 	}
 
+	public function dataBug3133(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3133.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10098,6 +10103,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataNativeStaticReturnType
 	 * @dataProvider dataClassPhpDocs
 	 * @dataProvider dataNonEmptyArrayKeyType
+	 * @dataProvider dataBug3133
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

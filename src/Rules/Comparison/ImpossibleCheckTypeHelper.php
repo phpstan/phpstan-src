@@ -63,6 +63,9 @@ class ImpossibleCheckTypeHelper
 		) {
 			if ($node->name instanceof \PhpParser\Node\Name) {
 				$functionName = strtolower((string) $node->name);
+				if ($functionName === 'assert') {
+					return $this->findSpecifiedType($scope, $node->args[0]->value);
+				}
 				if (in_array($functionName, [
 					'class_exists',
 					'interface_exists',
@@ -76,6 +79,9 @@ class ImpossibleCheckTypeHelper
 					$argType = $scope->getType($node->args[0]->value);
 					if (count(TypeUtils::getConstantScalars($argType)) > 0) {
 						return !$argType->toNumber() instanceof ErrorType;
+					}
+					if (TypeUtils::containsGeneralString($argType)) {
+						return null;
 					}
 				} elseif ($functionName === 'defined') {
 					return null;

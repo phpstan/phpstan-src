@@ -583,7 +583,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 					new IntersectionType([
 						new StringType(),
 						new AccessoryNumericStringType(),
-					]),
+					])
 				),
 				'int|(string&numeric)',
 				'int|string',

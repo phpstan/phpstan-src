@@ -13,6 +13,8 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 
 class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
@@ -39,7 +41,10 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		];
 
 		if ($context->truthy()) {
-			$numericTypes[] = new AccessoryNumericStringType();
+			$numericTypes[] = new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+			]);
 		}
 
 		return $this->typeSpecifier->create($node->args[0]->value, new UnionType($numericTypes), $context);

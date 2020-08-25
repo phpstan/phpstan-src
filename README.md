@@ -55,6 +55,12 @@ Run:
 vendor/bin/phing tests
 ```
 
+You can find most issues by running `tests-fast` only which is recommended during development:
+
+```bash
+vendor/bin/phing tests-fast
+```
+
 ### Debugging
 
 1. Make sure XDebug is installed and configured.

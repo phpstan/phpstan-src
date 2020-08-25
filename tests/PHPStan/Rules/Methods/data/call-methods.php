@@ -1640,3 +1640,23 @@ class ConstantArrayAcceptsOptionalKey
 	}
 
 }
+
+class NumericStringParam
+{
+
+	/**
+	 * @param numeric-string $test
+	 */
+	public function sayHello(string $test): void
+	{
+
+	}
+
+	public function doFoo()
+	{
+		$this->sayHello(123);
+		$this->sayHello('abc');
+		$this->sayHello('123');
+	}
+
+}

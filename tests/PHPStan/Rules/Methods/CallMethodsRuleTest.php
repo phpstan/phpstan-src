@@ -467,6 +467,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
 				1589,
 			],
+			[
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, 123 given.',
+				1657,
+			],
+			[
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
+				1658,
+			],
 		]);
 	}
 
@@ -727,6 +735,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
 				1589,
+			],
+			[
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, 123 given.',
+				1657,
+			],
+			[
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
+				1658,
 			],
 		]);
 	}

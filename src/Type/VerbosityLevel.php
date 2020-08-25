@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+
 class VerbosityLevel
 {
 
@@ -55,6 +57,10 @@ class VerbosityLevel
 				return $type;
 			}
 			if ($type instanceof ConstantType && !$type instanceof NullType) {
+				$moreVerbose = true;
+				return $type;
+			}
+			if ($type instanceof AccessoryNumericStringType) {
 				$moreVerbose = true;
 				return $type;
 			}

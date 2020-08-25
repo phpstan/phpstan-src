@@ -121,6 +121,11 @@ class StrictMixedType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

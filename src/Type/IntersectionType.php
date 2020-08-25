@@ -273,6 +273,13 @@ class IntersectionType implements CompoundType
 		});
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return $this->intersectResults(static function (Type $type): TrinaryLogic {
+			return $type->isNumericString();
+		});
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return $this->intersectResults(static function (Type $type): TrinaryLogic {

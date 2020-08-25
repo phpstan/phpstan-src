@@ -85,6 +85,8 @@ interface Type
 
 	public function toArray(): Type;
 
+	public function isNumericString(): TrinaryLogic;
+
 	/**
 	 * Infers template types
 	 *

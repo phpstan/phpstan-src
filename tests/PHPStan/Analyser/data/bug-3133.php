@@ -17,7 +17,7 @@ class Foo
 			return;
 		}
 
-		assertType('string', $arg);
+		assertType('string&numeric', $arg);
 	}
 
 	/**
@@ -26,8 +26,21 @@ class Foo
 	public function doBar($arg): void
 	{
 		if (\is_numeric($arg)) {
-			assertType('float|int|string', $arg);
+			assertType('float|int|(string&numeric)', $arg);
 		}
+	}
+
+	/**
+	 * @param numeric $numeric
+	 * @param numeric-string $numericString
+	 */
+	public function doBaz(
+		$numeric,
+		string $numericString
+	)
+	{
+		assertType('float|int|(string&numeric)', $numeric);
+		assertType('string&numeric', $numericString);
 	}
 
 }

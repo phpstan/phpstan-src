@@ -184,6 +184,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

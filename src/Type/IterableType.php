@@ -221,6 +221,11 @@ class IterableType implements CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {

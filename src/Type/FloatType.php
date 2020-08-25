@@ -121,6 +121,11 @@ class FloatType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

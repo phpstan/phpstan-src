@@ -28,6 +28,7 @@ use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -144,6 +145,22 @@ class TypeNodeResolver
 
 			case 'number':
 				return new UnionType([new IntegerType(), new FloatType()]);
+
+			case 'numeric':
+				return new UnionType([
+					new IntegerType(),
+					new FloatType(),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNumericStringType(),
+					]),
+				]);
+
+			case 'numeric-string':
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNumericStringType(),
+				]);
 
 			case 'bool':
 			case 'boolean':

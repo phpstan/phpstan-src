@@ -56,4 +56,9 @@ trait JustNullableTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

@@ -208,6 +208,11 @@ class StaticType implements TypeWithClassName
 		return $this->getStaticObjectType()->isArray();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isNumericString();
+	}
+
 	/**
 	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]

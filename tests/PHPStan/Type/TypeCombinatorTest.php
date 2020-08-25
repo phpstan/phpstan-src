@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Broker\Broker;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -2789,6 +2790,38 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				BenevolentUnionType::class,
 				'(int|string)',
+			],
+			[
+				[
+					new ConstantStringType('abc'),
+					new AccessoryNumericStringType(),
+				],
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				[
+					new ConstantStringType('123'),
+					new AccessoryNumericStringType(),
+				],
+				ConstantStringType::class,
+				'\'123\'',
+			],
+			[
+				[
+					new StringType(),
+					new AccessoryNumericStringType(),
+				],
+				IntersectionType::class,
+				'string&numeric',
+			],
+			[
+				[
+					new IntegerType(),
+					new AccessoryNumericStringType(),
+				],
+				NeverType::class,
+				'*NEVER*',
 			],
 		];
 	}

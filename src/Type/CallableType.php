@@ -290,6 +290,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

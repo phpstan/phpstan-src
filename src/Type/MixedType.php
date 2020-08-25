@@ -331,6 +331,11 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

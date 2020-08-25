@@ -10038,6 +10038,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3133.php');
 	}
 
+	public function dataBug2550(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Comparison/data/bug-2550.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10104,6 +10109,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataClassPhpDocs
 	 * @dataProvider dataNonEmptyArrayKeyType
 	 * @dataProvider dataBug3133
+	 * @dataProvider dataBug2550
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

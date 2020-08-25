@@ -12,7 +12,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -75,14 +74,6 @@ class ImpossibleCheckTypeHelper
 				}
 				if ($functionName === 'count') {
 					return null;
-				} elseif ($functionName === 'is_numeric') {
-					$argType = $scope->getType($node->args[0]->value);
-					if (count(TypeUtils::getConstantScalars($argType)) > 0) {
-						return !$argType->toNumber() instanceof ErrorType;
-					}
-					if (TypeUtils::containsGeneralString($argType)) {
-						return null;
-					}
 				} elseif ($functionName === 'defined') {
 					return null;
 				} elseif (

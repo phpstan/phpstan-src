@@ -123,6 +123,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

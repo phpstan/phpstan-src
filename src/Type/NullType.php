@@ -134,6 +134,11 @@ class NullType implements ConstantScalarType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

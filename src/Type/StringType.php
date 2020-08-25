@@ -118,6 +118,11 @@ class StringType implements Type
 		);
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

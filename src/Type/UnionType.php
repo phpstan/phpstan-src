@@ -133,8 +133,15 @@ class UnionType implements CompoundType
 		$joinTypes = static function (array $types) use ($level): string {
 			$typeNames = [];
 			foreach ($types as $type) {
-				if ($type instanceof IntersectionType || $type instanceof ClosureType || $type instanceof CallableType) {
+				if ($type instanceof ClosureType || $type instanceof CallableType) {
 					$typeNames[] = sprintf('(%s)', $type->describe($level));
+				} elseif ($type instanceof IntersectionType) {
+					$intersectionDescription = $type->describe($level);
+					if (strpos($intersectionDescription, '&') !== false) {
+						$typeNames[] = sprintf('(%s)', $type->describe($level));
+					} else {
+						$typeNames[] = $intersectionDescription;
+					}
 				} else {
 					$typeNames[] = $type->describe($level);
 				}

@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -575,6 +576,17 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 				),
 				'array()|array(\'foooo\' => \'barrr\')',
 				'array<string, string>',
+			],
+			[
+				TypeCombinator::union(
+					new IntegerType(),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNumericStringType(),
+					]),
+				),
+				'int|(string&numeric)',
+				'int|string',
 			],
 		];
 	}

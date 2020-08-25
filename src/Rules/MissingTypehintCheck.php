@@ -73,7 +73,6 @@ class MissingTypehintCheck
 					}
 					$iterablesWithMissingValueTypehint[] = $type;
 				}
-				$traverse($type);
 				return $type;
 			}
 			return $traverse($type);

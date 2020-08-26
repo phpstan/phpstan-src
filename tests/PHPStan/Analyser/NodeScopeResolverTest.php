@@ -10688,7 +10688,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @param string $file
-	 * @param \Closure $callback
+	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
 	 * @param DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
 	 * @param DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
 	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
@@ -10697,7 +10697,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 */
 	private function processFile(
 		string $file,
-		\Closure $callback,
+		callable $callback,
 		array $dynamicMethodReturnTypeExtensions = [],
 		array $dynamicStaticMethodReturnTypeExtensions = [],
 		array $methodTypeSpecifyingExtensions = [],

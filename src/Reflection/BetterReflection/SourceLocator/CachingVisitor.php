@@ -32,7 +32,11 @@ class CachingVisitor extends NodeVisitorAbstract
 
 		if ($node instanceof \PhpParser\Node\Stmt\ClassLike) {
 			if ($node->name !== null) {
-				$this->classNodes[strtolower($node->namespacedName->toString())][] = new FetchedNode(
+				$fullClassName = $node->name->toString();
+				if ($this->currentNamespaceNode !== null && $this->currentNamespaceNode->name !== null) {
+					$fullClassName = $this->currentNamespaceNode->name . '\\' . $fullClassName;
+				}
+				$this->classNodes[strtolower($fullClassName)][] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
 					$this->fileName

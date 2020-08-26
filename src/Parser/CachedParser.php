@@ -2,17 +2,12 @@
 
 namespace PHPStan\Parser;
 
+use PHPStan\File\FileReader;
+
 class CachedParser implements Parser
 {
 
 	private \PHPStan\Parser\Parser $originalParser;
-
-	/** @var array<string, \PhpParser\Node\Stmt[]> */
-	private array $cachedNodesByFile = [];
-
-	private int $cachedNodesByFileCount = 0;
-
-	private int $cachedNodesByFileCountMax;
 
 	/** @var array<string, \PhpParser\Node\Stmt[]>*/
 	private array $cachedNodesByString = [];
@@ -23,12 +18,10 @@ class CachedParser implements Parser
 
 	public function __construct(
 		Parser $originalParser,
-		int $cachedNodesByFileCountMax,
 		int $cachedNodesByStringCountMax
 	)
 	{
 		$this->originalParser = $originalParser;
-		$this->cachedNodesByFileCountMax = $cachedNodesByFileCountMax;
 		$this->cachedNodesByStringCountMax = $cachedNodesByStringCountMax;
 	}
 
@@ -38,23 +31,7 @@ class CachedParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		if ($this->cachedNodesByFileCountMax !== 0 && $this->cachedNodesByFileCount >= $this->cachedNodesByFileCountMax) {
-			$this->cachedNodesByFile = array_slice(
-				$this->cachedNodesByFile,
-				1,
-				null,
-				true
-			);
-
-			--$this->cachedNodesByFileCount;
-		}
-
-		if (!isset($this->cachedNodesByFile[$file])) {
-			$this->cachedNodesByFile[$file] = $this->originalParser->parseFile($file);
-			$this->cachedNodesByFileCount++;
-		}
-
-		return $this->cachedNodesByFile[$file];
+		return $this->parseString(FileReader::read($file));
 	}
 
 	/**
@@ -82,16 +59,6 @@ class CachedParser implements Parser
 		return $this->cachedNodesByString[$sourceCode];
 	}
 
-	public function getCachedNodesByFileCount(): int
-	{
-		return $this->cachedNodesByFileCount;
-	}
-
-	public function getCachedNodesByFileCountMax(): int
-	{
-		return $this->cachedNodesByFileCountMax;
-	}
-
 	public function getCachedNodesByStringCount(): int
 	{
 		return $this->cachedNodesByStringCount;
@@ -100,14 +67,6 @@ class CachedParser implements Parser
 	public function getCachedNodesByStringCountMax(): int
 	{
 		return $this->cachedNodesByStringCountMax;
-	}
-
-	/**
-	 * @return array<string, \PhpParser\Node[]>
-	 */
-	public function getCachedNodesByFile(): array
-	{
-		return $this->cachedNodesByFile;
 	}
 
 	/**

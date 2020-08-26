@@ -7,47 +7,22 @@ class CachedParserTest extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataParseFileClearCache
-	 * @param int $cachedNodesByFileCountMax
 	 * @param int $cachedNodesByStringCountMax
-	 * @param int $cachedNodesByFileCountExpected
 	 * @param int $cachedNodesByStringCountExpected
 	 */
 	public function testParseFileClearCache(
-		int $cachedNodesByFileCountMax,
 		int $cachedNodesByStringCountMax,
-		int $cachedNodesByFileCountExpected,
 		int $cachedNodesByStringCountExpected
 	): void
 	{
 		$parser = new CachedParser(
 			$this->getParserMock(),
-			$cachedNodesByFileCountMax,
 			$cachedNodesByStringCountMax
-		);
-
-		$this->assertEquals(
-			$cachedNodesByFileCountMax,
-			$parser->getCachedNodesByFileCountMax()
 		);
 
 		$this->assertEquals(
 			$cachedNodesByStringCountMax,
 			$parser->getCachedNodesByStringCountMax()
-		);
-
-		// Add files to cache
-		for ($i = 0; $i <= $cachedNodesByFileCountMax; $i++) {
-			$parser->parseFile('file' . $i);
-		}
-
-		$this->assertEquals(
-			$cachedNodesByFileCountExpected,
-			$parser->getCachedNodesByFileCount()
-		);
-
-		$this->assertCount(
-			$cachedNodesByFileCountExpected,
-			$parser->getCachedNodesByFile()
 		);
 
 		// Add strings to cache
@@ -69,16 +44,12 @@ class CachedParserTest extends \PHPUnit\Framework\TestCase
 	public function dataParseFileClearCache(): \Generator
 	{
 		yield 'even' => [
-			'cachedNodesByFileCountMax' => 100,
 			'cachedNodesByStringCountMax' => 50,
-			'cachedNodesByFileCountExpected' => 100,
 			'cachedNodesByStringCountExpected' => 50,
 		];
 
 		yield 'odd' => [
-			'cachedNodesByFileCountMax' => 101,
 			'cachedNodesByStringCountMax' => 51,
-			'cachedNodesByFileCountExpected' => 101,
 			'cachedNodesByStringCountExpected' => 51,
 		];
 	}

@@ -493,7 +493,6 @@ services:
 		class: PHPStan\Parser\CachedParser
 		arguments:
 			originalParser: @directParser
-			cachedNodesByFileCountMax: %cache.nodesByFileCountMax%
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 
 	-

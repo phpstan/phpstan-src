@@ -277,6 +277,10 @@ class IntersectionType implements CompoundType
 	public function isNumericString(): TrinaryLogic
 	{
 		return $this->intersectResults(static function (Type $type): TrinaryLogic {
+			if (!method_exists($type, 'isNumericString')) {
+				return TrinaryLogic::createNo();
+			}
+
 			return $type->isNumericString();
 		});
 	}

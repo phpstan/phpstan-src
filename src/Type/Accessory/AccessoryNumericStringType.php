@@ -40,6 +40,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
 		}
 
+		if (!method_exists($type, 'isNumericString')) {
+			return TrinaryLogic::createNo();
+		}
+
 		return $type->isNumericString();
 	}
 
@@ -49,6 +53,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
+		if (!method_exists($type, 'isNumericString')) {
+			return TrinaryLogic::createNo();
+		}
+
 		return $type->isNumericString();
 	}
 
@@ -56,6 +64,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
 			return $otherType->isSuperTypeOf($this);
+		}
+
+		if (!method_exists($otherType, 'isNumericString')) {
+			return TrinaryLogic::createNo();
 		}
 
 		return $otherType->isNumericString()

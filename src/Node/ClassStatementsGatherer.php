@@ -14,14 +14,11 @@ use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflectionWithNode;
 
 class ClassStatementsGatherer
 {
 
 	private ClassReflection $classReflection;
-
-	private Scope $classScope;
 
 	/** @var callable(\PhpParser\Node $node, Scope $scope): void */
 	private $nodeCallback;
@@ -46,17 +43,14 @@ class ClassStatementsGatherer
 
 	/**
 	 * @param ClassReflection $classReflection
-	 * @param Scope $classScope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function __construct(
 		ClassReflection $classReflection,
-		Scope $classScope,
 		callable $nodeCallback
 	)
 	{
 		$this->classReflection = $classReflection;
-		$this->classScope = $classScope;
 		$this->nodeCallback = $nodeCallback;
 	}
 
@@ -137,20 +131,6 @@ class ClassStatementsGatherer
 		}
 		if ($node instanceof MethodCall || $node instanceof StaticCall) {
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
-			if ($node instanceof MethodCall && $node->name instanceof \PhpParser\Node\Identifier) {
-				$calleeType = $scope->getType($node->var);
-				$methodName = $node->name->toString();
-				if ($calleeType->hasMethod($methodName)->yes()) {
-					$methodReflection = $calleeType->getMethod($methodName, $scope);
-					if (
-						$methodReflection instanceof MethodReflectionWithNode
-						&& $methodReflection->getDeclaringClass()->getName() === $this->classReflection->getName()
-						&& $methodReflection->getNode() !== null
-					) {
-						//$this->processNodes([$methodReflection->getNode()], $this->classScope, $this);
-					}
-				}
-			}
 			return;
 		}
 		if ($node instanceof Array_ && count($node->items) === 2) {

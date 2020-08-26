@@ -1,8 +1,0 @@
-includes:
-	- ../../../conf/bleedingEdge.neon
-
-services:
-	-
-		class: MagicSetter\MagicSetterMethodExtension
-		tags:
-			- phpstan.broker.methodsClassReflectionExtension

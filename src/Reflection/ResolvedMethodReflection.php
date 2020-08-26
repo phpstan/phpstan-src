@@ -2,13 +2,12 @@
 
 namespace PHPStan\Reflection;
 
-use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
-class ResolvedMethodReflection implements MethodReflectionWithNode
+class ResolvedMethodReflection implements MethodReflection
 {
 
 	private MethodReflection $reflection;
@@ -119,15 +118,6 @@ class ResolvedMethodReflection implements MethodReflectionWithNode
 	public function hasSideEffects(): TrinaryLogic
 	{
 		return $this->reflection->hasSideEffects();
-	}
-
-	public function getNode(): ?ClassMethod
-	{
-		if ($this->reflection instanceof MethodReflectionWithNode) {
-			return $this->reflection->getNode();
-		}
-
-		return null;
 	}
 
 }

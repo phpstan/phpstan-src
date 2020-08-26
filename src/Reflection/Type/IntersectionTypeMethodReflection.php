@@ -2,18 +2,16 @@
 
 namespace PHPStan\Reflection\Type;
 
-use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\MethodReflectionWithNode;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class IntersectionTypeMethodReflection implements MethodReflectionWithNode
+class IntersectionTypeMethodReflection implements MethodReflection
 {
 
 	private string $methodName;
@@ -171,24 +169,6 @@ class IntersectionTypeMethodReflection implements MethodReflectionWithNode
 
 	public function getDocComment(): ?string
 	{
-		return null;
-	}
-
-	public function getNode(): ?ClassMethod
-	{
-		foreach ($this->methods as $method) {
-			if (!$method instanceof MethodReflectionWithNode) {
-				continue;
-			}
-
-			$node = $method->getNode();
-			if ($node === null) {
-				continue;
-			}
-
-			return $node;
-		}
-
 		return null;
 	}
 

@@ -571,7 +571,7 @@ class NodeScopeResolver
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
-			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $classScope, $nodeCallback);
+			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer);
 			$nodeCallback(new ClassPropertiesNode($stmt, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls()), $classScope);

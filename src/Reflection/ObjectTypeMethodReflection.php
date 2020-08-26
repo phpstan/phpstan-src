@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection;
 
-use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ObjectType;
@@ -10,7 +9,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
-class ObjectTypeMethodReflection implements MethodReflectionWithNode
+class ObjectTypeMethodReflection implements MethodReflection
 {
 
 	private \PHPStan\Type\ObjectType $objectType;
@@ -139,15 +138,6 @@ class ObjectTypeMethodReflection implements MethodReflectionWithNode
 	public function hasSideEffects(): TrinaryLogic
 	{
 		return $this->reflection->hasSideEffects();
-	}
-
-	public function getNode(): ?ClassMethod
-	{
-		if ($this->reflection instanceof MethodReflectionWithNode) {
-			return $this->reflection->getNode();
-		}
-
-		return null;
 	}
 
 }

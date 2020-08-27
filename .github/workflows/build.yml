@@ -189,9 +189,11 @@ jobs:
           php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit -c tests/phpunit.xml tests/PHPStan
 
       - name: "Coveralls"
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          composer require php-coveralls/php-coveralls --dev && \
-          vendor/bin/php-coveralls --verbose --coverage_clover=tests/tmp/clover.xml
+           composer require twinh/php-coveralls --dev && \
+           vendor/bin/php-coveralls --verbose --coverage_clover=tests/tmp/clover.xml
 
   static-analysis:
     name: "PHPStan"

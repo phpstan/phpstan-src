@@ -193,7 +193,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
            composer require twinh/php-coveralls --dev && \
-           vendor/bin/php-coveralls --verbose --coverage_clover=tests/tmp/clover.xml
+           vendor/bin/php-coveralls --verbose --coverage_clover=tests/tmp/clover.xml --json_path=tests/tmp/coveralls-upload.json
 
   static-analysis:
     name: "PHPStan"

@@ -188,10 +188,10 @@ jobs:
           vendor/bin/pcov clobber && \
           php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit -c tests/phpunit.xml tests/PHPStan
 
-      - name: "Codecov.io"
-        env:
-          CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
-        run: "bash <(curl -s https://codecov.io/bash) -f tests/tmp/clover.xml"
+      - name: "Coveralls"
+        uses: "coverallsapp/github-action@master"
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
 
   static-analysis:
     name: "PHPStan"

@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/phpstan/phpstan-src.svg?branch=master)](https://travis-ci.com/phpstan/phpstan-src)
 [![Build](https://github.com/phpstan/phpstan-src/workflows/Build/badge.svg)](https://github.com/phpstan/phpstan-src/actions)
+[![Coverage Status](https://coveralls.io/repos/github/phpstan/phpstan-src/badge.svg)](https://coveralls.io/github/phpstan/phpstan-src)
 [![PHPStan Enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 
 ---

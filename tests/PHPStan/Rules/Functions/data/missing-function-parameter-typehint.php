@@ -158,19 +158,4 @@ namespace MissingFunctionParameterTypehint
 
 	}
 
-	/**
-	 * @param GenericClass<GenericClass<int, int>, GenericClass<int, int>> $class
-	 */
-	function genericGenericValidArgs(GenericClass $class)
-	{
-
-	}
-
-	/**
-	 * @param GenericClass<GenericClass, GenericClass> $class
-	 */
-	function genericGenericMissingTemplateArgs(GenericClass $class)
-	{
-
-	}
 }

@@ -90,4 +90,20 @@ namespace MissingFunctionReturnTypehint
 	{
 
 	}
+
+	/**
+	 * @return GenericClass<GenericClass<int, int>, GenericClass<int, int>>
+	 */
+	function genericGenericValidArgs(): GenericClass
+	{
+
+	}
+
+	/**
+	 * @return GenericClass<GenericClass, int>
+	 */
+	function genericGenericMissingTemplateArgs(): GenericClass
+	{
+
+	}
 }

@@ -13,6 +13,7 @@ use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+use PHPStan\Type\VoidType;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\YieldFrom>
@@ -128,6 +129,10 @@ class YieldFromTypeRule implements Rule
 				$exprSendType->describe(VerbosityLevel::typeOnly()),
 				$thisSendType->describe(VerbosityLevel::typeOnly())
 			))->build();
+		}
+
+		if ($scope->getType($node) instanceof VoidType && !$scope->isInFirstLevelStatement()) {
+			$messages[] = RuleErrorBuilder::message('Result of yield from (void) is used.')->build();
 		}
 
 		return $messages;

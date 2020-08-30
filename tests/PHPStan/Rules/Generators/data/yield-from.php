@@ -74,4 +74,40 @@ class Foo
 		yield from $this->doArrayShape();
 	}
 
+	/**
+	 * @return \Generator<int, int>
+	 */
+	public function yieldWithImplicitReturn() : \Generator{
+		yield 1;
+		return 1;
+	}
+
+	/**
+	 * @return \Generator<int, int, void, int>
+	 */
+	public function yieldWithExplicitReturn() : \Generator{
+		yield 1;
+		return 1;
+	}
+
+	/**
+	 * @return \Generator<int, int, void, void>
+	 */
+	public function yieldWithVoidReturn() : \Generator{
+		yield 1;
+	}
+
+	/**
+	 * @return \Generator<int, int, void, void>
+	 */
+	public function yieldFromResult() : \Generator{
+		yield from $this->yieldWithImplicitReturn();
+		$mixed = yield from $this->yieldWithImplicitReturn();
+
+		yield from $this->yieldWithExplicitReturn();
+		$int = yield from $this->yieldWithExplicitReturn();
+
+		yield from $this->yieldWithVoidReturn();
+		$void = yield from $this->yieldWithVoidReturn();
+	}
 }

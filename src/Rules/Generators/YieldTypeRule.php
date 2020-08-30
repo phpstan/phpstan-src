@@ -12,6 +12,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\VerbosityLevel;
+use PHPStan\Type\VoidType;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Yield_>
@@ -77,6 +78,9 @@ class YieldTypeRule implements Rule
 				$returnType->getIterableValueType()->describe($verbosityLevel),
 				$valueType->describe($verbosityLevel)
 			))->build();
+		}
+		if ($scope->getType($node) instanceof VoidType && !$scope->isInFirstLevelStatement()) {
+			$messages[] = RuleErrorBuilder::message('Result of yield (void) is used.')->build();
 		}
 
 		return $messages;

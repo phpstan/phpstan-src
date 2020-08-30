@@ -411,6 +411,9 @@ services:
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
+		class: PHPStan\Command\AnalyserRunner
+
+	-
 		class: PHPStan\Command\IgnoredRegexValidator
 		arguments:
 			parser: @regexParser

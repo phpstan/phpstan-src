@@ -48,6 +48,14 @@ class YieldTypeRuleTest extends RuleTestCase
 				'Generator expects value type array(0 => DateTime, 1 => DateTime, 2 => stdClass, 4 => DateTimeImmutable), array(DateTime, DateTime, stdClass, DateTimeImmutable) given.',
 				25,
 			],
+			[
+				'Result of yield (void) is used.',
+				137,
+			],
+			[
+				'Result of yield (void) is used.',
+				138,
+			],
 		]);
 	}
 

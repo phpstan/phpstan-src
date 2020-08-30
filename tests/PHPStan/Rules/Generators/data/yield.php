@@ -119,3 +119,30 @@ class TestMap
 	}
 
 }
+
+/**
+ * @return \Generator<int, int, int, void>
+ */
+function yieldWithIntSendType(){
+	yield 1;
+	$something = yield 1;
+	var_dump(yield 1);
+}
+
+/**
+ * @return \Generator<int, int, void, void>
+ */
+function yieldWithVoidSendType(){
+	yield 1;
+	$something = yield 1;
+	var_dump(yield 1);
+}
+
+/**
+ * @return \Generator<int, int>
+ */
+function yieldWithoutSendType(){
+	yield 1;
+	$something = yield 1;
+	var_dump(yield 1);
+}

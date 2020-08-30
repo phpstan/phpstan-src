@@ -97,14 +97,6 @@ class GenericObjectTypeCheck
 	 */
 	private function getGenericTypes(Type $phpDocType): array
 	{
-		if ($phpDocType instanceof GenericObjectType) {
-			$resolvedType = TemplateTypeHelper::resolveToBounds($phpDocType);
-			if (!$resolvedType instanceof GenericObjectType) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-			return [$resolvedType];
-		}
-
 		$genericObjectTypes = [];
 		TypeTraverser::map($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
 			if ($type instanceof GenericObjectType) {
@@ -113,6 +105,7 @@ class GenericObjectTypeCheck
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 				$genericObjectTypes[] = $resolvedType;
+				$traverse($type);
 				return $type;
 			}
 			$traverse($type);

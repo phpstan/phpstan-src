@@ -43,6 +43,11 @@ class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCas
 				89,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Function MissingFunctionReturnTypehint\genericGenericMissingTemplateArgs() return type with generic class MissingFunctionReturnTypehint\GenericClass does not specify its types: A, B',
+				105,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		]);
 	}
 

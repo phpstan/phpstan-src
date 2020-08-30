@@ -94,6 +94,7 @@ class MissingTypehintCheck
 		$objectTypes = [];
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$objectTypes): Type {
 			if ($type instanceof GenericObjectType) {
+				$traverse($type);
 				return $type;
 			}
 			if ($type instanceof TemplateType) {

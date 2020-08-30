@@ -243,3 +243,35 @@ function genericGenerics($t, $u, $v, $w, $x)
 {
 
 }
+
+/**
+ * @return \InvalidPhpDocDefinitions\FooGeneric<\InvalidPhpDocDefinitions\FooGeneric<int, \stdClass>, \Exception>
+ */
+function genericNestedWrongTemplateArgs()
+{
+
+}
+
+/**
+ * @return \InvalidPhpDocDefinitions\FooGeneric<\InvalidPhpDocDefinitions\FooGeneric<int, \Exception>, \Exception>
+ */
+function genericNestedOkTemplateArgs()
+{
+
+}
+
+/**
+ * @return \InvalidPhpDocDefinitions\FooGeneric<\InvalidPhpDocDefinitions\FooGeneric<int>, \Exception>
+ */
+function genericNestedWrongArgCount()
+{
+
+}
+
+/**
+ * @return \InvalidPhpDocDefinitions\FooGeneric<\InvalidPhpDocDefinitions\Foo<int, \Exception>, \Exception>
+ */
+function genericNestedNonTemplateArgs()
+{
+
+}

@@ -130,6 +130,18 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Type stdClass in generic type InvalidPhpDocDefinitions\FooGeneric<int, stdClass> in PHPDoc tag @param for parameter $x is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
 				242,
 			],
+			[
+				'Type stdClass in generic type InvalidPhpDocDefinitions\FooGeneric<int, stdClass> in PHPDoc tag @return is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
+				250,
+			],
+			[
+				'Generic type InvalidPhpDocDefinitions\FooGeneric<int> in PHPDoc tag @return does not specify all template types of class InvalidPhpDocDefinitions\FooGeneric: T, U',
+				266,
+			],
+			[
+				'PHPDoc tag @return contains generic type InvalidPhpDocDefinitions\Foo<int, Exception> but class InvalidPhpDocDefinitions\Foo is not generic.',
+				274,
+			],
 		]);
 	}
 

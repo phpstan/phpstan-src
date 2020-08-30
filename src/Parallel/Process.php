@@ -26,10 +26,10 @@ class Process
 	/** @var resource */
 	private $stdErr;
 
-	/** @var callable */
+	/** @var callable(mixed[] $json) : void */
 	private $onData;
 
-	/** @var callable */
+	/** @var callable(\Throwable $exception) : void */
 	private $onError;
 
 	private ?TimerInterface $timer = null;
@@ -45,6 +45,11 @@ class Process
 		$this->timeoutSeconds = $timeoutSeconds;
 	}
 
+	/**
+	 * @param callable(mixed[] $json) : void $onData
+	 * @param callable(\Throwable $exception) : void $onError
+	 * @param callable(?int $exitCode, string $output) : void $onExit
+	 */
 	public function start(callable $onData, callable $onError, callable $onExit): void
 	{
 		$tmpStdOut = tmpfile();

@@ -106,4 +106,46 @@ namespace MissingFunctionReturnTypehint
 	{
 
 	}
+
+	/**
+	 * @return \Closure
+	 */
+	function closureWithNoPrototype() : \Closure{
+
+	}
+
+	/**
+	 * @return \Closure(int) : void
+	 */
+	function closureWithPrototype() : \Closure{
+
+	}
+
+	/**
+	 * @return callable
+	 */
+	function callableWithNoPrototype() : callable{
+
+	}
+
+	/**
+	 * @return callable(int) : void
+	 */
+	function callableWithPrototype() : callable{
+
+	}
+
+	/**
+	 * @return callable(callable) : void
+	 */
+	function callableNestedNoPrototype() : callable{
+
+	}
+
+	/**
+	 * @return callable(callable(int) : void) : void
+	 */
+	function callableNestedWithPrototype() : callable{
+
+	}
 }

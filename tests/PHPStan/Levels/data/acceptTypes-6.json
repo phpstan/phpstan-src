@@ -151,12 +151,12 @@
     },
     {
         "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has parameter $callables with no prototype specified for callable type callable.",
-        "line": 561,
+        "line": 570,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has parameter $iterable with no prototype specified for callable type callable.",
-        "line": 561,
+        "line": 570,
         "ignorable": true
     },
     {
@@ -166,7 +166,7 @@
     },
     {
         "message": "Method Levels\\AcceptTypes\\ArrayShapes::doBar() has parameter $one with no prototype specified for callable type callable.",
-        "line": 594,
+        "line": 603,
         "ignorable": true
     }
 ]

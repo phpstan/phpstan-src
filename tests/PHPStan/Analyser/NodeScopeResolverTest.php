@@ -3437,23 +3437,23 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'*ERROR*',
+				'\'Foo\'',
 				'$stringFalse',
 			],
 			[
-				'*ERROR*',
+				'\'Foo\'',
 				'$stringObject',
 			],
 			[
-				'*ERROR*',
+				'\'Foo\'',
 				'$stringFloat',
 			],
 			[
-				'*ERROR*',
+				'\'Foo\'',
 				'$stringString',
 			],
 			[
-				'*ERROR*',
+				'\'Foo\'',
 				'$stringArray',
 			],
 		];

@@ -2379,35 +2379,35 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($var);
-			if (!$varType->isArray()->no()) {
-				// 4. compose types
-				if ($varType instanceof ErrorType) {
-					$varType = new ConstantArrayType([], []);
-				}
-				$offsetValueType = $varType;
-				$offsetValueTypeStack = [$offsetValueType];
-				foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
-					if ($offsetType === null) {
+			// 4. compose types
+			if ($varType instanceof ErrorType) {
+				$varType = new ConstantArrayType([], []);
+			}
+			$offsetValueType = $varType;
+			$offsetValueTypeStack = [$offsetValueType];
+			foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+				if ($offsetType === null) {
+					$offsetValueType = new ConstantArrayType([], []);
+
+				} else {
+					$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+					if ($offsetValueType instanceof ErrorType) {
 						$offsetValueType = new ConstantArrayType([], []);
-
-					} else {
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-						if ($offsetValueType instanceof ErrorType) {
-							$offsetValueType = new ConstantArrayType([], []);
-						}
 					}
-
-					$offsetValueTypeStack[] = $offsetValueType;
 				}
 
-				foreach (array_reverse($offsetTypes) as $i => $offsetType) {
-					/** @var Type $offsetValueType */
-					$offsetValueType = array_pop($offsetValueTypeStack);
+				$offsetValueTypeStack[] = $offsetValueType;
+			}
 
-					/** @phpstan-ignore-next-line */
-					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
-				}
+			foreach (array_reverse($offsetTypes) as $i => $offsetType) {
+				/** @var Type $offsetValueType */
+				$offsetValueType = array_pop($offsetValueTypeStack);
 
+				/** @phpstan-ignore-next-line */
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+			}
+
+			if (!$valueToWrite instanceof ErrorType) {
 				if ($var instanceof Variable && is_string($var->name)) {
 					$scope = $scope->assignVariable($var->name, $valueToWrite);
 				} else {

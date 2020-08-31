@@ -38,7 +38,7 @@ class HelloWorld
 		$var = "hello world";
 		foreach($data as $key => $value){
 			$var[$key] = $value;
-			assertType('\'hello world\'', $var);
+			assertType('string', $var);
 		}
 	}
 }

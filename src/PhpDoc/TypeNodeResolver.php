@@ -451,7 +451,7 @@ class TypeNodeResolver
 				$isVariadic = $isVariadic || $parameterNode->isVariadic;
 				return new NativeParameterReflection(
 					$parameterNode->parameterName,
-					$parameterNode->isOptional,
+					$parameterNode->isOptional || $parameterNode->isVariadic,
 					$this->resolve($parameterNode->type, $nameScope),
 					$parameterNode->isReference ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 					$parameterNode->isVariadic,

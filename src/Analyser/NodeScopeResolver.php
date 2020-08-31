@@ -97,7 +97,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -2380,7 +2379,7 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($var);
-			if (!(new ObjectWithoutClassType())->isSuperTypeOf($varType)->yes()) {
+			if (!$varType->isArray()->no()) {
 				// 4. compose types
 				if ($varType instanceof ErrorType) {
 					$varType = new ConstantArrayType([], []);

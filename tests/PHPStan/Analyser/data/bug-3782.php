@@ -23,4 +23,22 @@ class HelloWorld
 			assertType('Bug3782\\HelloWorld', $var);
 		}
 	}
+
+	public static function sayHello3(array $data): void
+	{
+		$var = 1;
+		foreach($data as $key => $value){
+			$var[$key] = $value;
+			assertType('1', $var);
+		}
+	}
+
+	public static function sayHello4(array $data): void
+	{
+		$var = "hello world";
+		foreach($data as $key => $value){
+			$var[$key] = $value;
+			assertType('\'hello world\'', $var);
+		}
+	}
 }

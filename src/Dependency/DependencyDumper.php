@@ -89,8 +89,7 @@ class DependencyDumper
 			}
 
 			foreach (array_unique($fileDependencies) as $fileDependency) {
-				$relativeDependencyFile = $fileDependency;
-				$dependencies[$relativeDependencyFile][] = $file;
+				$dependencies[$fileDependency][] = $file;
 			}
 
 			$progressCallback();

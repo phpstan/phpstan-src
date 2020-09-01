@@ -9,6 +9,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\File\FileHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
@@ -20,19 +21,17 @@ use PHPStan\Type\Constant\ConstantStringType;
 class DependencyResolver
 {
 
+	private FileHelper $fileHelper;
+
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(FileHelper $fileHelper, ReflectionProvider $reflectionProvider)
 	{
+		$this->fileHelper = $fileHelper;
 		$this->reflectionProvider = $reflectionProvider;
 	}
 
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param Scope $scope
-	 * @return ReflectionWithFilename[]
-	 */
-	public function resolveDependencies(\PhpParser\Node $node, Scope $scope): array
+	public function resolveDependencies(\PhpParser\Node $node, Scope $scope): NodeDependencies
 	{
 		$dependenciesReflections = [];
 
@@ -188,7 +187,7 @@ class DependencyResolver
 			}
 		}
 
-		return $dependenciesReflections;
+		return new NodeDependencies($this->fileHelper, $dependenciesReflections);
 	}
 
 	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool

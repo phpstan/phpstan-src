@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\File\FileFinder;
-use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
 
 class DependencyDumper
@@ -16,8 +15,6 @@ class DependencyDumper
 	private DependencyResolver $dependencyResolver;
 
 	private NodeScopeResolver $nodeScopeResolver;
-
-	private FileHelper $fileHelper;
 
 	private Parser $parser;
 
@@ -28,7 +25,6 @@ class DependencyDumper
 	public function __construct(
 		DependencyResolver $dependencyResolver,
 		NodeScopeResolver $nodeScopeResolver,
-		FileHelper $fileHelper,
 		Parser $parser,
 		ScopeFactory $scopeFactory,
 		FileFinder $fileFinder
@@ -36,7 +32,6 @@ class DependencyDumper
 	{
 		$this->dependencyResolver = $dependencyResolver;
 		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->fileHelper = $fileHelper;
 		$this->parser = $parser;
 		$this->scopeFactory = $scopeFactory;
 		$this->fileFinder = $fileFinder;
@@ -110,27 +105,7 @@ class DependencyDumper
 		array $analysedFiles
 	): array
 	{
-		$dependencies = [];
-
-		foreach ($this->dependencyResolver->resolveDependencies($node, $scope) as $dependencyReflection) {
-			$dependencyFile = $dependencyReflection->getFileName();
-			if ($dependencyFile === false) {
-				continue;
-			}
-			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);
-
-			if ($scope->getFile() === $dependencyFile) {
-				continue;
-			}
-
-			if (!isset($analysedFiles[$dependencyFile])) {
-				continue;
-			}
-
-			$dependencies[$dependencyFile] = $dependencyFile;
-		}
-
-		return array_values($dependencies);
+		return $this->dependencyResolver->resolveDependencies($node, $scope)->getFileDependencies($scope->getFile(), $analysedFiles);
 	}
 
 }

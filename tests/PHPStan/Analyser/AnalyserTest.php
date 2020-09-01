@@ -518,8 +518,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$this->createScopeFactory($broker, $typeSpecifier),
 			$nodeScopeResolver,
 			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser),
-			new DependencyResolver($broker),
-			$fileHelper,
+			new DependencyResolver($fileHelper, $broker),
 			$reportUnmatchedIgnoredErrors
 		);
 

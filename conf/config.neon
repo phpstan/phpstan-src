@@ -26,6 +26,7 @@ parameters:
 	checkFunctionArgumentTypes: false
 	checkFunctionNameCase: false
 	checkGenericClassInNonGenericObjectType: false
+	checkInternalClassCaseSensitivity: false
 	checkMissingIterableValueType: false
 	checkMissingVarTagTypehint: false
 	checkArgumentsPassedByReference: false
@@ -167,6 +168,7 @@ parametersSchema:
 	checkFunctionArgumentTypes: bool()
 	checkFunctionNameCase: bool()
 	checkGenericClassInNonGenericObjectType: bool()
+	checkInternalClassCaseSensitivity: bool()
 	checkMissingIterableValueType: bool()
 	checkMissingVarTagTypehint: bool()
 	checkArgumentsPassedByReference: bool()
@@ -584,6 +586,8 @@ services:
 
 	-
 		class: PHPStan\Rules\ClassCaseSensitivityCheck
+		arguments:
+			checkInternalClassCaseSensitivity: %checkInternalClassCaseSensitivity%
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper

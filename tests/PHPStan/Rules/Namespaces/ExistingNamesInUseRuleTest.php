@@ -13,7 +13,7 @@ class ExistingNamesInUseRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ExistingNamesInUseRule($broker, new ClassCaseSensitivityCheck($broker), true);
+		return new ExistingNamesInUseRule($broker, new ClassCaseSensitivityCheck($broker, true), true);
 	}
 
 	public function testRule(): void
@@ -37,6 +37,10 @@ class ExistingNamesInUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Interface Uses\Lorem referenced with incorrect case: Uses\LOREM.',
 				10,
+			],
+			[
+				'Class DateTime referenced with incorrect case: DATETIME.',
+				11,
 			],
 		]);
 	}

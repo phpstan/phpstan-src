@@ -433,6 +433,8 @@ return [
 ];
 php;
 
+		ksort($exportedNodes);
+
 		FileWriter::write(
 			$this->cacheFilePath,
 			sprintf(

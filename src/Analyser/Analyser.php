@@ -60,6 +60,7 @@ class Analyser
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
 		$dependencies = [];
+		$exportedNodes = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
@@ -74,6 +75,11 @@ class Analyser
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
+
+				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
+				if (count($fileExportedNodes) > 0) {
+					$exportedNodes[$file] = $fileExportedNodes;
+				}
 			} catch (\Throwable $t) {
 				if ($debug) {
 					throw $t;
@@ -108,6 +114,7 @@ class Analyser
 			$errors,
 			[],
 			$internalErrorsCount === 0 ? $dependencies : null,
+			$exportedNodes,
 			$reachedInternalErrorsCountLimit
 		);
 	}

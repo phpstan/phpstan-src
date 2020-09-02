@@ -11,7 +11,7 @@ class NameScope
 
 	private ?string $namespace;
 
-	/** @var string[] alias(string) => fullName(string) */
+	/** @var array<string, string> alias(string) => fullName(string) */
 	private array $uses;
 
 	private ?string $className;
@@ -22,7 +22,7 @@ class NameScope
 
 	/**
 	 * @param string|null $namespace
-	 * @param string[] $uses alias(string) => fullName(string)
+	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param string|null $className
 	 */
 	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null)
@@ -32,6 +32,19 @@ class NameScope
 		$this->className = $className;
 		$this->functionName = $functionName;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
+	}
+
+	public function getNamespace(): ?string
+	{
+		return $this->namespace;
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getUses(): array
+	{
+		return $this->uses;
 	}
 
 	public function getClassName(): ?string

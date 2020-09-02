@@ -427,6 +427,17 @@ services:
 		class: PHPStan\Dependency\DependencyResolver
 
 	-
+		class: PHPStan\Dependency\ExportedNodeFetcher
+		arguments:
+			phpParser: @phpParserDecorator
+
+	-
+		class: PHPStan\Dependency\ExportedNodeResolver
+
+	-
+		class: PHPStan\Dependency\ExportedNodeVisitor
+
+	-
 		class: PHPStan\DependencyInjection\Container
 		factory: PHPStan\DependencyInjection\MemoizingContainer
 		arguments:

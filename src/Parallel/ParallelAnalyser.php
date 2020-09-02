@@ -7,6 +7,7 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Dependency\ExportedNode;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
@@ -98,6 +99,7 @@ class ParallelAnalyser
 		};
 
 		$dependencies = [];
+		$exportedNodes = [];
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {
 				break;
@@ -116,7 +118,7 @@ class ParallelAnalyser
 				],
 				$input
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -132,6 +134,21 @@ class ParallelAnalyser
 				 */
 				foreach ($json['dependencies'] as $file => $fileDependencies) {
 					$dependencies[$file] = $fileDependencies;
+				}
+
+				/**
+				 * @var string $file
+				 * @var array<ExportedNode> $fileExportedNodes
+				 */
+				foreach ($json['exportedNodes'] as $file => $fileExportedNodes) {
+					if (count($fileExportedNodes) === 0) {
+						continue;
+					}
+					$exportedNodes[$file] = array_map(static function (array $node): ExportedNode {
+						$class = $node['type'];
+
+						return $class::decode($node['data']);
+					}, $fileExportedNodes);
 				}
 
 				if ($postFileCallback !== null) {
@@ -171,6 +188,7 @@ class ParallelAnalyser
 			$errors,
 			$internalErrors,
 			$internalErrorsCount === 0 ? $dependencies : null,
+			$exportedNodes,
 			$reachedInternalErrorsCountLimit
 		);
 	}

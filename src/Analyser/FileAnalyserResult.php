@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Dependency\ExportedNode;
+
 class FileAnalyserResult
 {
 
@@ -11,14 +13,19 @@ class FileAnalyserResult
 	/** @var array<int, string> */
 	private array $dependencies;
 
+	/** @var array<int, ExportedNode> */
+	private array $exportedNodes;
+
 	/**
 	 * @param Error[] $errors
 	 * @param array<int, string> $dependencies
+	 * @param array<int, ExportedNode> $exportedNodes
 	 */
-	public function __construct(array $errors, array $dependencies)
+	public function __construct(array $errors, array $dependencies, array $exportedNodes)
 	{
 		$this->errors = $errors;
 		$this->dependencies = $dependencies;
+		$this->exportedNodes = $exportedNodes;
 	}
 
 	/**
@@ -35,6 +42,14 @@ class FileAnalyserResult
 	public function getDependencies(): array
 	{
 		return $this->dependencies;
+	}
+
+	/**
+	 * @return array<int, ExportedNode>
+	 */
+	public function getExportedNodes(): array
+	{
+		return $this->exportedNodes;
 	}
 
 }

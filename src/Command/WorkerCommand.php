@@ -168,11 +168,13 @@ class WorkerCommand extends Command
 			$files = $json['files'];
 			$errors = [];
 			$dependencies = [];
+			$exportedNodes = [];
 			foreach ($files as $file) {
 				try {
 					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $registry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
+					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
 					}
@@ -194,6 +196,7 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => $errors,
 					'dependencies' => $dependencies,
+					'exportedNodes' => $exportedNodes,
 					'filesCount' => count($files),
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);

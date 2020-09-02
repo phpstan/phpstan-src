@@ -10,6 +10,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -86,7 +87,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$this->createScopeFactory($broker, $typeSpecifier),
 				$nodeScopeResolver,
 				$this->getParser(),
-				new DependencyResolver($fileHelper, $broker),
+				new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
 				true
 			);
 			$this->analyser = new Analyser(

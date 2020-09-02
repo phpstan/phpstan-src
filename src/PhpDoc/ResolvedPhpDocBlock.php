@@ -218,6 +218,11 @@ class ResolvedPhpDocBlock
 		return $this->filename;
 	}
 
+	public function getNameScope(): NameScope
+	{
+		return $this->nameScope;
+	}
+
 	/**
 	 * @return array<string|int, \PHPStan\PhpDoc\Tag\VarTag>
 	 */

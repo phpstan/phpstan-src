@@ -13,14 +13,21 @@ class NodeDependencies
 	/** @var ReflectionWithFilename[] */
 	private array $reflections;
 
+	private ?ExportedNode $exportedNode;
+
 	/**
 	 * @param FileHelper $fileHelper
 	 * @param ReflectionWithFilename[] $reflections
 	 */
-	public function __construct(FileHelper $fileHelper, array $reflections)
+	public function __construct(
+		FileHelper $fileHelper,
+		array $reflections,
+		?ExportedNode $exportedNode
+	)
 	{
 		$this->fileHelper = $fileHelper;
 		$this->reflections = $reflections;
+		$this->exportedNode = $exportedNode;
 	}
 
 	/**
@@ -51,6 +58,11 @@ class NodeDependencies
 		}
 
 		return array_values($dependencies);
+	}
+
+	public function getExportedNode(): ?ExportedNode
+	{
+		return $this->exportedNode;
 	}
 
 }

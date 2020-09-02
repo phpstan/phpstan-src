@@ -73,9 +73,10 @@ class DependencyDumper
 					$parserNodes,
 					$this->scopeFactory->create(ScopeContext::create($file)),
 					function (\PhpParser\Node $node, Scope $scope) use ($analysedFiles, &$fileDependencies): void {
+						$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
 						$fileDependencies = array_merge(
 							$fileDependencies,
-							$this->resolveDependencies($node, $scope, $analysedFiles)
+							$dependencies->getFileDependencies($scope->getFile(), $analysedFiles)
 						);
 					}
 				);
@@ -91,21 +92,6 @@ class DependencyDumper
 		}
 
 		return $dependencies;
-	}
-
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param Scope $scope
-	 * @param array<string, true> $analysedFiles
-	 * @return string[]
-	 */
-	private function resolveDependencies(
-		\PhpParser\Node $node,
-		Scope $scope,
-		array $analysedFiles
-	): array
-	{
-		return $this->dependencyResolver->resolveDependencies($node, $scope)->getFileDependencies($scope->getFile(), $analysedFiles);
 	}
 
 }

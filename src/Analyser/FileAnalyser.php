@@ -64,12 +64,13 @@ class FileAnalyser
 	{
 		$fileErrors = [];
 		$fileDependencies = [];
+		$exportedNodes = [];
 		if (is_file($file)) {
 			try {
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = [];
 				$temporaryFileErrors = [];
-				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
+				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
 					if ($outerNodeCallback !== null) {
 						$outerNodeCallback($node, $scope);
 					}
@@ -166,8 +167,12 @@ class FileAnalyser
 					}
 
 					try {
-						foreach ($this->resolveDependencies($node, $scope, $analysedFiles) as $dependentFile) {
+						$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
+						foreach ($dependencies->getFileDependencies($scope->getFile(), $analysedFiles) as $dependentFile) {
 							$fileDependencies[] = $dependentFile;
+						}
+						if ($dependencies->getExportedNode() !== null) {
+							$exportedNodes[] = $dependencies->getExportedNode();
 						}
 					} catch (\PHPStan\AnalysedCodeException $e) {
 						// pass
@@ -243,7 +248,7 @@ class FileAnalyser
 			$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
 		}
 
-		return new FileAnalyserResult($fileErrors, array_values(array_unique($fileDependencies)));
+		return new FileAnalyserResult($fileErrors, array_values(array_unique($fileDependencies)), $exportedNodes);
 	}
 
 	/**
@@ -293,21 +298,6 @@ class FileAnalyser
 		}
 
 		return null;
-	}
-
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param Scope $scope
-	 * @param array<string, true> $analysedFiles
-	 * @return string[]
-	 */
-	private function resolveDependencies(
-		\PhpParser\Node $node,
-		Scope $scope,
-		array $analysedFiles
-	): array
-	{
-		return $this->dependencyResolver->resolveDependencies($node, $scope)->getFileDependencies($scope->getFile(), $analysedFiles);
 	}
 
 }

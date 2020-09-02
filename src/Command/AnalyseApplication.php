@@ -153,7 +153,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], false);
+			return new AnalyserResult([], [], [], [], false);
 		}
 
 		/** @var bool $runningInParallel */

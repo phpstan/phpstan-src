@@ -51,7 +51,7 @@ class AnalyserRunner
 	{
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return new AnalyserResult([], [], [], false);
+			return new AnalyserResult([], [], [], [], false);
 		}
 
 		$schedule = $this->scheduler->scheduleWork($this->getNumberOfCpuCores(), $files);

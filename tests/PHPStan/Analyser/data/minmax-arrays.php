@@ -2,6 +2,7 @@
 
 namespace MinMaxArrays;
 
+use DateTimeInterface;
 use function PHPStan\Analyser\assertType;
 
 function dummy(): void
@@ -96,4 +97,12 @@ function dummy3(array $ints): void
 {
 	assertType('int|false', min($ints));
 	assertType('int|false', max($ints));
+}
+
+function dummy4(DateTimeInterface $dateA, ?DateTimeInterface $dateB): void
+{
+	assertType('DateTimeInterface', min(array_filter([$dateA, $dateB])));
+	assertType('DateTimeInterface', max(array_filter([$dateA, $dateB])));
+	assertType('DateTimeInterface|false', min(array_filter([$dateB])));
+	assertType('DateTimeInterface|false', max(array_filter([$dateB])));
 }

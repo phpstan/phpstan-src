@@ -9,6 +9,7 @@ use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -96,6 +97,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 			$values = $type->getValueTypes();
 
 			$generalize = false;
+			$notEmpty = false;
 
 			foreach ($values as $offset => $value) {
 				$isFalsey = $falseyTypes->isSuperTypeOf($value);
@@ -105,12 +107,22 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 				} elseif ($isFalsey->maybe()) {
 					$values[$offset] = TypeCombinator::remove($values[$offset], $falseyTypes);
 					$generalize = true;
+				} else {
+					$notEmpty = true;
 				}
 			}
 
 			$filteredArray = new ConstantArrayType(array_values($keys), array_values($values));
 
-			return $generalize ? $filteredArray->generalize() : $filteredArray;
+			if (! $generalize) {
+				return $filteredArray;
+			}
+
+			if (! $notEmpty) {
+				return $filteredArray->generalize();
+			}
+
+			return TypeCombinator::intersect($filteredArray->generalize(), new NonEmptyArrayType());
 		}
 
 		$keyType = $type->getIterableKeyType();

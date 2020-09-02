@@ -61,6 +61,11 @@ parameters:
 			path: src/PhpDoc/PhpDocBlock.php
 
 		-
+			message: "#^Method PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock\\:\\:getNameScope\\(\\) should return PHPStan\\\\Analyser\\\\NameScope but returns PHPStan\\\\Analyser\\\\NameScope\\|null\\.$#"
+			count: 1
+			path: src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
 			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
 			count: 1
 			path: src/PhpDoc/Tag/ParamTag.php

@@ -308,7 +308,10 @@ class ExportedNodeResolver
 			$text
 		);
 
-		$nameScope = $resolvedPhpDocBlock->getNameScope();
+		$nameScope = $resolvedPhpDocBlock->getNullableNameScope();
+		if ($nameScope === null) {
+			return null;
+		}
 
 		return new ExportedPhpDocNode($text, $nameScope->getNamespace(), $nameScope->getUses());
 	}

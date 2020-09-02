@@ -16,7 +16,7 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 
 	private ?string $newName;
 
-	/** @var string[] */
+	/** @var string[]|null */
 	private ?array $insteadOfs;
 
 	/**

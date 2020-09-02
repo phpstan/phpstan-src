@@ -2,10 +2,14 @@
 
 namespace PHPStan\Dependency;
 
+use IteratorAggregate;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ReflectionWithFilename;
 
-class NodeDependencies
+/**
+ * @implements \IteratorAggregate<int, ReflectionWithFilename>
+ */
+class NodeDependencies implements IteratorAggregate
 {
 
 	private FileHelper $fileHelper;
@@ -28,6 +32,11 @@ class NodeDependencies
 		$this->fileHelper = $fileHelper;
 		$this->reflections = $reflections;
 		$this->exportedNode = $exportedNode;
+	}
+
+	public function getIterator(): \Traversable
+	{
+		return new \ArrayIterator($this->reflections);
 	}
 
 	/**

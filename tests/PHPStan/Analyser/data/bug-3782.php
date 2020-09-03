@@ -33,11 +33,11 @@ class HelloWorld
 		}
 	}
 
-	public static function sayHello4(array $data): void
+	public static function sayHello4(array $keys, array $values): void
 	{
 		$var = "hello world";
-		foreach($data as $key => $value){
-			$var[$key] = $value;
+		foreach($values as $key => $value){
+			$var[$keys[$key]] = $value;
 			assertType('string', $var);
 		}
 	}

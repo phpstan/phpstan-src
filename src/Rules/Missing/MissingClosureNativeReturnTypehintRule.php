@@ -115,7 +115,7 @@ class MissingClosureNativeReturnTypehintRule implements Rule
 
 		$returnType = TypeUtils::generalizeType($returnType);
 		$description = $returnType->describe(VerbosityLevel::typeOnly());
-		if ($returnType instanceof ArrayType) {
+		if ($returnType->isArray()->yes()) {
 			$description = 'array';
 		}
 		if ($hasNull) {

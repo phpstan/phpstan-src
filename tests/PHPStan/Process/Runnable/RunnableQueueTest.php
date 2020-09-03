@@ -125,7 +125,7 @@ class RunnableQueueTest extends TestCase
 	public function testCancelAll(): void
 	{
 		$logger = new RunnableQueueLoggerStub();
-		$queue = new RunnableQueue($logger, 4);
+		$queue = new RunnableQueue($logger, 6);
 		$one = new RunnableStub('1');
 		$two = new RunnableStub('2');
 		$three = new RunnableStub('3');
@@ -133,8 +133,8 @@ class RunnableQueueTest extends TestCase
 		$queue->queue($two, 2);
 		$queue->queue($three, 3);
 
-		$this->assertSame(5, $queue->getQueueSize());
-		$this->assertSame(3, $queue->getRunningSize());
+		$this->assertSame(3, $queue->getQueueSize());
+		$this->assertSame(5, $queue->getRunningSize());
 
 		$queue->cancelAll();
 		$this->assertSame(0, $queue->getQueueSize());
@@ -145,19 +145,18 @@ class RunnableQueueTest extends TestCase
 			1 => 'Removing top item from queue - new size is 3',
 			2 => 'Running process 1',
 			3 => 'Queue not full - looking at first item in the queue',
-			4 => 'Canot remote first item from the queue - it has size 2, current queue size is 3, new size would be 5',
-			5 => 'Queue not full - looking at first item in the queue',
-			6 => 'Canot remote first item from the queue - it has size 2, current queue size is 3, new size would be 5',
-			7 => 'Process 1 finished unsuccessfully: Runnable 1 canceled',
-			8 => 'Queue not full - looking at first item in the queue',
-			9 => 'Removing top item from queue - new size is 2',
-			10 => 'Running process 2',
-			11 => 'Process 2 finished unsuccessfully: Runnable 2 canceled',
-			12 => 'Queue not full - looking at first item in the queue',
-			13 => 'Removing top item from queue - new size is 3',
-			14 => 'Running process 3',
-			15 => 'Process 3 finished unsuccessfully: Runnable 3 canceled',
-			16 => 'Queue empty',
+			4 => 'Removing top item from queue - new size is 5',
+			5 => 'Running process 2',
+			6 => 'Queue not full - looking at first item in the queue',
+			7 => 'Canot remote first item from the queue - it has size 3, current queue size is 5, new size would be 8',
+			8 => 'Process 1 finished unsuccessfully: Runnable 1 canceled',
+			9 => 'Queue not full - looking at first item in the queue',
+			10 => 'Removing top item from queue - new size is 5',
+			11 => 'Running process 3',
+			12 => 'Process 3 finished unsuccessfully: Runnable 3 canceled',
+			13 => 'Queue empty',
+			14 => 'Process 2 finished unsuccessfully: Runnable 2 canceled',
+			15 => 'Queue empty',
 		], $logger->getMessages());
 	}
 

@@ -129,8 +129,13 @@ class RunnableQueue
 			$deferred->promise()->cancel(); // @phpstan-ignore-line
 		}
 
+		$runningDeferreds = [];
 		foreach ($this->running as $running) { // phpcs:ignore
-			[, $deferred] = $this->running->getInfo();
+			[,$deferred] = $this->running->getInfo();
+			$runningDeferreds[] = $deferred;
+		}
+
+		foreach ($runningDeferreds as $deferred) {
 			$deferred->promise()->cancel(); // @phpstan-ignore-line
 		}
 	}

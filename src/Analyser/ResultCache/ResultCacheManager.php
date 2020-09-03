@@ -9,6 +9,7 @@ use PHPStan\Dependency\ExportedNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use Symfony\Component\Finder\Finder;
 use function array_fill_keys;
 use function array_key_exists;
 
@@ -20,6 +21,8 @@ class ResultCacheManager
 	private ExportedNodeFetcher $exportedNodeFetcher;
 
 	private string $cacheFilePath;
+
+	private string $tempResultCachePath;
 
 	/** @var string[] */
 	private array $allCustomConfigFiles;
@@ -40,9 +43,13 @@ class ResultCacheManager
 	/** @var array<string, string> */
 	private array $fileHashes = [];
 
+	/** @var array<string, string> */
+	private array $fileReplacements = [];
+
 	/**
 	 * @param ExportedNodeFetcher $exportedNodeFetcher
 	 * @param string $cacheFilePath
+	 * @param string $tempResultCachePath
 	 * @param string[] $allCustomConfigFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
@@ -53,6 +60,7 @@ class ResultCacheManager
 	public function __construct(
 		ExportedNodeFetcher $exportedNodeFetcher,
 		string $cacheFilePath,
+		string $tempResultCachePath,
 		array $allCustomConfigFiles,
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths,
@@ -63,6 +71,7 @@ class ResultCacheManager
 	{
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
 		$this->cacheFilePath = $cacheFilePath;
+		$this->tempResultCachePath = $tempResultCachePath;
 		$this->allCustomConfigFiles = $allCustomConfigFiles;
 		$this->analysedPaths = $analysedPaths;
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
@@ -71,12 +80,17 @@ class ResultCacheManager
 		$this->cliAutoloadFile = $cliAutoloadFile;
 	}
 
+	public function setFileReplacement(string $insteadOfFile, string $tmpFile): void
+	{
+		$this->fileReplacements[$insteadOfFile] = $tmpFile;
+	}
+
 	/**
 	 * @param string[] $allAnalysedFiles
 	 * @param bool $debug
 	 * @return ResultCache
 	 */
-	public function restore(array $allAnalysedFiles, bool $debug, Output $output): ResultCache
+	public function restore(array $allAnalysedFiles, bool $debug, Output $output, ?string $resultCacheName = null): ResultCache
 	{
 		if ($debug) {
 			if ($output->isDebug()) {
@@ -85,7 +99,12 @@ class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
 		}
 
-		if (!is_file($this->cacheFilePath)) {
+		$cacheFilePath = $this->cacheFilePath;
+		if ($resultCacheName !== null) {
+			$cacheFilePath = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
+		}
+
+		if (!is_file($cacheFilePath)) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
@@ -93,7 +112,7 @@ class ResultCacheManager
 		}
 
 		try {
-			$data = require $this->cacheFilePath;
+			$data = require $cacheFilePath;
 		} catch (\Throwable $e) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
@@ -102,7 +121,7 @@ class ResultCacheManager
 		}
 
 		if (!is_array($data)) {
-			@unlink($this->cacheFilePath);
+			@unlink($cacheFilePath);
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
@@ -208,6 +227,9 @@ class ResultCacheManager
 	 */
 	private function exportedNodesChanged(string $analysedFile, array $cachedFileExportedNodes): bool
 	{
+		if (array_key_exists($analysedFile, $this->fileReplacements)) {
+			$analysedFile = $this->fileReplacements[$analysedFile];
+		}
 		$fileExportedNodes = $this->exportedNodeFetcher->fetchNodes($analysedFile);
 		if (count($fileExportedNodes) !== count($cachedFileExportedNodes)) {
 			return true;
@@ -223,7 +245,14 @@ class ResultCacheManager
 		return false;
 	}
 
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, bool $save): ResultCacheProcessResult
+	/**
+	 * @param AnalyserResult $analyserResult
+	 * @param ResultCache $resultCache
+	 * @param bool|string $save
+	 * @return ResultCacheProcessResult
+	 * @throws \PHPStan\ShouldNotHappenException
+	 */
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -231,7 +260,7 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes) use ($internalErrors, $resultCache): bool {
+		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache): bool {
 			if ($dependencies === null) {
 				return false;
 			}
@@ -250,14 +279,14 @@ class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $dependencies, $exportedNodes);
+			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $dependencies, $exportedNodes);
 			return true;
 		};
 
 		if ($resultCache->isFullAnalysis()) {
 			$saved = false;
-			if ($save) {
-				$saved = $doSave($freshErrorsByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes());
+			if ($save !== false) {
+				$saved = $doSave($freshErrorsByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), is_string($save) ? $save : null);
 			}
 
 			return new ResultCacheProcessResult($analyserResult, $saved);
@@ -268,8 +297,8 @@ class ResultCacheManager
 		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
 
 		$saved = false;
-		if ($save) {
-			$saved = $doSave($errorsByFile, $dependencies, $exportedNodes);
+		if ($save !== false) {
+			$saved = $doSave($errorsByFile, $dependencies, $exportedNodes, is_string($save) ? $save : null);
 		}
 
 		$flatErrors = [];
@@ -371,12 +400,14 @@ class ResultCacheManager
 
 	/**
 	 * @param int $lastFullAnalysisTime
+	 * @param string|null $resultCacheName
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
+		?string $resultCacheName,
 		array $errors,
 		array $dependencies,
 		array $exportedNodes
@@ -435,8 +466,13 @@ php;
 
 		ksort($exportedNodes);
 
+		$file = $this->cacheFilePath;
+		if ($resultCacheName !== null) {
+			$file = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
+		}
+
 		FileWriter::write(
-			$this->cacheFilePath,
+			$file,
 			sprintf(
 				$template,
 				var_export($lastFullAnalysisTime, true),
@@ -487,6 +523,9 @@ php;
 
 	private function getFileHash(string $path): string
 	{
+		if (array_key_exists($path, $this->fileReplacements)) {
+			$path = $this->fileReplacements[$path];
+		}
 		if (array_key_exists($path, $this->fileHashes)) {
 			return $this->fileHashes[$path];
 		}
@@ -550,6 +589,14 @@ php;
 		@unlink($this->cacheFilePath);
 
 		return $dir;
+	}
+
+	public function clearTemporaryCaches(): void
+	{
+		$finder = new Finder();
+		foreach ($finder->files()->name('*.php')->in($this->tempResultCachePath) as $tmpResultCacheFile) {
+			@unlink($tmpResultCacheFile->getPathname());
+		}
 	}
 
 }

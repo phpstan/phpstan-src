@@ -91,6 +91,7 @@ parameters:
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
+	tempResultCachePath: %tmpDir%/resultCaches
 	staticReflectionClassNamePatterns:
 		- '#^PhpParser\\#'
 		- '#^PHPStan\\#'
@@ -237,6 +238,7 @@ parametersSchema:
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
 	earlyTerminatingFunctionCalls: listOf(string())
 	memoryLimitFile: string()
+	tempResultCachePath: string()
 	staticReflectionClassNamePatterns: listOf(string())
 	dynamicConstantNames: listOf(string())
 	customRulesetUsed: bool()
@@ -394,6 +396,7 @@ services:
 		class: PHPStan\Analyser\ResultCache\ResultCacheManager
 		arguments:
 			cacheFilePath: %tmpDir%/resultCache.php
+			tempResultCachePath: %tempResultCachePath%
 			allCustomConfigFiles: %allCustomConfigFiles%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%

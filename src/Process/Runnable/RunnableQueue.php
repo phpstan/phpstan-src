@@ -123,4 +123,16 @@ class RunnableQueue
 		});
 	}
 
+	public function cancelAll(): void
+	{
+		foreach ($this->queue as [$runnable, $size, $deferred]) {
+			$deferred->promise()->cancel(); // @phpstan-ignore-line
+		}
+
+		foreach ($this->running as $running) { // phpcs:ignore
+			[, $deferred] = $this->running->getInfo();
+			$deferred->promise()->cancel(); // @phpstan-ignore-line
+		}
+	}
+
 }

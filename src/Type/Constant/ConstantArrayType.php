@@ -7,6 +7,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -583,10 +584,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		return new ArrayType(
+		$generalizedArray = new ArrayType(
 			TypeUtils::generalizeType($this->getKeyType()),
 			$this->getItemType()
 		);
+
+		return $this->isIterableAtLeastOnce()->yes()
+			? TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType())
+			: $generalizedArray;
 	}
 
 	/**

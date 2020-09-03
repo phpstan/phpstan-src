@@ -392,16 +392,15 @@ class CommandHelper
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getByType(FileFinder::class);
 
-		try {
+		/** @var \Closure(): (array{string[], bool}) $filesCallback */
+		$filesCallback = static function () use ($fileFinder, $paths): array {
 			$fileFinderResult = $fileFinder->findFiles($paths);
-		} catch (\PHPStan\File\PathNotFoundException $e) {
-			$errorOutput->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
-			throw new \PHPStan\Command\InceptionNotSuccessfulException($e->getMessage(), 0, $e);
-		}
+
+			return [$fileFinderResult->getFiles(), $fileFinderResult->isOnlyFiles()];
+		};
 
 		return new InceptionResult(
-			$fileFinderResult->getFiles(),
-			$fileFinderResult->isOnlyFiles(),
+			$filesCallback,
 			$stdOutput,
 			$errorOutput,
 			$container,

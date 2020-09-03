@@ -205,9 +205,16 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			}
 		}
 
+		try {
+			[$files, $onlyFiles] = $inceptionResult->getFiles();
+		} catch (\PHPStan\File\PathNotFoundException $e) {
+			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
+			return 1;
+		}
+
 		$analysisResult = $application->analyse(
-			$inceptionResult->getFiles(),
-			$inceptionResult->isOnlyFiles(),
+			$files,
+			$onlyFiles,
 			$inceptionResult->getStdOutput(),
 			$inceptionResult->getErrorOutput(),
 			$inceptionResult->isDefaultLevelUsed(),

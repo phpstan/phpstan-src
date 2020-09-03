@@ -103,7 +103,12 @@ class WorkerCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
-		$analysedFiles = $inceptionResult->getFiles();
+		try {
+			[$analysedFiles] = $inceptionResult->getFiles();
+		} catch (\PHPStan\File\PathNotFoundException $e) {
+			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
+			return 1;
+		}
 
 		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);

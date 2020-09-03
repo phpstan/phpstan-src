@@ -2,7 +2,7 @@
 
 namespace PHPStan\Command;
 
-use PHPStan\Analyser\ResultCache\ResultCacheManager;
+use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\File\FuzzyRelativePathHelper;
@@ -41,7 +41,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 		if (PHP_VERSION_ID >= 80000 && DIRECTORY_SEPARATOR === '\\') {
 			$this->markTestSkipped('Skipped because of https://github.com/symfony/symfony/issues/37508');
 		}
-		self::getContainer()->getByType(ResultCacheManager::class)->clear();
+		self::getContainer()->getByType(ResultCacheManagerFactory::class)->create([])->clear();
 		$analyserApplication = self::getContainer()->getByType(AnalyseApplication::class);
 		$resource = fopen('php://memory', 'w', false);
 		if ($resource === false) {

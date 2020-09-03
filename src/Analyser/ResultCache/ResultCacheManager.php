@@ -56,6 +56,7 @@ class ResultCacheManager
 	 * @param string[] $stubFiles
 	 * @param string $usedLevel
 	 * @param string|null $cliAutoloadFile
+	 * @param array<string, string> $fileReplacements
 	 */
 	public function __construct(
 		ExportedNodeFetcher $exportedNodeFetcher,
@@ -66,7 +67,8 @@ class ResultCacheManager
 		array $composerAutoloaderProjectPaths,
 		array $stubFiles,
 		string $usedLevel,
-		?string $cliAutoloadFile
+		?string $cliAutoloadFile,
+		array $fileReplacements
 	)
 	{
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
@@ -78,11 +80,7 @@ class ResultCacheManager
 		$this->stubFiles = $stubFiles;
 		$this->usedLevel = $usedLevel;
 		$this->cliAutoloadFile = $cliAutoloadFile;
-	}
-
-	public function setFileReplacement(string $insteadOfFile, string $tmpFile): void
-	{
-		$this->fileReplacements[$insteadOfFile] = $tmpFile;
+		$this->fileReplacements = $fileReplacements;
 	}
 
 	/**

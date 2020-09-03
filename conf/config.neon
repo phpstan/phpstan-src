@@ -393,7 +393,7 @@ services:
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 
 	-
-		class: PHPStan\Analyser\ResultCache\ResultCacheManager
+		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory
 		arguments:
 			cacheFilePath: %tmpDir%/resultCache.php
 			tempResultCachePath: %tempResultCachePath%

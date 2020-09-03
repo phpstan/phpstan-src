@@ -515,6 +515,9 @@ services:
 		class: PHPStan\Parser\FunctionCallStatementFinder
 
 	-
+		class: PHPStan\Process\CpuCoreCounter
+
+	-
 		implement: PHPStan\Reflection\FunctionReflectionFactory
 
 	-

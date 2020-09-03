@@ -6,6 +6,7 @@ use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
+use PHPStan\Process\CpuCoreCounter;
 use Symfony\Component\Console\Input\InputInterface;
 
 class AnalyserRunner
@@ -17,15 +18,19 @@ class AnalyserRunner
 
 	private ParallelAnalyser $parallelAnalyser;
 
+	private CpuCoreCounter $cpuCoreCounter;
+
 	public function __construct(
 		Scheduler $scheduler,
 		Analyser $analyser,
-		ParallelAnalyser $parallelAnalyser
+		ParallelAnalyser $parallelAnalyser,
+		CpuCoreCounter $cpuCoreCounter
 	)
 	{
 		$this->scheduler = $scheduler;
 		$this->analyser = $analyser;
 		$this->parallelAnalyser = $parallelAnalyser;
+		$this->cpuCoreCounter = $cpuCoreCounter;
 	}
 
 	/**
@@ -54,7 +59,7 @@ class AnalyserRunner
 			return new AnalyserResult([], [], [], [], false);
 		}
 
-		$schedule = $this->scheduler->scheduleWork($this->getNumberOfCpuCores(), $files);
+		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
 		$mainScript = null;
 		if (isset($_SERVER['argv'][0]) && file_exists($_SERVER['argv'][0])) {
 			$mainScript = $_SERVER['argv'][0];
@@ -75,41 +80,6 @@ class AnalyserRunner
 			$debug,
 			$allAnalysedFiles
 		);
-	}
-
-	private function getNumberOfCpuCores(): int
-	{
-		// from brianium/paratest
-		$cores = 2;
-		if (is_file('/proc/cpuinfo')) {
-			// Linux (and potentially Windows with linux sub systems)
-			$cpuinfo = @file_get_contents('/proc/cpuinfo');
-			if ($cpuinfo !== false) {
-				preg_match_all('/^processor/m', $cpuinfo, $matches);
-				return count($matches[0]);
-			}
-		}
-
-		if (\DIRECTORY_SEPARATOR === '\\') {
-			// Windows
-			$process = @popen('wmic cpu get NumberOfLogicalProcessors', 'rb');
-			if ($process !== false) {
-				fgets($process);
-				$cores = (int) fgets($process);
-				pclose($process);
-			}
-
-			return $cores;
-		}
-
-		$process = @\popen('sysctl -n hw.ncpu', 'rb');
-		if ($process !== false) {
-			// *nix (Linux, BSD and Mac)
-			$cores = (int) fgets($process);
-			pclose($process);
-		}
-
-		return $cores;
 	}
 
 }

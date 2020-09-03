@@ -55,6 +55,15 @@ class SchedulerTest extends TestCase
 				2,
 				[30, 30, 30, 30, 4],
 			],
+			[
+				16,
+				16,
+				2,
+				20,
+				1,
+				1,
+				[1],
+			],
 		];
 	}
 

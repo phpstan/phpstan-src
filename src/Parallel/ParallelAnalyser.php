@@ -184,6 +184,10 @@ class ParallelAnalyser
 
 		$loop->run();
 
+		if (count($jobs) > 0) {
+			throw new \PHPStan\ShouldNotHappenException('Some jobs remaining');
+		}
+
 		return new AnalyserResult(
 			$errors,
 			$internalErrors,

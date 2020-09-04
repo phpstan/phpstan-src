@@ -98,7 +98,10 @@ class ResultCacheManager
 
 		$cacheFilePath = $this->cacheFilePath;
 		if ($resultCacheName !== null) {
-			$cacheFilePath = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
+			$tmpCacheFile = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
+			if (is_file($tmpCacheFile)) {
+				$cacheFilePath = $tmpCacheFile;
+			}
 		}
 
 		if (!is_file($cacheFilePath)) {

@@ -184,6 +184,9 @@ class ResultCacheManager
 			}
 
 			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile];
+			if (count($dependentFiles) === 0) {
+				continue;
+			}
 			if (!$this->exportedNodesChanged($analysedFile, $cachedFileExportedNodes)) {
 				continue;
 			}

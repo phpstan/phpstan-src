@@ -9,7 +9,6 @@ use PHPStan\Dependency\ExportedNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
-use Symfony\Component\Finder\Finder;
 use function array_fill_keys;
 use function array_key_exists;
 
@@ -575,26 +574,6 @@ php;
 		}
 
 		return $stubFiles;
-	}
-
-	public function clear(): string
-	{
-		$dir = dirname($this->cacheFilePath);
-		if (!is_file($this->cacheFilePath)) {
-			return $dir;
-		}
-
-		@unlink($this->cacheFilePath);
-
-		return $dir;
-	}
-
-	public function clearTemporaryCaches(): void
-	{
-		$finder = new Finder();
-		foreach ($finder->files()->name('*.php')->in($this->tempResultCachePath) as $tmpResultCacheFile) {
-			@unlink($tmpResultCacheFile->getPathname());
-		}
 	}
 
 }

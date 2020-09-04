@@ -2,7 +2,7 @@
 
 namespace PHPStan\Command;
 
-use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -70,9 +70,9 @@ class ClearResultCacheCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
-		/** @var ResultCacheManagerFactory $resultCacheManagerFactory */
-		$resultCacheManagerFactory = $container->getByType(ResultCacheManagerFactory::class);
-		$path = $resultCacheManagerFactory->create([])->clear();
+		/** @var ResultCacheClearer $resultCacheClearer */
+		$resultCacheClearer = $container->getByType(ResultCacheClearer::class);
+		$path = $resultCacheClearer->clear();
 
 		$output->writeln('<info>Result cache cleared from directory:</info>');
 		$output->writeln($path);

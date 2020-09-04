@@ -405,6 +405,12 @@ services:
 			cliAutoloadFile: %cliAutoloadFile%
 
 	-
+		class: PHPStan\Analyser\ResultCache\ResultCacheClearer
+		arguments:
+			cacheFilePath: %tmpDir%/resultCache.php
+			tempResultCachePath: %tempResultCachePath%
+
+	-
 		class: PHPStan\Cache\Cache
 		arguments:
 			storage: @cacheStorage

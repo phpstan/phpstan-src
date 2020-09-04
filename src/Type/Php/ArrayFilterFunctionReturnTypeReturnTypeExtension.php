@@ -118,11 +118,13 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 				return $filteredArray;
 			}
 
+			$generalizedArray = TypeCombinator::remove($filteredArray->generalize(), new NonEmptyArrayType());
+
 			if (! $notEmpty) {
-				return $filteredArray->generalize();
+				return $generalizedArray;
 			}
 
-			return TypeCombinator::intersect($filteredArray->generalize(), new NonEmptyArrayType());
+			return TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
 		}
 
 		$keyType = $type->getIterableKeyType();

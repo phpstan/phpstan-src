@@ -66,7 +66,7 @@ class GithubErrorFormatter implements ErrorFormatter
 			// newlines need to be encoded
 			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
 			$warning = str_replace("\n", '%0A', $warning);
-			
+
 			$line = sprintf('::warning ::%s', $warning);
 
 			$output->writeRaw($line);

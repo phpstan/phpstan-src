@@ -221,14 +221,17 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		// strip heredocs/nowdocs
 		if (strpos($contents, '<<<') !== false) {
 			$contents = preg_replace('{<<<[ \t]*([\'"]?)(\w+)\\1(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)(?:\s*)\\2(?=\s+|[;,.)])}s', 'null', $contents);
+			assert(is_string($contents));
 		}
 
 		// strip strings
 		$contents = preg_replace('{"[^"]*+(?:[^"]*+)*+"|\'[^\']*+(?:[^\']*+)*+\'}', 'null', $contents);
+		assert(is_string($contents));
 
 		// strip leading non-php code if needed
 		if (strpos($contents, '<?') !== 0) {
 			$contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
+			assert(is_string($contents));
 			if ($replacements === 0) {
 				return ['classes' => [], 'functions' => []];
 			}
@@ -237,17 +240,20 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		// strip non-php blocks in the file
 		if (strpos($contents, '?>') !== false) {
 			$contents = preg_replace('{\?>(?:[^<]++|<(?!\?))*+<\?}', '?><?', $contents);
+			assert(is_string($contents));
 		}
 
 		// strip trailing non-php code if needed
 		$pos = strrpos($contents, '?>');
-		if ($pos !== false && strpos(substr($contents, $pos), '<?') === false) {
+		if ($pos !== false && strpos((string)substr($contents, $pos), '<?') === false) {
 			$contents = substr($contents, 0, $pos);
+			assert(is_string($contents));
 		}
 
 		// strip comments if short open tags are in the file
 		if (preg_match('{(?:<\?)(?!(?:php|hh))}i', $contents)) {
 			$contents = preg_replace('{//.* | /\*(?:[^*]++|\*(?!/))*\*/}x', '', $contents);
+			assert(is_string($contents));
 		}
 
 		if (strpos($contents, 'namespace') !== false) {

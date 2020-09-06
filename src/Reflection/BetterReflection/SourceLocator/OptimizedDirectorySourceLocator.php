@@ -198,39 +198,70 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			return ['classes' => [], 'functions' => []];
 		}
 
-		if (!preg_match('{\b(?:class|interface|trait|function)\s}i', $contents)) {
+		$found = [];
+		if (stripos($contents, 'class') !== false) {
+			$found[] = 'class';
+		}
+		if (stripos($contents, 'interface') !== false) {
+			$found[] = 'interface';
+		}
+		if (stripos($contents, 'trait') !== false) {
+			$found[] = 'trait';
+		}
+		if (stripos($contents, 'function') !== false) {
+			$found[] = 'function';
+		}
+		if ($found === []) {
+			return ['classes' => [], 'functions' => []];
+		}
+		if (!preg_match('{\b(?:' . \implode('|', $found) . ')\s}i', $contents)) {
 			return ['classes' => [], 'functions' => []];
 		}
 
 		// strip heredocs/nowdocs
-		$contents = preg_replace('{<<<[ \t]*([\'"]?)(\w+)\\1(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)(?:\s*)\\2(?=\s+|[;,.)])}s', 'null', $contents);
+		if (strpos($contents, '<<<') !== false) {
+			$contents = preg_replace('{<<<[ \t]*([\'"]?)(\w+)\\1(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)(?:\s*)\\2(?=\s+|[;,.)])}s', 'null', $contents);
+		}
+
 		// strip strings
-		$contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
+		$contents = preg_replace('{"[^"]*+(?:[^"]*+)*+"|\'[^\']*+(?:[^\']*+)*+\'}', 'null', $contents);
+
 		// strip leading non-php code if needed
-		if (substr($contents, 0, 2) !== '<?') {
+		if (strpos($contents, '<?') !== 0) {
 			$contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
 			if ($replacements === 0) {
 				return ['classes' => [], 'functions' => []];
 			}
 		}
+
 		// strip non-php blocks in the file
-		$contents = preg_replace('{\?>(?:[^<]++|<(?!\?))*+<\?}s', '?><?', $contents);
+		if (strpos($contents, '?>') !== false) {
+			$contents = preg_replace('{\?>(?:[^<]++|<(?!\?))*+<\?}', '?><?', $contents);
+		}
+
 		// strip trailing non-php code if needed
 		$pos = strrpos($contents, '?>');
 		if ($pos !== false && strpos(substr($contents, $pos), '<?') === false) {
 			$contents = substr($contents, 0, $pos);
 		}
+
 		// strip comments if short open tags are in the file
-		if (preg_match('{(<\?)(?!(php|hh))}i', $contents)) {
+		if (preg_match('{(?:<\?)(?!(?:php|hh))}i', $contents)) {
 			$contents = preg_replace('{//.* | /\*(?:[^*]++|\*(?!/))*\*/}x', '', $contents);
 		}
 
+		if (strpos($contents, 'namespace') !== false) {
+			$namespaceRegex = '| \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-z_\x7f-\xff][a-z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-z_\x7f-\xff][a-z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]';
+		} else {
+			$namespaceRegex = '';
+		}
+
 		preg_match_all('{
-            (?:
-                 \b(?<![\$:>])(?P<type>class|interface|trait|function) \s++ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
-               | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]
-            )
-        }ix', $contents, $matches);
+			(?:
+				\b(?<![\$:>])(?P<type>' . \implode('|', $found) . ') \s+ (?P<name>[a-z_\x7f-\xff:][a-z0-9_\x7f-\xff:\-]*+)
+				' . $namespaceRegex . '
+			)
+		}ix', $contents, $matches);
 
 		$classes = [];
 		$functions = [];

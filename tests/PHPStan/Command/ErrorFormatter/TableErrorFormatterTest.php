@@ -62,6 +62,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
  ------ -----------------------------------------------------------------
   2      Bar
+         Bar2
   4      Foo
  ------ -----------------------------------------------------------------
 
@@ -70,6 +71,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  ------ ---------
   1      Foo
   5      Bar
+         Bar2
  ------ ---------
 
  [ERROR] Found 4 errors
@@ -103,6 +105,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
  ------ -----------------------------------------------------------------
   2      Bar
+         Bar2
   4      Foo
  ------ -----------------------------------------------------------------
 
@@ -111,6 +114,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  ------ ---------
   1      Foo
   5      Bar
+         Bar2
  ------ ---------
 
  -- ----------------------

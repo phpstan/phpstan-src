@@ -245,9 +245,8 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 		// strip trailing non-php code if needed
 		$pos = strrpos($contents, '?>');
-		if ($pos !== false && strpos((string) substr($contents, $pos), '<?') === false) {
+		if ($pos !== false && strpos(substr($contents, $pos), '<?') === false) {
 			$contents = substr($contents, 0, $pos);
-			assert(is_string($contents));
 		}
 
 		// strip comments if short open tags are in the file

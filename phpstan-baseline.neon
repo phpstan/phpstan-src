@@ -86,32 +86,7 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
-			count: 4
-			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function substr expects string, string\\|null given\\.$#"
-			count: 3
-			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
-			message: "#^Parameter \\#1 \\$haystack of function strrpos expects string, string\\|null given\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
-			message: "#^Parameter \\#2 \\$subject of function preg_match expects string, string\\|null given\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
-			message: "#^Parameter \\#2 \\$subject of function preg_match_all expects string, string\\|null given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 

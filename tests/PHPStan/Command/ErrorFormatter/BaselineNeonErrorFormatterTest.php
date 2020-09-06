@@ -76,7 +76,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					'path' => 'folder with unicode 😃/file name with "spaces" and unicode 😃.php',
 				],
 				[
-					'message' => "#^Bar\nBar2$#",
+					'message' => '#^Foo$#',
 					'count' => 1,
 					'path' => 'folder with unicode 😃/file name with "spaces" and unicode 😃.php',
 				],

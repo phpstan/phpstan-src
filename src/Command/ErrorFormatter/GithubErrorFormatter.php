@@ -41,6 +41,9 @@ class GithubErrorFormatter implements ErrorFormatter
 			});
 
 			$message = $fileSpecificError->getMessage();
+			// newlines need to be encoded
+			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
+			$message = str_replace("\n", '%0A', $message);
 
 			$line = sprintf('::error %s::%s', implode(',', $metas), $message);
 

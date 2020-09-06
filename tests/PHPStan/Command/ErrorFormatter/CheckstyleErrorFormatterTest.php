@@ -59,12 +59,12 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			'<?xml version="1.0" encoding="UTF-8"?>
 <checkstyle>
 <file name="folder with unicode 😃/file name with &quot;spaces&quot; and unicode 😃.php">
-  <error line="2" column="1" severity="error" message="Bar"/>
+  <error line="2" column="1" severity="error" message="Bar Bar2"/>
   <error line="4" column="1" severity="error" message="Foo"/>
 </file>
 <file name="foo.php">
   <error line="1" column="1" severity="error" message="Foo"/>
-  <error line="5" column="1" severity="error" message="Bar"/>
+  <error line="5" column="1" severity="error" message="Bar Bar2"/>
 </file>
 </checkstyle>
 ',
@@ -93,12 +93,12 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			'<?xml version="1.0" encoding="UTF-8"?>
 <checkstyle>
 <file name="folder with unicode 😃/file name with &quot;spaces&quot; and unicode 😃.php">
-  <error line="2" column="1" severity="error" message="Bar"/>
+  <error line="2" column="1" severity="error" message="Bar Bar2"/>
   <error line="4" column="1" severity="error" message="Foo"/>
 </file>
 <file name="foo.php">
   <error line="1" column="1" severity="error" message="Foo"/>
-  <error line="5" column="1" severity="error" message="Bar"/>
+  <error line="5" column="1" severity="error" message="Bar Bar2"/>
 </file>
 <file>
   <error message="first generic error" severity="error"/>

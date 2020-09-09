@@ -9451,7 +9451,7 @@ return [
 'Redis::zRevRangeByScore' => ['array', 'key'=>'string', 'start'=>'int', 'end'=>'int', 'options='=>'array'],
 'Redis::zRevRank' => ['int', 'key'=>'string', 'member'=>'string'],
 'Redis::zScan' => ['array|bool', 'key'=>'string', '&iterator'=>'int', 'pattern='=>'string', 'count='=>'int'],
-'Redis::zScore' => ['float', 'key'=>'string', 'member'=>'string'],
+'Redis::zScore' => ['float|false', 'key'=>'string', 'member'=>'string'],
 'Redis::zSize' => ['', 'key'=>'string'],
 'Redis::zUnion' => ['int', 'Output'=>'string', 'ZSetKeys'=>'array', 'Weights='=>'?array', 'aggregateFunction='=>'string'],
 'RedisArray::__construct' => ['void', 'name='=>'string', 'hosts='=>'?array', 'opts='=>'?array'],

@@ -22,7 +22,7 @@ class AutoloadSourceLocatorTest extends TestCase
 	{
 		/** @var FunctionReflector $functionReflector */
 		$functionReflector = null;
-		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
+		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), []);
 		$classReflector = new ClassReflector($locator);
 		$functionReflector = new FunctionReflector($locator, $classReflector);
 		$constantReflector = new ConstantReflector($locator, $classReflector);

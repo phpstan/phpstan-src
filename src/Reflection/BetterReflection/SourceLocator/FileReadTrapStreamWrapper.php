@@ -32,6 +32,7 @@ final class FileReadTrapStreamWrapper
 	public static ?string $autoloadLocatedFile = null;
 
 	/**
+	 * @param array<string, string> $userStreamWrappers
 	 * @param string[] $streamWrapperProtocols
 	 *
 	 * @return mixed
@@ -42,6 +43,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public static function withStreamWrapperOverride(
 		callable $executeMeWithinStreamWrapperOverride,
+		array $userStreamWrappers,
 		array $streamWrapperProtocols = self::DEFAULT_STREAM_WRAPPER_PROTOCOLS
 	)
 	{
@@ -57,7 +59,12 @@ final class FileReadTrapStreamWrapper
 			$result = $executeMeWithinStreamWrapperOverride();
 		} finally {
 			foreach ($streamWrapperProtocols as $protocol) {
-				stream_wrapper_restore($protocol);
+				if (array_key_exists($protocol, $userStreamWrappers)) {
+					stream_wrapper_unregister($protocol);
+					stream_wrapper_register($protocol, $userStreamWrappers[$protocol]);
+				} else {
+					stream_wrapper_restore($protocol);
+				}
 			}
 		}
 

@@ -35,6 +35,9 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private FileNodesFetcher $fileNodesFetcher;
 
+	/** @var array<string, string> */
+	private array $userStreamWrappers = [];
+
 	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
 	private array $classNodes = [];
 
@@ -50,9 +53,16 @@ class AutoloadSourceLocator implements SourceLocator
 	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
 	private array $locatedSourcesByFile = [];
 
-	public function __construct(FileNodesFetcher $fileNodesFetcher)
+	/**
+	 * @param array<string, string> $userStreamWrappers
+	 */
+	public function __construct(
+		FileNodesFetcher $fileNodesFetcher,
+		array $userStreamWrappers
+	)
 	{
 		$this->fileNodesFetcher = $fileNodesFetcher;
+		$this->userStreamWrappers = $userStreamWrappers;
 	}
 
 	/**
@@ -309,7 +319,8 @@ class AutoloadSourceLocator implements SourceLocator
 					}
 
 					return null;
-				}
+				},
+				$this->userStreamWrappers
 			);
 		} finally {
 			restore_error_handler();

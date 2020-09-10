@@ -1,12 +1,14 @@
 parameters:
 	bootstrap: null
 	bootstrapFiles:
+		- ../stubs/runtime/userStreamWrappers.php
 		- ../stubs/runtime/ReflectionUnionType.php
 	excludes_analyse: []
 	autoload_directories: []
 	autoload_files: []
 	level: null
 	paths: []
+	streamWrappers: []
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
@@ -249,6 +251,7 @@ parametersSchema:
 	mixinExcludeClasses: listOf(string())
 	scanFiles: listOf(string())
 	scanDirectories: listOf(string())
+	streamWrappers: arrayOf(string())
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -545,6 +548,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
+		arguments:
+			userStreamWrappers: %streamWrappers%
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker

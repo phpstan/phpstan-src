@@ -39,7 +39,7 @@ class VariableCertaintyInIssetRule implements \PHPStan\Rules\Rule
 				$isSubNode = true;
 			}
 
-			if (!$var instanceof Node\Expr\Variable || !is_string($var->name)) {
+			if (!$var instanceof Node\Expr\Variable || !is_string($var->name) || $var->name === '_SESSION') {
 				continue;
 			}
 

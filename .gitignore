@@ -2,7 +2,6 @@
 /compiler/composer.lock
 /compiler/tmp
 /compiler/vendor
-/composer.lock
 /conf/config.local.yml
 /vendor
 /.idea

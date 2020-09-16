@@ -1632,7 +1632,7 @@ return [
 'DateTimeImmutable::setTimezone' => ['static', 'timezone'=>'DateTimeZone'],
 'DateTimeImmutable::sub' => ['static', 'interval'=>'DateInterval'],
 'DateTimeInterface::diff' => ['DateInterval', 'datetime2'=>'DateTimeInterface', 'absolute='=>'bool'],
-'DateTimeInterface::format' => ['string', 'format'=>'string'],
+'DateTimeInterface::format' => ['string|false', 'format'=>'string'],
 'DateTimeInterface::getOffset' => ['int'],
 'DateTimeInterface::getTimestamp' => ['int'],
 'DateTimeInterface::getTimezone' => ['DateTimeZone'],

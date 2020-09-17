@@ -55,6 +55,8 @@ class UnreachableIfBranchesRule implements \PHPStan\Rules\Rule
 				$errors[] = $addTip(RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.')->line($elseif->getLine()))
 					->identifier('deadCode.unreachableElseif')
 					->metadata([
+						'ifDepth' => $node->getAttribute('statementDepth'),
+						'ifOrder' => $node->getAttribute('statementOrder'),
 						'depth' => $elseif->getAttribute('statementDepth'),
 						'order' => $elseif->getAttribute('statementOrder'),
 					])
@@ -71,8 +73,8 @@ class UnreachableIfBranchesRule implements \PHPStan\Rules\Rule
 			$errors[] = $addTip(RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.'))->line($node->else->getLine())
 				->identifier('deadCode.unreachableElse')
 				->metadata([
-					'parentDepth' => $node->getAttribute('statementDepth'),
-					'parentOrder' => $node->getAttribute('statementOrder'),
+					'ifDepth' => $node->getAttribute('statementDepth'),
+					'ifOrder' => $node->getAttribute('statementOrder'),
 				])
 				->build();
 		}

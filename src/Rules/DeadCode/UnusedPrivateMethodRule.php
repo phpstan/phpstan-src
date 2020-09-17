@@ -148,7 +148,16 @@ class UnusedPrivateMethodRule implements Rule
 			if ($methodNode->isStatic()) {
 				$methodType = 'Static method';
 			}
-			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $methodName))->line($methodNode->getLine())->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $methodName))
+				->line($methodNode->getLine())
+				->identifier('deadCode.unusedMethod')
+				->metadata([
+					'classOrder' => $node->getClass()->getAttribute('statementOrder'),
+					'classDepth' => $node->getClass()->getAttribute('statementDepth'),
+					'classStartLine' => $node->getClass()->getStartLine(),
+					'methodName' => $methodName,
+				])
+				->build();
 		}
 
 		return $errors;

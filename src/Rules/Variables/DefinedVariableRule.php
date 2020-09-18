@@ -57,6 +57,10 @@ class DefinedVariableRule implements \PHPStan\Rules\Rule
 					->identifier('variable.undefined')
 					->metadata([
 						'variableName' => $node->name,
+						'statementDepth' => $node->getAttribute('statementDepth'),
+						'statementOrder' => $node->getAttribute('statementOrder'),
+						'depth' => $node->getAttribute('expressionDepth'),
+						'order' => $node->getAttribute('expressionOrder'),
 					])
 					->build(),
 			];
@@ -69,6 +73,10 @@ class DefinedVariableRule implements \PHPStan\Rules\Rule
 					->identifier('variable.maybeUndefined')
 					->metadata([
 						'variableName' => $node->name,
+						'statementDepth' => $node->getAttribute('statementDepth'),
+						'statementOrder' => $node->getAttribute('statementOrder'),
+						'depth' => $node->getAttribute('expressionDepth'),
+						'order' => $node->getAttribute('expressionOrder'),
 					])
 					->build(),
 			];

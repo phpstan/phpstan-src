@@ -46,7 +46,7 @@ class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
 				'statementOrder' => $node->getAttribute('statementOrder'),
 				'depth' => $node->getAttribute('expressionDepth'),
 				'order' => $node->getAttribute('expressionOrder'),
-			],
+			]
 		);
 	}
 

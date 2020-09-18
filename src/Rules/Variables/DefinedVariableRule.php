@@ -53,14 +53,24 @@ class DefinedVariableRule implements \PHPStan\Rules\Rule
 
 		if ($scope->hasVariableType($node->name)->no()) {
 			return [
-				RuleErrorBuilder::message(sprintf('Undefined variable: $%s', $node->name))->build(),
+				RuleErrorBuilder::message(sprintf('Undefined variable: $%s', $node->name))
+					->identifier('variable.undefined')
+					->metadata([
+						'variableName' => $node->name,
+					])
+					->build(),
 			];
 		} elseif (
 			$this->checkMaybeUndefinedVariables
 			&& !$scope->hasVariableType($node->name)->yes()
 		) {
 			return [
-				RuleErrorBuilder::message(sprintf('Variable $%s might not be defined.', $node->name))->build(),
+				RuleErrorBuilder::message(sprintf('Variable $%s might not be defined.', $node->name))
+					->identifier('variable.maybeUndefined')
+					->metadata([
+						'variableName' => $node->name,
+					])
+					->build(),
 			];
 		}
 

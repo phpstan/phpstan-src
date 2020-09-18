@@ -26,14 +26,9 @@ RUN yes | pecl install xdebug \
     && echo "xdebug.remote_autostart=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && rm -rf /tmp/pear
 
-# PHP memory limit
-RUN echo "memory_limit=768M" > /usr/local/etc/php/php.ini
-
 # Install composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php -r "if (hash_file('sha384', 'composer-setup.php') === '795f976fe0ebd8b75f26a6dd68f78fd3453ce79f32ecb33e7fd087d39bfeb978342fb73ac986cd4f54edd0dc902601dc') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
-    && php composer-setup.php --version=2.0.0-RC1 \
-    && php -r "unlink('composer-setup.php');" \
+RUN curl -sSL https://getcomposer.org/installer | php \
+    && chmod +x composer.phar \
     && mv composer.phar /usr/local/bin/composer
 
 # [Option] Install Node.js

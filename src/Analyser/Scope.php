@@ -33,6 +33,8 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function getNamespace(): ?string;
 
+	public function getParentScope(): ?self;
+
 	public function hasVariableType(string $variableName): TrinaryLogic;
 
 	public function getVariableType(string $variableName): Type;

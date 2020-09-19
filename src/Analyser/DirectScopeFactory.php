@@ -76,6 +76,7 @@ class DirectScopeFactory implements ScopeFactory
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<\PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection> $inFunctionCallsStack
+	 * @param Scope|null $parentScope
 	 *
 	 * @return MutatingScope
 	 */
@@ -92,7 +93,8 @@ class DirectScopeFactory implements ScopeFactory
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
 		array $nativeExpressionTypes = [],
-		array $inFunctionCallsStack = []
+		array $inFunctionCallsStack = [],
+		?Scope $parentScope = null
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;
@@ -123,7 +125,8 @@ class DirectScopeFactory implements ScopeFactory
 			$nativeExpressionTypes,
 			$inFunctionCallsStack,
 			$this->dynamicConstantNames,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
+			$parentScope
 		);
 	}
 

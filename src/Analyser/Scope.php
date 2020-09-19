@@ -39,6 +39,11 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function getVariableType(string $variableName): Type;
 
+	/**
+	 * @return array<int, string>
+	 */
+	public function getDefinedVariables(): array;
+
 	public function hasConstant(Name $name): bool;
 
 	public function isInAnonymousFunction(): bool;

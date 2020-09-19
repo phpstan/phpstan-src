@@ -371,6 +371,23 @@ class MutatingScope implements Scope
 		return $this->variableTypes[$variableName]->getType();
 	}
 
+	/**
+	 * @return array<int, string>
+	 */
+	public function getDefinedVariables(): array
+	{
+		$variables = [];
+		foreach ($this->variableTypes as $variableName => $holder) {
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+
+			$variables[] = $variableName;
+		}
+
+		return $variables;
+	}
+
 	private function isGlobalVariable(string $variableName): bool
 	{
 		return in_array($variableName, [

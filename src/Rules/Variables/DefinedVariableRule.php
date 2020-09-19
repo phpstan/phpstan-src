@@ -61,6 +61,8 @@ class DefinedVariableRule implements \PHPStan\Rules\Rule
 						'statementOrder' => $node->getAttribute('statementOrder'),
 						'depth' => $node->getAttribute('expressionDepth'),
 						'order' => $node->getAttribute('expressionOrder'),
+						'variables' => $scope->getDefinedVariables(),
+						'parentVariables' => $this->getParentVariables($scope),
 					])
 					->build(),
 			];
@@ -77,12 +79,30 @@ class DefinedVariableRule implements \PHPStan\Rules\Rule
 						'statementOrder' => $node->getAttribute('statementOrder'),
 						'depth' => $node->getAttribute('expressionDepth'),
 						'order' => $node->getAttribute('expressionOrder'),
+						'variables' => $scope->getDefinedVariables(),
+						'parentVariables' => $this->getParentVariables($scope),
 					])
 					->build(),
 			];
 		}
 
 		return [];
+	}
+
+	/**
+	 * @param Scope $scope
+	 * @return array<int, array<int, string>>
+	 */
+	private function getParentVariables(Scope $scope): array
+	{
+		$variables = [];
+		$parent = $scope->getParentScope();
+		while ($parent !== null) {
+			$variables[] = $parent->getDefinedVariables();
+			$parent = $parent->getParentScope();
+		}
+
+		return $variables;
 	}
 
 }

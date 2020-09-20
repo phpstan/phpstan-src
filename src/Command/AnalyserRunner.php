@@ -39,6 +39,7 @@ class AnalyserRunner
 	 * @param \Closure|null $preFileCallback
 	 * @param \Closure|null $postFileCallback
 	 * @param bool $debug
+	 * @param bool $allowParallel
 	 * @param string|null $projectConfigFile
 	 * @param InputInterface $input
 	 * @return AnalyserResult
@@ -50,6 +51,7 @@ class AnalyserRunner
 		?\Closure $preFileCallback,
 		?\Closure $postFileCallback,
 		bool $debug,
+		bool $allowParallel,
 		?string $projectConfigFile,
 		InputInterface $input
 	): AnalyserResult
@@ -67,6 +69,7 @@ class AnalyserRunner
 
 		if (
 			!$debug
+			&& $allowParallel
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 1
 		) {

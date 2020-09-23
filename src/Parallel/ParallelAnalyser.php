@@ -41,6 +41,8 @@ class ParallelAnalyser
 	 * @param string $mainScript
 	 * @param \Closure(int): void|null $postFileCallback
 	 * @param string|null $projectConfigFile
+	 * @param string|null $tmpFile
+	 * @param string|null $insteadOfFile
 	 * @return AnalyserResult
 	 */
 	public function analyse(
@@ -48,6 +50,8 @@ class ParallelAnalyser
 		string $mainScript,
 		?\Closure $postFileCallback,
 		?string $projectConfigFile,
+		?string $tmpFile,
+		?string $insteadOfFile,
 		InputInterface $input
 	): AnalyserResult
 	{
@@ -106,16 +110,25 @@ class ParallelAnalyser
 			}
 
 			$processIdentifier = Random::generate();
+			$commandOptions = [
+				'--port',
+				(string) $serverPort,
+				'--identifier',
+				$processIdentifier,
+			];
+
+			if ($tmpFile !== null && $insteadOfFile !== null) {
+				$commandOptions[] = '--tmp-file';
+				$commandOptions[] = escapeshellarg($tmpFile);
+				$commandOptions[] = '--instead-of';
+				$commandOptions[] = escapeshellarg($insteadOfFile);
+			}
+
 			$process = new Process(ProcessHelper::getWorkerCommand(
 				$mainScript,
 				'worker',
 				$projectConfigFile,
-				[
-					'--port',
-					(string) $serverPort,
-					'--identifier',
-					$processIdentifier,
-				],
+				$commandOptions,
 				$input
 			), $loop, $this->processTimeout);
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {

@@ -41,6 +41,8 @@ class AnalyserRunner
 	 * @param bool $debug
 	 * @param bool $allowParallel
 	 * @param string|null $projectConfigFile
+	 * @param string|null $tmpFile
+	 * @param string|null $insteadOfFile
 	 * @param InputInterface $input
 	 * @return AnalyserResult
 	 * @throws \Throwable
@@ -53,6 +55,8 @@ class AnalyserRunner
 		bool $debug,
 		bool $allowParallel,
 		?string $projectConfigFile,
+		?string $tmpFile,
+		?string $insteadOfFile,
 		InputInterface $input
 	): AnalyserResult
 	{
@@ -73,16 +77,41 @@ class AnalyserRunner
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 1
 		) {
-			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $input);
+			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input);
 		}
 
 		return $this->analyser->analyse(
-			$files,
+			$this->switchTmpFile($files, $insteadOfFile, $tmpFile),
 			$preFileCallback,
 			$postFileCallback,
 			$debug,
-			$allAnalysedFiles
+			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile)
 		);
+	}
+
+	/**
+	 * @param string[] $analysedFiles
+	 * @param string|null $insteadOfFile
+	 * @param string|null $tmpFile
+	 * @return string[]
+	 */
+	private function switchTmpFile(
+		array $analysedFiles,
+		?string $insteadOfFile,
+		?string $tmpFile
+	): array
+	{
+		$analysedFiles = array_values(array_filter($analysedFiles, static function (string $file) use ($insteadOfFile): bool {
+			if ($insteadOfFile === null) {
+				return true;
+			}
+			return $file !== $insteadOfFile;
+		}));
+		if ($tmpFile !== null) {
+			$analysedFiles[] = $tmpFile;
+		}
+
+		return $analysedFiles;
 	}
 
 }

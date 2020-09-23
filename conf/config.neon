@@ -249,6 +249,7 @@ parametersSchema:
 	mixinExcludeClasses: listOf(string())
 	scanFiles: listOf(string())
 	scanDirectories: listOf(string())
+	fixerTmpDir: string()
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -425,6 +426,14 @@ services:
 		class: PHPStan\Command\AnalyserRunner
 
 	-
+		class: PHPStan\Command\FixerApplication
+		arguments:
+			analysedPaths: %analysedPaths%
+			currentWorkingDirectory: %currentWorkingDirectory%
+			fixerTmpDir: %fixerTmpDir%
+			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
+
+	-
 		class: PHPStan\Command\IgnoredRegexValidator
 		arguments:
 			parser: @regexParser
@@ -496,6 +505,9 @@ services:
 		class: PHPStan\File\FileFinder
 		arguments:
 			fileExtensions: %fileExtensions%
+
+	-
+		class: PHPStan\File\FileMonitor
 
 	-
 		class: PHPStan\NodeVisitor\StatementOrderVisitor

@@ -3,8 +3,10 @@
 namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
+use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
+use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\File\FileWriter;
@@ -56,6 +58,9 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				new InputOption('generate-baseline', null, InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
+				new InputOption('fix', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
+				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
+				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 			]);
 	}
 
@@ -89,6 +94,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		$pathsFile = $input->getOption('paths-file');
 		$allowXdebug = $input->getOption('xdebug');
 		$debugEnabled = (bool) $input->getOption('debug');
+		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -179,17 +185,6 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			$errorOutput->writeLineFormatted('');
 		}
 
-		/** @var ErrorFormatter $errorFormatter */
-		$errorFormatter = $container->getService($errorFormatterServiceName);
-
-		/** @var AnalyseApplication  $application */
-		$application = $container->getByType(AnalyseApplication::class);
-
-		$debug = $input->getOption('debug');
-		if (!is_bool($debug)) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
 		$generateBaselineFile = $inceptionResult->getGenerateBaselineFile();
 		if ($generateBaselineFile !== null) {
 			$baselineExtension = pathinfo($generateBaselineFile, PATHINFO_EXTENSION);
@@ -210,6 +205,14 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		} catch (\PHPStan\File\PathNotFoundException $e) {
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
+		}
+
+		/** @var AnalyseApplication  $application */
+		$application = $container->getByType(AnalyseApplication::class);
+
+		$debug = $input->getOption('debug');
+		if (!is_bool($debug)) {
+			throw new \PHPStan\ShouldNotHappenException();
 		}
 
 		$analysisResult = $application->analyse(
@@ -297,6 +300,84 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 			return $inceptionResult->handleReturn(0);
 		}
+
+		if ($fix) {
+			$ciDetector = new CiDetector();
+			if ($ciDetector->isCiDetected()) {
+				$inceptionResult->getStdOutput()->writeLineFormatted('PHPStan Pro can\'t run in CI environment yet. Stay tuned!');
+
+				return $inceptionResult->handleReturn(1);
+			}
+			$container->getByType(ResultCacheClearer::class)->clearTemporaryCaches();
+			$hasInternalErrors = $analysisResult->hasInternalErrors();
+			$nonIgnorableErrorsByException = [];
+			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+				if (!$fileSpecificError->hasNonIgnorableException()) {
+					continue;
+				}
+
+				$nonIgnorableErrorsByException[] = $fileSpecificError;
+			}
+
+			if ($hasInternalErrors || count($nonIgnorableErrorsByException) > 0) {
+				$fixerAnalysisResult = new AnalysisResult(
+					$nonIgnorableErrorsByException,
+					$analysisResult->getInternalErrors(),
+					$analysisResult->getInternalErrors(),
+					[],
+					$analysisResult->isDefaultLevelUsed(),
+					$analysisResult->getProjectConfigFile(),
+					$analysisResult->isResultCacheSaved()
+				);
+
+				$inceptionResult->getStdOutput()->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
+
+				/** @var TableErrorFormatter $tableErrorFormatter */
+				$tableErrorFormatter = $container->getService('errorFormatter.table');
+				$tableErrorFormatter->formatErrors($fixerAnalysisResult, $inceptionResult->getStdOutput());
+
+				$inceptionResult->getStdOutput()->writeLineFormatted('Please fix them first and then re-run PHPStan.');
+
+				return $inceptionResult->handleReturn(1);
+			}
+
+			if (!$analysisResult->isResultCacheSaved()) {
+				// this can happen only if there are some regex-related errors in ignoreErrors configuration
+				if (count($analysisResult->getFileSpecificErrors()) > 0) {
+					$inceptionResult->getStdOutput()->getStyle()->error('Unknown error. Please report this as a bug.');
+					return $inceptionResult->handleReturn(1);
+				}
+
+				$inceptionResult->getStdOutput()->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
+
+				/** @var TableErrorFormatter $tableErrorFormatter */
+				$tableErrorFormatter = $container->getService('errorFormatter.table');
+				$tableErrorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
+
+				$inceptionResult->getStdOutput()->writeLineFormatted('Please fix them first and then re-run PHPStan.');
+
+				return $inceptionResult->handleReturn(1);
+			}
+
+			$inceptionResult->handleReturn(0); // delete memory limit file
+
+			/** @var FixerApplication $fixerApplication */
+			$fixerApplication = $container->getByType(FixerApplication::class);
+
+			return $fixerApplication->run(
+				$inceptionResult->getProjectConfigFile(),
+				$inceptionResult,
+				$input,
+				$output,
+				$analysisResult->getFileSpecificErrors(),
+				$analysisResult->getNotFileSpecificErrors(),
+				count($files),
+				$_SERVER['argv'][0]
+			);
+		}
+
+		/** @var ErrorFormatter $errorFormatter */
+		$errorFormatter = $container->getService($errorFormatterServiceName);
 
 		return $inceptionResult->handleReturn(
 			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput())

@@ -439,7 +439,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		});
 		$reflectionSourceStubber = new ReflectionSourceStubber();
 		$locators[] = new PhpInternalSourceLocator($astLocator, self::getPhpStormStubsSourceStubber());
-		$locators[] = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
+		$locators[] = new AutoloadSourceLocator(
+			self::getContainer()->getByType(FileNodesFetcher::class),
+			self::getContainer()->getParameter('streamWrappers')
+		);
 		$locators[] = new PhpInternalSourceLocator($astLocator, $reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $reflectionSourceStubber);
 		$sourceLocator = new MemoizingSourceLocator(new AggregateSourceLocator($locators));

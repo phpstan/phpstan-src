@@ -5,7 +5,6 @@ namespace PHPStan\Command;
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use Composer\CaBundle\CaBundle;
-use GuzzleHttp\Client;
 use Nette\Utils\Json;
 use Phar;
 use PHPStan\Analyser\AnalyserResult;
@@ -22,17 +21,21 @@ use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
 use PHPStan\Process\Runnable\RunnableQueue;
 use PHPStan\Process\Runnable\RunnableQueueLogger;
+use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
+use React\Http\Browser;
 use React\Promise\CancellablePromiseInterface;
 use React\Promise\ExtendedPromiseInterface;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
+use React\Socket\Connector;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use const PHP_BINARY;
+use function Clue\React\Block\await;
 use function escapeshellarg;
 use function file_exists;
 use function React\Promise\resolve;
@@ -277,7 +280,7 @@ class FixerApplication
 
 		try {
 			$this->downloadPhar($output, $pharPath, $infoPath);
-		} catch (\GuzzleHttp\Exception\GuzzleException $e) {
+		} catch (\RuntimeException $e) {
 			if (!file_exists($pharPath)) {
 				$output->writeln('<fg=red>Could not download the fixer executable.</>');
 				$output->writeln($e->getMessage());
@@ -316,13 +319,6 @@ class FixerApplication
 		string $infoPath
 	): void
 	{
-		$client = new Client([
-			'http_errors' => true,
-			'verify' => CaBundle::getBundledCaBundlePath(),
-			'timeout' => 30.0,
-			'connect_timeout' => 30.0,
-		]);
-
 		$currentVersion = null;
 		if (file_exists($pharPath) && file_exists($infoPath)) {
 			/** @var array{version: string, date: string} $currentInfo */
@@ -339,36 +335,53 @@ class FixerApplication
 			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Fixer release...</>');
 		}
 
+		$loop = new StreamSelectLoop();
+		$client = new Browser(
+			$loop,
+			new Connector(
+				$loop,
+				[
+					'timeout' => 5,
+					'tls' => [
+						'cafile' => CaBundle::getBundledCaBundlePath(),
+					],
+				]
+			)
+		);
+
 		/** @var array{url: string, version: string} $latestInfo */
-		$latestInfo = Json::decode((string) $client->request('GET', 'https://fixer-download-api.phpstan.com/latest')->getBody(), Json::FORCE_ARRAY);
+		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version']);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Fixer!</>');
 			return;
 		}
 
-		$progressBar = new ProgressBar($output);
-		$progressStarted = false;
-
 		$output->writeln('<fg=green>Downloading the latest PHPStan Fixer...</>');
 
-		$client->request('GET', $latestInfo['url'], [
-			'sink' => $pharPath,
-			'progress' => static function (int $total, int $downloaded) use (&$progressStarted, $progressBar): void {
-				if ($total === 0) {
-					return;
-				}
+		$progressBar = new ProgressBar($output);
+		$client->requestStreaming('GET', $latestInfo['url'])->then(static function (ResponseInterface $response) use ($loop, $pharPath, $progressBar): void {
+			$body = $response->getBody();
+			if (!$body instanceof \React\Stream\ReadableStreamInterface) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
 
-				if (!$progressStarted) {
-					$progressBar->setFormat('file_download');
-					$progressBar->setMessage(sprintf('%.2f MB', $total / 1000000), 'fileSize');
-					$progressBar->start($total);
-					$progressStarted = true;
-				}
+			$totalSize = (int) $response->getHeaderLine('Content-Length');
+			$progressBar->setFormat('file_download');
+			$progressBar->setMessage(sprintf('%.2f MB', $totalSize / 1000000), 'fileSize');
+			$progressBar->start($totalSize);
 
-				$progressBar->setProgress($downloaded);
-			},
-		]);
+			$destination = new \React\Stream\WritableResourceStream(fopen($pharPath, 'w'), $loop);
+			$body->pipe($destination);
+
+			$bytes = 0;
+			$body->on('data', static function ($chunk) use ($progressBar, &$bytes): void {
+				$bytes += strlen($chunk);
+				$progressBar->setProgress($bytes);
+			});
+		});
+
+		$loop->run();
 
 		$progressBar->finish();
 		$output->writeln('');

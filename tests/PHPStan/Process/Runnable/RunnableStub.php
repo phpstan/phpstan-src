@@ -2,8 +2,8 @@
 
 namespace PHPStan\Process\Runnable;
 
+use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
-use React\Promise\PromiseInterface;
 
 class RunnableStub implements Runnable
 {
@@ -30,8 +30,9 @@ class RunnableStub implements Runnable
 		$this->deferred->resolve();
 	}
 
-	public function run(): PromiseInterface
+	public function run(): CancellablePromiseInterface
 	{
+		/** @var CancellablePromiseInterface */
 		return $this->deferred->promise();
 	}
 

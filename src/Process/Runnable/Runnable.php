@@ -2,14 +2,14 @@
 
 namespace PHPStan\Process\Runnable;
 
-use React\Promise\PromiseInterface;
+use React\Promise\CancellablePromiseInterface;
 
 interface Runnable
 {
 
 	public function getName(): string;
 
-	public function run(): PromiseInterface;
+	public function run(): CancellablePromiseInterface;
 
 	public function cancel(): void;
 

@@ -260,7 +260,7 @@ class FixerApplication
 			if ($exitCode === 0) {
 				return;
 			}
-			$output->writeln(sprintf('<fg=red>Fixer process exited with code %d.</>', $exitCode));
+			$output->writeln(sprintf('<fg=red>PHPStan Pro process exited with code %d.</>', $exitCode));
 		});
 
 		$loop->run();
@@ -282,7 +282,7 @@ class FixerApplication
 			$this->downloadPhar($output, $pharPath, $infoPath);
 		} catch (\RuntimeException $e) {
 			if (!file_exists($pharPath)) {
-				$output->writeln('<fg=red>Could not download the fixer executable.</>');
+				$output->writeln('<fg=red>Could not download the PHPStan Pro executable.</>');
 				$output->writeln($e->getMessage());
 
 				throw new \PHPStan\Command\FixerProcessException();
@@ -297,7 +297,7 @@ class FixerApplication
 		} catch (\Throwable $e) {
 			@unlink($pharPath);
 			@unlink($infoPath);
-			$output->writeln('<fg=red>Fixer PHAR signature is corrupted.</>');
+			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
 
 			throw new \PHPStan\Command\FixerProcessException();
 		}
@@ -305,7 +305,7 @@ class FixerApplication
 		if ($phar->getSignature()['hash_type'] !== 'OpenSSL') {
 			@unlink($pharPath);
 			@unlink($infoPath);
-			$output->writeln('<fg=red>Fixer PHAR signature is corrupted.</>');
+			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
 
 			throw new \PHPStan\Command\FixerProcessException();
 		}
@@ -332,7 +332,7 @@ class FixerApplication
 				return;
 			}
 
-			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Fixer release...</>');
+			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
 		}
 
 		$loop = new StreamSelectLoop();
@@ -353,11 +353,11 @@ class FixerApplication
 		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version']);
-			$output->writeln('<fg=green>You\'re running the latest PHPStan Fixer!</>');
+			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');
 			return;
 		}
 
-		$output->writeln('<fg=green>Downloading the latest PHPStan Fixer...</>');
+		$output->writeln('<fg=green>Downloading the latest PHPStan Pro...</>');
 
 		$progressBar = new ProgressBar($output);
 		$client->requestStreaming('GET', $latestInfo['url'])->then(static function (ResponseInterface $response) use ($loop, $pharPath, $progressBar): void {

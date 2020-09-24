@@ -46,12 +46,15 @@ class AutoloadFilesTest extends TestCase
 		sort($autoloadFiles);
 
 		$expectedFiles = [
+			'guzzlehttp/guzzle/src/functions_include.php', // added to phpstan-dist/bootstrap.php
+			'guzzlehttp/guzzlehttp/promises/src/functions_include.php', // added to phpstan-dist/bootstrap.php
+			'guzzlehttp/guzzlehttp/psr7/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'hoa/consistency/Prelude.php', // Hoa isn't prefixed, no need to load this eagerly
 			'hoa/protocol/Wrapper.php', // Hoa isn't prefixed, no need to load this eagerly
-			'jetbrains/phpstorm-stubs/PhpStormStubsMap.php', // added to bin/phpstan
+			'jetbrains/phpstorm-stubs/PhpStormStubsMap.php', // added to phpstan-dist/bootstrap.php
 			'myclabs/deep-copy/src/DeepCopy/deep_copy.php', // dev dependency of PHPUnit
-			'react/promise-timer/src/functions_include.php', // added to bin/phpstan
-			'react/promise/src/functions_include.php', // added to bin/phpstan
+			'react/promise-timer/src/functions_include.php', // added to phpstan-dist/bootstrap.php
+			'react/promise/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'symfony/polyfill-ctype/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-mbstring/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary

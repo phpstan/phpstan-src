@@ -310,7 +310,7 @@ class FixerApplication
 			throw new \PHPStan\Command\FixerProcessException();
 		}
 
-		return new Process(sprintf('%s %s --port %d', PHP_BINARY, escapeshellarg($pharPath), $serverPort), null, null, []);
+		return new Process(sprintf('%s -d memory_limit=%s %s --port %d', PHP_BINARY, escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), null, null, []);
 	}
 
 	private function downloadPhar(

@@ -444,7 +444,7 @@ return [
 'bcsub' => ['string', 'left_operand'=>'string', 'right_operand'=>'string', 'scale='=>'int'],
 'bin2hex' => ['string', 'data'=>'string'],
 'bind_textdomain_codeset' => ['string', 'domain'=>'string', 'codeset'=>'string'],
-'bindec' => ['int', 'binary_number'=>'string'],
+'bindec' => ['float|int', 'binary_number'=>'string'],
 'bindtextdomain' => ['string', 'domain_name'=>'string', 'dir'=>'string'],
 'birdstep_autocommit' => ['bool', 'index'=>'int'],
 'birdstep_close' => ['bool', 'id'=>'int'],

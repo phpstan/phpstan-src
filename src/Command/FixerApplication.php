@@ -359,8 +359,9 @@ class FixerApplication
 
 		$output->writeln('<fg=green>Downloading the latest PHPStan Pro...</>');
 
+		$pharPathResource = fopen($pharPath, 'w');
 		$progressBar = new ProgressBar($output);
-		$client->requestStreaming('GET', $latestInfo['url'])->then(static function (ResponseInterface $response) use ($loop, $pharPath, $progressBar): void {
+		$client->requestStreaming('GET', $latestInfo['url'])->done(static function (ResponseInterface $response) use ($loop, $pharPath, $progressBar, $pharPathResource): void {
 			$body = $response->getBody();
 			if (!$body instanceof \React\Stream\ReadableStreamInterface) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -371,7 +372,7 @@ class FixerApplication
 			$progressBar->setMessage(sprintf('%.2f MB', $totalSize / 1000000), 'fileSize');
 			$progressBar->start($totalSize);
 
-			$destination = new \React\Stream\WritableResourceStream(fopen($pharPath, 'w'), $loop);
+			$destination = new \React\Stream\WritableResourceStream($pharPathResource, $loop);
 			$body->pipe($destination);
 
 			$bytes = 0;
@@ -382,6 +383,8 @@ class FixerApplication
 		});
 
 		$loop->run();
+
+		fclose($pharPathResource);
 
 		$progressBar->finish();
 		$output->writeln('');

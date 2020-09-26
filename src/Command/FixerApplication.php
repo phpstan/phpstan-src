@@ -381,6 +381,8 @@ class FixerApplication
 				fwrite($pharPathResource, $chunk);
 				$progressBar->setProgress($bytes);
 			});
+		}, static function (\Throwable $e) use ($output): void {
+			$output->writeln(sprintf('<fg=red>Could not download the PHPStan Pro executable:</> %s', $e->getMessage()));
 		});
 
 		$loop->run();

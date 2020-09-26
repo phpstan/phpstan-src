@@ -360,6 +360,9 @@ class FixerApplication
 		$output->writeln('<fg=green>Downloading the latest PHPStan Pro...</>');
 
 		$pharPathResource = fopen($pharPath, 'w');
+		if ($pharPathResource === false) {
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
+		}
 		$progressBar = new ProgressBar($output);
 		$client->requestStreaming('GET', $latestInfo['url'])->done(static function (ResponseInterface $response) use ($loop, $pharPath, $progressBar, $pharPathResource): void {
 			$body = $response->getBody();

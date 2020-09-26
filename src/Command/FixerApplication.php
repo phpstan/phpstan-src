@@ -364,7 +364,7 @@ class FixerApplication
 			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
 		}
 		$progressBar = new ProgressBar($output);
-		$client->requestStreaming('GET', $latestInfo['url'])->done(static function (ResponseInterface $response) use ($loop, $pharPath, $progressBar, $pharPathResource): void {
+		$client->requestStreaming('GET', $latestInfo['url'])->done(static function (ResponseInterface $response) use ($progressBar, $pharPathResource): void {
 			$body = $response->getBody();
 			if (!$body instanceof \React\Stream\ReadableStreamInterface) {
 				throw new \PHPStan\ShouldNotHappenException();

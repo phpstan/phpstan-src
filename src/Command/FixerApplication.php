@@ -372,12 +372,10 @@ class FixerApplication
 			$progressBar->setMessage(sprintf('%.2f MB', $totalSize / 1000000), 'fileSize');
 			$progressBar->start($totalSize);
 
-			$destination = new \React\Stream\WritableResourceStream($pharPathResource, $loop);
-			$body->pipe($destination);
-
 			$bytes = 0;
-			$body->on('data', static function ($chunk) use ($progressBar, &$bytes): void {
+			$body->on('data', static function ($chunk) use ($pharPathResource, $progressBar, &$bytes): void {
 				$bytes += strlen($chunk);
+				fwrite($pharPathResource, $chunk);
 				$progressBar->setProgress($bytes);
 			});
 		});

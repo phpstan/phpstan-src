@@ -144,7 +144,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 
 	public function testExtendsPdoStatementCrash(): void
 	{
-		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
+		if (PHP_MAJOR_VERSION >= 8 && !self::$useStaticReflectionProvider) {
 			$this->markTestSkipped();
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/extends-pdo-statement.php');

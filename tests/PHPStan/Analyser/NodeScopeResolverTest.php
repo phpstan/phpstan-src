@@ -5905,6 +5905,46 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array<int, string>|int|false',
 				'$strWordCountStrTypeIndeterminant',
 			],
+			[
+				'string',
+				'$hashHmacMd5',
+			],
+			[
+				'string',
+				'$hashHmacSha256',
+			],
+			[
+				'false',
+				'$hashHmacNonCryptographic',
+			],
+			[
+				'false',
+				'$hashHmacRandom',
+			],
+			[
+				'string',
+				'$hashHmacVariable',
+			],
+			[
+				'string|false',
+				'$hashHmacFileMd5',
+			],
+			[
+				'string|false',
+				'$hashHmacFileSha256',
+			],
+			[
+				'false',
+				'$hashHmacFileNonCryptographic',
+			],
+			[
+				'false',
+				'$hashHmacFileRandom',
+			],
+			[
+				'(string|false)',
+				'$hashHmacFileVariable',
+			],
 		];
 	}
 

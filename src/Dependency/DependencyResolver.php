@@ -9,6 +9,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\File\FileHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
@@ -20,19 +21,24 @@ use PHPStan\Type\Constant\ConstantStringType;
 class DependencyResolver
 {
 
+	private FileHelper $fileHelper;
+
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	public function __construct(ReflectionProvider $reflectionProvider)
+	private ExportedNodeResolver $exportedNodeResolver;
+
+	public function __construct(
+		FileHelper $fileHelper,
+		ReflectionProvider $reflectionProvider,
+		ExportedNodeResolver $exportedNodeResolver
+	)
 	{
+		$this->fileHelper = $fileHelper;
 		$this->reflectionProvider = $reflectionProvider;
+		$this->exportedNodeResolver = $exportedNodeResolver;
 	}
 
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param Scope $scope
-	 * @return ReflectionWithFilename[]
-	 */
-	public function resolveDependencies(\PhpParser\Node $node, Scope $scope): array
+	public function resolveDependencies(\PhpParser\Node $node, Scope $scope): NodeDependencies
 	{
 		$dependenciesReflections = [];
 
@@ -44,10 +50,8 @@ class DependencyResolver
 				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 			}
 		} elseif ($node instanceof \PhpParser\Node\Stmt\Interface_) {
-			if ($node->extends !== null) {
-				foreach ($node->extends as $className) {
-					$this->addClassToDependencies($className->toString(), $dependenciesReflections);
-				}
+			foreach ($node->extends as $className) {
+				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 			}
 		} elseif ($node instanceof InClassMethodNode) {
 			$nativeMethod = $scope->getFunction();
@@ -188,7 +192,7 @@ class DependencyResolver
 			}
 		}
 
-		return $dependenciesReflections;
+		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node));
 	}
 
 	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool

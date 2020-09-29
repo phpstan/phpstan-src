@@ -221,13 +221,18 @@ class CommandHelper
 			$loaderParameters
 		);
 
-		if (!isset($tmpDir)) {
-			$tmpDir = sys_get_temp_dir() . '/phpstan';
-			if (!@mkdir($tmpDir, 0777) && !is_dir($tmpDir)) {
-				$errorOutput->writeLineFormatted(sprintf('Cannot create a temp directory %s', $tmpDir));
+		$createDir = static function (string $path) use ($errorOutput): void {
+			if (!@mkdir($path, 0777) && !is_dir($path)) {
+				$errorOutput->writeLineFormatted(sprintf('Cannot create a temp directory %s', $path));
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}
+		};
+
+		if (!isset($tmpDir)) {
+			$tmpDir = sys_get_temp_dir() . '/phpstan';
 		}
+
+		$createDir($tmpDir);
 
 		if ($projectConfigFile !== null) {
 			$allCustomConfigFiles = self::getConfigFiles(
@@ -389,19 +394,21 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
+		$tempResultCachePath = $container->getParameter('tempResultCachePath');
+		$createDir($tempResultCachePath);
+
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getByType(FileFinder::class);
 
-		try {
+		/** @var \Closure(): (array{string[], bool}) $filesCallback */
+		$filesCallback = static function () use ($fileFinder, $paths): array {
 			$fileFinderResult = $fileFinder->findFiles($paths);
-		} catch (\PHPStan\File\PathNotFoundException $e) {
-			$errorOutput->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
-			throw new \PHPStan\Command\InceptionNotSuccessfulException($e->getMessage(), 0, $e);
-		}
+
+			return [$fileFinderResult->getFiles(), $fileFinderResult->isOnlyFiles()];
+		};
 
 		return new InceptionResult(
-			$fileFinderResult->getFiles(),
-			$fileFinderResult->isOnlyFiles(),
+			$filesCallback,
 			$stdOutput,
 			$errorOutput,
 			$container,

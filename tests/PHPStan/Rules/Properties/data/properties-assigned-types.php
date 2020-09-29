@@ -286,3 +286,16 @@ class ClassWithPropertyThatAcceptsGenericClass
 	}
 
 }
+
+/**
+ * @template T
+ */
+class Baz {
+	/** @var array{array<T>} */
+	private $var;
+
+	function test(): void
+	{
+		$this->var = [[]];
+	}
+}

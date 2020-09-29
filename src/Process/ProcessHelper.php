@@ -67,6 +67,8 @@ class ProcessHelper
 
 		$processCommandArray = array_merge($processCommandArray, $additionalItems);
 
+		$processCommandArray[] = '--';
+
 		/** @var string[] $paths */
 		$paths = $input->getArgument('paths');
 		foreach ($paths as $path) {

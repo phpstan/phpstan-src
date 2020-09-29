@@ -63,8 +63,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 			0,
 			'[
     {
-        "description": "Bar",
-        "fingerprint": "d112f1651daa597592156359ef28c9a4b81a8a96dbded1c0f1009f5bbc2bda97",
+        "description": "Bar\nBar2",
+        "fingerprint": "034b4afbfb347494c14e396ed8327692f58be4cd27e8aff5f19f4194934db7c9",
         "location": {
             "path": "with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
             "lines": {
@@ -93,8 +93,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         }
     },
     {
-        "description": "Bar",
-        "fingerprint": "d83022ee5bc7c71b6a4988ec47a377c9998b929d12d86fc71b745ec2b04c81e5",
+        "description": "Bar\nBar2",
+        "fingerprint": "829f6c782152fdac840b39208c5b519d18e51bff2c601b6197812fffb8bcd9ed",
         "location": {
             "path": "with space/and unicode \ud83d\ude03/project/foo.php",
             "lines": {
@@ -141,8 +141,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 			2,
 			'[
     {
-        "description": "Bar",
-        "fingerprint": "d112f1651daa597592156359ef28c9a4b81a8a96dbded1c0f1009f5bbc2bda97",
+        "description": "Bar\nBar2",
+        "fingerprint": "034b4afbfb347494c14e396ed8327692f58be4cd27e8aff5f19f4194934db7c9",
         "location": {
             "path": "with space/and unicode \ud83d\ude03/project/folder with unicode \ud83d\ude03/file name with \"spaces\" and unicode \ud83d\ude03.php",
             "lines": {
@@ -171,8 +171,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         }
     },
     {
-        "description": "Bar",
-        "fingerprint": "d83022ee5bc7c71b6a4988ec47a377c9998b929d12d86fc71b745ec2b04c81e5",
+        "description": "Bar\nBar2",
+        "fingerprint": "829f6c782152fdac840b39208c5b519d18e51bff2c601b6197812fffb8bcd9ed",
         "location": {
             "path": "with space/and unicode \ud83d\ude03/project/foo.php",
             "lines": {

@@ -3,8 +3,10 @@
 
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\ClearResultCacheCommand;
+use PHPStan\Command\FixerWorkerCommand;
 use PHPStan\Command\DumpDependenciesCommand;
 use PHPStan\Command\WorkerCommand;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 (function () {
 	error_reporting(E_ALL);
@@ -83,11 +85,13 @@ use PHPStan\Command\WorkerCommand;
 		'PHPStan - PHP Static Analysis Tool',
 		$version
 	);
+	ProgressBar::setFormatDefinition('file_download', ' [%bar%] %percent:3s%% %fileSize%');
 
 	$reversedComposerAutoloaderProjectPaths = array_reverse($composerAutoloaderProjectPaths);
 	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new DumpDependenciesCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new WorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));
+	$application->add(new FixerWorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->run();
 })();

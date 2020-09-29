@@ -52,7 +52,14 @@ class ElseIfConstantConditionRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Elseif condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false'
-				)))->line($node->cond->getLine())->build(),
+				)))->line($node->cond->getLine())
+					->identifier('deadCode.elseifConstantCondition')
+					->metadata([
+						'depth' => $node->getAttribute('statementDepth'),
+						'order' => $node->getAttribute('statementOrder'),
+						'value' => $exprType->getValue(),
+					])
+					->build(),
 			];
 		}
 

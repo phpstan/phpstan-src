@@ -91,6 +91,44 @@ class Error implements \JsonSerializable
 		return $this->filePath;
 	}
 
+	public function changeFilePath(string $newFilePath): self
+	{
+		if ($this->traitFilePath !== null) {
+			throw new \PHPStan\ShouldNotHappenException('Errors in traits not yet supported');
+		}
+
+		return new self(
+			$this->message,
+			$newFilePath,
+			$this->line,
+			$this->canBeIgnored,
+			$newFilePath,
+			null,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata
+		);
+	}
+
+	public function changeTraitFilePath(string $newFilePath): self
+	{
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$newFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata
+		);
+	}
+
 	public function getTraitFilePath(): ?string
 	{
 		return $this->traitFilePath;

@@ -41,6 +41,9 @@ class GithubErrorFormatter implements ErrorFormatter
 			});
 
 			$message = $fileSpecificError->getMessage();
+			// newlines need to be encoded
+			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
+			$message = str_replace("\n", '%0A', $message);
 
 			$line = sprintf('::error %s::%s', implode(',', $metas), $message);
 
@@ -49,6 +52,10 @@ class GithubErrorFormatter implements ErrorFormatter
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
+			// newlines need to be encoded
+			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
+			$notFileSpecificError = str_replace("\n", '%0A', $notFileSpecificError);
+
 			$line = sprintf('::error ::%s', $notFileSpecificError);
 
 			$output->writeRaw($line);
@@ -56,6 +63,10 @@ class GithubErrorFormatter implements ErrorFormatter
 		}
 
 		foreach ($analysisResult->getWarnings() as $warning) {
+			// newlines need to be encoded
+			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
+			$warning = str_replace("\n", '%0A', $warning);
+
 			$line = sprintf('::warning ::%s', $warning);
 
 			$output->writeRaw($line);

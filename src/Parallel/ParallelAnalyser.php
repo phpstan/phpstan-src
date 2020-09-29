@@ -7,6 +7,7 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Dependency\ExportedNode;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
@@ -40,6 +41,8 @@ class ParallelAnalyser
 	 * @param string $mainScript
 	 * @param \Closure(int): void|null $postFileCallback
 	 * @param string|null $projectConfigFile
+	 * @param string|null $tmpFile
+	 * @param string|null $insteadOfFile
 	 * @return AnalyserResult
 	 */
 	public function analyse(
@@ -47,6 +50,8 @@ class ParallelAnalyser
 		string $mainScript,
 		?\Closure $postFileCallback,
 		?string $projectConfigFile,
+		?string $tmpFile,
+		?string $insteadOfFile,
 		InputInterface $input
 	): AnalyserResult
 	{
@@ -98,25 +103,35 @@ class ParallelAnalyser
 		};
 
 		$dependencies = [];
+		$exportedNodes = [];
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {
 				break;
 			}
 
 			$processIdentifier = Random::generate();
+			$commandOptions = [
+				'--port',
+				(string) $serverPort,
+				'--identifier',
+				$processIdentifier,
+			];
+
+			if ($tmpFile !== null && $insteadOfFile !== null) {
+				$commandOptions[] = '--tmp-file';
+				$commandOptions[] = escapeshellarg($tmpFile);
+				$commandOptions[] = '--instead-of';
+				$commandOptions[] = escapeshellarg($insteadOfFile);
+			}
+
 			$process = new Process(ProcessHelper::getWorkerCommand(
 				$mainScript,
 				'worker',
 				$projectConfigFile,
-				[
-					'--port',
-					(string) $serverPort,
-					'--identifier',
-					$processIdentifier,
-				],
+				$commandOptions,
 				$input
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -132,6 +147,21 @@ class ParallelAnalyser
 				 */
 				foreach ($json['dependencies'] as $file => $fileDependencies) {
 					$dependencies[$file] = $fileDependencies;
+				}
+
+				/**
+				 * @var string $file
+				 * @var array<ExportedNode> $fileExportedNodes
+				 */
+				foreach ($json['exportedNodes'] as $file => $fileExportedNodes) {
+					if (count($fileExportedNodes) === 0) {
+						continue;
+					}
+					$exportedNodes[$file] = array_map(static function (array $node): ExportedNode {
+						$class = $node['type'];
+
+						return $class::decode($node['data']);
+					}, $fileExportedNodes);
 				}
 
 				if ($postFileCallback !== null) {
@@ -167,10 +197,15 @@ class ParallelAnalyser
 
 		$loop->run();
 
+		if (count($jobs) > 0) {
+			throw new \PHPStan\ShouldNotHappenException('Some jobs remaining');
+		}
+
 		return new AnalyserResult(
 			$errors,
 			$internalErrors,
 			$internalErrorsCount === 0 ? $dependencies : null,
+			$exportedNodes,
 			$reachedInternalErrorsCountLimit
 		);
 	}

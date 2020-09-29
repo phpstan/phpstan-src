@@ -790,4 +790,39 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testClosureUse(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteCatchScopeWithTryAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/defined-variables-anonymous-function-use.php'], [
+			[
+				'Variable $bar might not be defined.',
+				5,
+			],
+			[
+				'Variable $wrongErrorHandler might not be defined.',
+				22,
+			],
+			[
+				'Variable $onlyInIf might not be defined.',
+				23,
+			],
+			[
+				'Variable $forI might not be defined.',
+				24,
+			],
+			[
+				'Variable $forJ might not be defined.',
+				25,
+			],
+			[
+				'Variable $anotherVariableFromForCond might not be defined.',
+				26,
+			],
+		]);
+	}
+
 }

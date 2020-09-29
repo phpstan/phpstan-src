@@ -157,6 +157,8 @@ class MutatingScope implements Scope
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private ?Scope $parentScope;
+
 	/**
 	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
 	 * @param ReflectionProvider $reflectionProvider
@@ -180,7 +182,8 @@ class MutatingScope implements Scope
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 * @param string[] $dynamicConstantNames
-	 * @paarm bool $treatPhpDocTypesAsCertain
+	 * @param bool $treatPhpDocTypesAsCertain
+	 * @param Scope|null $parentScope
 	 */
 	public function __construct(
 		ScopeFactory $scopeFactory,
@@ -205,7 +208,8 @@ class MutatingScope implements Scope
 		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		array $dynamicConstantNames = [],
-		bool $treatPhpDocTypesAsCertain = true
+		bool $treatPhpDocTypesAsCertain = true,
+		?Scope $parentScope = null
 	)
 	{
 		if ($namespace === '') {
@@ -235,6 +239,7 @@ class MutatingScope implements Scope
 		$this->inFunctionCallsStack = $inFunctionCallsStack;
 		$this->dynamicConstantNames = $dynamicConstantNames;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->parentScope = $parentScope;
 	}
 
 	public function getFile(): string
@@ -319,6 +324,11 @@ class MutatingScope implements Scope
 		return $this->namespace;
 	}
 
+	public function getParentScope(): ?Scope
+	{
+		return $this->parentScope;
+	}
+
 	/**
 	 * @return array<string, \PHPStan\Analyser\VariableTypeHolder>
 	 */
@@ -359,6 +369,23 @@ class MutatingScope implements Scope
 		}
 
 		return $this->variableTypes[$variableName]->getType();
+	}
+
+	/**
+	 * @return array<int, string>
+	 */
+	public function getDefinedVariables(): array
+	{
+		$variables = [];
+		foreach ($this->variableTypes as $variableName => $holder) {
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+
+			$variables[] = $variableName;
+		}
+
+		return $variables;
 	}
 
 	private function isGlobalVariable(string $variableName): bool
@@ -1912,7 +1939,8 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->dynamicConstantNames,
-			false
+			false,
+			$this->parentScope
 		);
 	}
 
@@ -2167,7 +2195,8 @@ class MutatingScope implements Scope
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
-			$stack
+			$stack,
+			$this->parentScope
 		);
 	}
 
@@ -2189,7 +2218,8 @@ class MutatingScope implements Scope
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
-			$stack
+			$stack,
+			$this->parentScope
 		);
 	}
 
@@ -2577,7 +2607,9 @@ class MutatingScope implements Scope
 			$anonymousFunctionReflection,
 			true,
 			[],
-			$nativeTypes
+			$nativeTypes,
+			[],
+			$this
 		);
 	}
 
@@ -2618,7 +2650,12 @@ class MutatingScope implements Scope
 			$variableTypes,
 			[],
 			$this->inClosureBindScopeClass,
-			$anonymousFunctionReflection
+			$anonymousFunctionReflection,
+			true,
+			[],
+			[],
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -2773,7 +2810,9 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$currentlyAssignedExpressions,
-			$this->nativeExpressionTypes
+			$this->nativeExpressionTypes,
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -2795,7 +2834,9 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$currentlyAssignedExpressions,
-			$this->nativeExpressionTypes
+			$this->nativeExpressionTypes,
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -2849,7 +2890,8 @@ class MutatingScope implements Scope
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$nativeTypes,
-			$this->inFunctionCallsStack
+			$this->inFunctionCallsStack,
+			$this->parentScope
 		);
 	}
 
@@ -2876,7 +2918,9 @@ class MutatingScope implements Scope
 				$this->anonymousFunctionReflection,
 				$this->inFirstLevelStatement,
 				[],
-				$nativeTypes
+				$nativeTypes,
+				[],
+				$this->parentScope
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$varType = $this->getType($expr->var);
@@ -2933,7 +2977,8 @@ class MutatingScope implements Scope
 				$this->inFirstLevelStatement,
 				$this->currentlyAssignedExpressions,
 				$this->nativeExpressionTypes,
-				$this->inFunctionCallsStack
+				$this->inFunctionCallsStack,
+				$this->parentScope
 			);
 		}
 
@@ -2963,7 +3008,8 @@ class MutatingScope implements Scope
 				$this->inFirstLevelStatement,
 				$this->currentlyAssignedExpressions,
 				$nativeTypes,
-				$this->inFunctionCallsStack
+				$this->inFunctionCallsStack,
+				$this->parentScope
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$constantArrays = TypeUtils::getConstantArrays($this->getType($expr->var));
@@ -3036,7 +3082,10 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions
+			$this->currentlyAssignedExpressions,
+			[],
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -3147,7 +3196,8 @@ class MutatingScope implements Scope
 			false,
 			$this->currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
-			$this->inFunctionCallsStack
+			$this->inFunctionCallsStack,
+			$this->parentScope
 		);
 	}
 
@@ -3180,7 +3230,9 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
-			$this->nativeExpressionTypes
+			$this->nativeExpressionTypes,
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -3218,7 +3270,8 @@ class MutatingScope implements Scope
 			), static function (VariableTypeHolder $holder): bool {
 				return $holder->getCertainty()->yes();
 			})),
-			[]
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -3287,7 +3340,8 @@ class MutatingScope implements Scope
 				array_map($typeToVariableHolder, $finallyScope->nativeExpressionTypes),
 				array_map($typeToVariableHolder, $originalFinallyScope->nativeExpressionTypes)
 			)),
-			[]
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -3377,7 +3431,8 @@ class MutatingScope implements Scope
 			$this->inFirstLevelStatement,
 			[],
 			$this->nativeExpressionTypes,
-			$this->inFunctionCallsStack
+			$this->inFunctionCallsStack,
+			$this->parentScope
 		);
 	}
 
@@ -3424,7 +3479,8 @@ class MutatingScope implements Scope
 			$this->inFirstLevelStatement,
 			[],
 			$nativeTypes,
-			[]
+			[],
+			$this->parentScope
 		);
 	}
 
@@ -3467,7 +3523,8 @@ class MutatingScope implements Scope
 			$this->inFirstLevelStatement,
 			[],
 			$nativeTypes,
-			[]
+			[],
+			$this->parentScope
 		);
 	}
 

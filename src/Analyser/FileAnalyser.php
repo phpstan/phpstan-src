@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use PhpParser\Comment;
 use PhpParser\Node;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\File\FileHelper;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Rules\FileRuleError;
@@ -32,8 +31,6 @@ class FileAnalyser
 
 	private DependencyResolver $dependencyResolver;
 
-	private FileHelper $fileHelper;
-
 	private bool $reportUnmatchedIgnoredErrors;
 
 	public function __construct(
@@ -41,7 +38,6 @@ class FileAnalyser
 		NodeScopeResolver $nodeScopeResolver,
 		Parser $parser,
 		DependencyResolver $dependencyResolver,
-		FileHelper $fileHelper,
 		bool $reportUnmatchedIgnoredErrors
 	)
 	{
@@ -49,7 +45,6 @@ class FileAnalyser
 		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->parser = $parser;
 		$this->dependencyResolver = $dependencyResolver;
-		$this->fileHelper = $fileHelper;
 		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 	}
 
@@ -69,12 +64,13 @@ class FileAnalyser
 	{
 		$fileErrors = [];
 		$fileDependencies = [];
+		$exportedNodes = [];
 		if (is_file($file)) {
 			try {
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = [];
 				$temporaryFileErrors = [];
-				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
+				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
 					if ($outerNodeCallback !== null) {
 						$outerNodeCallback($node, $scope);
 					}
@@ -171,8 +167,12 @@ class FileAnalyser
 					}
 
 					try {
-						foreach ($this->resolveDependencies($node, $scope, $analysedFiles) as $dependentFile) {
+						$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
+						foreach ($dependencies->getFileDependencies($scope->getFile(), $analysedFiles) as $dependentFile) {
 							$fileDependencies[] = $dependentFile;
+						}
+						if ($dependencies->getExportedNode() !== null) {
+							$exportedNodes[] = $dependencies->getExportedNode();
 						}
 					} catch (\PHPStan\AnalysedCodeException $e) {
 						// pass
@@ -248,7 +248,7 @@ class FileAnalyser
 			$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
 		}
 
-		return new FileAnalyserResult($fileErrors, array_values(array_unique($fileDependencies)));
+		return new FileAnalyserResult($fileErrors, array_values(array_unique($fileDependencies)), $exportedNodes);
 	}
 
 	/**
@@ -298,41 +298,6 @@ class FileAnalyser
 		}
 
 		return null;
-	}
-
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param Scope $scope
-	 * @param array<string, true> $analysedFiles
-	 * @return string[]
-	 */
-	private function resolveDependencies(
-		\PhpParser\Node $node,
-		Scope $scope,
-		array $analysedFiles
-	): array
-	{
-		$dependencies = [];
-
-		foreach ($this->dependencyResolver->resolveDependencies($node, $scope) as $dependencyReflection) {
-			$dependencyFile = $dependencyReflection->getFileName();
-			if ($dependencyFile === false) {
-				continue;
-			}
-			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);
-
-			if ($scope->getFile() === $dependencyFile) {
-				continue;
-			}
-
-			if (!isset($analysedFiles[$dependencyFile])) {
-				continue;
-			}
-
-			$dependencies[$dependencyFile] = $dependencyFile;
-		}
-
-		return array_values($dependencies);
 	}
 
 }

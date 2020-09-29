@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\File\FileFinder;
-use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
 
 class DependencyDumper
@@ -16,8 +15,6 @@ class DependencyDumper
 	private DependencyResolver $dependencyResolver;
 
 	private NodeScopeResolver $nodeScopeResolver;
-
-	private FileHelper $fileHelper;
 
 	private Parser $parser;
 
@@ -28,7 +25,6 @@ class DependencyDumper
 	public function __construct(
 		DependencyResolver $dependencyResolver,
 		NodeScopeResolver $nodeScopeResolver,
-		FileHelper $fileHelper,
 		Parser $parser,
 		ScopeFactory $scopeFactory,
 		FileFinder $fileFinder
@@ -36,7 +32,6 @@ class DependencyDumper
 	{
 		$this->dependencyResolver = $dependencyResolver;
 		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->fileHelper = $fileHelper;
 		$this->parser = $parser;
 		$this->scopeFactory = $scopeFactory;
 		$this->fileFinder = $fileFinder;
@@ -78,9 +73,10 @@ class DependencyDumper
 					$parserNodes,
 					$this->scopeFactory->create(ScopeContext::create($file)),
 					function (\PhpParser\Node $node, Scope $scope) use ($analysedFiles, &$fileDependencies): void {
+						$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
 						$fileDependencies = array_merge(
 							$fileDependencies,
-							$this->resolveDependencies($node, $scope, $analysedFiles)
+							$dependencies->getFileDependencies($scope->getFile(), $analysedFiles)
 						);
 					}
 				);
@@ -89,49 +85,13 @@ class DependencyDumper
 			}
 
 			foreach (array_unique($fileDependencies) as $fileDependency) {
-				$relativeDependencyFile = $fileDependency;
-				$dependencies[$relativeDependencyFile][] = $file;
+				$dependencies[$fileDependency][] = $file;
 			}
 
 			$progressCallback();
 		}
 
 		return $dependencies;
-	}
-
-	/**
-	 * @param \PhpParser\Node $node
-	 * @param Scope $scope
-	 * @param array<string, true> $analysedFiles
-	 * @return string[]
-	 */
-	private function resolveDependencies(
-		\PhpParser\Node $node,
-		Scope $scope,
-		array $analysedFiles
-	): array
-	{
-		$dependencies = [];
-
-		foreach ($this->dependencyResolver->resolveDependencies($node, $scope) as $dependencyReflection) {
-			$dependencyFile = $dependencyReflection->getFileName();
-			if ($dependencyFile === false) {
-				continue;
-			}
-			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);
-
-			if ($scope->getFile() === $dependencyFile) {
-				continue;
-			}
-
-			if (!isset($analysedFiles[$dependencyFile])) {
-				continue;
-			}
-
-			$dependencies[$dependencyFile] = $dependencyFile;
-		}
-
-		return array_values($dependencies);
 	}
 
 }

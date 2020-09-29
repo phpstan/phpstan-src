@@ -6,6 +6,7 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\DirectParser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -518,8 +519,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$this->createScopeFactory($broker, $typeSpecifier),
 			$nodeScopeResolver,
 			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser),
-			new DependencyResolver($broker),
-			$fileHelper,
+			new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
 			$reportUnmatchedIgnoredErrors
 		);
 

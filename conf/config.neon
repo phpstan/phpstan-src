@@ -26,6 +26,7 @@ parameters:
 	checkFunctionArgumentTypes: false
 	checkFunctionNameCase: false
 	checkGenericClassInNonGenericObjectType: false
+	checkInternalClassCaseSensitivity: false
 	checkMissingIterableValueType: false
 	checkMissingVarTagTypehint: false
 	checkArgumentsPassedByReference: false
@@ -90,6 +91,7 @@ parameters:
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
+	tempResultCachePath: %tmpDir%/resultCaches
 	staticReflectionClassNamePatterns:
 		- '#^PhpParser\\#'
 		- '#^PHPStan\\#'
@@ -167,6 +169,7 @@ parametersSchema:
 	checkFunctionArgumentTypes: bool()
 	checkFunctionNameCase: bool()
 	checkGenericClassInNonGenericObjectType: bool()
+	checkInternalClassCaseSensitivity: bool()
 	checkMissingIterableValueType: bool()
 	checkMissingVarTagTypehint: bool()
 	checkArgumentsPassedByReference: bool()
@@ -235,6 +238,7 @@ parametersSchema:
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
 	earlyTerminatingFunctionCalls: listOf(string())
 	memoryLimitFile: string()
+	tempResultCachePath: string()
 	staticReflectionClassNamePatterns: listOf(string())
 	dynamicConstantNames: listOf(string())
 	customRulesetUsed: bool()
@@ -245,6 +249,7 @@ parametersSchema:
 	mixinExcludeClasses: listOf(string())
 	scanFiles: listOf(string())
 	scanDirectories: listOf(string())
+	fixerTmpDir: string()
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -389,15 +394,22 @@ services:
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 
 	-
-		class: PHPStan\Analyser\ResultCache\ResultCacheManager
+		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory
 		arguments:
 			cacheFilePath: %tmpDir%/resultCache.php
+			tempResultCachePath: %tempResultCachePath%
 			allCustomConfigFiles: %allCustomConfigFiles%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			stubFiles: %stubFiles%
 			usedLevel: %usedLevel%
 			cliAutoloadFile: %cliAutoloadFile%
+
+	-
+		class: PHPStan\Analyser\ResultCache\ResultCacheClearer
+		arguments:
+			cacheFilePath: %tmpDir%/resultCache.php
+			tempResultCachePath: %tempResultCachePath%
 
 	-
 		class: PHPStan\Cache\Cache
@@ -414,6 +426,14 @@ services:
 		class: PHPStan\Command\AnalyserRunner
 
 	-
+		class: PHPStan\Command\FixerApplication
+		arguments:
+			analysedPaths: %analysedPaths%
+			currentWorkingDirectory: %currentWorkingDirectory%
+			fixerTmpDir: %fixerTmpDir%
+			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
+
+	-
 		class: PHPStan\Command\IgnoredRegexValidator
 		arguments:
 			parser: @regexParser
@@ -423,6 +443,17 @@ services:
 
 	-
 		class: PHPStan\Dependency\DependencyResolver
+
+	-
+		class: PHPStan\Dependency\ExportedNodeFetcher
+		arguments:
+			phpParser: @phpParserDecorator
+
+	-
+		class: PHPStan\Dependency\ExportedNodeResolver
+
+	-
+		class: PHPStan\Dependency\ExportedNodeVisitor
 
 	-
 		class: PHPStan\DependencyInjection\Container
@@ -476,6 +507,9 @@ services:
 			fileExtensions: %fileExtensions%
 
 	-
+		class: PHPStan\File\FileMonitor
+
+	-
 		class: PHPStan\NodeVisitor\StatementOrderVisitor
 
 	-
@@ -500,6 +534,9 @@ services:
 
 	-
 		class: PHPStan\Parser\FunctionCallStatementFinder
+
+	-
+		class: PHPStan\Process\CpuCoreCounter
 
 	-
 		implement: PHPStan\Reflection\FunctionReflectionFactory
@@ -584,6 +621,8 @@ services:
 
 	-
 		class: PHPStan\Rules\ClassCaseSensitivityCheck
+		arguments:
+			checkInternalClassCaseSensitivity: %checkInternalClassCaseSensitivity%
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
@@ -865,6 +904,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PathinfoFunctionDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\PregSplitDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

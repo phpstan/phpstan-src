@@ -10,9 +10,12 @@ class ClassCaseSensitivityCheck
 
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	public function __construct(ReflectionProvider $reflectionProvider)
+	private bool $checkInternalClassCaseSensitivity;
+
+	public function __construct(ReflectionProvider $reflectionProvider, bool $checkInternalClassCaseSensitivity = false)
 	{
 		$this->reflectionProvider = $reflectionProvider;
+		$this->checkInternalClassCaseSensitivity = $checkInternalClassCaseSensitivity;
 	}
 
 	/**
@@ -28,7 +31,7 @@ class ClassCaseSensitivityCheck
 				continue;
 			}
 			$classReflection = $this->reflectionProvider->getClass($className);
-			if ($classReflection->isBuiltin()) {
+			if (!$this->checkInternalClassCaseSensitivity && $classReflection->isBuiltin()) {
 				continue; // skip built-in classes
 			}
 			$realClassName = $classReflection->getName();

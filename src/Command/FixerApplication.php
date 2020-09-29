@@ -314,6 +314,33 @@ class FixerApplication
 		$forcedPort = $_SERVER['PHPSTAN_PRO_WEB_PORT'] ?? null;
 		if ($forcedPort !== null) {
 			$env['PHPSTAN_PRO_WEB_PORT'] = $_SERVER['PHPSTAN_PRO_WEB_PORT'];
+			$isDocker = $this->isDockerRunning();
+			if ($isDocker) {
+				$output->writeln('Running in Docker? Don\'t forget to do these steps:');
+
+				$output->writeln('1) Publish this port when running Docker:');
+				$output->writeln('   <fg=cyan>-p 11111</>');
+				$output->writeln('2) Map the temp directory to a persistent volume');
+				$output->writeln('   so that you don\'t have to log in every time:');
+				$output->writeln(sprintf('   <fg=cyan>-v ~/phpstan-pro:%s</>', $this->fixerTmpDir));
+				$output->writeln('');
+			}
+		} else {
+			$isDocker = $this->isDockerRunning();
+			if ($isDocker) {
+				$output->writeln('Running in Docker? You need to do these steps in order to launch PHPStan Pro:');
+				$output->writeln('');
+				$output->writeln('1) Set the PHPSTAN_PRO_WEB_PORT environment variable in the Dockerfile:');
+				$output->writeln('   <fg=cyan>ENV PHPSTAN_PRO_WEB_PORT=11111</>');
+				$output->writeln('2) Expose this port in the Dockerfile:');
+				$output->writeln('   <fg=cyan>EXPOSE 11111</>');
+				$output->writeln('3) Publish this port when running Docker:');
+				$output->writeln('   <fg=cyan>-p 11111</>');
+				$output->writeln('4) Map the temp directory to a persistent volume');
+				$output->writeln('   so that you don\'t have to log in every time:');
+				$output->writeln(sprintf('   <fg=cyan>-v ~/phpstan-pro:%s</>', $this->fixerTmpDir));
+				$output->writeln('');
+			}
 		}
 
 		return new Process(sprintf('%s -d memory_limit=%s %s --port %d', PHP_BINARY, escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), null, $env, []);
@@ -535,6 +562,21 @@ class FixerApplication
 			return \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
 		} catch (\OutOfBoundsException $e) {
 			return 'Version unknown';
+		}
+	}
+
+	private function isDockerRunning(): bool
+	{
+		if (!is_file('/proc/1/cgroup')) {
+			return false;
+		}
+
+		try {
+			$contents = FileReader::read('/proc/1/cgroup');
+
+			return strpos($contents, 'docker') !== false;
+		} catch (\PHPStan\File\CouldNotReadFileException $e) {
+			return false;
 		}
 	}
 

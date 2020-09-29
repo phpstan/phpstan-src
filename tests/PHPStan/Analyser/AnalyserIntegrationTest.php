@@ -148,7 +148,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 			$this->markTestSkipped();
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/extends-pdo-statement.php');
-		$this->assertCount(6, $errors);
+		$this->assertCount(0, $errors);
 	}
 
 	public function testArrayDestructuringArrayDimFetch(): void

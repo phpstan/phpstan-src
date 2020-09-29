@@ -335,7 +335,7 @@ class FixerApplication
 				$output->writeln('2) Expose this port in the Dockerfile:');
 				$output->writeln('   <fg=cyan>EXPOSE 11111</>');
 				$output->writeln('3) Publish this port when running Docker:');
-				$output->writeln('   <fg=cyan>-p 11111</>');
+				$output->writeln('   <fg=cyan>-p 127.0.0.1:11111:11111</>');
 				$output->writeln('4) Map the temp directory to a persistent volume');
 				$output->writeln('   so that you don\'t have to log in every time:');
 				$output->writeln(sprintf('   <fg=cyan>-v ~/phpstan-pro:%s</>', $this->fixerTmpDir));

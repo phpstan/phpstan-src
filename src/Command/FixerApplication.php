@@ -322,7 +322,7 @@ class FixerApplication
 				$output->writeln(sprintf('   <fg=cyan>-p 127.0.0.1:%d:%d</>', $_SERVER['PHPSTAN_PRO_WEB_PORT'], $_SERVER['PHPSTAN_PRO_WEB_PORT']));
 				$output->writeln('2) Map the temp directory to a persistent volume');
 				$output->writeln('   so that you don\'t have to log in every time:');
-				$output->writeln(sprintf('   <fg=cyan>-v ~/phpstan-pro:%s</>', $this->fixerTmpDir));
+				$output->writeln(sprintf('   <fg=cyan>-v ~/.phpstan-pro:%s</>', $this->fixerTmpDir));
 				$output->writeln('');
 			}
 		} else {

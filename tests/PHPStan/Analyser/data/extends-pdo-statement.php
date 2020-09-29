@@ -13,6 +13,14 @@ class CrashOne extends \PDOStatement
 	{
 		return true;
 	}
+
+	/**
+	 * @return \Traversable<mixed, mixed>
+	 */
+	public function getIterator()
+	{
+		return new \ArrayObject([]);
+	}
 }
 
 class CrashTwo extends \PDOStatement
@@ -28,6 +36,13 @@ class CrashTwo extends \PDOStatement
 		return true;
 	}
 
+	/**
+	 * @return \Traversable<mixed, mixed>
+	 */
+	public function getIterator()
+	{
+		return new \ArrayObject([]);
+	}
 }
 
 class CrashThree extends \PDOStatement
@@ -43,6 +58,13 @@ class CrashThree extends \PDOStatement
 		return true;
 	}
 
+	/**
+	 * @return \Traversable<mixed, mixed>
+	 */
+	public function getIterator()
+	{
+		return new \ArrayObject([]);
+	}
 }
 
 class CrashFour extends \PDOStatement
@@ -59,6 +81,13 @@ class CrashFour extends \PDOStatement
 		return true;
 	}
 
+	/**
+	 * @return \Traversable<mixed, mixed>
+	 */
+	public function getIterator()
+	{
+		return new \ArrayObject([]);
+	}
 }
 
 class CrashFive extends \PDOStatement
@@ -75,6 +104,13 @@ class CrashFive extends \PDOStatement
 		return true;
 	}
 
+	/**
+	 * @return \Traversable<mixed, mixed>
+	 */
+	public function getIterator()
+	{
+		return new \ArrayObject([]);
+	}
 }
 
 class CrashSix extends \PDOStatement
@@ -90,4 +126,11 @@ class CrashSix extends \PDOStatement
 		return true;
 	}
 
+	/**
+	 * @return \Traversable<mixed, mixed>
+	 */
+	public function getIterator()
+	{
+		return new \ArrayObject([]);
+	}
 }

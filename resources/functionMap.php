@@ -8118,7 +8118,7 @@ return [
 'openssl_public_decrypt' => ['bool', 'data'=>'string', '&w_decrypted'=>'string', 'key'=>'string|resource', 'padding='=>'int'],
 'openssl_public_encrypt' => ['bool', 'data'=>'string', '&w_crypted'=>'string', 'key'=>'string|resource', 'padding='=>'int'],
 'openssl_random_pseudo_bytes' => ['string|false', 'length'=>'int', '&w_crypto_strong='=>'bool'],
-'openssl_seal' => ['int|false', 'data'=>'string', '&w_sealed_data'=>'string', '&w_env_keys'=>'array', 'pub_key_ids'=>'array', 'method='=>'string', '&rw_iv'=>'string'],
+'openssl_seal' => ['int|false', 'data'=>'string', '&w_sealed_data'=>'string', '&w_env_keys'=>'array', 'pub_key_ids'=>'array', 'method='=>'string', '&rw_iv='=>'string'],
 'openssl_sign' => ['bool', 'data'=>'string', '&w_signature'=>'string', 'priv_key_id'=>'resource|string', 'signature_alg='=>'int|string'],
 'openssl_spki_export' => ['string|null', 'spkac'=>'string'],
 'openssl_spki_export_challenge' => ['string|null', 'spkac'=>'string'],

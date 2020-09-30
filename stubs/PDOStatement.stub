@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @implements Traversable<array<int|string, mixed>>
+ * @implements IteratorAggregate<array<int|string, mixed>>
  * @link https://php.net/manual/en/class.pdostatement.php
  */
 class PDOStatement implements Traversable

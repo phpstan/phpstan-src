@@ -403,7 +403,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 			}
 
 			self::assertNotInstanceOf(ErrorType::class, $signature->getReturnType(), $functionName);
+			$optionalOcurred = false;
 			foreach ($signature->getParameters() as $parameter) {
+				if ($parameter->isOptional()) {
+					$optionalOcurred = true;
+				} elseif ($optionalOcurred) {
+					$this->fail(sprintf('%s contains required parameter after optional.', $functionName));
+				}
 				self::assertNotInstanceOf(ErrorType::class, $parameter->getType(), sprintf('%s (parameter %s)', $functionName, $parameter->getName()));
 			}
 		}

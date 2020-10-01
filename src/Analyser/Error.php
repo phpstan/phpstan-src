@@ -141,7 +141,7 @@ class Error implements \JsonSerializable
 
 	public function canBeIgnored(): bool
 	{
-		return $this->canBeIgnored !== false;
+		return $this->canBeIgnored === true;
 	}
 
 	public function hasNonIgnorableException(): bool

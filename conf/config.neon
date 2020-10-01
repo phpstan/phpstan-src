@@ -875,6 +875,10 @@ services:
 		class: PHPStan\Type\Php\GettimeofdayDynamicFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+	-
+		class: PHPStan\Type\Php\HashHmacFunctionsReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
 		class: PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension

@@ -180,6 +180,15 @@ return [
 		function (string $filePath, string $prefix, string $content): string {
 			return str_replace('private static final', 'private static', $content);
 		},
+		function (string $filePath, string $prefix, string $content): string {
+			if ($filePath !== 'vendor/hoa/stream/Stream.php') {
+				return $content;
+			}
+
+			$content = str_replace('\Hoa\Consistency::registerShutdownFunction(xcallable(\'Hoa\\\\Stream\\\\Stream::_Hoa_Stream\'));', '', $content);
+
+			return $content;
+		},
 	],
 	'whitelist' => [
 		'PHPStan\*',

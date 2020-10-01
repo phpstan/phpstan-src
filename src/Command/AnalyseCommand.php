@@ -330,31 +330,42 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 					$analysisResult->isResultCacheSaved()
 				);
 
-				$inceptionResult->getStdOutput()->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
+				$stdOutput = $inceptionResult->getStdOutput();
+				$stdOutput->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
 
 				/** @var TableErrorFormatter $tableErrorFormatter */
 				$tableErrorFormatter = $container->getService('errorFormatter.table');
-				$tableErrorFormatter->formatErrors($fixerAnalysisResult, $inceptionResult->getStdOutput());
+				$tableErrorFormatter->formatErrors($fixerAnalysisResult, $stdOutput);
 
-				$inceptionResult->getStdOutput()->writeLineFormatted('Please fix them first and then re-run PHPStan.');
+				$stdOutput->writeLineFormatted('Please fix them first and then re-run PHPStan.');
+
+				if ($stdOutput->isDebug()) {
+					$stdOutput->writeLineFormatted(sprintf('hasInternalErrors: %s', $hasInternalErrors ? 'true' : 'false'));
+					$stdOutput->writeLineFormatted(sprintf('nonIgnorableErrorsByExceptionCount: %d', count($nonIgnorableErrorsByException)));
+				}
 
 				return $inceptionResult->handleReturn(1);
 			}
 
 			if (!$analysisResult->isResultCacheSaved()) {
 				// this can happen only if there are some regex-related errors in ignoreErrors configuration
+				$stdOutput = $inceptionResult->getStdOutput();
 				if (count($analysisResult->getFileSpecificErrors()) > 0) {
-					$inceptionResult->getStdOutput()->getStyle()->error('Unknown error. Please report this as a bug.');
+					$stdOutput->getStyle()->error('Unknown error. Please report this as a bug.');
 					return $inceptionResult->handleReturn(1);
 				}
 
-				$inceptionResult->getStdOutput()->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
+				$stdOutput->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
 
 				/** @var TableErrorFormatter $tableErrorFormatter */
 				$tableErrorFormatter = $container->getService('errorFormatter.table');
-				$tableErrorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
+				$tableErrorFormatter->formatErrors($analysisResult, $stdOutput);
 
-				$inceptionResult->getStdOutput()->writeLineFormatted('Please fix them first and then re-run PHPStan.');
+				$stdOutput->writeLineFormatted('Please fix them first and then re-run PHPStan.');
+
+				if ($stdOutput->isDebug()) {
+					$stdOutput->writeLineFormatted('Result cache was not saved.');
+				}
 
 				return $inceptionResult->handleReturn(1);
 			}

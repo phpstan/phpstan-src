@@ -5914,7 +5914,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$hashHmacSha256',
 			],
 			[
-				'false',
+				// can't be tested correctly in PHP < 7.2
+				(function_exists('hash_hmac_algos') ? 'false' : 'string'),
 				'$hashHmacNonCryptographic',
 			],
 			[
@@ -5934,7 +5935,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$hashHmacFileSha256',
 			],
 			[
-				'false',
+				(function_exists('hash_hmac_algos') ? 'false' : 'string'),
 				'$hashHmacFileNonCryptographic',
 			],
 			[

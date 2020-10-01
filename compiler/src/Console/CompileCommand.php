@@ -176,8 +176,6 @@ php;
 			$output .= 'require_once __DIR__ . ' . var_export($path, true) . ';' . "\n";
 		}
 
-		$output .= 'require_once __DIR__ . \'/vendor/hoa/event/Bucket.php\';' . "\n";
-
 		file_put_contents($preloadScript, sprintf($template, $output));
 	}
 

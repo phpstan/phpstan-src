@@ -285,7 +285,7 @@ class ResultCacheManager
 					}
 
 					if ($output->isDebug()) {
-						$output->writeLineFormatted('Result cache was not saved because of non-ignorable exception.');
+						$output->writeLineFormatted(sprintf('Result cache was not saved because of non-ignorable exception: %s', $error->getMessage()));
 					}
 
 					return false;

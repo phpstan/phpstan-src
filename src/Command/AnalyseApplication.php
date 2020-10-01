@@ -88,6 +88,9 @@ class AnalyseApplication
 			$warnings = [];
 			$internalErrors = [];
 			$savedResultCache = false;
+			if ($errorOutput->isDebug()) {
+				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
+			}
 		} else {
 			$resultCache = $resultCacheManager->restore($files, $debug, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(

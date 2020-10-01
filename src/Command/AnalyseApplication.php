@@ -99,7 +99,7 @@ class AnalyseApplication
 				$errorOutput,
 				$input
 			);
-			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, true);
+			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());

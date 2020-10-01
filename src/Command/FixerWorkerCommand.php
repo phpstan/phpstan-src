@@ -159,6 +159,7 @@ class FixerWorkerCommand extends Command
 		$result = $resultCacheManager->process(
 			$this->switchTmpFileInAnalyserResult($intermediateAnalyserResult, $tmpFile, $insteadOfFile),
 			$resultCache,
+			$inceptionResult->getErrorOutput(),
 			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null
 		)->getAnalyserResult();
 

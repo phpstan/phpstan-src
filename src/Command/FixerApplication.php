@@ -512,6 +512,7 @@ class FixerApplication
 			$result = $resultCacheManager->process(
 				new AnalyserResult([], [], [], [], false),
 				$resultCache,
+				$inceptionResult->getErrorOutput(),
 				true
 			)->getAnalyserResult();
 			$intermediateErrors = $ignoredErrorHelperResult->process(

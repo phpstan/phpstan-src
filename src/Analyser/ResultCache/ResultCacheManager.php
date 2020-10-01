@@ -255,7 +255,7 @@ class ResultCacheManager
 	 * @return ResultCacheProcessResult
 	 * @throws \PHPStan\ShouldNotHappenException
 	 */
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, $save): ResultCacheProcessResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -263,12 +263,18 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache): bool {
+		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output): bool {
 			if ($dependencies === null) {
+				if ($output->isDebug()) {
+					$output->writeLineFormatted('Result cache was not saved because of error in dependencies.');
+				}
 				return false;
 			}
 
 			if (count($internalErrors) > 0) {
+				if ($output->isDebug()) {
+					$output->writeLineFormatted('Result cache was not saved because of internal errors.');
+				}
 				return false;
 			}
 
@@ -278,11 +284,20 @@ class ResultCacheManager
 						continue;
 					}
 
+					if ($output->isDebug()) {
+						$output->writeLineFormatted('Result cache was not saved because of non-ignorable exception.');
+					}
+
 					return false;
 				}
 			}
 
 			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $dependencies, $exportedNodes);
+
+			if ($output->isDebug()) {
+				$output->writeLineFormatted('Result cache is saved.');
+			}
+
 			return true;
 		};
 
@@ -290,6 +305,10 @@ class ResultCacheManager
 			$saved = false;
 			if ($save !== false) {
 				$saved = $doSave($freshErrorsByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), is_string($save) ? $save : null);
+			} else {
+				if ($output->isDebug()) {
+					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
+				}
 			}
 
 			return new ResultCacheProcessResult($analyserResult, $saved);

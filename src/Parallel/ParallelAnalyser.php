@@ -181,7 +181,7 @@ class ParallelAnalyser
 
 				$job = array_pop($jobs);
 				$process->request(['action' => 'analyse', 'files' => $job]);
-			}, $handleError, function ($exitCode, string $output) use (&$internalErrors, $processIdentifier): void {
+			}, $handleError, function ($exitCode, string $output) use (&$internalErrors, &$internalErrorsCount, $processIdentifier): void {
 				$this->processPool->tryQuitProcess($processIdentifier);
 				if ($exitCode === 0) {
 					return;
@@ -191,14 +191,15 @@ class ParallelAnalyser
 				}
 
 				$internalErrors[] = sprintf('Child process error (exit code %d): %s', $exitCode, $output);
+				$internalErrorsCount++;
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);
 		}
 
 		$loop->run();
 
-		if (count($jobs) > 0) {
-			$internalErrors[] = 'Some parallel worker jobs have not finished';
+		if (count($jobs) > 0 && $internalErrorsCount === 0) {
+			$internalErrors[] = 'Some parallel worker jobs have not finished.';
 			$internalErrorsCount++;
 		}
 

@@ -7213,7 +7213,7 @@ return [
 'mysqli::use_result' => ['mysqli_result|false'],
 'mysqli_affected_rows' => ['int', 'link'=>'mysqli'],
 'mysqli_autocommit' => ['bool', 'link'=>'mysqli', 'mode'=>'bool'],
-'mysqli_begin_transaction' => ['bool', 'link'=>'mysqli', 'flags'=>'int', 'name'=>'string'],
+'mysqli_begin_transaction' => ['bool', 'link'=>'mysqli', 'flags='=>'int', 'name='=>'string'],
 'mysqli_change_user' => ['bool', 'link'=>'mysqli', 'user'=>'string', 'password'=>'string', 'database'=>'string'],
 'mysqli_character_set_name' => ['string', 'link'=>'mysqli'],
 'mysqli_close' => ['bool', 'link'=>'mysqli'],

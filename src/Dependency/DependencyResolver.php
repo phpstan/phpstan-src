@@ -7,10 +7,10 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Foreach_;
-use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\InClassMethodNode;
+use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
@@ -61,15 +61,9 @@ class DependencyResolver
 					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
 				}
 			}
-		} elseif ($node instanceof Function_) {
-			$functionName = $node->name->name;
-			if (isset($node->namespacedName)) {
-				$functionName = (string) $node->namespacedName;
-			}
-			$functionNameName = new Name($functionName);
-			if ($this->reflectionProvider->hasFunction($functionNameName, null)) {
-				$functionReflection = $this->reflectionProvider->getFunction($functionNameName, null);
-
+		} elseif ($node instanceof InFunctionNode) {
+			$functionReflection = $scope->getFunction();
+			if ($functionReflection !== null) {
 				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
 				if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {

@@ -10091,7 +10091,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	public function dataBug3782(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3782.php');
-  }
+	}
 
 	public function dataPregSplitReturnType(): array
 	{

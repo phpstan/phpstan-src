@@ -52,6 +52,8 @@ class WorkerCommand extends Command
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
 				new InputOption('port', null, InputOption::VALUE_REQUIRED),
 				new InputOption('identifier', null, InputOption::VALUE_REQUIRED),
+				new InputOption('tmp-file', null, InputOption::VALUE_REQUIRED),
+				new InputOption('instead-of', null, InputOption::VALUE_REQUIRED),
 			]);
 	}
 
@@ -81,6 +83,17 @@ class WorkerCommand extends Command
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		/** @var string|null $tmpFile */
+		$tmpFile = $input->getOption('tmp-file');
+
+		/** @var string|null $insteadOfFile */
+		$insteadOfFile = $input->getOption('instead-of');
+
+		$singleReflectionFile = null;
+		if ($tmpFile !== null) {
+			$singleReflectionFile = $tmpFile;
+		}
+
 		try {
 			$inceptionResult = CommandHelper::begin(
 				$input,
@@ -94,7 +107,9 @@ class WorkerCommand extends Command
 				null,
 				$level,
 				$allowXdebug,
-				false
+				false,
+				false,
+				$singleReflectionFile
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;
@@ -103,7 +118,13 @@ class WorkerCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
-		$analysedFiles = $inceptionResult->getFiles();
+		try {
+			[$analysedFiles] = $inceptionResult->getFiles();
+			$analysedFiles = $this->switchTmpFile($analysedFiles, $insteadOfFile, $tmpFile);
+		} catch (\PHPStan\File\PathNotFoundException $e) {
+			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
+			return 1;
+		}
 
 		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
@@ -112,11 +133,11 @@ class WorkerCommand extends Command
 		$analysedFiles = array_fill_keys($analysedFiles, true);
 
 		$tcpConector = new TcpConnector($loop);
-		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->then(function (ConnectionInterface $connection) use ($container, $identifier, $analysedFiles): void {
+		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $analysedFiles, $tmpFile, $insteadOfFile): void {
 			$out = new Encoder($connection);
 			$in = new Decoder($connection, true, 512, 0, $container->getParameter('parallel')['buffer']);
 			$out->write(['action' => 'hello', 'identifier' => $identifier]);
-			$this->runWorker($container, $out, $in, $analysedFiles);
+			$this->runWorker($container, $out, $in, $analysedFiles, $tmpFile, $insteadOfFile);
 		});
 
 		$loop->run();
@@ -129,12 +150,16 @@ class WorkerCommand extends Command
 	 * @param WritableStreamInterface $out
 	 * @param ReadableStreamInterface $in
 	 * @param array<string, true> $analysedFiles
+	 * @param string|null $tmpFile
+	 * @param string|null $insteadOfFile
 	 */
 	private function runWorker(
 		Container $container,
 		WritableStreamInterface $out,
 		ReadableStreamInterface $in,
-		array $analysedFiles
+		array $analysedFiles,
+		?string $tmpFile,
+		?string $insteadOfFile
 	): void
 	{
 		$handleError = static function (\Throwable $error) use ($out): void {
@@ -158,7 +183,7 @@ class WorkerCommand extends Command
 		$registry = $container->getByType(Registry::class);
 
 		// todo collectErrors (from Analyser)
-		$in->on('data', static function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles): void {
+		$in->on('data', static function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles, $tmpFile, $insteadOfFile): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -168,11 +193,16 @@ class WorkerCommand extends Command
 			$files = $json['files'];
 			$errors = [];
 			$dependencies = [];
+			$exportedNodes = [];
 			foreach ($files as $file) {
 				try {
+					if ($file === $insteadOfFile) {
+						$file = $tmpFile;
+					}
 					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $registry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
+					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
 					}
@@ -194,11 +224,37 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => $errors,
 					'dependencies' => $dependencies,
+					'exportedNodes' => $exportedNodes,
 					'filesCount' => count($files),
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);
 		});
 		$in->on('error', $handleError);
+	}
+
+	/**
+	 * @param string[] $analysedFiles
+	 * @param string|null $insteadOfFile
+	 * @param string|null $tmpFile
+	 * @return string[]
+	 */
+	private function switchTmpFile(
+		array $analysedFiles,
+		?string $insteadOfFile,
+		?string $tmpFile
+	): array
+	{
+		$analysedFiles = array_values(array_filter($analysedFiles, static function (string $file) use ($insteadOfFile): bool {
+			if ($insteadOfFile === null) {
+				return true;
+			}
+			return $file !== $insteadOfFile;
+		}));
+		if ($tmpFile !== null) {
+			$analysedFiles[] = $tmpFile;
+		}
+
+		return $analysedFiles;
 	}
 
 }

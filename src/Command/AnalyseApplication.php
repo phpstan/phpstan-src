@@ -4,7 +4,7 @@ namespace PHPStan\Command;
 
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
-use PHPStan\Analyser\ResultCache\ResultCacheManager;
+use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\PhpDoc\StubValidator;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -15,7 +15,7 @@ class AnalyseApplication
 
 	private \PHPStan\PhpDoc\StubValidator $stubValidator;
 
-	private \PHPStan\Analyser\ResultCache\ResultCacheManager $resultCacheManager;
+	private \PHPStan\Analyser\ResultCache\ResultCacheManagerFactory $resultCacheManagerFactory;
 
 	private IgnoredErrorHelper $ignoredErrorHelper;
 
@@ -26,7 +26,7 @@ class AnalyseApplication
 	public function __construct(
 		AnalyserRunner $analyserRunner,
 		StubValidator $stubValidator,
-		ResultCacheManager $resultCacheManager,
+		ResultCacheManagerFactory $resultCacheManagerFactory,
 		IgnoredErrorHelper $ignoredErrorHelper,
 		string $memoryLimitFile,
 		int $internalErrorsCountLimit
@@ -34,7 +34,7 @@ class AnalyseApplication
 	{
 		$this->analyserRunner = $analyserRunner;
 		$this->stubValidator = $stubValidator;
-		$this->resultCacheManager = $resultCacheManager;
+		$this->resultCacheManagerFactory = $resultCacheManagerFactory;
 		$this->ignoredErrorHelper = $ignoredErrorHelper;
 		$this->memoryLimitFile = $memoryLimitFile;
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
@@ -80,14 +80,19 @@ class AnalyseApplication
 			@unlink($this->memoryLimitFile);
 		});
 
+		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
+
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			$errors = $ignoredErrorHelperResult->getErrors();
 			$warnings = [];
 			$internalErrors = [];
 			$savedResultCache = false;
+			if ($errorOutput->isDebug()) {
+				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
+			}
 		} else {
-			$resultCache = $this->resultCacheManager->restore($files, $debug, $errorOutput);
+			$resultCache = $resultCacheManager->restore($files, $debug, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,
@@ -97,7 +102,7 @@ class AnalyseApplication
 				$errorOutput,
 				$input
 			);
-			$resultCacheResult = $this->resultCacheManager->process($intermediateAnalyserResult, $resultCache, true);
+			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
@@ -153,7 +158,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], false);
+			return new AnalyserResult([], [], [], [], false);
 		}
 
 		/** @var bool $runningInParallel */
@@ -184,7 +189,7 @@ class AnalyseApplication
 			$postFileCallback = null;
 		}
 
-		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, $projectConfigFile, $input);
+		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input);
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();

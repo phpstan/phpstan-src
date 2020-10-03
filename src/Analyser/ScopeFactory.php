@@ -24,6 +24,7 @@ interface ScopeFactory
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
+	 * @param Scope|null $parentScope
 	 *
 	 * @return MutatingScope
 	 */
@@ -40,7 +41,8 @@ interface ScopeFactory
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
 		array $nativeExpressionTypes = [],
-		array $inFunctionCallsStack = []
+		array $inFunctionCallsStack = [],
+		?Scope $parentScope = null
 	): MutatingScope;
 
 }

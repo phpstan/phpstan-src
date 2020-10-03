@@ -123,4 +123,16 @@ $strWordCountStrType2Extra = str_word_count('string', 2, 'string');
 $integer = doFoo();
 $strWordCountStrTypeIndeterminant = str_word_count('string', $integer);
 
+$hashHmacMd5 = hash_hmac('md5', 'data', 'key');
+$hashHmacSha256 = hash_hmac('sha256', 'data', 'key');
+$hashHmacNonCryptographic = hash_hmac('crc32', 'data', 'key');
+$hashHmacRandom = hash_hmac('random', 'data', 'key');
+$hashHmacVariable = hash_hmac($string, 'data', 'key');
+
+$hashHmacFileMd5 = hash_hmac_file('md5', 'data', 'key');
+$hashHmacFileSha256 = hash_hmac_file('sha256', 'data', 'key');
+$hashHmacFileNonCryptographic = hash_hmac_file('crc32', 'data', 'key');
+$hashHmacFileRandom = hash_hmac_file('random', 'data', 'key');
+$hashHmacFileVariable = hash_hmac_file($string, 'data', 'key');
+
 die;

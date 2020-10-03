@@ -5905,6 +5905,46 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array<int, string>|int|false',
 				'$strWordCountStrTypeIndeterminant',
 			],
+			[
+				'string',
+				'$hashHmacMd5',
+			],
+			[
+				'string',
+				'$hashHmacSha256',
+			],
+			[
+				'false',
+				'$hashHmacNonCryptographic',
+			],
+			[
+				'false',
+				'$hashHmacRandom',
+			],
+			[
+				'string',
+				'$hashHmacVariable',
+			],
+			[
+				'string|false',
+				'$hashHmacFileMd5',
+			],
+			[
+				'string|false',
+				'$hashHmacFileSha256',
+			],
+			[
+				'false',
+				'$hashHmacFileNonCryptographic',
+			],
+			[
+				'false',
+				'$hashHmacFileRandom',
+			],
+			[
+				'(string|false)',
+				'$hashHmacFileVariable',
+			],
 		];
 	}
 
@@ -10051,6 +10091,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	public function dataBug3782(): array
 	{
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3782.php');
+  }
+
+	public function dataPregSplitReturnType(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/preg_split.php');
+	}
+
+	public function dataBcMathDynamicReturn(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bcmath-dynamic-return.php');
 	}
 
 	/**
@@ -10118,10 +10168,12 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataNativeStaticReturnType
 	 * @dataProvider dataClassPhpDocs
 	 * @dataProvider dataNonEmptyArrayKeyType
+	 * @dataProvider dataBcMathDynamicReturn
 	 * @dataProvider dataBug3133
 	 * @dataProvider dataBug2550
 	 * @dataProvider dataBug2899
 	 * @dataProvider dataBug3782
+	 * @dataProvider dataPregSplitReturnType
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

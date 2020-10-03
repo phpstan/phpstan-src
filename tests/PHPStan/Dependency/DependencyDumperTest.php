@@ -2,6 +2,7 @@
 
 namespace PHPStan\Dependency;
 
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Broker\Broker;
@@ -10,6 +11,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Testing\TestCase;
+use PHPStan\Type\FileTypeMapper;
 use Tests\Dependency\Child;
 use Tests\Dependency\GrandChild;
 use Tests\Dependency\ParentClass;
@@ -76,9 +78,8 @@ class DependencyDumperTest extends TestCase
 		$fileFinder = $container->getByType(FileFinder::class);
 
 		$dumper = new DependencyDumper(
-			new DependencyResolver($mockBroker),
+			new DependencyResolver($fileHelper, $mockBroker, new ExportedNodeResolver(self::getContainer()->getByType(FileTypeMapper::class), new Standard())),
 			$nodeScopeResolver,
-			$fileHelper,
 			$mockParser,
 			$scopeFactory,
 			$fileFinder

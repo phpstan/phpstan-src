@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Dependency\ExportedNode;
 
 class ResultCache
 {
@@ -20,19 +21,24 @@ class ResultCache
 	/** @var array<string, array<string>> */
 	private array $dependencies;
 
+	/** @var array<string, array<ExportedNode>> */
+	private array $exportedNodes;
+
 	/**
 	 * @param string[] $filesToAnalyse
 	 * @param bool $fullAnalysis
 	 * @param int $lastFullAnalysisTime
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
+	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 */
 	public function __construct(
 		array $filesToAnalyse,
 		bool $fullAnalysis,
 		int $lastFullAnalysisTime,
 		array $errors,
-		array $dependencies
+		array $dependencies,
+		array $exportedNodes
 	)
 	{
 		$this->filesToAnalyse = $filesToAnalyse;
@@ -40,6 +46,7 @@ class ResultCache
 		$this->lastFullAnalysisTime = $lastFullAnalysisTime;
 		$this->errors = $errors;
 		$this->dependencies = $dependencies;
+		$this->exportedNodes = $exportedNodes;
 	}
 
 	/**
@@ -74,6 +81,14 @@ class ResultCache
 	public function getDependencies(): array
 	{
 		return $this->dependencies;
+	}
+
+	/**
+	 * @return array<string, array<ExportedNode>>
+	 */
+	public function getExportedNodes(): array
+	{
+		return $this->exportedNodes;
 	}
 
 }

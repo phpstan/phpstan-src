@@ -84,6 +84,13 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 			return 1;
 		}
 
+		try {
+			[$files] = $inceptionResult->getFiles();
+		} catch (\PHPStan\File\PathNotFoundException $e) {
+			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
+			return 1;
+		}
+
 		$stdOutput = $inceptionResult->getStdOutput();
 		$stdOutputStyole = $stdOutput->getStyle();
 
@@ -99,7 +106,7 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 			return $fileHelper->absolutizePath($path);
 		}, $analysedPaths);
 		$dependencies = $dependencyDumper->dumpDependencies(
-			$inceptionResult->getFiles(),
+			$files,
 			static function (int $count) use ($stdOutputStyole): void {
 				$stdOutputStyole->progressStart($count);
 			},

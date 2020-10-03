@@ -9,6 +9,7 @@ use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use function sys_get_temp_dir;
 
 class ContainerFactory
 {
@@ -88,6 +89,7 @@ class ContainerFactory
 			'allCustomConfigFiles' => $allCustomConfigFiles,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
+			'fixerTmpDir' => sys_get_temp_dir() . '/phpstan-fixer',
 		]);
 		$configurator->addDynamicParameters([
 			'singleReflectionFile' => $singleReflectionFile,

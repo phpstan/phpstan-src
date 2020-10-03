@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Dependency\ExportedNode;
+
 class AnalyserResult
 {
 
@@ -17,18 +19,23 @@ class AnalyserResult
 	/** @var array<string, array<string>>|null */
 	private ?array $dependencies;
 
+	/** @var array<string, array<ExportedNode>> */
+	private array $exportedNodes;
+
 	private bool $reachedInternalErrorsCountLimit;
 
 	/**
 	 * @param \PHPStan\Analyser\Error[] $errors
 	 * @param string[] $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
+	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 * @param bool $reachedInternalErrorsCountLimit
 	 */
 	public function __construct(
 		array $errors,
 		array $internalErrors,
 		?array $dependencies,
+		array $exportedNodes,
 		bool $reachedInternalErrorsCountLimit
 	)
 	{
@@ -52,6 +59,7 @@ class AnalyserResult
 		$this->errors = $errors;
 		$this->internalErrors = $internalErrors;
 		$this->dependencies = $dependencies;
+		$this->exportedNodes = $exportedNodes;
 		$this->reachedInternalErrorsCountLimit = $reachedInternalErrorsCountLimit;
 	}
 
@@ -85,6 +93,14 @@ class AnalyserResult
 	public function getDependencies(): ?array
 	{
 		return $this->dependencies;
+	}
+
+	/**
+	 * @return array<string, array<ExportedNode>>
+	 */
+	public function getExportedNodes(): array
+	{
+		return $this->exportedNodes;
 	}
 
 	public function hasReachedInternalErrorsCountLimit(): bool

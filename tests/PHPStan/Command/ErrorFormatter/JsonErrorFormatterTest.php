@@ -86,7 +86,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 			"errors":2,
 			"messages":[
 				{
-					"message": "Bar",
+					"message": "Bar\nBar2",
 					"line": 2,
 					"ignorable": true
 				},
@@ -106,7 +106,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 					"ignorable": true
 				},
 				{
-					"message": "Bar",
+					"message": "Bar\nBar2",
 					"line": 5,
 					"ignorable": true
 				}
@@ -152,7 +152,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 			"errors":2,
 			"messages":[
 				{
-					"message": "Bar",
+					"message": "Bar\nBar2",
 					"line": 2,
 					"ignorable": true
 				},
@@ -172,7 +172,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 					"ignorable": true
 				},
 				{
-					"message": "Bar",
+					"message": "Bar\nBar2",
 					"line": 5,
 					"ignorable": true
 				}

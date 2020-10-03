@@ -8,10 +8,8 @@ use function memory_get_peak_usage;
 class InceptionResult
 {
 
-	/** @var string[] */
-	private array $files;
-
-	private bool $onlyFiles;
+	/** @var callable(): (array{string[], bool}) */
+	private $filesCallback;
 
 	private Output $stdOutput;
 
@@ -28,8 +26,7 @@ class InceptionResult
 	private ?string $generateBaselineFile;
 
 	/**
-	 * @param string[] $files
-	 * @param bool $onlyFiles
+	 * @param callable(): (array{string[], bool}) $filesCallback
 	 * @param Output $stdOutput
 	 * @param Output $errorOutput
 	 * @param \PHPStan\DependencyInjection\Container $container
@@ -39,8 +36,7 @@ class InceptionResult
 	 * @param string|null $generateBaselineFile
 	 */
 	public function __construct(
-		array $files,
-		bool $onlyFiles,
+		callable $filesCallback,
 		Output $stdOutput,
 		Output $errorOutput,
 		Container $container,
@@ -50,8 +46,7 @@ class InceptionResult
 		?string $generateBaselineFile
 	)
 	{
-		$this->files = $files;
-		$this->onlyFiles = $onlyFiles;
+		$this->filesCallback = $filesCallback;
 		$this->stdOutput = $stdOutput;
 		$this->errorOutput = $errorOutput;
 		$this->container = $container;
@@ -62,16 +57,13 @@ class InceptionResult
 	}
 
 	/**
-	 * @return string[]
+	 * @return array{string[], bool}
 	 */
 	public function getFiles(): array
 	{
-		return $this->files;
-	}
+		$callback = $this->filesCallback;
 
-	public function isOnlyFiles(): bool
-	{
-		return $this->onlyFiles;
+		return $callback();
 	}
 
 	public function getStdOutput(): Output

@@ -226,3 +226,8 @@ function () {
 
     }
 };
+
+function () {
+    isset($_SESSION);
+    isset($_SESSION['foo']);
+};

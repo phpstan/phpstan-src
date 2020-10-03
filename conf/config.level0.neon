@@ -176,13 +176,6 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\Variables\DefinedVariableInAnonymousFunctionUseRule
-		arguments:
-			checkMaybeUndefinedVariables: %checkMaybeUndefinedVariables%
-		tags:
-			- phpstan.rules.rule
-
-	-
 		class: PHPStan\Rules\Regexp\RegularExpressionPatternRule
 		tags:
 			- phpstan.rules.rule

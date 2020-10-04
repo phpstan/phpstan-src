@@ -106,9 +106,6 @@ class CommandHelperTest extends TestCase
 		bool $expectException
 	): void
 	{
-		if (PHP_VERSION_ID >= 80000 && DIRECTORY_SEPARATOR === '\\') {
-			$this->markTestSkipped('Skipped because of https://github.com/symfony/symfony/issues/37508');
-		}
 		$resource = fopen('php://memory', 'w', false);
 		if ($resource === false) {
 			throw new \PHPStan\ShouldNotHappenException();

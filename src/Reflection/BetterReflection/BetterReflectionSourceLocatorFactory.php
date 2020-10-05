@@ -11,10 +11,8 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJs
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceStubber\Php8StubsSourceStubber;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\AggregateSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
@@ -50,9 +48,6 @@ class BetterReflectionSourceLocatorFactory
 
 	/** @var \PHPStan\DependencyInjection\Container */
 	private $container;
-
-	/** @var PhpVersion */
-	private $phpVersion;
 
 	/** @var string[] */
 	private $autoloadDirectories;
@@ -101,7 +96,6 @@ class BetterReflectionSourceLocatorFactory
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
 		Container $container,
-		PhpVersion $phpVersion,
 		array $autoloadDirectories,
 		array $autoloadFiles,
 		array $scanFiles,
@@ -121,7 +115,6 @@ class BetterReflectionSourceLocatorFactory
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->autoloadSourceLocator = $autoloadSourceLocator;
 		$this->container = $container;
-		$this->phpVersion = $phpVersion;
 		$this->autoloadDirectories = $autoloadDirectories;
 		$this->autoloadFiles = $autoloadFiles;
 		$this->scanFiles = $scanFiles;
@@ -171,11 +164,7 @@ class BetterReflectionSourceLocatorFactory
 			return $this->container->getService('betterReflectionFunctionReflector');
 		});
 
-		$internalSourceStubber = $this->phpstormStubsSourceStubber;
-		if ($this->phpVersion->getVersionId() >= 80000) {
-			$internalSourceStubber = new AggregateSourceStubber(new Php8StubsSourceStubber(), $internalSourceStubber);
-		}
-		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astLocator, $internalSourceStubber));
+		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber));
 		$locators[] = new ClassBlacklistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);

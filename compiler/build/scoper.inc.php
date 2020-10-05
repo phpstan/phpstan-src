@@ -12,6 +12,7 @@ $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
 foreach ($stubFinder->files()->name('*.php')->in([
 	'../../stubs',
 	'../../vendor/jetbrains/phpstorm-stubs',
+	'../../vendor/phpstan/php-8-stubs/stubs',
 ]) as $file) {
 	if ($file->getPathName() === '../../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 		continue;

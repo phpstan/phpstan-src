@@ -46,10 +46,7 @@ interface Iterator extends Traversable
 }
 
 /**
- * @template-covariant TKey
- * @template-covariant TValue
- *
- * @extends Iterator<TKey, TValue>
+ * @extends Iterator<mixed, mixed>
  */
 interface RecursiveIterator extends Iterator
 {
@@ -84,7 +81,6 @@ class Generator implements Iterator
  * @implements Traversable<mixed, mixed>
  * @implements ArrayAccess<mixed, mixed>
  * @implements Iterator<mixed, mixed>
- * @implements RecursiveIterator<mixed, mixed>
  */
 class SimpleXMLElement implements Traversable, ArrayAccess, Iterator, RecursiveIterator
 {

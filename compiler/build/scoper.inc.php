@@ -169,6 +169,15 @@ return [
 			return $content;
 		},
 		function (string $filePath, string $prefix, string $content): string {
+			if ($filePath !== 'vendor/phpstan/php-8-stubs/Php8StubsMap.php') {
+				return $content;
+			}
+
+			$content = str_replace('\'' . $prefix . '\\\\', '\'', $content);
+
+			return $content;
+		},
+		function (string $filePath, string $prefix, string $content): string {
 			if (!in_array($filePath, [
 				'src/Type/TypehintHelper.php',
 				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionUnionType.php',

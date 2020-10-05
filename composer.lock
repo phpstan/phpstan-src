@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd65ab443f11e29991ef8482270061d1",
+    "content-hash": "d16f31f33d418639ab566154f3426593",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1334,12 +1334,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "d4db4b4834d8a9c8fc3c0aa6dc3c9bae723bbc9c"
+                "reference": "283077af53ba9319567ff1dd0caf15c5468209a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/d4db4b4834d8a9c8fc3c0aa6dc3c9bae723bbc9c",
-                "reference": "d4db4b4834d8a9c8fc3c0aa6dc3c9bae723bbc9c",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/283077af53ba9319567ff1dd0caf15c5468209a0",
+                "reference": "283077af53ba9319567ff1dd0caf15c5468209a0",
                 "shasum": ""
             },
             "require-dev": {
@@ -2073,26 +2073,26 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.31",
+            "version": "4.3.33",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "a3d26b6480e9d6a1b011dcd763e51e3462cb42ee"
+                "reference": "ee91b863e3b20db06b2e1c2240aab02169d8cbe2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/a3d26b6480e9d6a1b011dcd763e51e3462cb42ee",
-                "reference": "a3d26b6480e9d6a1b011dcd763e51e3462cb42ee",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/ee91b863e3b20db06b2e1c2240aab02169d8cbe2",
+                "reference": "ee91b863e3b20db06b2e1c2240aab02169d8cbe2",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "jetbrains/phpstorm-stubs": "dev-master#d4db4b4834d8a9c8fc3c0aa6dc3c9bae723bbc9c",
+                "jetbrains/phpstorm-stubs": "dev-master#283077af53ba9319567ff1dd0caf15c5468209a0",
                 "nikic/php-parser": "4.10.2",
                 "php": ">=7.1.0",
                 "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
                 "phpdocumentor/type-resolver": "^1.0.0",
-                "roave/signature": "^1.0"
+                "roave/signature": "1.1.0"
             },
             "require-dev": {
                 "phpstan/phpstan": "^0.12.25",
@@ -2141,9 +2141,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.31"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.33"
             },
-            "time": "2020-09-28T09:29:43+00:00"
+            "time": "2020-10-05T14:17:19+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -3251,23 +3251,25 @@
         },
         {
             "name": "roave/signature",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/Signature.git",
-                "reference": "bed4ecbdd7f312ab6bb39561ac191f520bcee386"
+                "reference": "c4e8a59946bad694ab5682a76e7884a9157a8a2c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/Signature/zipball/bed4ecbdd7f312ab6bb39561ac191f520bcee386",
-                "reference": "bed4ecbdd7f312ab6bb39561ac191f520bcee386",
+                "url": "https://api.github.com/repos/Roave/Signature/zipball/c4e8a59946bad694ab5682a76e7884a9157a8a2c",
+                "reference": "c4e8a59946bad694ab5682a76e7884a9157a8a2c",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.0|^7.1"
+                "php": "^7.1 || ^7.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "^5.6"
+                "infection/infection": "^0.7.1",
+                "phpunit/phpunit": "^7.0",
+                "squizlabs/php_codesniffer": "^3.2"
             },
             "type": "library",
             "autoload": {
@@ -3282,13 +3284,13 @@
             "description": "Sign and verify stuff",
             "support": {
                 "issues": "https://github.com/Roave/Signature/issues",
-                "source": "https://github.com/Roave/Signature/tree/master"
+                "source": "https://github.com/Roave/Signature/tree/1.1.0"
             },
-            "time": "2017-02-17T13:53:21+00:00"
+            "time": "2020-10-01T07:27:11+00:00"
         },
         {
             "name": "symfony/console",
-            "version": "v4.4.14",
+            "version": "v4.4.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
@@ -3362,7 +3364,7 @@
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/console/tree/v4.4.14"
+                "source": "https://github.com/symfony/console/tree/v4.4.15"
             },
             "funding": [
                 {
@@ -3382,16 +3384,16 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v4.4.14",
+            "version": "v4.4.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "5ef0f6c609c1a36f723880dfe78301199bc96868"
+                "reference": "60d08560f9aa72997c44077c40d47aa28a963230"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/5ef0f6c609c1a36f723880dfe78301199bc96868",
-                "reference": "5ef0f6c609c1a36f723880dfe78301199bc96868",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/60d08560f9aa72997c44077c40d47aa28a963230",
+                "reference": "60d08560f9aa72997c44077c40d47aa28a963230",
                 "shasum": ""
             },
             "require": {
@@ -3428,7 +3430,7 @@
             "description": "Symfony Finder Component",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/finder/tree/4.4"
+                "source": "https://github.com/symfony/finder/tree/v4.4.15"
             },
             "funding": [
                 {
@@ -3444,7 +3446,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-09-02T16:08:58+00:00"
+            "time": "2020-10-02T07:34:48+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -6137,7 +6139,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.1.6",
+            "version": "v5.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",

@@ -4662,6 +4662,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$str',
 			],
 			[
+				'array<int, mixed>',
+				'$arr',
+			],
+			[
 				'1',
 				'$integer',
 			],

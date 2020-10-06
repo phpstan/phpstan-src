@@ -221,7 +221,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$functionReflectionFactory,
 				$fileTypeMapper,
 				self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
-				self::getContainer()->getByType(StubPhpDocProvider::class)
+				self::getContainer()->getByType(StubPhpDocProvider::class),
+				self::getContainer()->getByType(PhpStormStubsSourceStubber::class)
 			),
 			self::getPhpStormStubsSourceStubber(),
 			[

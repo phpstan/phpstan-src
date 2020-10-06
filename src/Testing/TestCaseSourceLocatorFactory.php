@@ -6,6 +6,7 @@ use Composer\Autoload\ClassLoader;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
+use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -74,8 +75,8 @@ class TestCaseSourceLocatorFactory
 
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber);
 		$locators[] = $this->autoloadSourceLocator;
-		$locators[] = new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber);
-		$locators[] = new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

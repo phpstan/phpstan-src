@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d16f31f33d418639ab566154f3426593",
+    "content-hash": "78d0c5d1a14fd2d2632288e94165ebb6",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2073,16 +2073,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.33",
+            "version": "4.3.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "ee91b863e3b20db06b2e1c2240aab02169d8cbe2"
+                "reference": "a99ec67fbe66e871acec79ed110790e82b681ede"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/ee91b863e3b20db06b2e1c2240aab02169d8cbe2",
-                "reference": "ee91b863e3b20db06b2e1c2240aab02169d8cbe2",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/a99ec67fbe66e871acec79ed110790e82b681ede",
+                "reference": "a99ec67fbe66e871acec79ed110790e82b681ede",
                 "shasum": ""
             },
             "require": {
@@ -2095,7 +2095,7 @@
                 "roave/signature": "1.1.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.25",
+                "phpstan/phpstan": "^0.12.49",
                 "phpunit/phpunit": "^7.5.18",
                 "vimeo/psalm": "3.11.2"
             },
@@ -2141,9 +2141,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.33"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.34"
             },
-            "time": "2020-10-05T14:17:19+00:00"
+            "time": "2020-10-06T14:56:18+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",

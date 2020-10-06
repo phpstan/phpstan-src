@@ -18,6 +18,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use ReflectionClass;
+use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class RuntimeReflectionProvider implements ReflectionProvider
 {
@@ -37,6 +38,8 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
+	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
+
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
 	private array $functionReflections = [];
 
@@ -55,7 +58,8 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
-		StubPhpDocProvider $stubPhpDocProvider
+		StubPhpDocProvider $stubPhpDocProvider,
+		PhpStormStubsSourceStubber $phpStormStubsSourceStubber
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;
@@ -64,6 +68,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
+		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 	}
 
 	public function getClass(string $className): \PHPStan\Reflection\ClassReflection
@@ -287,9 +292,13 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
-		return $this->resolveName($nameNode, static function (string $name): bool {
+		return $this->resolveName($nameNode, function (string $name): bool {
 			$exists = function_exists($name);
 			if ($exists) {
+				if ($this->phpStormStubsSourceStubber->isPresentFunction($name) === false) {
+					return false;
+				}
+
 				return true;
 			}
 

@@ -18,6 +18,7 @@ use PHPStan\Reflection\ReflectionProvider\SetterReflectionProviderProvider;
 use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Type\FileTypeMapper;
+use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class BrokerTest extends \PHPStan\Testing\TestCase
 {
@@ -46,7 +47,8 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			$this->createMock(FunctionReflectionFactory::class),
 			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
-			self::getContainer()->getByType(StubPhpDocProvider::class)
+			self::getContainer()->getByType(StubPhpDocProvider::class),
+			self::getContainer()->getByType(PhpStormStubsSourceStubber::class)
 		);
 		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 		$this->broker = new Broker(

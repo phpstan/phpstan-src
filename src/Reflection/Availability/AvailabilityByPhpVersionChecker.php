@@ -10,10 +10,10 @@ class AvailabilityByPhpVersionChecker
 	private PhpVersion $phpVersion;
 
 	/** @var array<string, array{int|null, int|null}>|null */
-	private static ?array $functionMap = null;
+	private ?array $functionMap = null;
 
 	/** @var array<string, array{int|null, int|null}>|null */
-	private static ?array $classMap = null;
+	private ?array $classMap = null;
 
 	public function __construct(PhpVersion $phpVersion)
 	{
@@ -22,7 +22,7 @@ class AvailabilityByPhpVersionChecker
 
 	public function isFunctionAvailable(string $functionName): ?bool
 	{
-		$map = self::getFunctionMap();
+		$map = $this->getFunctionMap();
 		$lowerFunctionName = strtolower($functionName);
 		if (!array_key_exists($lowerFunctionName, $map)) {
 			return null;
@@ -33,7 +33,7 @@ class AvailabilityByPhpVersionChecker
 
 	public function isClassAvailable(string $className): ?bool
 	{
-		$map = self::getClassMap();
+		$map = $this->getClassMap();
 		$lowerClassName = strtolower($className);
 		if (!array_key_exists($lowerClassName, $map)) {
 			return null;
@@ -69,29 +69,29 @@ class AvailabilityByPhpVersionChecker
 	/**
 	 * @return array<string, array{int|null, int|null}>
 	 */
-	private static function getFunctionMap(): array
+	private function getFunctionMap(): array
 	{
-		if (self::$functionMap !== null) {
-			return self::$functionMap;
+		if ($this->functionMap !== null) {
+			return $this->functionMap;
 		}
 
-		self::$functionMap = require __DIR__ . '/../../../resources/functionPhpVersions.php';
+		$this->functionMap = require __DIR__ . '/../../../resources/functionPhpVersions.php';
 
-		return self::$functionMap;
+		return $this->functionMap;
 	}
 
 	/**
 	 * @return array<string, array{int|null, int|null}>
 	 */
-	private static function getClassMap(): array
+	private function getClassMap(): array
 	{
-		if (self::$classMap !== null) {
-			return self::$classMap;
+		if ($this->classMap !== null) {
+			return $this->classMap;
 		}
 
-		self::$classMap = require __DIR__ . '/../../../resources/classPhpVersions.php';
+		$this->classMap = require __DIR__ . '/../../../resources/classPhpVersions.php';
 
-		return self::$classMap;
+		return $this->classMap;
 	}
 
 }

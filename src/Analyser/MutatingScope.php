@@ -2736,6 +2736,8 @@ class MutatingScope implements Scope
 			return new VoidType();
 		} elseif ($type === 'object') {
 			return new ObjectWithoutClassType();
+		} elseif ($type === 'false') {
+			return new ConstantBooleanType(false);
 		} elseif ($type === 'mixed') {
 			return new MixedType(true);
 		}

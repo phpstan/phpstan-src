@@ -43,3 +43,20 @@ function (): void {
 
 	assertType('NativeUnionTypes\\Bar|NativeUnionTypes\\Foo', $f(1));
 };
+
+class Baz
+{
+
+	public function doFoo(array|false $foo): void
+	{
+		assertType('array|false', $foo);
+		assertNativeType('array|false', $foo);
+		assertType('array|false', $this->doBar());
+	}
+
+	public function doBar(): array|false
+	{
+
+	}
+
+}

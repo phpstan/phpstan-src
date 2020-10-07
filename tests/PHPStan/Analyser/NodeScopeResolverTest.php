@@ -5497,6 +5497,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'int|string|null',
 				'key($generalIntegerOrStringKeysMixedValues)',
 			],
+			[
+				'\'foo\'',
+				'$poppedFoo',
+			],
 		];
 	}
 

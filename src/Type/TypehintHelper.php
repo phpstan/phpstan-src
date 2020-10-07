@@ -130,7 +130,22 @@ class TypehintHelper
 
 			$resultType = $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes() ? $phpDocType : $type;
 
-			if (TypeCombinator::containsNull($type)) {
+			if ($type instanceof UnionType) {
+				$addToUnionTypes = [];
+				foreach ($type->getTypes() as $innerType) {
+					if (!$innerType->isSuperTypeOf($resultType)->no()) {
+						continue;
+					}
+
+					$addToUnionTypes[] = $innerType;
+				}
+
+				if (count($addToUnionTypes) > 0) {
+					$type = TypeCombinator::union($resultType, ...$addToUnionTypes);
+				} else {
+					$type = $resultType;
+				}
+			} elseif (TypeCombinator::containsNull($type)) {
 				$type = TypeCombinator::addNull($resultType);
 			} else {
 				$type = $resultType;

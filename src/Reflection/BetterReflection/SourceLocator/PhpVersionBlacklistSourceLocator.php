@@ -2,11 +2,11 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PHPStan\Reflection\Availability\AvailabilityByPhpVersionChecker;
 use Roave\BetterReflection\Identifier\Identifier;
 use Roave\BetterReflection\Identifier\IdentifierType;
 use Roave\BetterReflection\Reflection\Reflection;
 use Roave\BetterReflection\Reflector\Reflector;
+use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 
 class PhpVersionBlacklistSourceLocator implements SourceLocator
@@ -14,27 +14,27 @@ class PhpVersionBlacklistSourceLocator implements SourceLocator
 
 	private SourceLocator $sourceLocator;
 
-	private AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker;
+	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
 	public function __construct(
 		SourceLocator $sourceLocator,
-		AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker
+		PhpStormStubsSourceStubber $phpStormStubsSourceStubber
 	)
 	{
 		$this->sourceLocator = $sourceLocator;
-		$this->availabilityByPhpVersionChecker = $availabilityByPhpVersionChecker;
+		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($identifier->isClass()) {
-			if ($this->availabilityByPhpVersionChecker->isClassAvailable($identifier->getName()) === false) {
+			if ($this->phpStormStubsSourceStubber->isPresentClass($identifier->getName()) === false) {
 				return null;
 			}
 		}
 
 		if ($identifier->isFunction()) {
-			if ($this->availabilityByPhpVersionChecker->isFunctionAvailable($identifier->getName()) === false) {
+			if ($this->phpStormStubsSourceStubber->isPresentFunction($identifier->getName()) === false) {
 				return null;
 			}
 		}

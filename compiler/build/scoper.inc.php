@@ -3,11 +3,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $stubs = [
-	'../../resources/classPhpVersions.php',
 	'../../resources/functionMap.php',
 	'../../resources/functionMap_php74delta.php',
 	'../../resources/functionMetadata.php',
-	'../../resources/functionPhpVersions.php',
 	'../../vendor/hoa/consistency/Prelude.php',
 ];
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();

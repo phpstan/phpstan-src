@@ -4,6 +4,7 @@ namespace PHPStan\Testing;
 
 use Composer\Autoload\ClassLoader;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Reflection\Availability\AvailabilityByPhpVersionChecker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
@@ -32,13 +33,16 @@ class TestCaseSourceLocatorFactory
 
 	private ReflectionSourceStubber $reflectionSourceStubber;
 
+	private AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker;
+
 	public function __construct(
 		Container $container,
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
 		\PhpParser\Parser $phpParser,
 		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
-		ReflectionSourceStubber $reflectionSourceStubber
+		ReflectionSourceStubber $reflectionSourceStubber,
+		AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker
 	)
 	{
 		$this->container = $container;
@@ -47,6 +51,7 @@ class TestCaseSourceLocatorFactory
 		$this->phpParser = $phpParser;
 		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 		$this->reflectionSourceStubber = $reflectionSourceStubber;
+		$this->availabilityByPhpVersionChecker = $availabilityByPhpVersionChecker;
 	}
 
 	public function create(): SourceLocator
@@ -75,8 +80,8 @@ class TestCaseSourceLocatorFactory
 
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber);
 		$locators[] = $this->autoloadSourceLocator;
-		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->availabilityByPhpVersionChecker);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->availabilityByPhpVersionChecker);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

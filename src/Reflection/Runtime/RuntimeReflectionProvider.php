@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
+use PHPStan\Reflection\Availability\AvailabilityByPhpVersionChecker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
@@ -18,7 +19,6 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use ReflectionClass;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class RuntimeReflectionProvider implements ReflectionProvider
 {
@@ -38,7 +38,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
+	private AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker;
 
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
 	private array $functionReflections = [];
@@ -59,7 +59,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		FileTypeMapper $fileTypeMapper,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		StubPhpDocProvider $stubPhpDocProvider,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber
+		AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;
@@ -68,7 +68,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
+		$this->availabilityByPhpVersionChecker = $availabilityByPhpVersionChecker;
 	}
 
 	public function getClass(string $className): \PHPStan\Reflection\ClassReflection
@@ -295,7 +295,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		return $this->resolveName($nameNode, function (string $name): bool {
 			$exists = function_exists($name);
 			if ($exists) {
-				if ($this->phpStormStubsSourceStubber->isPresentFunction($name) === false) {
+				if ($this->availabilityByPhpVersionChecker->isFunctionAvailable($name) === false) {
 					return false;
 				}
 

@@ -32,6 +32,7 @@ use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
+use PHPStan\Reflection\Availability\AvailabilityByPhpVersionChecker;
 use PHPStan\Reflection\BetterReflection\BetterReflectionProvider;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector;
@@ -222,7 +223,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				$fileTypeMapper,
 				self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
 				self::getContainer()->getByType(StubPhpDocProvider::class),
-				self::getContainer()->getByType(PhpStormStubsSourceStubber::class)
+				self::getContainer()->getByType(AvailabilityByPhpVersionChecker::class)
 			),
 			self::getPhpStormStubsSourceStubber(),
 			[

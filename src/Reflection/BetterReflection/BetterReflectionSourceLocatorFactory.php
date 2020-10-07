@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\BetterReflection;
 
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\Availability\AvailabilityByPhpVersionChecker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ClassBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ClassWhitelistSourceLocator;
@@ -34,6 +35,8 @@ class BetterReflectionSourceLocatorFactory
 
 	/** @var ReflectionSourceStubber */
 	private $reflectionSourceStubber;
+
+	private AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker;
 
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
 	private $optimizedSingleFileSourceLocatorRepository;
@@ -92,6 +95,7 @@ class BetterReflectionSourceLocatorFactory
 		\PhpParser\Parser $parser,
 		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber,
+		AvailabilityByPhpVersionChecker $availabilityByPhpVersionChecker,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
@@ -111,6 +115,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->parser = $parser;
 		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 		$this->reflectionSourceStubber = $reflectionSourceStubber;
+		$this->availabilityByPhpVersionChecker = $availabilityByPhpVersionChecker;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
@@ -175,8 +180,8 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = $locator;
 		}
 		$locators[] = new ClassWhitelistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->availabilityByPhpVersionChecker);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->availabilityByPhpVersionChecker);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

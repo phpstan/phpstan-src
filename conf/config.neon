@@ -539,6 +539,9 @@ services:
 		class: PHPStan\Process\CpuCoreCounter
 
 	-
+		class: PHPStan\Reflection\Availability\AvailabilityByPhpVersionChecker
+
+	-
 		implement: PHPStan\Reflection\FunctionReflectionFactory
 
 	-

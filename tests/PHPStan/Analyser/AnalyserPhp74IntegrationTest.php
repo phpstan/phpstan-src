@@ -5,6 +5,9 @@ namespace PHPStan\Analyser;
 class AnalyserPhp74IntegrationTest extends \PHPStan\Testing\TestCase
 {
 
+	/**
+	 * @runInSeparateProcess
+	 */
 	public function testErrors(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/removedOnPhp80.php');

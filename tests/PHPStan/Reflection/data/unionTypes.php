@@ -2,6 +2,7 @@
 
 namespace NativeUnionTypes;
 
+use function PHPStan\Analyser\assertNativeType;
 use function PHPStan\Analyser\assertType;
 
 class Foo
@@ -13,6 +14,7 @@ class Foo
 	{
 		assertType('bool|int', $foo);
 		assertType('bool|int', $this->fooProp);
+		assertNativeType('bool|int', $foo);
 	}
 
 }
@@ -25,6 +27,7 @@ class Bar
 function doFoo(int|bool $foo): Foo|Bar
 {
 	assertType('bool|int', $foo);
+	assertNativeType('bool|int', $foo);
 }
 
 function (Foo $foo): void {

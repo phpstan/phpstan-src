@@ -10106,6 +10106,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bcmath-dynamic-return.php');
 	}
 
+	public function dataBug3875(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3875.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10176,6 +10181,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2550
 	 * @dataProvider dataBug2899
 	 * @dataProvider dataPregSplitReturnType
+	 * @dataProvider dataBug3875
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

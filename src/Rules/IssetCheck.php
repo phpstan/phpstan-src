@@ -82,32 +82,36 @@ class IssetCheck
 
 		} elseif ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\StaticPropertyFetch) {
 
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $scope);
-
-			if ($propertyReflection === null) {
+			$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($expr, $scope);
+			if (count($propertyReflections) === 0) {
 				return null;
 			}
 
-			if (!$propertyReflection->isNative()) {
-				return null;
-			}
-
-			$nativeType = $propertyReflection->getNativeType();
-			if (!$nativeType instanceof MixedType) {
-				if (!$scope->isSpecified($expr)) {
+			foreach ($propertyReflections as $propertyReflection) {
+				if (!$propertyReflection->isNative()) {
 					return null;
 				}
-			}
 
-			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $expr);
-			$propertyType = $propertyReflection->getWritableType();
+				$nativeType = $propertyReflection->getNativeType();
+				if (!$nativeType instanceof MixedType
+					&&
+					!$scope->isSpecified($expr)
+				) {
+					return null;
+				}
 
-			$error = $error ?? $this->generateError(
-				$propertyReflection->getWritableType(),
-				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription)
-			);
+				$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $expr);
+				$propertyType = $propertyReflection->getWritableType();
 
-			if ($error !== null) {
+				$error = $error ?? $this->generateError(
+					$propertyType,
+					sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription)
+				);
+
+				if ($error === null) {
+					continue;
+				}
+
 				if ($expr instanceof Node\Expr\PropertyFetch) {
 					return $this->check($expr->var, $scope, $operatorDescription, $error);
 				}

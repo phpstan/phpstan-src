@@ -85,7 +85,6 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use function array_key_exists;
 
 class MutatingScope implements Scope
 {
@@ -367,7 +366,7 @@ class MutatingScope implements Scope
 			throw new \PHPStan\Analyser\UndefinedVariableException($this, $variableName);
 		}
 
-		if (!array_key_exists($variableName, $this->variableTypes)) {
+		if (!isset($this->variableTypes[$variableName])) {
 			return new MixedType();
 		}
 
@@ -413,20 +412,20 @@ class MutatingScope implements Scope
 			return $this->fileHasCompilerHaltStatementCalls();
 		}
 		if ($name->isFullyQualified()) {
-			if (array_key_exists($name->toCodeString(), $this->constantTypes)) {
+			if (isset($this->constantTypes[$name->toCodeString()])) {
 				return true;
 			}
 		}
 
 		if ($this->getNamespace() !== null) {
 			$constantName = new FullyQualified([$this->getNamespace(), $name->toString()]);
-			if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+			if (isset($this->constantTypes[$constantName->toCodeString()])) {
 				return true;
 			}
 		}
 
 		$constantName = new FullyQualified($name->toString());
-		if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+		if (isset($this->constantTypes[$constantName->toCodeString()])) {
 			return true;
 		}
 
@@ -474,7 +473,7 @@ class MutatingScope implements Scope
 	{
 		$key = $this->getNodeKey($node);
 
-		if (!array_key_exists($key, $this->resolvedTypes)) {
+		if (!isset($this->resolvedTypes[$key])) {
 			$this->resolvedTypes[$key] = $this->resolveType($node);
 		}
 		return $this->resolvedTypes[$key];
@@ -1512,20 +1511,20 @@ class MutatingScope implements Scope
 			}
 
 			if ($node->name->isFullyQualified()) {
-				if (array_key_exists($node->name->toCodeString(), $this->constantTypes)) {
+				if (isset($this->constantTypes[$node->name->toCodeString()])) {
 					return $this->resolveConstantType($node->name->toString(), $this->constantTypes[$node->name->toCodeString()]);
 				}
 			}
 
 			if ($this->getNamespace() !== null) {
 				$constantName = new FullyQualified([$this->getNamespace(), $constName]);
-				if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+				if (isset($this->constantTypes[$constantName->toCodeString()])) {
 					return $this->resolveConstantType($constantName->toString(), $this->constantTypes[$constantName->toCodeString()]);
 				}
 			}
 
 			$constantName = new FullyQualified($constName);
-			if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+			if (isset($this->constantTypes[$constantName->toCodeString()])) {
 				return $this->resolveConstantType($constantName->toString(), $this->constantTypes[$constantName->toCodeString()]);
 			}
 
@@ -1917,7 +1916,7 @@ class MutatingScope implements Scope
 	{
 		$key = $this->getNodeKey($expr);
 
-		if (array_key_exists($key, $this->nativeExpressionTypes)) {
+		if (isset($this->nativeExpressionTypes[$key])) {
 			return $this->nativeExpressionTypes[$key];
 		}
 
@@ -1997,16 +1996,19 @@ class MutatingScope implements Scope
 	 */
 	private function hasPropertyNativeType($propertyFetch): bool
 	{
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyFetch, $this);
-		if ($propertyReflection === null) {
-			return false;
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $this);
+
+		foreach ($propertyReflections as $propertyReflection) {
+			if (!$propertyReflection->isNative()) {
+				continue;
+			}
+
+			if (!$propertyReflection->getNativeType() instanceof MixedType) {
+				return true;
+			}
 		}
 
-		if (!$propertyReflection->isNative()) {
-			return false;
-		}
-
-		return !$propertyReflection->getNativeType() instanceof MixedType;
+		return false;
 	}
 
 	protected function getTypeFromArrayDimFetch(
@@ -2440,7 +2442,7 @@ class MutatingScope implements Scope
 			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
 		}
 
-		if (!$preserveThis && array_key_exists('this', $variableTypes)) {
+		if (!$preserveThis && isset($variableTypes['this'])) {
 			unset($variableTypes['this']);
 		}
 
@@ -2810,7 +2812,7 @@ class MutatingScope implements Scope
 	public function isInExpressionAssign(Expr $expr): bool
 	{
 		$exprString = $this->getNodeKey($expr);
-		return array_key_exists($exprString, $this->currentlyAssignedExpressions);
+		return isset($this->currentlyAssignedExpressions[$exprString]);
 	}
 
 	public function assignVariable(string $variableName, Type $type, ?TrinaryLogic $certainty = null): self
@@ -3220,7 +3222,7 @@ class MutatingScope implements Scope
 		$theirVariableTypes = $otherScope->getVariableTypes();
 		if ($this->isRootScope()) {
 			foreach (array_keys($theirVariableTypes) as $name) {
-				if (array_key_exists($name, $ourVariableTypes)) {
+				if (isset($ourVariableTypes[$name])) {
 					continue;
 				}
 

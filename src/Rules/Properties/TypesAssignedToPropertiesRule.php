@@ -52,35 +52,40 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		/** @var \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch */
-		$propertyFetch = $node->var;
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyFetch, $scope);
-		if ($propertyReflection === null) {
-			return [];
-		}
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($node->var, $scope);
+		$errors = [];
+		foreach ($propertyReflections as $propertyReflection) {
+			$propertyType = $propertyReflection->getWritableType();
 
-		$propertyType = $propertyReflection->getWritableType();
+			$overwriteType = $propertyReflection->getOverwriteType();
+			if ($overwriteType instanceof \PHPStan\Type\Type) {
+				$assignedValueType = $overwriteType;
+			} elseif ($node instanceof Node\Expr\Assign) {
+				$assignedValueType = $scope->getType($node->expr);
+			} else {
+				$assignedValueType = $scope->getType($node);
+			}
 
-		if ($node instanceof Node\Expr\Assign) {
-			$assignedValueType = $scope->getType($node->expr);
-		} else {
-			$assignedValueType = $scope->getType($node);
-		}
-		if (!$this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes())) {
+			if ($this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes())) {
+				continue;
+			}
+
+			/** @var \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch */
+			$propertyFetch = $node->var;
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $propertyFetch);
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType);
 
-			return [
-				RuleErrorBuilder::message(sprintf(
+			$errors[] = RuleErrorBuilder::message(
+				sprintf(
 					'%s (%s) does not accept %s.',
 					$propertyDescription,
 					$propertyType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel)
-				))->build(),
-			];
+				)
+			)->build();
 		}
 
-		return [];
+		return $errors;
 	}
 
 }

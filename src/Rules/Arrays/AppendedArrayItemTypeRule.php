@@ -56,35 +56,41 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->var->var, $scope);
-		if ($propertyReflection === null) {
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($node->var->var, $scope);
+		if (count($propertyReflections) === 0) {
 			return [];
 		}
 
-		$assignedToType = $propertyReflection->getWritableType();
-		if (!($assignedToType instanceof ArrayType)) {
-			return [];
-		}
+		$errors = [];
+		foreach ($propertyReflections as $propertyReflection) {
+			$assignedToType = $propertyReflection->getWritableType();
+			if (!($assignedToType instanceof ArrayType)) {
+				continue;
+			}
 
-		if ($node instanceof Assign) {
-			$assignedValueType = $scope->getType($node->expr);
-		} else {
-			$assignedValueType = $scope->getType($node);
-		}
+			if ($node instanceof Assign) {
+				$assignedValueType = $scope->getType($node->expr);
+			} else {
+				$assignedValueType = $scope->getType($node);
+			}
 
-		$itemType = $assignedToType->getItemType();
-		if (!$this->ruleLevelHelper->accepts($itemType, $assignedValueType, $scope->isDeclareStrictTypes())) {
+			$itemType = $assignedToType->getItemType();
+			if ($this->ruleLevelHelper->accepts($itemType, $assignedValueType, $scope->isDeclareStrictTypes())) {
+				continue;
+			}
+
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($itemType);
-			return [
-				RuleErrorBuilder::message(sprintf(
+
+			$errors[] = RuleErrorBuilder::message(
+				sprintf(
 					'Array (%s) does not accept %s.',
 					$assignedToType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel)
-				))->build(),
-			];
+				)
+			)->build();
 		}
 
-		return [];
+		return $errors;
 	}
 
 }

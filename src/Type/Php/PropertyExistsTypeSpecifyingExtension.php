@@ -70,8 +70,8 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 			return new SpecifiedTypes([], []);
 		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
-		if ($propertyReflection !== null) {
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyNode, $scope);
+		foreach ($propertyReflections as $propertyReflection) {
 			if (!$propertyReflection->isNative()) {
 				return new SpecifiedTypes([], []);
 			}

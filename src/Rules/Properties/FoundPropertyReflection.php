@@ -18,15 +18,28 @@ class FoundPropertyReflection implements PropertyReflection
 
 	private Type $writableType;
 
+	private ?Type $overwriteType;
+
+	private ?string $name;
+
 	public function __construct(
 		PropertyReflection $originalPropertyReflection,
 		Type $readableType,
-		Type $writableType
+		Type $writableType,
+		?Type $overwriteType = null,
+		?string $name = null
 	)
 	{
 		$this->originalPropertyReflection = $originalPropertyReflection;
 		$this->readableType = $readableType;
 		$this->writableType = $writableType;
+		$this->overwriteType = $overwriteType;
+		$this->name = $name;
+	}
+
+	public function getName(): ?string
+	{
+		return $this->name;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -116,6 +129,11 @@ class FoundPropertyReflection implements PropertyReflection
 		}
 
 		return $reflection->getNativeType();
+	}
+
+	public function getOverwriteType(): ?Type
+	{
+		return $this->overwriteType;
 	}
 
 }

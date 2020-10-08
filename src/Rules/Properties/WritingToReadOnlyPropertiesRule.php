@@ -65,27 +65,33 @@ class WritingToReadOnlyPropertiesRule implements \PHPStan\Rules\Rule
 
 		/** @var \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch */
 		$propertyFetch = $node->var;
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyFetch, $scope);
-		if ($propertyReflection === null) {
+
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $scope);
+		if (count($propertyReflections) === 0) {
 			return [];
 		}
 
-		if (!$scope->canAccessProperty($propertyReflection)) {
-			return [];
-		}
+		$errors = [];
+		foreach ($propertyReflections as $propertyReflection) {
+			if (!$scope->canAccessProperty($propertyReflection)) {
+				continue;
+			}
 
-		if (!$propertyReflection->isWritable()) {
+			if ($propertyReflection->isWritable()) {
+				continue;
+			}
+
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $propertyFetch);
 
-			return [
-				RuleErrorBuilder::message(sprintf(
+			$errors[] = RuleErrorBuilder::message(
+				sprintf(
 					'%s is not writable.',
 					$propertyDescription
-				))->build(),
-			];
+				)
+			)->build();
 		}
 
-		return [];
+		return $errors;
 	}
 
 }

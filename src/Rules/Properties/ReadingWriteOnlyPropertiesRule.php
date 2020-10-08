@@ -60,26 +60,32 @@ class ReadingWriteOnlyPropertiesRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $scope);
-		if ($propertyReflection === null) {
-			return [];
-		}
-		if (!$scope->canAccessProperty($propertyReflection)) {
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($node, $scope);
+		if (count($propertyReflections) === 0) {
 			return [];
 		}
 
-		if (!$propertyReflection->isReadable()) {
+		$errors = [];
+		foreach ($propertyReflections as $propertyReflection) {
+			if (!$scope->canAccessProperty($propertyReflection)) {
+				continue;
+			}
+
+			if ($propertyReflection->isReadable()) {
+				continue;
+			}
+
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $node);
 
-			return [
-				RuleErrorBuilder::message(sprintf(
+			$errors[] = RuleErrorBuilder::message(
+				sprintf(
 					'%s is not readable.',
 					$propertyDescription
-				))->build(),
-			];
+				)
+			)->build();
 		}
 
-		return [];
+		return $errors;
 	}
 
 }

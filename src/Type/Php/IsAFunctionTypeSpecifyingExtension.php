@@ -38,10 +38,24 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$classNameArgExpr = $node->args[1]->value;
-		$classNameArgExprType = $scope->getType($classNameArgExpr);
+		$types = $this->specifyTypesHelper($node, $scope, $context);
+
 		if (
-			$classNameArgExpr instanceof ClassConstFetch
+			isset($node->args[2])
+			&& $context->true()
+			&& !$scope->getType($node->args[2]->value)->isSuperTypeOf(new ConstantBooleanType(true))->no()
+		) {
+			$types = $types->intersectWith($this->typeSpecifier->create($node->args[0]->value, new StringType(), $context));
+		}
+
+		return $types;
+	}
+
+	private function specifyTypesHelper(FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		$classNameArgExpr = $node->args[1]->value;
+
+		if ($classNameArgExpr instanceof ClassConstFetch
 			&& $classNameArgExpr->class instanceof Name
 			&& $classNameArgExpr->name instanceof \PhpParser\Node\Identifier
 			&& strtolower($classNameArgExpr->name->name) === 'class'
@@ -52,24 +66,22 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 			} else {
 				$objectType = new ObjectType($className);
 			}
-			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
-		} elseif ($classNameArgExprType instanceof ConstantStringType) {
+
+			return $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
+		}
+
+		$classNameArgExprType = $scope->getType($classNameArgExpr);
+		if ($classNameArgExprType instanceof ConstantStringType) {
 			$objectType = new ObjectType($classNameArgExprType->getValue());
-			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
-		} elseif ($context->true()) {
+			return $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
+		}
+
+		if ($context->true()) {
 			$objectType = new ObjectWithoutClassType();
-			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
-		} else {
-			$types = new SpecifiedTypes();
+			return $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
 		}
 
-		if (isset($node->args[2]) && $context->true()) {
-			if (!$scope->getType($node->args[2]->value)->isSuperTypeOf(new ConstantBooleanType(true))->no()) {
-				$types = $types->intersectWith($this->typeSpecifier->create($node->args[0]->value, new StringType(), $context));
-			}
-		}
-
-		return $types;
+		return new SpecifiedTypes();
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

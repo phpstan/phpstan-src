@@ -49,11 +49,18 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\VarLikeIdentifier) {
+		if (
+			!$node->name instanceof Node\VarLikeIdentifier
+			&& !$node->name instanceof Node\Expr\Variable // Variable variable like static::${$foo}
+		) {
 			return [];
 		}
 
 		$name = $node->name->name;
+		if ($name instanceof Node\Expr) {
+			return [];
+		}
+
 		$messages = [];
 		if ($node->class instanceof Name) {
 			$class = (string) $node->class;
@@ -156,6 +163,30 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 		$classType = TypeCombinator::remove($classType, new StringType());
 
 		if ($scope->isInExpressionAssign($node)) {
+			if (!$node->name instanceof Node\Expr) {
+				return [];
+			}
+
+			$assignNames = array_map(static function (\PHPStan\Type\Constant\ConstantStringType $string): string {
+				return $string->getValue();
+			}, TypeUtils::getConstantStrings($scope->getType($node->name)));
+
+			foreach ($assignNames as $assignName) {
+				if ($classType->hasProperty($assignName)->yes()) {
+					continue;
+				}
+
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Cannot access static property $%s on %s.',
+					$assignName,
+					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+				))->build();
+			}
+
+			return $messages;
+		}
+
+		if ($node->name instanceof Node\Expr\Variable) {
 			return [];
 		}
 

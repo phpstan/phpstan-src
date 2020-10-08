@@ -49,43 +49,48 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->var->var, $scope);
-		if ($propertyReflection === null) {
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($node->var->var, $scope);
+		if (count($propertyReflections) === 0) {
 			return [];
 		}
 
-		$arrayType = $propertyReflection->getReadableType();
-		if (!$arrayType instanceof ArrayType) {
-			return [];
-		}
-
-		if ($node->var->dim !== null) {
-			$dimensionType = $scope->getType($node->var->dim);
-			$isValidKey = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
-			if (!$isValidKey->yes()) {
-				// already handled by InvalidKeyInArrayDimFetchRule
-				return [];
+		$errors = [];
+		foreach ($propertyReflections as $propertyReflection) {
+			$arrayType = $propertyReflection->getReadableType();
+			if (!$arrayType instanceof ArrayType) {
+				continue;
 			}
 
-			$keyType = ArrayType::castToArrayKeyType($dimensionType);
-			if (!$this->checkUnionTypes && $keyType instanceof UnionType) {
-				return [];
-			}
-		} else {
-			$keyType = new IntegerType();
-		}
+			if ($node->var->dim !== null) {
+				$dimensionType = $scope->getType($node->var->dim);
+				$isValidKey = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
+				if (!$isValidKey->yes()) {
+					// already handled by InvalidKeyInArrayDimFetchRule
+					continue;
+				}
 
-		if (!$arrayType->getIterableKeyType()->isSuperTypeOf($keyType)->yes()) {
-			return [
-				RuleErrorBuilder::message(sprintf(
+				$keyType = ArrayType::castToArrayKeyType($dimensionType);
+				if (!$this->checkUnionTypes && $keyType instanceof UnionType) {
+					continue;
+				}
+			} else {
+				$keyType = new IntegerType();
+			}
+
+			if ($arrayType->getIterableKeyType()->isSuperTypeOf($keyType)->yes()) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(
+				sprintf(
 					'Array (%s) does not accept key %s.',
 					$arrayType->describe(VerbosityLevel::typeOnly()),
 					$keyType->describe(VerbosityLevel::value())
-				))->build(),
-			];
+				)
+			)->build();
 		}
 
-		return [];
+		return $errors;
 	}
 
 }

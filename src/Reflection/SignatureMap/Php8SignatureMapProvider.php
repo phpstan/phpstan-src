@@ -166,7 +166,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 			$functionMapParameter = $functionMapSignature->getParameters()[$i];
 			$parameters[] = new ParameterSignature(
-				$nativeParameter->getName(),
+				$functionMapParameter->getName(),
 				$nativeParameter->isOptional(),
 				TypehintHelper::decideType(
 					$nativeParameter->getType(),

@@ -34,7 +34,7 @@ class Php8SignatureMapProviderTest extends TestCase
 				'curl_exec',
 				[
 					[
-						'name' => 'handle',
+						'name' => 'ch',
 						'optional' => false,
 						'type' => new ObjectType('CurlHandle'),
 						'passedByReference' => PassedByReference::createNo(),
@@ -101,7 +101,7 @@ class Php8SignatureMapProviderTest extends TestCase
 				'bindTo',
 				[
 					[
-						'name' => 'newThis',
+						'name' => 'new',
 						'optional' => false,
 						'type' => new UnionType([
 							new ObjectWithoutClassType(),
@@ -111,7 +111,7 @@ class Php8SignatureMapProviderTest extends TestCase
 						'variadic' => false,
 					],
 					[
-						'name' => 'newScope',
+						'name' => 'newscope',
 						'optional' => true,
 						'type' => new UnionType([
 							new ObjectWithoutClassType(),

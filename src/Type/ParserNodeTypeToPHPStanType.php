@@ -66,6 +66,8 @@ class ParserNodeTypeToPHPStanType
 			return new ObjectWithoutClassType();
 		} elseif ($type === 'false') {
 			return new ConstantBooleanType(false);
+		} elseif ($type === 'null') {
+			return new NullType();
 		} elseif ($type === 'mixed') {
 			return new MixedType(true);
 		}

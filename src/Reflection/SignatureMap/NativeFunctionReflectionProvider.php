@@ -39,11 +39,10 @@ class NativeFunctionReflectionProvider
 			return null;
 		}
 
-		$variantName = $lowerCasedFunctionName;
 		$variants = [];
 		$i = 0;
-		while ($this->signatureMapProvider->hasFunctionSignature($variantName)) {
-			$functionSignature = $this->signatureMapProvider->getFunctionSignature($variantName, null);
+		while ($this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName, $i)) {
+			$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $i);
 			$returnType = $functionSignature->getReturnType();
 			if ($lowerCasedFunctionName === 'pow') {
 				$returnType = TypeUtils::toBenevolentUnion($returnType);
@@ -82,7 +81,6 @@ class NativeFunctionReflectionProvider
 			);
 
 			$i++;
-			$variantName = sprintf($lowerCasedFunctionName . '\'' . $i);
 		}
 
 		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {

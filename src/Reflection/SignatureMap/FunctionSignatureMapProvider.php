@@ -23,15 +23,31 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		$this->phpVersion = $phpVersion;
 	}
 
-	public function hasFunctionSignature(string $name): bool
+	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool
+	{
+		return $this->hasFunctionSignature(sprintf('%s::%s', $className, $methodName), $variant);
+	}
+
+	public function hasFunctionSignature(string $name, int $variant = 0): bool
 	{
 		$signatureMap = $this->getSignatureMap();
+		if ($variant > 0) {
+			$name .= '\'' . $variant;
+		}
 		return array_key_exists(strtolower($name), $signatureMap);
 	}
 
-	public function getFunctionSignature(string $functionName, ?string $className): FunctionSignature
+	public function getMethodSignature(string $className, string $methodName, int $variant = 0): FunctionSignature
+	{
+		return $this->getFunctionSignature(sprintf('%s::%s', $className, $methodName), $className, $variant);
+	}
+
+	public function getFunctionSignature(string $functionName, ?string $className, int $variant = 0): FunctionSignature
 	{
 		$functionName = strtolower($functionName);
+		if ($variant > 0) {
+			$functionName .= '\'' . $variant;
+		}
 
 		if (!$this->hasFunctionSignature($functionName)) {
 			throw new \PHPStan\ShouldNotHappenException();
@@ -45,10 +61,25 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		);
 	}
 
+	public function hasMethodMetadata(string $className, string $methodName): bool
+	{
+		return $this->hasFunctionMetadata(sprintf('%s::%s', $className, $methodName));
+	}
+
 	public function hasFunctionMetadata(string $name): bool
 	{
 		$signatureMap = $this->getFunctionMetadataMap();
 		return array_key_exists(strtolower($name), $signatureMap);
+	}
+
+	/**
+	 * @param string $className
+	 * @param string $methodName
+	 * @return array{hasSideEffects: bool}
+	 */
+	public function getMethodMetadata(string $className, string $methodName): array
+	{
+		return $this->getFunctionMetadata(sprintf('%s::%s', $className, $methodName));
 	}
 
 	/**

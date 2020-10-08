@@ -391,7 +391,6 @@ class PhpClassReflectionExtension
 			}
 		}
 		$declaringClassName = $methodReflection->getDeclaringClass()->getName();
-		$signatureMapMethodName = sprintf('%s::%s', $declaringClassName, $methodReflection->getName());
 		$declaringClass = $classReflection->getAncestorWithClassName($declaringClassName);
 
 		if ($declaringClass === null) {
@@ -402,14 +401,12 @@ class PhpClassReflectionExtension
 			));
 		}
 
-		if ($this->signatureMapProvider->hasFunctionSignature($signatureMapMethodName)) {
-			$variantName = $signatureMapMethodName;
-			$variantNames = [];
+		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {
+			$variantNumbers = [];
 			$i = 0;
-			while ($this->signatureMapProvider->hasFunctionSignature($variantName)) {
-				$variantNames[] = $variantName;
+			while ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName(), $i)) {
+				$variantNumbers[] = $i;
 				$i++;
-				$variantName = sprintf($signatureMapMethodName . '\'' . $i);
 			}
 
 			$stubPhpDocString = null;
@@ -423,12 +420,12 @@ class PhpClassReflectionExtension
 					$reflectionMethod = $reflectionClass->getMethod($methodReflection->getName());
 				}
 			}
-			foreach ($variantNames as $innerVariantName) {
-				$methodSignature = $this->signatureMapProvider->getFunctionSignature($innerVariantName, $declaringClassName);
+			foreach ($variantNumbers as $variantNumber) {
+				$methodSignature = $this->signatureMapProvider->getMethodSignature($declaringClassName, $methodReflection->getName(), $variantNumber);
 				$phpDocReturnType = null;
 				$stubPhpDocParameterTypes = [];
 				$stubPhpDocParameterVariadicity = [];
-				if (count($variantNames) === 1) {
+				if (count($variantNumbers) === 1) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
 						return $parameterSignature->getName();
 					}, $methodSignature->getParameters()));
@@ -457,8 +454,8 @@ class PhpClassReflectionExtension
 				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $phpDocReturnType, $reflectionMethod);
 			}
 
-			if ($this->signatureMapProvider->hasFunctionMetadata($signatureMapMethodName)) {
-				$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getFunctionMetadata($signatureMapMethodName)['hasSideEffects']);
+			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
+				$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects']);
 			} else {
 				$hasSideEffects = TrinaryLogic::createMaybe();
 			}

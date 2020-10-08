@@ -43,7 +43,11 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, $variant);
 		}
 
-		return $this->findMethodNode($className, $methodName) !== null;
+		if ($this->findMethodNode($className, $methodName) === null) {
+			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, $variant);
+		}
+
+		return true;
 	}
 
 	private function findMethodNode(string $className, string $methodName): ?ClassMethod
@@ -108,10 +112,18 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 		$methodNode = $this->findMethodNode($className, $methodName);
 		if ($methodNode === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $variant);
 		}
 
-		return $this->getSignature($methodNode);
+		$signature = $this->getSignature($methodNode);
+		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName)) {
+			return $this->mergeSignatures(
+				$signature,
+				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName)
+			);
+		}
+
+		return $signature;
 	}
 
 	public function getFunctionSignature(string $functionName, ?string $className, int $variant = 0): FunctionSignature

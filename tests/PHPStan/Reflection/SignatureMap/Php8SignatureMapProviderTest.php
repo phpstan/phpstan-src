@@ -4,14 +4,17 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\TestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -19,6 +22,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPStan\Type\VoidType;
 
 class Php8SignatureMapProviderTest extends TestCase
 {
@@ -122,6 +126,24 @@ class Php8SignatureMapProviderTest extends TestCase
 					new ObjectType('Closure'),
 					new NullType(),
 				]),
+				false,
+			],
+			[
+				'ArrayIterator',
+				'uasort',
+				[
+					[
+						'name' => 'cmp_function',
+						'optional' => false,
+						'type' => new CallableType([
+							new NativeParameterReflection('', false, new MixedType(true), PassedByReference::createNo(), false, null),
+							new NativeParameterReflection('', false, new MixedType(true), PassedByReference::createNo(), false, null),
+						], new IntegerType(), false),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+					],
+				],
+				new VoidType(),
 				false,
 			],
 		];

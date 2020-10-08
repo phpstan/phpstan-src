@@ -4,12 +4,12 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
-use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
+use PHPStan\Type\TypehintHelper;
 
 class Php8SignatureMapProvider implements SignatureMapProvider
 {
@@ -132,7 +132,44 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			throw new \PHPStan\ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
 		}
 
-		return $this->getSignature($functions[$lowerName]->getNode());
+		$signature = $this->getSignature($functions[$lowerName]->getNode());
+		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
+			return $this->mergeSignatures(
+				$signature,
+				$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className)
+			);
+		}
+
+		return $signature;
+	}
+
+	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature
+	{
+		$parameters = [];
+		foreach ($nativeSignature->getParameters() as $i => $nativeParameter) {
+			if (!array_key_exists($i, $functionMapSignature->getParameters())) {
+				$parameters[] = $nativeParameter;
+				continue;
+			}
+
+			$functionMapParameter = $functionMapSignature->getParameters()[$i];
+			$parameters[] = new ParameterSignature(
+				$nativeParameter->getName(),
+				$nativeParameter->isOptional(),
+				TypehintHelper::decideType(
+					$nativeParameter->getType(),
+					$functionMapParameter->getType()
+				),
+				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
+				$nativeParameter->isVariadic()
+			);
+		}
+
+		return new FunctionSignature(
+			$parameters,
+			TypehintHelper::decideType($nativeSignature->getReturnType(), $functionMapSignature->getReturnType()),
+			$nativeSignature->isVariadic()
+		);
 	}
 
 	public function hasMethodMetadata(string $className, string $methodName): bool

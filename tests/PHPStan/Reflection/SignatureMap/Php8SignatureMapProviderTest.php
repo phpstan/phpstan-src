@@ -6,7 +6,12 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\TestCase;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -33,6 +38,25 @@ class Php8SignatureMapProviderTest extends TestCase
 					],
 				],
 				new UnionType([new StringType(), new BooleanType()]),
+				false,
+			],
+			[
+				'date_get_last_errors',
+				[],
+				new UnionType([
+					new ConstantBooleanType(false),
+					new ConstantArrayType([
+						new ConstantStringType('warning_count'),
+						new ConstantStringType('warnings'),
+						new ConstantStringType('error_count'),
+						new ConstantStringType('errors'),
+					], [
+						new IntegerType(),
+						new ArrayType(new IntegerType(), new StringType()),
+						new IntegerType(),
+						new ArrayType(new IntegerType(), new StringType()),
+					]),
+				]),
 				false,
 			],
 		];

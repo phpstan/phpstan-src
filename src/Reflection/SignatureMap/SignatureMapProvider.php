@@ -102,6 +102,15 @@ class SignatureMapProvider
 				$signatureMap = $this->computeSignatureMap($signatureMap, $php74MapDelta);
 			}
 
+			if ($this->phpVersion->getVersionId() >= 80000) {
+				$php80MapDelta = require __DIR__ . '/../../../resources/functionMap_php80delta.php';
+				if (!is_array($php80MapDelta)) {
+					throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
+				}
+
+				$signatureMap = $this->computeSignatureMap($signatureMap, $php80MapDelta);
+			}
+
 			$this->signatureMap = $signatureMap;
 		}
 
@@ -115,7 +124,7 @@ class SignatureMapProvider
 	 */
 	private function computeSignatureMap(array $signatureMap, array $delta): array
 	{
-		foreach ($delta['old'] as $key) {
+		foreach (array_keys($delta['old']) as $key) {
 			unset($signatureMap[strtolower($key)]);
 		}
 		foreach ($delta['new'] as $key => $signature) {

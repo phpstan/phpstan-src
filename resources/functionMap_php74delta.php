@@ -55,6 +55,6 @@ return [
 		'WeakReference::get' => ['?object'],
 	],
 	'old' => [
-		'implode\'2',
+		'implode\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],
 	],
 ];

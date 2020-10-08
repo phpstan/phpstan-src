@@ -4,10 +4,10 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\ResourceType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
+use PHPStan\Type\TypeCombinator;
 
 class CurlInitReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
@@ -24,14 +24,12 @@ class CurlInitReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturn
 	): Type
 	{
 		$argsCount = count($functionCall->args);
+		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		if ($argsCount === 0) {
-			return new ResourceType();
+			return TypeCombinator::remove($returnType, new ConstantBooleanType(false));
 		}
 
-		return new UnionType([
-			new ResourceType(),
-			new ConstantBooleanType(false),
-		]);
+		return $returnType;
 	}
 
 }

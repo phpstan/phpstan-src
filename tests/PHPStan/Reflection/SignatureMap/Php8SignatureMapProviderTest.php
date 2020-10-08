@@ -31,6 +31,26 @@ class Php8SignatureMapProviderTest extends TestCase
 	{
 		return [
 			[
+				'curl_init',
+				[
+					[
+						'name' => 'url',
+						'optional' => true,
+						'type' => new UnionType([
+							new StringType(),
+							new NullType(),
+						]),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+					],
+				],
+				new UnionType([
+					new ObjectType('CurlHandle'),
+					new ConstantBooleanType(false),
+				]),
+				false,
+			],
+			[
 				'curl_exec',
 				[
 					[

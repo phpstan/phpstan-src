@@ -146,6 +146,24 @@ class Php8SignatureMapProviderTest extends TestCase
 				new VoidType(),
 				false,
 			],
+			[
+				'RecursiveArrayIterator',
+				'uasort',
+				[
+					[
+						'name' => 'cmp_function',
+						'optional' => false,
+						'type' => new CallableType([
+							new NativeParameterReflection('', false, new MixedType(true), PassedByReference::createNo(), false, null),
+							new NativeParameterReflection('', false, new MixedType(true), PassedByReference::createNo(), false, null),
+						], new IntegerType(), false),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+					],
+				],
+				new VoidType(),
+				false,
+			],
 		];
 	}
 

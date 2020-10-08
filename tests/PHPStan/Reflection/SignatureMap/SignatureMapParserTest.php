@@ -398,7 +398,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 	public function testParseAll(int $phpVersionId): void
 	{
 		$parser = self::getContainer()->getByType(SignatureMapParser::class);
-		$provider = new SignatureMapProvider($parser, new PhpVersion($phpVersionId));
+		$provider = new FunctionSignatureMapProvider($parser, new PhpVersion($phpVersionId));
 		$signatureMap = $provider->getSignatureMap();
 
 		$count = 0;

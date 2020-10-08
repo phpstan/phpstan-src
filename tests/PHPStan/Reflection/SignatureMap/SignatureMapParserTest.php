@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -382,13 +383,26 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
-	public function testParseAll(): void
+	public function dataParseAll(): array
+	{
+		return [
+			[70400],
+			[80000],
+		];
+	}
+
+	/**
+	 * @dataProvider dataParseAll
+	 * @param int $phpVersionId
+	 */
+	public function testParseAll(int $phpVersionId): void
 	{
 		$parser = self::getContainer()->getByType(SignatureMapParser::class);
-		$signatureMap = require __DIR__ . '/../../../../resources/functionMap.php';
+		$provider = new SignatureMapProvider($parser, new PhpVersion($phpVersionId));
+		$signatureMap = $provider->getSignatureMap();
 
 		$count = 0;
-		foreach ($signatureMap as $functionName => $map) {
+		foreach (array_keys($signatureMap) as $functionName) {
 			$className = null;
 			if (strpos($functionName, '::') !== false) {
 				$parts = explode('::', $functionName);
@@ -396,10 +410,10 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 			}
 
 			try {
-				$signature = $parser->getFunctionSignature($map, $className);
+				$signature = $provider->getFunctionSignature($functionName, $className);
 				$count++;
 			} catch (\PHPStan\PhpDocParser\Parser\ParserException $e) {
-				$this->fail(sprintf('Could not parse %s.', $functionName));
+				$this->fail(sprintf('Could not parse %s: %s.', $functionName, $e->getMessage()));
 			}
 
 			self::assertNotInstanceOf(ErrorType::class, $signature->getReturnType(), $functionName);

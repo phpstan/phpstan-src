@@ -180,6 +180,7 @@ class TypeNodeResolver
 				return new FloatType();
 
 			case 'array':
+			case 'associative-array':
 				return new ArrayType(new MixedType(), new MixedType());
 
 			case 'iterable':

@@ -81,9 +81,10 @@ class SignatureMapProvider
 	}
 
 	/**
+	 * @internal
 	 * @return mixed[]
 	 */
-	private function getSignatureMap(): array
+	public function getSignatureMap(): array
 	{
 		if ($this->signatureMap === null) {
 			$signatureMap = require __DIR__ . '/../../../resources/functionMap.php';

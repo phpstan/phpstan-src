@@ -45,7 +45,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -68,7 +67,6 @@ use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
@@ -76,6 +74,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
@@ -86,7 +85,6 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function array_key_exists;
 
 class MutatingScope implements Scope
@@ -2684,65 +2682,20 @@ class MutatingScope implements Scope
 				false
 			));
 		}
-		if ($type === null) {
-			return new MixedType();
-		} elseif ($type instanceof Name) {
+
+		if ($type instanceof Name) {
 			$className = (string) $type;
 			$lowercasedClassName = strtolower($className);
-			if ($this->isInClass() && in_array($lowercasedClassName, ['self', 'static'], true)) {
-				$className = $this->getClassReflection()->getName();
-			} elseif (
-				$lowercasedClassName === 'parent'
-			) {
+			if ($lowercasedClassName === 'parent') {
 				if ($this->isInClass() && $this->getClassReflection()->getParentClass() !== false) {
 					return new ObjectType($this->getClassReflection()->getParentClass()->getName());
 				}
 
 				return new NonexistentParentClassType();
 			}
-
-			if ($lowercasedClassName === 'static') {
-				return new StaticType($className);
-			}
-
-			return new ObjectType($className);
-		} elseif ($type instanceof Node\NullableType) {
-			return $this->getFunctionType($type->type, true, $isVariadic);
-		} elseif ($type instanceof Node\UnionType) {
-			$types = [];
-			foreach ($type->types as $unionTypeType) {
-				$types[] = $this->getFunctionType($unionTypeType, false, false);
-			}
-
-			return TypeCombinator::union(...$types);
 		}
 
-		$type = $type->name;
-		if ($type === 'string') {
-			return new StringType();
-		} elseif ($type === 'int') {
-			return new IntegerType();
-		} elseif ($type === 'bool') {
-			return new BooleanType();
-		} elseif ($type === 'float') {
-			return new FloatType();
-		} elseif ($type === 'callable') {
-			return new CallableType();
-		} elseif ($type === 'array') {
-			return new ArrayType(new MixedType(), new MixedType());
-		} elseif ($type === 'iterable') {
-			return new IterableType(new MixedType(), new MixedType());
-		} elseif ($type === 'void') {
-			return new VoidType();
-		} elseif ($type === 'object') {
-			return new ObjectWithoutClassType();
-		} elseif ($type === 'false') {
-			return new ConstantBooleanType(false);
-		} elseif ($type === 'mixed') {
-			return new MixedType(true);
-		}
-
-		return new MixedType();
+		return ParserNodeTypeToPHPStanType::resolve($type, $this->isInClass() ? $this->getClassReflection()->getName() : null);
 	}
 
 	public function enterForeach(Expr $iteratee, string $valueName, ?string $keyName): self

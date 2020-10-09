@@ -3,35 +3,35 @@ parameters:
 		-
 			message: "#^Cannot access offset 'hash_type' on array\\('hash' \\=\\> string, 'hash_type' \\=\\> string\\)\\|false\\.$#"
 			count: 1
-			path: src/Command/FixerApplication.php
+			path: ../src/Command/FixerApplication.php
 
 		-
 			message: "#^Argument of an invalid type array\\<string, mixed\\>\\|null supplied for foreach, only iterables are supported\\.$#"
 			count: 1
-			path: src/PhpDoc/TypeNodeResolver.php
+			path: ../src/PhpDoc/TypeNodeResolver.php
 
 		-
 			message: "#^Strict comparison using \\=\\=\\= between array and false will always evaluate to false\\.$#"
 			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
+			path: ../src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
 
 		-
 			message: "#^Method PHPStan\\\\Reflection\\\\ClassConstantReflection\\:\\:getName\\(\\) should return string but returns string\\|false\\.$#"
 			count: 1
-			path: src/Reflection/ClassConstantReflection.php
+			path: ../src/Reflection/ClassConstantReflection.php
 
 		-
 			message: "#^Binary operation \"\\+\" between array\\(class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\) and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
 			count: 1
-			path: src/Rules/Registry.php
+			path: ../src/Rules/Registry.php
 
 		-
 			message: "#^Strict comparison using \\=\\=\\= between array and false will always evaluate to false\\.$#"
 			count: 1
-			path: src/Type/Php/MbFunctionsReturnTypeExtension.php
+			path: ../src/Type/Php/MbFunctionsReturnTypeExtension.php
 
 		-
 			message: "#^Call to function is_array\\(\\) with array will always evaluate to true\\.$#"
 			count: 1
-			path: src/Type/Php/StrSplitFunctionReturnTypeExtension.php
+			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php
 

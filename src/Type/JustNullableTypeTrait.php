@@ -44,7 +44,7 @@ trait JustNullableTypeTrait
 
 	public function equals(Type $type): bool
 	{
-		return get_class($type) === self::class;
+		return get_class($type) === static::class;
 	}
 
 	public function traverse(callable $cb): Type

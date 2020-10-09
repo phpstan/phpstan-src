@@ -617,7 +617,21 @@ services:
 		class: PHPStan\Reflection\SignatureMap\SignatureMapParser
 
 	-
+		class: PHPStan\Reflection\SignatureMap\FunctionSignatureMapProvider
+		autowired:
+			- PHPStan\Reflection\SignatureMap\FunctionSignatureMapProvider
+
+	-
+		class: PHPStan\Reflection\SignatureMap\Php8SignatureMapProvider
+		autowired:
+			- PHPStan\Reflection\SignatureMap\Php8SignatureMapProvider
+
+	-
+		class: PHPStan\Reflection\SignatureMap\SignatureMapProviderFactory
+
+	-
 		class: PHPStan\Reflection\SignatureMap\SignatureMapProvider
+		factory: @PHPStan\Reflection\SignatureMap\SignatureMapProviderFactory::create()
 
 	-
 		class: PHPStan\Rules\ClassCaseSensitivityCheck

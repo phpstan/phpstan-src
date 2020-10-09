@@ -17,6 +17,7 @@
 		</else>
 	</if>
 	<php expression="PHP_VERSION_ID &gt;= 70400 ?'true':'false'" returnProperty="isPHP74" level="verbose" />
+	<php expression="PHP_VERSION_ID &gt;= 80000 ?'true':'false'" returnProperty="isPHP80" level="verbose" />
 	<target name="check" depends="
 		composer-validate,
 		composer-install,
@@ -275,6 +276,15 @@
 				></append>
 			</then>
 		</if>
+		<if>
+			<equals arg1="${isPHP80}" arg2="true" />
+			<then>
+				<append
+					destFile="${phpstan.config}"
+					text=", baseline-8.0.neon"
+				></append>
+			</then>
+		</if>
 		<append
 			destFile="${phpstan.config}"
 			text=", ignore-hoa.neon"
@@ -329,6 +339,15 @@
 				<append
 					destFile="${phpstan.config}"
 					text=", ignore-gte-php7.4-errors.neon"
+				></append>
+			</then>
+		</if>
+		<if>
+			<equals arg1="${isPHP80}" arg2="true" />
+			<then>
+				<append
+					destFile="${phpstan.config}"
+					text=", baseline-8.0.neon"
 				></append>
 			</then>
 		</if>
@@ -393,6 +412,15 @@
 				></append>
 			</then>
 		</if>
+		<if>
+			<equals arg1="${isPHP80}" arg2="true" />
+			<then>
+				<append
+					destFile="${phpstan.config}"
+					text=", baseline-8.0.neon"
+				></append>
+			</then>
+		</if>
 		<append
 			destFile="${phpstan.config}"
 			text=", ignore-hoa.neon"
@@ -435,6 +463,15 @@
 				<append
 					destFile="${phpstan.config}"
 					text=", ignore-gte-php7.4-errors.neon"
+				></append>
+			</then>
+		</if>
+		<if>
+			<equals arg1="${isPHP80}" arg2="true" />
+			<then>
+				<append
+					destFile="${phpstan.config}"
+					text=", baseline-8.0.neon"
 				></append>
 			</then>
 		</if>
@@ -481,6 +518,15 @@
 				<append
 					destFile="${phpstan.config}"
 					text=", ignore-gte-php7.4-errors.neon"
+				></append>
+			</then>
+		</if>
+		<if>
+			<equals arg1="${isPHP80}" arg2="true" />
+			<then>
+				<append
+					destFile="${phpstan.config}"
+					text=", baseline-8.0.neon"
 				></append>
 			</then>
 		</if>

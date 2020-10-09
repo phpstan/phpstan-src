@@ -2329,8 +2329,8 @@ class NodeScopeResolver
 		if ($var instanceof Variable && is_string($var->name)) {
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
-			$scope = $result->getScope();
-			$scope = $scope->assignVariable($var->name, $scope->getType($assignedExpr));
+			$type = $scope->getType($assignedExpr);
+			$scope = $result->getScope()->assignVariable($var->name, $type);
 		} elseif ($var instanceof ArrayDimFetch) {
 			$dimExprStack = [];
 			while ($var instanceof ArrayDimFetch) {

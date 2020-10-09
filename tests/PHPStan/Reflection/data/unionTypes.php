@@ -59,4 +59,23 @@ class Baz
 
 	}
 
+	/**
+	 * @param array<int, string> $foo
+	 */
+	public function doBaz(array|false $foo): void
+	{
+		assertType('array<int, string>|false', $foo);
+		assertNativeType('array|false', $foo);
+
+		assertType('array<int, string>|false', $this->doLorem());
+	}
+
+	/**
+	 * @return array<int, string>
+	 */
+	public function doLorem(): array|false
+	{
+
+	}
+
 }

@@ -11,7 +11,7 @@ class AnalyserPhp80IntegrationTest extends \PHPStan\Testing\TestCase
 	public function testErrors(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/removedOnPhp80.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(3, $errors);
 	}
 
 	/**

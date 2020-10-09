@@ -202,6 +202,9 @@ class ClassReflection implements ReflectionWithFilename
 		return $parentReflection;
 	}
 
+	/**
+	 * @return class-string
+	 */
 	public function getName(): string
 	{
 		return $this->reflection->getName();

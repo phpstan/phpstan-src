@@ -171,4 +171,7 @@ foreach ($array as $val) {
 	$mergedInts = array_merge($mergedInts, $generalIntegers);
 }
 
+$fooArray = ['foo'];
+$poppedFoo = array_pop($fooArray);
+
 die;

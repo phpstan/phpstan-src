@@ -5,6 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $stubs = [
 	'../../resources/functionMap.php',
 	'../../resources/functionMap_php74delta.php',
+	'../../resources/functionMap_php80delta.php',
 	'../../resources/functionMetadata.php',
 	'../../vendor/hoa/consistency/Prelude.php',
 ];

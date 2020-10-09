@@ -174,19 +174,19 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Function openssl_open invoked with 7 parameters, 4-6 required.',
-				37,
+				39,
 			],
 			[
 				'Function openssl_x509_parse invoked with 3 parameters, 1-2 required.',
-				41,
+				43,
 			],
 			[
 				'Function openssl_pkcs12_export invoked with 6 parameters, 4-5 required.',
-				47,
+				49,
 			],
 			[
 				'Parameter #1 $depth of function xdebug_call_class expects int, string given.',
-				49,
+				51,
 			],
 		]);
 	}

@@ -205,7 +205,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				TypehintHelper::decideType(
 					$nativeSignature->getReturnType(),
 					$functionMapSignature->getReturnType()
-				),
+				)
 			),
 			$nativeReturnType,
 			$nativeSignature->isVariadic()

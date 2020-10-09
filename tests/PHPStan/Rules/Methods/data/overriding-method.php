@@ -306,3 +306,13 @@ class ExtendsFinalWithAnnotation extends FinalWithAnnotation
 	}
 
 }
+
+class FixedArrayOffsetExists extends \SplFixedArray
+{
+
+	public function offsetExists(int $index)
+	{
+
+	}
+
+}

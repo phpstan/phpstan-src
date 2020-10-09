@@ -102,8 +102,15 @@ class TypehintHelper
 	): Type
 	{
 		if ($phpDocType !== null && !$phpDocType instanceof ErrorType) {
-			if ($type instanceof VoidType || $phpDocType instanceof VoidType) {
+			if ($type instanceof VoidType) {
 				return new VoidType();
+			}
+			if (
+				$type instanceof MixedType
+				&& !$type->isExplicitMixed()
+				&& $phpDocType instanceof VoidType
+			) {
+				return $phpDocType;
 			}
 
 			if (TypeCombinator::removeNull($type) instanceof IterableType) {

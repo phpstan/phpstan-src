@@ -122,6 +122,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 				'Method OverridingFinalMethod\SomeOtherException::__construct() overrides final method OverridingFinalMethod\OtherException::__construct().',
 				280,
 			],
+			[
+				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $offset (mixed) of method ArrayAccess::offsetExists().',
+				313,
+			],
 		]);
 	}
 

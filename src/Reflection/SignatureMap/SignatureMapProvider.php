@@ -9,7 +9,7 @@ interface SignatureMapProvider
 
 	public function hasFunctionSignature(string $name, int $variant = 0): bool;
 
-	public function getMethodSignature(string $className, string $methodName, int $variant = 0): FunctionSignature;
+	public function getMethodSignature(string $className, string $methodName, ?\ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature;
 
 	public function getFunctionSignature(string $functionName, ?string $className, int $variant = 0): FunctionSignature;
 

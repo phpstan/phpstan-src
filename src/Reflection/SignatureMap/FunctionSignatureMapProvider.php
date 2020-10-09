@@ -3,6 +3,8 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\TypehintHelper;
 
 class FunctionSignatureMapProvider implements SignatureMapProvider
 {
@@ -37,9 +39,43 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		return array_key_exists(strtolower($name), $signatureMap);
 	}
 
-	public function getMethodSignature(string $className, string $methodName, int $variant = 0): FunctionSignature
+	public function getMethodSignature(string $className, string $methodName, ?\ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
 	{
-		return $this->getFunctionSignature(sprintf('%s::%s', $className, $methodName), $className, $variant);
+		$signature = $this->getFunctionSignature(sprintf('%s::%s', $className, $methodName), $className, $variant);
+		$parameters = [];
+		foreach ($signature->getParameters() as $i => $parameter) {
+			if ($reflectionMethod === null) {
+				$parameters[] = $parameter;
+				continue;
+			}
+			$nativeParameters = $reflectionMethod->getParameters();
+			if (!array_key_exists($i, $nativeParameters)) {
+				$parameters[] = $parameter;
+				continue;
+			}
+
+			$parameters[] = new ParameterSignature(
+				$parameter->getName(),
+				$parameter->isOptional(),
+				$parameter->getType(),
+				TypehintHelper::decideTypeFromReflection($nativeParameters[$i]->getType()),
+				$parameter->passedByReference(),
+				$parameter->isVariadic()
+			);
+		}
+
+		if ($reflectionMethod === null) {
+			$nativeReturnType = new MixedType();
+		} else {
+			$nativeReturnType = TypehintHelper::decideTypeFromReflection($reflectionMethod->getReturnType());
+		}
+
+		return new FunctionSignature(
+			$parameters,
+			$signature->getReturnType(),
+			$nativeReturnType,
+			$signature->isVariadic()
+		);
 	}
 
 	public function getFunctionSignature(string $functionName, ?string $className, int $variant = 0): FunctionSignature

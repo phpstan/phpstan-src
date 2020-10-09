@@ -12,21 +12,26 @@ class FunctionSignature
 
 	private \PHPStan\Type\Type $returnType;
 
+	private \PHPStan\Type\Type $nativeReturnType;
+
 	private bool $variadic;
 
 	/**
 	 * @param array<int, \PHPStan\Reflection\SignatureMap\ParameterSignature> $parameters
 	 * @param \PHPStan\Type\Type $returnType
+	 * @param \PHPStan\Type\Type $nativeReturnType
 	 * @param bool $variadic
 	 */
 	public function __construct(
 		array $parameters,
 		Type $returnType,
+		Type $nativeReturnType,
 		bool $variadic
 	)
 	{
 		$this->parameters = $parameters;
 		$this->returnType = $returnType;
+		$this->nativeReturnType = $nativeReturnType;
 		$this->variadic = $variadic;
 	}
 
@@ -41,6 +46,11 @@ class FunctionSignature
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
+	}
+
+	public function getNativeReturnType(): Type
+	{
+		return $this->nativeReturnType;
 	}
 
 	public function isVariadic(): bool

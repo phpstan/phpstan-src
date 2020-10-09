@@ -99,27 +99,27 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return true;
 	}
 
-	public function getMethodSignature(string $className, string $methodName, int $variant = 0): FunctionSignature
+	public function getMethodSignature(string $className, string $methodName, ?\ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
 	{
 		$lowerClassName = strtolower($className);
 		if (!array_key_exists($lowerClassName, Php8StubsMap::CLASSES)) {
-			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $variant);
+			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
 		}
 
 		if ($variant > 0) {
-			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $variant);
+			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
 		}
 
 		$methodNode = $this->findMethodNode($className, $methodName);
 		if ($methodNode === null) {
-			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $variant);
+			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
 		}
 
 		$signature = $this->getSignature($methodNode);
 		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName)) {
 			return $this->mergeSignatures(
 				$signature,
-				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName)
+				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant)
 			);
 		}
 
@@ -165,21 +165,35 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			}
 
 			$functionMapParameter = $functionMapSignature->getParameters()[$i];
+			$nativeParameterType = $nativeParameter->getNativeType();
 			$parameters[] = new ParameterSignature(
 				$functionMapParameter->getName(),
 				$nativeParameter->isOptional(),
 				TypehintHelper::decideType(
-					$nativeParameter->getType(),
-					$functionMapParameter->getType()
+					$nativeParameterType,
+					TypehintHelper::decideType(
+						$nativeParameter->getType(),
+						$functionMapParameter->getType()
+					)
 				),
+				$nativeParameterType,
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
 				$nativeParameter->isVariadic()
 			);
 		}
 
+		$nativeReturnType = $nativeSignature->getNativeReturnType();
+
 		return new FunctionSignature(
 			$parameters,
-			TypehintHelper::decideType($nativeSignature->getReturnType(), $functionMapSignature->getReturnType()),
+			TypehintHelper::decideType(
+				$nativeReturnType,
+				TypehintHelper::decideType(
+					$nativeSignature->getReturnType(),
+					$functionMapSignature->getReturnType()
+				),
+			),
+			$nativeReturnType,
 			$nativeSignature->isVariadic()
 		);
 	}
@@ -222,10 +236,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			if (!$name instanceof Variable || !is_string($name->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
+			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, null);
 			$parameters[] = new ParameterSignature(
 				$name->name,
 				$param->default !== null || $param->variadic,
-				ParserNodeTypeToPHPStanType::resolve($param->type, null),
+				$parameterType,
+				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 				$param->variadic
 			);
@@ -233,9 +249,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			$variadic = $variadic || $param->variadic;
 		}
 
+		$returnType = ParserNodeTypeToPHPStanType::resolve($function->getReturnType(), null);
+
 		return new FunctionSignature(
 			$parameters,
-			ParserNodeTypeToPHPStanType::resolve($function->getReturnType(), null),
+			$returnType,
+			$returnType,
 			$variadic
 		);
 	}

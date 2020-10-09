@@ -38,6 +38,7 @@ class SignatureMapParser
 		return new FunctionSignature(
 			$parameterSignatures,
 			$this->getTypeFromString($map[0], $className),
+			new MixedType(),
 			$hasVariadic
 		);
 	}
@@ -64,6 +65,7 @@ class SignatureMapParser
 				$name,
 				$isOptional,
 				$this->getTypeFromString($typeString, null),
+				new MixedType(),
 				$passedByReference,
 				$isVariadic
 			);

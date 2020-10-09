@@ -200,7 +200,7 @@ class Php8SignatureMapProviderTest extends TestCase
 	): void
 	{
 		$provider = $this->createProvider();
-		$signature = $provider->getMethodSignature($className, $methodName);
+		$signature = $provider->getMethodSignature($className, $methodName, null);
 		$this->assertSignature($parameters, $returnType, $variadic, $signature);
 	}
 

@@ -421,7 +421,7 @@ class PhpClassReflectionExtension
 				}
 			}
 			foreach ($variantNumbers as $variantNumber) {
-				$methodSignature = $this->signatureMapProvider->getMethodSignature($declaringClassName, $methodReflection->getName(), $variantNumber);
+				$methodSignature = $this->signatureMapProvider->getMethodSignature($declaringClassName, $methodReflection->getName(), $reflectionMethod, $variantNumber);
 				$phpDocReturnType = null;
 				$stubPhpDocParameterTypes = [];
 				$stubPhpDocParameterVariadicity = [];
@@ -451,7 +451,7 @@ class PhpClassReflectionExtension
 						}
 					}
 				}
-				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $phpDocReturnType, $reflectionMethod);
+				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $phpDocReturnType);
 			}
 
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
@@ -558,48 +558,23 @@ class PhpClassReflectionExtension
 	 * @param array<string, Type> $stubPhpDocParameterTypes
 	 * @param array<string, bool> $stubPhpDocParameterVariadicity
 	 * @param Type|null $phpDocReturnType
-	 * @param \ReflectionMethod|null $reflectionMethod
 	 * @return FunctionVariantWithPhpDocs
 	 */
 	private function createNativeMethodVariant(
 		FunctionSignature $methodSignature,
 		array $stubPhpDocParameterTypes,
 		array $stubPhpDocParameterVariadicity,
-		?Type $phpDocReturnType,
-		?\ReflectionMethod $reflectionMethod
+		?Type $phpDocReturnType
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
-		$nativeParameters = null;
-		$nativeReturnType = null;
-		if ($reflectionMethod !== null) {
-			$nativeParameters = $reflectionMethod->getParameters();
-			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
-				$reflectionMethod->getReturnType(),
-				null,
-				null
-			);
-		}
-		foreach ($methodSignature->getParameters() as $i => $parameterSignature) {
-			if (
-				$nativeParameters !== null
-				&& array_key_exists($i, $nativeParameters)
-			) {
-				$nativeParameterType = TypehintHelper::decideTypeFromReflection(
-					$nativeParameters[$i]->getType(),
-					null,
-					null,
-					$nativeParameters[$i]->isVariadic()
-				);
-			} else {
-				$nativeParameterType = new MixedType();
-			}
+		foreach ($methodSignature->getParameters() as $parameterSignature) {
 			$parameters[] = new NativeParameterWithPhpDocsReflection(
 				$parameterSignature->getName(),
 				$parameterSignature->isOptional(),
 				$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? $parameterSignature->getType(),
 				$stubPhpDocParameterTypes[$parameterSignature->getName()] ?? new MixedType(),
-				$nativeParameterType,
+				$parameterSignature->getNativeType(),
 				$parameterSignature->passedByReference(),
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
 				null
@@ -613,7 +588,7 @@ class PhpClassReflectionExtension
 			$methodSignature->isVariadic(),
 			$phpDocReturnType ?? $methodSignature->getReturnType(),
 			$phpDocReturnType ?? new MixedType(),
-			$nativeReturnType ?? new MixedType()
+			$methodSignature->getNativeReturnType()
 		);
 	}
 

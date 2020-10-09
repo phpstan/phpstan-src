@@ -14,6 +14,8 @@ class ParameterSignature
 
 	private \PHPStan\Type\Type $type;
 
+	private \PHPStan\Type\Type $nativeType;
+
 	private \PHPStan\Reflection\PassedByReference $passedByReference;
 
 	private bool $variadic;
@@ -22,6 +24,7 @@ class ParameterSignature
 		string $name,
 		bool $optional,
 		Type $type,
+		Type $nativeType,
 		PassedByReference $passedByReference,
 		bool $variadic
 	)
@@ -29,6 +32,7 @@ class ParameterSignature
 		$this->name = $name;
 		$this->optional = $optional;
 		$this->type = $type;
+		$this->nativeType = $nativeType;
 		$this->passedByReference = $passedByReference;
 		$this->variadic = $variadic;
 	}
@@ -46,6 +50,11 @@ class ParameterSignature
 	public function getType(): Type
 	{
 		return $this->type;
+	}
+
+	public function getNativeType(): Type
+	{
+		return $this->nativeType;
 	}
 
 	public function passedByReference(): PassedByReference

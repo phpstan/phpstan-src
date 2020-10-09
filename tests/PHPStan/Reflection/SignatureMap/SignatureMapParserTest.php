@@ -33,6 +33,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'fp',
 							false,
 							new ResourceType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -40,6 +41,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'fields',
 							false,
 							new ArrayType(new MixedType(), new MixedType()),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -47,6 +49,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'delimiter',
 							true,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -54,6 +57,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'enclosure',
 							true,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -61,11 +65,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'escape_char',
 							true,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
 					],
 					new IntegerType(),
+					new MixedType(),
 					false
 				),
 			],
@@ -78,11 +84,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'fp',
 							false,
 							new ResourceType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
 					],
 					new BooleanType(),
+					new MixedType(),
 					false
 				),
 			],
@@ -95,11 +103,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'array_arg',
 							false,
 							new ArrayType(new MixedType(), new MixedType()),
+							new MixedType(),
 							PassedByReference::createReadsArgument(),
 							false
 						),
 					],
 					new BooleanType(),
+					new MixedType(),
 					false
 				),
 			],
@@ -115,6 +125,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 								new StringType(),
 								new ResourceType(),
 							]),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -122,6 +133,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'out',
 							false,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createCreatesNewVariable(),
 							false
 						),
@@ -129,11 +141,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'notext',
 							true,
 							new BooleanType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
 					],
 					new BooleanType(),
+					new MixedType(),
 					false
 				),
 			],
@@ -147,6 +161,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 						new ObjectType('Foo'),
 						new NullType(),
 					]),
+					new MixedType(),
 					false
 				),
 			],
@@ -155,6 +170,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 				null,
 				new FunctionSignature(
 					[],
+					new MixedType(),
 					new MixedType(),
 					false
 				),
@@ -168,6 +184,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'arr1',
 							false,
 							new ArrayType(new MixedType(), new MixedType()),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -175,6 +192,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'arr2',
 							false,
 							new ArrayType(new MixedType(), new MixedType()),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -182,11 +200,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'...',
 							true,
 							new ArrayType(new MixedType(), new MixedType()),
+							new MixedType(),
 							PassedByReference::createNo(),
 							true
 						),
 					],
 					new ArrayType(new MixedType(), new MixedType()),
+					new MixedType(),
 					true
 				),
 			],
@@ -199,6 +219,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'callback',
 							false,
 							new CallableType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -206,6 +227,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'event',
 							false,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -213,11 +235,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'...',
 							true,
 							new MixedType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							true
 						),
 					],
 					new ResourceType(),
+					new MixedType(),
 					true
 				),
 			],
@@ -230,6 +254,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'format',
 							false,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -237,11 +262,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'args',
 							true,
 							new MixedType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							true
 						),
 					],
 					new StringType(),
+					new MixedType(),
 					true
 				),
 			],
@@ -254,6 +281,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'format',
 							false,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
@@ -261,11 +289,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'args',
 							true,
 							new MixedType(),
+							new MixedType(),
 							PassedByReference::createNo(),
 							true
 						),
 					],
 					new StringType(),
+					new MixedType(),
 					true
 				),
 			],
@@ -275,6 +305,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 				new FunctionSignature(
 					[],
 					new ArrayType(new IntegerType(), new ObjectType(\ReflectionParameter::class)),
+					new MixedType(),
 					false
 				),
 			],
@@ -287,11 +318,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'interval',
 							false,
 							new ObjectType(\DateInterval::class),
+							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
 					],
 					new StaticType(\DateTime::class),
+					new MixedType(),
 					false
 				),
 			],
@@ -304,6 +337,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'string',
 							false,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createReadsArgument(),
 							false
 						),
@@ -311,11 +345,13 @@ class SignatureMapParserTest extends \PHPStan\Testing\TestCase
 							'strings',
 							true,
 							new StringType(),
+							new MixedType(),
 							PassedByReference::createReadsArgument(),
 							true
 						),
 					],
 					new BooleanType(),
+					new MixedType(),
 					true
 				),
 			],

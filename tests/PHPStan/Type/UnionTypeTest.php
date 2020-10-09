@@ -6,11 +6,20 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\HasMethodType;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasPropertyType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 
 class UnionTypeTest extends \PHPStan\Testing\TestCase
 {
@@ -64,6 +73,89 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+		);
+	}
+
+	public function dataSelfCompare(): \Iterator
+	{
+		$broker = $this->createBroker();
+
+		$integerType = new IntegerType();
+		$stringType = new StringType();
+		$mixedType = new MixedType();
+		$constantStringType = new ConstantStringType('foo');
+		$constantIntegerType = new ConstantIntegerType(42);
+		$templateTypeScope = TemplateTypeScope::createWithClass('Foo');
+
+		$mixedParam = new NativeParameterReflection('foo', false, $mixedType, PassedByReference::createNo(), false, null);
+		$integerParam = new NativeParameterReflection('n', false, $integerType, PassedByReference::createNo(), false, null);
+
+		yield [new AccessoryNumericStringType()];
+		yield [new ArrayType($integerType, $stringType)];
+		yield [new ArrayType($stringType, $mixedType)];
+		yield [new BenevolentUnionType([$integerType, $stringType])];
+		yield [new BooleanType()];
+		yield [new CallableType()];
+		yield [new CallableType([$mixedParam, $integerParam], $stringType, false)];
+		yield [new ClassStringType()];
+		yield [new ClosureType([$mixedParam, $integerParam], $stringType, false)];
+		yield [new ConstantArrayType([$constantStringType, $constantIntegerType], [$mixedType, $stringType], 10, [1])];
+		yield [new ConstantBooleanType(true)];
+		yield [new ConstantFloatType(3.14)];
+		yield [$constantIntegerType];
+		yield [$constantStringType];
+		yield [new ErrorType()];
+		yield [new FloatType()];
+		yield [new GenericClassStringType(new ObjectType(\Exception::class))];
+		yield [new GenericObjectType('Foo', [new ObjectType('DateTime')])];
+		yield [new HasMethodType('Foo')];
+		yield [new HasOffsetType($constantStringType)];
+		yield [new HasPropertyType('foo')];
+		yield [IntegerRangeType::fromInterval(3, 10)];
+		yield [$integerType];
+		yield [new IntersectionType([new HasMethodType('Foo'), new HasPropertyType('bar')])];
+		yield [new IterableType($integerType, $stringType)];
+		yield [$mixedType];
+		yield [new NeverType()];
+		yield [new NonEmptyArrayType()];
+		yield [new NonexistentParentClassType()];
+		yield [new NullType()];
+		yield [new ObjectType('Foo')];
+		yield [new ObjectWithoutClassType(new ObjectType('Foo'))];
+		yield [new ResourceType()];
+		yield [new StaticType('Foo')];
+		yield [new StrictMixedType()];
+		yield [new StringAlwaysAcceptingObjectWithToStringType()];
+		yield [$stringType];
+		yield [TemplateTypeFactory::create($templateTypeScope, 'T', null, TemplateTypeVariance::createInvariant())];
+		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectType('Foo'), TemplateTypeVariance::createInvariant())];
+		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectWithoutClassType(), TemplateTypeVariance::createInvariant())];
+		yield [new ThisType($broker->getClass('Foo'))];
+		yield [new UnionType([$integerType, $stringType])];
+		yield [new VoidType()];
+	}
+
+	/**
+	 * @dataProvider dataSelfCompare
+	 *
+	 * @param  Type $type
+	 */
+	public function testSelfCompare(Type $type): void
+	{
+		$description = $type->describe(VerbosityLevel::precise());
+		$this->assertTrue(
+			$type->equals($type),
+			sprintf('%s -> equals(itself)', $description)
+		);
+		$this->assertEquals(
+			'Yes',
+			$type->isSuperTypeOf($type)->describe(),
+			sprintf('%s -> isSuperTypeOf(itself)', $description)
+		);
+		$this->assertInstanceOf(
+			get_class($type),
+			TypeCombinator::union($type, $type),
+			sprintf('%s -> union with itself is same type', $description)
 		);
 	}
 

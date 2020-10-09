@@ -22,6 +22,7 @@ parameters:
 		- %rootDir%/tests/PHPStan/Reflection/MixedTypeTest.php
 		- %rootDir%/tests/PHPStan/Reflection/StaticTypeTest.php
 		- ../tests/e2e/magic-setter/*
+		- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
 	featureToggles:
 		readComposerPhpVersion: false
 	ignoreErrors:

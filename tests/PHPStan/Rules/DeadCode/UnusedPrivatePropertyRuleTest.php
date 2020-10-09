@@ -29,7 +29,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
 					{
-						return $property->getDeclaringClass()->getName() === 'UnusedPrivateProperty\\TextExtension'
+						return $property->getDeclaringClass()->getName() === 'UnusedPrivateProperty\\TestExtension'
 							&& in_array($propertyName, [
 								'read',
 								'used',
@@ -38,7 +38,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 					public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
 					{
-						return $property->getDeclaringClass()->getName() === 'UnusedPrivateProperty\\TextExtension'
+						return $property->getDeclaringClass()->getName() === 'UnusedPrivateProperty\\TestExtension'
 							&& in_array($propertyName, [
 								'written',
 								'used',
@@ -100,17 +100,19 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				'Property UnusedPrivateProperty\Lorem::$baz is never read, only written.',
 				117,
 			],
+		]);
+		$this->analyse([__DIR__ . '/data/TestExtension.php'], [
 			[
-				'Property UnusedPrivateProperty\TextExtension::$unused is unused.',
-				148,
+				'Property UnusedPrivateProperty\TestExtension::$unused is unused.',
+				8,
 			],
 			[
-				'Property UnusedPrivateProperty\TextExtension::$read is never written, only read.',
-				150,
+				'Property UnusedPrivateProperty\TestExtension::$read is never written, only read.',
+				10,
 			],
 			[
-				'Property UnusedPrivateProperty\TextExtension::$written is never read, only written.',
-				152,
+				'Property UnusedPrivateProperty\TestExtension::$written is never read, only written.',
+				12,
 			],
 		]);
 	}

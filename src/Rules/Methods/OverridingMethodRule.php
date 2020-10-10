@@ -232,7 +232,7 @@ class OverridingMethodRule implements Rule
 				if ($this->phpVersion->supportsLessOverridenParametersWithVariadic()) {
 					$remainingPrototypeParameters = array_slice($prototypeVariant->getParameters(), $i);
 					foreach ($remainingPrototypeParameters as $j => $remainingPrototypeParameter) {
-						if (!$remainingPrototypeParameters instanceof ParameterReflectionWithPhpDocs) {
+						if (!$remainingPrototypeParameter instanceof ParameterReflectionWithPhpDocs) {
 							continue;
 						}
 						if ($methodParameter->getNativeType()->isSuperTypeOf($remainingPrototypeParameter->getNativeType())->yes()) {

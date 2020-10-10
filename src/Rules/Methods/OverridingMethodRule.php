@@ -223,7 +223,7 @@ class OverridingMethodRule implements Rule
 							$i + 1,
 							$methodParameter->getName(),
 							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName(),
+							$method->getName()
 						))->nonIgnorable()->build();
 					}
 				}

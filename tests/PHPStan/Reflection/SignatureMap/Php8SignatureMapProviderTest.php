@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
@@ -268,6 +269,24 @@ class Php8SignatureMapProviderTest extends TestCase
 		$this->assertSame($expectedReturnType->describe(VerbosityLevel::precise()), $actualSignature->getReturnType()->describe(VerbosityLevel::precise()));
 		$this->assertSame($expectedNativeReturnType->describe(VerbosityLevel::precise()), $actualSignature->getNativeReturnType()->describe(VerbosityLevel::precise()));
 		$this->assertSame($expectedVariadic, $actualSignature->isVariadic());
+	}
+
+	public function dataParseAll(): array
+	{
+		return array_map(static function (string $file): array {
+			return [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file];
+		}, array_merge(Php8StubsMap::CLASSES, Php8StubsMap::FUNCTIONS));
+	}
+
+	/**
+	 * @dataProvider dataParseAll
+	 * @param string $stubFile
+	 */
+	public function testParseAll(string $stubFile): void
+	{
+		$parser = $this->getParser();
+		$stmts = $parser->parseFile($stubFile);
+		$this->assertIsArray($stmts);
 	}
 
 }

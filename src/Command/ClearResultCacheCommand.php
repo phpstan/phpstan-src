@@ -62,7 +62,10 @@ class ClearResultCacheCommand extends Command
 				null,
 				'0',
 				false,
-				false
+				false,
+				false,
+				null,
+				[]
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

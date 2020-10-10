@@ -50,6 +50,7 @@ class ContainerFactory
 	 * @param string|null $generateBaselineFile
 	 * @param string|null $cliAutoloadFile
 	 * @param string|null $singleReflectionFile
+	 * @param string[]|null $analyseExcludes
 	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(
@@ -62,7 +63,8 @@ class ContainerFactory
 		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
 		?string $generateBaselineFile = null,
 		?string $cliAutoloadFile = null,
-		?string $singleReflectionFile = null
+		?string $singleReflectionFile = null,
+		?array $analyseExcludes = []
 	): Container
 	{
 		$configurator = new Configurator(new LoaderFactory(
@@ -90,6 +92,7 @@ class ContainerFactory
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
 			'fixerTmpDir' => sys_get_temp_dir() . '/phpstan-fixer',
+			'excludes_analyse' => $analyseExcludes,
 		]);
 		$configurator->addDynamicParameters([
 			'singleReflectionFile' => $singleReflectionFile,

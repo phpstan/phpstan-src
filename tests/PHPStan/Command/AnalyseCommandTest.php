@@ -52,6 +52,13 @@ class AnalyseCommandTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('magic value', SOME_CONSTANT_IN_AUTOLOAD_FILE);
 	}
 
+	public function testExcludeAnalyseParameter(): void
+	{
+		$output = $this->runCommand(0, ['-e' => ['test']]);
+		$this->assertStringNotContainsString('test/', $output);
+	}
+
+
 	/**
 	 * @return string[][]
 	 */

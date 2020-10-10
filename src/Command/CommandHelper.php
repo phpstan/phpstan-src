@@ -30,6 +30,7 @@ class CommandHelper
 	/**
 	 * @param string[] $paths
 	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string[]|null $analyseExcludes
 	 */
 	public static function begin(
 		InputInterface $input,
@@ -45,7 +46,8 @@ class CommandHelper
 		bool $allowXdebug,
 		bool $manageMemoryLimitFile = true,
 		bool $debugEnabled = false,
-		?string $singleReflectionFile = null
+		?string $singleReflectionFile = null,
+		?array $analyseExcludes
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
@@ -115,6 +117,12 @@ class CommandHelper
 			return $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path));
 		}, $paths);
 
+		if (is_array($analyseExcludes)) {
+			$analyseExcludes = array_map(static function (string $analyseExcludes) use ($currentWorkingDirectoryFileHelper): string {
+				return $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($analyseExcludes));
+			}, $analyseExcludes);
+		}
+
 		if (count($paths) === 0 && $pathsFile !== null) {
 			$pathsFile = $currentWorkingDirectoryFileHelper->absolutizePath($pathsFile);
 			if (!file_exists($pathsFile)) {
@@ -174,6 +182,9 @@ class CommandHelper
 			if (count($paths) === 0 && isset($projectConfig['parameters']['paths'])) {
 				$analysedPathsFromConfig = Helpers::expand($projectConfig['parameters']['paths'], $defaultParameters);
 				$paths = $analysedPathsFromConfig;
+			}
+			if (!is_array($analyseExcludes) && isset($projectConfig['parameters']['excludes_analyse'])) {
+				$analyseExcludes = Helpers::expand($projectConfig['parameters']['excludes_analyse'], $defaultParameters);
 			}
 		}
 
@@ -248,7 +259,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $allCustomConfigFiles, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $allCustomConfigFiles, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile, $analyseExcludes);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());
@@ -403,7 +414,6 @@ class CommandHelper
 		/** @var \Closure(): (array{string[], bool}) $filesCallback */
 		$filesCallback = static function () use ($fileFinder, $paths): array {
 			$fileFinderResult = $fileFinder->findFiles($paths);
-
 			return [$fileFinderResult->getFiles(), $fileFinderResult->isOnlyFiles()];
 		};
 

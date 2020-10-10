@@ -54,6 +54,7 @@ class WorkerCommand extends Command
 				new InputOption('identifier', null, InputOption::VALUE_REQUIRED),
 				new InputOption('tmp-file', null, InputOption::VALUE_REQUIRED),
 				new InputOption('instead-of', null, InputOption::VALUE_REQUIRED),
+				new InputOption('analyse-excludes', 'e', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Exclude paths from analysis'),
 			]);
 	}
 
@@ -68,7 +69,7 @@ class WorkerCommand extends Command
 		$allowXdebug = $input->getOption('xdebug');
 		$port = $input->getOption('port');
 		$identifier = $input->getOption('identifier');
-
+		$analyseExcludes = $input->getOption('analyse-excludes');
 		if (
 			!is_array($paths)
 			|| (!is_string($memoryLimit) && $memoryLimit !== null)
@@ -79,6 +80,7 @@ class WorkerCommand extends Command
 			|| (!is_bool($allowXdebug))
 			|| !is_string($port)
 			|| !is_string($identifier)
+			|| !is_array($analyseExcludes)
 		) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
@@ -109,7 +111,8 @@ class WorkerCommand extends Command
 				$allowXdebug,
 				false,
 				false,
-				$singleReflectionFile
+				$singleReflectionFile,
+				$analyseExcludes
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

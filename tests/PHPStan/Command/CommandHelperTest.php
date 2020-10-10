@@ -125,7 +125,10 @@ class CommandHelperTest extends TestCase
 				null,
 				$level,
 				false,
-				true
+				true,
+				false,
+				null,
+				['vendor']
 			);
 			if ($expectException) {
 				$this->fail();
@@ -250,7 +253,10 @@ class CommandHelperTest extends TestCase
 			null,
 			'0',
 			false,
-			true
+			true,
+			false,
+			null,
+			[]
 		);
 		$parameters = $result->getContainer()->getParameters();
 		foreach ($expectedParameters as $name => $expectedValue) {

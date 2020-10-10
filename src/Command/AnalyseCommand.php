@@ -61,6 +61,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				new InputOption('fix', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
+				new InputOption('analyse-excludes', 'e', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Exclude paths from analysis'),
 			]);
 	}
 
@@ -94,6 +95,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		$pathsFile = $input->getOption('paths-file');
 		$allowXdebug = $input->getOption('xdebug');
 		$debugEnabled = (bool) $input->getOption('debug');
+		$analyseExcludes = $input->getOption('analyse-excludes');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 
 		/** @var string|false|null $generateBaselineFile */
@@ -111,7 +113,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			|| (!is_string($configuration) && $configuration !== null)
 			|| (!is_string($level) && $level !== null)
 			|| (!is_string($pathsFile) && $pathsFile !== null)
-			|| (!is_bool($allowXdebug))
+			|| (!is_bool($allowXdebug)
+			|| !is_array($analyseExcludes))
 		) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
@@ -130,7 +133,9 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				$level,
 				$allowXdebug,
 				true,
-				$debugEnabled
+				$debugEnabled,
+				null,
+				$analyseExcludes
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

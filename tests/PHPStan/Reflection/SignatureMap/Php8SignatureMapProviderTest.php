@@ -285,8 +285,8 @@ class Php8SignatureMapProviderTest extends TestCase
 	public function testParseAll(string $stubFile): void
 	{
 		$parser = $this->getParser();
-		$stmts = $parser->parseFile($stubFile);
-		$this->assertIsArray($stmts);
+		$parser->parseFile($stubFile);
+		$this->expectNotToPerformAssertions();
 	}
 
 }

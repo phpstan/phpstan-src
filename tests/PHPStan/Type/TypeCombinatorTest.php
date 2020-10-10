@@ -1866,7 +1866,6 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				VoidType::class,
 				'void',
 			],
-
 			[
 				[
 					new ObjectType('UnknownClass'),

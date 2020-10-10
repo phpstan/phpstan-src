@@ -24,9 +24,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -661,14 +659,7 @@ class TypeSpecifier
 			]);
 			return $this->create($expr, $type, TypeSpecifierContext::createFalse());
 		} elseif (!$context->falsey()) {
-			$type = new UnionType([
-				new NullType(),
-				new ConstantBooleanType(false),
-				new ConstantIntegerType(0),
-				new ConstantFloatType(0.0),
-				new ConstantStringType(''),
-				new ConstantArrayType([], []),
-			]);
+			$type = TypeUtils::falsey();
 			return $this->create($expr, $type, TypeSpecifierContext::createFalse());
 		}
 

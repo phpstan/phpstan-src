@@ -12,17 +12,12 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
 
 class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
@@ -82,14 +77,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 
 	public function removeFalsey(Type $type): Type
 	{
-		$falseyTypes = new UnionType([
-			new NullType(),
-			new ConstantBooleanType(false),
-			new ConstantIntegerType(0),
-			new ConstantFloatType(0.0),
-			new ConstantStringType(''),
-			new ConstantArrayType([], []),
-		]);
+		$falseyTypes = TypeUtils::falsey();
 
 		if ($type instanceof ConstantArrayType) {
 			$keys = $type->getKeyTypes();

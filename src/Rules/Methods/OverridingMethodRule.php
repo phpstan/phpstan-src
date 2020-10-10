@@ -21,6 +21,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function array_slice;
 
 /**
  * @implements Rule<InClassMethodNode>
@@ -228,6 +229,32 @@ class OverridingMethodRule implements Rule
 					}
 				}
 			} elseif ($methodParameter->isVariadic()) {
+				if ($this->phpVersion->supportsLessOverridenParametersWithVariadic()) {
+					$remainingPrototypeParameters = array_slice($prototypeVariant->getParameters(), $i);
+					foreach ($remainingPrototypeParameters as $j => $remainingPrototypeParameter) {
+						if (!$remainingPrototypeParameters instanceof ParameterReflectionWithPhpDocs) {
+							continue;
+						}
+						if ($methodParameter->getNativeType()->isSuperTypeOf($remainingPrototypeParameter->getNativeType())->yes()) {
+							continue;
+						}
+
+						$messages[] = RuleErrorBuilder::message(sprintf(
+							'Parameter #%d ...$%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
+							$i + 1,
+							$methodParameter->getName(),
+							$methodParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
+							$method->getDeclaringClass()->getDisplayName(),
+							$method->getName(),
+							$i + $j + 1,
+							$remainingPrototypeParameter->getName(),
+							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
+							$prototype->getDeclaringClass()->getDisplayName(),
+							$prototype->getName()
+						))->nonIgnorable()->build();
+					}
+					break;
+				}
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s of method %s::%s() is variadic but parameter #%d $%s of method %s::%s() is not variadic.',
 					$i + 1,

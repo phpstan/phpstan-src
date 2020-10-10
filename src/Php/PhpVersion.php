@@ -51,4 +51,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsLessOverridenParametersWithVariadic(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

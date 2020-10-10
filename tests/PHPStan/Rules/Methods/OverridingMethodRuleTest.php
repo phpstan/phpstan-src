@@ -382,4 +382,74 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function dataLessOverridenParametersWithVariadic(): array
+	{
+		return [
+			[
+				70400,
+				[
+					[
+						'Parameter #1 $everything of method LessParametersVariadics\Bar::doFoo() is variadic but parameter #1 $many of method LessParametersVariadics\Foo::doFoo() is not variadic.',
+						18,
+					],
+					[
+						'Method LessParametersVariadics\Bar::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #2 $parameters.',
+						18,
+					],
+					[
+						'Method LessParametersVariadics\Bar::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #3 $here.',
+						18,
+					],
+					[
+						'Parameter #1 $everything of method LessParametersVariadics\Baz::doFoo() is variadic but parameter #1 $many of method LessParametersVariadics\Foo::doFoo() is not variadic.',
+						28,
+					],
+					[
+						'Method LessParametersVariadics\Baz::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #2 $parameters.',
+						28,
+					],
+					[
+						'Method LessParametersVariadics\Baz::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #3 $here.',
+						28,
+					],
+					[
+						'Parameter #2 $everything of method LessParametersVariadics\Lorem::doFoo() is variadic but parameter #2 $parameters of method LessParametersVariadics\Foo::doFoo() is not variadic.',
+						38,
+					],
+					[
+						'Method LessParametersVariadics\Lorem::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #3 $here.',
+						38,
+					],
+				],
+			],
+			[
+				80000,
+				[
+					[
+						'Parameter #1 ...$everything (int) of method LessParametersVariadics\Baz::doFoo() is not contravariant with parameter #2 $parameters (string) of method LessParametersVariadics\Foo::doFoo().',
+						28,
+					],
+					[
+						'Parameter #1 ...$everything (int) of method LessParametersVariadics\Baz::doFoo() is not contravariant with parameter #3 $here (string) of method LessParametersVariadics\Foo::doFoo().',
+						28,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataLessOverridenParametersWithVariadic
+	 * @param int $phpVersionId
+	 * @param mixed[] $errors
+	 */
+	public function testLessOverridenParametersWithVariadic(int $phpVersionId, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/less-parameters-variadics.php'], $errors);
+	}
+
 }

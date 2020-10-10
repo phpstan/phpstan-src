@@ -5,8 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\Broker\Broker;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -55,14 +53,7 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createYes(),
 			],
 			[
-				new ArrayType(new MixedType(), new MixedType(false, new UnionType([
-					new NullType(),
-					new ConstantBooleanType(false),
-					new ConstantIntegerType(0),
-					new ConstantFloatType(0.0),
-					new ConstantStringType(''),
-					new ConstantArrayType([], []),
-				]))),
+				new ArrayType(new MixedType(), new MixedType(false, TypeUtils::falsey())),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
 			],

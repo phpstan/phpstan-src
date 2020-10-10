@@ -146,6 +146,7 @@ class OverridingMethodRule implements Rule
 		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
 		$methodParameters = $methodVariant->getParameters();
 
+		$prototypeAfterVariadic = false;
 		foreach ($prototypeVariant->getParameters() as $i => $prototypeParameter) {
 			if (!array_key_exists($i, $methodParameters)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
@@ -190,19 +191,41 @@ class OverridingMethodRule implements Rule
 			}
 
 			if ($prototypeParameter->isVariadic()) {
+				$prototypeAfterVariadic = true;
 				if (!$methodParameter->isVariadic()) {
-					$messages[] = RuleErrorBuilder::message(sprintf(
-						'Parameter #%d $%s of method %s::%s() is not variadic but parameter #%d $%s of method %s::%s() is variadic.',
-						$i + 1,
-						$methodParameter->getName(),
-						$method->getDeclaringClass()->getDisplayName(),
-						$method->getName(),
-						$i + 1,
-						$prototypeParameter->getName(),
-						$prototype->getDeclaringClass()->getDisplayName(),
-						$prototype->getName()
-					))->nonIgnorable()->build();
-					continue;
+					if (!$methodParameter->isOptional()) {
+						if (count($methodParameters) !== $i + 1) {
+							$messages[] = RuleErrorBuilder::message(sprintf(
+								'Parameter #%d $%s of method %s::%s() is not optional.',
+								$i + 1,
+								$methodParameter->getName(),
+								$method->getDeclaringClass()->getDisplayName(),
+								$method->getName()
+							))->nonIgnorable()->build();
+							continue;
+						}
+
+						$messages[] = RuleErrorBuilder::message(sprintf(
+							'Parameter #%d $%s of method %s::%s() is not variadic but parameter #%d $%s of method %s::%s() is variadic.',
+							$i + 1,
+							$methodParameter->getName(),
+							$method->getDeclaringClass()->getDisplayName(),
+							$method->getName(),
+							$i + 1,
+							$prototypeParameter->getName(),
+							$prototype->getDeclaringClass()->getDisplayName(),
+							$prototype->getName()
+						))->nonIgnorable()->build();
+						continue;
+					} elseif (count($methodParameters) === $i + 1) {
+						$messages[] = RuleErrorBuilder::message(sprintf(
+							'Parameter #%d $%s of method %s::%s() is not variadic.',
+							$i + 1,
+							$methodParameter->getName(),
+							$method->getDeclaringClass()->getDisplayName(),
+							$method->getName(),
+						))->nonIgnorable()->build();
+					}
 				}
 			} elseif ($methodParameter->isVariadic()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
@@ -285,17 +308,31 @@ class OverridingMethodRule implements Rule
 				continue;
 			}
 
-			if ($methodParameter->isOptional()) {
+			if (
+				$j === count($methodParameters) - 1
+				&& $prototypeAfterVariadic
+				&& !$methodParameter->isVariadic()
+			) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s of method %s::%s() is not variadic.',
+					$j + 1,
+					$methodParameter->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName()
+				))->nonIgnorable()->build();
 				continue;
 			}
 
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Parameter #%d $%s of method %s::%s() is not optional.',
-				$j + 1,
-				$methodParameter->getName(),
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName()
-			))->nonIgnorable()->build();
+			if (!$methodParameter->isOptional()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s of method %s::%s() is not optional.',
+					$j + 1,
+					$methodParameter->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName()
+				))->nonIgnorable()->build();
+				continue;
+			}
 		}
 
 		$methodReturnType = $methodVariant->getNativeReturnType();

@@ -355,4 +355,31 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3629.php'], []);
 	}
 
+	public function testVariadics(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/overriding-variadics.php'], [
+			[
+				'Parameter #2 $lang of method OverridingVariadics\OtherTranslator::translate() is not optional.',
+				34,
+			],
+			[
+				'Parameter #2 $lang of method OverridingVariadics\AnotherTranslator::translate() is not optional.',
+				44,
+			],
+			[
+				'Parameter #3 $parameters of method OverridingVariadics\AnotherTranslator::translate() is not variadic.',
+				44,
+			],
+			[
+				'Parameter #2 $lang of method OverridingVariadics\YetAnotherTranslator::translate() is not variadic.',
+				54,
+			],
+		]);
+	}
+
 }

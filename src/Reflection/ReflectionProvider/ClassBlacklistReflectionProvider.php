@@ -42,10 +42,6 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		if (strtolower($className) === 'generator') {
-			return true;
-		}
-
 		if ($this->isClassBlacklisted($className)) {
 			return false;
 		}

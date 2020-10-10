@@ -73,7 +73,17 @@ class UnionTypeHelper
 					|| $b instanceof ConstantFloatType
 				)
 			) {
-				return (int) ($a->getValue() - $b->getValue());
+				$cmp = $a->getValue() <=> $b->getValue();
+				if ($cmp !== 0) {
+					return $cmp;
+				}
+				if ($a instanceof ConstantIntegerType && $b instanceof ConstantFloatType) {
+					return -1;
+				}
+				if ($b instanceof ConstantIntegerType && $a instanceof ConstantFloatType) {
+					return 1;
+				}
+				return 0;
 			}
 
 			if ($a instanceof ConstantStringType && $b instanceof ConstantStringType) {

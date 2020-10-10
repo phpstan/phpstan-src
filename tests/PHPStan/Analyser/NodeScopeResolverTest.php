@@ -491,7 +491,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				$testScope,
 				'mixedVarFromTryCatch',
 				TrinaryLogic::createYes(),
-				'1.0|1',
+				'1|1.0',
 			],
 			[
 				$testScope,

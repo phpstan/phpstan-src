@@ -832,4 +832,38 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 		$this->assertSame($expectedResult->describe(), $type->hasMethod($methodName)->describe());
 	}
 
+	public function testSorting(): void
+	{
+		$types = [
+			new ConstantBooleanType(false),
+			new ConstantBooleanType(true),
+			new ConstantIntegerType(-1),
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+			new ConstantFloatType(-1.0),
+			new ConstantFloatType(0.0),
+			new ConstantFloatType(1.0),
+			new ConstantStringType(''),
+			new ConstantStringType('a'),
+			new ConstantStringType('b'),
+			new ConstantArrayType([], []),
+			new ConstantArrayType([new ConstantStringType('')], [new ConstantStringType('')]),
+			new IntegerType(),
+			IntegerRangeType::fromInterval(10, 20),
+			IntegerRangeType::fromInterval(30, 40),
+			new FloatType(),
+			new StringType(),
+			new ClassStringType(),
+			new MixedType(),
+		];
+
+		$type1 = new UnionType($types);
+		$type2 = new UnionType(array_reverse($types));
+
+		$this->assertTrue(
+			$type1->equals($type2),
+			'UnionType sorting always produces the same order',
+		);
+	}
+
 }

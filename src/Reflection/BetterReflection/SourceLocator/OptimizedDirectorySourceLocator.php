@@ -70,7 +70,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			}
 
 			if (!array_key_exists($className, $this->classNodes)) {
-				throw new \PHPStan\ShouldNotHappenException(sprintf('Class %s not found in file %s but was expected to be there.', $className, $file));
+				return null;
 			}
 
 			return $this->nodeToReflection($reflector, $this->classNodes[$className]);

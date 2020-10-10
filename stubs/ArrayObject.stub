@@ -89,9 +89,10 @@ class ArrayObject implements IteratorAggregate, ArrayAccess
 /**
  * @template TValue
  * @implements Iterator<int, TValue>
+ * @implements IteratorAggregate<int, TValue>
  * @implements ArrayAccess<int, TValue>
  */
-class SplFixedArray implements Iterator, ArrayAccess, Countable
+class SplFixedArray implements Iterator, IteratorAggregate, ArrayAccess, Countable
 {
 	/**
 	 * @template TInput

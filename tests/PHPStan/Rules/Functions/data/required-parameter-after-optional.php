@@ -18,3 +18,7 @@ function doBaz(int $foo = 1, $bar): void // not OK
 function doLorem(bool $foo = true, $bar): void // not OK
 {
 }
+
+function doIpsum(bool $foo = true, ...$bar): void // OK
+{
+}

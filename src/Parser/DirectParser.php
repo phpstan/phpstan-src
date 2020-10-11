@@ -4,19 +4,33 @@ namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
 use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\NameResolver;
+use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\File\FileReader;
+use PHPStan\NodeVisitor\StatementOrderVisitor;
 
 class DirectParser implements Parser
 {
 
 	private \PhpParser\Parser $parser;
 
-	private \PhpParser\NodeTraverser $traverser;
+	private NameResolver $nameResolver;
 
-	public function __construct(\PhpParser\Parser $parser, NodeTraverser $traverser)
+	private NodeConnectingVisitor $nodeConnectingVisitor;
+
+	private StatementOrderVisitor $statementOrderVisitor;
+
+	public function __construct(
+		\PhpParser\Parser $parser,
+		NameResolver $nameResolver,
+		NodeConnectingVisitor $nodeConnectingVisitor,
+		StatementOrderVisitor $statementOrderVisitor
+	)
 	{
 		$this->parser = $parser;
-		$this->traverser = $traverser;
+		$this->nameResolver = $nameResolver;
+		$this->nodeConnectingVisitor = $nodeConnectingVisitor;
+		$this->statementOrderVisitor = $statementOrderVisitor;
 	}
 
 	/**
@@ -43,8 +57,13 @@ class DirectParser implements Parser
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		$nodeTraverser = new NodeTraverser();
+		$nodeTraverser->addVisitor($this->nameResolver);
+		$nodeTraverser->addVisitor($this->nodeConnectingVisitor);
+		$nodeTraverser->addVisitor($this->statementOrderVisitor);
+
 		/** @var array<\PhpParser\Node\Stmt> */
-		return $this->traverser->traverse($nodes);
+		return $nodeTraverser->traverse($nodes);
 	}
 
 }

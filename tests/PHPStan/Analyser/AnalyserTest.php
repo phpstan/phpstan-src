@@ -2,12 +2,14 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\Parser\DirectParser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -485,9 +487,6 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			new AlwaysFailRule(),
 		]);
 
-		$traverser = new \PhpParser\NodeTraverser();
-		$traverser->addVisitor(new \PhpParser\NodeVisitor\NameResolver());
-
 		$broker = $this->createBroker();
 		$printer = new \PhpParser\PrettyPrinter\Standard();
 		$fileHelper = $this->getFileHelper();
@@ -518,7 +517,12 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($broker, $typeSpecifier),
 			$nodeScopeResolver,
-			new DirectParser(new \PhpParser\Parser\Php7(new \PhpParser\Lexer()), $traverser),
+			new DirectParser(
+				new \PhpParser\Parser\Php7(new \PhpParser\Lexer()),
+				new \PhpParser\NodeVisitor\NameResolver(),
+				new NodeConnectingVisitor(),
+				new StatementOrderVisitor()
+			),
 			new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
 			$reportUnmatchedIgnoredErrors
 		);

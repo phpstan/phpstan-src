@@ -276,13 +276,6 @@ services:
 		class: PHPStan\Parser\LexerFactory
 
 	-
-		class: PhpParser\NodeTraverser
-		setup:
-			- addVisitor(@PhpParser\NodeVisitor\NameResolver)
-			- addVisitor(@PhpParser\NodeVisitor\NodeConnectingVisitor)
-			- addVisitor(@PHPStan\NodeVisitor\StatementOrderVisitor)
-
-	-
 		class: PhpParser\NodeVisitor\NameResolver
 
 	-

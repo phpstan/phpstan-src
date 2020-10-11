@@ -6412,7 +6412,7 @@ return [
 'Memcache::decrement' => ['int', 'key'=>'string', 'value='=>'int'],
 'Memcache::delete' => ['bool', 'key'=>'string', 'timeout='=>'int'],
 'Memcache::flush' => ['bool'],
-'Memcache::get' => ['array', 'key'=>'string', 'flags='=>'array', 'keys='=>'array'],
+'Memcache::get' => ['string|array|false', 'key'=>'string', 'flags='=>'array', 'keys='=>'array'],
 'Memcache::getExtendedStats' => ['array', 'type='=>'string', 'slabid='=>'int', 'limit='=>'int'],
 'Memcache::getServerStatus' => ['int', 'host'=>'string', 'port='=>'int'],
 'Memcache::getStats' => ['array', 'type='=>'string', 'slabid='=>'int', 'limit='=>'int'],

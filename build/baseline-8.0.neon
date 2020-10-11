@@ -31,7 +31,7 @@ parameters:
 			path: ../src/Type/Php/MbFunctionsReturnTypeExtension.php
 
 		-
-			message: "#^Call to function is_array\\(\\) with array will always evaluate to true\\.$#"
+			message: "#^Call to function is_array\\(\\) with array\\<int, string\\> will always evaluate to true\\.$#"
 			count: 1
 			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php
 

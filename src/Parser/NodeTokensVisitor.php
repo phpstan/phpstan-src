@@ -64,10 +64,15 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 	{
 		$immediatePredecessor = null;
 		$immediateSuccessor = null;
-		foreach ($parent->getAttribute('children', []) as $parentChild) {
+
+		/** @var NodeList $parentChildList */
+		$parentChildList = $parent->getAttribute('children');
+		while ($parentChildList !== null) {
+			$parentChild = $parentChildList->getNode();
 			$childEnd = $parentChild->getAttribute('endTokenPos');
 			if ($childEnd < $myStart) {
 				$immediatePredecessor = $parentChild;
+				$parentChildList = $parentChildList->getNext();
 				continue;
 			}
 
@@ -76,6 +81,8 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 				$immediateSuccessor = $parentChild;
 				break;
 			}
+
+			$parentChildList = $parentChildList->getNext();
 		}
 
 		if ($immediatePredecessor === null || $immediateSuccessor === null) {

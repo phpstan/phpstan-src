@@ -19,9 +19,13 @@ class NodeChildrenVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		$parentChildren = $parentNode->getAttribute('children') ?? [];
-		$parentChildren[] = $node;
-		$parentNode->setAttribute('children', $parentChildren);
+		$parentChildren = $parentNode->getAttribute('children');
+		if ($parentChildren === null) {
+			$parentChildren = new NodeList($node);
+			$parentNode->setAttribute('children', $parentChildren);
+		} else {
+			$parentChildren->append($node);
+		}
 
 		return null;
 	}

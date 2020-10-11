@@ -515,7 +515,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			[],
 			[]
 		);
-		$lexer = new \PhpParser\Lexer();
+		$lexer = new \PhpParser\Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($broker, $typeSpecifier),
 			$nodeScopeResolver,

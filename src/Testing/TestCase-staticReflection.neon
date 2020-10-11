@@ -7,6 +7,9 @@ services:
 	phpParserLexer:
 		class: PhpParser\Lexer
 		factory: PhpParser\Lexer\Emulative
+		arguments:
+			options:
+				usedAttributes: [comments, startLine, endLine, startTokenPos, endTokenPos]
 
 	testCaseBetterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider

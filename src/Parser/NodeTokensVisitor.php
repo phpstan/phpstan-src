@@ -33,9 +33,6 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 		) {
 			$myStart = $node->getAttribute('startTokenPos');
 			$myEnd = $node->getAttribute('endTokenPos');
-			if ($myStart === null || $myEnd === null) {
-				return null;
-			}
 			[$immediatePredecessor, $immediateSuccessor] = $this->getImmediates($parent, $myStart, $myEnd);
 			if ($immediatePredecessor !== null) {
 				$tokensBefore = [];

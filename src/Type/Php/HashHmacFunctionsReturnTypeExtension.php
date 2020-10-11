@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 
@@ -69,7 +70,11 @@ final class HashHmacFunctionsReturnTypeExtension implements DynamicFunctionRetur
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		if ($functionReflection->getName() === 'hash_hmac') {
+			$defaultReturnType = new StringType();
+		} else {
+			$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		}
 
 		$argType = $scope->getType($functionCall->args[0]->value);
 		if ($argType instanceof MixedType) {

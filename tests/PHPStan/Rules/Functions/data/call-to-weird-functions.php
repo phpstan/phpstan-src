@@ -11,8 +11,8 @@ strtok('/'); // also OK, variant with $token only
 strtok('/something', '/', 'foo'); // should report 3 parameters given, 1-2 required
 fputcsv($handle);
 fputcsv($handle, $data, ',', '""', '\\');
-/** @var resource $resource */
-$resource = imagecreatefrompng('filename');
+
+$resource = imagecreatefrompng('filename'); if ($resource === false) { return; }
 imagepng(); // should report 1-4 parameters
 imagepng($resource); // OK
 imagepng($resource, 'to', 1, 2); // OK

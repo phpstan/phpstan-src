@@ -35,6 +35,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use SomeNodeScopeResolverNamespace\Foo;
+use const PHP_VERSION_ID;
 
 class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 {
@@ -3169,11 +3170,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_key_exists(\'foo\', $generalArray)',
 			],
 			[
-				'resource',
+				PHP_VERSION_ID < 80000 ? 'resource' : 'CurlHandle',
 				'curl_init()',
 			],
 			[
-				'resource|false',
+				PHP_VERSION_ID < 80000 ? 'resource|false' : 'CurlHandle|false',
 				'curl_init($string)',
 			],
 			[
@@ -4986,7 +4987,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_change_key_case($integers)',
 			],
 			[
-				'array|false',
+				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
 				'array_combine([1], [2])',
 			],
 			[
@@ -5613,11 +5614,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$mbStrlenWithInvalidEncoding',
 			],
 			[
-				'int|false',
+				PHP_VERSION_ID < 80000 ? 'int|false' : 'int',
 				'$mbStrlenWithValidAndInvalidEncoding',
 			],
 			[
-				'int|false',
+				PHP_VERSION_ID < 80000 ? 'int|false' : 'int',
 				'$mbStrlenWithUnknownEncoding',
 			],
 			[
@@ -5689,11 +5690,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
-				'array|false',
+				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
 				'$mbEncodingAliasesWithValidAndInvalidEncoding',
 			],
 			[
-				'array|false',
+				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
 				'$mbEncodingAliasesWithUnknownEncoding',
 			],
 			[
@@ -5757,7 +5758,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$gettimeofdayBenevolent',
 			],
 			[
-				'array<int, string>|false',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$strSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -5781,7 +5782,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$strSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				'array<int, string>|false',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
@@ -5789,7 +5790,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				'array<int, string>|false',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$strSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			// parse_url
@@ -7888,15 +7889,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$sureFalse',
 			],
 			[
-				'array<int, string>|false',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$arrayOrFalse',
 			],
 			[
-				'array<int, string>|false',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$anotherArrayOrFalse',
 			],
 			[
-				'(array<int, string>|false)',
+				PHP_VERSION_ID < 80000 ? '(array<int, string>|false)' : 'array<int, string>',
 				'$benevolentArrayOrFalse',
 			],
 		];
@@ -9992,6 +9993,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	public function dataBug3336(): array
 	{
+		if (PHP_VERSION_ID >= 80000) {
+			return [];
+		}
+
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3336.php');
 	}
 

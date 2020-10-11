@@ -37,6 +37,7 @@ rules:
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
+	- PHPStan\Rules\Ternary\RequireParenthesesForNestedTernaryRule
 	- PHPStan\Rules\Variables\UnsetRule
 
 services:

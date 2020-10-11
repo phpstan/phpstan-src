@@ -3,6 +3,7 @@
 namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
+use PhpParser\Lexer;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
@@ -14,23 +15,31 @@ class DirectParser implements Parser
 
 	private \PhpParser\Parser $parser;
 
+	private Lexer $lexer;
+
 	private NameResolver $nameResolver;
 
 	private NodeConnectingVisitor $nodeConnectingVisitor;
 
 	private StatementOrderVisitor $statementOrderVisitor;
 
+	private NodeChildrenVisitor $nodeChildrenVisitor;
+
 	public function __construct(
 		\PhpParser\Parser $parser,
+		Lexer $lexer,
 		NameResolver $nameResolver,
 		NodeConnectingVisitor $nodeConnectingVisitor,
-		StatementOrderVisitor $statementOrderVisitor
+		StatementOrderVisitor $statementOrderVisitor,
+		NodeChildrenVisitor $nodeChildrenVisitor
 	)
 	{
 		$this->parser = $parser;
+		$this->lexer = $lexer;
 		$this->nameResolver = $nameResolver;
 		$this->nodeConnectingVisitor = $nodeConnectingVisitor;
 		$this->statementOrderVisitor = $statementOrderVisitor;
+		$this->nodeChildrenVisitor = $nodeChildrenVisitor;
 	}
 
 	/**
@@ -50,6 +59,7 @@ class DirectParser implements Parser
 	{
 		$errorHandler = new Collecting();
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
+		$tokens = $this->lexer->getTokens();
 		if ($errorHandler->hasErrors()) {
 			throw new \PHPStan\Parser\ParserErrorsException($errorHandler->getErrors());
 		}
@@ -61,9 +71,16 @@ class DirectParser implements Parser
 		$nodeTraverser->addVisitor($this->nameResolver);
 		$nodeTraverser->addVisitor($this->nodeConnectingVisitor);
 		$nodeTraverser->addVisitor($this->statementOrderVisitor);
+		$nodeTraverser->addVisitor($this->nodeChildrenVisitor);
 
 		/** @var array<\PhpParser\Node\Stmt> */
-		return $nodeTraverser->traverse($nodes);
+		$nodes = $nodeTraverser->traverse($nodes);
+
+		$tokensTraverser = new NodeTraverser();
+		$tokensTraverser->addVisitor(new NodeTokensVisitor($tokens));
+
+		/** @var array<\PhpParser\Node\Stmt> */
+		return $tokensTraverser->traverse($nodes);
 	}
 
 }

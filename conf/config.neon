@@ -529,6 +529,9 @@ services:
 		class: PHPStan\Parser\FunctionCallStatementFinder
 
 	-
+		class: PHPStan\Parser\NodeChildrenVisitor
+
+	-
 		class: PHPStan\Process\CpuCoreCounter
 
 	-

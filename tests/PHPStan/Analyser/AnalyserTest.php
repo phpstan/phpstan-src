@@ -11,6 +11,7 @@ use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\Parser\DirectParser;
+use PHPStan\Parser\NodeChildrenVisitor;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -514,14 +515,17 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			[],
 			[]
 		);
+		$lexer = new \PhpParser\Lexer();
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($broker, $typeSpecifier),
 			$nodeScopeResolver,
 			new DirectParser(
-				new \PhpParser\Parser\Php7(new \PhpParser\Lexer()),
+				new \PhpParser\Parser\Php7($lexer),
+				$lexer,
 				new \PhpParser\NodeVisitor\NameResolver(),
 				new NodeConnectingVisitor(),
-				new StatementOrderVisitor()
+				new StatementOrderVisitor(),
+				new NodeChildrenVisitor()
 			),
 			new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
 			$reportUnmatchedIgnoredErrors

@@ -17,13 +17,14 @@ class LexerFactory
 
 	public function create(): Lexer
 	{
+		$options = ['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']];
 		if ($this->phpVersion->getVersionId() === PHP_VERSION_ID) {
-			return new Lexer();
+			return new Lexer($options);
 		}
 
-		return new Lexer\Emulative([
-			'phpVersion' => $this->phpVersion->getVersionString(),
-		]);
+		$options['phpVersion'] = $this->phpVersion->getVersionString();
+
+		return new Lexer\Emulative($options);
 	}
 
 }

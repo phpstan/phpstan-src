@@ -87,6 +87,22 @@ class BooleanOrConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Result of || is always true.',
 				65,
 			],
+			[
+				'Left side of || is always false.',
+				77,
+			],
+			[
+				'Right side of || is always false.',
+				79,
+			],
+			[
+				'Left side of || is always true.',
+				83,
+			],
+			[
+				'Right side of || is always true.',
+				85,
+			],
 		]);
 	}
 

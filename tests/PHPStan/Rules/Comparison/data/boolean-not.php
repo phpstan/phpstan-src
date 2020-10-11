@@ -40,4 +40,15 @@ class BooleanNot
 		!$std ? 'foo' : 'bar';
 	}
 
+	public function nestedIfConditions($mixed): void
+	{
+		if (!$mixed) {
+			if (!$mixed) {
+			}
+		}
+		if ($mixed) {
+			if (!$mixed) {
+			}
+		}
+	}
 }

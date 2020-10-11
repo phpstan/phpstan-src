@@ -30,12 +30,24 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private ConstantStringType $flagsString;
 
-	/** @var array<int, Type> */
-	private array $filterTypeMap;
+	/** @var array<int, Type>|null */
+	private ?array $filterTypeMap = null;
 
 	public function __construct(ReflectionProvider $reflectionProvider)
 	{
 		$this->reflectionProvider = $reflectionProvider;
+
+		$this->flagsString = new ConstantStringType('flags');
+	}
+
+	/**
+	 * @return array<int, Type>
+	 */
+	private function getFilterTypeMap(): array
+	{
+		if ($this->filterTypeMap !== null) {
+			return $this->filterTypeMap;
+		}
 
 		$booleanType = new BooleanType();
 		$floatType = new FloatType();
@@ -69,7 +81,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$this->filterTypeMap[$this->getConstant('FILTER_SANITIZE_ADD_SLASHES')] = $stringType;
 		}
 
-		$this->flagsString = new ConstantStringType('flags');
+		return $this->filterTypeMap;
 	}
 
 	private function getConstant(string $constantName): int
@@ -113,7 +125,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($exactType !== null) {
 			$type = $exactType;
 		} else {
-			$type = $this->filterTypeMap[$filterValue] ?? $mixedType;
+			$type = $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 			$otherType = $this->getOtherType($flagsArg, $scope);
 
 			if ($otherType->isSuperTypeOf($type)->no()) {

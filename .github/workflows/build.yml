@@ -146,7 +146,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl, composer:snapshot
           extensions: ds,mbstring
-          ini-values: memory_limit=512M
+          ini-values: memory_limit=640M
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"

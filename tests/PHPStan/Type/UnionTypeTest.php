@@ -862,7 +862,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 
 		$this->assertTrue(
 			$type1->equals($type2),
-			'UnionType sorting always produces the same order',
+			'UnionType sorting always produces the same order'
 		);
 	}
 

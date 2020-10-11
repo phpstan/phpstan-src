@@ -90,6 +90,14 @@ class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 				'If condition is always true.',
 				127,
 			],
+			[
+				'If condition is always true.',
+				287,
+			],
+			[
+				'If condition is always false.',
+				291,
+			],
 		]);
 	}
 

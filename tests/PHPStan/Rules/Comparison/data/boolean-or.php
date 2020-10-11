@@ -68,3 +68,22 @@ class BooleanOr
 	}
 
 }
+
+class OrInIfCondition
+{
+	public function orInIfCondition($mixed, int $i): void
+	{
+		if (!$mixed) {
+			if ($mixed || $i) {
+			}
+			if ($i || $mixed) {
+			}
+		}
+		if ($mixed) {
+			if ($mixed || $i) {
+			}
+			if ($i || $mixed) {
+			}
+		}
+	}
+}

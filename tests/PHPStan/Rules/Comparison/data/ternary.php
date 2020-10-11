@@ -60,4 +60,16 @@ class Ternary
 		}
 	}
 
+	public function ternaryInIfCondition($mixed): void
+	{
+		if (!$mixed) {
+			$a = $mixed ? 'foo' : 'bar';
+			$b = $mixed ?: 'bar';
+		}
+		if ($mixed) {
+			$a = $mixed ? 'foo' : 'bar';
+			$b = $mixed ?: 'bar';
+		}
+	}
+
 }

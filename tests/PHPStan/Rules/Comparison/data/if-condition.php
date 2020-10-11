@@ -278,3 +278,18 @@ class VarAnnotationAboveIf
 	}
 
 }
+
+class NestedIfConditions
+{
+	public function nestedIfConditions($mixed): void
+	{
+		if ($mixed) {
+			if ($mixed) {
+			}
+		}
+		if (!$mixed) {
+			if ($mixed) {
+			}
+		}
+	}
+}

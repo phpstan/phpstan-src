@@ -130,3 +130,22 @@ class IntegerRangeType
 	}
 
 }
+
+class AndInIfCondition
+{
+	public function andInIfCondition($mixed, int $i): void
+	{
+		if (!$mixed) {
+			if ($mixed && $i) {
+			}
+			if ($i && $mixed) {
+			}
+		}
+		if ($mixed) {
+			if ($mixed && $i) {
+			}
+			if ($i && $mixed) {
+			}
+		}
+	}
+}

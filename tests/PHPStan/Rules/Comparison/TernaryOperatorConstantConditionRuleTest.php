@@ -44,6 +44,22 @@ class TernaryOperatorConstantConditionRuleTest extends \PHPStan\Testing\RuleTest
 				'Ternary operator condition is always false.',
 				15,
 			],
+			[
+				'Ternary operator condition is always false.',
+				66,
+			],
+			[
+				'Ternary operator condition is always false.',
+				67,
+			],
+			[
+				'Ternary operator condition is always true.',
+				70,
+			],
+			[
+				'Ternary operator condition is always true.',
+				71,
+			],
 		]);
 	}
 

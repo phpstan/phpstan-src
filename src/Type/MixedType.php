@@ -11,19 +11,18 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 
 class MixedType implements CompoundType, SubtractableType
 {
 
 	use MaybeIterableTypeTrait;
 	use MaybeOffsetAccessibleTypeTrait;
-	use UndecidedBooleanTypeTrait;
 	use NonGenericTypeTrait;
 
 	private bool $isExplicitMixed;
@@ -259,6 +258,15 @@ class MixedType implements CompoundType, SubtractableType
 				return $description;
 			}
 		);
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		if ($this->subtractedType !== null && TypeUtils::falsey()->equals($this->subtractedType)) {
+			return new ConstantBooleanType(true);
+		}
+
+		return new BooleanType();
 	}
 
 	public function toNumber(): Type

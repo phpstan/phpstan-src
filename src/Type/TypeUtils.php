@@ -361,4 +361,15 @@ class TypeUtils
 		return $falsey;
 	}
 
+	public static function truthy(): Type
+	{
+		static $truthy;
+
+		if ($truthy === null) {
+			$truthy = new MixedType(false, self::falsey());
+		}
+
+		return $truthy;
+	}
+
 }

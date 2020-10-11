@@ -4,6 +4,9 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
 use PHPStan\Parser\Parser;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 
 class StatementResultTest extends \PHPStan\Testing\TestCase
@@ -221,7 +224,7 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 				true,
 			],
 			[
-				'while ($bool) { return; }',
+				'while ($cond) { return; }',
 				false,
 			],
 			[
@@ -245,7 +248,7 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 				true,
 			],
 			[
-				'do { return; } while ($maybe);',
+				'do { return; } while ($cond);',
 				true,
 			],
 			[
@@ -265,7 +268,7 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 				false,
 			],
 			[
-				'switch ($i) { case 0: return 1; case 1: case 2: default: }',
+				'switch ($x) { case 0: return 1; case 1: case 2: default: }',
 				false,
 			],
 			[
@@ -392,7 +395,10 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 		/** @var ScopeFactory $scopeFactory */
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
 		$scope = $scopeFactory->create(ScopeContext::create('test.php'))
-			->assignVariable('string', new StringType());
+			->assignVariable('string', new StringType())
+			->assignVariable('x', new IntegerType())
+			->assignVariable('cond', new MixedType())
+			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()));
 		$result = $nodeScopeResolver->processStmtNodes(
 			new Stmt\Namespace_(null, $stmts),
 			$stmts,

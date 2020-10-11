@@ -642,6 +642,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
+					new ConstantBooleanType(false),
+					new ConstantBooleanType(false),
+				],
+				ConstantBooleanType::class,
+				'false',
+			],
+			[
+				[
 					new ConstantBooleanType(true),
 					new ConstantBooleanType(false),
 				],
@@ -1720,6 +1728,30 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				IntersectionType::class,
 				'\'abc\'&hasOffset(int)',
 			],
+			[
+				[
+					TypeUtils::falsey(),
+					TypeUtils::falsey(),
+				],
+				UnionType::class,
+				'0|0.0|\'\'|\'0\'|array()|false|null',
+			],
+			[
+				[
+					TypeUtils::truthy(),
+					TypeUtils::truthy(),
+				],
+				MixedType::class,
+				'mixed~0|0.0|\'\'|\'0\'|array()|false|null=implicit',
+			],
+			[
+				[
+					TypeUtils::falsey(),
+					TypeUtils::truthy(),
+				],
+				MixedType::class,
+				'mixed=implicit',
+			],
 		];
 	}
 
@@ -1889,6 +1921,38 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				ConstantBooleanType::class,
 				'true',
+			],
+			[
+				[
+					new ConstantBooleanType(false),
+					new BooleanType(),
+				],
+				ConstantBooleanType::class,
+				'false',
+			],
+			[
+				[
+					TypeUtils::truthy(),
+					new BooleanType(),
+				],
+				ConstantBooleanType::class,
+				'true',
+			],
+			[
+				[
+					TypeUtils::falsey(),
+					new BooleanType(),
+				],
+				ConstantBooleanType::class,
+				'false',
+			],
+			[
+				[
+					TypeUtils::falsey(),
+					TypeUtils::truthy(),
+				],
+				NeverType::class,
+				'*NEVER*',
 			],
 			[
 				[
@@ -2965,6 +3029,42 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				'*NEVER*',
 			],
 			[
+				TypeUtils::falsey(),
+				TypeUtils::falsey(),
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				TypeUtils::truthy(),
+				TypeUtils::truthy(),
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				TypeUtils::truthy(),
+				TypeUtils::falsey(),
+				MixedType::class,
+				'mixed~0|0.0|\'\'|\'0\'|array()|false|null',
+			],
+			[
+				TypeUtils::falsey(),
+				TypeUtils::truthy(),
+				UnionType::class,
+				'0|0.0|\'\'|\'0\'|array()|false|null',
+			],
+			[
+				new BooleanType(),
+				TypeUtils::falsey(),
+				ConstantBooleanType::class,
+				'true',
+			],
+			[
+				new BooleanType(),
+				TypeUtils::truthy(),
+				ConstantBooleanType::class,
+				'false',
+			],
+			[
 				new UnionType([
 					new ConstantBooleanType(true),
 					new IntegerType(),
@@ -3137,8 +3237,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			[
 				new MixedType(false),
 				new MixedType(false, new StringType()),
-				NeverType::class,
-				'*NEVER*',
+				StringType::class,
+				'string',
 			],
 			[
 				new MixedType(false, new StringType()),

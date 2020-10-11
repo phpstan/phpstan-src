@@ -46,6 +46,13 @@ class TypeCombinator
 			return new NeverType();
 		}
 
+		if ($typeToRemove instanceof MixedType) {
+			$typeToRemoveSubtractedType = $typeToRemove->getSubtractedType();
+			if ($typeToRemoveSubtractedType !== null) {
+				return self::intersect($fromType, $typeToRemoveSubtractedType);
+			}
+		}
+
 		if ($fromType instanceof BooleanType) {
 			if ($typeToRemove instanceof ConstantBooleanType) {
 				return new ConstantBooleanType(!$typeToRemove->getValue());
@@ -430,7 +437,7 @@ class TypeCombinator
 			return new NeverType();
 		}
 
-		return $type;
+		return self::remove($type, $subtractedType);
 	}
 
 	private static function intersectWithSubtractedType(

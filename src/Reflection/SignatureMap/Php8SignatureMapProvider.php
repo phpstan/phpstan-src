@@ -122,6 +122,10 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
 		}
 
+		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, 1)) {
+			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
+		}
+
 		$methodNode = $this->findMethodNode($className, $methodName);
 		if ($methodNode === null) {
 			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
@@ -148,6 +152,10 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		}
 
 		if ($variant > 0) {
+			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $variant);
+		}
+
+		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName, 1)) {
 			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $variant);
 		}
 

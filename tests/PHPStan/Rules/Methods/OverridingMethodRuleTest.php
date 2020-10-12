@@ -52,8 +52,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires static reflection.');
 		}
 
-		$this->phpVersionId = $phpVersion;
-		$this->analyse([__DIR__ . '/data/overriding-method.php'], [
+		$errors = [
 			[
 				'Method OverridingFinalMethod\Bar::doFoo() overrides final method OverridingFinalMethod\Foo::doFoo().',
 				43,
@@ -126,7 +125,16 @@ class OverridingMethodRuleTest extends RuleTestCase
 				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $offset (mixed) of method ArrayAccess::offsetExists().',
 				313,
 			],
-		]);
+		];
+
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = array_values(array_filter($errors, function (array $error): bool {
+				return $error[1] !== 125;
+			}));
+		}
+
+		$this->phpVersionId = $phpVersion;
+		$this->analyse([__DIR__ . '/data/overriding-method.php'], $errors);
 	}
 
 	public function dataParameterContravariance(): array

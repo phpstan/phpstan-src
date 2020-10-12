@@ -1730,24 +1730,24 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
-					TypeUtils::falsey(),
-					TypeUtils::falsey(),
+					StaticTypeFactory::falsey(),
+					StaticTypeFactory::falsey(),
 				],
 				UnionType::class,
 				'0|0.0|\'\'|\'0\'|array()|false|null',
 			],
 			[
 				[
-					TypeUtils::truthy(),
-					TypeUtils::truthy(),
+					StaticTypeFactory::truthy(),
+					StaticTypeFactory::truthy(),
 				],
 				MixedType::class,
 				'mixed~0|0.0|\'\'|\'0\'|array()|false|null=implicit',
 			],
 			[
 				[
-					TypeUtils::falsey(),
-					TypeUtils::truthy(),
+					StaticTypeFactory::falsey(),
+					StaticTypeFactory::truthy(),
 				],
 				MixedType::class,
 				'mixed=implicit',
@@ -1932,7 +1932,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
-					TypeUtils::truthy(),
+					StaticTypeFactory::truthy(),
 					new BooleanType(),
 				],
 				ConstantBooleanType::class,
@@ -1940,7 +1940,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
-					TypeUtils::falsey(),
+					StaticTypeFactory::falsey(),
 					new BooleanType(),
 				],
 				ConstantBooleanType::class,
@@ -1948,8 +1948,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
-					TypeUtils::falsey(),
-					TypeUtils::truthy(),
+					StaticTypeFactory::falsey(),
+					StaticTypeFactory::truthy(),
 				],
 				NeverType::class,
 				'*NEVER*',
@@ -3029,38 +3029,38 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				'*NEVER*',
 			],
 			[
-				TypeUtils::falsey(),
-				TypeUtils::falsey(),
+				StaticTypeFactory::falsey(),
+				StaticTypeFactory::falsey(),
 				NeverType::class,
 				'*NEVER*',
 			],
 			[
-				TypeUtils::truthy(),
-				TypeUtils::truthy(),
+				StaticTypeFactory::truthy(),
+				StaticTypeFactory::truthy(),
 				NeverType::class,
 				'*NEVER*',
 			],
 			[
-				TypeUtils::truthy(),
-				TypeUtils::falsey(),
+				StaticTypeFactory::truthy(),
+				StaticTypeFactory::falsey(),
 				MixedType::class,
 				'mixed~0|0.0|\'\'|\'0\'|array()|false|null',
 			],
 			[
-				TypeUtils::falsey(),
-				TypeUtils::truthy(),
+				StaticTypeFactory::falsey(),
+				StaticTypeFactory::truthy(),
 				UnionType::class,
 				'0|0.0|\'\'|\'0\'|array()|false|null',
 			],
 			[
 				new BooleanType(),
-				TypeUtils::falsey(),
+				StaticTypeFactory::falsey(),
 				ConstantBooleanType::class,
 				'true',
 			],
 			[
 				new BooleanType(),
-				TypeUtils::truthy(),
+				StaticTypeFactory::truthy(),
 				ConstantBooleanType::class,
 				'false',
 			],

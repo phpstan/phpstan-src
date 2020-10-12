@@ -53,7 +53,7 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createYes(),
 			],
 			[
-				new ArrayType(new MixedType(), new MixedType(false, TypeUtils::falsey())),
+				new ArrayType(new MixedType(), new MixedType(false, StaticTypeFactory::falsey())),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
 			],

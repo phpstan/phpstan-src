@@ -48,4 +48,10 @@ class RequireParenthesesForNestedTernaryRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug(): void
+	{
+		$this->phpVersion = new PhpVersion(80000);
+		$this->analyse([__DIR__ . '/data/require-parentheses-bug.php'], []);
+	}
+
 }

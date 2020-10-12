@@ -36,7 +36,7 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 			[$immediatePredecessor, $immediateSuccessor] = $this->getImmediates($parent, $myStart, $myEnd);
 			if ($immediatePredecessor !== null) {
 				$tokensBefore = [];
-				for ($i = $immediatePredecessor->getAttribute('endTokenPos') + 1; $i < $myStart; $i++) {
+				for ($i = $immediatePredecessor; $i < $myStart; $i++) {
 					$tokensBefore[] = $this->tokens[$i];
 				}
 				$node->setAttribute('tokensBefore', $tokensBefore);
@@ -44,7 +44,7 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 
 			if ($immediateSuccessor !== null) {
 				$tokensAfter = [];
-				for ($i = $myEnd + 1; $i < $immediateSuccessor->getAttribute('startTokenPos'); $i++) {
+				for ($i = $myEnd + 1; $i <= $immediateSuccessor; $i++) {
 					$tokensAfter[] = $this->tokens[$i];
 				}
 				$node->setAttribute('tokensAfter', $tokensAfter);
@@ -58,7 +58,7 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 	 * @param Node $parent
 	 * @param int $myStart
 	 * @param int $myEnd
-	 * @return array{Node|null, Node|null}
+	 * @return array{int|null, int|null}
 	 */
 	private function getImmediates(Node $parent, int $myStart, int $myEnd): array
 	{
@@ -71,15 +71,19 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 			$parentChild = $parentChildList->getNode();
 			$childEnd = $parentChild->getAttribute('endTokenPos');
 			if ($childEnd < $myStart) {
-				$immediatePredecessor = $parentChild;
+				$immediatePredecessor = $childEnd + 1;
 				$parentChildList = $parentChildList->getNext();
 				continue;
 			}
 
 			$childStart = $parentChild->getAttribute('startTokenPos');
 			if ($childStart > $myEnd) {
-				$immediateSuccessor = $parentChild;
+				$immediateSuccessor = $childStart - 1;
 				break;
+			}
+
+			if ($childStart + 1 < $myStart && $childEnd > $myEnd) {
+				return [$childStart + 1, $childEnd];
 			}
 
 			$parentChildList = $parentChildList->getNext();

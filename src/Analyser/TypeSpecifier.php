@@ -38,6 +38,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -652,10 +653,10 @@ class TypeSpecifier
 	private function handleDefaultTruthyOrFalseyContext(TypeSpecifierContext $context, Expr $expr): SpecifiedTypes
 	{
 		if (!$context->truthy()) {
-			$type = TypeUtils::truthy();
+			$type = StaticTypeFactory::truthy();
 			return $this->create($expr, $type, TypeSpecifierContext::createFalse());
 		} elseif (!$context->falsey()) {
-			$type = TypeUtils::falsey();
+			$type = StaticTypeFactory::falsey();
 			return $this->create($expr, $type, TypeSpecifierContext::createFalse());
 		}
 

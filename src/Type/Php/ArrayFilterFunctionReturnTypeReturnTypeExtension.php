@@ -15,6 +15,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -77,7 +78,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 
 	public function removeFalsey(Type $type): Type
 	{
-		$falseyTypes = TypeUtils::falsey();
+		$falseyTypes = StaticTypeFactory::falsey();
 
 		if ($type instanceof ConstantArrayType) {
 			$keys = $type->getKeyTypes();

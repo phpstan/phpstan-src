@@ -262,7 +262,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toBoolean(): BooleanType
 	{
-		if ($this->subtractedType !== null && TypeUtils::falsey()->equals($this->subtractedType)) {
+		if ($this->subtractedType !== null && StaticTypeFactory::falsey()->equals($this->subtractedType)) {
 			return new ConstantBooleanType(true);
 		}
 

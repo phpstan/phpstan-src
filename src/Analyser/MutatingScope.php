@@ -335,6 +335,11 @@ class MutatingScope implements Scope
 		return $this->variableTypes;
 	}
 
+	private function isRootScope(): bool
+	{
+		return $this->function === null && !$this->isInAnonymousFunction();
+	}
+
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
 		if ($this->isGlobalVariable($variableName)) {
@@ -342,7 +347,7 @@ class MutatingScope implements Scope
 		}
 
 		if (!isset($this->variableTypes[$variableName])) {
-			if ($this->function === null && !$this->isInAnonymousFunction()) {
+			if ($this->isRootScope()) {
 				return TrinaryLogic::createMaybe();
 			}
 
@@ -3200,6 +3205,18 @@ class MutatingScope implements Scope
 			return new VariableTypeHolder($type, TrinaryLogic::createYes());
 		};
 
+		$ourVariableTypes = $this->getVariableTypes();
+		$theirVariableTypes = $otherScope->getVariableTypes();
+		if ($this->isRootScope()) {
+			foreach (array_keys($theirVariableTypes) as $name) {
+				if (array_key_exists($name, $ourVariableTypes)) {
+					continue;
+				}
+
+				$ourVariableTypes[$name] = VariableTypeHolder::createMaybe(new MixedType());
+			}
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -3209,7 +3226,7 @@ class MutatingScope implements Scope
 			)),
 			$this->getFunction(),
 			$this->getNamespace(),
-			$this->mergeVariableHolders($this->getVariableTypes(), $otherScope->getVariableTypes()),
+			$this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes),
 			$this->mergeVariableHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes),
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,

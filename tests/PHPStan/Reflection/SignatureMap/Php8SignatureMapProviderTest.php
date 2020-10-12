@@ -64,7 +64,7 @@ class Php8SignatureMapProviderTest extends TestCase
 				'curl_exec',
 				[
 					[
-						'name' => 'ch',
+						'name' => 'handle',
 						'optional' => false,
 						'type' => new ObjectType('CurlHandle'),
 						'nativeType' => new ObjectType('CurlHandle'),
@@ -139,7 +139,7 @@ class Php8SignatureMapProviderTest extends TestCase
 				'bindTo',
 				[
 					[
-						'name' => 'new',
+						'name' => 'newThis',
 						'optional' => false,
 						'type' => new UnionType([
 							new ObjectWithoutClassType(),
@@ -153,7 +153,7 @@ class Php8SignatureMapProviderTest extends TestCase
 						'variadic' => false,
 					],
 					[
-						'name' => 'newscope',
+						'name' => 'newScope',
 						'optional' => true,
 						'type' => new UnionType([
 							new ObjectWithoutClassType(),
@@ -184,7 +184,7 @@ class Php8SignatureMapProviderTest extends TestCase
 				'uasort',
 				[
 					[
-						'name' => 'cmp_function',
+						'name' => 'callback',
 						'optional' => false,
 						'type' => new CallableType([
 							new NativeParameterReflection('', false, new MixedType(true), PassedByReference::createNo(), false, null),

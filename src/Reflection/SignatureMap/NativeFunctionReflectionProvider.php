@@ -12,7 +12,6 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 
 class NativeFunctionReflectionProvider
@@ -44,9 +43,6 @@ class NativeFunctionReflectionProvider
 		while ($this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName, $i)) {
 			$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $i);
 			$returnType = $functionSignature->getReturnType();
-			if ($lowerCasedFunctionName === 'pow') {
-				$returnType = TypeUtils::toBenevolentUnion($returnType);
-			}
 			$variants[] = new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,

@@ -111,7 +111,7 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function substr expects string, string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|null given\\.$#"
 			count: 3
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 

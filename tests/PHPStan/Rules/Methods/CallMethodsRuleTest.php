@@ -388,7 +388,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				921,
 			],
 			[
-				'Parameter #1 $ns of method SimpleXMLElement::children() expects string, int given.',
+				'Parameter #1 $ns of method SimpleXMLElement::children() expects string|null, int given.',
 				942,
 			],
 			[

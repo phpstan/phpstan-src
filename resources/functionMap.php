@@ -10232,7 +10232,7 @@ return [
 'SimpleXMLElement::addChild' => ['SimpleXMLElement', 'name'=>'string', 'value='=>'string', 'ns='=>'string'],
 'SimpleXMLElement::asXML' => ['string|bool', 'filename='=>'string'],
 'SimpleXMLElement::attributes' => ['SimpleXMLElement|null', 'ns='=>'string', 'is_prefix='=>'bool'],
-'SimpleXMLElement::children' => ['SimpleXMLElement', 'ns='=>'string', 'is_prefix='=>'bool'],
+'SimpleXMLElement::children' => ['SimpleXMLElement', 'ns='=>'string|null', 'is_prefix='=>'bool'],
 'SimpleXMLElement::count' => ['int'],
 'SimpleXMLElement::getDocNamespaces' => ['string[]', 'recursive='=>'bool', 'from_root='=>'bool'],
 'SimpleXMLElement::getName' => ['string'],

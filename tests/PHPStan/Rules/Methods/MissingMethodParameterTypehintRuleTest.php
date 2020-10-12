@@ -18,7 +18,7 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], [
+		$errors = [
 			[
 				'Method MissingMethodParameterTypehint\FooInterface::getFoo() has parameter $p1 with no typehint specified.',
 				8,
@@ -64,7 +64,14 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 				119,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
-		]);
+		];
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
+				'Method MissingMethodParameterTypehint\SerializableImpl::unserialize() has parameter $serialized with no typehint specified.',
+				170,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], $errors);
 	}
 
 }

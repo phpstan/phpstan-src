@@ -131,64 +131,130 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testCallToWeirdFunctions(): void
 	{
-		$this->analyse([__DIR__ . '/data/call-to-weird-functions.php'], [
-			[
-				'Function implode invoked with 0 parameters, 1-2 required.',
-				3,
-			],
-			[
-				'Function implode invoked with 3 parameters, 1-2 required.',
-				6,
-			],
-			[
-				'Function strtok invoked with 0 parameters, 1-2 required.',
-				8,
-			],
-			[
-				'Function strtok invoked with 3 parameters, 1-2 required.',
-				11,
-			],
-			[
-				'Function fputcsv invoked with 1 parameter, 2-5 required.',
-				12,
-			],
-			[
-				'Function imagepng invoked with 0 parameters, 1-4 required.',
-				16,
-			],
-			[
-				'Function imagepng invoked with 5 parameters, 1-4 required.',
-				19,
-			],
-			[
-				'Function locale_get_display_language invoked with 3 parameters, 1-2 required.',
-				30,
-			],
-			[
-				'Function mysqli_fetch_all invoked with 0 parameters, 1-2 required.',
-				32,
-			],
-			[
-				'Function mysqli_fetch_all invoked with 3 parameters, 1-2 required.',
-				35,
-			],
-			[
-				'Function openssl_open invoked with 7 parameters, 4-6 required.',
-				39,
-			],
-			[
-				'Function openssl_x509_parse invoked with 3 parameters, 1-2 required.',
-				43,
-			],
-			[
-				'Function openssl_pkcs12_export invoked with 6 parameters, 4-5 required.',
-				49,
-			],
-			[
-				'Parameter #1 $depth of function xdebug_call_class expects int, string given.',
-				51,
-			],
-		]);
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = [
+				[
+					'Function implode invoked with 0 parameters, 1-2 required.',
+					3,
+				],
+				[
+					'Function implode invoked with 3 parameters, 1-2 required.',
+					6,
+				],
+				[
+					'Function strtok invoked with 0 parameters, 1-2 required.',
+					8,
+				],
+				[
+					'Function strtok invoked with 3 parameters, 1-2 required.',
+					11,
+				],
+				[
+					'Function fputcsv invoked with 1 parameter, 2-5 required.',
+					12,
+				],
+				[
+					'Function imagepng invoked with 0 parameters, 1-4 required.',
+					16,
+				],
+				[
+					'Function imagepng invoked with 5 parameters, 1-4 required.',
+					19,
+				],
+				[
+					'Function locale_get_display_language invoked with 3 parameters, 1-2 required.',
+					30,
+				],
+				[
+					'Function mysqli_fetch_all invoked with 0 parameters, 1-2 required.',
+					32,
+				],
+				[
+					'Function mysqli_fetch_all invoked with 3 parameters, 1-2 required.',
+					35,
+				],
+				[
+					'Function openssl_open invoked with 4 parameters, 5-6 required.',
+					38,
+				],
+				[
+					'Function openssl_open invoked with 7 parameters, 5-6 required.',
+					39,
+				],
+				[
+					'Function openssl_x509_parse invoked with 3 parameters, 1-2 required.',
+					43,
+				],
+				[
+					'Function openssl_pkcs12_export invoked with 6 parameters, 4-5 required.',
+					49,
+				],
+				[
+					'Parameter #1 $depth of function xdebug_call_class expects int, string given.',
+					51,
+				],
+			];
+		} else {
+			$errors = [
+				[
+					'Function implode invoked with 0 parameters, 1-2 required.',
+					3,
+				],
+				[
+					'Function implode invoked with 3 parameters, 1-2 required.',
+					6,
+				],
+				[
+					'Function strtok invoked with 0 parameters, 1-2 required.',
+					8,
+				],
+				[
+					'Function strtok invoked with 3 parameters, 1-2 required.',
+					11,
+				],
+				[
+					'Function fputcsv invoked with 1 parameter, 2-5 required.',
+					12,
+				],
+				[
+					'Function imagepng invoked with 0 parameters, 1-4 required.',
+					16,
+				],
+				[
+					'Function imagepng invoked with 5 parameters, 1-4 required.',
+					19,
+				],
+				[
+					'Function locale_get_display_language invoked with 3 parameters, 1-2 required.',
+					30,
+				],
+				[
+					'Function mysqli_fetch_all invoked with 0 parameters, 1-2 required.',
+					32,
+				],
+				[
+					'Function mysqli_fetch_all invoked with 3 parameters, 1-2 required.',
+					35,
+				],
+				[
+					'Function openssl_open invoked with 7 parameters, 4-6 required.',
+					39,
+				],
+				[
+					'Function openssl_x509_parse invoked with 3 parameters, 1-2 required.',
+					43,
+				],
+				[
+					'Function openssl_pkcs12_export invoked with 6 parameters, 4-5 required.',
+					49,
+				],
+				[
+					'Parameter #1 $depth of function xdebug_call_class expects int, string given.',
+					51,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/call-to-weird-functions.php'], $errors);
 	}
 
 	/**

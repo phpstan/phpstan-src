@@ -43,7 +43,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $error_handler of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.',
+				'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.',
 				16,
 			],
 		]);
@@ -220,7 +220,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				33,
 			],
 			[
-				'Parameter #1 $array_arg of function reset expects array, null given.',
+				'Parameter #1 $array of function reset expects array, null given.',
 				39,
 			],
 		]);
@@ -311,19 +311,19 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unpack-operator.php'], [
 			[
-				'Parameter #2 ...$args of function sprintf expects bool|float|int|string|null, array<string> given.',
+				'Parameter #2 ...$values of function sprintf expects bool|float|int|string|null, array<string> given.',
 				18,
 			],
 			[
-				'Parameter #2 ...$args of function sprintf expects bool|float|int|string|null, array<int, string> given.',
+				'Parameter #2 ...$values of function sprintf expects bool|float|int|string|null, array<int, string> given.',
 				19,
 			],
 			[
-				'Parameter #2 ...$args of function sprintf expects bool|float|int|string|null, UnpackOperator\Foo given.',
+				'Parameter #2 ...$values of function sprintf expects bool|float|int|string|null, UnpackOperator\Foo given.',
 				22,
 			],
 			[
-				'Parameter #2 ...$args of function printf expects bool|float|int|string|null, UnpackOperator\Foo given.',
+				'Parameter #2 ...$values of function printf expects bool|float|int|string|null, UnpackOperator\Foo given.',
 				24,
 			],
 		]);
@@ -333,11 +333,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/function-with-int-parameter-that-created-by-addition.php'], [
 			[
-				'Parameter #1 $decimal_number of function dechex expects int, float|int given.',
+				'Parameter #1 $num of function dechex expects int, float|int given.',
 				9,
 			],
 			[
-				'Parameter #1 $decimal_number of function dechex expects int, float|int given.',
+				'Parameter #1 $num of function dechex expects int, float|int given.',
 				40,
 			],
 		]);

@@ -53,7 +53,7 @@ class NativeFunctionReflectionProvider
 				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName): NativeParameterReflection {
 					$type = $parameterSignature->getType();
 					if (
-						$parameterSignature->getName() === 'args'
+						$parameterSignature->getName() === 'values'
 						&& (
 							$lowerCasedFunctionName === 'printf'
 							|| $lowerCasedFunctionName === 'sprintf'

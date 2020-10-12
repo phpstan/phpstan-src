@@ -201,7 +201,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 			[__DIR__ . '/data/instantiation-soap.php'],
 			[
 				[
-					'Parameter #2 $faultstring of class SoapFault constructor expects string, int given.',
+					'Parameter #2 $string of class SoapFault constructor expects string, int given.',
 					6,
 				],
 			]

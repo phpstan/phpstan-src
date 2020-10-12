@@ -128,7 +128,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		];
 
 		if (PHP_VERSION_ID >= 80000) {
-			$errors = array_values(array_filter($errors, function (array $error): bool {
+			$errors = array_values(array_filter($errors, static function (array $error): bool {
 				return $error[1] !== 125;
 			}));
 		}

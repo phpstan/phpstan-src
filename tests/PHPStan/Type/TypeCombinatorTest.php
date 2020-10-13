@@ -2886,6 +2886,17 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				NeverType::class,
 				'*NEVER*',
 			],
+			[
+				[
+					new IntersectionType([
+						new ArrayType(new StringType(), new IntegerType()),
+						new NonEmptyArrayType(),
+					]),
+					new NeverType(),
+				],
+				NeverType::class,
+				'*NEVER*',
+			],
 		];
 	}
 

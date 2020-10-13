@@ -34,6 +34,11 @@ class IterableType implements CompoundType
 		$this->itemType = $itemType;
 	}
 
+	public function getKeyType(): Type
+	{
+		return $this->keyType;
+	}
+
 	public function getItemType(): Type
 	{
 		return $this->itemType;

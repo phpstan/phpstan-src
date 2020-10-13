@@ -2002,8 +2002,48 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ArrayType(new MixedType(), new MixedType()),
 					new IterableType(new MixedType(), new StringType()),
 				],
-				IntersectionType::class,
-				'array&iterable<string>', // this is correct but 'array<string>' would be better
+				ArrayType::class,
+				'array<string>',
+			],
+			[
+				[
+					new ArrayType(new IntegerType(), new MixedType()),
+					new IterableType(new MixedType(), new StringType()),
+				],
+				ArrayType::class,
+				'array<int, string>',
+			],
+			[
+				[
+					new ArrayType(new IntegerType(), new MixedType()),
+					new IterableType(new StringType(), new MixedType()),
+				],
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				[
+					new ArrayType(new MixedType(), new IntegerType()),
+					new IterableType(new MixedType(), new StringType()),
+				],
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				[
+					new ArrayType(new IntegerType(), new MixedType()),
+					new ArrayType(new MixedType(), new StringType()),
+				],
+				ArrayType::class,
+				'array<int, string>',
+			],
+			[
+				[
+					new IterableType(new IntegerType(), new MixedType()),
+					new IterableType(new MixedType(), new StringType()),
+				],
+				IterableType::class,
+				'iterable<int, string>',
 			],
 			[
 				[

@@ -273,4 +273,54 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	public function dataEquals(): array
+	{
+		return [
+			[
+				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(\Exception::class)),
+				true,
+			],
+			[
+				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				false,
+			],
+			[
+				new GenericClassStringType(new StaticType(\Exception::class)),
+				new GenericClassStringType(new StaticType(\Exception::class)),
+				true,
+			],
+			[
+				new GenericClassStringType(new StaticType(\Exception::class)),
+				new GenericClassStringType(new StaticType(\stdClass::class)),
+				false,
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataEquals
+	 */
+	public function testEquals(GenericClassStringType $type, Type $otherType, bool $expected): void
+	{
+		$verbosityLevel = VerbosityLevel::precise();
+		$typeDescription = $type->describe($verbosityLevel);
+		$otherTypeDescription = $otherType->describe($verbosityLevel);
+
+		$actual = $type->equals($otherType);
+		$this->assertSame(
+			$expected,
+			$actual,
+			sprintf('%s -> equals(%s)', $typeDescription, $otherTypeDescription)
+		);
+
+		$actual = $otherType->equals($type);
+		$this->assertSame(
+			$expected,
+			$actual,
+			sprintf('%s -> equals(%s)', $otherTypeDescription, $typeDescription)
+		);
+	}
+
 }

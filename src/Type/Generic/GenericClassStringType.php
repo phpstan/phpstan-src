@@ -156,6 +156,23 @@ class GenericClassStringType extends ClassStringType
 		return $this->type->getReferencedTemplateTypes($variance);
 	}
 
+	public function equals(Type $type): bool
+	{
+		if (!$type instanceof self) {
+			return false;
+		}
+
+		if (!parent::equals($type)) {
+			return false;
+		}
+
+		if (!$this->type->equals($type->type)) {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

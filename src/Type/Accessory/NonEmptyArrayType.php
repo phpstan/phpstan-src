@@ -46,6 +46,10 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
 		return (new ArrayType(new MixedType(), new MixedType()))
 			->isSuperTypeOf($type)
 			->and($type->isIterableAtLeastOnce());

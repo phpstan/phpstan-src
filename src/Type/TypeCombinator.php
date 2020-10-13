@@ -738,11 +738,28 @@ class TypeCombinator
 					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof HasOffsetType) {
 						$types[$i] = $types[$i]->makeOffsetRequired($types[$j]->getOffsetType());
 						array_splice($types, $j--, 1);
+						continue;
 					}
 
 					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetType) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$i]->getOffsetType());
 						array_splice($types, $i--, 1);
+						continue 2;
+					}
+
+					if (
+						($types[$i] instanceof ArrayType || $types[$i] instanceof IterableType) &&
+						($types[$j] instanceof ArrayType || $types[$j] instanceof IterableType)
+					) {
+						$keyType = self::intersect($types[$i]->getKeyType(), $types[$j]->getKeyType());
+						$itemType = self::intersect($types[$i]->getItemType(), $types[$j]->getItemType());
+						if ($types[$i] instanceof IterableType && $types[$j] instanceof IterableType) {
+							$types[$j] = new IterableType($keyType, $itemType);
+						} else {
+							$types[$j] = new ArrayType($keyType, $itemType);
+						}
+						array_splice($types, $i--, 1);
+						continue 2;
 					}
 
 					continue;

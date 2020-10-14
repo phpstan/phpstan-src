@@ -46,6 +46,10 @@ class ThrowExpressionRuleTest extends RuleTestCase
 	 */
 	public function testRule(int $phpVersion, array $expectedErrors): void
 	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$this->phpVersion = new PhpVersion($phpVersion);
 		$this->analyse([__DIR__ . '/data/throw-expr.php'], $expectedErrors);
 	}

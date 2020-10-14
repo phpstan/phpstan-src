@@ -5966,6 +5966,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'false',
 				'$hashRandom',
 			],
+			[
+				'string',
+				'$hashMixed',
+			],
 		];
 	}
 

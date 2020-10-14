@@ -23,11 +23,7 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if ($functionReflection->getName() === 'hash') {
-			$defaultReturnType = new StringType();
-		} else {
-			$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		}
+		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
 		if (!isset($functionCall->args[0])) {
 			return $defaultReturnType;
@@ -44,7 +40,7 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 		$string = $values[0];
 
-		return in_array($string->getValue(), hash_algos(), true) ? $defaultReturnType : new ConstantBooleanType(false);
+		return in_array($string->getValue(), hash_algos(), true) ? new StringType() : new ConstantBooleanType(false);
 	}
 
 }

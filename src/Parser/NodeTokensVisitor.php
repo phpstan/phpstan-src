@@ -69,6 +69,8 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 		$parentChildList = $parent->getAttribute('children');
 		while ($parentChildList !== null) {
 			$parentChild = $parentChildList->getNode();
+
+			/** @var int $childEnd */
 			$childEnd = $parentChild->getAttribute('endTokenPos');
 			if ($childEnd < $myStart) {
 				$immediatePredecessor = $childEnd + 1;
@@ -76,6 +78,7 @@ class NodeTokensVisitor extends NodeVisitorAbstract
 				continue;
 			}
 
+			/** @var int $childStart */
 			$childStart = $parentChild->getAttribute('startTokenPos');
 			if ($childStart > $myEnd) {
 				$immediateSuccessor = $childStart - 1;

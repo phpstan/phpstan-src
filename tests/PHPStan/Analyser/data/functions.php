@@ -135,4 +135,10 @@ $hashHmacFileNonCryptographic = hash_hmac_file('crc32', 'data', 'key');
 $hashHmacFileRandom = hash_hmac_file('random', 'data', 'key');
 $hashHmacFileVariable = hash_hmac_file($string, 'data', 'key');
 
+$hash = hash('sha256', 'data', false);
+$hashRaw = hash('sha256', 'data', true);
+$hashRandom = hash('random', 'data', false);
+/** @var mixed $mixed */
+$mixed = doFoo();
+$hashMixed = hash('md5', $mixed, false);
 die;

@@ -5954,6 +5954,22 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'(string|false)',
 				'$hashHmacFileVariable',
 			],
+			[
+				'string',
+				'$hash',
+			],
+			[
+				'string',
+				'$hashRaw',
+			],
+			[
+				'false',
+				'$hashRandom',
+			],
+			[
+				'string',
+				'$hashMixed',
+			],
 		];
 	}
 

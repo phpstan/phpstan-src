@@ -3906,7 +3906,7 @@ return [
 'HaruPage::stroke' => ['bool', 'close_path='=>'bool'],
 'HaruPage::textOut' => ['bool', 'x'=>'float', 'y'=>'float', 'text'=>'string'],
 'HaruPage::textRect' => ['bool', 'left'=>'float', 'top'=>'float', 'right'=>'float', 'bottom'=>'float', 'text'=>'string', 'align='=>'int'],
-'hash' => ['string', 'algo'=>'string', 'data'=>'string', 'raw_output='=>'bool'],
+'hash' => ['string|false', 'algo'=>'string', 'data'=>'string', 'raw_output='=>'bool'],
 'hash_algos' => ['array'],
 'hash_copy' => ['HashContext', 'context'=>'HashContext'],
 'hash_equals' => ['bool', 'known_string'=>'string', 'user_string'=>'string'],

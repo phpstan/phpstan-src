@@ -61,4 +61,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsThrowExpression(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

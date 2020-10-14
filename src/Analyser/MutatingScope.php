@@ -494,7 +494,7 @@ class MutatingScope implements Scope
 
 	private function resolveType(Expr $node): Type
 	{
-		if ($node instanceof Expr\Exit_) {
+		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
 			return new NeverType();
 		}
 

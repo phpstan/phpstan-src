@@ -10146,6 +10146,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/pow.php');
 	}
 
+	public function dataThrowExpression(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/throw-expr.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10223,6 +10232,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug1014
 	 * @dataProvider dataBugFromPr339
 	 * @dataProvider dataPow
+	 * @dataProvider dataThrowExpression
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

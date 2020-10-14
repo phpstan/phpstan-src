@@ -155,6 +155,7 @@ class FunctionCallParametersCheck
 			$scope->getType($funcCall) instanceof VoidType
 			&& !$scope->isInFirstLevelStatement()
 			&& !$funcCall instanceof \PhpParser\Node\Expr\New_
+			&& !$funcCall->getAttribute('parent') instanceof \PhpParser\Node\Expr\ArrowFunction
 		) {
 			$errors[] = RuleErrorBuilder::message($messages[7])->build();
 		}

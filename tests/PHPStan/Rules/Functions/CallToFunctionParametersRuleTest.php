@@ -443,4 +443,10 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testAnonymousFunctionVoidReturnValue(): void
+	{
+		require_once __DIR__ . '/data/anonymous-function-void-return-value.php';
+		$this->analyse([__DIR__ . '/data/anonymous-function-void-return-value.php'], []);
+	}
+
 }

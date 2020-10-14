@@ -32,11 +32,11 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/arrow-functions-return-type.php'], [
 			[
 				'Anonymous function should return string but returns int.',
-				12,
+				13,
 			],
 			[
 				'Anonymous function should return int but returns string.',
-				14,
+				15,
 			],
 		]);
 	}

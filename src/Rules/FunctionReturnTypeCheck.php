@@ -72,7 +72,7 @@ class FunctionReturnTypeCheck
 
 		$returnValueType = $scope->getType($returnValue);
 
-		if ($isVoidSuperType->yes()) {
+		if (!$scope->isInAnonymousFunction() && $isVoidSuperType->yes()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$voidMessage,

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b96daa31c9828b00ae90d2e9b3e5270c",
+    "content-hash": "604f93798c69f1f5838dc5970099ec1a",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1334,12 +1334,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "283077af53ba9319567ff1dd0caf15c5468209a0"
+                "reference": "f40231e697e9483e523378096b256268369b9138"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/283077af53ba9319567ff1dd0caf15c5468209a0",
-                "reference": "283077af53ba9319567ff1dd0caf15c5468209a0",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/f40231e697e9483e523378096b256268369b9138",
+                "reference": "f40231e697e9483e523378096b256268369b9138",
                 "shasum": ""
             },
             "require-dev": {
@@ -2073,21 +2073,21 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.35",
+            "version": "4.3.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "45bfa96bdb201734a79067a384a71c8eded9724d"
+                "reference": "c254afa9ac7baddb5c56eab9541eeaf8ba67dcfd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/45bfa96bdb201734a79067a384a71c8eded9724d",
-                "reference": "45bfa96bdb201734a79067a384a71c8eded9724d",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/c254afa9ac7baddb5c56eab9541eeaf8ba67dcfd",
+                "reference": "c254afa9ac7baddb5c56eab9541eeaf8ba67dcfd",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "jetbrains/phpstorm-stubs": "dev-master#283077af53ba9319567ff1dd0caf15c5468209a0",
+                "jetbrains/phpstorm-stubs": "dev-master#f40231e697e9483e523378096b256268369b9138",
                 "nikic/php-parser": "4.10.2",
                 "php": ">=7.1.0",
                 "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
@@ -2141,9 +2141,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.35"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.36"
             },
-            "time": "2020-10-10T11:21:05+00:00"
+            "time": "2020-10-14T11:08:16+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",

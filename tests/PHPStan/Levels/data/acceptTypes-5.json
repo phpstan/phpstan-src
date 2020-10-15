@@ -198,5 +198,15 @@
         "message": "Parameter #1 $min (340) of function random_int expects lower number than parameter #2 $max (int<min, 339>).",
         "line": 685,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects string&numeric, 'foo' given.",
+        "line": 707,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects string&numeric, string given.",
+        "line": 708,
+        "ignorable": true
     }
 ]

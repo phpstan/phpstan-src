@@ -693,3 +693,27 @@ class RandomInt
 	}
 
 }
+
+class NumericStrings
+{
+
+	/**
+	 * @param string $string
+	 * @param numeric-string $numericString
+	 */
+	public function doFoo(string $string, string $numericString): void
+	{
+		$this->doBar('1');
+		$this->doBar('foo');
+		$this->doBar($string);
+		$this->doBar($numericString);
+	}
+
+	/**
+	 * @param numeric-string $numericString
+	 */
+	public function doBar(string $numericString): void
+	{
+
+	}
+}

@@ -189,7 +189,7 @@ class AnalyseApplication
 			$postFileCallback = null;
 		}
 
-		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input);
+		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input, $errorOutput);
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();

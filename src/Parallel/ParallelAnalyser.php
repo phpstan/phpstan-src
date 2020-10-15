@@ -7,6 +7,7 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
@@ -52,7 +53,8 @@ class ParallelAnalyser
 		?string $projectConfigFile,
 		?string $tmpFile,
 		?string $insteadOfFile,
-		InputInterface $input
+		InputInterface $input,
+		Output $errorOutput
 	): AnalyserResult
 	{
 		$jobs = array_reverse($schedule->getJobs());
@@ -131,7 +133,7 @@ class ParallelAnalyser
 				$commandOptions,
 				$input
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $errorOutput): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -175,14 +177,24 @@ class ParallelAnalyser
 				}
 
 				if (count($jobs) === 0) {
+					if ($errorOutput->isDebug()) {
+						$errorOutput->writeLineFormatted(sprintf('Process %s ended successfully - no more jobs remaining.', $processIdentifier));
+					}
 					$this->processPool->quitProcess($processIdentifier);
 					return;
 				}
 
+				if ($errorOutput->isDebug()) {
+					$errorOutput->writeLineFormatted(sprintf('Process %s analysis successful - queueing a new job.', $processIdentifier));
+				}
+
 				$job = array_pop($jobs);
 				$process->request(['action' => 'analyse', 'files' => $job]);
-			}, $handleError, function ($exitCode, string $output) use (&$internalErrors, &$internalErrorsCount, $processIdentifier): void {
+			}, $handleError, function ($exitCode, $termSignal, string $output) use (&$internalErrors, &$internalErrorsCount, $processIdentifier, $errorOutput): void {
 				$this->processPool->tryQuitProcess($processIdentifier);
+				if ($errorOutput->isDebug()) {
+					$errorOutput->writeLineFormatted(sprintf('Process %s exited - exit code %s, term signal %s, output: %s', $processIdentifier, $exitCode ?? 'null', $termSignal ?? 'null', $output));
+				}
 				if ($exitCode === 0) {
 					return;
 				}

@@ -57,3 +57,8 @@ function (
 	(string) $xml;
 	(bool) $xml;
 };
+
+function (): void {
+	$ch = curl_init();
+	(int) $ch;
+};

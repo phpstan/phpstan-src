@@ -310,6 +310,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return new IntegerType();
 		}
 
+		if ($this->getClassName() === 'CurlHandle') {
+			return new IntegerType();
+		}
+
 		return new ErrorType();
 	}
 

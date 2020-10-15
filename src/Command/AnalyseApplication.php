@@ -161,9 +161,6 @@ class AnalyseApplication
 			return new AnalyserResult([], [], [], [], false);
 		}
 
-		/** @var bool $runningInParallel */
-		$runningInParallel = false;
-
 		if (!$debug) {
 			$progressStarted = false;
 			$fileOrder = 0;

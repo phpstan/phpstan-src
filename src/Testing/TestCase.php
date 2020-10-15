@@ -26,6 +26,7 @@ use PHPStan\Parser\CachedParser;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\PhpParserDecorator;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -191,7 +192,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	private static function getPhpStormStubsSourceStubber(): PhpStormStubsSourceStubber
 	{
 		if (self::$phpStormStubsSourceStubber === null) {
-			self::$phpStormStubsSourceStubber = new PhpStormStubsSourceStubber(new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class)));
+			self::$phpStormStubsSourceStubber = new PhpStormStubsSourceStubber(new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class)), self::getContainer()->getByType(PhpVersion::class)->getVersionId());
 		}
 
 		return self::$phpStormStubsSourceStubber;

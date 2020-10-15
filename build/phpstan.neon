@@ -42,8 +42,8 @@ parameters:
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp
 	stubFiles:
-		- stubs/ReactChildProcess.php
-		- stubs/ReactStreams.php
+		- stubs/ReactChildProcess.stub
+		- stubs/ReactStreams.stub
 services:
 	-
 		class: PHPStan\Build\ServiceLocatorDynamicReturnTypeExtension

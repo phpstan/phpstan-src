@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 
 class VerbosityLevel
 {
@@ -61,6 +62,10 @@ class VerbosityLevel
 				return $type;
 			}
 			if ($type instanceof AccessoryNumericStringType) {
+				$moreVerbose = true;
+				return $type;
+			}
+			if ($type instanceof NonEmptyArrayType) {
 				$moreVerbose = true;
 				return $type;
 			}

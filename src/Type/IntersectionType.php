@@ -11,6 +11,7 @@ use PHPStan\Reflection\Type\IntersectionTypeMethodReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
@@ -133,7 +134,7 @@ class IntersectionType implements CompoundType
 			function () use ($level): string {
 				$typeNames = [];
 				foreach ($this->types as $type) {
-					if ($type instanceof AccessoryType && !$type instanceof AccessoryNumericStringType) {
+					if ($type instanceof AccessoryType && !$type instanceof AccessoryNumericStringType && !$type instanceof NonEmptyArrayType) {
 						continue;
 					}
 					$typeNames[] = $type->describe($level);

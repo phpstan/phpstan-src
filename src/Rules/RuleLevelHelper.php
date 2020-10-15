@@ -85,6 +85,7 @@ class RuleLevelHelper
 		if (
 			$acceptedType->isArray()->yes()
 			&& $acceptingType->isArray()->yes()
+			&& !$acceptingType->isIterableAtLeastOnce()->yes()
 			&& count(TypeUtils::getConstantArrays($acceptedType)) === 0
 			&& count(TypeUtils::getConstantArrays($acceptingType)) === 0
 		) {

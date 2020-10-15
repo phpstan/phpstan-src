@@ -717,3 +717,33 @@ class NumericStrings
 
 	}
 }
+
+class AcceptNonEmpty
+{
+
+	/**
+	 * @param array<mixed> $array
+	 * @param non-empty-array<mixed> $nonEmpty
+	 */
+	public function doFoo(
+		array $array,
+		array $nonEmpty
+	): void
+	{
+		$this->doBar([]);
+		$this->doBar([1, 2, 3]);
+		$this->doBar($array);
+		$this->doBar($nonEmpty);
+	}
+
+	/**
+	 * @param non-empty-array<mixed> $nonEmpty
+	 */
+	public function doBar(
+		array $nonEmpty
+	): void
+	{
+
+	}
+
+}

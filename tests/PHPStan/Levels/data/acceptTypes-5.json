@@ -208,5 +208,15 @@
         "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects string&numeric, string given.",
         "line": 708,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects array&nonEmpty, array() given.",
+        "line": 733,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects array&nonEmpty, array given.",
+        "line": 735,
+        "ignorable": true
     }
 ]

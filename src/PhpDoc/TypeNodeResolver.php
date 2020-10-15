@@ -29,6 +29,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -183,6 +184,12 @@ class TypeNodeResolver
 			case 'associative-array':
 				return new ArrayType(new MixedType(), new MixedType());
 
+			case 'non-empty-array':
+				return TypeCombinator::intersect(
+					new ArrayType(new MixedType(), new MixedType()),
+					new NonEmptyArrayType()
+				);
+
 			case 'iterable':
 				return new IterableType(new MixedType(), new MixedType());
 
@@ -207,6 +214,11 @@ class TypeNodeResolver
 
 			case 'list':
 				return new ArrayType(new IntegerType(), new MixedType());
+			case 'non-empty-list':
+				return TypeCombinator::intersect(
+					new ArrayType(new IntegerType(), new MixedType()),
+					new NonEmptyArrayType()
+				);
 		}
 
 		if ($nameScope->getClassName() !== null) {
@@ -321,19 +333,28 @@ class TypeNodeResolver
 		$mainTypeName = strtolower($typeNode->type->name);
 		$genericTypes = $this->resolveMultiple($typeNode->genericTypes, $nameScope);
 
-		if ($mainTypeName === 'array') {
+		if ($mainTypeName === 'array' || $mainTypeName === 'non-empty-array') {
 			if (count($genericTypes) === 1) { // array<ValueType>
-				return new ArrayType(new MixedType(true), $genericTypes[0]);
-
+				$arrayType = new ArrayType(new MixedType(true), $genericTypes[0]);
+			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
+				$arrayType = new ArrayType($genericTypes[0], $genericTypes[1]);
+			} else {
+				return new ErrorType();
 			}
 
-			if (count($genericTypes) === 2) { // array<KeyType, ValueType>
-				return new ArrayType($genericTypes[0], $genericTypes[1]);
+			if ($mainTypeName === 'non-empty-array') {
+				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 			}
 
-		} elseif ($mainTypeName === 'list') {
+			return $arrayType;
+		} elseif ($mainTypeName === 'list' || $mainTypeName === 'non-empty-list') {
 			if (count($genericTypes) === 1) { // list<ValueType>
-				return new ArrayType(new IntegerType(), $genericTypes[0]);
+				$listType = new ArrayType(new IntegerType(), $genericTypes[0]);
+				if ($mainTypeName === 'non-empty-list') {
+					return TypeCombinator::intersect($listType, new NonEmptyArrayType());
+				}
+
+				return $listType;
 			}
 
 			return new ErrorType();

@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\CompoundTypeHelper;
 use PHPStan\Type\ErrorType;
@@ -35,8 +34,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
 		}
 
-		return (new ArrayType(new MixedType(), new MixedType()))
-			->isSuperTypeOf($type)
+		return $type->isArray()
 			->and($type->isIterableAtLeastOnce());
 	}
 
@@ -50,8 +48,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return $type->isSubTypeOf($this);
 		}
 
-		return (new ArrayType(new MixedType(), new MixedType()))
-			->isSuperTypeOf($type)
+		return $type->isArray()
 			->and($type->isIterableAtLeastOnce());
 	}
 
@@ -61,8 +58,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return (new ArrayType(new MixedType(), new MixedType()))
-			->isSuperTypeOf($otherType)
+		return $otherType->isArray()
 			->and($otherType->isIterableAtLeastOnce())
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}

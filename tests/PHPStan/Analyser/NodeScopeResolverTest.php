@@ -10171,6 +10171,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/throw-expr.php');
 	}
 
+	public function dataNotEmptyArray(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10249,6 +10254,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBugFromPr339
 	 * @dataProvider dataPow
 	 * @dataProvider dataThrowExpression
+	 * @dataProvider dataNotEmptyArray
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -48,7 +48,11 @@ class DirectParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		return $this->parseString(FileReader::read($file));
+		try {
+			return $this->parseString(FileReader::read($file));
+		} catch (\PHPStan\Parser\ParserErrorsException $e) {
+			throw new \PHPStan\Parser\ParserErrorsException($e->getErrors(), $file);
+		}
 	}
 
 	/**
@@ -61,7 +65,7 @@ class DirectParser implements Parser
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
 		$tokens = $this->lexer->getTokens();
 		if ($errorHandler->hasErrors()) {
-			throw new \PHPStan\Parser\ParserErrorsException($errorHandler->getErrors());
+			throw new \PHPStan\Parser\ParserErrorsException($errorHandler->getErrors(), null);
 		}
 		if ($nodes === null) {
 			throw new \PHPStan\ShouldNotHappenException();

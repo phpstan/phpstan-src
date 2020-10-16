@@ -233,7 +233,7 @@ class FileAnalyser
 				$fileErrors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e);
 			} catch (\PHPStan\Parser\ParserErrorsException $e) {
 				foreach ($e->getErrors() as $error) {
-					$fileErrors[] = new Error($error->getMessage(), $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, $e);
+					$fileErrors[] = new Error($error->getMessage(), $e->getParsedFile() ?? $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, $e);
 				}
 			} catch (\PHPStan\AnalysedCodeException $e) {
 				$fileErrors[] = new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip());

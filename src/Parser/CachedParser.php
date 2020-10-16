@@ -31,7 +31,24 @@ class CachedParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		return $this->parseString(FileReader::read($file));
+		if ($this->cachedNodesByStringCountMax !== 0 && $this->cachedNodesByStringCount >= $this->cachedNodesByStringCountMax) {
+			$this->cachedNodesByString = array_slice(
+				$this->cachedNodesByString,
+				1,
+				null,
+				true
+			);
+
+			--$this->cachedNodesByStringCount;
+		}
+
+		$sourceCode = FileReader::read($file);
+		if (!isset($this->cachedNodesByString[$sourceCode])) {
+			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseFile($file);
+			$this->cachedNodesByStringCount++;
+		}
+
+		return $this->cachedNodesByString[$sourceCode];
 	}
 
 	/**

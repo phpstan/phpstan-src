@@ -10,15 +10,22 @@ class ParserErrorsException extends \Exception
 	/** @var \PhpParser\Error[] */
 	private array $errors;
 
+	private ?string $parsedFile;
+
 	/**
 	 * @param \PhpParser\Error[] $errors
+	 * @param string|null $parsedFile
 	 */
-	public function __construct(array $errors)
+	public function __construct(
+		array $errors,
+		?string $parsedFile
+	)
 	{
 		parent::__construct(implode(', ', array_map(static function (Error $error): string {
 			return $error->getMessage();
 		}, $errors)));
 		$this->errors = $errors;
+		$this->parsedFile = $parsedFile;
 	}
 
 	/**
@@ -27,6 +34,11 @@ class ParserErrorsException extends \Exception
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	public function getParsedFile(): ?string
+	{
+		return $this->parsedFile;
 	}
 
 }

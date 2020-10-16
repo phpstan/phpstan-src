@@ -168,6 +168,10 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
 					402,
 				],
+				[
+					'Cannot access property $array on stdClass|null.',
+					412,
+				],
 			]
 		);
 	}

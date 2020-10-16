@@ -403,3 +403,18 @@ class RevertNonNullabilityForIsset
 	}
 
 }
+
+class Bug1884
+{
+
+	function mustReport(?\stdClass $nullable): bool
+	{
+		return isset($nullable->array['key']);
+	}
+
+	function mustNotReport(?\stdClass $nullable): bool
+	{
+		return isset($nullable, $nullable->array['key']);
+	}
+
+}

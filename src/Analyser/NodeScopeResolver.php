@@ -1221,36 +1221,25 @@ class NodeScopeResolver
 	{
 		$exprToSpecify = $expr;
 		$specifiedExpressions = [];
-		while (
-			$exprToSpecify instanceof PropertyFetch
-			|| $exprToSpecify instanceof StaticPropertyFetch
-			|| (
-				$findMethods && (
-					$exprToSpecify instanceof MethodCall
-					|| $exprToSpecify instanceof StaticCall
-				)
-			)
-		) {
-			if (
-				$exprToSpecify instanceof PropertyFetch
-				|| $exprToSpecify instanceof MethodCall
-			) {
+		while (true) {
+			$exprType = $scope->getType($exprToSpecify);
+			$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
+			if (!$exprType->equals($exprTypeWithoutNull)) {
+				$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType);
+				$scope = $scope->specifyExpressionType($exprToSpecify, $exprTypeWithoutNull);
+			}
+
+			if ($exprToSpecify instanceof PropertyFetch) {
 				$exprToSpecify = $exprToSpecify->var;
-			} elseif ($exprToSpecify->class instanceof Expr) {
+			} elseif ($exprToSpecify instanceof StaticPropertyFetch && $exprToSpecify->class instanceof Expr) {
+				$exprToSpecify = $exprToSpecify->class;
+			} elseif ($findMethods && $exprToSpecify instanceof MethodCall) {
+				$exprToSpecify = $exprToSpecify->var;
+			} elseif ($findMethods && $exprToSpecify instanceof StaticCall && $exprToSpecify->class instanceof Expr) {
 				$exprToSpecify = $exprToSpecify->class;
 			} else {
 				break;
 			}
-
-			$exprType = $scope->getType($exprToSpecify);
-			$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
-			if ($exprType->equals($exprTypeWithoutNull)) {
-				continue;
-			}
-
-			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType);
-
-			$scope = $scope->specifyExpressionType($exprToSpecify, $exprTypeWithoutNull);
 		}
 
 		return new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
@@ -1861,14 +1850,18 @@ class NodeScopeResolver
 			$scope = $this->lookForExitVariableAssign($scope, $expr->expr);
 		} elseif ($expr instanceof Expr\Isset_) {
 			$hasYield = false;
+			$nonNullabilityResults = [];
 			foreach ($expr->vars as $var) {
 				$nonNullabilityResult = $this->ensureNonNullability($scope, $var, true);
 				$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $var);
 				$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
-				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
+				$nonNullabilityResults[] = $nonNullabilityResult;
 				$scope = $this->lookForExitVariableAssign($scope, $var);
+			}
+			foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
+				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 			}
 		} elseif ($expr instanceof Instanceof_) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());

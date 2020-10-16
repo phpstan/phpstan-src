@@ -3,6 +3,7 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 
 class TableErrorFormatterTest extends ErrorFormatterTestCase
@@ -147,7 +148,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected
 	): void
 	{
-		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(self::DIRECTORY_PATH, [], '/'), false);
+		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),

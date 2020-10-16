@@ -6,6 +6,7 @@ use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\File\NullRelativePathHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -56,7 +57,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 
 		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
 
-		$relativePathHelper = new FuzzyRelativePathHelper(__DIR__, [], DIRECTORY_SEPARATOR);
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), __DIR__, [], DIRECTORY_SEPARATOR);
 		$errorFormatter = new TableErrorFormatter($relativePathHelper, false);
 		$analysisResult = $analyserApplication->analyse(
 			[$path],

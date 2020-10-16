@@ -3,6 +3,7 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 
 class GithubErrorFormatterTest extends ErrorFormatterTestCase
@@ -161,7 +162,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected
 	): void
 	{
-		$relativePathHelper = new FuzzyRelativePathHelper(self::DIRECTORY_PATH, [], '/');
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 		$formatter = new GithubErrorFormatter(
 			$relativePathHelper,
 			new TableErrorFormatter($relativePathHelper, false)

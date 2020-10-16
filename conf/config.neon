@@ -1146,12 +1146,19 @@ services:
 		arguments:
 			currentWorkingDirectory: %currentWorkingDirectory%
 			analysedPaths: %analysedPaths%
+			fallbackRelativePathHelper: @parentDirectoryRelativePathHelper
 
 	simpleRelativePathHelper:
 		class: PHPStan\File\RelativePathHelper
 		factory: PHPStan\File\SimpleRelativePathHelper
 		arguments:
 			currentWorkingDirectory: %currentWorkingDirectory%
+		autowired: false
+
+	parentDirectoryRelativePathHelper:
+		class: PHPStan\File\ParentDirectoryRelativePathHelper
+		arguments:
+			parentDirectory: %currentWorkingDirectory%
 		autowired: false
 
 	broker:

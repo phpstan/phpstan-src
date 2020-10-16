@@ -5,21 +5,26 @@ namespace PHPStan\File;
 class FuzzyRelativePathHelper implements RelativePathHelper
 {
 
+	private RelativePathHelper $fallbackRelativePathHelper;
+
 	private string $directorySeparator;
 
 	private ?string $pathToTrim = null;
 
 	/**
+	 * @param RelativePathHelper $fallbackRelativePathHelper
 	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
 	 * @param string|null $directorySeparator
 	 */
 	public function __construct(
+		RelativePathHelper $fallbackRelativePathHelper,
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		?string $directorySeparator = null
 	)
 	{
+		$this->fallbackRelativePathHelper = $fallbackRelativePathHelper;
 		if ($directorySeparator === null) {
 			$directorySeparator = DIRECTORY_SEPARATOR;
 		}
@@ -101,7 +106,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 			return ltrim(substr($filename, strlen($this->pathToTrim)), $this->directorySeparator);
 		}
 
-		return $filename;
+		return $this->fallbackRelativePathHelper->getRelativePath($filename);
 	}
 
 }

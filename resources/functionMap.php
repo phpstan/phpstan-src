@@ -10239,7 +10239,7 @@ return [
 'SimpleXMLElement::getNamespaces' => ['string[]', 'recursive='=>'bool'],
 'SimpleXMLElement::registerXPathNamespace' => ['bool', 'prefix'=>'string', 'ns'=>'string'],
 'SimpleXMLElement::xpath' => ['SimpleXMLElement[]|false', 'path'=>'string'],
-'SimpleXMLIterator::current' => ['SimpleXMLIterator|null'],
+'SimpleXMLIterator::current' => ['SimpleXMLIterator'],
 'SimpleXMLIterator::getChildren' => ['SimpleXMLIterator'],
 'SimpleXMLIterator::hasChildren' => ['bool'],
 'SimpleXMLIterator::key' => ['string|false'],

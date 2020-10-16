@@ -48,7 +48,7 @@ class Process
 	/**
 	 * @param callable(mixed[] $json) : void $onData
 	 * @param callable(\Throwable $exception) : void $onError
-	 * @param callable(?int $exitCode, ?int $termSignal, string $output) : void $onExit
+	 * @param callable(?int $exitCode, string $output) : void $onExit
 	 */
 	public function start(callable $onData, callable $onError, callable $onExit): void
 	{
@@ -69,7 +69,7 @@ class Process
 		$this->process->start($this->loop);
 		$this->onData = $onData;
 		$this->onError = $onError;
-		$this->process->on('exit', function ($exitCode, $termSignal) use ($onExit): void {
+		$this->process->on('exit', function ($exitCode) use ($onExit): void {
 			$this->cancelTimer();
 
 			$output = '';
@@ -84,7 +84,7 @@ class Process
 			if (is_string($stdErr)) {
 				$output .= $stdErr;
 			}
-			$onExit($exitCode, $termSignal, $output);
+			$onExit($exitCode, $output);
 			fclose($this->stdOut);
 			fclose($this->stdErr);
 		});

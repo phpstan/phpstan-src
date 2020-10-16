@@ -154,8 +154,7 @@ class FixerWorkerCommand extends Command
 			$configuration,
 			$tmpFile,
 			$insteadOfFile,
-			$input,
-			$inceptionResult->getErrorOutput()
+			$input
 		);
 		$result = $resultCacheManager->process(
 			$this->switchTmpFileInAnalyserResult($intermediateAnalyserResult, $tmpFile, $insteadOfFile),

@@ -1586,15 +1586,26 @@ class MutatingScope implements Scope
 					}
 					$constantClassType = new ObjectType($resolvedName);
 				}
+
+				if (strtolower($constantName) === 'class') {
+					return new ConstantStringType($constantClassType->getClassName(), true);
+				}
 			} else {
 				$constantClassType = $this->getType($node->class);
 			}
 
-			if (strtolower($constantName) === 'class' && $constantClassType instanceof TypeWithClassName) {
-				return new ConstantStringType($constantClassType->getClassName(), true);
-			}
-
 			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
+			if (strtolower($constantName) === 'class') {
+				if (count($referencedClasses) === 0) {
+					return new ErrorType();
+				}
+				$classTypes = [];
+				foreach ($referencedClasses as $referencedClass) {
+					$classTypes[] = new GenericClassStringType(new ObjectType($referencedClass));
+				}
+
+				return TypeCombinator::union(...$classTypes);
+			}
 			$types = [];
 			foreach ($referencedClasses as $referencedClass) {
 				if (!$this->reflectionProvider->hasClass($referencedClass)) {

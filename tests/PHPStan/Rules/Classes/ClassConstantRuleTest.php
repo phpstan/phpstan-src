@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -12,14 +13,18 @@ use PHPStan\Rules\RuleLevelHelper;
 class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var int */
+	private $phpVersion;
+
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ClassConstantRule($broker, new RuleLevelHelper($broker, true, false, true, false), new ClassCaseSensitivityCheck($broker));
+		return new ClassConstantRule($broker, new RuleLevelHelper($broker, true, false, true, false), new ClassCaseSensitivityCheck($broker), new PhpVersion($this->phpVersion));
 	}
 
 	public function testClassConstant(): void
 	{
+		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse(
 			[
 				__DIR__ . '/data/class-constant.php',
@@ -85,6 +90,8 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
 			$this->markTestSkipped('Test does not run on PHP 7.4 because of referencing parent:: without parent class.');
 		}
+
+		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-constant-visibility.php'], [
 			[
 				'Access to private constant PRIVATE_BAR of class ClassConstantVisibility\Bar.',
@@ -149,6 +156,7 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testClassExists(): void
 	{
+		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-exists.php'], [
 			[
 				'Class UnknownClass\Bar not found.',
@@ -166,6 +174,64 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
+	}
+
+	public function dataClassConstantOnExpression(): array
+	{
+		return [
+			[
+				70400,
+				[
+					[
+						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+						15,
+					],
+					[
+						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+						16,
+					],
+					[
+						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+						17,
+					],
+					[
+						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+						18,
+					],
+				],
+			],
+			[
+				80000,
+				[
+					[
+						'Accessing ::class constant on a dynamic string is not supported in PHP.',
+						16,
+					],
+					[
+						'Cannot access constant class on stdClass|null.',
+						17,
+					],
+					[
+						'Cannot access constant class on string|null.',
+						18,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataClassConstantOnExpression
+	 * @param int $phpVersion
+	 * @param mixed[] $errors
+	 */
+	public function testClassConstantOnExpression(int $phpVersion, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection');
+		}
+		$this->phpVersion = $phpVersion;
+		$this->analyse([__DIR__ . '/data/class-constant-on-expr.php'], $errors);
 	}
 
 }

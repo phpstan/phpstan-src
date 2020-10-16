@@ -10176,6 +10176,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array.php');
 	}
 
+	public function dataClassConstantOnExpression(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/class-constant-on-expr.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10255,6 +10264,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataPow
 	 * @dataProvider dataThrowExpression
 	 * @dataProvider dataNotEmptyArray
+	 * @dataProvider dataClassConstantOnExpression
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

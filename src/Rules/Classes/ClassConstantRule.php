@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -30,15 +31,19 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 
 	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
+	private PhpVersion $phpVersion;
+
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck
+		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		PhpVersion $phpVersion
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
+		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string
@@ -107,6 +112,10 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				$className = $this->reflectionProvider->getClass($className)->getName();
 			}
 
+			if (strtolower($constantName) === 'class') {
+				return $messages;
+			}
+
 			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
 				$classType = new ThisType($scope->getClassReflection());
 			} else {
@@ -124,6 +133,24 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {
 				return $classTypeResult->getUnknownClassErrors();
+			}
+
+			if (strtolower($constantName) === 'class') {
+				if (!$this->phpVersion->supportsClassConstantOnExpression()) {
+					return [
+						RuleErrorBuilder::message('Accessing ::class constant on an expression is supported only on PHP 8.0 and later.')
+							->nonIgnorable()
+							->build(),
+					];
+				}
+
+				if ((new StringType())->isSuperTypeOf($classType)->yes()) {
+					return [
+						RuleErrorBuilder::message('Accessing ::class constant on a dynamic string is not supported in PHP.')
+							->nonIgnorable()
+							->build(),
+					];
+				}
 			}
 		}
 

@@ -66,4 +66,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsClassConstantOnExpression(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

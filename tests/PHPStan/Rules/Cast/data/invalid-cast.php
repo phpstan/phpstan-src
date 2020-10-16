@@ -62,3 +62,8 @@ function (): void {
 	$ch = curl_init();
 	(int) $ch;
 };
+
+function (): void {
+	$ch = curl_multi_init();
+	(int) $ch;
+};

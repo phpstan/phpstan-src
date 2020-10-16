@@ -552,23 +552,26 @@ class MutatingScope implements Scope
 			$result = new ConstantBooleanType(true);
 			foreach ($node->vars as $var) {
 				if ($var instanceof Expr\ArrayDimFetch && $var->dim !== null) {
-					$hasOffset = $this->getType($var->var)->hasOffsetValueType(
-						$this->getType($var->dim)
-					)->toBooleanType();
-					if ($hasOffset instanceof ConstantBooleanType) {
-						if (!$hasOffset->getValue()) {
-							return $hasOffset;
+					$variableType = $this->getType($var->var);
+					$dimType = $this->getType($var->dim);
+					$hasOffset = $variableType->hasOffsetValueType($dimType);
+					$offsetValueType = $variableType->getOffsetValueType($dimType);
+					$offsetValueIsNotNull = (new NullType())->isSuperTypeOf($offsetValueType)->negate();
+					$isset = $hasOffset->and($offsetValueIsNotNull)->toBooleanType();
+					if ($isset instanceof ConstantBooleanType) {
+						if (!$isset->getValue()) {
+							return $isset;
 						}
 
 						continue;
 					}
 
-					$result = $hasOffset;
+					$result = $isset;
 					continue;
 				}
 
 				if ($var instanceof Expr\Variable && is_string($var->name)) {
-					$variableType = $this->resolveType($var);
+					$variableType = $this->getType($var);
 					$isNullSuperType = (new NullType())->isSuperTypeOf($variableType);
 					$has = $this->hasVariableType($var->name);
 					if ($has->no() || $isNullSuperType->yes()) {

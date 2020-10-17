@@ -46,6 +46,10 @@ class TypesAssignedToPropertiesFromArrayRuleTest extends \PHPStan\Testing\RuleTe
 				'Property PropertiesFromArrayIntoObject\Foo::$lall (int) does not accept string.',
 				110,
 			],
+			[
+				'Property PropertiesFromArrayIntoObject\FooBar::$foo (string) does not accept float.',
+				147
+			]
 		]);
 	}
 
@@ -60,6 +64,10 @@ class TypesAssignedToPropertiesFromArrayRuleTest extends \PHPStan\Testing\RuleTe
 				'Static property PropertiesFromArrayIntoStaticObject\Foo::$foo (string) does not accept float.',
 				36
 			],
+			[
+				'Static property PropertiesFromArrayIntoStaticObject\FooBar::$foo (string) does not accept float.',
+				72
+			]
 		]);
 	}
 

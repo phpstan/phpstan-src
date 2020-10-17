@@ -149,3 +149,18 @@ class AndInIfCondition
 		}
 	}
 }
+
+function getMaybeArray() : ?array {
+	if (rand(0, 1)) { return [1, 2, 3]; }
+	return null;
+}
+
+function bug1924() {
+	$arr = [
+		'a' => getMaybeArray(),
+		'b' => getMaybeArray(),
+	];
+
+	if (isset($arr['a']) && isset($arr['b'])) {
+	}
+}

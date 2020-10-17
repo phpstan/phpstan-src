@@ -6,13 +6,16 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 
 class ExplodeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
@@ -38,7 +41,15 @@ class ExplodeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynamic
 		if ($isSuperset->yes()) {
 			return new ConstantBooleanType(false);
 		} elseif ($isSuperset->no()) {
-			return new ArrayType(new IntegerType(), new StringType());
+			$arrayType = new ArrayType(new IntegerType(), new StringType());
+			if (
+				!isset($functionCall->args[2])
+				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->args[2]->value))->yes()
+			) {
+				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			}
+
+			return $arrayType;
 		}
 
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();

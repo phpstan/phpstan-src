@@ -10185,6 +10185,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/class-constant-on-expr.php');
 	}
 
+	public function dataBug3961(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3961.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10265,6 +10270,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataThrowExpression
 	 * @dataProvider dataNotEmptyArray
 	 * @dataProvider dataClassConstantOnExpression
+	 * @dataProvider dataBug3961
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

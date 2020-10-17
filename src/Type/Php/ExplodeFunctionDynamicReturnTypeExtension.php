@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -13,6 +14,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -20,6 +22,13 @@ use PHPStan\Type\TypeUtils;
 
 class ExplodeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
+
+	private PhpVersion $phpVersion;
+
+	public function __construct(PhpVersion $phpVersion)
+	{
+		$this->phpVersion = $phpVersion;
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -39,6 +48,9 @@ class ExplodeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynamic
 		$delimiterType = $scope->getType($functionCall->args[0]->value);
 		$isSuperset = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
 		if ($isSuperset->yes()) {
+			if ($this->phpVersion->getVersionId() >= 80000) {
+				return new NeverType();
+			}
 			return new ConstantBooleanType(false);
 		} elseif ($isSuperset->no()) {
 			$arrayType = new ArrayType(new IntegerType(), new StringType());

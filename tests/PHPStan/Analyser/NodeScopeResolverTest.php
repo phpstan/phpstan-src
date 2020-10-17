@@ -10187,6 +10187,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	public function dataBug3961(): array
 	{
+		if (PHP_VERSION >= 80000) {
+			return $this->gatherAssertTypes(__DIR__ . '/data/bug-3961-php8.php');
+		}
+
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3961.php');
 	}
 

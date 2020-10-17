@@ -7897,7 +7897,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'array<int, string>',
+				'array<int, string>&nonEmpty',
 				'$sureArray',
 			],
 			[

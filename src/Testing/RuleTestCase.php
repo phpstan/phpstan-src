@@ -152,6 +152,10 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 			$expectedErrors
 		);
 
+		usort($actualErrors, static function (Error $a, Error $b): int {
+			return $a->getLine() <=> $b->getLine();
+		});
+
 		$actualErrors = array_map(
 			static function (Error $error) use ($strictlyTypedSprintf): string {
 				$line = $error->getLine();

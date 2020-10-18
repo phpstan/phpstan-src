@@ -31,4 +31,14 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleExpressionNames(): void
+	{
+		$this->analyse([__DIR__ . '/data/properties-from-array-into-static-object.php'], [
+			[
+				'Access to an undefined static property PropertiesFromArrayIntoStaticObject\Foo::$noop.',
+				29,
+			],
+		]);
+	}
+
 }

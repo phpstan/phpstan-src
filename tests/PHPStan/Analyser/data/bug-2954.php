@@ -6,7 +6,7 @@ use function PHPStan\Analyser\assertType;
 
 function (int $x) {
 	if ($x === 0) return;
-	assertType('int<1, max>|int<min, -1>', $x);
+	assertType('int<min, -1>|int<1, max>', $x);
 
 	$x++;
 	assertType('int', $x);
@@ -14,7 +14,7 @@ function (int $x) {
 
 function (int $x) {
 	if ($x === 0) return;
-	assertType('int<1, max>|int<min, -1>', $x);
+	assertType('int<min, -1>|int<1, max>', $x);
 
 	++$x;
 	assertType('int', $x);
@@ -22,7 +22,7 @@ function (int $x) {
 
 function (int $x) {
 	if ($x === 0) return;
-	assertType('int<1, max>|int<min, -1>', $x);
+	assertType('int<min, -1>|int<1, max>', $x);
 
 	$x--;
 	assertType('int', $x);
@@ -30,7 +30,7 @@ function (int $x) {
 
 function (int $x) {
 	if ($x === 0) return;
-	assertType('int<1, max>|int<min, -1>', $x);
+	assertType('int<min, -1>|int<1, max>', $x);
 
 	--$x;
 	assertType('int', $x);

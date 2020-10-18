@@ -702,7 +702,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					)
 				),
 				[
-					'$n' => '~int<6, max>|int<min, 2>',
+					'$n' => '~int<min, 2>|int<6, max>',
 				],
 				[
 					'$n' => '~int<3, 5>',

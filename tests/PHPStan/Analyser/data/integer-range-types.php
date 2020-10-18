@@ -21,18 +21,18 @@ function (int $i) {
 		assertType('int<min, 1>', $i);
 	}
 
-	assertType('int<3, max>|int<min, 1>', $i);
+	assertType('int<min, 1>|int<3, max>', $i);
 
 	if ($i < 3 && $i > 5) {
 		assertType('*NEVER*', $i);
 	} else {
-		assertType('int<3, max>|int<min, 1>', $i);
+		assertType('int<min, 1>|int<3, max>', $i);
 	}
 
 	if ($i > 3 && $i < 5) {
 		assertType('4', $i);
 	} else {
-		assertType('3|int<5, max>|int<min, 1>', $i);
+		assertType('3|int<min, 1>|int<5, max>', $i);
 	}
 
 	if ($i >= 3 && $i <= 5) {

@@ -86,6 +86,10 @@ class UnionTypeHelper
 				return 0;
 			}
 
+			if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
+				return $a->getMin() <=> $b->getMin();
+			}
+
 			if ($a instanceof ConstantStringType && $b instanceof ConstantStringType) {
 				return strcasecmp($a->getValue(), $b->getValue());
 			}

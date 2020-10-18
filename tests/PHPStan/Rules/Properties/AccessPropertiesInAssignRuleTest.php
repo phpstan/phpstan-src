@@ -30,4 +30,36 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleExpressionNames(): void
+	{
+		$this->analyse([__DIR__ . '/data/properties-from-variable-into-object.php'], [
+			[
+				'Access to an undefined property PropertiesFromVariableIntoObject\Foo::$noop.',
+				26,
+			],
+		]);
+	}
+
+	public function testRuleExpressionNames2(): void
+	{
+		$this->analyse([__DIR__ . '/data/properties-from-array-into-object.php'], [
+			[
+				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
+				42,
+			],
+			[
+				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
+				54,
+			],
+			[
+				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
+				69,
+			],
+			[
+				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
+				110,
+			],
+		]);
+	}
+
 }

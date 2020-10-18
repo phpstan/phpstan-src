@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\VerbosityLevel;
@@ -54,11 +55,32 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 
 		/** @var \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch */
 		$propertyFetch = $node->var;
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyFetch, $scope);
-		if ($propertyReflection === null) {
-			return [];
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $scope);
+
+		$errors = [];
+		foreach ($propertyReflections as $propertyReflection) {
+			$errors = array_merge($errors, $this->processSingleProperty(
+				$scope,
+				$propertyReflection,
+				$node
+			));
 		}
 
+		return $errors;
+	}
+
+	/**
+	 * @param Scope $scope
+	 * @param FoundPropertyReflection $propertyReflection
+	 * @param Node\Expr $node
+	 * @return RuleError[]
+	 */
+	private function processSingleProperty(
+		Scope $scope,
+		FoundPropertyReflection $propertyReflection,
+		Node\Expr $node
+	): array
+	{
 		$propertyType = $propertyReflection->getWritableType();
 
 		if ($node instanceof Node\Expr\Assign) {
@@ -67,7 +89,7 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 			$assignedValueType = $scope->getType($node);
 		}
 		if (!$this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes())) {
-			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $propertyFetch);
+			$propertyDescription = $this->propertyDescriptor->describePropertyByName($propertyReflection, $propertyReflection->getName());
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType);
 
 			return [

@@ -15,11 +15,6 @@ class FileCacheStorage implements CacheStorage
 		$this->directory = $directory;
 	}
 
-	public function makeRootDir(): void
-	{
-		$this->makeDir($this->directory);
-	}
-
 	private function makeDir(string $directory): void
 	{
 		if (is_dir($directory)) {

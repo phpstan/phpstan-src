@@ -682,32 +682,58 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Foreach_) {
 			$condResult = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$scope = $condResult->getScope();
-			$bodyScope = $this->enterForeach($scope, $stmt);
-			$count = 0;
-			do {
-				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($scope);
-				$bodyScope = $this->enterForeach($bodyScope, $stmt);
-				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				})->filterOutLoopExitPoints();
-				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
-				if ($bodyScope->equals($prevScope)) {
-					break;
+			$exprType = $scope->getType($stmt->expr);
+			$exprConstantArrays = TypeUtils::getConstantArrays($exprType);
+			if (
+				count($exprConstantArrays) === 1
+				&& $stmt->valueVar instanceof Variable
+				&& is_string($stmt->valueVar->name)
+				&& (
+					$stmt->keyVar === null
+					|| (
+						$stmt->keyVar instanceof Variable
+						&& is_string($stmt->keyVar->name)
+					)
+				)
+			) {
+				$iterationScope = $scope;
+				$hasYield = false;
+				$alwaysTerminating = false;
+				foreach ($exprConstantArrays[0]->getKeyTypes() as $i => $keyType) {
+					$valueType = $exprConstantArrays[0]->getValueTypes()[$i];
+					$iterationScope = $iterationScope->assignVariable(
+						$stmt->valueVar->name,
+						$valueType
+					);
+					if ($stmt->keyVar !== null) {
+						$iterationScope = $iterationScope->assignVariable($stmt->keyVar->name, $keyType);
+					}
+
+					$iterationScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $iterationScope, $nodeCallback)->filterOutLoopExitPoints();
+					$iterationScope = $iterationScopeResult->getScope();
+					$hasYield = $hasYield || $iterationScopeResult->hasYield();
+					$alwaysTerminating = $alwaysTerminating || $iterationScopeResult->isAlwaysTerminating();
+					if ($alwaysTerminating) {
+						break;
+					}
+
+					foreach ($iterationScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$iterationScope = $continueExitPoint->getScope()->mergeWith($iterationScope);
+					}
 				}
 
-				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
-				}
-				$count++;
-			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+				// todo merge all break scopes
 
-			$bodyScope = $bodyScope->mergeWith($scope);
-			$bodyScope = $this->enterForeach($bodyScope, $stmt);
-			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
+				return new StatementResult(
+					$iterationScope,
+					$hasYield,
+					$alwaysTerminating,
+					[]
+				);
+			}
+
+			$finalScopeResult = $this->processForeach($scope, $stmt, $nodeCallback);
+
 			$finalScope = $finalScopeResult->getScope();
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
@@ -1128,6 +1154,46 @@ class NodeScopeResolver
 		}
 
 		return new StatementResult($scope, $hasYield, false, []);
+	}
+
+	/**
+	 * @param MutatingScope $scope
+	 * @param Foreach_ $stmt
+	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @return StatementResult
+	 */
+	private function processForeach(
+		MutatingScope $scope,
+		Foreach_ $stmt,
+		callable $nodeCallback
+	): StatementResult
+	{
+		$bodyScope = $this->enterForeach($scope, $stmt);
+		$count = 0;
+		do {
+			$prevScope = $bodyScope;
+			$bodyScope = $bodyScope->mergeWith($scope);
+			$bodyScope = $this->enterForeach($bodyScope, $stmt);
+			$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
+			})->filterOutLoopExitPoints();
+			$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
+			$bodyScope = $bodyScopeResult->getScope();
+			foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+			}
+			if ($bodyScope->equals($prevScope)) {
+				break;
+			}
+
+			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+				$bodyScope = $bodyScope->generalizeWith($prevScope);
+			}
+			$count++;
+		} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+
+		$bodyScope = $bodyScope->mergeWith($scope);
+		$bodyScope = $this->enterForeach($bodyScope, $stmt);
+		return $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
 	}
 
 	/**

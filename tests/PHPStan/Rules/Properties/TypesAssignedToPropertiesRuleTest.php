@@ -39,7 +39,7 @@ class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				37,
 			],
 			[
-				'Static property PropertiesAssignedTypes\Ipsum::$parentStringProperty (string) does not accept int.',
+				'Property PropertiesAssignedTypes\Ipsum::$parentStringProperty (string) does not accept int.',
 				39,
 			],
 			[

@@ -16,7 +16,7 @@ class PropertyDescriptor
 	{
 		/** @var \PhpParser\Node\Identifier $name */
 		$name = $propertyFetch->name;
-		if ($propertyFetch instanceof \PhpParser\Node\Expr\PropertyFetch) {
+		if (!$property->isStatic()) {
 			return sprintf('Property %s::$%s', $property->getDeclaringClass()->getDisplayName(), $name->name);
 		}
 

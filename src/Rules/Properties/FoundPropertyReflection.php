@@ -14,21 +14,17 @@ class FoundPropertyReflection implements PropertyReflection
 
 	private PropertyReflection $originalPropertyReflection;
 
-	private string $propertyName;
-
 	private Type $readableType;
 
 	private Type $writableType;
 
 	public function __construct(
 		PropertyReflection $originalPropertyReflection,
-		string $propertyName,
 		Type $readableType,
 		Type $writableType
 	)
 	{
 		$this->originalPropertyReflection = $originalPropertyReflection;
-		$this->propertyName = $propertyName;
 		$this->readableType = $readableType;
 		$this->writableType = $writableType;
 	}
@@ -36,11 +32,6 @@ class FoundPropertyReflection implements PropertyReflection
 	public function getDeclaringClass(): ClassReflection
 	{
 		return $this->originalPropertyReflection->getDeclaringClass();
-	}
-
-	public function getName(): string
-	{
-		return $this->propertyName;
 	}
 
 	public function isStatic(): bool

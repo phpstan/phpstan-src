@@ -10199,7 +10199,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1924.php');
 	}
 
+	public function dataBug3964(): array
+	{
+		require_once __DIR__ . '/data/array-sum.php';
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/array-sum.php');
+	}
+
 	/**
+	 * @dataProvider dataBug3964
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
 	 * @dataProvider dataGenerics

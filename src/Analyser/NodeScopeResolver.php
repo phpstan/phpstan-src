@@ -683,7 +683,6 @@ class NodeScopeResolver
 			$condResult = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$scope = $condResult->getScope();
 			$bodyScope = $this->enterForeach($scope, $stmt);
-			$hasYield = false;
 			$count = 0;
 			do {
 				$prevScope = $bodyScope;

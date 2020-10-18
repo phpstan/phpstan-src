@@ -26,7 +26,7 @@ class FileCacheStorage implements CacheStorage
 			return;
 		}
 
-		$result = @mkdir($directory, 0777);
+		$result = @mkdir($directory, 0777, true);
 		if ($result === false) {
 			clearstatcache();
 			if (is_dir($directory)) {

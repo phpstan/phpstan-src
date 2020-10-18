@@ -3,12 +3,16 @@
 namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -41,11 +45,30 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof \PhpParser\Node\Identifier) {
-			return [];
+		if ($node->name instanceof Identifier) {
+			$names = [$node->name->name];
+		} else {
+			$names = array_map(static function (ConstantStringType $type): string {
+				return $type->getValue();
+			}, TypeUtils::getConstantStrings($scope->getType($node->name)));
 		}
 
-		$name = $node->name->name;
+		$errors = [];
+		foreach ($names as $name) {
+			$errors = array_merge($errors, $this->processSingleProperty($scope, $node, $name));
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param Scope $scope
+	 * @param PropertyFetch $node
+	 * @param string $name
+	 * @return RuleError[]
+	 */
+	private function processSingleProperty(Scope $scope, PropertyFetch $node, string $name): array
+	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->var,

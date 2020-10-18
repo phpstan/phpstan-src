@@ -1428,6 +1428,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				[
+					IntegerRangeType::fromInterval(7, 9),
+					IntegerRangeType::fromInterval(1, 3),
+				],
+				UnionType::class,
+				'int<1, 3>|int<7, 9>',
+			],
+			[
+				[
 					IntegerRangeType::fromInterval(1, 3),
 					new ConstantIntegerType(3),
 				],
@@ -3204,7 +3212,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new ConstantIntegerType(1),
 				UnionType::class,
-				'int<2, max>|int<min, 0>|string',
+				'int<min, 0>|int<2, max>|string',
 			],
 			[
 				new BenevolentUnionType([new IntegerType(), new StringType()]),

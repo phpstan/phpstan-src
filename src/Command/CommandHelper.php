@@ -230,9 +230,8 @@ class CommandHelper
 
 		if (!isset($tmpDir)) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan';
+			$createDir($tmpDir);
 		}
-
-		$createDir($tmpDir);
 
 		if ($projectConfigFile !== null) {
 			$allCustomConfigFiles = self::getConfigFiles(

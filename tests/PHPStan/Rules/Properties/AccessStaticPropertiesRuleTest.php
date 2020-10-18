@@ -186,4 +186,14 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/static-properties-class-exists.php'], []);
 	}
 
+	public function testRuleExpressionNames(): void
+	{
+		$this->analyse([__DIR__ . '/data/properties-from-array-into-static-object.php'], [
+			[
+				'Cannot access static property $noop on PropertiesFromArrayIntoStaticObject\Foo.',
+				29,
+			],
+		]);
+	}
+
 }

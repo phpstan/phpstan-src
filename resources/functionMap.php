@@ -10151,7 +10151,7 @@ return [
 'setcookie\'1' => ['bool', 'name'=>'string', 'value='=>'string', 'options='=>'array'],
 'setLeftFill' => ['void', 'red'=>'int', 'green'=>'int', 'blue'=>'int', 'a='=>'int'],
 'setLine' => ['void', 'width'=>'int', 'red'=>'int', 'green'=>'int', 'blue'=>'int', 'a='=>'int'],
-'setlocale' => ['string|false', 'category'=>'int', 'locale'=>'string|0|null', '...args='=>'string'],
+'setlocale' => ['string|false', 'category'=>'int', 'locale'=>'string|null', '...args='=>'string'],
 'setlocale\'1' => ['string|false', 'category'=>'int', 'locale'=>'?array'],
 'setproctitle' => ['void', 'title'=>'string'],
 'setrawcookie' => ['bool', 'name'=>'string', 'value='=>'string', 'expires='=>'int', 'path='=>'string', 'domain='=>'string', 'secure='=>'bool', 'httponly='=>'bool'],

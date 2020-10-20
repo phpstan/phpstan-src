@@ -60,7 +60,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 		$thirdArgument = $scope->getType($functionCall->args[2]->value);
 		$thirdArgumentIsNumeric = ($thirdArgument instanceof ConstantScalarType && is_numeric($thirdArgument->getValue())) || $thirdArgument instanceof IntegerType;
 
-		if ($thirdArgument instanceof ConstantScalarType && ($this->isZero($thirdArgument->getValue()) || !is_numeric($thirdArgument->getValue()))) {
+		if ($thirdArgument instanceof ConstantScalarType && !is_numeric($thirdArgument->getValue())) {
 			return new NullType();
 		}
 

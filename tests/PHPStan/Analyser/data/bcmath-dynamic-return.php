@@ -23,6 +23,8 @@ $nonNumeric = 'foo';
 \PHPStan\Analyser\assertType('null', bcdiv('10', 0.0)); // Warning: Division by zero
 \PHPStan\Analyser\assertType('string', bcdiv('10', '1'));
 \PHPStan\Analyser\assertType('string', bcdiv('10', '-1'));
+\PHPStan\Analyser\assertType('string', bcdiv('10', '2', 0));
+\PHPStan\Analyser\assertType('string', bcdiv('10', '2', 1));
 \PHPStan\Analyser\assertType('string', bcdiv('10', $iNeg));
 \PHPStan\Analyser\assertType('string', bcdiv('10', $iPos));
 \PHPStan\Analyser\assertType('string', bcdiv($iPos, $iPos));
@@ -38,6 +40,8 @@ $nonNumeric = 'foo';
 \PHPStan\Analyser\assertType('null', bcmod($iPos, '0')); // Warning: Division by zero
 \PHPStan\Analyser\assertType('null', bcmod('10', $nonNumeric));
 \PHPStan\Analyser\assertType('string', bcmod('10', '1'));
+\PHPStan\Analyser\assertType('string', bcmod('10', '2', 0));
+\PHPStan\Analyser\assertType('string', bcmod('5.7', '1.3', 1));
 \PHPStan\Analyser\assertType('string', bcmod('10', 2.2));
 \PHPStan\Analyser\assertType('string', bcmod('10', $iUnknown));
 \PHPStan\Analyser\assertType('string', bcmod('10', '-1'));

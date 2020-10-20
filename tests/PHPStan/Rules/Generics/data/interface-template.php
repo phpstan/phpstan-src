@@ -33,3 +33,25 @@ interface Lorem
 {
 
 }
+
+interface BaseViewData
+{
+
+}
+
+/**
+ * @template T
+ */
+interface BaseModel
+{
+
+}
+
+/**
+ * @template TViewData of BaseViewData
+ * @template TModel of BaseModel<TViewData>
+ */
+interface BaseRepository
+{
+
+}

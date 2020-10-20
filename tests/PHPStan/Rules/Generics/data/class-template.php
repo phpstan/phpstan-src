@@ -66,3 +66,25 @@ new /** @template TypeAlias */ class
 {
 
 };
+
+interface BaseViewData
+{
+
+}
+
+/**
+ * @template T
+ */
+class BaseModel
+{
+
+}
+
+/**
+ * @template TViewData of BaseViewData
+ * @template TModel of BaseModel<TViewData>
+ */
+class BaseRepository
+{
+
+}

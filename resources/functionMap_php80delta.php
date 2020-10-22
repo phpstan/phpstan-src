@@ -85,7 +85,7 @@ return [
 		'strchr' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'before_needle='=>'bool'],
 		'stripos' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
 		'stristr' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'before_needle='=>'bool'],
-		'strpos' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
+		'strpos' => ['positive-int|0|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
 		'strrchr' => ['string|false', 'haystack'=>'string', 'needle'=>'string'],
 		'strripos' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
 		'strrpos' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],

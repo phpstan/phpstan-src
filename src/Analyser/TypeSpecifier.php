@@ -45,6 +45,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function array_reverse;
 
 class TypeSpecifier
 {
@@ -572,8 +573,15 @@ class TypeSpecifier
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
+			$vars = array_reverse($vars);
+
 			$types = null;
 			foreach ($vars as $var) {
+				if ($var instanceof Expr\Variable && is_string($var->name)) {
+					if ($scope->hasVariableType($var->name)->no()) {
+						return new SpecifiedTypes([], []);
+					}
+				}
 				if ($expr instanceof Expr\Isset_) {
 					if (
 						$var instanceof ArrayDimFetch

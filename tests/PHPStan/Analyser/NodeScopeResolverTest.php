@@ -7901,7 +7901,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$sureArray',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$sureFalse',
 			],
 			[
@@ -10187,7 +10187,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 	public function dataBug3961(): array
 	{
-		if (PHP_VERSION >= 80000) {
+		if (PHP_VERSION_ID >= 80000) {
 			return $this->gatherAssertTypes(__DIR__ . '/data/bug-3961-php8.php');
 		}
 

@@ -108,15 +108,27 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 				145,
 			],
 			[
+				'Undefined variable: $negatedVariableInEmpty',
+				152,
+			],
+			[
 				'Undefined variable: $variableInEmpty',
 				155,
 			],
 			[
-				'Variable $negatedVariableInEmpty might not be defined.',
+				'Undefined variable: $negatedVariableInEmpty',
 				156,
 			],
 			[
-				'Variable $variableInIsset might not be defined.',
+				'Undefined variable: $variableInIsset',
+				159,
+			],
+			[
+				'Undefined variable: $anotherVariableInIsset',
+				159,
+			],
+			[
+				'Undefined variable: $variableInIsset',
 				161,
 			],
 			[
@@ -210,6 +222,10 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Variable $forVariableUsedAndThenDefined might not be defined.',
 				360,
+			],
+			[
+				'Undefined variable: $variableInWhileIsset',
+				365,
 			],
 			[
 				'Undefined variable: $unknownVariablePassedToReset',

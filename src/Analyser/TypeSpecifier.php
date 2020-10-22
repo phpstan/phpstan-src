@@ -549,7 +549,7 @@ class TypeSpecifier
 				$varsToIterate = [$expr->expr];
 			}
 			foreach ($varsToIterate as $var) {
-				$vars[] = $var;
+				$tmpVars = [$var];
 
 				while (
 					$var instanceof ArrayDimFetch
@@ -565,15 +565,15 @@ class TypeSpecifier
 					} else {
 						$var = $var->var;
 					}
-					$vars[] = $var;
+					$tmpVars[] = $var;
 				}
+
+				$vars = array_merge($vars, array_reverse($tmpVars));
 			}
 
 			if (count($vars) === 0) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-
-			$vars = array_reverse($vars);
 
 			$types = null;
 			foreach ($vars as $var) {

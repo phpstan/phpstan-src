@@ -192,7 +192,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	private static function getPhpStormStubsSourceStubber(): PhpStormStubsSourceStubber
 	{
 		if (self::$phpStormStubsSourceStubber === null) {
-			self::$phpStormStubsSourceStubber = new PhpStormStubsSourceStubber(new PhpParserDecorator(self::getContainer()->getByType(CachedParser::class)), self::getContainer()->getByType(PhpVersion::class)->getVersionId());
+			self::$phpStormStubsSourceStubber = self::getContainer()->getByType(PhpStormStubsSourceStubber::class);
 		}
 
 		return self::$phpStormStubsSourceStubber;

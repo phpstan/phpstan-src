@@ -282,9 +282,6 @@ services:
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-
-		class: PhpParser\Parser\Php7
-
-	-
 		class: PhpParser\PrettyPrinter\Standard
 
 	-
@@ -522,7 +519,7 @@ services:
 	-
 		class: PHPStan\Parser\CachedParser
 		arguments:
-			originalParser: @directParser
+			originalParser: @currentPhpVersionParser
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 
 	-
@@ -1176,8 +1173,11 @@ services:
 			directory: %tmpDir%/cache/PHPStan
 		autowired: no
 
-	directParser:
+	currentPhpVersionParser:
 		class: PHPStan\Parser\DirectParser
+		arguments:
+			parser: @currentPhpVersionPhpParser
+			lexer: @currentPhpVersionLexer
 		autowired: no
 
 	phpParserDecorator:
@@ -1186,9 +1186,16 @@ services:
 			wrappedParser: @PHPStan\Parser\Parser
 		autowired: no
 
-	phpParserLexer:
+	currentPhpVersionLexer:
 		class: PhpParser\Lexer
 		factory: @PHPStan\Parser\LexerFactory::create()
+		autowired: false
+
+	currentPhpVersionPhpParser:
+		class: PhpParser\Parser\Php7
+		arguments:
+			lexer: @currentPhpVersionLexer
+		autowired: false
 
 	registry:
 		class: PHPStan\Rules\Registry

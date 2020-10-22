@@ -436,8 +436,6 @@ services:
 
 	-
 		class: PHPStan\Dependency\ExportedNodeFetcher
-		arguments:
-			phpParser: @phpParserDecorator
 
 	-
 		class: PHPStan\Dependency\ExportedNodeResolver
@@ -545,8 +543,6 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
-		arguments:
-			phpParser: @phpParserDecorator
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator

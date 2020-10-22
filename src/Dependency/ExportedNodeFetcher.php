@@ -3,21 +3,21 @@
 namespace PHPStan\Dependency;
 
 use PhpParser\NodeTraverser;
-use PHPStan\File\FileReader;
+use PHPStan\Parser\Parser;
 
 class ExportedNodeFetcher
 {
 
-	private \PhpParser\Parser $phpParser;
+	private Parser $parser;
 
 	private ExportedNodeVisitor $visitor;
 
 	public function __construct(
-		\PhpParser\Parser $phpParser,
+		Parser $parser,
 		ExportedNodeVisitor $visitor
 	)
 	{
-		$this->phpParser = $phpParser;
+		$this->parser = $parser;
 		$this->visitor = $visitor;
 	}
 
@@ -30,12 +30,10 @@ class ExportedNodeFetcher
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->visitor);
 
-		$contents = FileReader::read($fileName);
-
 		try {
 			/** @var \PhpParser\Node[] $ast */
-			$ast = $this->phpParser->parse($contents);
-		} catch (\PhpParser\Error $e) {
+			$ast = $this->parser->parseFile($fileName);
+		} catch (\PHPStan\Parser\ParserErrorsException $e) {
 			return [];
 		}
 		$this->visitor->reset($fileName);

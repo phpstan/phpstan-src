@@ -3,8 +3,8 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\NodeTraverser;
-use PhpParser\Parser;
 use PHPStan\File\FileReader;
+use PHPStan\Parser\Parser;
 use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 
 class FileNodesFetcher
@@ -12,15 +12,15 @@ class FileNodesFetcher
 
 	private \PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor $cachingVisitor;
 
-	private Parser $phpParser;
+	private Parser $parser;
 
 	public function __construct(
 		CachingVisitor $cachingVisitor,
-		Parser $phpParser
+		Parser $parser
 	)
 	{
 		$this->cachingVisitor = $cachingVisitor;
-		$this->phpParser = $phpParser;
+		$this->parser = $parser;
 	}
 
 	public function fetchNodes(string $fileName): FetchedNodesResult
@@ -33,8 +33,8 @@ class FileNodesFetcher
 
 		try {
 			/** @var \PhpParser\Node[] $ast */
-			$ast = $this->phpParser->parse($contents);
-		} catch (\PhpParser\Error $e) {
+			$ast = $this->parser->parseFile($fileName);
+		} catch (\PHPStan\Parser\ParserErrorsException $e) {
 			return new FetchedNodesResult([], [], [], $locatedSource);
 		}
 		$this->cachingVisitor->reset($fileName);

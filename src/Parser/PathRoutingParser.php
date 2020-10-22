@@ -40,7 +40,7 @@ class PathRoutingParser implements Parser
 
 	public function parseString(string $sourceCode): array
 	{
-		return $this->currentPhpVersionRichParser->parseString($sourceCode);
+		return $this->currentPhpVersionSimpleParser->parseString($sourceCode);
 	}
 
 }

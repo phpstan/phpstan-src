@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -36,12 +37,17 @@ class CountFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 			}
 		}
 
-		$arrays = TypeUtils::getArrays($scope->getType($functionCall->args[0]->value));
-		if (count($arrays) === 0) {
+		$argType = $scope->getType($functionCall->args[0]->value);
+		$constantArrays = TypeUtils::getConstantArrays($scope->getType($functionCall->args[0]->value));
+		if (count($constantArrays) === 0) {
+			if ($argType->isIterableAtLeastOnce()->yes()) {
+				return IntegerRangeType::fromInterval(1, null);
+			}
+
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 		$countTypes = [];
-		foreach ($arrays as $array) {
+		foreach ($constantArrays as $array) {
 			$countTypes[] = $array->count();
 		}
 

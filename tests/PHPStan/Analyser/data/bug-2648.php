@@ -16,7 +16,7 @@ class Foo
 			assertType('int<2, max>', count($list));
 			unset($list['fooo']);
 			assertType('array<bool>', $list);
-			assertType('int', count($list));
+			assertType('int<0, max>', count($list));
 		}
 	}
 
@@ -28,24 +28,24 @@ class Foo
 		if (count($list) > 1) {
 			assertType('int<2, max>', count($list));
 			foreach ($list as $key => $item) {
-				assertType('int<2, max>|int<min, 0>', count($list));
+				assertType('0|int<2, max>', count($list));
 				if ($item === false) {
 					unset($list[$key]);
-					assertType('int', count($list));
+					assertType('int<0, max>', count($list));
 				}
 
-				assertType('int', count($list));
+				assertType('int<0, max>', count($list));
 
 				if (count($list) === 1) {
-					assertType('int', count($list));
+					assertType('int<1, max>', count($list));
 					break;
 				}
 			}
 
-			assertType('int', count($list));
+			assertType('int<0, max>', count($list));
 		}
 
-		assertType('int', count($list));
+		assertType('int<0, max>', count($list));
 	}
 
 }

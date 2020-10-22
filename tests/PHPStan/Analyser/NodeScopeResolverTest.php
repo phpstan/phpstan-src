@@ -2530,7 +2530,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'count($arrayOfIntegers)',
 			],
 			[
-				'int',
+				'int<0, max>',
 				'count($arrayOfIntegers, \COUNT_RECURSIVE)',
 			],
 			[
@@ -2802,11 +2802,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'count($array)',
 			],
 			[
-				'int',
+				'int<0, max>',
 				'count()',
 			],
 			[
-				'int',
+				'int<0, max>',
 				'count($appendingToArrayInBranches)',
 			],
 			[
@@ -10204,6 +10204,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/extra-int-types.php');
 	}
 
+	public function dataCount(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/count-type.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10287,6 +10292,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3961
 	 * @dataProvider dataBug1924
 	 * @dataProvider dataExtraIntTypes
+	 * @dataProvider dataCount
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

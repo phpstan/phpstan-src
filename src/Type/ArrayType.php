@@ -276,7 +276,7 @@ class ArrayType implements Type
 
 	public function count(): Type
 	{
-		return new IntegerType();
+		return IntegerRangeType::fromInterval(0, null);
 	}
 
 	public static function castToArrayKeyType(Type $offsetType): Type

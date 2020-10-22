@@ -74,9 +74,7 @@ class FileWhitespaceRule implements Rule
 		$nodeTraverser->traverse($nodes);
 
 		$lastNodes = $visitor->getLastNodes();
-		if (count($nodes) > 0) {
-			$lastNodes[] = $nodes[count($nodes) - 1];
-		}
+		$lastNodes[] = $nodes[count($nodes) - 1];
 		foreach ($lastNodes as $lastNode) {
 			if (!$lastNode instanceof Node\Stmt\InlineHTML || Strings::match($lastNode->value, '#^(\s+)$#') === null) {
 				continue;

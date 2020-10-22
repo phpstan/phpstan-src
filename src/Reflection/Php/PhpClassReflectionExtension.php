@@ -769,7 +769,7 @@ class PhpClassReflectionExtension
 
 		$classNameParts = explode('\\', $declaringClass->getName());
 		$namespace = null;
-		if (count($classNameParts) > 0) {
+		if (count($classNameParts) > 1) {
 			$namespace = implode('\\', array_slice($classNameParts, 0, -1));
 		}
 

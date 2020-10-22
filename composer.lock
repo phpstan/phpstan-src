@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "927300049b80e29d00d47f60d1f12bfa",
+    "content-hash": "320bb5af1deae751a280aedc81c1ab25",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1334,12 +1334,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "f40231e697e9483e523378096b256268369b9138"
+                "reference": "3248428e27a6887ea293f22f163c24a42aa89e47"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/f40231e697e9483e523378096b256268369b9138",
-                "reference": "f40231e697e9483e523378096b256268369b9138",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/3248428e27a6887ea293f22f163c24a42aa89e47",
+                "reference": "3248428e27a6887ea293f22f163c24a42aa89e47",
                 "shasum": ""
             },
             "require-dev": {
@@ -2073,21 +2073,21 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.37",
+            "version": "4.3.38",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "2de61c19c975c8901597e6f3a8ef49b868a701f0"
+                "reference": "39266e52e87701b849a70c7921bfedd74fc1bdbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/2de61c19c975c8901597e6f3a8ef49b868a701f0",
-                "reference": "2de61c19c975c8901597e6f3a8ef49b868a701f0",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/39266e52e87701b849a70c7921bfedd74fc1bdbc",
+                "reference": "39266e52e87701b849a70c7921bfedd74fc1bdbc",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "jetbrains/phpstorm-stubs": "dev-master#f40231e697e9483e523378096b256268369b9138",
+                "jetbrains/phpstorm-stubs": "dev-master#3248428e27a6887ea293f22f163c24a42aa89e47",
                 "nikic/php-parser": "4.10.2",
                 "php": ">=7.1.0",
                 "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
@@ -2141,9 +2141,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.37"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.38"
             },
-            "time": "2020-10-16T08:15:03+00:00"
+            "time": "2020-10-22T14:43:00+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -4154,16 +4154,16 @@
         },
         {
             "name": "ergebnis/composer-normalize",
-            "version": "2.8.2",
+            "version": "2.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/composer-normalize.git",
-                "reference": "0a25a226c5503659179c8ea440d1c76599e434fd"
+                "reference": "4b77c0ee53cde3d868b359b7ecadfb9797df955c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/composer-normalize/zipball/0a25a226c5503659179c8ea440d1c76599e434fd",
-                "reference": "0a25a226c5503659179c8ea440d1c76599e434fd",
+                "url": "https://api.github.com/repos/ergebnis/composer-normalize/zipball/4b77c0ee53cde3d868b359b7ecadfb9797df955c",
+                "reference": "4b77c0ee53cde3d868b359b7ecadfb9797df955c",
                 "shasum": ""
             },
             "require": {
@@ -4175,18 +4175,22 @@
                 "php": "^7.2 || ^8.0"
             },
             "require-dev": {
-                "composer/composer": "^1.10.13 || ^2.0.0",
+                "composer/composer": "^1.10.15 || ^2.0.0",
                 "composer/package-versions-deprecated": "^1.11.99",
+                "ergebnis/license": "^1.1.0",
+                "ergebnis/php-cs-fixer-config": "^2.3.0",
                 "ergebnis/phpstan-rules": "~0.15.2",
-                "ergebnis/test-util": "^1.1.0",
+                "ergebnis/test-util": "^1.3.0",
                 "jangregor/phpstan-prophecy": "~0.8.0",
                 "phpstan/extension-installer": "^1.0.5",
-                "phpstan/phpstan": "~0.12.43",
+                "phpstan/phpstan": "~0.12.50",
                 "phpstan/phpstan-deprecation-rules": "~0.12.5",
                 "phpstan/phpstan-phpunit": "~0.12.16",
                 "phpstan/phpstan-strict-rules": "~0.12.5",
                 "phpunit/phpunit": "^8.5.8",
-                "symfony/filesystem": "^5.1.5"
+                "psalm/plugin-phpunit": "~0.12.2",
+                "symfony/filesystem": "^5.1.7",
+                "vimeo/psalm": "^3.18.2"
             },
             "type": "composer-plugin",
             "extra": {
@@ -4225,7 +4229,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-09-22T09:55:49+00:00"
+            "time": "2020-10-21T08:45:29+00:00"
         },
         {
             "name": "ergebnis/json-normalizer",

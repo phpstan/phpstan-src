@@ -4,7 +4,7 @@ services:
 		arguments:
 			phpParser: @phpParserDecorator
 
-	phpParserLexer:
+	currentPhpVersionLexer:
 		class: PhpParser\Lexer
 		factory: PhpParser\Lexer\Emulative
 		arguments:

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
@@ -20,6 +21,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionMethod;
 
 class ClassReflection implements ReflectionWithFilename
 {
@@ -27,6 +29,8 @@ class ClassReflection implements ReflectionWithFilename
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+
+	private PhpVersion $phpVersion;
 
 	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
 	private array $propertiesClassReflectionExtensions;
@@ -97,6 +101,7 @@ class ClassReflection implements ReflectionWithFilename
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		FileTypeMapper $fileTypeMapper,
+		PhpVersion $phpVersion,
 		array $propertiesClassReflectionExtensions,
 		array $methodsClassReflectionExtensions,
 		string $displayName,
@@ -109,6 +114,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->phpVersion = $phpVersion;
 		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
 		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
 		$this->displayName = $displayName;
@@ -406,16 +412,34 @@ class ClassReflection implements ReflectionWithFilename
 
 	public function hasConstructor(): bool
 	{
-		return $this->reflection->getConstructor() !== null;
+		return $this->findConstructor() !== null;
 	}
 
 	public function getConstructor(): MethodReflection
 	{
-		$constructor = $this->reflection->getConstructor();
+		$constructor = $this->findConstructor();
 		if ($constructor === null) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 		return $this->getNativeMethod($constructor->getName());
+	}
+
+	private function findConstructor(): ?ReflectionMethod
+	{
+		$constructor = $this->reflection->getConstructor();
+		if ($constructor === null) {
+			return null;
+		}
+
+		if ($this->phpVersion->supportsLegacyConstructor()) {
+			return $constructor;
+		}
+
+		if (strtolower($constructor->getName()) !== '__construct') {
+			return null;
+		}
+
+		return $constructor;
 	}
 
 	private function getPhpExtension(): PhpClassReflectionExtension
@@ -839,6 +863,7 @@ class ClassReflection implements ReflectionWithFilename
 		return new self(
 			$this->reflectionProvider,
 			$this->fileTypeMapper,
+			$this->phpVersion,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
 			$this->displayName,

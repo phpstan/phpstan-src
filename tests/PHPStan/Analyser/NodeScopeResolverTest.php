@@ -14,6 +14,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -10917,6 +10918,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,
+			self::getContainer()->getByType(PhpVersion::class),
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,

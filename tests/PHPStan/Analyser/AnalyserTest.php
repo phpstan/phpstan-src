@@ -12,6 +12,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\Parser\DirectParser;
 use PHPStan\Parser\NodeChildrenVisitor;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -506,6 +507,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,
+			self::getContainer()->getByType(PhpVersion::class),
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,

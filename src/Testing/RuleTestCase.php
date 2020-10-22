@@ -13,6 +13,7 @@ use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -74,6 +75,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),
 				$fileTypeMapper,
+				self::getContainer()->getByType(PhpVersion::class),
 				$phpDocInheritanceResolver,
 				$fileHelper,
 				$typeSpecifier,

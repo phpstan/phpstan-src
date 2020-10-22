@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Runtime;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
@@ -34,6 +35,8 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
+	private PhpVersion $phpVersion;
+
 	private \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
 
 	private StubPhpDocProvider $stubPhpDocProvider;
@@ -57,6 +60,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
+		PhpVersion $phpVersion,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		StubPhpDocProvider $stubPhpDocProvider,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber
@@ -66,6 +70,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->functionReflectionFactory = $functionReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->phpVersion = $phpVersion;
 		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
@@ -148,6 +153,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			$classReflection = new ClassReflection(
 				$this->reflectionProviderProvider->getReflectionProvider(),
 				$this->fileTypeMapper,
+				$this->phpVersion,
 				$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 				$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 				$displayName,

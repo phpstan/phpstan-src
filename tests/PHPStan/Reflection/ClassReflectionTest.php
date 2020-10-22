@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Broker\Broker;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Type\FileTypeMapper;
 
 class ClassReflectionTest extends \PHPStan\Testing\TestCase
@@ -26,7 +27,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	{
 		$broker = $this->createMock(Broker::class);
 		$fileTypeMapper = $this->createMock(FileTypeMapper::class);
-		$classReflection = new ClassReflection($broker, $fileTypeMapper, [], [], $className, new \ReflectionClass($className), null, null, null);
+		$classReflection = new ClassReflection($broker, $fileTypeMapper, new PhpVersion(PHP_VERSION_ID), [], [], $className, new \ReflectionClass($className), null, null, null);
 		$this->assertSame($has, $classReflection->hasTraitUse(\HasTraitUse\FooTrait::class));
 	}
 
@@ -93,6 +94,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		$classReflection = new ClassReflection(
 			$broker,
 			$fileTypeMapper,
+			new PhpVersion(PHP_VERSION_ID),
 			[],
 			[],
 			$class,

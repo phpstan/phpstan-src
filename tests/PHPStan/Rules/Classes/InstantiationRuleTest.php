@@ -223,4 +223,45 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testOldStyleConstructorOnPhp8(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/php80-constructor.php'], [
+			[
+				'Class OldStyleConstructorOnPhp8 does not have a constructor and must be instantiated without any parameters.',
+				13,
+			],
+			[
+				'Class OldStyleConstructorOnPhp8 does not have a constructor and must be instantiated without any parameters.',
+				20,
+			],
+		]);
+	}
+
+	public function testOldStyleConstructorOnPhp7(): void
+	{
+		if (PHP_VERSION_ID >= 80000) {
+			$this->markTestSkipped('Test requires PHP 7.x');
+		}
+
+		$errors = [
+			[
+				'Class OldStyleConstructorOnPhp8 constructor invoked with 0 parameters, 1 required.',
+				19,
+			],
+		];
+
+		if (!self::$useStaticReflectionProvider) {
+			$errors[] = [
+				'Methods with the same name as their class will not be constructors in a future version of PHP; OldStyleConstructorOnPhp8 has a deprecated constructor',
+				3,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/php80-constructor.php'], $errors);
+	}
+
 }

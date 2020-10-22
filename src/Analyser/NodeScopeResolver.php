@@ -67,6 +67,7 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ParamTag;
@@ -125,6 +126,8 @@ class NodeScopeResolver
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
+	private PhpVersion $phpVersion;
+
 	private \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
 	private \PHPStan\File\FileHelper $fileHelper;
@@ -166,6 +169,7 @@ class NodeScopeResolver
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		Parser $parser,
 		FileTypeMapper $fileTypeMapper,
+		PhpVersion $phpVersion,
 		PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		FileHelper $fileHelper,
 		TypeSpecifier $typeSpecifier,
@@ -181,6 +185,7 @@ class NodeScopeResolver
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->parser = $parser;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->phpVersion = $phpVersion;
 		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
 		$this->fileHelper = $fileHelper;
 		$this->typeSpecifier = $typeSpecifier;
@@ -544,6 +549,7 @@ class NodeScopeResolver
 				$classReflection = new ClassReflection(
 					$this->reflectionProvider,
 					$this->fileTypeMapper,
+					$this->phpVersion,
 					$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 					$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 					$betterReflectionClass->getName(),

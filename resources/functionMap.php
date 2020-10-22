@@ -11785,7 +11785,7 @@ return [
 'strncasecmp' => ['int', 'str1'=>'string', 'str2'=>'string', 'len'=>'int'],
 'strncmp' => ['int', 'str1'=>'string', 'str2'=>'string', 'len'=>'int'],
 'strpbrk' => ['string|false', 'haystack'=>'string', 'char_list'=>'string'],
-'strpos' => ['int|false', 'haystack'=>'string', 'needle'=>'string|int', 'offset='=>'int'],
+'strpos' => ['positive-int|0|false', 'haystack'=>'string', 'needle'=>'string|int', 'offset='=>'int'],
 'strptime' => ['array|false', 'datestr'=>'string', 'format'=>'string'],
 'strrchr' => ['string|false', 'haystack'=>'string', 'needle'=>'mixed'],
 'strrev' => ['string', 'str'=>'string'],

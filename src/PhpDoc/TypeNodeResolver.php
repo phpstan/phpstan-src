@@ -45,6 +45,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
@@ -128,6 +129,12 @@ class TypeNodeResolver
 			case 'int':
 			case 'integer':
 				return new IntegerType();
+
+			case 'positive-int':
+				return IntegerRangeType::fromInterval(1, null);
+
+			case 'negative-int':
+				return IntegerRangeType::fromInterval(null, -1);
 
 			case 'string':
 				return new StringType();

@@ -88,6 +88,10 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Static property CoalesceRule\FooCoalesce::$staticString (string) on left side of ?? is not nullable.',
 				131,
 			],
+			[
+				'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
+				136,
+			],
 		]);
 	}
 

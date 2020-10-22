@@ -10,7 +10,7 @@ use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\File\FileReader;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
 
-class DirectParser implements Parser
+class RichParser implements Parser
 {
 
 	private \PhpParser\Parser $parser;

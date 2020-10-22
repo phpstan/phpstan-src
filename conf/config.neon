@@ -1174,7 +1174,7 @@ services:
 		autowired: no
 
 	currentPhpVersionParser:
-		class: PHPStan\Parser\DirectParser
+		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
 			lexer: @currentPhpVersionLexer

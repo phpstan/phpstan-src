@@ -10,8 +10,8 @@ use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
-use PHPStan\Parser\DirectParser;
 use PHPStan\Parser\NodeChildrenVisitor;
+use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -521,7 +521,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($broker, $typeSpecifier),
 			$nodeScopeResolver,
-			new DirectParser(
+			new RichParser(
 				new \PhpParser\Parser\Php7($lexer),
 				$lexer,
 				new \PhpParser\NodeVisitor\NameResolver(),

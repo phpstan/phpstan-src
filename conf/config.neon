@@ -519,7 +519,7 @@ services:
 	-
 		class: PHPStan\Parser\CachedParser
 		arguments:
-			originalParser: @currentPhpVersionRichParser
+			originalParser: @pathRoutingParser
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 
 	-
@@ -1302,7 +1302,7 @@ services:
 	-
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 		arguments:
-			phpParser: @php8Parser
+			phpParser: @php8PhpParser
 			phpVersionId: %phpVersion%
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
@@ -1316,10 +1316,24 @@ services:
 		class: PhpParser\Lexer\Emulative
 		autowired: false
 
-	php8Parser:
+	php8PhpParser:
 		class: PhpParser\Parser\Php7
 		arguments:
 			lexer: @php8Lexer
+		autowired: false
+
+	php8Parser:
+		class: PHPStan\Parser\SimpleParser
+		arguments:
+			parser: @php8PhpParser
+		autowired: false
+
+	pathRoutingParser:
+		class: PHPStan\Parser\PathRoutingParser
+		arguments:
+			currentPhpVersionRichParser: @currentPhpVersionRichParser
+			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
+			php8Parser: @php8Parser
 		autowired: false
 
 	# Error formatters

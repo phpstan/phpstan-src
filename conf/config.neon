@@ -1186,7 +1186,8 @@ services:
 		class: PHPStan\Parser\PhpParserDecorator
 		arguments:
 			wrappedParser: @PHPStan\Parser\Parser
-		autowired: no
+		autowired:
+			- PhpParser\Parser
 
 	currentPhpVersionLexer:
 		class: PhpParser\Lexer

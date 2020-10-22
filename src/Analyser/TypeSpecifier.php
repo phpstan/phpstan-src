@@ -538,9 +538,9 @@ class TypeSpecifier
 			(
 				$expr instanceof Expr\Isset_
 				&& count($expr->vars) > 0
-				&& $context->truthy()
+				&& $context->true()
 			)
-			|| ($expr instanceof Expr\Empty_ && $context->falsey())
+			|| ($expr instanceof Expr\Empty_ && $context->false())
 		) {
 			$vars = [];
 			if ($expr instanceof Expr\Isset_) {

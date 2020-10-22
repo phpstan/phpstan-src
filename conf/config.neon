@@ -1289,7 +1289,7 @@ services:
 	-
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 		arguments:
-			phpParser: @phpParserDecorator
+			phpParser: @php8Parser
 			phpVersionId: %phpVersion%
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
@@ -1298,6 +1298,16 @@ services:
 		class: Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 		autowired:
 			- Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
+
+	php8Lexer:
+		class: PhpParser\Lexer\Emulative
+		autowired: false
+
+	php8Parser:
+		class: PhpParser\Parser\Php7
+		arguments:
+			lexer: @php8Lexer
+		autowired: false
 
 	# Error formatters
 

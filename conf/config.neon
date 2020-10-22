@@ -519,7 +519,7 @@ services:
 	-
 		class: PHPStan\Parser\CachedParser
 		arguments:
-			originalParser: @currentPhpVersionParser
+			originalParser: @currentPhpVersionRichParser
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 
 	-
@@ -1173,11 +1173,17 @@ services:
 			directory: %tmpDir%/cache/PHPStan
 		autowired: no
 
-	currentPhpVersionParser:
+	currentPhpVersionRichParser:
 		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
 			lexer: @currentPhpVersionLexer
+		autowired: no
+
+	currentPhpVersionSimpleParser:
+		class: PHPStan\Parser\SimpleParser
+		arguments:
+			parser: @currentPhpVersionPhpParser
 		autowired: no
 
 	phpParserDecorator:

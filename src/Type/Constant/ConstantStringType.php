@@ -64,7 +64,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				try {
 					$truncatedValue = \Nette\Utils\Strings::truncate($this->value, self::DESCRIBE_LIMIT);
 				} catch (\Nette\Utils\RegexpException $e) {
-					$truncatedValue = substr($this->value, 0, self::DESCRIBE_LIMIT);
+					$truncatedValue = substr($this->value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
 				}
 
 				return var_export(

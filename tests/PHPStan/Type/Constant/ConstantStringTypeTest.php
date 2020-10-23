@@ -150,7 +150,7 @@ class ConstantStringTypeTest extends TestCase
 
 	public function testInvalidEncoding(): void
 	{
-		$this->assertIsString((new ConstantStringType(file_get_contents('invalidUtf8Characters.txt', true)))->describe(VerbosityLevel::value()));
+		$this->assertSame("'\xc3Lorem ipsum dolor s\u{2026}'", (new ConstantStringType("\xc3Lorem ipsum dolor sit"))->describe(VerbosityLevel::value()));
 	}
 
 }

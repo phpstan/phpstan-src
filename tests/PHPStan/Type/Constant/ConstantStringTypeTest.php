@@ -148,4 +148,9 @@ class ConstantStringTypeTest extends TestCase
 		$this->assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize()->describe(VerbosityLevel::precise()));
 	}
 
+	public function testInvalidEncoding(): void
+	{
+		$this->assertIsString((new ConstantStringType(file_get_contents('invalidUtf8Characters.txt', true)))->describe(VerbosityLevel::value()));
+	}
+
 }

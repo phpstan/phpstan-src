@@ -61,7 +61,7 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 
 		$constantArrays = TypeUtils::getConstantArrays($valueType);
 		if (count($constantArrays) === 0) {
-			return $valueType;
+			return TypeCombinator::union(...TypeUtils::getArrays($valueType));
 		}
 
 		if (isset($functionCall->args[3])) {

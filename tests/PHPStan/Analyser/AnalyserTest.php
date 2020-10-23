@@ -527,7 +527,8 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 				new \PhpParser\NodeVisitor\NameResolver(),
 				new NodeConnectingVisitor(),
 				new StatementOrderVisitor(),
-				new NodeChildrenVisitor()
+				new NodeChildrenVisitor(),
+				self::getContainer()->getByType(PhpVersion::class)
 			),
 			new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
 			$reportUnmatchedIgnoredErrors

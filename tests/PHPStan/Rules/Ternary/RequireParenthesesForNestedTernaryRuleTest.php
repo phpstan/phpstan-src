@@ -27,6 +27,9 @@ class RequireParenthesesForNestedTernaryRuleTest extends RuleTestCase
 
 	public function testReportOnPhp80(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
 		$this->phpVersion = new PhpVersion(80000);
 		$tip = 'See: https://wiki.php.net/rfc/ternary_associativity';
 		$this->analyse([__DIR__ . '/data/nested-ternary.php'], [
@@ -50,6 +53,9 @@ class RequireParenthesesForNestedTernaryRuleTest extends RuleTestCase
 
 	public function testBug(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
 		$this->phpVersion = new PhpVersion(80000);
 		$this->analyse([__DIR__ . '/data/require-parentheses-bug.php'], []);
 	}

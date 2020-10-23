@@ -9,6 +9,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\File\FileReader;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
+use PHPStan\Php\PhpVersion;
 
 class RichParser implements Parser
 {
@@ -25,13 +26,16 @@ class RichParser implements Parser
 
 	private NodeChildrenVisitor $nodeChildrenVisitor;
 
+	private PhpVersion $phpVersion;
+
 	public function __construct(
 		\PhpParser\Parser $parser,
 		Lexer $lexer,
 		NameResolver $nameResolver,
 		NodeConnectingVisitor $nodeConnectingVisitor,
 		StatementOrderVisitor $statementOrderVisitor,
-		NodeChildrenVisitor $nodeChildrenVisitor
+		NodeChildrenVisitor $nodeChildrenVisitor,
+		PhpVersion $phpVersion
 	)
 	{
 		$this->parser = $parser;
@@ -40,6 +44,7 @@ class RichParser implements Parser
 		$this->nodeConnectingVisitor = $nodeConnectingVisitor;
 		$this->statementOrderVisitor = $statementOrderVisitor;
 		$this->nodeChildrenVisitor = $nodeChildrenVisitor;
+		$this->phpVersion = $phpVersion;
 	}
 
 	/**
@@ -75,10 +80,17 @@ class RichParser implements Parser
 		$nodeTraverser->addVisitor($this->nameResolver);
 		$nodeTraverser->addVisitor($this->nodeConnectingVisitor);
 		$nodeTraverser->addVisitor($this->statementOrderVisitor);
-		$nodeTraverser->addVisitor($this->nodeChildrenVisitor);
+
+		if ($this->phpVersion->requiresParenthesesForNestedTernaries()) {
+			$nodeTraverser->addVisitor($this->nodeChildrenVisitor);
+		}
 
 		/** @var array<\PhpParser\Node\Stmt> */
 		$nodes = $nodeTraverser->traverse($nodes);
+
+		if (!$this->phpVersion->requiresParenthesesForNestedTernaries()) {
+			return $nodes;
+		}
 
 		$tokensTraverser = new NodeTraverser();
 		$tokensTraverser->addVisitor(new NodeTokensVisitor($tokens));

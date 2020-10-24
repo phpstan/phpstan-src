@@ -32,7 +32,6 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -163,103 +162,25 @@ class TypeSpecifier
 			if ($context->true()) {
 				return $this->create($exprNode, new ObjectWithoutClassType(), $context);
 			}
-		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical) {
-			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
-			if ($expressions !== null) {
-				/** @var Expr $exprNode */
-				$exprNode = $expressions[0];
-				if ($exprNode instanceof Expr\Assign) {
-					$exprNode = $exprNode->var;
-				}
-				/** @var \PHPStan\Type\ConstantScalarType $constantType */
-				$constantType = $expressions[1];
-				if ($constantType->getValue() === false) {
-					$types = $this->create($exprNode, $constantType, $context);
-					return $types->unionWith($this->specifyTypesInCondition(
-						$scope,
-						$exprNode,
-						$context->true() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createFalse()->negate()
-					));
-				}
+		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical && !$context->null()) {
+			$leftType = $scope->getType($expr->left);
+			$rightType = $scope->getType($expr->right);
 
-				if ($constantType->getValue() === true) {
-					$types = $this->create($exprNode, $constantType, $context);
-					return $types->unionWith($this->specifyTypesInCondition(
-						$scope,
-						$exprNode,
-						$context->true() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createTrue()->negate()
-					));
+			if ($context->truthy()) {
+				return $this->specifyTypesInExpression($scope, $expr->left, $rightType, $context)
+					->unionWith($this->specifyTypesInExpression($scope, $expr->right, $leftType, $context));
+			} elseif ($context->falsey()) {
+				$specifiedTypes = new SpecifiedTypes();
+				if (TypeUtils::isOneDefiniteType($leftType)->yes()) {
+					$specifiedTypes = $this->specifyTypesInExpression($scope, $expr->right, $leftType, $context);
 				}
-
-				if ($constantType->getValue() === null) {
-					return $this->create($exprNode, $constantType, $context);
-				}
-
-				if (
-					!$context->null()
-					&& $exprNode instanceof FuncCall
-					&& count($exprNode->args) === 1
-					&& $exprNode->name instanceof Name
-					&& strtolower((string) $exprNode->name) === 'count'
-					&& $constantType instanceof ConstantIntegerType
-				) {
-					if ($context->truthy() || $constantType->getValue() === 0) {
-						$newContext = $context;
-						if ($constantType->getValue() === 0) {
-							$newContext = $newContext->negate();
-						}
-						$argType = $scope->getType($exprNode->args[0]->value);
-						if ((new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($argType)->yes()) {
-							return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $newContext);
-						}
-					}
-				}
-			}
-
-			if ($context->true()) {
-				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
-				$leftTypes = $this->create($expr->left, $type, $context);
-				$rightTypes = $this->create($expr->right, $type, $context);
-				return $leftTypes->unionWith($rightTypes);
-
-			} elseif ($context->false()) {
-				$identicalType = $scope->getType($expr);
-				if ($identicalType instanceof ConstantBooleanType) {
-					$never = new NeverType();
-					$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
-					$leftTypes = $this->create($expr->left, $never, $contextForTypes);
-					$rightTypes = $this->create($expr->right, $never, $contextForTypes);
-					return $leftTypes->unionWith($rightTypes);
-				}
-
-				if (
-					(
-						$expr->left instanceof Node\Scalar
-						|| $expr->left instanceof Expr\Array_
-					)
-					&& !$expr->right instanceof Node\Scalar
-				) {
-					return $this->create(
-						$expr->right,
-						$scope->getType($expr->left),
-						$context
+				if (TypeUtils::isOneDefiniteType($rightType)->yes()) {
+					$specifiedTypes = $specifiedTypes->unionWith(
+						$this->specifyTypesInExpression($scope, $expr->left, $rightType, $context)
 					);
 				}
-				if (
-					(
-						$expr->right instanceof Node\Scalar
-						|| $expr->right instanceof Expr\Array_
-					)
-					&& !$expr->left instanceof Node\Scalar
-				) {
-					return $this->create(
-						$expr->left,
-						$scope->getType($expr->right),
-						$context
-					);
-				}
+				return $specifiedTypes;
 			}
-
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotIdentical) {
 			return $this->specifyTypesInCondition(
 				$scope,
@@ -462,7 +383,7 @@ class TypeSpecifier
 			}
 
 			if ($defaultHandleFunctions) {
-				return $this->handleDefaultTruthyOrFalseyContext($context, $expr);
+				return $this->handleDefaultTruthyOrFalseyContext($scope, $context, $expr);
 			}
 		} elseif ($expr instanceof MethodCall && $expr->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($expr->var);
@@ -485,7 +406,7 @@ class TypeSpecifier
 			}
 
 			if ($defaultHandleFunctions) {
-				return $this->handleDefaultTruthyOrFalseyContext($context, $expr);
+				return $this->handleDefaultTruthyOrFalseyContext($scope, $context, $expr);
 			}
 		} elseif ($expr instanceof StaticCall && $expr->name instanceof Node\Identifier) {
 			if ($expr->class instanceof Name) {
@@ -513,7 +434,7 @@ class TypeSpecifier
 			}
 
 			if ($defaultHandleFunctions) {
-				return $this->handleDefaultTruthyOrFalseyContext($context, $expr);
+				return $this->handleDefaultTruthyOrFalseyContext($scope, $context, $expr);
 			}
 		} elseif ($expr instanceof BooleanAnd || $expr instanceof LogicalAnd) {
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
@@ -529,11 +450,9 @@ class TypeSpecifier
 			if (!$scope instanceof MutatingScope) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			if ($context->null()) {
-				return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context);
-			}
-
-			return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context);
+			$scope = $scope->exitFirstLevelStatements();
+			return $this->specifyTypesInCondition($scope, $expr->var, $context)
+				->unionWith($this->specifyTypesInCondition($scope, $expr->expr, $context));
 		} elseif (
 			(
 				$expr instanceof Expr\Isset_
@@ -652,20 +571,24 @@ class TypeSpecifier
 		} elseif ($expr instanceof Expr\ErrorSuppress) {
 			return $this->specifyTypesInCondition($scope, $expr->expr, $context, $defaultHandleFunctions);
 		} elseif (!$context->null()) {
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr);
+			return $this->handleDefaultTruthyOrFalseyContext($scope, $context, $expr);
 		}
 
 		return new SpecifiedTypes();
 	}
 
-	private function handleDefaultTruthyOrFalseyContext(TypeSpecifierContext $context, Expr $expr): SpecifiedTypes
+	private function handleDefaultTruthyOrFalseyContext(Scope $scope, TypeSpecifierContext $context, Expr $expr): SpecifiedTypes
 	{
-		if (!$context->truthy()) {
-			$type = StaticTypeFactory::truthy();
-			return $this->create($expr, $type, TypeSpecifierContext::createFalse());
-		} elseif (!$context->falsey()) {
-			$type = StaticTypeFactory::falsey();
-			return $this->create($expr, $type, TypeSpecifierContext::createFalse());
+		if ($context->truthy()) {
+			$falsey = StaticTypeFactory::falsey();
+			if (!$falsey->isSuperTypeOf($scope->getType($expr))->no()) {
+				return $this->create($expr, $falsey, TypeSpecifierContext::createFalsey());
+			}
+		} elseif ($context->falsey()) {
+			$falsey = StaticTypeFactory::falsey();
+			if (!$falsey->isSuperTypeOf($scope->getType($expr))->yes()) {
+				return $this->create($expr, $falsey, TypeSpecifierContext::createTruthy());
+			}
 		}
 
 		return new SpecifiedTypes();
@@ -798,6 +721,50 @@ class TypeSpecifier
 		}
 
 		return array_merge(...$extensionsForClass);
+	}
+
+	private function specifyTypesInExpression(Scope $scope, Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if ($expr instanceof Expr\Assign) {
+			return $this->specifyTypesInExpression($scope, $expr->var, $type, $context)
+				->unionWith($this->specifyTypesInExpression($scope, $expr->expr, $type, $context));
+		}
+
+		$originalType = $scope->getType($expr);
+
+		if ($context->truthy()) {
+			$newType = TypeCombinator::intersect($originalType, $type);
+		} elseif ($context->falsey()) {
+			$newType = TypeCombinator::remove($originalType, $type);
+		} else {
+			return new SpecifiedTypes();
+		}
+
+		if ($originalType->equals($newType)) {
+			return new SpecifiedTypes();
+		}
+
+		$specifiedTypes = $this->create($expr, $type, $context);
+
+		if (
+			!StaticTypeFactory::truthy()->isSuperTypeOf($originalType)->yes()
+			&& StaticTypeFactory::truthy()->isSuperTypeOf($newType)->yes()
+		) {
+			$specifiedTypes = $specifiedTypes->unionWith(
+				$this->specifyTypesInCondition($scope, $expr, TypeSpecifierContext::createTruthy())
+			);
+		}
+
+		if (
+			!StaticTypeFactory::falsey()->isSuperTypeOf($originalType)->yes()
+			&& StaticTypeFactory::falsey()->isSuperTypeOf($newType)->yes()
+		) {
+			$specifiedTypes = $specifiedTypes->unionWith(
+				$this->specifyTypesInCondition($scope, $expr, TypeSpecifierContext::createFalsey()),
+			);
+		}
+
+		return $specifiedTypes;
 	}
 
 }

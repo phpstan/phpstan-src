@@ -7591,17 +7591,17 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'int',
+				'int<min, 10>',
 				'$i',
 				"'begin'",
 			],
 			[
-				'int',
+				'int<min, 10>',
 				'$i',
 				"'end'",
 			],
 			[
-				'int',
+				'int<min, 10>',
 				'$i',
 				"'afterLoop'",
 			],
@@ -8921,7 +8921,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				"'afterFirst'",
 			],
 			[
-				'int',
+				'int<min, -1>|int<1, max>',
 				'$a',
 				"'afterSecond'",
 			],
@@ -8936,12 +8936,12 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				"'afterSecond'",
 			],
 			[
-				'int',
+				'int<min, -1>|int<1, max>',
 				'$a',
 				"'afterThird'",
 			],
 			[
-				'int',
+				'int<min, -1>|int<1, max>',
 				'$b',
 				"'afterThird'",
 			],

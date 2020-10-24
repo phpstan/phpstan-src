@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -337,6 +338,40 @@ class TypeUtils
 		}
 
 		return false;
+	}
+
+	public static function isOneDefiniteType(Type $type): TrinaryLogic
+	{
+		if ($type instanceof ConstantScalarType) {
+			return TrinaryLogic::createYes();
+		}
+
+		if ($type instanceof ConstantArrayType) {
+			if (count($type->getOptionalKeys()) !== 0) {
+				return TrinaryLogic::createNo();
+			}
+			foreach ($type->getValueTypes() as $valueType) {
+				if (!self::isOneDefiniteType($valueType)) {
+					return TrinaryLogic::createNo();
+				}
+			}
+			return TrinaryLogic::createYes();
+		}
+
+		if ($type instanceof UnionType) {
+			return TrinaryLogic::createNo();
+		}
+
+		if ($type instanceof IntersectionType) {
+			foreach ($type->getTypes() as $innerType) {
+				$innerTypeIsOneDefiniteType = self::isOneDefiniteType($innerType);
+				if (!$innerTypeIsOneDefiniteType->maybe()) {
+					return $innerTypeIsOneDefiniteType;
+				}
+			}
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 }

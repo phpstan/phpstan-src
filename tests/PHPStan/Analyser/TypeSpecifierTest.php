@@ -28,10 +28,8 @@ use PHPStan\Type\VerbosityLevel;
 class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 {
 
-	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array()|false|null';
-	private const TRUTHY_TYPE_DESCRIPTION = 'mixed~' . self::FALSEY_TYPE_DESCRIPTION;
-	private const SURE_NOT_FALSEY = '~' . self::FALSEY_TYPE_DESCRIPTION;
-	private const SURE_NOT_TRUTHY = '~' . self::TRUTHY_TYPE_DESCRIPTION;
+	private const SURE_FALSEY = '0|0.0|\'\'|\'0\'|array()|false|null';
+	private const SURE_NOT_FALSEY = '~' . self::SURE_FALSEY;
 
 	/** @var \PhpParser\PrettyPrinter\Standard() */
 	private $printer;
@@ -204,7 +202,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 			[
 				new Variable('foo'),
 				['$foo' => self::SURE_NOT_FALSEY],
-				['$foo' => self::SURE_NOT_TRUTHY],
+				['$foo' => self::SURE_FALSEY],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
@@ -220,18 +218,18 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					$this->createFunctionCall('random')
 				),
 				[],
-				['$foo' => self::SURE_NOT_TRUTHY],
+				['$foo' => self::SURE_FALSEY],
 			],
 			[
 				new Expr\BooleanNot(new Variable('bar')),
-				['$bar' => self::SURE_NOT_TRUTHY],
-				['$bar' => self::SURE_NOT_FALSEY],
+				['$bar' => self::SURE_FALSEY],
+				[],
 			],
 
 			[
 				new PropertyFetch(new Variable('this'), 'foo'),
 				['$this->foo' => self::SURE_NOT_FALSEY],
-				['$this->foo' => self::SURE_NOT_TRUTHY],
+				['$this->foo' => self::SURE_FALSEY],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
@@ -247,11 +245,11 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					$this->createFunctionCall('random')
 				),
 				[],
-				['$this->foo' => self::SURE_NOT_TRUTHY],
+				['$this->foo' => self::SURE_FALSEY],
 			],
 			[
 				new Expr\BooleanNot(new PropertyFetch(new Variable('this'), 'foo')),
-				['$this->foo' => self::SURE_NOT_TRUTHY],
+				['$this->foo' => self::SURE_FALSEY],
 				['$this->foo' => self::SURE_NOT_FALSEY],
 			],
 
@@ -343,7 +341,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('foo'),
 					new Expr\ConstFetch(new Name('true'))
 				),
-				['$foo' => 'true & ~' . self::FALSEY_TYPE_DESCRIPTION],
+				['$foo' => 'true & ~' . self::SURE_FALSEY],
 				['$foo' => '~true'],
 			],
 			[
@@ -351,7 +349,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('foo'),
 					new Expr\ConstFetch(new Name('false'))
 				),
-				['$foo' => 'false & ~' . self::TRUTHY_TYPE_DESCRIPTION],
+				['$foo' => 'false'],
 				['$foo' => '~false'],
 			],
 			[
@@ -391,7 +389,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('foo'),
 					new Expr\ConstFetch(new Name('false'))
 				),
-				['$foo' => self::SURE_NOT_TRUTHY],
+				['$foo' => self::SURE_FALSEY],
 				['$foo' => self::SURE_NOT_FALSEY],
 			],
 			[
@@ -399,7 +397,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('foo'),
 					new Expr\ConstFetch(new Name('null'))
 				),
-				['$foo' => self::SURE_NOT_TRUTHY],
+				['$foo' => self::SURE_FALSEY],
 				['$foo' => self::SURE_NOT_FALSEY],
 			],
 			[
@@ -407,7 +405,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('foo'),
 					new Variable('bar')
 				),
-				['$foo' => 'Bar', '$bar' => 'Bar'],
+				['$foo' => 'Bar & ' . self::SURE_NOT_FALSEY],
 				[],
 			],
 			[
@@ -478,16 +476,28 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('foo'),
 					new Variable('stringOrNull')
 				),
-				['$foo' => self::SURE_NOT_FALSEY],
-				['$foo' => self::SURE_NOT_TRUTHY],
+				[
+					'$foo' => self::SURE_NOT_FALSEY,
+					'$stringOrNull' => self::SURE_NOT_FALSEY,
+				],
+				[
+					'$foo' => self::SURE_FALSEY,
+					'$stringOrNull' => self::SURE_FALSEY,
+				],
 			],
 			[
 				new Expr\Assign(
 					new Variable('foo'),
 					new Variable('stringOrFalse')
 				),
-				['$foo' => self::SURE_NOT_FALSEY],
-				['$foo' => self::SURE_NOT_TRUTHY],
+				[
+					'$foo' => self::SURE_NOT_FALSEY,
+					'$stringOrFalse' => self::SURE_NOT_FALSEY,
+				],
+				[
+					'$foo' => self::SURE_FALSEY,
+					'$stringOrFalse' => self::SURE_FALSEY,
+				],
 			],
 			[
 				new Expr\Assign(
@@ -495,7 +505,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('bar')
 				),
 				['$foo' => self::SURE_NOT_FALSEY],
-				['$foo' => self::SURE_NOT_TRUTHY],
+				[
+					'$foo' => self::SURE_FALSEY,
+					'$bar' => self::SURE_FALSEY,
+				],
 			],
 			[
 				new Expr\Isset_([
@@ -507,7 +520,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'$barOrNull' => '~null',
 				],
 				[
-					'isset($stringOrNull, $barOrNull)' => self::SURE_NOT_TRUTHY,
+					'isset($stringOrNull, $barOrNull)' => self::SURE_FALSEY,
 				],
 			],
 			[
@@ -525,8 +538,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new LNumber(123)
 				),
 				[
-					'$foo' => '123',
-					123 => '123',
+					'$foo' => '123 & ' . self::SURE_NOT_FALSEY,
 				],
 				['$foo' => '~123'],
 			],
@@ -576,7 +588,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'$foo' => self::SURE_NOT_FALSEY,
 				],
 				[
-					'$foo' => self::SURE_NOT_TRUTHY,
+					'$foo' => self::SURE_FALSEY,
 				],
 			],
 			[
@@ -585,7 +597,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'$array' => self::SURE_NOT_FALSEY,
 				],
 				[
-					'$array' => self::SURE_NOT_TRUTHY,
+					'$array' => self::SURE_FALSEY,
 				],
 			],
 			[
@@ -623,7 +635,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'$foo->bar' => '~null',
 				],
 				[
-					'isset($foo->bar)' => self::SURE_NOT_TRUTHY,
+					'isset($foo->bar)' => self::SURE_FALSEY,
 				],
 			],
 			[
@@ -636,7 +648,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'Foo::$bar' => '~null',
 				],
 				[
-					'isset(Foo::$bar)' => self::SURE_NOT_TRUTHY,
+					'isset(Foo::$bar)' => self::SURE_FALSEY,
 				],
 			],
 			[
@@ -648,7 +660,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'$barOrNull' => 'null',
 				],
 				[
-					'$barOrNull' => '~null',
+					'$barOrNull' => self::SURE_NOT_FALSEY,
 				],
 			],
 			[
@@ -661,9 +673,11 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 				),
 				[
 					'$notNullBar' => 'null',
+					'$barOrNull' => 'null',
 				],
 				[
 					'$notNullBar' => '~null',
+					'$barOrNull' => self::SURE_NOT_FALSEY,
 				],
 			],
 			[
@@ -672,7 +686,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Expr\ConstFetch(new Name('null'))
 				),
 				[
-					'$barOrNull' => '~null',
+					'$barOrNull' => self::SURE_NOT_FALSEY,
 				],
 				[
 					'$barOrNull' => 'null',
@@ -735,9 +749,11 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 				),
 				[
 					'$notNullBar' => '~null',
+					'$barOrNull' => self::SURE_NOT_FALSEY,
 				],
 				[
 					'$notNullBar' => 'null',
+					'$barOrNull' => 'null',
 				],
 			],
 			[
@@ -746,10 +762,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Expr\ConstFetch(new Name('false'))
 				),
 				[
-					'$barOrFalse' => 'false & ' . self::SURE_NOT_TRUTHY,
+					'$barOrFalse' => 'false',
 				],
 				[
-					'$barOrFalse' => '~false',
+					'$barOrFalse' => self::SURE_NOT_FALSEY,
 				],
 			],
 			[
@@ -761,10 +777,12 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Expr\ConstFetch(new Name('false'))
 				),
 				[
-					'$notFalseBar' => 'false & ' . self::SURE_NOT_TRUTHY,
+					'$notFalseBar' => 'false',
+					'$barOrFalse' => 'false',
 				],
 				[
 					'$notFalseBar' => '~false',
+					'$barOrFalse' => self::SURE_NOT_FALSEY,
 				],
 			],
 			[
@@ -773,10 +791,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Expr\ConstFetch(new Name('false'))
 				),
 				[
-					'$barOrFalse' => '~false',
+					'$barOrFalse' => self::SURE_NOT_FALSEY,
 				],
 				[
-					'$barOrFalse' => 'false & ' . self::SURE_NOT_TRUTHY,
+					'$barOrFalse' => 'false',
 				],
 			],
 			[
@@ -789,9 +807,11 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 				),
 				[
 					'$notFalseBar' => '~false',
+					'$barOrFalse' => self::SURE_NOT_FALSEY,
 				],
 				[
-					'$notFalseBar' => 'false & ' . self::SURE_NOT_TRUTHY,
+					'$notFalseBar' => 'false',
+					'$barOrFalse' => 'false',
 				],
 			],
 			[

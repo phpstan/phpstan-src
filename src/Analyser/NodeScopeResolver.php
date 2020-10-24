@@ -1755,10 +1755,10 @@ class NodeScopeResolver
 			$itemNodes = [];
 			$hasYield = false;
 			foreach ($expr->items as $arrayItem) {
-				if ($arrayItem === null) {
-					throw new \PHPStan\ShouldNotHappenException();
-				}
 				$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
+				if ($arrayItem === null) {
+					continue;
+				}
 				$result = $this->processExprNode($arrayItem, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
 				$scope = $result->getScope();

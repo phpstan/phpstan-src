@@ -37,6 +37,9 @@ class UnpackIterableInArrayRule implements Rule
 		$errors = [];
 		foreach ($node->getItemNodes() as $itemNode) {
 			$item = $itemNode->getArrayItem();
+			if ($item === null) {
+				continue;
+			}
 			if (!$item->unpack) {
 				continue;
 			}

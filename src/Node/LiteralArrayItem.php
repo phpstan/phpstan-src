@@ -10,9 +10,9 @@ class LiteralArrayItem
 
 	private Scope $scope;
 
-	private ArrayItem $arrayItem;
+	private ?ArrayItem $arrayItem;
 
-	public function __construct(Scope $scope, ArrayItem $arrayItem)
+	public function __construct(Scope $scope, ?ArrayItem $arrayItem)
 	{
 		$this->scope = $scope;
 		$this->arrayItem = $arrayItem;
@@ -23,7 +23,7 @@ class LiteralArrayItem
 		return $this->scope;
 	}
 
-	public function getArrayItem(): ArrayItem
+	public function getArrayItem(): ?ArrayItem
 	{
 		return $this->arrayItem;
 	}

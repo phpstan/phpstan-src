@@ -35,6 +35,9 @@ class DuplicateKeysInLiteralArraysRule implements \PHPStan\Rules\Rule
 		$valueLines = [];
 		foreach ($node->getItemNodes() as $itemNode) {
 			$item = $itemNode->getArrayItem();
+			if ($item === null) {
+				continue;
+			}
 			if ($item->key === null) {
 				continue;
 			}

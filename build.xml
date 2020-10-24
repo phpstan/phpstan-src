@@ -149,6 +149,8 @@
 			<arg path="tests/PHPStan/Rules/Classes/data/trait-use-error.php"/>
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Properties/data/default-value-for-native-property-type.php"/>
+			<arg value="--exclude"/>
+			<arg path="tests/PHPStan/Rules/Arrays/data/empty-array-item.php"/>
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />

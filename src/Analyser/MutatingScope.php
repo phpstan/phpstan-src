@@ -2958,7 +2958,7 @@ class MutatingScope implements Scope
 		return $this;
 	}
 
-	public function specifyExpressionType(Expr $expr, Type $type): self
+	public function specifyExpressionType(Expr $expr, Type $type, ?Type $nativeType = null): self
 	{
 		if ($expr instanceof Node\Scalar || $expr instanceof Array_) {
 			return $this;
@@ -2998,8 +2998,12 @@ class MutatingScope implements Scope
 			$variableTypes = $this->getVariableTypes();
 			$variableTypes[$variableName] = VariableTypeHolder::createYes($type);
 
+			if ($nativeType === null) {
+				$nativeType = $type;
+			}
+
 			$nativeTypes = $this->nativeExpressionTypes;
-			$nativeTypes[sprintf('$%s', $variableName)] = $type;
+			$nativeTypes[sprintf('$%s', $variableName)] = $nativeType;
 
 			return $this->scopeFactory->create(
 				$this->context,

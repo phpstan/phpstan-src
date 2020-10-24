@@ -12,10 +12,17 @@ class EnsuredNonNullabilityResultExpression
 
 	private Type $originalType;
 
-	public function __construct(Expr $expression, Type $originalType)
+	private Type $originalNativeType;
+
+	public function __construct(
+		Expr $expression,
+		Type $originalType,
+		Type $originalNativeType
+	)
 	{
 		$this->expression = $expression;
 		$this->originalType = $originalType;
+		$this->originalNativeType = $originalNativeType;
 	}
 
 	public function getExpression(): Expr
@@ -26,6 +33,11 @@ class EnsuredNonNullabilityResultExpression
 	public function getOriginalType(): Type
 	{
 		return $this->originalType;
+	}
+
+	public function getOriginalNativeType(): Type
+	{
+		return $this->originalNativeType;
 	}
 
 }

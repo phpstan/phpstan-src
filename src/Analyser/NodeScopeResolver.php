@@ -1231,8 +1231,13 @@ class NodeScopeResolver
 			$exprType = $scope->getType($exprToSpecify);
 			$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 			if (!$exprType->equals($exprTypeWithoutNull)) {
-				$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType);
-				$scope = $scope->specifyExpressionType($exprToSpecify, $exprTypeWithoutNull);
+				$nativeType = $scope->getNativeType($exprToSpecify);
+				$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType);
+				$scope = $scope->specifyExpressionType(
+					$exprToSpecify,
+					$exprTypeWithoutNull,
+					TypeCombinator::removeNull($nativeType)
+				);
 			}
 
 			if ($exprToSpecify instanceof PropertyFetch) {
@@ -1259,7 +1264,11 @@ class NodeScopeResolver
 	private function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
 	{
 		foreach ($specifiedExpressions as $specifiedExpressionResult) {
-			$scope = $scope->specifyExpressionType($specifiedExpressionResult->getExpression(), $specifiedExpressionResult->getOriginalType());
+			$scope = $scope->specifyExpressionType(
+				$specifiedExpressionResult->getExpression(),
+				$specifiedExpressionResult->getOriginalType(),
+				$specifiedExpressionResult->getOriginalNativeType()
+			);
 		}
 
 		return $scope;

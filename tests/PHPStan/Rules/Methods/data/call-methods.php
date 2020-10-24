@@ -1660,3 +1660,13 @@ class NumericStringParam
 	}
 
 }
+
+class XmlReaderOpen
+{
+
+	public function doFoo(\XMLReader $xml): void
+	{
+		$xml->open('http://', null);
+	}
+
+}

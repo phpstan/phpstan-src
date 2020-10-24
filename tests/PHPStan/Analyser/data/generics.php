@@ -1390,3 +1390,7 @@ class CarFactoryProcessor {
 		assertType(Car::class, $car);
 	}
 }
+
+function (\Throwable $e): void {
+	assertType('mixed', $e->getCode());
+};

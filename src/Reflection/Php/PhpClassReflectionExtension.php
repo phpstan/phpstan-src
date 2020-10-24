@@ -605,10 +605,6 @@ class PhpClassReflectionExtension
 				$type = $stubPhpDocParameterTypes[$parameterSignature->getName()];
 				$phpDocType = $stubPhpDocParameterTypes[$parameterSignature->getName()];
 			} elseif (isset($phpDocParameterTypes[$parameterSignature->getName()])) {
-				$type = TypehintHelper::decideType(
-					$parameterSignature->getNativeType(),
-					$phpDocParameterTypes[$parameterSignature->getName()]
-				);
 				$phpDocType = $phpDocParameterTypes[$parameterSignature->getName()];
 			}
 
@@ -628,11 +624,6 @@ class PhpClassReflectionExtension
 		if ($stubPhpDocReturnType !== null) {
 			$returnType = $stubPhpDocReturnType;
 			$phpDocReturnType = $stubPhpDocReturnType;
-		} elseif ($phpDocReturnType !== null) {
-			$returnType = TypehintHelper::decideType(
-				$methodSignature->getReturnType(),
-				$phpDocReturnType
-			);
 		}
 
 		return new FunctionVariantWithPhpDocs(

@@ -370,4 +370,26 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3997(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3997.php'], [
+			[
+				'Method Bug3997\Foo::count() should return int but returns string.',
+				12,
+			],
+			[
+				'Method Bug3997\Bar::count() should return int but returns string.',
+				22,
+			],
+			[
+				'Method Bug3997\Baz::count() should return int but returns string.',
+				35,
+			],
+			[
+				'Method Bug3997\Lorem::count() should return int but returns string.',
+				48,
+			],
+		]);
+	}
+
 }

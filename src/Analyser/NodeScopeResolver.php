@@ -1478,6 +1478,7 @@ class NodeScopeResolver
 			) {
 				$arrayArg = $expr->args[0]->value;
 				$constantArrays = TypeUtils::getConstantArrays($scope->getType($arrayArg));
+				$scope = $scope->invalidateExpression($arrayArg);
 				if (count($constantArrays) > 0) {
 					$resultArrayTypes = [];
 
@@ -1489,14 +1490,14 @@ class NodeScopeResolver
 						}
 					}
 
-					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
+					$scope = $scope->specifyExpressionType(
 						$arrayArg,
 						TypeCombinator::union(...$resultArrayTypes)
 					);
 				} else {
 					$arrays = TypeUtils::getAnyArrays($scope->getType($arrayArg));
 					if (count($arrays) > 0) {
-						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, TypeCombinator::union(...$arrays));
+						$scope = $scope->specifyExpressionType($arrayArg, TypeCombinator::union(...$arrays));
 					}
 				}
 			}

@@ -11,6 +11,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -63,7 +64,12 @@ class ImpossibleCheckTypeHelper
 			if ($node->name instanceof \PhpParser\Node\Name) {
 				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert') {
-					return $this->findSpecifiedType($scope, $node->args[0]->value);
+					$assertValue = $scope->getType($node->args[0]->value)->toBoolean();
+					if (!$assertValue instanceof ConstantBooleanType) {
+						return null;
+					}
+
+					return $assertValue->getValue();
 				}
 				if (in_array($functionName, [
 					'class_exists',

@@ -1562,6 +1562,10 @@ class NodeScopeResolver
 			) {
 				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()));
 			}
+
+			if (isset($functionReflection) && $functionReflection->getName() === 'extract') {
+				$scope = $scope->afterExtractCall();
+			}
 		} elseif ($expr instanceof MethodCall) {
 			$originalScope = $scope;
 			if (

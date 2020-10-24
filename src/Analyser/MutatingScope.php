@@ -155,6 +155,8 @@ class MutatingScope implements Scope
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $afterExtractCall;
+
 	private ?Scope $parentScope;
 
 	/**
@@ -181,6 +183,7 @@ class MutatingScope implements Scope
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 * @param string[] $dynamicConstantNames
 	 * @param bool $treatPhpDocTypesAsCertain
+	 * @param bool $afterExtractCall
 	 * @param Scope|null $parentScope
 	 */
 	public function __construct(
@@ -207,6 +210,7 @@ class MutatingScope implements Scope
 		array $inFunctionCallsStack = [],
 		array $dynamicConstantNames = [],
 		bool $treatPhpDocTypesAsCertain = true,
+		bool $afterExtractCall = false,
 		?Scope $parentScope = null
 	)
 	{
@@ -237,6 +241,7 @@ class MutatingScope implements Scope
 		$this->inFunctionCallsStack = $inFunctionCallsStack;
 		$this->dynamicConstantNames = $dynamicConstantNames;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->afterExtractCall = $afterExtractCall;
 		$this->parentScope = $parentScope;
 	}
 
@@ -335,9 +340,30 @@ class MutatingScope implements Scope
 		return $this->variableTypes;
 	}
 
-	private function isRootScope(): bool
+	private function canAnyVariableExist(): bool
 	{
-		return $this->function === null && !$this->isInAnonymousFunction();
+		return ($this->function === null && !$this->isInAnonymousFunction()) || $this->afterExtractCall;
+	}
+
+	public function afterExtractCall(): self
+	{
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->getVariableTypes(),
+			$this->moreSpecificTypes,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->nativeExpressionTypes,
+			$this->inFunctionCallsStack,
+			true,
+			$this->parentScope
+		);
 	}
 
 	public function hasVariableType(string $variableName): TrinaryLogic
@@ -347,7 +373,7 @@ class MutatingScope implements Scope
 		}
 
 		if (!isset($this->variableTypes[$variableName])) {
-			if ($this->isRootScope()) {
+			if ($this->canAnyVariableExist()) {
 				return TrinaryLogic::createMaybe();
 			}
 
@@ -1957,6 +1983,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->dynamicConstantNames,
 			false,
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -2213,6 +2240,7 @@ class MutatingScope implements Scope
 			$this->currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
 			$stack,
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -2236,6 +2264,7 @@ class MutatingScope implements Scope
 			$this->currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
 			$stack,
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -2622,6 +2651,7 @@ class MutatingScope implements Scope
 			[],
 			$nativeTypes,
 			[],
+			false,
 			$this
 		);
 	}
@@ -2668,6 +2698,7 @@ class MutatingScope implements Scope
 			[],
 			[],
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -2782,6 +2813,7 @@ class MutatingScope implements Scope
 			$currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -2806,6 +2838,7 @@ class MutatingScope implements Scope
 			$currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -2861,6 +2894,7 @@ class MutatingScope implements Scope
 			$this->currentlyAssignedExpressions,
 			$nativeTypes,
 			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -2890,6 +2924,7 @@ class MutatingScope implements Scope
 				[],
 				$nativeTypes,
 				[],
+				$this->afterExtractCall,
 				$this->parentScope
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
@@ -2948,6 +2983,7 @@ class MutatingScope implements Scope
 				$this->currentlyAssignedExpressions,
 				$this->nativeExpressionTypes,
 				$this->inFunctionCallsStack,
+				$this->afterExtractCall,
 				$this->parentScope
 			);
 		}
@@ -2979,6 +3015,7 @@ class MutatingScope implements Scope
 				$this->currentlyAssignedExpressions,
 				$nativeTypes,
 				$this->inFunctionCallsStack,
+				$this->afterExtractCall,
 				$this->parentScope
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
@@ -3055,6 +3092,7 @@ class MutatingScope implements Scope
 			$this->currentlyAssignedExpressions,
 			[],
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -3167,6 +3205,7 @@ class MutatingScope implements Scope
 			$this->currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -3202,6 +3241,7 @@ class MutatingScope implements Scope
 			$this->currentlyAssignedExpressions,
 			$this->nativeExpressionTypes,
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -3221,7 +3261,7 @@ class MutatingScope implements Scope
 
 		$ourVariableTypes = $this->getVariableTypes();
 		$theirVariableTypes = $otherScope->getVariableTypes();
-		if ($this->isRootScope()) {
+		if ($this->canAnyVariableExist()) {
 			foreach (array_keys($theirVariableTypes) as $name) {
 				if (array_key_exists($name, $ourVariableTypes)) {
 					continue;
@@ -3253,6 +3293,7 @@ class MutatingScope implements Scope
 				return $holder->getCertainty()->yes();
 			})),
 			[],
+			$this->afterExtractCall && $otherScope->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -3323,6 +3364,7 @@ class MutatingScope implements Scope
 				array_map($typeToVariableHolder, $originalFinallyScope->nativeExpressionTypes)
 			)),
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -3414,6 +3456,7 @@ class MutatingScope implements Scope
 			[],
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -3462,6 +3505,7 @@ class MutatingScope implements Scope
 			[],
 			$nativeTypes,
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}
@@ -3506,6 +3550,7 @@ class MutatingScope implements Scope
 			[],
 			$nativeTypes,
 			[],
+			$this->afterExtractCall,
 			$this->parentScope
 		);
 	}

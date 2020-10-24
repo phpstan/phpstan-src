@@ -34,7 +34,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Validate Composer"
         run: "composer validate"
@@ -68,7 +68,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Validate Composer"
         run: "composer validate"
@@ -108,7 +108,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -144,7 +144,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:snapshot
+          tools: pecl, composer:v2
           extensions: ds,mbstring
           ini-values: memory_limit=640M
 
@@ -176,7 +176,7 @@ jobs:
         with:
           coverage: "pcov"
           php-version: "7.4"
-          tools: pecl, composer:snapshot
+          tools: pecl, composer:v2
           extensions: ds
 
       - name: "Install dependencies"
@@ -226,7 +226,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -262,7 +262,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -310,7 +310,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
           ini-values: memory_limit=256M
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -380,7 +380,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Install dependencies"
         run: "composer update --no-interaction --no-progress --no-suggest"
@@ -417,7 +417,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "7.4"
-          tools: ${{ matrix.tools }}, composer:snapshot
+          tools: ${{ matrix.tools }}, composer:v2
           extensions: ${{ matrix.extensions }}
 
       - name: "Install dependencies"

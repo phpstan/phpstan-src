@@ -338,6 +338,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:v1
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"

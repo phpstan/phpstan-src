@@ -9,9 +9,6 @@ env:
   global:
     secure: "EpvZZ1v6JvefnfhgYm3Y2WprJxjgr6zDw2FJs+WISEtd1PHJToFJOE59vW7DRTcr5ycR4jrHyANqqIJWbH1k3A3wuyavmkissNKHbFK6vmLtAC9TuI/x5zBd+/T5yQ6i6uBe43nDzbkrQDYtGyNMdn1FXhWV9Z/hNCZ6uD0aiO5+d49NFJoexUOt3+LCxrZAGCCsm49KYRff/62QxO2Wajlfdhx+PLO0igY/i9N3oUQoVfbBEbP1ZSAPLv7ZkZGL4XdMMYEGYqnOeMWk39MYID34RmCYteWRfED4oqYbi4rzOpW8YeA/YkuHGThIykSLBrjdAfwUpekVEAI9r1gdrh91Gkpm/W/trFygdfI2gqev5GVjbYgmKQMm50l1W8wiD+Tb+AMUIttEXGjgwd+K2rn1RBHjM+CjPEWWdppg/7OOYVIJg0gIr94TN2LCQWDfFN5SxIIf0BpQmWteGEPCDpxCc3jsjpaVFXQ2jrui69Pdjr8/u7XCisQD9zpn4sQ43GZkdHC4rGOoBrjXQDWMB/LZyYNymJ6fkkuceqSgn6vDyBEkp9UBR1CIv4P8Ray86qEPodDFbPZMVX2JqDwUHMH3HVl4FINPYtVW3/VNUK7VihKd33+AjoX7anRTeq0T8jXUT4IF6tAxbO4DaDBB4XjQ3vCBDH15WxwIxy81KKA="
 
-before_install:
-  - composer self-update --1
-
 before_script:
   - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
   - composer update --no-interaction
@@ -23,6 +20,7 @@ jobs:
       os: linux
       dist: xenial
       before_install:
+        - composer self-update --1
         - |
           openssl aes-256-cbc -K $encrypted_bd816b4f73f9_key -iv $encrypted_bd816b4f73f9_iv -in build/key.gpg.enc -out build/key.gpg -d && \
           gpg --batch --import build/key.gpg && \

@@ -197,7 +197,7 @@ class CommandHelper
 					}
 					$includedFilePath = sprintf('%s/%s', $extensionConfig['install_path'], $includedFile);
 					if (!file_exists($includedFilePath) || !is_readable($includedFilePath)) {
-						$errorOutput->writeLineFormatted(sprintf('Config file %s does not exists or isn\'t readable', $includedFilePath));
+						$errorOutput->writeLineFormatted(sprintf('Config file %s does not exist or isn\'t readable', $includedFilePath));
 						throw new \PHPStan\Command\InceptionNotSuccessfulException();
 					}
 					$additionalConfigFiles[] = $includedFilePath;

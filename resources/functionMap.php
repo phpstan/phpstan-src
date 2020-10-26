@@ -12185,7 +12185,7 @@ return [
 'sys_get_temp_dir' => ['string'],
 'sys_getloadavg' => ['array'],
 'syslog' => ['bool', 'priority'=>'int', 'message'=>'string'],
-'system' => ['string', 'command'=>'string', '&w_return_value='=>'int'],
+'system' => ['string|false', 'command'=>'string', '&w_return_value='=>'int'],
 'taint' => ['bool', '&rw_string'=>'string', '&...w_other_strings='=>'string'],
 'tan' => ['float', 'number'=>'float'],
 'tanh' => ['float', 'number'=>'float'],

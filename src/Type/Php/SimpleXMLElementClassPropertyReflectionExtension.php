@@ -19,7 +19,7 @@ class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClas
 
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
-		return new SimpleXMLElementProperty($classReflection, new ObjectType('SimpleXMLElement'));
+		return new SimpleXMLElementProperty($classReflection, new ObjectType($classReflection->getName()));
 	}
 
 }

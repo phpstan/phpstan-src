@@ -216,4 +216,24 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4003(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-4003.php'], [
+			[
+				'Return type (string) of method Bug4003\Baz::foo() should be compatible with return type (int) of method Bug4003\Boo::foo()',
+				15,
+			],
+			[
+				'Parameter #1 $test (string) of method Bug4003\Ipsum::doFoo() should be compatible with parameter $test (int) of method Bug4003\Lorem::doFoo()',
+				38,
+			],
+			[
+				'Return type (void) of method Bug4003\Amet::bar() should be compatible with return type (*NEVER*) of method Bug4003\Dolor::bar()',
+				54,
+			],
+		]);
+	}
+
 }

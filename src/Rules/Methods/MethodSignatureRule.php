@@ -12,6 +12,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -70,22 +71,22 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
-			$returnTypeCompatibility = $this->checkReturnTypeCompatibility($parameters, $parentParameters);
+			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($parameters, $parentParameters);
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Return type (%s) of method %s::%s() should be %s with return type (%s) of method %s::%s()',
-					$parameters->getPhpDocReturnType()->describe(VerbosityLevel::value()),
+					$returnType->describe(VerbosityLevel::value()),
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$returnTypeCompatibility->no() ? 'compatible' : 'covariant',
-					$parentParameters->getPhpDocReturnType()->describe(VerbosityLevel::value()),
+					$parentReturnType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName()
 				))->build();
 			}
 
 			$parameterResults = $this->checkParameterTypeCompatibility($parameters->getParameters(), $parentParameters->getParameters());
-			foreach ($parameterResults as $parameterIndex => $parameterResult) {
+			foreach ($parameterResults as $parameterIndex => [$parameterResult, $parameterType, $parentParameterType]) {
 				if ($parameterResult->yes()) {
 					continue;
 				}
@@ -98,12 +99,12 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 					'Parameter #%d $%s (%s) of method %s::%s() should be %s with parameter $%s (%s) of method %s::%s()',
 					$parameterIndex + 1,
 					$parameter->getName(),
-					$parameter->getType()->describe(VerbosityLevel::value()),
+					$parameterType->describe(VerbosityLevel::value()),
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$parameterResult->no() ? 'compatible' : 'contravariant',
 					$parentParameter->getName(),
-					$parentParameter->getType()->describe(VerbosityLevel::value()),
+					$parentParameterType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName()
 				))->build();
@@ -141,10 +142,15 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 		return $parentMethods;
 	}
 
+	/**
+	 * @param ParametersAcceptorWithPhpDocs $currentVariant
+	 * @param ParametersAcceptorWithPhpDocs $parentVariant
+	 * @return array{TrinaryLogic, Type, Type}
+	 */
 	private function checkReturnTypeCompatibility(
 		ParametersAcceptorWithPhpDocs $currentVariant,
 		ParametersAcceptorWithPhpDocs $parentVariant
-	): TrinaryLogic
+	): array
 	{
 		$returnType = TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
@@ -156,21 +162,21 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 		);
 		// Allow adding `void` return type hints when the parent defines no return type
 		if ($returnType instanceof VoidType && $parentReturnType instanceof MixedType) {
-			return TrinaryLogic::createYes();
+			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];
 		}
 
 		// We can return anything
 		if ($parentReturnType instanceof VoidType) {
-			return TrinaryLogic::createYes();
+			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];
 		}
 
-		return $parentReturnType->isSuperTypeOf($returnType);
+		return [$parentReturnType->isSuperTypeOf($returnType), $returnType, $parentReturnType];
 	}
 
 	/**
 	 * @param \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parameters
 	 * @param \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parentParameters
-	 * @return array<int, TrinaryLogic>
+	 * @return array<int, array{TrinaryLogic, Type, Type}>
 	 */
 	private function checkParameterTypeCompatibility(
 		array $parameters,
@@ -193,7 +199,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 				$parentParameter->getPhpDocType()
 			);
 
-			$parameterResults[] = $parameterType->isSuperTypeOf($parentParameterType);
+			$parameterResults[] = [$parameterType->isSuperTypeOf($parentParameterType), $parameterType, $parentParameterType];
 		}
 
 		return $parameterResults;

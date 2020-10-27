@@ -10320,6 +10320,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBitwiseNot
 	 * @dataProvider dataGraphicsDrawReturnTypes
 	 * @dataProvider dataNativeUnionTypes
+	 * @dataProvider dataNativeMixedType
 	 * @dataProvider dataMinMaxReturnTypeWithArrays
 	 * @dataProvider dataNativeStaticReturnType
 	 * @dataProvider dataClassPhpDocs
@@ -10350,6 +10351,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3990
 	 * @dataProvider dataBug3991
 	 * @dataProvider dataBug3993
+	 * @dataProvider dataBug3997
 	 * @dataProvider dataBug4016
 	 * @param string $assertType
 	 * @param string $file

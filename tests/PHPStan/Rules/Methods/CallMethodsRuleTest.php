@@ -1514,4 +1514,17 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/stringable.php'], []);
 	}
 
+	public function testStringableStrictTypes(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/stringable-strict.php'], [
+			[
+				'Parameter #1 $s of method TestStringables\Dolor::doFoo() expects string, TestStringables\Bar given.',
+				15,
+			],
+		]);
+	}
+
 }

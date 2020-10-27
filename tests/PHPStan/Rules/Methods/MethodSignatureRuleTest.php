@@ -218,6 +218,9 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testBug4003(): void
 	{
+		if (PHP_VERSION_ID < 70200 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.2 or later.');
+		}
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-4003.php'], [

@@ -7,6 +7,7 @@ use Phar;
 use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
+use PHPStan\Php\PhpVersion;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use function sys_get_temp_dir;
@@ -100,6 +101,8 @@ class ContainerFactory
 		}
 
 		$container = $configurator->createContainer();
+
+		BetterReflection::$phpVersion = $container->getByType(PhpVersion::class)->getVersionId();
 
 		// @phpstan-ignore-next-line
 		BetterReflection::populate(

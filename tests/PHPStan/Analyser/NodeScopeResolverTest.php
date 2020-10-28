@@ -3195,6 +3195,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$arrayToBeUnset',
 			],
 			[
+				'array<int, 1|2|3>',
+				'$arrayToBeUnset2',
+			],
+			[
 				'array',
 				'$shiftedNonEmptyArray',
 			],
@@ -5036,7 +5040,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_intersect_key(...[$integers, [4, 5, 6]])',
 			],
 			[
-				'array<int|string, int>',
+				'array<int>',
 				'array_intersect_key(...$generalIntegersInAnotherArray, [])',
 			],
 			[
@@ -5128,7 +5132,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_merge(...[$generalStringKeys, $generalDateTimeValues])',
 			],
 			[
-				'array<int|string, int>',
+				'array<int>',
 				'$mergedInts',
 			],
 			[
@@ -5244,7 +5248,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array_filter($union)',
 			],
 			[
-				'array<int, int<min, -1>|int<1, max>|true>',
+				'array(?0 => true, ?1 => int<min, -1>|int<1, max>)',
 				'array_filter($withPossiblyFalsey)',
 			],
 			[
@@ -7545,7 +7549,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				"'end'",
 			],
 			[
-				'array<int, 1|2|3>',
+				'array<int, 1|2|3>&nonEmpty',
 				'$integers',
 				"'end'",
 			],
@@ -7560,7 +7564,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				"'begin'",
 			],
 			[
-				'array<string, 1|2|3>',
+				'array<string, 1|2|3>&nonEmpty',
 				'$this->property',
 				"'end'",
 			],
@@ -9642,7 +9646,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				"array<int|string, array<int|string, array('hitCount' => int, 'loadCount' => int, 'removeCount' => int, 'saveCount' => int)>>",
+				"array<array<int|string, array('hitCount' => int, 'loadCount' => int, 'removeCount' => int, 'saveCount' => int)>>",
 				'$statistics',
 			],
 		];
@@ -9669,7 +9673,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'array()|array(\'foo\' => array<int|string, array>)',
+				'array()|array(\'foo\' => array<array>)',
 				'$data',
 			],
 		];
@@ -10250,6 +10254,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3997.php');
 	}
 
+	public function dataBug4016(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4016.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10341,6 +10350,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3990
 	 * @dataProvider dataBug3991
 	 * @dataProvider dataBug3993
+	 * @dataProvider dataBug4016
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

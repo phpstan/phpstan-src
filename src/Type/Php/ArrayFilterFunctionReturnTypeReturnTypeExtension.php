@@ -12,6 +12,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -84,22 +85,19 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 			$keys = $type->getKeyTypes();
 			$values = $type->getValueTypes();
 
-			$generalize = false;
+			$builder = ConstantArrayTypeBuilder::createEmpty();
 
 			foreach ($values as $offset => $value) {
 				$isFalsey = $falseyTypes->isSuperTypeOf($value);
 
-				if ($isFalsey->yes()) {
-					unset($keys[$offset], $values[$offset]);
-				} elseif ($isFalsey->maybe()) {
-					$values[$offset] = TypeCombinator::remove($values[$offset], $falseyTypes);
-					$generalize = true;
+				if ($isFalsey->maybe()) {
+					$builder->setOffsetValueType($keys[$offset], TypeCombinator::remove($value, $falseyTypes), true);
+				} elseif ($isFalsey->no()) {
+					$builder->setOffsetValueType($keys[$offset], $value);
 				}
 			}
 
-			$filteredArray = new ConstantArrayType(array_values($keys), array_values($values));
-
-			return $generalize ? $filteredArray->generalize() : $filteredArray;
+			return $builder->getArray();
 		}
 
 		$keyType = $type->getIterableKeyType();

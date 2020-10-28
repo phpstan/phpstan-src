@@ -3622,7 +3622,7 @@ class MutatingScope implements Scope
 					$constantArrays[$key][] = $type;
 					continue;
 				}
-				if ($type instanceof ArrayType) {
+				if ($type->isArray()->yes()) {
 					$generalArrays[$key][] = $type;
 					continue;
 				}

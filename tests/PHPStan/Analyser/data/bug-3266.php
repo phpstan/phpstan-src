@@ -21,7 +21,7 @@ class Foo
 			assertType('TKey (method Bug3266\Foo::iteratorToArray(), argument)', $key);
 			assertType('TValue (method Bug3266\Foo::iteratorToArray(), argument)', $value);
 			$array[$key] = $value;
-			assertType('array<TKey (method Bug3266\Foo::iteratorToArray(), argument), TValue (method Bug3266\Foo::iteratorToArray(), argument)>', $array);
+			assertType('array<TKey (method Bug3266\Foo::iteratorToArray(), argument), TValue (method Bug3266\Foo::iteratorToArray(), argument)>&nonEmpty', $array);
 		}
 
 		assertType('array<TKey (method Bug3266\Foo::iteratorToArray(), argument), TValue (method Bug3266\Foo::iteratorToArray(), argument)>', $array);

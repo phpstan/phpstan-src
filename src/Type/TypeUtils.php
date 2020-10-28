@@ -120,15 +120,13 @@ class TypeUtils
 
 	public static function generalizeType(Type $type): Type
 	{
-		if ($type instanceof ConstantType) {
-			return $type->generalize();
-		} elseif ($type instanceof UnionType) {
-			return TypeCombinator::union(...array_map(static function (Type $innerType): Type {
-				return self::generalizeType($innerType);
-			}, $type->getTypes()));
-		}
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof ConstantType) {
+				return $type->generalize();
+			}
 
-		return $type;
+			return $traverse($type);
+		});
 	}
 
 	/**

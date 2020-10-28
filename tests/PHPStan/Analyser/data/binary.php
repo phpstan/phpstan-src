@@ -134,6 +134,9 @@ class Foo
 		$arrayToBeUnset = $array;
 		unset($arrayToBeUnset[$string]);
 
+		$arrayToBeUnset2 = $arrayToBeUnset;
+		unset($arrayToBeUnset2[$string]);
+
 		/** @var array $shiftedNonEmptyArray */
 		$shiftedNonEmptyArray = doFoo();
 

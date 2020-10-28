@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -225,10 +226,10 @@ class ArrayType implements Type
 			$offsetType = new IntegerType();
 		}
 
-		return new self(
+		return TypeCombinator::intersect(new self(
 			TypeCombinator::union($this->keyType, self::castToArrayKeyType($offsetType)),
 			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType
-		);
+		), new NonEmptyArrayType());
 	}
 
 	public function isCallable(): TrinaryLogic

@@ -41,4 +41,24 @@ class BenevolentUnionType extends UnionType
 		return TrinaryLogic::createNo()->or(...$results);
 	}
 
+	public function traverse(callable $cb): Type
+	{
+		$types = [];
+		$changed = false;
+
+		foreach ($this->getTypes() as $type) {
+			$newType = $cb($type);
+			if ($type !== $newType) {
+				$changed = true;
+			}
+			$types[] = $newType;
+		}
+
+		if ($changed) {
+			return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$types));
+		}
+
+		return $this;
+	}
+
 }

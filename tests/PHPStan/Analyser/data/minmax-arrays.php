@@ -97,3 +97,14 @@ function dummy3(array $ints): void
 	assertType('int|false', min($ints));
 	assertType('int|false', max($ints));
 }
+
+
+function dummy4(\DateTimeInterface $dateA, ?\DateTimeInterface $dateB): void
+{
+	assertType('array(0 => DateTimeInterface, ?1 => DateTimeInterface)', array_filter([$dateA, $dateB]));
+	assertType('DateTimeInterface', min(array_filter([$dateA, $dateB])));
+	assertType('DateTimeInterface', max(array_filter([$dateA, $dateB])));
+	assertType('array(?0 => DateTimeInterface)', array_filter([$dateB]));
+	assertType('DateTimeInterface|false', min(array_filter([$dateB])));
+	assertType('DateTimeInterface|false', max(array_filter([$dateB])));
+}

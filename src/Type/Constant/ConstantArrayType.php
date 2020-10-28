@@ -7,6 +7,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -477,12 +478,31 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 		}
 
-		return $this->generalize();
+		$arrays = [];
+		foreach ($this->getAllArrays() as $tmp) {
+			$arrays[] = new self($tmp->keyTypes, $tmp->valueTypes, $tmp->nextAutoIndex, array_keys($tmp->keyTypes));
+		}
+
+		return TypeUtils::generalizeType(TypeCombinator::union(...$arrays));
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean(count($this->keyTypes) > 0);
+		$keysCount = count($this->keyTypes);
+		if ($keysCount === 0) {
+			return TrinaryLogic::createNo();
+		}
+
+		$optionalKeysCount = count($this->optionalKeys);
+		if ($optionalKeysCount === 0) {
+			return TrinaryLogic::createYes();
+		}
+
+		if ($optionalKeysCount < $keysCount) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function removeLast(): self
@@ -583,10 +603,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		return new ArrayType(
+		$arrayType = new ArrayType(
 			TypeUtils::generalizeType($this->getKeyType()),
 			$this->getItemType()
 		);
+
+		if (count($this->keyTypes) > count($this->optionalKeys)) {
+			return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+
+		return $arrayType;
 	}
 
 	/**

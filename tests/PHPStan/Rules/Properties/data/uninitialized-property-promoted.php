@@ -1,6 +1,6 @@
 <?php // lint >= 8.0
 
-namespace UninitializedProperty;
+namespace UninitializedPropertyPromoted;
 
 class Foo
 {

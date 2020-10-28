@@ -57,8 +57,8 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 
 	public function testDuplicatePromotedProperty(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
 		}
 
 		$this->analyse([__DIR__ . '/data/duplicate-promoted-property.php'], [

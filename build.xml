@@ -153,6 +153,8 @@
 			<arg path="tests/PHPStan/Rules/Arrays/data/empty-array-item.php"/>
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Classes/data/invalid-promoted-properties.php"/>
+			<arg value="--exclude"/>
+			<arg path="tests/PHPStan/Rules/Classes/data/duplicate-promoted-property.php"/>
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />

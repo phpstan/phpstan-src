@@ -295,6 +295,12 @@ class IntersectionType implements CompoundType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
+		foreach ($this->types as $type) {
+			if ($type instanceof ObjectType && $type->isInstanceOf(\ArrayAccess::class)->yes()) {
+				return $type->hasOffsetValueType($offsetType);
+			}
+		}
+
 		return $this->intersectResults(static function (Type $type) use ($offsetType): TrinaryLogic {
 			return $type->hasOffsetValueType($offsetType);
 		});

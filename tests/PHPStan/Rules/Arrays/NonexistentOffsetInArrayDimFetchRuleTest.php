@@ -230,4 +230,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		$this->analyse([__DIR__ . '/data/nonexistent-offset-coalesce-assign.php'], []);
 	}
 
+	public function testIntersection(): void
+	{
+		$this->analyse([__DIR__ . '/data/nonexistent-offset-intersection.php'], []);
+	}
+
 }

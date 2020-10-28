@@ -1,5 +1,10 @@
 [
     {
+        "message": "Cannot access offset 1 on stdClass.",
+        "line": 14,
+        "ignorable": true
+    },
+    {
         "message": "Cannot access offset 'a' on array('a' => 1)|stdClass.",
         "line": 27,
         "ignorable": true

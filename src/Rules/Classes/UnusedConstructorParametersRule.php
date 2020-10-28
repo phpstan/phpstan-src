@@ -56,7 +56,9 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 				return $parameter->var->name;
-			}, $node->params),
+			}, array_values(array_filter($node->params, static function (Param $parameter): bool {
+				return $parameter->flags === 0;
+			}))),
 			$node->stmts,
 			$message,
 			'constructor.unusedParameter',

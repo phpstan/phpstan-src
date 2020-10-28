@@ -449,6 +449,54 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 			]),
 			TrinaryLogic::createNo(),
 		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new IntegerType(),
+				new IntegerType(),
+			], 2),
+			new ConstantArrayType([], []),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new IntegerType(),
+				new IntegerType(),
+			], 2, [0]),
+			new ConstantArrayType([], []),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new IntegerType(),
+				new IntegerType(),
+			], 2, [0, 1]),
+			new ConstantArrayType([], []),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [
+				new IntegerType(),
+				new IntegerType(),
+			], 2, [0, 1]),
+			TrinaryLogic::createMaybe(),
+		];
 	}
 
 	/**

@@ -437,10 +437,20 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 			[
 				new ObjectType(\stdClass::class),
 				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new ObjectType(\Generator::class),
+				new IntegerType(),
 				TrinaryLogic::createNo(),
 			],
 			[
 				new ObjectType(\ArrayAccess::class),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new ObjectType(\Countable::class),
 				new IntegerType(),
 				TrinaryLogic::createMaybe(),
 			],

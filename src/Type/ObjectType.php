@@ -589,7 +589,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 		}
 
-		return TrinaryLogic::createNo();
+		if ($classReflection->isInterface()) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		if ($classReflection->isFinal()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

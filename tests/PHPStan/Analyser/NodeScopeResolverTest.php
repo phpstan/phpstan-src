@@ -1174,7 +1174,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$intArrayForRewritingFirstElement[1]',
 			],
 			[
-				'*ERROR*',
+				'stdClass',
 				'$obj',
 			],
 			[

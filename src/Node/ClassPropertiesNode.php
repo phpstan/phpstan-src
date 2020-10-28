@@ -8,7 +8,6 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\Property;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Method\MethodCall;
@@ -24,7 +23,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 	private ClassLike $class;
 
-	/** @var Property[] */
+	/** @var ClassPropertyNode[] */
 	private array $properties;
 
 	/** @var array<int, PropertyRead|PropertyWrite> */
@@ -35,7 +34,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param ClassLike $class
-	 * @param Property[] $properties
+	 * @param ClassPropertyNode[] $properties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
 	 */
@@ -54,7 +53,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	}
 
 	/**
-	 * @return Property[]
+	 * @return ClassPropertyNode[]
 	 */
 	public function getProperties(): array
 	{
@@ -85,7 +84,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param string[] $constructors
 	 * @param ReadWritePropertiesExtension[] $extensions
-	 * @return array{array<string, Property>, array<array{string, int}>}
+	 * @return array{array<string, ClassPropertyNode>, array<array{string, int}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
@@ -106,15 +105,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($property->isStatic()) {
 				continue;
 			}
-			if ($property->type === null) {
+			if ($property->getNativeType() === null) {
 				continue;
 			}
-			foreach ($property->props as $prop) {
-				if ($prop->default !== null) {
-					continue;
-				}
-				$properties[$prop->name->toString()] = $property;
+			if ($property->getDefault() !== null) {
+				continue;
 			}
+			$properties[$property->getName()] = $property;
 		}
 
 		foreach (array_keys($properties) as $name) {

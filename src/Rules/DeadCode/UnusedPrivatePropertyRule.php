@@ -72,8 +72,8 @@ class UnusedPrivatePropertyRule implements Rule
 
 			$alwaysRead = false;
 			$alwaysWritten = false;
-			if ($property->getDocComment() !== null) {
-				$text = $property->getDocComment()->getText();
+			if ($property->getPhpDoc() !== null) {
+				$text = $property->getPhpDoc();
 				foreach ($this->alwaysReadTags as $tag) {
 					if (strpos($text, $tag) === false) {
 						continue;
@@ -93,38 +93,36 @@ class UnusedPrivatePropertyRule implements Rule
 				}
 			}
 
-			foreach ($property->props as $propertyProperty) {
-				$propertyName = $propertyProperty->name->toString();
-				if (!$alwaysRead || !$alwaysWritten) {
-					if (!$classReflection->hasNativeProperty($propertyName)) {
+			$propertyName = $property->getName();
+			if (!$alwaysRead || !$alwaysWritten) {
+				if (!$classReflection->hasNativeProperty($propertyName)) {
+					continue;
+				}
+
+				$propertyReflection = $classReflection->getNativeProperty($propertyName);
+
+				foreach ($this->extensionProvider->getExtensions() as $extension) {
+					if ($alwaysRead && $alwaysWritten) {
+						break;
+					}
+					if (!$alwaysRead && $extension->isAlwaysRead($propertyReflection, $propertyName)) {
+						$alwaysRead = true;
+					}
+					if ($alwaysWritten || !$extension->isAlwaysWritten($propertyReflection, $propertyName)) {
 						continue;
 					}
 
-					$propertyReflection = $classReflection->getNativeProperty($propertyName);
-
-					foreach ($this->extensionProvider->getExtensions() as $extension) {
-						if ($alwaysRead && $alwaysWritten) {
-							break;
-						}
-						if (!$alwaysRead && $extension->isAlwaysRead($propertyReflection, $propertyName)) {
-							$alwaysRead = true;
-						}
-						if ($alwaysWritten || !$extension->isAlwaysWritten($propertyReflection, $propertyName)) {
-							continue;
-						}
-
-						$alwaysWritten = true;
-					}
+					$alwaysWritten = true;
 				}
-
-				$read = $alwaysRead;
-				$written = $alwaysWritten || $propertyProperty->default !== null;
-				$properties[$propertyName] = [
-					'read' => $read,
-					'written' => $written,
-					'node' => $property,
-				];
 			}
+
+			$read = $alwaysRead;
+			$written = $alwaysWritten || $property->getDefault() !== null;
+			$properties[$propertyName] = [
+				'read' => $read,
+				'written' => $written,
+				'node' => $property,
+			];
 		}
 
 		foreach ($node->getPropertyUsages() as $usage) {

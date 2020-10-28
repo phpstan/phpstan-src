@@ -4,13 +4,14 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\PropertyProperty>
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
  */
 final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 {
@@ -24,7 +25,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\PropertyProperty::class;
+		return ClassPropertyNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -33,14 +34,14 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->name->name);
+		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());
 		$propertyType = $propertyReflection->getReadableType();
 		if ($propertyType instanceof MixedType && !$propertyType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Property %s::$%s has no typehint specified.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
-					$node->name->name
+					$node->getName()
 				))->build(),
 			];
 		}
@@ -51,7 +52,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s type has no value type specified in iterable type %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
-				$node->name->name,
+				$node->getName(),
 				$iterableTypeDescription
 			))->tip(sprintf(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP, $iterableTypeDescription))->build();
 		}
@@ -60,7 +61,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s with generic %s does not specify its types: %s',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
-				$node->name->name,
+				$node->getName(),
 				$name,
 				implode(', ', $genericTypeNames)
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();

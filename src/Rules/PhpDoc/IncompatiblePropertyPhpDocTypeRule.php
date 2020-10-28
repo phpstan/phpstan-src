@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -12,7 +13,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\PropertyProperty>
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
  */
 class IncompatiblePropertyPhpDocTypeRule implements Rule
 {
@@ -26,7 +27,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\PropertyProperty::class;
+		return ClassPropertyNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -35,7 +36,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$propertyName = $node->name->toString();
+		$propertyName = $node->getName();
 		$propertyReflection = $scope->getClassReflection()->getNativeProperty($propertyName);
 
 		if (!$propertyReflection->hasPhpDoc()) {

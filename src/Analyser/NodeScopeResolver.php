@@ -52,6 +52,7 @@ use PHPStan\File\FileReader;
 use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
+use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
@@ -586,6 +587,18 @@ class NodeScopeResolver
 			$hasYield = false;
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
+				$docComment = $stmt->getDocComment();
+				$nodeCallback(
+					new ClassPropertyNode(
+						$prop->name->toString(),
+						$stmt->flags,
+						$stmt->type,
+						$prop->default,
+						$docComment !== null ? $docComment->getText() : null,
+						$prop
+					),
+					$scope
+				);
 			}
 
 			if ($stmt->type !== null) {

@@ -23,7 +23,7 @@ class ClassStatementsGatherer
 	/** @var callable(\PhpParser\Node $node, Scope $scope): void */
 	private $nodeCallback;
 
-	/** @var \PhpParser\Node\Stmt\Property[] */
+	/** @var ClassPropertyNode[] */
 	private array $properties = [];
 
 	/** @var \PhpParser\Node\Stmt\ClassMethod[] */
@@ -55,7 +55,7 @@ class ClassStatementsGatherer
 	}
 
 	/**
-	 * @return \PhpParser\Node\Stmt\Property[]
+	 * @return ClassPropertyNode[]
 	 */
 	public function getProperties(): array
 	{
@@ -117,7 +117,7 @@ class ClassStatementsGatherer
 		if ($scope->getClassReflection()->getName() !== $this->classReflection->getName()) {
 			return;
 		}
-		if ($node instanceof \PhpParser\Node\Stmt\Property && !$scope->isInTrait()) {
+		if ($node instanceof ClassPropertyNode && !$scope->isInTrait()) {
 			$this->properties[] = $node;
 			return;
 		}

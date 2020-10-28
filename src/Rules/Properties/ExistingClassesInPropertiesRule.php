@@ -3,15 +3,15 @@
 namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\PropertyProperty;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\PropertyProperty>
+ * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
  */
 class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 {
@@ -39,7 +39,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return PropertyProperty::class;
+		return ClassPropertyNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -48,7 +48,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->name->name);
+		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());
 		if ($this->checkThisOnly) {
 			$referencedClasses = $propertyReflection->getNativeType()->getReferencedClasses();
 		} else {
@@ -65,7 +65,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Property %s::$%s has invalid type %s.',
 						$propertyReflection->getDeclaringClass()->getDisplayName(),
-						$node->name->name,
+						$node->getName(),
 						$referencedClass
 					))->build();
 				}
@@ -75,7 +75,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s has unknown class %s as its type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
-				$node->name->name,
+				$node->getName(),
 				$referencedClass
 			))->discoveringSymbolsTip()->build();
 		}

@@ -62,6 +62,29 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 
 		$declaredFunctions = [];
 		foreach ($node->getOriginalNode()->getMethods() as $method) {
+			if ($method->name->toLowerString() === '__construct') {
+				foreach ($method->params as $param) {
+					if ($param->flags === 0) {
+						continue;
+					}
+
+					if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+
+					$propertyName = $param->var->name;
+
+					if (array_key_exists($propertyName, $declaredProperties)) {
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'Cannot redeclare property %s::$%s.',
+							$classReflection->getDisplayName(),
+							$propertyName
+						))->line($param->getLine())->nonIgnorable()->build();
+					} else {
+						$declaredProperties[$propertyName] = true;
+					}
+				}
+			}
 			if (array_key_exists(strtolower($method->name->name), $declaredFunctions)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Cannot redeclare method %s::%s().',

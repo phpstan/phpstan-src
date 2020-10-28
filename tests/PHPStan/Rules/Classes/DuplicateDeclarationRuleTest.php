@@ -55,4 +55,22 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testDuplicatePromotedProperty(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/duplicate-promoted-property.php'], [
+			[
+				'Cannot redeclare property DuplicatedPromotedProperty\Foo::$foo.',
+				11,
+			],
+			[
+				'Cannot redeclare property DuplicatedPromotedProperty\Foo::$bar.',
+				13,
+			],
+		]);
+	}
+
 }

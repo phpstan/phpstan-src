@@ -76,4 +76,9 @@ class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	public function supportsPromotedProperties(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

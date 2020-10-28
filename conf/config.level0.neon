@@ -26,6 +26,7 @@ rules:
 	- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
 	- PHPStan\Rules\Classes\InstantiationRule
+	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule

@@ -137,6 +137,7 @@ class TypeNodeResolver
 				return IntegerRangeType::fromInterval(null, -1);
 
 			case 'string':
+			case 'non-empty-string':
 				return new StringType();
 
 			case 'class-string':

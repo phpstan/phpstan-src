@@ -8,19 +8,19 @@ includes:
 	- ../phpstan-baseline.neon
 parameters:
 	bootstrapFiles:
-		- %rootDir%/tests/phpstan-bootstrap.php
+		- ../tests/phpstan-bootstrap.php
 	checkUninitializedProperties: true
 	excludes_analyse:
-		- %rootDir%/src/Reflection/SignatureMap/functionMap.php
-		- %rootDir%/src/Reflection/SignatureMap/functionMetadata.php
-		- %rootDir%/tests/*/data/*
-		- %rootDir%/tests/tmp/*
-		- %rootDir%/tests/PHPStan/Analyser/traits/*
-		- %rootDir%/tests/notAutoloaded/*
-		- %rootDir%/tests/PHPStan/Generics/functions.php
-		- %rootDir%/tests/PHPStan/Reflection/UnionTypesTest.php
-		- %rootDir%/tests/PHPStan/Reflection/MixedTypeTest.php
-		- %rootDir%/tests/PHPStan/Reflection/StaticTypeTest.php
+		- ../src/Reflection/SignatureMap/functionMap.php
+		- ../src/Reflection/SignatureMap/functionMetadata.php
+		- ../tests/*/data/*
+		- ../tests/tmp/*
+		- ../tests/PHPStan/Analyser/traits/*
+		- ../tests/notAutoloaded/*
+		- ../tests/PHPStan/Generics/functions.php
+		- ../tests/PHPStan/Reflection/UnionTypesTest.php
+		- ../tests/PHPStan/Reflection/MixedTypeTest.php
+		- ../tests/PHPStan/Reflection/StaticTypeTest.php
 		- ../tests/e2e/magic-setter/*
 		- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
 	featureToggles:

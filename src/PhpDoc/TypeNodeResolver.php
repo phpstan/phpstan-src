@@ -217,6 +217,8 @@ class TypeNodeResolver
 
 			case 'never':
 			case 'never-return':
+			case 'never-returns':
+			case 'no-return':
 				return new NeverType(true);
 
 			case 'list':

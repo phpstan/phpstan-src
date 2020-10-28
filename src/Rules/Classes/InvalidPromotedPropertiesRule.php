@@ -54,7 +54,7 @@ class InvalidPromotedPropertiesRule implements Rule
 		if (!$this->phpVersion->supportsPromotedProperties()) {
 			return [
 				RuleErrorBuilder::message(
-					'Promoted properties are supported only on PHP 8.0 and later.',
+					'Promoted properties are supported only on PHP 8.0 and later.'
 				)->nonIgnorable()->build(),
 			];
 		}
@@ -65,7 +65,7 @@ class InvalidPromotedPropertiesRule implements Rule
 		) {
 			return [
 				RuleErrorBuilder::message(
-					'Promoted properties can be in constructor only.',
+					'Promoted properties can be in constructor only.'
 				)->nonIgnorable()->build(),
 			];
 		}
@@ -73,7 +73,7 @@ class InvalidPromotedPropertiesRule implements Rule
 		if ($node->stmts === null) {
 			return [
 				RuleErrorBuilder::message(
-					'Promoted properties are not allowed in abstract constructors.',
+					'Promoted properties are not allowed in abstract constructors.'
 				)->nonIgnorable()->build(),
 			];
 		}

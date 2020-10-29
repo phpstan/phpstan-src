@@ -378,6 +378,7 @@ class FixerApplication
 					'tls' => [
 						'cafile' => CaBundle::getBundledCaBundlePath(),
 					],
+					'dns' => '1.1.1.1',
 				]
 			)
 		);

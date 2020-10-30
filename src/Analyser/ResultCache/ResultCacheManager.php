@@ -608,6 +608,6 @@ php;
 
 	private function buildCacheFilePath(): string
 	{
-		return $this->resultCachePath . '/resultCache' . $this->getMetaAsString() . 'php';
+		return $this->resultCachePath . '/resultCache' . $this->getMetaAsString() . '.php';
 	}
 }

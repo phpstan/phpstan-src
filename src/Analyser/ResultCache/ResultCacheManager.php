@@ -19,7 +19,7 @@ class ResultCacheManager
 
 	private ExportedNodeFetcher $exportedNodeFetcher;
 
-	private string $cacheFilePath;
+	private string $resultCachePath;
 
 	private string $tempResultCachePath;
 
@@ -47,7 +47,7 @@ class ResultCacheManager
 
 	/**
 	 * @param ExportedNodeFetcher $exportedNodeFetcher
-	 * @param string $cacheFilePath
+	 * @param string $resultCachePath
 	 * @param string $tempResultCachePath
 	 * @param string[] $allCustomConfigFiles
 	 * @param string[] $analysedPaths
@@ -59,7 +59,7 @@ class ResultCacheManager
 	 */
 	public function __construct(
 		ExportedNodeFetcher $exportedNodeFetcher,
-		string $cacheFilePath,
+		string $resultCachePath,
 		string $tempResultCachePath,
 		array $allCustomConfigFiles,
 		array $analysedPaths,
@@ -71,7 +71,7 @@ class ResultCacheManager
 	)
 	{
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
-		$this->cacheFilePath = $cacheFilePath;
+		$this->resultCachePath = $resultCachePath;
 		$this->tempResultCachePath = $tempResultCachePath;
 		$this->allCustomConfigFiles = $allCustomConfigFiles;
 		$this->analysedPaths = $analysedPaths;
@@ -96,7 +96,7 @@ class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
 		}
 
-		$cacheFilePath = $this->cacheFilePath;
+		$cacheFilePath = $this->buildCacheFilePath();
 		if ($resultCacheName !== null) {
 			$tmpCacheFile = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
 			if (is_file($tmpCacheFile)) {
@@ -488,7 +488,7 @@ php;
 
 		ksort($exportedNodes);
 
-		$file = $this->cacheFilePath;
+		$file = $this->buildCacheFilePath();
 		if ($resultCacheName !== null) {
 			$file = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
 		}
@@ -528,6 +528,11 @@ php;
 			'stubFiles' => $this->getStubFiles(),
 			'level' => $this->usedLevel,
 		];
+	}
+
+	private function getMetaAsString(): string
+	{
+		return sha1(serialize($this->getMeta()));
 	}
 
 	/**
@@ -601,4 +606,8 @@ php;
 		return $stubFiles;
 	}
 
+	private function buildCacheFilePath(): string
+	{
+		return $this->resultCachePath . '/resultCache' . $this->getMetaAsString() . 'php';
+	}
 }

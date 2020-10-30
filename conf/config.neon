@@ -386,7 +386,7 @@ services:
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory
 		arguments:
-			cacheFilePath: %tmpDir%/resultCache.php
+			resultCachePath: %tmpDir%
 			tempResultCachePath: %tempResultCachePath%
 			allCustomConfigFiles: %allCustomConfigFiles%
 			analysedPaths: %analysedPaths%
@@ -398,7 +398,7 @@ services:
 	-
 		class: PHPStan\Analyser\ResultCache\ResultCacheClearer
 		arguments:
-			cacheFilePath: %tmpDir%/resultCache.php
+			resultCachePath: %tmpDir%
 			tempResultCachePath: %tempResultCachePath%
 
 	-

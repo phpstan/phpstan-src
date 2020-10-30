@@ -7,26 +7,24 @@ use Symfony\Component\Finder\Finder;
 class ResultCacheClearer
 {
 
-	private string $cacheFilePath;
+	private string $resultCachePath;
 
 	private string $tempResultCachePath;
 
-	public function __construct(string $cacheFilePath, string $tempResultCachePath)
+	public function __construct(string $resultCachePath, string $tempResultCachePath)
 	{
-		$this->cacheFilePath = $cacheFilePath;
+		$this->resultCachePath = $resultCachePath;
 		$this->tempResultCachePath = $tempResultCachePath;
 	}
 
 	public function clear(): string
 	{
-		$dir = dirname($this->cacheFilePath);
-		if (!is_file($this->cacheFilePath)) {
-			return $dir;
+		$finder = new Finder();
+		foreach ($finder->files()->name('resultCache*.php')->in($this->tempResultCachePath) as $tmpResultCacheFile) {
+			@unlink($tmpResultCacheFile->getPathname());
 		}
 
-		@unlink($this->cacheFilePath);
-
-		return $dir;
+		return $this->resultCachePath;
 	}
 
 	public function clearTemporaryCaches(): void

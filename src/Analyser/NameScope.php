@@ -47,6 +47,11 @@ class NameScope
 		return $this->uses;
 	}
 
+	public function hasUseAlias(string $name): bool
+	{
+		return isset($this->uses[strtolower($name)]);
+	}
+
 	public function getClassName(): ?string
 	{
 		return $this->className;

@@ -152,9 +152,21 @@ class TypeNodeResolver
 				return new UnionType([new IntegerType(), new FloatType(), new StringType(), new BooleanType()]);
 
 			case 'number':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
 				return new UnionType([new IntegerType(), new FloatType()]);
 
 			case 'numeric':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
 				return new UnionType([
 					new IntegerType(),
 					new FloatType(),
@@ -171,7 +183,15 @@ class TypeNodeResolver
 				]);
 
 			case 'bool':
+				return new BooleanType();
+
 			case 'boolean':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
 				return new BooleanType();
 
 			case 'true':
@@ -184,7 +204,15 @@ class TypeNodeResolver
 				return new NullType();
 
 			case 'float':
+				return new FloatType();
+
 			case 'double':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
 				return new FloatType();
 
 			case 'array':
@@ -204,6 +232,12 @@ class TypeNodeResolver
 				return new CallableType();
 
 			case 'resource':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
 				return new ResourceType();
 
 			case 'mixed':
@@ -216,6 +250,14 @@ class TypeNodeResolver
 				return new ObjectWithoutClassType();
 
 			case 'never':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
+				return new NeverType(true);
+
 			case 'never-return':
 			case 'never-returns':
 			case 'no-return':
@@ -261,6 +303,25 @@ class TypeNodeResolver
 		}
 
 		return new ObjectType($stringName);
+	}
+
+	private function tryResolvePseudoTypeClassType(IdentifierTypeNode $typeNode, NameScope $nameScope): ?Type
+	{
+		if ($nameScope->hasUseAlias($typeNode->name)) {
+			return new ObjectType($nameScope->resolveStringName($typeNode->name));
+		}
+
+		if ($nameScope->getNamespace() === null) {
+			return null;
+		}
+
+		$className = $nameScope->resolveStringName($typeNode->name);
+
+		if ($this->getReflectionProvider()->hasClass($className)) {
+			return new ObjectType($className);
+		}
+
+		return null;
 	}
 
 	private function resolveThisTypeNode(ThisTypeNode $typeNode, NameScope $nameScope): Type

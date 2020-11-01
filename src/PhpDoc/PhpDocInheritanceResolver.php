@@ -77,6 +77,13 @@ class PhpDocInheritanceResolver
 		$parentPhpDocBlocks = [];
 
 		foreach ($phpDocBlock->getParents() as $parentPhpDocBlock) {
+			if (
+				$parentPhpDocBlock->getClassReflection()->isBuiltin()
+				&& $functionName !== null
+				&& strtolower($functionName) === '__construct'
+			) {
+				continue;
+			}
 			$parents[] = $this->docBlockTreeToResolvedDocBlock(
 				$parentPhpDocBlock,
 				$parentPhpDocBlock->getTrait(),

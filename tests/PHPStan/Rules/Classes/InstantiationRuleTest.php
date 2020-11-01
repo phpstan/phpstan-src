@@ -264,4 +264,9 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/php80-constructor.php'], $errors);
 	}
 
+	public function testBug4030(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4030.php'], []);
+	}
+
 }

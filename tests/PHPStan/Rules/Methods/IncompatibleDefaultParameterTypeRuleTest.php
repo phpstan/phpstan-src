@@ -35,4 +35,9 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/incompatible-default-parameter-type-trait-crash.php'], []);
 	}
 
+	public function testBug4011(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4011.php'], []);
+	}
+
 }

@@ -8,6 +8,7 @@ rules:
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\Exceptions\DeadCatchRule
 	- PHPStan\Rules\Functions\CallToFunctionStamentWithoutSideEffectsRule
+	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToMethodStamentWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToStaticMethodStamentWithoutSideEffectsRule
 	- PHPStan\Rules\TooWideTypehints\TooWideArrowFunctionReturnTypehintRule

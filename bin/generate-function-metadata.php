@@ -4,6 +4,7 @@
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
+use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PhpParser\ParserFactory;
 
 (function () {
@@ -18,17 +19,34 @@ use PhpParser\ParserFactory;
 		/** @var string[] */
 		public $functions = [];
 
+		/** @var string[] */
+		public $methods = [];
+
 		public function enterNode(Node $node)
 		{
-			if (!$node instanceof Node\Stmt\Function_) {
-				return;
+			if ($node instanceof Node\Stmt\Function_) {
+				foreach ($node->attrGroups as $attrGroup) {
+					foreach ($attrGroup->attrs as $attr) {
+						if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
+							$this->functions[] = $node->namespacedName->toLowerString();
+							break;
+						}
+					}
+				}
 			}
 
-			foreach ($node->attrGroups as $attrGroup) {
-				foreach ($attrGroup->attrs as $attr) {
-					if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
-						$this->functions[] = $node->namespacedName->toLowerString();
-						break;
+			if ($node instanceof Node\Stmt\ClassMethod) {
+				$class = $node->getAttribute('parent');
+				if (!$class instanceof Node\Stmt\ClassLike) {
+					throw new \PHPStan\ShouldNotHappenException($node->name->toString());
+				}
+				$className = $class->namespacedName->toString();
+				foreach ($node->attrGroups as $attrGroup) {
+					foreach ($attrGroup->attrs as $attr) {
+						if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
+							$this->methods[] = sprintf('%s::%s', $className, $node->name->toString());
+							break;
+						}
 					}
 				}
 			}
@@ -41,6 +59,7 @@ use PhpParser\ParserFactory;
 		$path = $stubFile->getPathname();
 		$traverser = new NodeTraverser();
 		$traverser->addVisitor(new NameResolver());
+		$traverser->addVisitor(new NodeConnectingVisitor());
 		$traverser->addVisitor($visitor);
 
 		$traverser->traverse(
@@ -56,6 +75,15 @@ use PhpParser\ParserFactory;
 			}
 		}
 		$metadata[$functionName] = ['hasSideEffects' => false];
+	}
+
+	foreach ($visitor->methods as $methodName) {
+		if (array_key_exists($methodName, $metadata)) {
+			if ($metadata[$methodName]['hasSideEffects']) {
+				throw new \PHPStan\ShouldNotHappenException($methodName);
+			}
+		}
+		$metadata[$methodName] = ['hasSideEffects' => false];
 	}
 
 	ksort($metadata);

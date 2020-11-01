@@ -16,4 +16,9 @@ class Foo
 		$dti->createFromFormat('Y-m-d', '2019-07-24');
 	}
 
+	public function doBaz(\Exception $e)
+	{
+		$e->getCode();
+	}
+
 }

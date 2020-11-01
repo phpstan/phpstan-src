@@ -29,6 +29,9 @@ class BetterReflectionSourceLocatorFactory
 	/** @var \PhpParser\Parser */
 	private $parser;
 
+	/** @var \PhpParser\Parser */
+	private $php8Parser;
+
 	/** @var PhpStormStubsSourceStubber */
 	private $phpstormStubsSourceStubber;
 
@@ -90,6 +93,7 @@ class BetterReflectionSourceLocatorFactory
 	 */
 	public function __construct(
 		\PhpParser\Parser $parser,
+		\PhpParser\Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
@@ -109,6 +113,7 @@ class BetterReflectionSourceLocatorFactory
 	)
 	{
 		$this->parser = $parser;
+		$this->php8Parser = $php8Parser;
 		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 		$this->reflectionSourceStubber = $reflectionSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
@@ -165,7 +170,11 @@ class BetterReflectionSourceLocatorFactory
 			return $this->container->getService('betterReflectionFunctionReflector');
 		});
 
-		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber));
+		$astPhp8Locator = new Locator($this->php8Parser, function (): FunctionReflector {
+			return $this->container->getService('betterReflectionFunctionReflector');
+		});
+
+		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 		$locators[] = new ClassBlacklistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);

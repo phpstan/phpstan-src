@@ -1283,6 +1283,7 @@ services:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory
 		arguments:
 			parser: @phpParserDecorator
+			php8Parser: @php8PhpParser
 			autoloadDirectories: %autoload_directories%
 			autoloadFiles: %autoload_files%
 			scanFiles: %scanFiles%

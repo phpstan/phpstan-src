@@ -5619,6 +5619,23 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		];
 	}
 
+	public function dataPseudoTypeOverrides(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-override.php');
+	}
+
+	public function dataPseudoTypeNamespace(): array
+	{
+		require_once __DIR__ . '/data/phpdoc-pseudotype-namespace.php';
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-namespace.php');
+	}
+
+	public function dataPseudoTypeGlobal(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-global.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11220,6 +11237,9 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataNestedGenericIncompleteConstructor
 	 * @dataProvider dataIteratorIterator
 	 * @dataProvider dataBug4642
+	 * @dataProvider dataPseudoTypeGlobal
+	 * @dataProvider dataPseudoTypeNamespace
+	 * @dataProvider dataPseudoTypeOverrides
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -239,4 +239,42 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4017(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-4017.php'], []);
+	}
+
+	public function testBug4017Two(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-4017_2.php'], [
+			[
+				'Parameter #1 $a (Bug4017_2\Foo) of method Bug4017_2\Lorem::doFoo() should be compatible with parameter $a (stdClass) of method Bug4017_2\Bar<stdClass>::doFoo()',
+				51,
+			],
+		]);
+	}
+
+	public function testBug4017Three(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-4017_3.php'], [
+			[
+				'Parameter #1 $a (T of stdClass) of method Bug4017_3\Lorem::doFoo() should be compatible with parameter $a (Bug4017_3\Foo) of method Bug4017_3\Bar::doFoo()',
+				45,
+			],
+		]);
+	}
+
+	public function testBug4023(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-4023.php'], []);
+	}
+
 }

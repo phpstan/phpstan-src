@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -154,11 +155,11 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	{
 		$returnType = TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
-			$currentVariant->getPhpDocReturnType()
+			TemplateTypeHelper::resolveToBounds($currentVariant->getPhpDocReturnType())
 		);
 		$parentReturnType = TypehintHelper::decideType(
 			$parentVariant->getNativeReturnType(),
-			$parentVariant->getPhpDocReturnType()
+			TemplateTypeHelper::resolveToBounds($parentVariant->getPhpDocReturnType())
 		);
 		// Allow adding `void` return type hints when the parent defines no return type
 		if ($returnType instanceof VoidType && $parentReturnType instanceof MixedType) {
@@ -170,7 +171,10 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];
 		}
 
-		return [$parentReturnType->isSuperTypeOf($returnType), $returnType, $parentReturnType];
+		return [$parentReturnType->isSuperTypeOf($returnType), TypehintHelper::decideType(
+			$currentVariant->getNativeReturnType(),
+			$currentVariant->getPhpDocReturnType()
+		), $parentReturnType];
 	}
 
 	/**
@@ -192,14 +196,17 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 
 			$parameterType = TypehintHelper::decideType(
 				$parameter->getNativeType(),
-				$parameter->getPhpDocType()
+				TemplateTypeHelper::resolveToBounds($parameter->getPhpDocType())
 			);
 			$parentParameterType = TypehintHelper::decideType(
 				$parentParameter->getNativeType(),
-				$parentParameter->getPhpDocType()
+				TemplateTypeHelper::resolveToBounds($parentParameter->getPhpDocType())
 			);
 
-			$parameterResults[] = [$parameterType->isSuperTypeOf($parentParameterType), $parameterType, $parentParameterType];
+			$parameterResults[] = [$parameterType->isSuperTypeOf($parentParameterType), TypehintHelper::decideType(
+				$parameter->getNativeType(),
+				$parameter->getPhpDocType()
+			), $parentParameterType];
 		}
 
 		return $parameterResults;

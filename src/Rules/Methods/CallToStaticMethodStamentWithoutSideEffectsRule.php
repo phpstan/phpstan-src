@@ -79,6 +79,15 @@ class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 		}
 
 		$method = $calledOnType->getMethod($methodName, $scope);
+		if (
+			(
+				strtolower($method->getName()) === '__construct'
+				|| strtolower($method->getName()) === strtolower($method->getDeclaringClass()->getName())
+			)
+		) {
+			return [];
+		}
+
 		if ($method->hasSideEffects()->no()) {
 			return [
 				RuleErrorBuilder::message(sprintf(

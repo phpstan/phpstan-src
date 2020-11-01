@@ -241,6 +241,9 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testBug4017(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-4017.php'], []);

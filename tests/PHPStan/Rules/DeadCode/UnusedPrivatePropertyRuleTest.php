@@ -155,4 +155,20 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPromotedProperties(): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/unused-private-promoted-property.php'], [
+			[
+				'Property UnusedPrivatePromotedProperty\Foo::$lorem is never read, only written.',
+				12,
+			],
+		]);
+	}
+
 }

@@ -458,6 +458,27 @@ class NodeScopeResolver
 				$isFinal
 			);
 
+			if ($stmt->name->toLowerString() === '__construct') {
+				foreach ($stmt->params as $param) {
+					if ($param->flags === 0) {
+						continue;
+					}
+
+					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+					$nodeCallback(new ClassPropertyNode(
+						$param->var->name,
+						$param->flags,
+						$param->type,
+						$param->default,
+						null, // todo
+						true,
+						$param
+					), $methodScope);
+				}
+			}
+
 			if ($stmt->getAttribute('virtual', false) === false) {
 				$nodeCallback(new InClassMethodNode($stmt), $methodScope);
 			}
@@ -595,6 +616,7 @@ class NodeScopeResolver
 						$stmt->type,
 						$prop->default,
 						$docComment !== null ? $docComment->getText() : null,
+						false,
 						$prop
 					),
 					$scope

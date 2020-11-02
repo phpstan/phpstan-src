@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
+use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Property\PropertyRead;
@@ -119,6 +120,12 @@ class ClassStatementsGatherer
 		}
 		if ($node instanceof ClassPropertyNode && !$scope->isInTrait()) {
 			$this->properties[] = $node;
+			if ($node->isPromoted()) {
+				$this->propertyUsages[] = new PropertyWrite(
+					new PropertyFetch(new Expr\Variable('this'), new Identifier($node->getName())),
+					$scope
+				);
+			}
 			return;
 		}
 		if ($node instanceof \PhpParser\Node\Stmt\ClassMethod && !$scope->isInTrait()) {

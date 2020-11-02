@@ -25,6 +25,8 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 
 	private ?string $phpDoc;
 
+	private bool $isPromoted;
+
 	/**
 	 * @param int $flags
 	 * @param Identifier|Name|NullableType|UnionType|null $type
@@ -37,6 +39,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		$type,
 		?Expr $default,
 		?string $phpDoc,
+		bool $isPromoted,
 		Node $originalNode
 	)
 	{
@@ -45,6 +48,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		$this->flags = $flags;
 		$this->type = $type;
 		$this->default = $default;
+		$this->isPromoted = $isPromoted;
 		$this->phpDoc = $phpDoc;
 	}
 
@@ -61,6 +65,11 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function getDefault(): ?Expr
 	{
 		return $this->default;
+	}
+
+	public function isPromoted(): bool
+	{
+		return $this->isPromoted;
 	}
 
 	public function getPhpDoc(): ?string

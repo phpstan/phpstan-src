@@ -10229,9 +10229,9 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3985.php');
 	}
 
-	public function dataArraySliceNonEmpty(): array
+	public function dataArraySlice(): array
 	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/array-slice-non-empty.php');
+		return $this->gatherAssertTypes(__DIR__ . '/data/array-slice.php');
 	}
 
 	public function dataBug3990(): array
@@ -10347,7 +10347,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2816
 	 * @dataProvider dataBug2816Two
 	 * @dataProvider dataBug3985
-	 * @dataProvider dataArraySliceNonEmpty
+	 * @dataProvider dataArraySlice
 	 * @dataProvider dataBug3990
 	 * @dataProvider dataBug3991
 	 * @dataProvider dataBug3993

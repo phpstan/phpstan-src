@@ -128,4 +128,19 @@ class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4043(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4043.php'], [
+			[
+				'If condition is always false.',
+				43,
+			],
+			[
+				'If condition is always true.',
+				50,
+			],
+		]);
+	}
+
 }

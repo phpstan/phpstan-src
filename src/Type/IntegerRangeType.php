@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
 class IntegerRangeType extends IntegerType
@@ -150,6 +151,20 @@ class IntegerRangeType extends IntegerType
 	public function toNumber(): Type
 	{
 		return new parent();
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($this);
+		if ($isZero->no()) {
+			return new ConstantBooleanType(true);
+		}
+
+		if ($isZero->maybe()) {
+			return new BooleanType();
+		}
+
+		return new ConstantBooleanType(false);
 	}
 
 

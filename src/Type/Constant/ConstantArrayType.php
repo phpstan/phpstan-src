@@ -602,7 +602,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function toBoolean(): BooleanType
 	{
-		return new ConstantBooleanType(count($this->keyTypes) > 0);
+		return $this->count()->toBoolean();
 	}
 
 	public function generalize(): Type
@@ -690,7 +690,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$optionalKeysCount = count($this->optionalKeys);
 		$totalKeysCount = count($this->getKeyTypes());
-		if ($optionalKeysCount === $totalKeysCount) {
+		if ($optionalKeysCount === 0) {
 			return new ConstantIntegerType($totalKeysCount);
 		}
 

@@ -96,6 +96,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
@@ -1314,46 +1315,58 @@ class NodeScopeResolver
 
 	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
 	{
-		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && count($this->earlyTerminatingMethodCalls) > 0) {
+		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall)) {
 			if ($expr->name instanceof Expr) {
 				return null;
 			}
 
-			if ($expr instanceof MethodCall) {
-				$methodCalledOnType = $scope->getType($expr->var);
-			} else {
-				if ($expr->class instanceof Name) {
-					$methodCalledOnType = $scope->getFunctionType($expr->class, false, false);
+			if (count($this->earlyTerminatingMethodCalls) > 0) {
+				if ($expr instanceof MethodCall) {
+					$methodCalledOnType = $scope->getType($expr->var);
 				} else {
-					$methodCalledOnType = $scope->getType($expr->class);
-				}
-			}
-
-			$directClassNames = TypeUtils::getDirectClassNames($methodCalledOnType);
-			foreach ($directClassNames as $referencedClass) {
-				if (!$this->reflectionProvider->hasClass($referencedClass)) {
-					continue;
+					if ($expr->class instanceof Name) {
+						$methodCalledOnType = $scope->getFunctionType($expr->class, false, false);
+					} else {
+						$methodCalledOnType = $scope->getType($expr->class);
+					}
 				}
 
-				$classReflection = $this->reflectionProvider->getClass($referencedClass);
-				foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
-					if (!isset($this->earlyTerminatingMethodCalls[$className])) {
+				$directClassNames = TypeUtils::getDirectClassNames($methodCalledOnType);
+				foreach ($directClassNames as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
 						continue;
 					}
 
-					if (in_array((string) $expr->name, $this->earlyTerminatingMethodCalls[$className], true)) {
-						return $expr;
+					$classReflection = $this->reflectionProvider->getClass($referencedClass);
+					foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
+						if (!isset($this->earlyTerminatingMethodCalls[$className])) {
+							continue;
+						}
+
+						if (in_array((string) $expr->name, $this->earlyTerminatingMethodCalls[$className], true)) {
+							return $expr;
+						}
 					}
 				}
 			}
+
+			$type = $scope->getType($expr);
+			if ($type instanceof NeverType && $type->isExplicit()) {
+				return $expr;
+			}
 		}
 
-		if ($expr instanceof FuncCall && count($this->earlyTerminatingFunctionCalls) > 0) {
+		if ($expr instanceof FuncCall) {
 			if ($expr->name instanceof Expr) {
 				return null;
 			}
 
 			if (in_array((string) $expr->name, $this->earlyTerminatingFunctionCalls, true)) {
+				return $expr;
+			}
+
+			$type = $scope->getType($expr);
+			if ($type instanceof NeverType && $type->isExplicit()) {
 				return $expr;
 			}
 		}

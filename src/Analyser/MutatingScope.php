@@ -1750,7 +1750,7 @@ class MutatingScope implements Scope
 				) ?? new NeverType();
 			};
 			$returnType = TypeTraverser::map($methodCalledOnType, $map);
-			if ($returnType instanceof NeverType) {
+			if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
 				return new ErrorType();
 			}
 			return $returnType;
@@ -1799,7 +1799,7 @@ class MutatingScope implements Scope
 				) ?? new NeverType();
 			};
 			$returnType = TypeTraverser::map($staticMethodCalledOnType, $map);
-			if ($returnType instanceof NeverType) {
+			if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
 				return new ErrorType();
 			}
 			return $returnType;

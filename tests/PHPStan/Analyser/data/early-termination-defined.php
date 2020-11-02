@@ -14,6 +14,21 @@ class Foo
 		throw new \Exception();
 	}
 
+	/**
+	 * @return no-return
+	 */
+	public static function doBarPhpDoc()
+	{
+		throw new \Exception();
+	}
+
+	/**
+	 * @return never-return
+	 */
+	public function doFooPhpDoc()
+	{
+		throw new \Exception();
+	}
 }
 
 class Bar extends Foo
@@ -22,6 +37,22 @@ class Bar extends Foo
 }
 
 function baz()
+{
+	throw new \Exception();
+}
+
+/**
+ * @return never
+ */
+function bazPhpDoc()
+{
+	throw new \Exception();
+}
+
+/**
+ * @return never-returns
+ */
+function bazPhpDoc2()
 {
 	throw new \Exception();
 }

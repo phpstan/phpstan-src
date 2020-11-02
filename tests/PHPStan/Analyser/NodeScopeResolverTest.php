@@ -10268,6 +10268,85 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/promoted-properties-types.php');
 	}
 
+	/** @return array<string, mixed[]> */
+	public function dataNeverEarlyTerminates(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/early-termination-phpdoc.php');
+	}
+
+	/**
+	 * @param string $file
+	 * @return array<string, mixed[]>
+	 */
+	private function gatherAssertTypes(string $file): array
+	{
+		$asserts = [];
+		$this->processFile($file, function (Node $node, Scope $scope) use (&$asserts, $file): void {
+			if (!$node instanceof Node\Expr\FuncCall) {
+				return;
+			}
+
+			$nameNode = $node->name;
+			if (!$nameNode instanceof Name) {
+				return;
+			}
+
+			$functionName = $nameNode->toString();
+			if ($functionName === 'PHPStan\\Analyser\\assertType') {
+				$expectedType = $scope->getType($node->args[0]->value);
+				$actualType = $scope->getType($node->args[1]->value);
+				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
+			} elseif ($functionName === 'PHPStan\\Analyser\\assertNativeType') {
+				$expectedType = $scope->getNativeType($node->args[0]->value);
+				$actualType = $scope->getNativeType($node->args[1]->value);
+				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
+			} elseif ($functionName === 'PHPStan\\Analyser\\assertVariableCertainty') {
+				$certainty = $node->args[0]->value;
+				if (!$certainty instanceof StaticCall) {
+					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
+				}
+				if (!$certainty->class instanceof Node\Name) {
+					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+				}
+
+				if ($certainty->class->toString() !== 'PHPStan\\TrinaryLogic') {
+					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+				}
+
+				if (!$certainty->name instanceof Node\Identifier) {
+					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+				}
+
+				// @phpstan-ignore-next-line
+				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
+				$variable = $node->args[1]->value;
+				if (!$variable instanceof Node\Expr\Variable) {
+					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
+				}
+				if (!is_string($variable->name)) {
+					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
+				}
+
+				$actualCertaintyValue = $scope->hasVariableType($variable->name);
+				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name];
+			} else {
+				return;
+			}
+
+			if (count($node->args) !== 2) {
+				$this->fail(sprintf(
+					'ERROR: Wrong %s() call on line %d.',
+					$functionName,
+					$node->getLine()
+				));
+			}
+
+			$asserts[$file . ':' . $node->getLine()] = $assert;
+		});
+
+		return $asserts;
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10363,6 +10442,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3997
 	 * @dataProvider dataBug4016
 	 * @dataProvider dataPromotedProperties
+	 * @dataProvider dataNeverEarlyTerminates
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args
@@ -10392,79 +10472,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
 			);
 		}
-	}
-
-	/**
-	 * @param string $file
-	 * @return array<string, mixed[]>
-	 */
-	private function gatherAssertTypes(string $file): array
-	{
-		$asserts = [];
-		$this->processFile($file, function (Node $node, Scope $scope) use (&$asserts, $file): void {
-			if (!$node instanceof Node\Expr\FuncCall) {
-				return;
-			}
-
-			$nameNode = $node->name;
-			if (!$nameNode instanceof Name) {
-				return;
-			}
-
-			$functionName = $nameNode->toString();
-			if ($functionName === 'PHPStan\\Analyser\\assertType') {
-				$expectedType = $scope->getType($node->args[0]->value);
-				$actualType = $scope->getType($node->args[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
-			} elseif ($functionName === 'PHPStan\\Analyser\\assertNativeType') {
-				$expectedType = $scope->getNativeType($node->args[0]->value);
-				$actualType = $scope->getNativeType($node->args[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
-			} elseif ($functionName === 'PHPStan\\Analyser\\assertVariableCertainty') {
-				$certainty = $node->args[0]->value;
-				if (!$certainty instanceof StaticCall) {
-					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
-				}
-				if (!$certainty->class instanceof Node\Name) {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
-				}
-
-				if ($certainty->class->toString() !== 'PHPStan\\TrinaryLogic') {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
-				}
-
-				if (!$certainty->name instanceof Node\Identifier) {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
-				}
-
-				// @phpstan-ignore-next-line
-				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
-				$variable = $node->args[1]->value;
-				if (!$variable instanceof Node\Expr\Variable) {
-					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
-				}
-				if (!is_string($variable->name)) {
-					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
-				}
-
-				$actualCertaintyValue = $scope->hasVariableType($variable->name);
-				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name];
-			} else {
-				return;
-			}
-
-			if (count($node->args) !== 2) {
-				$this->fail(sprintf(
-					'ERROR: Wrong %s() call on line %d.',
-					$functionName,
-					$node->getLine()
-				));
-			}
-
-			$asserts[$file . ':' . $node->getLine()] = $assert;
-		});
-
-		return $asserts;
 	}
 
 	public function dataInferPrivatePropertyTypeFromConstructor(): array

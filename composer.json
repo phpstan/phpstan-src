@@ -69,7 +69,10 @@
 			"PHPStan\\": [
 				"src/"
 			]
-		}
+		},
+		"files": [
+			"src/debugger.php"
+		]
 	},
 	"autoload-dev": {
 		"psr-4": {

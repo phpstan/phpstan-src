@@ -162,7 +162,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		}
 
 		$this->alwaysWrittenTags = [];
-		$this->alwaysReadTags = [];
+		$this->alwaysReadTags = ['@get'];
 		$this->analyse([__DIR__ . '/data/unused-private-promoted-property.php'], [
 			[
 				'Property UnusedPrivatePromotedProperty\Foo::$lorem is never read, only written.',

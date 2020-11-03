@@ -467,12 +467,16 @@ class NodeScopeResolver
 					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 						throw new \PHPStan\ShouldNotHappenException();
 					}
+					$phpDoc = null;
+					if ($param->getDocComment() !== null) {
+						$phpDoc = $param->getDocComment()->getText();
+					}
 					$nodeCallback(new ClassPropertyNode(
 						$param->var->name,
 						$param->flags,
 						$param->type,
 						$param->default,
-						null, // todo
+						$phpDoc,
 						true,
 						$param
 					), $methodScope);

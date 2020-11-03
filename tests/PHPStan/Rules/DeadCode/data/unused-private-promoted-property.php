@@ -9,7 +9,8 @@ class Foo
 		public $foo,
 		protected $bar,
 		private $baz,
-		private $lorem
+		private $lorem,
+		/** @get */ private $ipsum
 	) { }
 
 	public function getBaz()

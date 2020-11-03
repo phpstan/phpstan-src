@@ -226,14 +226,24 @@ class PhpClassReflectionExtension
 						$constructorName = $declaringClassReflection->getConstructor()->getName();
 					}
 				}
-				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
-					$docComment,
-					$declaringClassReflection,
-					$declaringClassReflection->getFileName(),
-					$declaringTraitName,
-					$propertyName,
-					$constructorName
-				);
+
+				if ($constructorName === null) {
+					$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
+						$docComment,
+						$declaringClassReflection,
+						$declaringClassReflection->getFileName(),
+						$declaringTraitName,
+						$propertyName
+					);
+				} elseif ($docComment !== null) {
+					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+						$declaringClassReflection->getFileName(),
+						$declaringClassName,
+						$declaringTraitName,
+						$constructorName,
+						$docComment
+					);
+				}
 				$phpDocBlockClassReflection = $declaringClassReflection;
 			}
 		} else {

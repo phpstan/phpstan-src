@@ -2760,13 +2760,12 @@ class NodeScopeResolver
 						throw new \PHPStan\ShouldNotHappenException();
 					}
 
-					$paramPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
-						$param->getDocComment()->getText(),
-						$scope->getClassReflection(),
+					$paramPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 						$file,
+						$class,
 						$trait,
-						$param->var->name,
-						'__construct'
+						'__construct',
+						$param->getDocComment()->getText()
 					);
 					$varTags = $paramPhpDoc->getVarTags();
 					if (isset($varTags[0]) && count($varTags) === 1) {

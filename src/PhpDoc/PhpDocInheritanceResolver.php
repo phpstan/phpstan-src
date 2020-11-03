@@ -22,8 +22,7 @@ class PhpDocInheritanceResolver
 		ClassReflection $classReflection,
 		string $classReflectionFileName,
 		?string $declaringTraitName,
-		string $propertyName,
-		?string $constructorName
+		string $propertyName
 	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForProperty(
@@ -37,7 +36,7 @@ class PhpDocInheritanceResolver
 			[]
 		);
 
-		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $declaringTraitName, $constructorName);
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $declaringTraitName, null);
 	}
 
 	/**

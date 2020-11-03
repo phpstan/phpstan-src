@@ -82,3 +82,24 @@ function (): void {
 	$lorem = new Lorem(new \stdClass);
 	assertType('stdClass', $lorem->foo);
 };
+
+/**
+ * @extends Foo<\stdClass>
+ */
+class Baz extends Foo
+{
+
+	public function __construct(
+		public $anotherPhpDocArray
+	)
+	{
+		assertType('array<int, string>', $anotherPhpDocArray);
+		assertNativeType('array', $anotherPhpDocArray);
+	}
+
+}
+
+function (Baz $baz): void {
+	assertType('array<int, string>', $baz->anotherPhpDocArray);
+	assertType('stdClass', $baz->templateProperty);
+};

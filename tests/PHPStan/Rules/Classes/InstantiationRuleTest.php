@@ -269,4 +269,22 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4030.php'], []);
 	}
 
+	public function testPromotedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/instantiation-promoted-properties.php'], [
+			[
+				'Parameter #2 $bar of class InstantiationPromotedProperties\Foo constructor expects array<string>, array<int, int> given.',
+				30,
+			],
+			[
+				'Parameter #2 $bar of class InstantiationPromotedProperties\Bar constructor expects array<string>, array<int, int> given.',
+				33,
+			],
+		]);
+	}
+
 }

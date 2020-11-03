@@ -78,6 +78,11 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->isPublic();
 	}
 
+	public function isConstructor(): bool
+	{
+		return $this->reflection->isConstructor();
+	}
+
 	public function getPrototype(): BuiltinMethodReflection
 	{
 		return new self($this->reflection->getPrototype());

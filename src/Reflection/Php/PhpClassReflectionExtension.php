@@ -14,7 +14,6 @@ use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
-use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
@@ -562,14 +561,60 @@ class PhpClassReflectionExtension
 		$isDeprecated = false;
 		$isInternal = false;
 		$isFinal = false;
+		if (
+			$methodReflection->isConstructor()
+			&& $declaringClass->getFileName() !== false
+		) {
+			foreach ($methodReflection->getParameters() as $parameter) {
+				if (!method_exists($parameter, 'isPromoted') || !$parameter->isPromoted()) {
+					continue;
+				}
+
+				if (!$methodReflection->getDeclaringClass()->hasProperty($parameter->getName())) {
+					continue;
+				}
+
+				$parameterProperty = $methodReflection->getDeclaringClass()->getProperty($parameter->getName());
+				if (!method_exists($parameterProperty, 'isPromoted') || !$parameterProperty->isPromoted()) {
+					continue;
+				}
+				if ($parameterProperty->getDocComment() === false) {
+					continue;
+				}
+
+				$propertyDocblock = $this->fileTypeMapper->getResolvedPhpDoc(
+					$declaringClass->getFileName(),
+					$declaringClassName,
+					$declaringTraitName,
+					$methodReflection->getName(),
+					$parameterProperty->getDocComment()
+				);
+				$varTags = $propertyDocblock->getVarTags();
+				if (isset($varTags[0]) && count($varTags) === 1) {
+					$phpDocType = $varTags[0]->getType();
+				} elseif (isset($varTags[$parameter->getName()])) {
+					$phpDocType = $varTags[$parameter->getName()]->getType();
+				} else {
+					continue;
+				}
+
+				$phpDocParameterTypes[$parameter->getName()] = $phpDocType;
+			}
+		}
 		if ($resolvedPhpDoc !== null) {
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
-			$phpDocParameterTypes = array_map(static function (ParamTag $tag) use ($phpDocBlockClassReflection): Type {
-				return TemplateTypeHelper::resolveTemplateTypes(
-					$tag->getType(),
+			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
+				if (array_key_exists($paramName, $phpDocParameterTypes)) {
+					continue;
+				}
+				$phpDocParameterTypes[$paramName] = $paramTag->getType();
+			}
+			foreach ($phpDocParameterTypes as $paramName => $paramType) {
+				$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+					$paramType,
 					$phpDocBlockClassReflection->getActiveTemplateTypeMap()
 				);
-			}, $resolvedPhpDoc->getParamTags());
+			}
 			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$methodReflection->getReturnType(),
 				null,

@@ -2,6 +2,7 @@
 
 namespace PromotedPropertiesTypes;
 
+use function PHPStan\Analyser\assertNativeType;
 use function PHPStan\Analyser\assertType;
 
 /**
@@ -14,6 +15,7 @@ class Foo
 	 * @param array<int, string> $anotherPhpDocArray
 	 * @param T $anotherTemplateProperty
 	 * @param string $bothProperty
+	 * @param array<string> $anotherBothProperty
 	 */
 	public function __construct(
 		public $noType,
@@ -23,8 +25,18 @@ class Foo
 		/** @var array<int, string> */ public array $yetAnotherPhpDocArray,
 		/** @var T */ public $templateProperty,
 		public $anotherTemplateProperty,
-		/** @var int */ public $bothProperty
-	) { }
+		/** @var int */ public $bothProperty,
+		/** @var array<int> */ public $anotherBothProperty
+	) {
+		assertType('array<int, string>', $phpDocArray);
+		assertNativeType('mixed', $phpDocArray);
+		assertType('array<int, string>', $anotherPhpDocArray);
+		assertNativeType('mixed', $anotherPhpDocArray);
+		assertType('array<int, string>', $yetAnotherPhpDocArray);
+		assertNativeType('array', $yetAnotherPhpDocArray);
+		assertType('int', $bothProperty);
+		assertType('array<int>', $anotherBothProperty);
+	}
 
 }
 
@@ -35,6 +47,7 @@ function (Foo $foo): void {
 	assertType('array<int, string>', $foo->anotherPhpDocArray);
 	assertType('array<int, string>', $foo->yetAnotherPhpDocArray);
 	assertType('int', $foo->bothProperty);
+	assertType('array<int>', $foo->anotherBothProperty);
 };
 
 /**

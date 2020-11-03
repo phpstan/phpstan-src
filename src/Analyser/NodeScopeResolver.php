@@ -71,7 +71,6 @@ use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
-use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -2743,6 +2742,44 @@ class NodeScopeResolver
 				$functionLike->name->name,
 				$positionalParameterNames
 			);
+
+			if ($functionLike->name->toLowerString() === '__construct') {
+				foreach ($functionLike->params as $param) {
+					if ($param->flags === 0) {
+						continue;
+					}
+
+					if ($param->getDocComment() === null) {
+						continue;
+					}
+
+					if (
+						!$param->var instanceof Variable
+						|| !is_string($param->var->name)
+					) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+
+					$paramPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
+						$param->getDocComment()->getText(),
+						$scope->getClassReflection(),
+						$file,
+						$trait,
+						$param->var->name,
+						'__construct'
+					);
+					$varTags = $paramPhpDoc->getVarTags();
+					if (isset($varTags[0]) && count($varTags) === 1) {
+						$phpDocType = $varTags[0]->getType();
+					} elseif (isset($varTags[$param->var->name])) {
+						$phpDocType = $varTags[$param->var->name]->getType();
+					} else {
+						continue;
+					}
+
+					$phpDocParameterTypes[$param->var->name] = $phpDocType;
+				}
+			}
 		} elseif ($functionLike instanceof Node\Stmt\Function_) {
 			$functionName = trim($scope->getNamespace() . '\\' . $functionLike->name->name, '\\');
 		}
@@ -2759,9 +2796,12 @@ class NodeScopeResolver
 
 		if ($resolvedPhpDoc !== null) {
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
-			$phpDocParameterTypes = array_map(static function (ParamTag $tag): Type {
-				return $tag->getType();
-			}, $resolvedPhpDoc->getParamTags());
+			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
+				if (array_key_exists($paramName, $phpDocParameterTypes)) {
+					continue;
+				}
+				$phpDocParameterTypes[$paramName] = $paramTag->getType();
+			}
 			$nativeReturnType = $scope->getFunctionType($functionLike->getReturnType(), false, false);
 			$phpDocReturnType = $this->getPhpDocReturnType($resolvedPhpDoc, $nativeReturnType);
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;

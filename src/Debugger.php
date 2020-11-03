@@ -4,11 +4,10 @@ namespace PHPStan;
 
 class Debugger
 {
-    /**
-     * @var mixed $thing
-     */
-    public function logType($thing)
-    {
-        //
-    }
+	/**
+	 * @var mixed $thing
+	 */
+	public function dumpType($thing): void
+	{
+	}
 }

@@ -119,6 +119,15 @@ class PhpPropertyReflection implements PropertyReflection
 		return true;
 	}
 
+	public function isPromoted(): bool
+	{
+		if (!method_exists($this->reflection, 'isPromoted')) {
+			return false;
+		}
+
+		return $this->reflection->isPromoted();
+	}
+
 	public function hasPhpDoc(): bool
 	{
 		return $this->phpDocType !== null;

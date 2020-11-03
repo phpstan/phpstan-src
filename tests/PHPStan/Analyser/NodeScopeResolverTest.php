@@ -10259,6 +10259,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4016.php');
 	}
 
+	public function dataPromotedProperties(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/promoted-properties-types.php');
+	}
+
 	/**
 	 * @dataProvider dataBug2574
 	 * @dataProvider dataBug2577
@@ -10353,6 +10362,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3993
 	 * @dataProvider dataBug3997
 	 * @dataProvider dataBug4016
+	 * @dataProvider dataPromotedProperties
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

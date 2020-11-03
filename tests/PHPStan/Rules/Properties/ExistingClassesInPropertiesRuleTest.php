@@ -106,4 +106,32 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testPromotedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/properties-promoted-types.php'], [
+			[
+				'Property PromotedPropertiesExistingClasses\Foo::$baz has invalid type PromotedPropertiesExistingClasses\SomeTrait.',
+				11,
+			],
+			[
+				'Property PromotedPropertiesExistingClasses\Foo::$lorem has invalid type PromotedPropertiesExistingClasses\SomeTrait.',
+				12,
+			],
+			[
+				'Property PromotedPropertiesExistingClasses\Foo::$ipsum has unknown class PromotedPropertiesExistingClasses\Bar as its type.',
+				13,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Property PromotedPropertiesExistingClasses\Foo::$dolor has unknown class PromotedPropertiesExistingClasses\Bar as its type.',
+				14,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

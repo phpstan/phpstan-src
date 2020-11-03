@@ -44,6 +44,10 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		}
 
 		$phpDocType = $propertyReflection->getPhpDocType();
+		$description = 'PHPDoc tag @var';
+		if ($propertyReflection->isPromoted()) {
+			$description = 'PHPDoc type';
+		}
 
 		$messages = [];
 		if (
@@ -51,7 +55,8 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 			|| ($phpDocType instanceof NeverType && !$phpDocType->isExplicit())
 		) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'PHPDoc tag @var for property %s::$%s contains unresolvable type.',
+				'%s for property %s::$%s contains unresolvable type.',
+				$description,
 				$propertyReflection->getDeclaringClass()->getName(),
 				$propertyName
 			))->build();
@@ -61,7 +66,8 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
 		if ($isSuperType->no()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'PHPDoc tag @var for property %s::$%s with type %s is incompatible with native type %s.',
+				'%s for property %s::$%s with type %s is incompatible with native type %s.',
+				$description,
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
@@ -70,7 +76,8 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 
 		} elseif ($isSuperType->maybe()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'PHPDoc tag @var for property %s::$%s with type %s is not subtype of native type %s.',
+				'%s for property %s::$%s with type %s is not subtype of native type %s.',
+				$description,
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
@@ -81,22 +88,26 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		$messages = array_merge($messages, $this->genericObjectTypeCheck->check(
 			$phpDocType,
 			sprintf(
-				'PHPDoc tag @var for property %s::$%s contains generic type %%s but class %%s is not generic.',
+				'%s for property %s::$%s contains generic type %%s but class %%s is not generic.',
+				$description,
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName
 			),
 			sprintf(
-				'Generic type %%s in PHPDoc tag @var for property %s::$%s does not specify all template types of class %%s: %%s',
+				'Generic type %%s in %s for property %s::$%s does not specify all template types of class %%s: %%s',
+				$description,
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName
 			),
 			sprintf(
-				'Generic type %%s in PHPDoc tag @var for property %s::$%s specifies %%d template types, but class %%s supports only %%d: %%s',
+				'Generic type %%s in %s for property %s::$%s specifies %%d template types, but class %%s supports only %%d: %%s',
+				$description,
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName
 			),
 			sprintf(
-				'Type %%s in generic type %%s in PHPDoc tag @var for property %s::$%s is not subtype of template type %%s of class %%s.',
+				'Type %%s in generic type %%s in %s for property %s::$%s is not subtype of template type %%s of class %%s.',
+				$description,
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName
 			)

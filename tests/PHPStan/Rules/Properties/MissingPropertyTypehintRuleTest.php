@@ -54,4 +54,22 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3402.php'], []);
 	}
 
+	public function testPromotedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/promoted-properties-missing-typehint.php'], [
+			[
+				'Property PromotedPropertiesMissingTypehint\Foo::$lorem has no typehint specified.',
+				15,
+			],
+			[
+				'Property PromotedPropertiesMissingTypehint\Foo::$ipsum type has no value type specified in iterable type array.',
+				16,
+				"Consider adding something like <fg=cyan>array<Foo></> to the PHPDoc.\nYou can turn off this check by setting <fg=cyan>checkMissingIterableValueType: false</> in your <fg=cyan>%configurationFile%</>.",
+			],
+		]);
+	}
+
 }

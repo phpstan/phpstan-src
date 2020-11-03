@@ -79,4 +79,50 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCa
 		]);
 	}
 
+	public function testPromotedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/incompatible-property-promoted.php'], [
+			[
+				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$bar contains unresolvable type.',
+				16,
+			],
+			[
+				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$classStringInt contains unresolvable type.',
+				22,
+			],
+			[
+				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$fooGeneric contains generic type InvalidPhpDocDefinitions\Foo<stdClass> but class InvalidPhpDocDefinitions\Foo is not generic.',
+				28,
+			],
+			[
+				'Generic type InvalidPhpDocDefinitions\FooGeneric<int> in PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$notEnoughTypesGenericfoo does not specify all template types of class InvalidPhpDocDefinitions\FooGeneric: T, U',
+				34,
+			],
+			[
+				'Generic type InvalidPhpDocDefinitions\FooGeneric<int, InvalidArgumentException, string> in PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$tooManyTypesGenericfoo specifies 3 template types, but class InvalidPhpDocDefinitions\FooGeneric supports only 2: T, U',
+				37,
+			],
+			[
+				'Type Throwable in generic type InvalidPhpDocDefinitions\FooGeneric<int, Throwable> in PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$invalidTypeGenericfoo is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
+				40,
+			],
+			[
+				'Type stdClass in generic type InvalidPhpDocDefinitions\FooGeneric<int, stdClass> in PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$anotherInvalidTypeGenericfoo is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
+				43,
+			],
+			[
+				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$unknownClassConstant contains unresolvable type.',
+				46,
+			],
+			[
+				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$unknownClassConstant2 contains unresolvable type.',
+				49,
+			],
+		]);
+	}
+
 }

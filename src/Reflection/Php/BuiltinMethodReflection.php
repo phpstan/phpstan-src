@@ -36,8 +36,6 @@ interface BuiltinMethodReflection
 
 	public function isPublic(): bool;
 
-	public function isConstructor(): bool;
-
 	public function getPrototype(): self;
 
 	public function isDeprecated(): TrinaryLogic;

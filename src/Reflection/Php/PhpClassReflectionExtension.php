@@ -562,7 +562,8 @@ class PhpClassReflectionExtension
 		$isInternal = false;
 		$isFinal = false;
 		if (
-			$methodReflection->isConstructor()
+			$methodReflection instanceof NativeBuiltinMethodReflection
+			&& $methodReflection->isConstructor()
 			&& $declaringClass->getFileName() !== false
 		) {
 			foreach ($methodReflection->getParameters() as $parameter) {

@@ -79,11 +79,6 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return true;
 	}
 
-	public function isConstructor(): bool
-	{
-		return false;
-	}
-
 	public function getPrototype(): BuiltinMethodReflection
 	{
 		throw new \ReflectionException();

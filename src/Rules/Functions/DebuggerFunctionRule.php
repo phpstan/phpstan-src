@@ -20,7 +20,7 @@ class DebuggerFunctionRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->name !== 'PHPStan\dumpType') {
+		if (!($node->name instanceof \PhpParser\Node\Name) || (string) $node->name !== 'PHPStan\\dumpType') {
 			return [];
 		}
 

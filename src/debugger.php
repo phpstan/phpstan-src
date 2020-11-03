@@ -4,6 +4,7 @@ namespace PHPStan;
 
 /**
  * @param mixed $thing
+ * phpcs:ignore Squiz.Functions.GlobalFunction.Found
  */
 function dumpType($thing): void
 {

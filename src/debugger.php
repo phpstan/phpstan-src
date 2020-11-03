@@ -3,7 +3,7 @@
 namespace PHPStan;
 
 /**
- * @var mixed $thing
+ * @param mixed $thing
  */
 function dumpType($thing): void
 {

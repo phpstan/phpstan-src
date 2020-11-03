@@ -26,4 +26,5 @@ class DebuggerFunctionRule implements \PHPStan\Rules\Rule
 
 		return [$scope->getType($node->args[0]->value)->describe(VerbosityLevel::precise())];
 	}
+
 }

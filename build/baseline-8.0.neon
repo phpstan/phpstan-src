@@ -40,3 +40,8 @@ parameters:
 			paths:
 				- ../src/Reflection/Php/PhpClassReflectionExtension.php
 				- ../src/Reflection/Php/PhpPropertyReflection.php
+
+		-
+			message: "#^Call to function method_exists\\(\\) with ReflectionParameter and 'isPromoted' will always evaluate to true\\.$#"
+			paths:
+				- ../src/Reflection/Php/PhpClassReflectionExtension.php

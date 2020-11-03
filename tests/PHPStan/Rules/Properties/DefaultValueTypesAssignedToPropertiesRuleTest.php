@@ -49,8 +49,8 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\Rul
 
 	public function testDefaultValueForPromotedProperty(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
 		}
 
 		$this->analyse([__DIR__ . '/data/default-value-for-promoted-property.php'], [

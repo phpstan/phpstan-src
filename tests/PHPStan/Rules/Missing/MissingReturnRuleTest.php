@@ -96,6 +96,10 @@ class MissingReturnRuleTest extends RuleTestCase
 				'Method MissingReturn\MissingReturnGenerators::bodySpecifiedTReturn() should return string but return statement is missing.',
 				370,
 			],
+			[
+				'Method MissingReturn\NeverReturn::doBaz() should always throw an exception or terminate script execution but doesn\'t do that.',
+				473,
+			],
 		]);
 	}
 

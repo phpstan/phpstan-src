@@ -447,3 +447,32 @@ class VoidUnion
 	}
 
 }
+
+class NeverReturn
+{
+
+	/**
+	 * @return never
+	 */
+	public function doFoo()
+	{
+		throw new \Exception();
+	}
+
+	/**
+	 * @return never
+	 */
+	public function doBar()
+	{
+		die;
+	}
+
+	/**
+	 * @return never
+	 */
+	public function doBaz()
+	{
+
+	}
+
+}

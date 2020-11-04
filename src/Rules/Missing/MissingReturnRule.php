@@ -12,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -94,6 +95,12 @@ class MissingReturnRule implements Rule
 
 		if (!$node->hasNativeReturnTypehint() && !$this->checkPhpDocMissingReturn) {
 			return [];
+		}
+
+		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			return [
+				RuleErrorBuilder::message(sprintf('%s should always throw an exception or terminate script execution but doesn\'t do that.', $description))->line($node->getNode()->getStartLine())->build(),
+			];
 		}
 
 		if (

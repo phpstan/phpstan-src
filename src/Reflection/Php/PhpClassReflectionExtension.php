@@ -257,7 +257,11 @@ class PhpClassReflectionExtension
 				$phpDocType = $varTags[0]->getType();
 			} elseif (isset($varTags[$propertyName])) {
 				$phpDocType = $varTags[$propertyName]->getType();
-			} elseif (isset($constructorName) && $declaringClassReflection->getFileName() !== false) {
+			}
+		}
+
+		if ($phpDocType === null) {
+			if (isset($constructorName) && $declaringClassReflection->getFileName() !== false) {
 				$constructorDocComment = $declaringClassReflection->getConstructor()->getDocComment();
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$constructorDocComment,
@@ -272,6 +276,9 @@ class PhpClassReflectionExtension
 					$phpDocType = $paramTags[$propertyReflection->getName()]->getType();
 				}
 			}
+		}
+
+		if ($resolvedPhpDoc !== null) {
 			if (!isset($phpDocBlockClassReflection)) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}

@@ -78,3 +78,12 @@ function doFooBar()
 {
 	yield 'test';
 }
+
+/**
+ * @return never
+ */
+function doNever()
+{
+	yield 1;
+	yield from doFoo();
+}

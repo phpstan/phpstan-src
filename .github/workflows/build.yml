@@ -80,9 +80,6 @@ jobs:
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
         run: php bin/transform-source.php
 
-      - name: "Composer Normalize"
-        run: "vendor/bin/phing composer-normalize-check"
-
       - name: "Lint"
         run: "vendor/bin/phing lint"
 

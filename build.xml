@@ -23,7 +23,6 @@
 		composer-install,
 		lint,
 		cs,
-		composer-normalize-check,
 		composer-require-checker,
 		test-configuration-validate,
 		tests,
@@ -50,31 +49,6 @@
 				checkreturn="true"
 		>
 			<arg value="install"/>
-			<arg value="--ansi"/>
-		</exec>
-	</target>
-
-	<target name="composer-normalize-check">
-		<exec
-				executable="composer"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
-		>
-			<arg value="normalize"/>
-			<arg value="--ansi"/>
-			<arg value="--dry-run"/>
-		</exec>
-	</target>
-
-	<target name="composer-normalize-fix">
-		<exec
-				executable="composer"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
-		>
-			<arg value="normalize"/>
 			<arg value="--ansi"/>
 		</exec>
 	</target>

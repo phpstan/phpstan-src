@@ -49,7 +49,7 @@ class YieldInGeneratorRule implements Rule
 			return [];
 		}
 
-		if ($returnType instanceof NeverType) {
+		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 			$isSuperType = TrinaryLogic::createNo();
 		} else {
 			$isSuperType = $returnType->isIterable()->and(TrinaryLogic::createFromBoolean(

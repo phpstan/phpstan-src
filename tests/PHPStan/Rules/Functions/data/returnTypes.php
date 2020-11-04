@@ -172,3 +172,11 @@ function returnVoidFromGenerator2(): \Generator
 	yield 1;
 	return 2;
 }
+
+/**
+ * @return never
+ */
+function returnNever()
+{
+	return;
+}

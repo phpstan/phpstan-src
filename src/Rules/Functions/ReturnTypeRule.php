@@ -81,6 +81,10 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 				'Function %s() should return %%s but returns %%s.',
 				$function->getName()
 			),
+			sprintf(
+				'Function %s() should never return but return statement found.',
+				$function->getName()
+			),
 			$reflection !== null && $reflection->isGenerator()
 		);
 	}

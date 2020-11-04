@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\GenericTypeVariableResolver;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
@@ -37,9 +38,14 @@ class FunctionReturnTypeCheck
 		string $emptyReturnStatementMessage,
 		string $voidMessage,
 		string $typeMismatchMessage,
+		string $neverMessage,
 		bool $isGenerator
 	): array
 	{
+		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			return [RuleErrorBuilder::message($neverMessage)->build()];
+		}
+
 		if ($isGenerator) {
 			if (!$returnType instanceof TypeWithClassName) {
 				return [];

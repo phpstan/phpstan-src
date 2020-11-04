@@ -275,6 +275,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Method ReturnTypes\ReturnStaticGeneric::instanceReturnsStatic() should return static(ReturnTypes\ReturnStaticGeneric) but returns ReturnTypes\ReturnStaticGeneric.',
 				1064,
 			],
+			[
+				'Method ReturnTypes\NeverReturn::doFoo() should never return but return statement found.',
+				1238,
+			],
 		]);
 	}
 

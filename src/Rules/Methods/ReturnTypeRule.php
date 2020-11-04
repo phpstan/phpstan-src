@@ -66,6 +66,11 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName()
 			),
+			sprintf(
+				'Method %s::%s() should never return but return statement found.',
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName()
+			),
 			$reflection !== null && $reflection->isGenerator()
 		);
 	}

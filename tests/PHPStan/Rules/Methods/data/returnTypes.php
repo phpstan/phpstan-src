@@ -1226,3 +1226,16 @@ class Bug3072
 	}
 
 }
+
+class NeverReturn
+{
+
+	/**
+	 * @return never
+	 */
+	public function doFoo(): void
+	{
+		return;
+	}
+
+}

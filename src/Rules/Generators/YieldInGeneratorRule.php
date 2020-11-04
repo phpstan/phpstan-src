@@ -8,7 +8,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\MixedType;
 
 /**
@@ -50,8 +49,8 @@ class YieldInGeneratorRule implements Rule
 		}
 
 		$isSuperType = $returnType->isIterable()->and(TrinaryLogic::createFromBoolean(
-			$returnType instanceof ArrayType
-		)->negate());
+			!$returnType->isArray()->yes()
+		));
 		if ($isSuperType->yes()) {
 			return [];
 		}

@@ -68,7 +68,8 @@
 			"PHPStan\\": [
 				"src/"
 			]
-		}
+		},
+		"files": ["src/dumpType.php"]
 	},
 	"autoload-dev": {
 		"psr-4": {

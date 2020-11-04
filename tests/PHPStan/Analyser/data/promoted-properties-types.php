@@ -94,7 +94,7 @@ class Baz extends Foo
 	)
 	{
 		assertType('array<int, string>', $anotherPhpDocArray);
-		assertNativeType('array', $anotherPhpDocArray);
+		assertNativeType('mixed', $anotherPhpDocArray);
 	}
 
 }

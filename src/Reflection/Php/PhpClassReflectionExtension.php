@@ -263,13 +263,20 @@ class PhpClassReflectionExtension
 		if ($phpDocType === null) {
 			if (isset($constructorName) && $declaringClassReflection->getFileName() !== false) {
 				$constructorDocComment = $declaringClassReflection->getConstructor()->getDocComment();
+				$nativeClassReflection = $declaringClassReflection->getNativeReflection();
+				$positionalParameterNames = [];
+				if ($nativeClassReflection->getConstructor() !== null) {
+					$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
+						return $parameter->getName();
+					}, $nativeClassReflection->getConstructor()->getParameters());
+				}
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$constructorDocComment,
 					$declaringClassReflection->getFileName(),
 					$declaringClassReflection,
 					$declaringTraitName,
 					$constructorName,
-					[]
+					$positionalParameterNames
 				);
 				$paramTags = $resolvedPhpDoc->getParamTags();
 				if (isset($paramTags[$propertyReflection->getName()])) {

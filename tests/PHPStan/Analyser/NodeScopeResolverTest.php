@@ -10274,6 +10274,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/early-termination-phpdoc.php');
 	}
 
+	public function dataBug3915(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3915.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10443,6 +10448,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4016
 	 * @dataProvider dataPromotedProperties
 	 * @dataProvider dataNeverEarlyTerminates
+	 * @dataProvider dataBug3915
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

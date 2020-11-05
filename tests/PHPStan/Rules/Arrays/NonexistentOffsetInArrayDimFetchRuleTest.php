@@ -235,4 +235,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		$this->analyse([__DIR__ . '/data/nonexistent-offset-intersection.php'], []);
 	}
 
+	public function testBug3782(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3782.php'], [
+			[
+				'Cannot access offset (int|string) on Bug3782\HelloWorld.',
+				11,
+			],
+		]);
+	}
+
 }

@@ -126,7 +126,8 @@ class ExportedNodeResolver
 				$methodName = $node->name->toString();
 				$docComment = $node->getDocComment();
 				$parentNode = $node->getAttribute('parent');
-				if (!$parentNode instanceof Class_ || !isset($parentNode->namespacedName)) {
+				$continue = ($parentNode instanceof Class_ || $parentNode instanceof Node\Stmt\Interface_) && isset($parentNode->namespacedName);
+				if (!$continue) {
 					return null;
 				}
 

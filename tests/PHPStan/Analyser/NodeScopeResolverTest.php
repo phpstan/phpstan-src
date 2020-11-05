@@ -3191,11 +3191,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$coalesceArray',
 			],
 			[
-				'array<int, 1|2|3>',
+				'array<int, int>',
 				'$arrayToBeUnset',
 			],
 			[
-				'array<int, 1|2|3>',
+				'array<int, int>',
 				'$arrayToBeUnset2',
 			],
 			[
@@ -9140,7 +9140,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$anotherArrayCopy',
 			],
 			[
-				'array<string, 1|2|3|4|null>',
+				'array<string, int|null>',
 				'$yetAnotherArrayCopy',
 			],
 			[

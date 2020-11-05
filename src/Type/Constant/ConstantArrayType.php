@@ -613,7 +613,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$arrayType = new ArrayType(
 			TypeUtils::generalizeType($this->getKeyType()),
-			$this->getItemType()
+			TypeUtils::generalizeType($this->getItemType())
 		);
 
 		if (count($this->keyTypes) > count($this->optionalKeys)) {

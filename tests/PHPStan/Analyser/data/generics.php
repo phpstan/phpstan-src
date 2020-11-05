@@ -97,7 +97,7 @@ function testD($int, $float, $intFloat)
 	assertType('DateTime|int', d($int, new \DateTime()));
 	assertType('DateTime|float|int', d($intFloat, new \DateTime()));
 	assertType('array()|DateTime', d([], new \DateTime()));
-	assertType('(array<string, \'barrrr\'>&nonEmpty)|DateTime', d(['blabla' => 'barrrr'], new \DateTime()));
+	assertType('(array<string, string>&nonEmpty)|DateTime', d(['blabla' => 'barrrr'], new \DateTime()));
 }
 
 /**

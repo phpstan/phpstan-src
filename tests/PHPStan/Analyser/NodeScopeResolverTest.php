@@ -6076,15 +6076,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'range(2, 5, $integer)',
 			],
 			[
-				'array<int, float>',
+				'array<int, float|int>',
 				'range($float, 5, $integer)',
 			],
 			[
-				'array<int, float>',
+				'array<int, (float|int|string)>',
 				'range($float, $mixed, $integer)',
 			],
 			[
-				'array<int, float|int>',
+				'array<int, (float|int|string)>',
 				'range($integer, $mixed)',
 			],
 			[
@@ -10279,6 +10279,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3915.php');
 	}
 
+	public function dataBug2378(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2378.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10449,6 +10454,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataPromotedProperties
 	 * @dataProvider dataNeverEarlyTerminates
 	 * @dataProvider dataBug3915
+	 * @dataProvider dataBug2378
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

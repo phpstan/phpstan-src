@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function array_filter;
 
 class ConstantArrayTypeBuilder
@@ -97,7 +98,7 @@ class ConstantArrayTypeBuilder
 			return;
 		}
 
-		$this->keyTypes[] = $offsetType;
+		$this->keyTypes[] = TypeUtils::generalizeType($offsetType);
 		$this->valueTypes[] = $valueType;
 		$this->degradeToGeneralArray = true;
 	}

@@ -9065,7 +9065,7 @@ return [
 'rand\'1' => ['int'],
 'random_bytes' => ['string', 'length'=>'int'],
 'random_int' => ['int', 'min'=>'int', 'max'=>'int'],
-'range' => ['array', 'low'=>'mixed', 'high'=>'mixed', 'step='=>'int|float'],
+'range' => ['array', 'low'=>'int|float|string', 'high'=>'int|float|string', 'step='=>'int|float'],
 'RangeException::__clone' => ['void'],
 'RangeException::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'(?Throwable)|(?RangeException)'],
 'RangeException::__toString' => ['string'],

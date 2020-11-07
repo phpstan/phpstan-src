@@ -7,11 +7,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -41,13 +44,13 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 
 		$startConstants = TypeUtils::getConstantScalars($startType);
 		foreach ($startConstants as $startConstant) {
-			if (!$startConstant instanceof ConstantIntegerType && !$startConstant instanceof ConstantFloatType) {
+			if (!$startConstant instanceof ConstantIntegerType && !$startConstant instanceof ConstantFloatType && !$startConstant instanceof ConstantStringType) {
 				continue;
 			}
 
 			$endConstants = TypeUtils::getConstantScalars($endType);
 			foreach ($endConstants as $endConstant) {
-				if (!$endConstant instanceof ConstantIntegerType && !$endConstant instanceof ConstantFloatType) {
+				if (!$endConstant instanceof ConstantIntegerType && !$endConstant instanceof ConstantFloatType && !$endConstant instanceof ConstantStringType) {
 					continue;
 				}
 
@@ -57,21 +60,16 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 						continue;
 					}
 
-					$rangeLength = (int) ceil(abs($startConstant->getValue() - $endConstant->getValue()) / $stepConstant->getValue()) + 1;
-					if ($rangeLength > self::RANGE_LENGTH_THRESHOLD) {
-						continue;
-					}
-
-					$keyTypes = [];
-					$valueTypes = [];
-
+					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
-					foreach ($rangeValues as $key => $value) {
-						$keyTypes[] = new ConstantIntegerType($key);
-						$valueTypes[] = $scope->getTypeFromValue($value);
+					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
+						$arrayBuilder->degradeToGeneralArray();
+					}
+					foreach ($rangeValues as $value) {
+						$arrayBuilder->setOffsetValueType(null, $scope->getTypeFromValue($value));
 					}
 
-					$constantReturnTypes[] = new ConstantArrayType($keyTypes, $valueTypes, $rangeLength);
+					$constantReturnTypes[] = $arrayBuilder->getArray();
 				}
 			}
 		}
@@ -80,27 +78,31 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 			return TypeCombinator::union(...$constantReturnTypes);
 		}
 
-		$startType = TypeUtils::generalizeType($startType);
-		$endType = TypeUtils::generalizeType($endType);
-		$stepType = TypeUtils::generalizeType($stepType);
+		$argType = TypeCombinator::union($startType, $endType);
+		$isInteger = (new IntegerType())->isSuperTypeOf($argType)->yes();
+		$isStepInteger = (new IntegerType())->isSuperTypeOf($stepType)->yes();
 
-		if (
-			$startType instanceof IntegerType
-			&& $endType instanceof IntegerType
-			&& $stepType instanceof IntegerType
-		) {
+		if ($isInteger && $isStepInteger) {
 			return new ArrayType(new IntegerType(), new IntegerType());
 		}
 
-		if (
-			$startType instanceof FloatType
-			|| $endType instanceof FloatType
-			|| $stepType instanceof FloatType
-		) {
+		$isFloat = (new FloatType())->isSuperTypeOf($argType)->yes();
+		if ($isFloat) {
 			return new ArrayType(new IntegerType(), new FloatType());
 		}
 
-		return new ArrayType(new IntegerType(), new UnionType([new IntegerType(), new FloatType()]));
+		$numberType = new UnionType([new IntegerType(), new FloatType()]);
+		$isNumber = $numberType->isSuperTypeOf($argType)->yes();
+		if ($isNumber) {
+			return new ArrayType(new IntegerType(), $numberType);
+		}
+
+		$isString = (new StringType())->isSuperTypeOf($argType)->yes();
+		if ($isString) {
+			return new ArrayType(new IntegerType(), new StringType());
+		}
+
+		return new ArrayType(new IntegerType(), new BenevolentUnionType([new IntegerType(), new FloatType(), new StringType()]));
 	}
 
 }

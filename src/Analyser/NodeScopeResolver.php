@@ -64,6 +64,9 @@ use PHPStan\Node\InClosureNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
+use PHPStan\Node\MatchExpressionArm;
+use PHPStan\Node\MatchExpressionArmCondition;
+use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\UnreachableStatementNode;
@@ -2035,12 +2038,14 @@ class NodeScopeResolver
 			$scope = $condResult->getScope();
 			$hasYield = $condResult->hasYield();
 			$matchScope = $scope;
+			$armNodes = [];
 			foreach ($expr->arms as $arm) {
 				if ($arm->conds === null) {
 					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, $deepContext);
 					$matchScope = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
 					$scope = $scope->mergeWith($matchScope);
+					$armNodes[] = new MatchExpressionArm([], $arm->getLine());
 					continue;
 				}
 
@@ -2050,7 +2055,9 @@ class NodeScopeResolver
 
 				$filteringExpr = null;
 				$armCondScope = $matchScope;
+				$condNodes = [];
 				foreach ($arm->conds as $armCond) {
+					$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getLine());
 					$armCondResult = $this->processExprNode($armCond, $armCondScope, $nodeCallback, $deepContext);
 					$hasYield = $hasYield || $armCondResult->hasYield();
 					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
@@ -2063,6 +2070,8 @@ class NodeScopeResolver
 					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
 				}
 
+				$armNodes[] = new MatchExpressionArm($condNodes, $arm->getLine());
+
 				$armResult = $this->processExprNode(
 					$arm->body,
 					$matchScope->filterByTruthyValue($filteringExpr),
@@ -2074,6 +2083,8 @@ class NodeScopeResolver
 				$hasYield = $hasYield || $armResult->hasYield();
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
+
+			$nodeCallback(new MatchExpressionNode($expr->cond, $armNodes, $expr, $matchScope), $scope);
 		} else {
 			$hasYield = false;
 		}

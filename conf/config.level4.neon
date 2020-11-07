@@ -109,6 +109,13 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Comparison\MatchExpressionRule
+		arguments:
+			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Comparison\StrictComparisonOfDifferentTypesRule
 		arguments:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%

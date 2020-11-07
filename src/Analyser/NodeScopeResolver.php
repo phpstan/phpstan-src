@@ -2046,6 +2046,50 @@ class NodeScopeResolver
 				$scope = $this->processExprNode($expr->value, $scope, $nodeCallback, $context->enterDeep())->getScope();
 			}
 			$hasYield = true;
+		} elseif ($expr instanceof Expr\Match_) {
+			$deepContext = $context->enterDeep();
+			$condResult = $this->processExprNode($expr->cond, $scope, $nodeCallback, $deepContext);
+			$scope = $condResult->getScope();
+			$hasYield = $condResult->hasYield();
+			$matchScope = $scope;
+			foreach ($expr->arms as $arm) {
+				if ($arm->conds === null) {
+					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, $deepContext);
+					$matchScope = $armResult->getScope();
+					$hasYield = $hasYield || $armResult->hasYield();
+					$scope = $scope->mergeWith($matchScope);
+					continue;
+				}
+
+				if (count($arm->conds) === 0) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+
+				$filteringExpr = null;
+				foreach ($arm->conds as $armCond) {
+					$armCondResult = $this->processExprNode($armCond, $matchScope, $nodeCallback, $deepContext);
+					$hasYield = $hasYield || $armCondResult->hasYield();
+					$matchScope = $armCondResult->getScope();
+					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
+					if ($filteringExpr === null) {
+						$filteringExpr = $armCondExpr;
+						continue;
+					}
+
+					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
+				}
+
+				$armResult = $this->processExprNode(
+					$arm->body,
+					$matchScope->filterByTruthyValue($filteringExpr),
+					$nodeCallback,
+					$deepContext
+				);
+				$armScope = $armResult->getScope();
+				$scope = $scope->mergeWith($armScope);
+				$hasYield = $hasYield || $armResult->hasYield();
+				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+			}
 		} else {
 			$hasYield = false;
 		}

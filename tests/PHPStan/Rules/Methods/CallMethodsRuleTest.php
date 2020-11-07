@@ -1527,4 +1527,29 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testMatchExpressionVoidIsUsed(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/match-expr-void-used.php'], [
+			[
+				'Result of method MatchExprVoidUsed\Foo::doLorem() (void) is used.',
+				10,
+			],
+			[
+				'Result of method MatchExprVoidUsed\Foo::doBar() (void) is used.',
+				11,
+			],
+			[
+				'Result of method MatchExprVoidUsed\Foo::doBaz() (void) is used.',
+				11,
+			],
+		]);
+	}
+
 }

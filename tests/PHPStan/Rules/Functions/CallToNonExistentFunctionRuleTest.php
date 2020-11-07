@@ -67,4 +67,34 @@ class CallToNonExistentFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testMatchExprAnalysis(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/match-expr-analysis.php'], [
+			[
+				'Function lorem not found.',
+				10,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function ipsum not found.',
+				11,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function dolor not found.',
+				11,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function sit not found.',
+				12,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

@@ -1315,17 +1315,13 @@ class NodeScopeResolver
 
 	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
 	{
-		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall)) {
-			if ($expr->name instanceof Expr) {
-				return null;
-			}
-
+		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && $expr->name instanceof Node\Identifier) {
 			if (count($this->earlyTerminatingMethodCalls) > 0) {
 				if ($expr instanceof MethodCall) {
 					$methodCalledOnType = $scope->getType($expr->var);
 				} else {
 					if ($expr->class instanceof Name) {
-						$methodCalledOnType = $scope->getFunctionType($expr->class, false, false);
+						$methodCalledOnType = new ObjectType($scope->resolveName($expr->class));
 					} else {
 						$methodCalledOnType = $scope->getType($expr->class);
 					}
@@ -1349,29 +1345,16 @@ class NodeScopeResolver
 					}
 				}
 			}
-
-			$type = $scope->getType($expr);
-			if ($type instanceof NeverType && $type->isExplicit()) {
-				return $expr;
-			}
 		}
 
-		if ($expr instanceof FuncCall) {
-			if ($expr->name instanceof Expr) {
-				return null;
-			}
-
+		if ($expr instanceof FuncCall && $expr->name instanceof Name) {
 			if (in_array((string) $expr->name, $this->earlyTerminatingFunctionCalls, true)) {
 				return $expr;
 			}
-
-			$type = $scope->getType($expr);
-			if ($type instanceof NeverType && $type->isExplicit()) {
-				return $expr;
-			}
 		}
 
-		if ($expr instanceof Exit_) {
+		$exprType = $scope->getType($expr);
+		if ($exprType instanceof NeverType && $exprType->isExplicit()) {
 			return $expr;
 		}
 

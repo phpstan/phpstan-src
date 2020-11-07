@@ -521,7 +521,7 @@ class MutatingScope implements Scope
 	private function resolveType(Expr $node): Type
 	{
 		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
-			return new NeverType();
+			return new NeverType(true);
 		}
 
 		if (
@@ -1338,7 +1338,7 @@ class MutatingScope implements Scope
 				$lowercasedClassName = strtolower($node->class->toString());
 				if ($lowercasedClassName === 'static') {
 					if (!$this->isInClass()) {
-						throw new \PHPStan\ShouldNotHappenException();
+						return new ErrorType();
 					}
 
 					return new StaticType($this->getClassReflection()->getName());

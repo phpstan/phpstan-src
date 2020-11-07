@@ -1522,6 +1522,39 @@ class MutatingScope implements Scope
 			}
 
 			return $generatorReturnType;
+		} elseif ($node instanceof Expr\Match_) {
+			$cond = $node->cond;
+			$types = [];
+
+			$matchScope = $this;
+			foreach ($node->arms as $arm) {
+				if ($arm->conds === null) {
+					$types[] = $matchScope->getType($arm->body);
+					continue;
+				}
+
+				if (count($arm->conds) === 0) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+
+				$filteringExpr = null;
+				foreach ($arm->conds as $armCond) {
+					$armCondExpr = new BinaryOp\Identical($cond, $armCond);
+					if ($filteringExpr === null) {
+						$filteringExpr = $armCondExpr;
+						continue;
+					}
+
+					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
+				}
+
+				$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+				$types[] = $truthyScope->getType($arm->body);
+
+				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+			}
+
+			return TypeCombinator::union(...$types);
 		}
 
 		$exprString = $this->getNodeKey($node);

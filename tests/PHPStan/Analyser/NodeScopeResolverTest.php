@@ -10284,6 +10284,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2378.php');
 	}
 
+	public function dataMatchExpression(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/match-expr.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10455,6 +10464,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataNeverEarlyTerminates
 	 * @dataProvider dataBug3915
 	 * @dataProvider dataBug2378
+	 * @dataProvider dataMatchExpression
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

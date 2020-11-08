@@ -8490,7 +8490,7 @@ return [
 'PDOStatement::fetchColumn' => ['string|null|false|int', 'column_number='=>'int'],
 'PDOStatement::fetchObject' => ['mixed', 'class_name='=>'string', 'ctor_args='=>'?array'],
 'PDOStatement::getAttribute' => ['mixed', 'attribute'=>'int'],
-'PDOStatement::getColumnMeta' => ['array', 'column'=>'int'],
+'PDOStatement::getColumnMeta' => ['array|false', 'column'=>'int'],
 'PDOStatement::nextRowset' => ['bool'],
 'PDOStatement::rowCount' => ['int'],
 'PDOStatement::setAttribute' => ['bool', 'attribute'=>'int', 'value'=>'mixed'],

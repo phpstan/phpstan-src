@@ -2049,11 +2049,12 @@ class NodeScopeResolver
 				}
 
 				$filteringExpr = null;
+				$armCondScope = $matchScope;
 				foreach ($arm->conds as $armCond) {
-					$armCondResult = $this->processExprNode($armCond, $matchScope, $nodeCallback, $deepContext);
+					$armCondResult = $this->processExprNode($armCond, $armCondScope, $nodeCallback, $deepContext);
 					$hasYield = $hasYield || $armCondResult->hasYield();
-					$matchScope = $armCondResult->getScope();
 					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
+					$armCondScope = $armCondResult->getScope()->filterByFalseyValue($armCondExpr);
 					if ($filteringExpr === null) {
 						$filteringExpr = $armCondExpr;
 						continue;

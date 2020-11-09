@@ -1265,12 +1265,7 @@ class NodeScopeResolver
 		return $scope;
 	}
 
-	/**
-	 * @param MutatingScope $scope
-	 * @param Expr $exprToSpecify
-	 * @return array{EnsuredNonNullabilityResultExpression, MutatingScope}|null
-	 */
-	private function ensureShallowNonNullability(MutatingScope $scope, Expr $exprToSpecify): ?array
+	private function ensureShallowNonNullability(MutatingScope $scope, Expr $exprToSpecify): EnsuredNonNullabilityResult
 	{
 		$exprType = $scope->getType($exprToSpecify);
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
@@ -1281,13 +1276,16 @@ class NodeScopeResolver
 				$exprTypeWithoutNull,
 				TypeCombinator::removeNull($nativeType)
 			);
-			return [
-				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
+
+			return new EnsuredNonNullabilityResult(
 				$scope,
-			];
+				[
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
+				]
+			);
 		}
 
-		return null;
+		return new EnsuredNonNullabilityResult($scope, []);
 	}
 
 	private function ensureNonNullability(MutatingScope $scope, Expr $expr, bool $findMethods): EnsuredNonNullabilityResult
@@ -1296,8 +1294,9 @@ class NodeScopeResolver
 		$specifiedExpressions = [];
 		while (true) {
 			$result = $this->ensureShallowNonNullability($scope, $exprToSpecify);
-			if ($result !== null) {
-				[$specifiedExpressions[], $scope] = $result;
+			$scope = $result->getScope();
+			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
+				$specifiedExpressions[] = $specifiedExpression;
 			}
 
 			if ($exprToSpecify instanceof PropertyFetch) {

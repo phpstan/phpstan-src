@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace MatchExprRule;
 
@@ -25,25 +25,25 @@ class Foo
 		match ($i) {
 			1 => null,
 			2 => null,
-			3 => null, // always true
+			3 => null, // always true - report with strict-rules
 			4 => null, // unreachable
 		};
 
 		match ($i) {
 			1 => null,
 			2 => null,
-			3 => null, // always true
+			3 => null, // always true - report with strict-rules
 			default => null, // unreachable
 		};
 
 		match (1) {
-			1 => null, // always true
+			1 => null, // always true - report with strict-rules
 			2 => null, // unreachable
 			3 => null, // unreachable
 		};
 
 		match (1) {
-			1 => null, // always true
+			1 => null, // always true - report with strict-rules
 			default => null, // unreachable
 		};
 
@@ -67,16 +67,16 @@ class Foo
 		};
 
 		match (1) {
-			1 => 1, // always true - report
+			1 => 1, // always true - report with strict-rules
 		};
 
 		match ($i) {
-			default => 1, // always true - report
+			default => 1, // always true - report with strict-rules
 		};
 
 		match ($i) {
-			default => 1, // always true - report
-			1 => 2, // unreachable - report
+			default => 1, // always true - report with strict-rules
+			1 => 2, // unreachable
 		};
 	}
 

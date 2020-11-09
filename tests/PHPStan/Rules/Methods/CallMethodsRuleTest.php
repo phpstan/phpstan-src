@@ -1552,4 +1552,22 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testNullSafe(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/nullsafe-method-call.php'], [
+			[
+				'Method NullsafeMethodCall\Foo::doBar() invoked with 1 parameter, 0 required.',
+				11,
+			],
+		]);
+	}
+
 }

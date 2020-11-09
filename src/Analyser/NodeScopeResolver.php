@@ -1669,6 +1669,12 @@ class NodeScopeResolver
 				$scope = $scope->invalidateExpression($expr->var, true);
 			}
 			$hasYield = $hasYield || $result->hasYield();
+		} elseif ($expr instanceof Expr\NullsafeMethodCall) {
+			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $expr->var);
+			$exprResult = $this->processExprNode(new MethodCall($expr->var, $expr->name, $expr->args, $expr->getAttributes()), $nonNullabilityResult->getScope(), $nodeCallback, $context);
+			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
+
+			return new ExpressionResult($scope, $exprResult->hasYield());
 		} elseif ($expr instanceof StaticCall) {
 			if ($expr->class instanceof Expr) {
 				$scope = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep())->getScope();

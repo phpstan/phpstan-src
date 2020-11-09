@@ -10293,6 +10293,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/match-expr.php');
 	}
 
+	public function dataNullSafe(): array
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/nullsafe.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10465,6 +10474,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3915
 	 * @dataProvider dataBug2378
 	 * @dataProvider dataMatchExpression
+	 * @dataProvider dataNullSafe
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

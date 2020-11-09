@@ -1789,6 +1789,14 @@ class MutatingScope implements Scope
 			return $returnType;
 		}
 
+		if ($node instanceof Expr\NullsafeMethodCall) {
+			return TypeCombinator::union(
+				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
+					->getType(new MethodCall($node->var, $node->name, $node->args, $node->getAttributes())),
+				new NullType()
+			);
+		}
+
 		if ($node instanceof Expr\StaticCall && $node->name instanceof Node\Identifier) {
 			if ($node->class instanceof Name) {
 				$staticMethodCalledOnType = new ObjectType($this->resolveName($node->class));

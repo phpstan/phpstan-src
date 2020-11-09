@@ -1265,21 +1265,39 @@ class NodeScopeResolver
 		return $scope;
 	}
 
+	/**
+	 * @param MutatingScope $scope
+	 * @param Expr $exprToSpecify
+	 * @return array{EnsuredNonNullabilityResultExpression, MutatingScope}|null
+	 */
+	private function ensureShallowNonNullability(MutatingScope $scope, Expr $exprToSpecify): ?array
+	{
+		$exprType = $scope->getType($exprToSpecify);
+		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
+		if (!$exprType->equals($exprTypeWithoutNull)) {
+			$nativeType = $scope->getNativeType($exprToSpecify);
+			$scope = $scope->specifyExpressionType(
+				$exprToSpecify,
+				$exprTypeWithoutNull,
+				TypeCombinator::removeNull($nativeType)
+			);
+			return [
+				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
+				$scope,
+			];
+		}
+
+		return null;
+	}
+
 	private function ensureNonNullability(MutatingScope $scope, Expr $expr, bool $findMethods): EnsuredNonNullabilityResult
 	{
 		$exprToSpecify = $expr;
 		$specifiedExpressions = [];
 		while (true) {
-			$exprType = $scope->getType($exprToSpecify);
-			$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
-			if (!$exprType->equals($exprTypeWithoutNull)) {
-				$nativeType = $scope->getNativeType($exprToSpecify);
-				$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType);
-				$scope = $scope->specifyExpressionType(
-					$exprToSpecify,
-					$exprTypeWithoutNull,
-					TypeCombinator::removeNull($nativeType)
-				);
+			$result = $this->ensureShallowNonNullability($scope, $exprToSpecify);
+			if ($result !== null) {
+				[$specifiedExpressions[], $scope] = $result;
 			}
 
 			if ($exprToSpecify instanceof PropertyFetch) {

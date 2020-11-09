@@ -1749,44 +1749,48 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
-			$methodCalledOnType = $this->getType($node->var);
-			$methodName = $node->name->name;
-			$map = function (Type $type, callable $traverse) use ($methodName, $node): Type {
-				if ($type instanceof UnionType) {
-					return $traverse($type);
-				}
-				if ($type instanceof IntersectionType) {
-					$returnTypes = [];
-					foreach ($type->getTypes() as $innerType) {
-						$returnType = $this->methodCallReturnType(
-							$type,
-							$innerType,
-							$methodName,
-							$node
-						);
-						if ($returnType === null) {
-							continue;
-						}
+			$typeCallback = function () use ($node): Type {
+				$methodCalledOnType = $this->getType($node->var);
+				$methodName = $node->name->name;
+				$map = function (Type $type, callable $traverse) use ($methodName, $node): Type {
+					if ($type instanceof UnionType) {
+						return $traverse($type);
+					}
+					if ($type instanceof IntersectionType) {
+						$returnTypes = [];
+						foreach ($type->getTypes() as $innerType) {
+							$returnType = $this->methodCallReturnType(
+								$type,
+								$innerType,
+								$methodName,
+								$node
+							);
+							if ($returnType === null) {
+								continue;
+							}
 
-						$returnTypes[] = $returnType;
+							$returnTypes[] = $returnType;
+						}
+						if (count($returnTypes) === 0) {
+							return new NeverType();
+						}
+						return TypeCombinator::intersect(...$returnTypes);
 					}
-					if (count($returnTypes) === 0) {
-						return new NeverType();
-					}
-					return TypeCombinator::intersect(...$returnTypes);
+					return $this->methodCallReturnType(
+						$type,
+						$type,
+						$methodName,
+						$node
+					) ?? new NeverType();
+				};
+				$returnType = TypeTraverser::map($methodCalledOnType, $map);
+				if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
+					return new ErrorType();
 				}
-				return $this->methodCallReturnType(
-					$type,
-					$type,
-					$methodName,
-					$node
-				) ?? new NeverType();
+				return $returnType;
 			};
-			$returnType = TypeTraverser::map($methodCalledOnType, $map);
-			if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
-				return new ErrorType();
-			}
-			return $returnType;
+
+			return $typeCallback();
 		}
 
 		if ($node instanceof Expr\NullsafeMethodCall) {
@@ -1798,92 +1802,100 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\StaticCall && $node->name instanceof Node\Identifier) {
-			if ($node->class instanceof Name) {
-				$staticMethodCalledOnType = new ObjectType($this->resolveName($node->class));
-			} else {
-				$staticMethodCalledOnType = $this->getType($node->class);
-				if ($staticMethodCalledOnType instanceof GenericClassStringType) {
-					$staticMethodCalledOnType = $staticMethodCalledOnType->getGenericType();
+			$typeCallback = function () use ($node): Type {
+				if ($node->class instanceof Name) {
+					$staticMethodCalledOnType = new ObjectType($this->resolveName($node->class));
+				} else {
+					$staticMethodCalledOnType = $this->getType($node->class);
+					if ($staticMethodCalledOnType instanceof GenericClassStringType) {
+						$staticMethodCalledOnType = $staticMethodCalledOnType->getGenericType();
+					}
 				}
-			}
 
-			$methodName = $node->name->toString();
-			$map = function (Type $type, callable $traverse) use ($methodName, $node): Type {
-				if ($type instanceof UnionType) {
-					return $traverse($type);
-				}
-				if ($type instanceof IntersectionType) {
-					$returnTypes = [];
-					foreach ($type->getTypes() as $innerType) {
-						$returnType = $this->methodCallReturnType(
-							$type,
-							$innerType,
-							$methodName,
-							$node
-						);
-						if ($returnType === null) {
-							continue;
+				$methodName = $node->name->toString();
+				$map = function (Type $type, callable $traverse) use ($methodName, $node): Type {
+					if ($type instanceof UnionType) {
+						return $traverse($type);
+					}
+					if ($type instanceof IntersectionType) {
+						$returnTypes = [];
+						foreach ($type->getTypes() as $innerType) {
+							$returnType = $this->methodCallReturnType(
+								$type,
+								$innerType,
+								$methodName,
+								$node
+							);
+							if ($returnType === null) {
+								continue;
+							}
+
+							$returnTypes[] = $returnType;
 						}
-
-						$returnTypes[] = $returnType;
+						if (count($returnTypes) === 0) {
+							return new NeverType();
+						}
+						return TypeCombinator::intersect(...$returnTypes);
 					}
-					if (count($returnTypes) === 0) {
-						return new NeverType();
-					}
-					return TypeCombinator::intersect(...$returnTypes);
+					return $this->methodCallReturnType(
+						$type,
+						$type,
+						$methodName,
+						$node
+					) ?? new NeverType();
+				};
+				$returnType = TypeTraverser::map($staticMethodCalledOnType, $map);
+				if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
+					return new ErrorType();
 				}
-				return $this->methodCallReturnType(
-					$type,
-					$type,
-					$methodName,
-					$node
-				) ?? new NeverType();
+				return $returnType;
 			};
-			$returnType = TypeTraverser::map($staticMethodCalledOnType, $map);
-			if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
-				return new ErrorType();
-			}
-			return $returnType;
+
+			return $typeCallback();
 		}
 
 		if ($node instanceof PropertyFetch && $node->name instanceof Node\Identifier) {
-			$propertyFetchedOnType = $this->getType($node->var);
-			$propertyName = $node->name->name;
-			$map = function (Type $type, callable $traverse) use ($propertyName, $node): Type {
-				if ($type instanceof UnionType) {
-					return $traverse($type);
-				}
-				if ($type instanceof IntersectionType) {
-					$returnTypes = [];
-					foreach ($type->getTypes() as $innerType) {
-						$returnType = $this->propertyFetchType(
-							$innerType,
-							$propertyName,
-							$node
-						);
-						if ($returnType === null) {
-							continue;
-						}
+			$typeCallback = function () use ($node): Type {
+				$propertyFetchedOnType = $this->getType($node->var);
+				$propertyName = $node->name->name;
+				$map = function (Type $type, callable $traverse) use ($propertyName, $node): Type {
+					if ($type instanceof UnionType) {
+						return $traverse($type);
+					}
+					if ($type instanceof IntersectionType) {
+						$returnTypes = [];
+						foreach ($type->getTypes() as $innerType) {
+							$returnType = $this->propertyFetchType(
+								$innerType,
+								$propertyName,
+								$node
+							);
+							if ($returnType === null) {
+								continue;
+							}
 
-						$returnTypes[] = $returnType;
+							$returnTypes[] = $returnType;
+						}
+						if (count($returnTypes) === 0) {
+							return new NeverType();
+						}
+						return TypeCombinator::intersect(...$returnTypes);
 					}
-					if (count($returnTypes) === 0) {
-						return new NeverType();
-					}
-					return TypeCombinator::intersect(...$returnTypes);
+					return $this->propertyFetchType(
+						$type,
+						$propertyName,
+						$node
+					) ?? new NeverType();
+				};
+
+				$returnType = TypeTraverser::map($propertyFetchedOnType, $map);
+				if ($returnType instanceof NeverType) {
+					return new ErrorType();
 				}
-				return $this->propertyFetchType(
-					$type,
-					$propertyName,
-					$node
-				) ?? new NeverType();
+				return $returnType;
 			};
 
-			$returnType = TypeTraverser::map($propertyFetchedOnType, $map);
-			if ($returnType instanceof NeverType) {
-				return new ErrorType();
-			}
-			return $returnType;
+			return $typeCallback();
 		}
 
 		if ($node instanceof Expr\NullsafePropertyFetch) {
@@ -1898,51 +1910,55 @@ class MutatingScope implements Scope
 			$node instanceof Expr\StaticPropertyFetch
 			&& $node->name instanceof Node\VarLikeIdentifier
 		) {
-			if ($node->class instanceof Name) {
-				$staticPropertyFetchedOnType = new ObjectType($this->resolveName($node->class));
-			} else {
-				$staticPropertyFetchedOnType = $this->getType($node->class);
-				if ($staticPropertyFetchedOnType instanceof GenericClassStringType) {
-					$staticPropertyFetchedOnType = $staticPropertyFetchedOnType->getGenericType();
+			$typeCallback = function () use ($node): Type {
+				if ($node->class instanceof Name) {
+					$staticPropertyFetchedOnType = new ObjectType($this->resolveName($node->class));
+				} else {
+					$staticPropertyFetchedOnType = $this->getType($node->class);
+					if ($staticPropertyFetchedOnType instanceof GenericClassStringType) {
+						$staticPropertyFetchedOnType = $staticPropertyFetchedOnType->getGenericType();
+					}
 				}
-			}
 
-			$staticPropertyName = $node->name->toString();
-			$map = function (Type $type, callable $traverse) use ($staticPropertyName, $node): Type {
-				if ($type instanceof UnionType) {
-					return $traverse($type);
-				}
-				if ($type instanceof IntersectionType) {
-					$returnTypes = [];
-					foreach ($type->getTypes() as $innerType) {
-						$returnType = $this->propertyFetchType(
-							$innerType,
-							$staticPropertyName,
-							$node
-						);
-						if ($returnType === null) {
-							continue;
+				$staticPropertyName = $node->name->toString();
+				$map = function (Type $type, callable $traverse) use ($staticPropertyName, $node): Type {
+					if ($type instanceof UnionType) {
+						return $traverse($type);
+					}
+					if ($type instanceof IntersectionType) {
+						$returnTypes = [];
+						foreach ($type->getTypes() as $innerType) {
+							$returnType = $this->propertyFetchType(
+								$innerType,
+								$staticPropertyName,
+								$node
+							);
+							if ($returnType === null) {
+								continue;
+							}
+
+							$returnTypes[] = $returnType;
 						}
+						if (count($returnTypes) === 0) {
+							return new NeverType();
+						}
+						return TypeCombinator::intersect(...$returnTypes);
+					}
+					return $this->propertyFetchType(
+						$type,
+						$staticPropertyName,
+						$node
+					) ?? new NeverType();
+				};
 
-						$returnTypes[] = $returnType;
-					}
-					if (count($returnTypes) === 0) {
-						return new NeverType();
-					}
-					return TypeCombinator::intersect(...$returnTypes);
+				$returnType = TypeTraverser::map($staticPropertyFetchedOnType, $map);
+				if ($returnType instanceof NeverType) {
+					return new ErrorType();
 				}
-				return $this->propertyFetchType(
-					$type,
-					$staticPropertyName,
-					$node
-				) ?? new NeverType();
+				return $returnType;
 			};
 
-			$returnType = TypeTraverser::map($staticPropertyFetchedOnType, $map);
-			if ($returnType instanceof NeverType) {
-				return new ErrorType();
-			}
-			return $returnType;
+			return $typeCallback();
 		}
 
 		if ($node instanceof FuncCall) {

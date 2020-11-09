@@ -10302,6 +10302,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/nullsafe.php');
 	}
 
+	public function dataRememberSpecifiedTypesAfterClosureUse(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/specified-types-closure-use.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10475,6 +10480,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2378
 	 * @dataProvider dataMatchExpression
 	 * @dataProvider dataNullSafe
+	 * @dataProvider dataRememberSpecifiedTypesAfterClosureUse
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

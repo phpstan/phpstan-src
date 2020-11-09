@@ -2661,6 +2661,7 @@ class MutatingScope implements Scope
 		}
 
 		$nativeTypes = [];
+		$moreSpecificTypes = [];
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
@@ -2668,13 +2669,27 @@ class MutatingScope implements Scope
 			if ($use->byRef) {
 				continue;
 			}
-			if ($this->hasVariableType($use->var->name)->no()) {
+			$variableName = $use->var->name;
+			if ($this->hasVariableType($variableName)->no()) {
 				$variableType = new ErrorType();
 			} else {
-				$variableType = $this->getVariableType($use->var->name);
-				$nativeTypes[sprintf('$%s', $use->var->name)] = $this->getNativeType($use->var);
+				$variableType = $this->getVariableType($variableName);
+				$nativeTypes[sprintf('$%s', $variableName)] = $this->getNativeType($use->var);
 			}
-			$variableTypes[$use->var->name] = VariableTypeHolder::createYes($variableType);
+			$variableTypes[$variableName] = VariableTypeHolder::createYes($variableType);
+			foreach ($this->moreSpecificTypes as $exprString => $moreSpecificType) {
+				$matches = \Nette\Utils\Strings::matchAll($exprString, '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				if ($matches === []) {
+					continue;
+				}
+
+				$matches = array_column($matches, 1);
+				if (!in_array($variableName, $matches, true)) {
+					continue;
+				}
+
+				$moreSpecificTypes[$exprString] = $moreSpecificType;
+			}
 		}
 
 		if ($this->hasVariableType('this')->yes() && !$closure->static) {
@@ -2693,7 +2708,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			[],
+			$moreSpecificTypes,
 			$this->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
 			true,
@@ -2740,7 +2755,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			[],
+			$this->moreSpecificTypes,
 			$this->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
 			true,
@@ -3502,7 +3517,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			[],
+			$this->moreSpecificTypes,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

@@ -433,4 +433,21 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3947.php'], []);
 	}
 
+	public function testNullSafe(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch.php'], [
+			[
+				'Access to an undefined property NullsafePropertyFetch\Foo::$baz.',
+				13,
+			],
+		]);
+	}
+
 }

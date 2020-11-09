@@ -1886,6 +1886,14 @@ class MutatingScope implements Scope
 			return $returnType;
 		}
 
+		if ($node instanceof Expr\NullsafePropertyFetch) {
+			return TypeCombinator::union(
+				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
+					->getType(new PropertyFetch($node->var, $node->name, $node->getAttributes())),
+				new NullType()
+			);
+		}
+
 		if (
 			$node instanceof Expr\StaticPropertyFetch
 			&& $node->name instanceof Node\VarLikeIdentifier

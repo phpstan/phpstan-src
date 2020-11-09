@@ -1752,6 +1752,12 @@ class NodeScopeResolver
 				$hasYield = $hasYield || $result->hasYield();
 				$scope = $result->getScope();
 			}
+		} elseif ($expr instanceof Expr\NullsafePropertyFetch) {
+			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $expr->var);
+			$exprResult = $this->processExprNode(new PropertyFetch($expr->var, $expr->name, $expr->getAttributes()), $nonNullabilityResult->getScope(), $nodeCallback, $context);
+			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
+
+			return new ExpressionResult($scope, $exprResult->hasYield());
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			$hasYield = false;
 			if ($expr->class instanceof Expr) {

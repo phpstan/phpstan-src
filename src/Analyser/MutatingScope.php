@@ -1001,7 +1001,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Spaceship) {
-			return new IntegerType();
+			return IntegerRangeType::fromInterval(-1, 1);
 		}
 
 		if ($node instanceof Expr\AssignOp\Coalesce) {

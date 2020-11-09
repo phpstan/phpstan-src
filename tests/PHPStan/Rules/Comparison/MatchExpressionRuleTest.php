@@ -95,6 +95,18 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match arm is unreachable because previous comparison is always true.',
 				79,
 			],
+			[
+				'Match arm comparison between true and false is always false.',
+				86,
+			],
+			[
+				'Match arm comparison between true and false is always false.',
+				92,
+			],
+			[
+				'Match expression does not handle remaining value: true',
+				90,
+			],
 		]);
 	}
 

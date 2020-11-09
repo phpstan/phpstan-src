@@ -80,4 +80,27 @@ class Foo
 		};
 	}
 
+	public function doBar(\Exception $e): void
+	{
+		match (true) {
+			$e instanceof \InvalidArgumentException, $e instanceof \InvalidArgumentException => true,
+			default => null,
+		};
+
+		match (true) {
+			$e instanceof \InvalidArgumentException => true,
+			$e instanceof \InvalidArgumentException => true,
+		};
+	}
+
+	/**
+	 * @param \stdClass&\Exception $obj
+	 */
+	public function doBaz($obj): void
+	{
+		match ($obj) {
+
+		};
+	}
+
 }

@@ -222,10 +222,10 @@ class TypeNodeResolver
 				return new NeverType(true);
 
 			case 'list':
-				return new ArrayType(new IntegerType(), new MixedType());
+				return new ArrayType(IntegerRangeType::fromInterval(0, null), new MixedType());
 			case 'non-empty-list':
 				return TypeCombinator::intersect(
-					new ArrayType(new IntegerType(), new MixedType()),
+					new ArrayType(IntegerRangeType::fromInterval(0, null), new MixedType()),
 					new NonEmptyArrayType()
 				);
 		}

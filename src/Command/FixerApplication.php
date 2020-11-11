@@ -357,7 +357,7 @@ class FixerApplication
 			/** @var array{version: string, date: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
 			$currentVersion = $currentInfo['version'];
-			$currentDate = \DateTimeImmutable::createFromFormat(\DateTimeImmutable::ATOM, $currentInfo['date']);
+			$currentDate = \DateTime::createFromFormat(\DateTime::ATOM, $currentInfo['date']);
 			if ($currentDate === false) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
@@ -434,7 +434,7 @@ class FixerApplication
 	{
 		FileWriter::write($infoPath, Json::encode([
 			'version' => $version,
-			'date' => (new \DateTimeImmutable('', new \DateTimeZone('UTC')))->format(\DateTimeImmutable::ATOM),
+			'date' => (new \DateTimeImmutable('', new \DateTimeZone('UTC')))->format(\DateTime::ATOM),
 		]));
 	}
 

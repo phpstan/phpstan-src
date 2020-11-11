@@ -42,6 +42,7 @@ class NoopRule implements Rule
 			!$expr instanceof Node\Expr\Variable
 			&& !$expr instanceof Node\Expr\PropertyFetch
 			&& !$expr instanceof Node\Expr\StaticPropertyFetch
+			&& !$expr instanceof Node\Expr\NullsafePropertyFetch
 			&& !$expr instanceof Node\Expr\ArrayDimFetch
 			&& !$expr instanceof Node\Scalar
 			&& !$expr instanceof Node\Expr\Isset_

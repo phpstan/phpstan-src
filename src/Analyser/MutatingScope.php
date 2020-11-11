@@ -3353,6 +3353,14 @@ class MutatingScope implements Scope
 
 				$ourVariableTypes[$name] = VariableTypeHolder::createMaybe(new MixedType());
 			}
+
+			foreach (array_keys($ourVariableTypes) as $name) {
+				if (array_key_exists($name, $theirVariableTypes)) {
+					continue;
+				}
+
+				$theirVariableTypes[$name] = VariableTypeHolder::createMaybe(new MixedType());
+			}
 		}
 
 		return $this->scopeFactory->create(

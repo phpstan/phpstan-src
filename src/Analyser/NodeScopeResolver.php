@@ -2411,9 +2411,28 @@ class NodeScopeResolver
 						&& $calleeReflection->getName() === 'array_filter'
 						&& isset($args[0])
 					) {
-						$parameterType = new CallableType([
-							new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-						], new MixedType(), false);
+						if (isset($args[2])) {
+							$mode = $scope->getType($args[2]->value);
+							if ($mode instanceof ConstantIntegerType) {
+								if ($mode->getValue() === ARRAY_FILTER_USE_KEY) {
+									$arrayFilterParameters = [
+										new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
+									];
+								} elseif ($mode->getValue() === ARRAY_FILTER_USE_BOTH) {
+									$arrayFilterParameters = [
+										new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+										new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
+									];
+								}
+							}
+						}
+						$parameterType = new CallableType(
+							$arrayFilterParameters ?? [
+								new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+							],
+							new MixedType(),
+							false
+						);
 					}
 				}
 			}

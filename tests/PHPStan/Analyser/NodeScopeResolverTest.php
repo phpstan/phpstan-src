@@ -10322,6 +10322,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2733.php');
 	}
 
+	public function dataBug3132(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3132.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10499,6 +10504,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataCastToNumericString
 	 * @dataProvider dataBug2539
 	 * @dataProvider dataBug2733
+	 * @dataProvider dataBug3132
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

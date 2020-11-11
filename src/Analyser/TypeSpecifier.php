@@ -651,6 +651,19 @@ class TypeSpecifier
 			return $this->create($expr->expr, new NonEmptyArrayType(), $context->negate());
 		} elseif ($expr instanceof Expr\ErrorSuppress) {
 			return $this->specifyTypesInCondition($scope, $expr->expr, $context, $defaultHandleFunctions);
+		} elseif ($expr instanceof Expr\NullsafePropertyFetch && !$context->null()) {
+			$types = $this->specifyTypesInCondition(
+				$scope,
+				new BooleanAnd(
+					new Expr\BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
+					new PropertyFetch($expr->var, $expr->name)
+				),
+				$context,
+				$defaultHandleFunctions
+			);
+
+			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr);
+			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->intersectWith($nullSafeTypes);
 		} elseif (!$context->null()) {
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr);
 		}
@@ -718,7 +731,24 @@ class TypeSpecifier
 			$sureTypes[$exprString] = [$expr, $type];
 		}
 
-		return new SpecifiedTypes($sureTypes, $sureNotTypes, $overwrite);
+		$types = new SpecifiedTypes($sureTypes, $sureNotTypes, $overwrite);
+		if ($expr instanceof Expr\NullsafePropertyFetch && !$context->null()) {
+			$propertyFetchTypes = $this->create(new PropertyFetch($expr->var, $expr->name), $type, $context);
+			if (
+				$context->true() && !TypeCombinator::containsNull($type)
+			) {
+				$propertyFetchTypes = $propertyFetchTypes->unionWith(
+					$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse())
+				);
+			} elseif ($context->false() && TypeCombinator::containsNull($type)) {
+				$propertyFetchTypes = $propertyFetchTypes->unionWith(
+					$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse())
+				);
+			}
+			return $types->unionWith($propertyFetchTypes);
+		}
+
+		return $types;
 	}
 
 	private function createRangeTypes(Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes

@@ -1757,7 +1757,16 @@ class NodeScopeResolver
 			$exprResult = $this->processExprNode(new PropertyFetch($expr->var, $expr->name, $expr->getAttributes()), $nonNullabilityResult->getScope(), $nodeCallback, $context);
 			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
-			return new ExpressionResult($scope, $exprResult->hasYield());
+			return new ExpressionResult(
+				$scope,
+				$exprResult->hasYield(),
+				static function () use ($scope, $expr): MutatingScope {
+					return $scope->filterByTruthyValue($expr);
+				},
+				static function () use ($scope, $expr): MutatingScope {
+					return $scope->filterByFalseyValue($expr);
+				}
+			);
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			$hasYield = false;
 			if ($expr->class instanceof Expr) {

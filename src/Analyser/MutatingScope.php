@@ -1799,7 +1799,7 @@ class MutatingScope implements Scope
 		if ($node instanceof Expr\NullsafeMethodCall) {
 			return TypeCombinator::union(
 				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
-					->getType(new MethodCall($node->var, $node->name, $node->args, $node->getAttributes())),
+					->getType(new MethodCall($node->var, $node->name, $node->args)),
 				new NullType()
 			);
 		}
@@ -1909,7 +1909,7 @@ class MutatingScope implements Scope
 		if ($node instanceof Expr\NullsafePropertyFetch) {
 			return TypeCombinator::union(
 				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
-					->getType(new PropertyFetch($node->var, $node->name, $node->getAttributes())),
+					->getType(new PropertyFetch($node->var, $node->name)),
 				new NullType()
 			);
 		}

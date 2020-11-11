@@ -3,12 +3,10 @@
 namespace PHPStan\Type\Constant;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;

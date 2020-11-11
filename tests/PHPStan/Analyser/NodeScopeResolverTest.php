@@ -10307,6 +10307,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/specified-types-closure-use.php');
 	}
 
+	public function dataCastToNumericString(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/cast-to-numeric-string.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10481,6 +10486,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataMatchExpression
 	 * @dataProvider dataNullSafe
 	 * @dataProvider dataRememberSpecifiedTypesAfterClosureUse
+	 * @dataProvider dataCastToNumericString
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

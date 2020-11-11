@@ -1741,10 +1741,13 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\ArrayDimFetch && $node->dim !== null) {
-			return $this->getTypeFromArrayDimFetch(
-				$node,
-				$this->getType($node->dim),
-				$this->getType($node->var)
+			return $this->getNullsafeShortCircuitingType(
+				$node->var,
+				$this->getTypeFromArrayDimFetch(
+					$node,
+					$this->getType($node->dim),
+					$this->getType($node->var)
+				)
 			);
 		}
 
@@ -1790,7 +1793,7 @@ class MutatingScope implements Scope
 				return $returnType;
 			};
 
-			return $typeCallback();
+			return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
 		}
 
 		if ($node instanceof Expr\NullsafeMethodCall) {
@@ -1851,7 +1854,12 @@ class MutatingScope implements Scope
 				return $returnType;
 			};
 
-			return $typeCallback();
+			$callType = $typeCallback();
+			if ($node->class instanceof Expr) {
+				return $this->getNullsafeShortCircuitingType($node->class, $callType);
+			}
+
+			return $callType;
 		}
 
 		if ($node instanceof PropertyFetch && $node->name instanceof Node\Identifier) {
@@ -1895,7 +1903,7 @@ class MutatingScope implements Scope
 				return $returnType;
 			};
 
-			return $typeCallback();
+			return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
 		}
 
 		if ($node instanceof Expr\NullsafePropertyFetch) {
@@ -1958,7 +1966,12 @@ class MutatingScope implements Scope
 				return $returnType;
 			};
 
-			return $typeCallback();
+			$fetchType = $typeCallback();
+			if ($node->class instanceof Expr) {
+				return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
+			}
+
+			return $fetchType;
 		}
 
 		if ($node instanceof FuncCall) {
@@ -1996,6 +2009,35 @@ class MutatingScope implements Scope
 		}
 
 		return new MixedType();
+	}
+
+	private function getNullsafeShortCircuitingType(Expr $var, Type $type): Type
+	{
+		if ($var instanceof Expr\NullsafePropertyFetch || $var instanceof Expr\NullsafeMethodCall) {
+			return TypeCombinator::addNull($type);
+		}
+
+		if ($var instanceof Expr\ArrayDimFetch) {
+			return $this->getNullsafeShortCircuitingType($var->var, $type);
+		}
+
+		if ($var instanceof PropertyFetch) {
+			return $this->getNullsafeShortCircuitingType($var->var, $type);
+		}
+
+		if ($var instanceof Expr\StaticPropertyFetch && $var->class instanceof Expr) {
+			return $this->getNullsafeShortCircuitingType($var->class, $type);
+		}
+
+		if ($var instanceof MethodCall) {
+			return $this->getNullsafeShortCircuitingType($var->var, $type);
+		}
+
+		if ($var instanceof Expr\StaticCall && $var->class instanceof Expr) {
+			return $this->getNullsafeShortCircuitingType($var->class, $type);
+		}
+
+		return $type;
 	}
 
 	private function resolveConstantType(string $constantName, Type $constantType): Type

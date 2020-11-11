@@ -28,6 +28,7 @@ class Foo
 		assertType('class-string<object>|null', $r?->name);
 
 		assertType('Nullsafe\Foo|null', $this->nullableSelf?->self);
+		assertType('Nullsafe\Foo|null', $this->nullableSelf?->self->self);
 	}
 
 }

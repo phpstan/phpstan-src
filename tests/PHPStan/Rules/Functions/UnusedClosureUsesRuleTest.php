@@ -12,7 +12,7 @@ class UnusedClosureUsesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck());
+		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck($this->createReflectionProvider()));
 	}
 
 	public function testUnusedClosureUses(): void

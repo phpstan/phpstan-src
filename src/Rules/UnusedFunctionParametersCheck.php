@@ -4,10 +4,18 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantStringType;
 
 class UnusedFunctionParametersCheck
 {
+
+	private ReflectionProvider $reflectionProvider;
+
+	public function __construct(ReflectionProvider $reflectionProvider)
+	{
+		$this->reflectionProvider = $reflectionProvider;
+	}
 
 	/**
 	 * @param \PHPStan\Analyser\Scope $scope
@@ -54,6 +62,12 @@ class UnusedFunctionParametersCheck
 	{
 		$variableNames = [];
 		if ($node instanceof Node) {
+			if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
+				$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+				if ($functionName === 'func_get_args') {
+					return $scope->getDefinedVariables();
+				}
+			}
 			if ($node instanceof Node\Expr\Variable && is_string($node->name) && $node->name !== 'this') {
 				return [$node->name];
 			}

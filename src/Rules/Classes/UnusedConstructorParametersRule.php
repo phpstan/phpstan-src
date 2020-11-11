@@ -5,12 +5,13 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
-use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassMethodNode;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ * @implements \PHPStan\Rules\Rule<InClassMethodNode>
  */
 class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 {
@@ -24,7 +25,7 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return ClassMethod::class;
+		return InClassMethodNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -33,11 +34,17 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		if ($node->name->name !== '__construct' || $node->stmts === null) {
+		$method = $scope->getFunction();
+		if (!$method instanceof MethodReflection) {
 			return [];
 		}
 
-		if (count($node->params) === 0) {
+		$originalNode = $node->getOriginalNode();
+		if (strtolower($method->getName()) !== '__construct' || $originalNode->stmts === null) {
+			return [];
+		}
+
+		if (count($originalNode->params) === 0) {
 			return [];
 		}
 
@@ -56,10 +63,10 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 				return $parameter->var->name;
-			}, array_values(array_filter($node->params, static function (Param $parameter): bool {
+			}, array_values(array_filter($originalNode->params, static function (Param $parameter): bool {
 				return $parameter->flags === 0;
 			}))),
-			$node->stmts,
+			$originalNode->stmts,
 			$message,
 			'constructor.unusedParameter',
 			[]

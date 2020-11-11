@@ -12,7 +12,9 @@ class UnusedConstructorParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new UnusedConstructorParametersRule(new UnusedFunctionParametersCheck());
+		return new UnusedConstructorParametersRule(new UnusedFunctionParametersCheck(
+			$this->createReflectionProvider()
+		));
 	}
 
 	public function testUnusedConstructorParameters(): void
@@ -36,6 +38,11 @@ class UnusedConstructorParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/unused-constructor-parameters-promoted-properties.php'], []);
+	}
+
+	public function testBug1917(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1917.php'], []);
 	}
 
 }

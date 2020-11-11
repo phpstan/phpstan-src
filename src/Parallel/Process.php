@@ -147,6 +147,10 @@ class Process
 			$onError = $this->onError;
 			$onError($error);
 		});
+		$in->on('error', function (\Throwable $error): void {
+			$onError = $this->onError;
+			$onError($error);
+		});
 	}
 
 }

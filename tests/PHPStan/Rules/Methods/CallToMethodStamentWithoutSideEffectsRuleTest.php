@@ -35,4 +35,18 @@ class CallToMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNullsafe(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/nullsafe-method-call-statement-no-side-effects.php'], [
+			[
+				'Call to method Exception::getMessage() on a separate line has no effect.',
+				10,
+			],
+		]);
+	}
+
 }

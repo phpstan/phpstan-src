@@ -30,7 +30,9 @@ class CallToMethodStamentWithoutSideEffectsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->expr instanceof Node\Expr\MethodCall) {
+		if ($node->expr instanceof Node\Expr\NullsafeMethodCall) {
+			$scope = $scope->filterByTruthyValue(new Node\Expr\BinaryOp\NotIdentical($node->expr->var, new Node\Expr\ConstFetch(new Node\Name('null'))));
+		} elseif (!$node->expr instanceof Node\Expr\MethodCall) {
 			return [];
 		}
 

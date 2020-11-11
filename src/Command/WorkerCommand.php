@@ -27,6 +27,8 @@ class WorkerCommand extends Command
 	/** @var string[] */
 	private array $composerAutoloaderProjectPaths;
 
+	private int $errorCount = 0;
+
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
@@ -142,6 +144,10 @@ class WorkerCommand extends Command
 
 		$loop->run();
 
+		if ($this->errorCount > 0) {
+			return 1;
+		}
+
 		return 0;
 	}
 
@@ -164,7 +170,8 @@ class WorkerCommand extends Command
 		?string $insteadOfFile
 	): void
 	{
-		$handleError = static function (\Throwable $error) use ($out, $output): void {
+		$handleError = function (\Throwable $error) use ($out, $output): void {
+			$this->errorCount++;
 			$output->writeln(sprintf('Error: %s', $error->getMessage()));
 			$out->write([
 				'action' => 'result',
@@ -186,7 +193,7 @@ class WorkerCommand extends Command
 		$registry = $container->getByType(Registry::class);
 
 		// todo collectErrors (from Analyser)
-		$in->on('data', static function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles, $tmpFile, $insteadOfFile): void {
+		$in->on('data', function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles, $tmpFile, $insteadOfFile): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -210,6 +217,7 @@ class WorkerCommand extends Command
 						$errors[] = $fileError;
 					}
 				} catch (\Throwable $t) {
+					$this->errorCount++;
 					$internalErrorsCount++;
 					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
 					$internalErrorMessage .= sprintf(

@@ -1011,6 +1011,7 @@ class NodeScopeResolver
 				$branchFinalScopeResult = $branchScopeResult->filterOutLoopExitPoints();
 				$hasYield = $hasYield || $branchFinalScopeResult->hasYield();
 				foreach ($branchScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+					$alwaysTerminating = false;
 					$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 				}
 				foreach ($branchScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {

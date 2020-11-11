@@ -92,4 +92,10 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4070_2.php'], []);
 	}
 
+	public function testBug4076(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4076.php'], []);
+	}
+
 }

@@ -133,11 +133,11 @@ class WorkerCommand extends Command
 		$analysedFiles = array_fill_keys($analysedFiles, true);
 
 		$tcpConector = new TcpConnector($loop);
-		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $analysedFiles, $tmpFile, $insteadOfFile): void {
+		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles, $tmpFile, $insteadOfFile): void {
 			$out = new Encoder($connection);
 			$in = new Decoder($connection, true, 512, 0, $container->getParameter('parallel')['buffer']);
 			$out->write(['action' => 'hello', 'identifier' => $identifier]);
-			$this->runWorker($container, $out, $in, $analysedFiles, $tmpFile, $insteadOfFile);
+			$this->runWorker($container, $out, $in, $output, $analysedFiles, $tmpFile, $insteadOfFile);
 		});
 
 		$loop->run();
@@ -149,6 +149,7 @@ class WorkerCommand extends Command
 	 * @param Container $container
 	 * @param WritableStreamInterface $out
 	 * @param ReadableStreamInterface $in
+	 * @param OutputInterface $output
 	 * @param array<string, true> $analysedFiles
 	 * @param string|null $tmpFile
 	 * @param string|null $insteadOfFile
@@ -157,12 +158,14 @@ class WorkerCommand extends Command
 		Container $container,
 		WritableStreamInterface $out,
 		ReadableStreamInterface $in,
+		OutputInterface $output,
 		array $analysedFiles,
 		?string $tmpFile,
 		?string $insteadOfFile
 	): void
 	{
-		$handleError = static function (\Throwable $error) use ($out): void {
+		$handleError = static function (\Throwable $error) use ($out, $output): void {
+			$output->writeln(sprintf('Error: %s', $error->getMessage()));
 			$out->write([
 				'action' => 'result',
 				'result' => [

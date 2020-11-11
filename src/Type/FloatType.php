@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -84,7 +85,10 @@ class FloatType implements Type
 
 	public function toString(): Type
 	{
-		return new StringType();
+		return new IntersectionType([
+			new StringType(),
+			new AccessoryNumericStringType(),
+		]);
 	}
 
 	public function toArray(): Type

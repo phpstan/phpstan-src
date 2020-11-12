@@ -70,4 +70,19 @@ class ReadingWriteOnlyPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testNullsafe(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/reading-write-only-properties-nullsafe.php'], [
+			[
+				'Property ReadingWriteOnlyProperties\Foo::$writeOnlyProperty is not readable.',
+				9,
+			],
+		]);
+	}
+
 }

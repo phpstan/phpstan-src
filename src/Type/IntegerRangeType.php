@@ -22,10 +22,30 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	}
 
 
-	public static function fromInterval(?int $min, ?int $max): Type
+	public static function fromInterval(?int $min, ?int $max, int $shift = 0): Type
 	{
 		$min = $min ?? PHP_INT_MIN;
 		$max = $max ?? PHP_INT_MAX;
+
+		if ($shift !== 0) {
+			if ($shift < 0) {
+				if ($max < PHP_INT_MIN - $shift) {
+					return new NeverType();
+				}
+				if ($max !== PHP_INT_MAX) {
+					$max += $shift;
+				}
+				$min = $min < PHP_INT_MIN - $shift ? PHP_INT_MIN : $min + $shift;
+			} else {
+				if ($min > PHP_INT_MAX - $shift) {
+					return new NeverType();
+				}
+				if ($min !== PHP_INT_MIN) {
+					$min += $shift;
+				}
+				$max = $max > PHP_INT_MAX - $shift ? PHP_INT_MAX : $max + $shift;
+			}
+		}
 
 		if ($min > $max) {
 			return new NeverType();

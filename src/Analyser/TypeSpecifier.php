@@ -401,20 +401,20 @@ class TypeSpecifier
 				if ($expr->right instanceof Expr\PostDec) {
 					$result = $result->unionWith($this->createRangeTypes(
 						$expr->right->var,
-						IntegerRangeType::fromInterval($leftType->getValue() + $offset - 1, null),
+						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset - 1),
 						$context
 					));
 				} elseif ($expr->right instanceof Expr\PreDec) {
 					$result = $result->unionWith($this->createRangeTypes(
 						$expr->right->var,
-						IntegerRangeType::fromInterval($leftType->getValue() + $offset, null),
+						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset),
 						$context
 					));
 				}
 
 				$result = $result->unionWith($this->createRangeTypes(
 					$expr->right,
-					IntegerRangeType::fromInterval($leftType->getValue() + $offset, null),
+					IntegerRangeType::fromInterval($leftType->getValue(), null, $offset),
 					$context
 				));
 			}
@@ -423,20 +423,20 @@ class TypeSpecifier
 				if ($expr->left instanceof Expr\PostInc) {
 					$result = $result->unionWith($this->createRangeTypes(
 						$expr->left->var,
-						IntegerRangeType::fromInterval(null, $rightType->getValue() - $offset + 1),
+						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset + 1),
 						$context
 					));
 				} elseif ($expr->left instanceof Expr\PreInc) {
 					$result = $result->unionWith($this->createRangeTypes(
 						$expr->left->var,
-						IntegerRangeType::fromInterval(null, $rightType->getValue() - $offset),
+						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset),
 						$context
 					));
 				}
 
 				$result = $result->unionWith($this->createRangeTypes(
 					$expr->left,
-					IntegerRangeType::fromInterval(null, $rightType->getValue() - $offset),
+					IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset),
 					$context
 				));
 			}

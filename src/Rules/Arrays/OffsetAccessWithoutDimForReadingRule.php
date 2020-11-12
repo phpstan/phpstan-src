@@ -27,7 +27,7 @@ class OffsetAccessWithoutDimForReadingRule implements \PHPStan\Rules\Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Cannot use [] for reading.')->build(),
+			RuleErrorBuilder::message('Cannot use [] for reading.')->nonIgnorable()->build(),
 		];
 	}
 

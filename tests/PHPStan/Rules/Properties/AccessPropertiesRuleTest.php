@@ -447,6 +447,22 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Access to an undefined property NullsafePropertyFetch\Foo::$baz.',
 				13,
 			],
+			[
+				'Cannot access property $bar on string.',
+				18,
+			],
+			[
+				'Cannot access property $bar on string.',
+				19,
+			],
+			[
+				'Cannot access property $bar on string.',
+				21,
+			],
+			[
+				'Cannot access property $bar on string.',
+				22,
+			],
 		]);
 	}
 

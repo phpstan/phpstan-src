@@ -13,4 +13,13 @@ class Foo
 		$selfOrNull?->baz;
 	}
 
+	public function doBar(string $string, ?string $nullableString): void
+	{
+		echo $string->bar ?? 4;
+		echo $nullableString->bar ?? 4;
+
+		echo $string?->bar ?? 4;
+		echo $nullableString?->bar ?? 4;
+	}
+
 }

@@ -841,4 +841,18 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testNullsafeIsset(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteCatchScopeWithTryAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/variable-nullsafe-isset.php'], []);
+	}
+
 }

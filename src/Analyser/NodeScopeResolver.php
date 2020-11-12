@@ -1247,7 +1247,7 @@ class NodeScopeResolver
 			}
 
 			$scope = $this->lookForVariableAssignCallback($scope, $expr, $callback);
-		} elseif ($expr instanceof PropertyFetch) {
+		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
 			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			if ($expr->class instanceof Expr) {

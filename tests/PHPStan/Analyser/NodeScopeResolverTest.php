@@ -10342,6 +10342,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3880.php');
 	}
 
+	public function dataIncDecInConditions(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/inc-dec-in-conditions.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10523,6 +10528,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug1233
 	 * @dataProvider dataComparisonOperators
 	 * @dataProvider dataBug3880
+	 * @dataProvider dataIncDecInConditions
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

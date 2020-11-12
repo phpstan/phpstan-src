@@ -5,6 +5,7 @@ namespace PHPStan\Type\Traits;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\CompoundTypeHelper;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\Type;
 
 trait ConstantScalarTypeTrait
@@ -43,6 +44,22 @@ trait ConstantScalarTypeTrait
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self && $this->value === $type->value;
+	}
+
+	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	{
+		if ($otherType instanceof ConstantScalarType) {
+			if ($orEqual) {
+				return TrinaryLogic::createFromBoolean($this->value <= $otherType->getValue());
+			}
+			return TrinaryLogic::createFromBoolean($this->value < $otherType->getValue());
+		}
+
+		if ($otherType instanceof CompoundType) {
+			return $otherType->isGreaterThan($this, $orEqual);
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function generalize(): Type

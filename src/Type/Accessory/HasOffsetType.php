@@ -14,6 +14,7 @@ use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
@@ -25,6 +26,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 	use MaybeObjectTypeTrait;
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonCompoundTypeTrait;
 
 	private \PHPStan\Type\Type $offsetType;
 

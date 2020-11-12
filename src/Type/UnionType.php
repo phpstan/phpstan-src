@@ -444,6 +444,20 @@ class UnionType implements CompoundType
 		});
 	}
 
+	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	{
+		return $this->unionResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
+			return $type->isSmallerThan($otherType, $orEqual);
+		});
+	}
+
+	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	{
+		return $this->unionResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
+			return $otherType->isSmallerThan($type, $orEqual);
+		});
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		/** @var BooleanType $type */

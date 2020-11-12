@@ -9,6 +9,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
@@ -17,6 +18,7 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	use ObjectTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonCompoundTypeTrait;
 
 	private string $propertyName;
 

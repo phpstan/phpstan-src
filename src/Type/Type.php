@@ -85,6 +85,8 @@ interface Type
 
 	public function toArray(): Type;
 
+	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic;
+
 	/**
 	 * Infers template types
 	 *

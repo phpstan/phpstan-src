@@ -11,4 +11,6 @@ interface CompoundType extends Type
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic;
 
+	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic;
+
 }

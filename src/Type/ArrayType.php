@@ -16,6 +16,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class ArrayType implements Type
 {
@@ -23,6 +24,7 @@ class ArrayType implements Type
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use UndecidedBooleanTypeTrait;
+	use UndecidedComparisonTypeTrait;
 
 	private \PHPStan\Type\Type $keyType;
 

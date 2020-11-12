@@ -18,12 +18,14 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class ObjectType implements TypeWithClassName, SubtractableType
 {
 
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonTypeTrait;
 
 	private const EXTRA_OFFSET_CLASSES = ['SimpleXMLElement', 'DOMNodeList', 'Threaded'];
 

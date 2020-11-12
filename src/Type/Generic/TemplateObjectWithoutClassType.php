@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
@@ -13,6 +14,8 @@ use PHPStan\Type\VerbosityLevel;
 
 class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements TemplateType
 {
+
+	use UndecidedComparisonCompoundTypeTrait;
 
 	private TemplateTypeScope $scope;
 

@@ -691,6 +691,46 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 				],
 			],
 			[
+				new Expr\BinaryOp\Smaller(
+					new Variable('n'),
+					new LNumber(PHP_INT_MIN)
+				),
+				[], // would be nice to specify that $n cannot be an int
+				[],
+			],
+			[
+				new Expr\BinaryOp\Greater(
+					new Variable('n'),
+					new LNumber(PHP_INT_MAX)
+				),
+				[], // would be nice to specify that $n cannot be an int
+				[],
+			],
+			[
+				new Expr\BinaryOp\SmallerOrEqual(
+					new Variable('n'),
+					new LNumber(PHP_INT_MIN)
+				),
+				[
+					'$n' => '~int<' . (PHP_INT_MIN + 1) . ', max>',
+				],
+				[
+					'$n' => '~' . PHP_INT_MIN,
+				],
+			],
+			[
+				new Expr\BinaryOp\GreaterOrEqual(
+					new Variable('n'),
+					new LNumber(PHP_INT_MAX)
+				),
+				[
+					'$n' => '~int<min, ' . (PHP_INT_MAX - 1) . '>',
+				],
+				[
+					'$n' => '~' . PHP_INT_MAX,
+				],
+			],
+			[
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\BinaryOp\GreaterOrEqual(
 						new Variable('n'),

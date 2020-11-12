@@ -13,6 +13,7 @@ use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 class CallableType implements CompoundType, ParametersAcceptor
 {
@@ -21,6 +22,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	use MaybeObjectTypeTrait;
 	use MaybeOffsetAccessibleTypeTrait;
 	use TruthyBooleanTypeTrait;
+	use UndecidedComparisonCompoundTypeTrait;
 
 	/** @var array<int, \PHPStan\Reflection\ParameterReflection> */
 	private array $parameters;

@@ -12,6 +12,7 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
@@ -22,6 +23,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	use NonObjectTypeTrait;
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonCompoundTypeTrait;
 
 	public function getReferencedClasses(): array
 	{

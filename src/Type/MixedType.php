@@ -17,6 +17,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 class MixedType implements CompoundType, SubtractableType
 {
@@ -24,6 +25,7 @@ class MixedType implements CompoundType, SubtractableType
 	use MaybeIterableTypeTrait;
 	use MaybeOffsetAccessibleTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonCompoundTypeTrait;
 
 	private bool $isExplicitMixed;
 

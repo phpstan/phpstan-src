@@ -12,6 +12,7 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 class IterableType implements CompoundType
 {
@@ -20,6 +21,7 @@ class IterableType implements CompoundType
 	use MaybeObjectTypeTrait;
 	use MaybeOffsetAccessibleTypeTrait;
 	use UndecidedBooleanTypeTrait;
+	use UndecidedComparisonCompoundTypeTrait;
 
 	private \PHPStan\Type\Type $keyType;
 

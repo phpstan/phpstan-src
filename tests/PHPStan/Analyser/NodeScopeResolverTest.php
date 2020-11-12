@@ -10332,6 +10332,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1233.php');
 	}
 
+	public function dataComparisonOperators(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/comparison-operators.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10511,6 +10516,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2733
 	 * @dataProvider dataBug3132
 	 * @dataProvider dataBug1233
+	 * @dataProvider dataComparisonOperators
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

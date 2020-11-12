@@ -6,7 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
-class IntegerRangeType extends IntegerType
+class IntegerRangeType extends IntegerType implements CompoundType
 {
 
 	private int $min;
@@ -136,6 +136,23 @@ class IntegerRangeType extends IntegerType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isSubTypeOf(Type $otherType): TrinaryLogic
+	{
+		if ($otherType instanceof parent) {
+			return $otherType->isSuperTypeOf($this);
+		}
+
+		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
+			return $otherType->isSuperTypeOf($this);
+		}
+
+		return TrinaryLogic::createNo();
+	}
+
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
+	{
+		return $this->isSubTypeOf($acceptingType);
+	}
 
 	public function equals(Type $type): bool
 	{
@@ -146,6 +163,22 @@ class IntegerRangeType extends IntegerType
 	public function generalize(): Type
 	{
 		return new parent();
+	}
+
+	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	{
+		return TrinaryLogic::extremeIdentity(
+			(new ConstantIntegerType($this->min))->isSmallerThan($otherType, $orEqual),
+			(new ConstantIntegerType($this->max))->isSmallerThan($otherType, $orEqual)
+		);
+	}
+
+	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	{
+		return TrinaryLogic::extremeIdentity(
+			$otherType->isSmallerThan((new ConstantIntegerType($this->min)), $orEqual),
+			$otherType->isSmallerThan((new ConstantIntegerType($this->max)), $orEqual)
+		);
 	}
 
 	public function toNumber(): Type

@@ -341,6 +341,20 @@ class IntersectionType implements CompoundType
 		});
 	}
 
+	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	{
+		return $this->intersectResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
+			return $type->isSmallerThan($otherType, $orEqual);
+		});
+	}
+
+	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	{
+		return $this->intersectResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
+			return $otherType->isSmallerThan($type, $orEqual);
+		});
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		$type = $this->intersectTypes(static function (Type $type): BooleanType {

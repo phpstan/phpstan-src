@@ -12,6 +12,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class BooleanType implements Type
 {
@@ -21,6 +22,7 @@ class BooleanType implements Type
 	use NonIterableTypeTrait;
 	use NonObjectTypeTrait;
 	use UndecidedBooleanTypeTrait;
+	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
 
 	public function describe(VerbosityLevel $level): string

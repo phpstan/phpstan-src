@@ -524,46 +524,20 @@ class MutatingScope implements Scope
 			return new NeverType(true);
 		}
 
-		if (
-			$node instanceof Expr\BinaryOp\Greater
-			|| $node instanceof Expr\BinaryOp\GreaterOrEqual
-			|| $node instanceof Expr\BinaryOp\Smaller
-			|| $node instanceof Expr\BinaryOp\SmallerOrEqual
-		) {
-			$leftType = $this->getType($node->left);
-			$rightType = $this->getType($node->right);
+		if ($node instanceof Expr\BinaryOp\Smaller) {
+			return $this->getType($node->left)->isSmallerThan($this->getType($node->right))->toBooleanType();
+		}
 
-			if ($rightType instanceof ConstantIntegerType) {
-				$rightValue = $rightType->getValue();
+		if ($node instanceof Expr\BinaryOp\SmallerOrEqual) {
+			return $this->getType($node->left)->isSmallerThan($this->getType($node->right), true)->toBooleanType();
+		}
 
-				if ($node instanceof Expr\BinaryOp\Greater) {
-					$rightIntervalType = IntegerRangeType::fromInterval($rightValue + 1, null);
-				} elseif ($node instanceof Expr\BinaryOp\GreaterOrEqual) {
-					$rightIntervalType = IntegerRangeType::fromInterval($rightValue, null);
-				} elseif ($node instanceof Expr\BinaryOp\Smaller) {
-					$rightIntervalType = IntegerRangeType::fromInterval(null, $rightValue - 1);
-				} else {
-					$rightIntervalType = IntegerRangeType::fromInterval(null, $rightValue);
-				}
+		if ($node instanceof Expr\BinaryOp\Greater) {
+			return $this->getType($node->right)->isSmallerThan($this->getType($node->left))->toBooleanType();
+		}
 
-				return $rightIntervalType->isSuperTypeOf($leftType->toInteger())->toBooleanType();
-			} elseif ($leftType instanceof ConstantIntegerType) {
-				$leftValue = $leftType->getValue();
-
-				if ($node instanceof Expr\BinaryOp\Smaller) {
-					$leftIntervalType = IntegerRangeType::fromInterval($leftValue + 1, null);
-				} elseif ($node instanceof Expr\BinaryOp\SmallerOrEqual) {
-					$leftIntervalType = IntegerRangeType::fromInterval($leftValue, null);
-				} elseif ($node instanceof Expr\BinaryOp\Greater) {
-					$leftIntervalType = IntegerRangeType::fromInterval(null, $leftValue - 1);
-				} else {
-					$leftIntervalType = IntegerRangeType::fromInterval(null, $leftValue);
-				}
-
-				return $leftIntervalType->isSuperTypeOf($rightType->toInteger())->toBooleanType();
-			}
-
-			return new BooleanType();
+		if ($node instanceof Expr\BinaryOp\GreaterOrEqual) {
+			return $this->getType($node->right)->isSmallerThan($this->getType($node->left), true)->toBooleanType();
 		}
 
 		if (

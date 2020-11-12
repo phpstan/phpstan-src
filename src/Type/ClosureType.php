@@ -17,11 +17,13 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class ClosureType implements TypeWithClassName, ParametersAcceptor
 {
 
 	use NonGenericTypeTrait;
+	use UndecidedComparisonTypeTrait;
 
 	private ObjectType $objectType;
 

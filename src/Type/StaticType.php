@@ -10,12 +10,14 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class StaticType implements TypeWithClassName
 {
 
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonTypeTrait;
 
 	private string $baseClass;
 

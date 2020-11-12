@@ -12,6 +12,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class NonexistentParentClassType implements Type
 {
@@ -22,6 +23,7 @@ class NonexistentParentClassType implements Type
 	use NonOffsetAccessibleTypeTrait;
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonTypeTrait;
 
 	public function describe(VerbosityLevel $level): string
 	{

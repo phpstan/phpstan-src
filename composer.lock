@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "60be7b02ecd76e265aff50a8d5a0ddb1",
+    "content-hash": "e9b111d73f0306831bbb3034209d1920",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1334,12 +1334,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "05d145c0bbafcf9a551fdd8824adb2a7e259fdaf"
+                "reference": "7a3c489a915d08576b6ff5090ae59598ef68ff31"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/05d145c0bbafcf9a551fdd8824adb2a7e259fdaf",
-                "reference": "05d145c0bbafcf9a551fdd8824adb2a7e259fdaf",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/7a3c489a915d08576b6ff5090ae59598ef68ff31",
+                "reference": "7a3c489a915d08576b6ff5090ae59598ef68ff31",
                 "shasum": ""
             },
             "require-dev": {

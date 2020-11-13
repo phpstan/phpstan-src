@@ -472,6 +472,10 @@ class PhpClassReflectionExtension
 			}
 			foreach ($variantNumbers as $variantNumber) {
 				$methodSignature = $this->signatureMapProvider->getMethodSignature($declaringClassName, $methodReflection->getName(), $reflectionMethod, $variantNumber);
+				$phpDocParameterNameMapping = [];
+				foreach ($methodSignature->getParameters() as $parameter) {
+					$phpDocParameterNameMapping[$parameter->getName()] = $parameter->getName();
+				}
 				$stubPhpDocReturnType = null;
 				$stubPhpDocParameterTypes = [];
 				$stubPhpDocParameterVariadicity = [];
@@ -517,10 +521,19 @@ class PhpClassReflectionExtension
 							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
 								$phpDocParameterTypes[$name] = $paramTag->getType();
 							}
+
+							$signatureParameters = $methodSignature->getParameters();
+							foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
+								if (!array_key_exists($paramI, $signatureParameters)) {
+									continue;
+								}
+
+								$phpDocParameterNameMapping[$signatureParameters[$paramI]->getName()] = $reflectionParameter->getName();
+							}
 						}
 					}
 				}
-				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType);
+				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping);
 			}
 
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
@@ -676,6 +689,7 @@ class PhpClassReflectionExtension
 	 * @param Type|null $stubPhpDocReturnType
 	 * @param array<string, Type> $phpDocParameterTypes
 	 * @param Type|null $phpDocReturnType
+	 * @param array<string, string> $phpDocParameterNameMapping
 	 * @return FunctionVariantWithPhpDocs
 	 */
 	private function createNativeMethodVariant(
@@ -684,7 +698,8 @@ class PhpClassReflectionExtension
 		array $stubPhpDocParameterVariadicity,
 		?Type $stubPhpDocReturnType,
 		array $phpDocParameterTypes,
-		?Type $phpDocReturnType
+		?Type $phpDocReturnType,
+		array $phpDocParameterNameMapping
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
@@ -692,11 +707,13 @@ class PhpClassReflectionExtension
 			$type = null;
 			$phpDocType = null;
 
+			$phpDocParameterName = $phpDocParameterNameMapping[$parameterSignature->getName()] ?? $parameterSignature->getName();
+
 			if (isset($stubPhpDocParameterTypes[$parameterSignature->getName()])) {
 				$type = $stubPhpDocParameterTypes[$parameterSignature->getName()];
 				$phpDocType = $stubPhpDocParameterTypes[$parameterSignature->getName()];
-			} elseif (isset($phpDocParameterTypes[$parameterSignature->getName()])) {
-				$phpDocType = $phpDocParameterTypes[$parameterSignature->getName()];
+			} elseif (isset($phpDocParameterTypes[$phpDocParameterName])) {
+				$phpDocType = $phpDocParameterTypes[$phpDocParameterName];
 			}
 
 			$parameters[] = new NativeParameterWithPhpDocsReflection(

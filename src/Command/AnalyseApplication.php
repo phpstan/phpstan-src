@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubValidator;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -184,6 +185,14 @@ class AnalyseApplication
 				$stdOutput->writeLineFormatted($file);
 			};
 			$postFileCallback = null;
+			if ($stdOutput->isDebug()) {
+				$previousMemory = memory_get_peak_usage(true);
+				$postFileCallback = static function () use ($stdOutput, &$previousMemory): void {
+					$currentTotalMemory = memory_get_peak_usage(true);
+					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory)));
+					$previousMemory = $currentTotalMemory;
+				};
+			}
 		}
 
 		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input);

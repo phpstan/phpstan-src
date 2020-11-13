@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Internal\BytesHelper;
 use function memory_get_peak_usage;
 
 class InceptionResult
@@ -99,29 +100,11 @@ class InceptionResult
 	public function handleReturn(int $exitCode): int
 	{
 		if ($this->getErrorOutput()->isVerbose()) {
-			$this->getErrorOutput()->writeLineFormatted(sprintf('Used memory: %s', $this->bytes(memory_get_peak_usage(true))));
+			$this->getErrorOutput()->writeLineFormatted(sprintf('Used memory: %s', BytesHelper::bytes(memory_get_peak_usage(true))));
 		}
 
 		@unlink($this->memoryLimitFile);
 		return $exitCode;
-	}
-
-	private function bytes(int $bytes): string
-	{
-		$bytes = round($bytes);
-		$units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
-		foreach ($units as $unit) {
-			if (abs($bytes) < 1024 || $unit === end($units)) {
-				break;
-			}
-			$bytes /= 1024;
-		}
-
-		if (!isset($unit)) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
-		return round($bytes, 2) . ' ' . $unit;
 	}
 
 }

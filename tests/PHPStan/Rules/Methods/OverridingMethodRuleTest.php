@@ -397,6 +397,13 @@ class OverridingMethodRuleTest extends RuleTestCase
 			],
 		]);
 
+		if (PHP_VERSION_ID < 70200) {
+			$errors[] = [
+				'Parameter #2 $lang (mixed) of method OverridingVariadics\YetAnotherTranslator::translate() does not match parameter #2 $parameters (string) of method OverridingVariadics\ITranslator::translate().',
+				54,
+			];
+		}
+
 		$this->analyse([__DIR__ . '/data/overriding-variadics.php'], $errors);
 	}
 

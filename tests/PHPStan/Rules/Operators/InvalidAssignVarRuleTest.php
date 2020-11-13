@@ -18,8 +18,8 @@ class InvalidAssignVarRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
 		}
 
 		$this->analyse([__DIR__ . '/data/invalid-assign-var.php'], [

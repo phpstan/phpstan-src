@@ -81,4 +81,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsParameterTypeWidening(): bool
+	{
+		return $this->versionId >= 70200;
+	}
+
 }

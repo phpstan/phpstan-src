@@ -290,6 +290,24 @@ class OverridingMethodRule implements Rule
 			}
 
 			$prototypeParameterType = $prototypeParameter->getNativeType();
+			if (!$this->phpVersion->supportsParameterTypeWidening()) {
+				if (!$methodParameterType->equals($prototypeParameterType)) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Parameter #%d $%s (%s) of method %s::%s() does not match parameter #%d $%s (%s) of method %s::%s().',
+						$i + 1,
+						$methodParameter->getName(),
+						$methodParameterType->describe(VerbosityLevel::typeOnly()),
+						$method->getDeclaringClass()->getDisplayName(),
+						$method->getName(),
+						$i + 1,
+						$prototypeParameter->getName(),
+						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
+						$prototype->getDeclaringClass()->getDisplayName(),
+						$prototype->getName()
+					))->nonIgnorable()->build();
+				}
+				continue;
+			}
 
 			if ($this->isTypeCompatible($methodParameterType, $prototypeParameterType, $this->phpVersion->supportsParameterContravariance())) {
 				continue;

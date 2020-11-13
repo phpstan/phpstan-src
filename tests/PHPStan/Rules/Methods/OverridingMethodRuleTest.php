@@ -460,4 +460,37 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/less-parameters-variadics.php'], $errors);
 	}
 
+	public function dataParameterTypeWidening(): array
+	{
+		return [
+			[
+				70100,
+				[
+					[
+						'Parameter #1 $foo (mixed) of method ParameterTypeWidening\Bar::doFoo() does not match parameter #1 $foo (string) of method ParameterTypeWidening\Foo::doFoo().',
+						18,
+					],
+				],
+			],
+			[
+				70200,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataParameterTypeWidening
+	 * @param int $phpVersionId
+	 * @param mixed[] $errors
+	 */
+	public function testParameterTypeWidening(int $phpVersionId, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/parameter-type-widening.php'], $errors);
+	}
+
 }

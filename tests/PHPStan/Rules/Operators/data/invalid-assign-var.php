@@ -34,4 +34,12 @@ class Foo
 		[$s] = ['test'];
 	}
 
+	public function doBaz(?\stdClass $a, \stdClass $b)
+	{
+		$x = &$a?->bar->foo;
+		$y = &$a?->bar;
+		$z = $b?->bar;
+	}
+
+
 }

@@ -52,8 +52,12 @@ class InvalidAssignVarRuleTest extends RuleTestCase
 				33,
 			],
 			[
-				'Expression on left side of assignment is not assignable.',
-				34,
+				'Nullsafe operator cannot be on right side of assignment by reference.',
+				39,
+			],
+			[
+				'Nullsafe operator cannot be on right side of assignment by reference.',
+				40,
 			],
 		]);
 	}

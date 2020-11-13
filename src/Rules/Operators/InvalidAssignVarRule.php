@@ -38,6 +38,12 @@ class InvalidAssignVarRule implements Rule
 			];
 		}
 
+		if ($node instanceof AssignRef && $this->containsNullSafe($node->expr)) {
+			return [
+				RuleErrorBuilder::message('Nullsafe operator cannot be on right side of assignment by reference.')->nonIgnorable()->build(),
+			];
+		}
+
 		if ($this->containsNonAssignableExpression($node->var)) {
 			return [
 				RuleErrorBuilder::message('Expression on left side of assignment is not assignable.')->nonIgnorable()->build(),

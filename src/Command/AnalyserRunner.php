@@ -57,8 +57,7 @@ class AnalyserRunner
 		?string $projectConfigFile,
 		?string $tmpFile,
 		?string $insteadOfFile,
-		InputInterface $input,
-		Output $output
+		InputInterface $input
 	): AnalyserResult
 	{
 		$filesCount = count($files);
@@ -72,17 +71,13 @@ class AnalyserRunner
 			$mainScript = $_SERVER['argv'][0];
 		}
 
-		if ($output->isDebug()) {
-			$output->writeLineFormatted(sprintf('Schedule: %d processes, %d jobs', $schedule->getNumberOfProcesses(), count($schedule->getJobs())));
-		}
-
 		if (
 			!$debug
 			&& $allowParallel
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 1
 		) {
-			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input, $output);
+			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input);
 		}
 
 		return $this->analyser->analyse(

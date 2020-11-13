@@ -44,6 +44,7 @@ class WritingToReadOnlyPropertiesRule implements \PHPStan\Rules\Rule
 		if (
 			!$node instanceof Node\Expr\Assign
 			&& !$node instanceof Node\Expr\AssignOp
+			&& !$node instanceof Node\Expr\AssignRef
 		) {
 			return [];
 		}

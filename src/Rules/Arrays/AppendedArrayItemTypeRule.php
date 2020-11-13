@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
+use PhpParser\Node\Expr\AssignRef;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -41,6 +42,7 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 		if (
 			!$node instanceof Assign
 			&& !$node instanceof AssignOp
+			&& !$node instanceof AssignRef
 		) {
 			return [];
 		}
@@ -66,7 +68,7 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		if ($node instanceof Assign) {
+		if ($node instanceof Assign || $node instanceof AssignRef) {
 			$assignedValueType = $scope->getType($node->expr);
 		} else {
 			$assignedValueType = $scope->getType($node);

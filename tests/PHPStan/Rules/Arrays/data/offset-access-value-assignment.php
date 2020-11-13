@@ -19,6 +19,9 @@ class Foo
 
 		$arrayAccess[] = 'baz';
 		$arrayAccess[] = ['foo'];
+
+		$s = 'foo';
+		$arrayAccess[] = &$s;
 	}
 
 	public function doBar(int $test): void

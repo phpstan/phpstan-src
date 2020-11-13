@@ -36,6 +36,7 @@ class OffsetAccessValueAssignmentRule implements \PHPStan\Rules\Rule
 		if (
 			!$node instanceof Assign
 			&& !$node instanceof AssignOp
+			&& !$node instanceof Expr\AssignRef
 		) {
 			return [];
 		}
@@ -46,7 +47,7 @@ class OffsetAccessValueAssignmentRule implements \PHPStan\Rules\Rule
 
 		$arrayDimFetch = $node->var;
 
-		if ($node instanceof Assign) {
+		if ($node instanceof Assign || $node instanceof Expr\AssignRef) {
 			$assignedValueType = $scope->getType($node->expr);
 		} else {
 			$assignedValueType = $scope->getType($node);

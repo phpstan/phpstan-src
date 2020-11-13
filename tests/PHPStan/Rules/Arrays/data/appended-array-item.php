@@ -23,6 +23,8 @@ class Foo
 		$this->callables[] = [__CLASS__, 'classMethod'];
 		$world = 'world';
 		$this->callables[] = ['Foo', "Hello $world"];
+
+		$this->integers[] = &$world;
 	}
 
 	public function assignOp()

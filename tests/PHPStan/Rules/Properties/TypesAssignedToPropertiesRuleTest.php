@@ -74,6 +74,10 @@ class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Static property PropertiesAssignedTypes\Ipsum::$fooStatic (PropertiesAssignedTypes\Ipsum) does not accept PropertiesAssignedTypes\Bar.',
 				144,
 			],
+			[
+				'Property PropertiesAssignedTypes\AssignRefFoo::$stringProperty (string) does not accept int.',
+				312,
+			],
 		]);
 	}
 

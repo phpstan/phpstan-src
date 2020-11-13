@@ -53,6 +53,10 @@ class WritingToReadOnlyPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Property WritingToReadOnlyProperties\Foo::$readOnlyProperty is not writable.',
 				26,
 			],
+			[
+				'Property WritingToReadOnlyProperties\Foo::$readOnlyProperty is not writable.',
+				35,
+			],
 		]);
 	}
 

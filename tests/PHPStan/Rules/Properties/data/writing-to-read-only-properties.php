@@ -30,6 +30,9 @@ class Foo
 
 		$self->writeOnlyProperty = 1;
 		$self->writeOnlyProperty .= 1;
+
+		$s = 'foo';
+		$self->readOnlyProperty = &$s;
 	}
 
 }

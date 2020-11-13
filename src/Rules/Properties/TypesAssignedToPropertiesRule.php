@@ -41,6 +41,7 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 		if (
 			!$node instanceof Node\Expr\Assign
 			&& !$node instanceof Node\Expr\AssignOp
+			&& !$node instanceof Node\Expr\AssignRef
 		) {
 			return [];
 		}
@@ -61,7 +62,7 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 
 		$propertyType = $propertyReflection->getWritableType();
 
-		if ($node instanceof Node\Expr\Assign) {
+		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {
 			$assignedValueType = $scope->getType($node->expr);
 		} else {
 			$assignedValueType = $scope->getType($node);

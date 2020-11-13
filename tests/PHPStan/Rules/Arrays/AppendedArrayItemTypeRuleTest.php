@@ -42,15 +42,19 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				],
 				[
 					'Array (array<int>) does not accept string.',
-					30,
+					27,
+				],
+				[
+					'Array (array<int>) does not accept string.',
+					32,
 				],
 				[
 					'Array (array<callable(): string>) does not accept Closure(): int.',
-					43,
+					45,
 				],
 				[
 					'Array (array<AppendedArrayItem\Lorem>) does not accept AppendedArrayItem\Baz.',
-					77,
+					79,
 				],
 			]
 		);

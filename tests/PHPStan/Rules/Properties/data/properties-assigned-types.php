@@ -299,3 +299,17 @@ class Baz {
 		$this->var = [[]];
 	}
 }
+
+class AssignRefFoo
+{
+
+	/** @var string */
+	private $stringProperty;
+
+	public function doFoo()
+	{
+		$i = 1;
+		$this->stringProperty = &$i;
+	}
+
+}

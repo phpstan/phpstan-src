@@ -19,6 +19,7 @@ rules:
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
 	- PHPStan\Rules\Arrays\EmptyArrayItemRule
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
+	- PHPStan\Rules\Cast\UnsetCastRule
 	- PHPStan\Rules\Classes\ClassConstantRule
 	- PHPStan\Rules\Classes\DuplicateDeclarationRule
 	- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule

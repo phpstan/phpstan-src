@@ -86,4 +86,9 @@ class PhpVersion
 		return $this->versionId >= 70200;
 	}
 
+	public function supportsUnsetCast(): bool
+	{
+		return $this->versionId < 80000;
+	}
+
 }

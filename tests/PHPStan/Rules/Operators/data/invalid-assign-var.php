@@ -19,4 +19,19 @@ class Foo
 		$c = 'foo';
 	}
 
+	public function doBar(
+		\stdClass $s
+	)
+	{
+		$s->foo = 'bar';
+		$d = 'foo';
+		$s['test'] = 'baz';
+		\stdClass::$foo = 'bar';
+
+		$s->foo() = 'test';
+
+		[$s->foo()] = ['test'];
+		[$s] = ['test'];
+	}
+
 }

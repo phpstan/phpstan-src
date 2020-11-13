@@ -32,13 +32,19 @@ class InvalidAssignVarRule implements Rule
 			return [];
 		}
 
-		if (!$this->containsNullSafe($node->var)) {
-			return [];
+		if ($this->containsNullSafe($node->var)) {
+			return [
+				RuleErrorBuilder::message('Nullsafe operator cannot be on left side of assignment.')->nonIgnorable()->build(),
+			];
 		}
 
-		return [
-			RuleErrorBuilder::message('Nullsafe operator cannot be on left side of assignment.')->nonIgnorable()->build(),
-		];
+		if ($this->containsNonAssignableExpression($node->var)) {
+			return [
+				RuleErrorBuilder::message('Expression on left side of assignment is not assignable.')->nonIgnorable()->build(),
+			];
+		}
+
+		return [];
 	}
 
 	private function containsNullSafe(Expr $expr): bool
@@ -87,6 +93,42 @@ class InvalidAssignVarRule implements Rule
 		}
 
 		return false;
+	}
+
+	private function containsNonAssignableExpression(Expr $expr): bool
+	{
+		if ($expr instanceof Expr\Variable) {
+			return false;
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return false;
+		}
+
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return false;
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch) {
+			return false;
+		}
+
+		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
+			foreach ($expr->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+				if (!$this->containsNonAssignableExpression($item->value)) {
+					continue;
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		return true;
 	}
 
 }

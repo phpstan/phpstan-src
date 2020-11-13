@@ -131,6 +131,8 @@
 			<arg path="tests/PHPStan/Rules/Classes/data/duplicate-promoted-property.php"/>
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Properties/data/default-value-for-promoted-property.php"/>
+			<arg value="--exclude"/>
+			<arg path="tests/PHPStan/Rules/Operators/data/invalid-assign-var.php"/>
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />

@@ -38,6 +38,7 @@ rules:
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
+	- PHPStan\Rules\Operators\InvalidAssignVarRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
 	- PHPStan\Rules\Ternary\RequireParenthesesForNestedTernaryRule

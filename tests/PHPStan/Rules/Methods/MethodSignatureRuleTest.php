@@ -229,7 +229,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 				15,
 			],
 			[
-				'Parameter #1 $test (string) of method Bug4003\Ipsum::doFoo() should be compatible with parameter $test (int) of method Bug4003\Lorem::doFoo()',
+				PHP_VERSION_ID < 70200 ? 'Parameter #1 $test (mixed) of method Bug4003\Ipsum::doFoo() does not match parameter #1 $test (int) of method Bug4003\Lorem::doFoo().' : 'Parameter #1 $test (string) of method Bug4003\Ipsum::doFoo() should be compatible with parameter $test (int) of method Bug4003\Lorem::doFoo()',
 				38,
 			],
 		]);

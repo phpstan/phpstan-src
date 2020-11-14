@@ -30,6 +30,7 @@ rules:
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
+	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule

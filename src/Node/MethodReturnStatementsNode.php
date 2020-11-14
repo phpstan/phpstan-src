@@ -6,8 +6,10 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
 
-class MethodReturnStatementsNode extends NodeAbstract implements VirtualNode
+class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
+
+	private ClassMethod $classMethod;
 
 	/** @var \PHPStan\Node\ReturnStatement[] */
 	private array $returnStatements;
@@ -26,6 +28,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements VirtualNode
 	)
 	{
 		parent::__construct($method->getAttributes());
+		$this->classMethod = $method;
 		$this->returnStatements = $returnStatements;
 		$this->statementResult = $statementResult;
 	}
@@ -41,6 +44,11 @@ class MethodReturnStatementsNode extends NodeAbstract implements VirtualNode
 	public function getStatementResult(): StatementResult
 	{
 		return $this->statementResult;
+	}
+
+	public function returnsByRef(): bool
+	{
+		return $this->classMethod->byRef;
 	}
 
 	public function getType(): string

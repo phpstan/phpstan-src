@@ -37,6 +37,7 @@ rules:
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Functions\InnerFunctionRule
 	- PHPStan\Rules\Functions\PrintfParametersRule
+	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule

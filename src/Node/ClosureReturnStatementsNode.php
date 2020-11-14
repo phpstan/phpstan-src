@@ -6,7 +6,7 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
 
-class ClosureReturnStatementsNode extends NodeAbstract implements VirtualNode
+class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 
 	private \PhpParser\Node\Expr\Closure $closureExpr;
@@ -49,6 +49,11 @@ class ClosureReturnStatementsNode extends NodeAbstract implements VirtualNode
 	public function getStatementResult(): StatementResult
 	{
 		return $this->statementResult;
+	}
+
+	public function returnsByRef(): bool
+	{
+		return $this->closureExpr->byRef;
 	}
 
 	public function getType(): string

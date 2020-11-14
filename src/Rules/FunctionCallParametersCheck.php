@@ -18,6 +18,8 @@ class FunctionCallParametersCheck
 
 	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
+	private NullsafeCheck $nullsafeCheck;
+
 	private bool $checkArgumentTypes;
 
 	private bool $checkArgumentsPassedByReference;
@@ -28,6 +30,7 @@ class FunctionCallParametersCheck
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
+		NullsafeCheck $nullsafeCheck,
 		bool $checkArgumentTypes,
 		bool $checkArgumentsPassedByReference,
 		bool $checkExtraArguments,
@@ -35,6 +38,7 @@ class FunctionCallParametersCheck
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;
+		$this->nullsafeCheck = $nullsafeCheck;
 		$this->checkArgumentTypes = $checkArgumentTypes;
 		$this->checkArgumentsPassedByReference = $checkArgumentsPassedByReference;
 		$this->checkExtraArguments = $checkExtraArguments;
@@ -220,11 +224,23 @@ class FunctionCallParametersCheck
 			if (
 				!$this->checkArgumentsPassedByReference
 				|| !$parameter->passedByReference()->yes()
-				|| $argumentValue instanceof \PhpParser\Node\Expr\Variable
+			) {
+				continue;
+			}
+
+			if ($this->nullsafeCheck->containsNullSafe($argumentValue)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					$messages[8],
+					$i + 1,
+					sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName())
+				))->build();
+				continue;
+			}
+
+			if ($argumentValue instanceof \PhpParser\Node\Expr\Variable
 				|| $argumentValue instanceof \PhpParser\Node\Expr\ArrayDimFetch
 				|| $argumentValue instanceof \PhpParser\Node\Expr\PropertyFetch
-				|| $argumentValue instanceof \PhpParser\Node\Expr\StaticPropertyFetch
-			) {
+				|| $argumentValue instanceof \PhpParser\Node\Expr\StaticPropertyFetch) {
 				continue;
 			}
 

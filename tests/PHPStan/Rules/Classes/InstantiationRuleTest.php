@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\RuleLevelHelper;
 
 /**
@@ -17,7 +18,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), true, true, true, true),
 			new ClassCaseSensitivityCheck($broker)
 		);
 	}

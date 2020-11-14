@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use const PHP_VERSION_ID;
@@ -31,7 +32,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), true, true, true, true),
 			$ruleLevelHelper,
 			true,
 			true
@@ -1566,6 +1567,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Method NullsafeMethodCall\Foo::doBar() invoked with 1 parameter, 0 required.',
 				11,
+			],
+			[
+				'Parameter #1 $passedByRef of method NullsafeMethodCall\Foo::doBaz() is passed by reference, so it expects variables only.',
+				26,
+			],
+			[
+				'Parameter #1 $passedByRef of method NullsafeMethodCall\Foo::doBaz() is passed by reference, so it expects variables only.',
+				27,
 			],
 		]);
 	}

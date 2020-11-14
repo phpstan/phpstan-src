@@ -16,4 +16,15 @@ class Foo
 
 	}
 
+	public function doBaz(&$passedByRef): void
+	{
+
+	}
+
+	public function doLorem(?self $selfOrNull): void
+	{
+		$this->doBaz($selfOrNull?->test);
+		$this->doBaz($selfOrNull?->test->test);
+	}
+
 }

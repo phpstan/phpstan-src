@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\RuleLevelHelper;
 
 /**
@@ -17,6 +18,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 		return new CallCallablesRule(
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
+				new NullsafeCheck(),
 				true,
 				true,
 				true,

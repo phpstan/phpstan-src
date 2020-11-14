@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Operators;
 
+use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -13,7 +14,7 @@ class InvalidAssignVarRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new InvalidAssignVarRule();
+		return new InvalidAssignVarRule(new NullsafeCheck());
 	}
 
 	public function testRule(): void

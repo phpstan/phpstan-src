@@ -692,6 +692,9 @@ services:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 
 	-
+		class: PHPStan\Rules\NullsafeCheck
+
+	-
 		class: PHPStan\Rules\Properties\LazyReadWritePropertiesExtensionProvider
 
 	-

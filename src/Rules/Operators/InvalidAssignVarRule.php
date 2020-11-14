@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\AssignRef;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -16,6 +17,13 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class InvalidAssignVarRule implements Rule
 {
+
+	private NullsafeCheck $nullsafeCheck;
+
+	public function __construct(NullsafeCheck $nullsafeCheck)
+	{
+		$this->nullsafeCheck = $nullsafeCheck;
+	}
 
 	public function getNodeType(): string
 	{
@@ -32,13 +40,13 @@ class InvalidAssignVarRule implements Rule
 			return [];
 		}
 
-		if ($this->containsNullSafe($node->var)) {
+		if ($this->nullsafeCheck->containsNullSafe($node->var)) {
 			return [
 				RuleErrorBuilder::message('Nullsafe operator cannot be on left side of assignment.')->nonIgnorable()->build(),
 			];
 		}
 
-		if ($node instanceof AssignRef && $this->containsNullSafe($node->expr)) {
+		if ($node instanceof AssignRef && $this->nullsafeCheck->containsNullSafe($node->expr)) {
 			return [
 				RuleErrorBuilder::message('Nullsafe operator cannot be on right side of assignment by reference.')->nonIgnorable()->build(),
 			];
@@ -53,53 +61,6 @@ class InvalidAssignVarRule implements Rule
 		return [];
 	}
 
-	private function containsNullSafe(Expr $expr): bool
-	{
-		if (
-			$expr instanceof Expr\NullsafePropertyFetch
-			|| $expr instanceof Expr\NullsafeMethodCall
-		) {
-			return true;
-		}
-
-		if ($expr instanceof Expr\ArrayDimFetch) {
-			return $this->containsNullSafe($expr->var);
-		}
-
-		if ($expr instanceof Expr\PropertyFetch) {
-			return $this->containsNullSafe($expr->var);
-		}
-
-		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
-			return $this->containsNullSafe($expr->class);
-		}
-
-		if ($expr instanceof Expr\MethodCall) {
-			return $this->containsNullSafe($expr->var);
-		}
-
-		if ($expr instanceof Expr\StaticCall && $expr->class instanceof Expr) {
-			return $this->containsNullSafe($expr->class);
-		}
-
-		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
-			foreach ($expr->items as $item) {
-				if ($item === null) {
-					continue;
-				}
-
-				if ($item->key !== null && $this->containsNullSafe($item->key)) {
-					return true;
-				}
-
-				if ($this->containsNullSafe($item->value)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
 
 	private function containsNonAssignableExpression(Expr $expr): bool
 	{

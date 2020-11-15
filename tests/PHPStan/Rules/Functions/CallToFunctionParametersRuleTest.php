@@ -453,6 +453,10 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Missing parameter $j (int) in call to function FunctionNamedArguments\foo.',
 				7,
 			],
+			[
+				'Unknown parameter $z in call to function FunctionNamedArguments\foo.',
+				8,
+			],
 		]);
 	}
 

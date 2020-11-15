@@ -305,6 +305,10 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Missing parameter $j (int) in call to InstantiationNamedArguments\Foo constructor.',
 				15,
 			],
+			[
+				'Unknown parameter $z in call to InstantiationNamedArguments\Foo constructor.',
+				16,
+			],
 		]);
 	}
 

@@ -394,6 +394,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Missing parameter $j (int) in call to static method StaticMethodNamedArguments\Foo::doFoo().',
 				15,
 			],
+			[
+				'Unknown parameter $z in call to static method StaticMethodNamedArguments\Foo::doFoo().',
+				16,
+			],
 		]);
 	}
 

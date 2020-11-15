@@ -1636,6 +1636,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Missing parameter $k (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
 				37,
 			],
+			[
+				'Unknown parameter $z in call to method NamedArgumentsMethod\Foo::doFoo().',
+				42,
+			],
 		]);
 	}
 

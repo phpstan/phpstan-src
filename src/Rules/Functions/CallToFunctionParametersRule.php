@@ -62,6 +62,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 				'Parameter #%d %s of function ' . $function->getName() . ' is passed by reference, so it expects variables only.',
 				'Unable to resolve the template type %s in call to function ' . $function->getName(),
 				'Missing parameter $%s in call to function ' . $function->getName() . '.',
+				'Unknown parameter $%s in call to function ' . $function->getName() . '.',
 			]
 		);
 	}

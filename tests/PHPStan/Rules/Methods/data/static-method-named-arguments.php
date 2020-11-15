@@ -13,6 +13,7 @@ class Foo
 	public function doBar(): void
 	{
 		self::doFoo(i: 1);
+		self::doFoo(i:1, j: 2, z: 3);
 	}
 
 }

@@ -54,7 +54,7 @@ class FunctionCallParametersCheck
 	 * @param \PHPStan\Reflection\ParametersAcceptor $parametersAcceptor
 	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\New_ $funcCall
-	 * @param array{string, string, string, string, string, string, string, string, string, string, string} $messages
+	 * @param array{string, string, string, string, string, string, string, string, string, string, string, string} $messages
 	 * @return RuleError[]
 	 */
 	public function check(
@@ -234,7 +234,8 @@ class FunctionCallParametersCheck
 			} elseif (array_key_exists($argumentName, $parametersByName)) {
 				$parameter = $parametersByName[$argumentName];
 			} else {
-				continue; // todo
+				$errors[] = RuleErrorBuilder::message(sprintf($messages[11], $argumentName))->build();
+				continue;
 			}
 
 			if (

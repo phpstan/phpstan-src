@@ -10713,6 +10713,41 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	public function dataInferPrivateTypedPropertyTypeFromConstructor(): array
+	{
+		return [
+			[
+				'InferPrivateTypedPropertyTypeFromConstructor\GenericFoo<stdClass>',
+				'$this->genericFoo',
+			],
+			[
+				'array<int, string>',
+				'$this->typedArray',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataInferPrivateTypedPropertyTypeFromConstructor
+	 * @param string $description
+	 * @param string $expression
+	 */
+	public function testInferPrivateTypedPropertyTypeFromConstructor(
+		string $description,
+		string $expression
+	): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->assertTypes(
+			__DIR__ . '/data/infer-private-typed-property-type-from-constructor.php',
+			$description,
+			$expression
+		);
+	}
+
 	public function dataPropertyNativeTypes(): array
 	{
 		return [

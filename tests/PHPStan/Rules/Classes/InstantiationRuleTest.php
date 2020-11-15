@@ -19,7 +19,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), true, true, true, true),
 			new ClassCaseSensitivityCheck($broker)
 		);
 	}
@@ -292,6 +292,20 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testBug4056(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4056.php'], []);
+	}
+
+	public function testNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/instantiation-named-arguments.php'], [
+			[
+				'Missing parameter $j (int) in call to InstantiationNamedArguments\Foo constructor.',
+				15,
+			],
+		]);
 	}
 
 }

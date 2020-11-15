@@ -1606,8 +1606,8 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
 		}
 
 		$this->checkThisOnly = false;
@@ -1623,6 +1623,18 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Named argument cannot be followed by a positional argument.',
 				22,
+			],
+			[
+				'Argument for parameter $i has already been passed.',
+				24,
+			],
+			[
+				'Argument for parameter $i has already been passed.',
+				30,
+			],
+			[
+				'Missing parameter $k (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
+				37,
 			],
 		]);
 	}

@@ -54,7 +54,7 @@ class FunctionCallParametersCheck
 	 * @param \PHPStan\Reflection\ParametersAcceptor $parametersAcceptor
 	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\New_ $funcCall
-	 * @param string[] $messages Nine message templates
+	 * @param array{string, string, string, string, string, string, string, string, string, string, string} $messages
 	 * @return RuleError[]
 	 */
 	public function check(
@@ -66,7 +66,9 @@ class FunctionCallParametersCheck
 	{
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
+		$parametersByName = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
+			$parametersByName[$parameter->getName()] = $parameter;
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
 			}
@@ -78,7 +80,7 @@ class FunctionCallParametersCheck
 			$functionParametersMaxCount = -1;
 		}
 
-		/** @var array<int, array{Expr, Type, bool}> $arguments */
+		/** @var array<int, array{Expr, Type, bool, string|null}> $arguments */
 		$arguments = [];
 		/** @var array<int, \PhpParser\Node\Arg> $args */
 		$args = $funcCall->args;
@@ -89,8 +91,10 @@ class FunctionCallParametersCheck
 			if ($hasNamedArguments && $arg->name === null) {
 				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($arg->getLine())->nonIgnorable()->build();
 			}
+			$argumentName = null;
 			if ($arg->name !== null) {
 				$hasNamedArguments = true;
+				$argumentName = $arg->name->toString();
 			}
 			if ($arg->unpack) {
 				$arrays = TypeUtils::getConstantArrays($type);
@@ -114,6 +118,7 @@ class FunctionCallParametersCheck
 							$arg->value,
 							TypeCombinator::union(...$types),
 							false,
+							$argumentName,
 						];
 					}
 				} else {
@@ -121,6 +126,7 @@ class FunctionCallParametersCheck
 						$arg->value,
 						$type->getIterableValueType(),
 						true,
+						$argumentName,
 					];
 				}
 				continue;
@@ -130,6 +136,7 @@ class FunctionCallParametersCheck
 				$arg->value,
 				$type,
 				false,
+				$argumentName,
 			];
 		}
 
@@ -137,37 +144,39 @@ class FunctionCallParametersCheck
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->nonIgnorable()->build();
 		}
 
-		$invokedParametersCount = count($arguments);
-		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack]) {
-			if ($unpack) {
-				$invokedParametersCount = max($functionParametersMinCount, $functionParametersMaxCount);
-				break;
+		if (!$hasNamedArguments) {
+			$invokedParametersCount = count($arguments);
+			foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName]) {
+				if ($unpack) {
+					$invokedParametersCount = max($functionParametersMinCount, $functionParametersMaxCount);
+					break;
+				}
 			}
-		}
 
-		if (
-			$invokedParametersCount < $functionParametersMinCount
-			|| ($this->checkExtraArguments && $invokedParametersCount > $functionParametersMaxCount)
-		) {
-			if ($functionParametersMinCount === $functionParametersMaxCount) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					$invokedParametersCount === 1 ? $messages[0] : $messages[1],
-					$invokedParametersCount,
-					$functionParametersMinCount
-				))->build();
-			} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					$invokedParametersCount === 1 ? $messages[2] : $messages[3],
-					$invokedParametersCount,
-					$functionParametersMinCount
-				))->build();
-			} elseif ($functionParametersMaxCount !== -1) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					$invokedParametersCount === 1 ? $messages[4] : $messages[5],
-					$invokedParametersCount,
-					$functionParametersMinCount,
-					$functionParametersMaxCount
-				))->build();
+			if (
+				$invokedParametersCount < $functionParametersMinCount
+				|| ($this->checkExtraArguments && $invokedParametersCount > $functionParametersMaxCount)
+			) {
+				if ($functionParametersMinCount === $functionParametersMaxCount) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						$invokedParametersCount === 1 ? $messages[0] : $messages[1],
+						$invokedParametersCount,
+						$functionParametersMinCount
+					))->build();
+				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						$invokedParametersCount === 1 ? $messages[2] : $messages[3],
+						$invokedParametersCount,
+						$functionParametersMinCount
+					))->build();
+				} elseif ($functionParametersMaxCount !== -1) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						$invokedParametersCount === 1 ? $messages[4] : $messages[5],
+						$invokedParametersCount,
+						$functionParametersMinCount,
+						$functionParametersMaxCount
+					))->build();
+				}
 			}
 		}
 
@@ -184,8 +193,9 @@ class FunctionCallParametersCheck
 		}
 
 		$parameters = $parametersAcceptor->getParameters();
+		$alreadyPassedParameters = [];
 
-		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack]) {
+		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName]) {
 			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
@@ -208,18 +218,34 @@ class FunctionCallParametersCheck
 				}
 			}
 
-			if (!isset($parameters[$i])) {
-				if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
-					break;
-				}
+			if ($argumentName === null) {
+				if (!isset($parameters[$i])) {
+					if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
+						break;
+					}
 
-				$parameter = $parameters[count($parameters) - 1];
-				if (!$parameter->isVariadic()) {
-					break; // func_get_args
+					$parameter = $parameters[count($parameters) - 1];
+					if (!$parameter->isVariadic()) {
+						break; // func_get_args
+					}
+				} else {
+					$parameter = $parameters[$i];
 				}
+			} elseif (array_key_exists($argumentName, $parametersByName)) {
+				$parameter = $parametersByName[$argumentName];
 			} else {
-				$parameter = $parameters[$i];
+				continue; // todo
 			}
+
+			if (
+				$hasNamedArguments
+				&& array_key_exists($parameter->getName(), $alreadyPassedParameters)
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))->build();
+				continue;
+			}
+
+			$alreadyPassedParameters[$parameter->getName()] = true;
 
 			$parameterType = $parameter->getType();
 			if (
@@ -265,6 +291,19 @@ class FunctionCallParametersCheck
 				$i + 1,
 				sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName())
 			))->build();
+		}
+
+		if ($hasNamedArguments) {
+			foreach ($parameters as $parameter) {
+				if ($parameter->isOptional()) {
+					continue;
+				}
+				if (array_key_exists($parameter->getName(), $alreadyPassedParameters)) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf($messages[10], sprintf('%s (%s)', $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly()))))->build();
+			}
 		}
 
 		if ($this->checkMissingTypehints) {

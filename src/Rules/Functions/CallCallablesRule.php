@@ -124,6 +124,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 					'Result of ' . $callableDescription . ' (void) is used.',
 					'Parameter #%d %s of ' . $callableDescription . ' is passed by reference, so it expects variables only.',
 					'Unable to resolve the template type %s in call to ' . $callableDescription,
+					'Missing parameter $%s in call to ' . $callableDescription . '.',
 				]
 			)
 		);

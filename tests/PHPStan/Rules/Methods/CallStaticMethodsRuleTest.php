@@ -23,7 +23,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($broker, true, $this->checkThisOnly, true, false);
 		return new CallStaticMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), true, true, true, true),
 			$ruleLevelHelper,
 			new ClassCaseSensitivityCheck($broker),
 			true,
@@ -379,6 +379,22 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-2164.php'], []);
+	}
+
+	public function testNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+
+		$this->analyse([__DIR__ . '/data/static-method-named-arguments.php'], [
+			[
+				'Missing parameter $j (int) in call to static method StaticMethodNamedArguments\Foo::doFoo().',
+				15,
+			],
+		]);
 	}
 
 }

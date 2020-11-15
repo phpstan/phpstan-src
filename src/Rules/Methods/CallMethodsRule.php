@@ -153,6 +153,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 				'Result of method ' . $messagesMethodName . ' (void) is used.',
 				'Parameter #%d %s of method ' . $messagesMethodName . ' is passed by reference, so it expects variables only.',
 				'Unable to resolve the template type %s in call to method ' . $messagesMethodName,
+				'Missing parameter $%s in call to method ' . $messagesMethodName . '.',
 			]
 		));
 

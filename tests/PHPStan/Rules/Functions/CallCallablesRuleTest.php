@@ -20,7 +20,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
 				new NullsafeCheck(),
-				new PhpVersion(PHP_VERSION_ID),
+				new PhpVersion(80000),
 				true,
 				true,
 				true,
@@ -129,6 +129,36 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Trying to invoke array(\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\') but it might not be a callable.',
 				179,
+			],
+		]);
+	}
+
+	public function testNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/callables-named-arguments.php'], [
+			[
+				'Missing parameter $j (int) in call to closure.',
+				14,
+			],
+			[
+				'Missing parameter $ (int) in call to callable callable(int, int): void.',
+				23,
+			],
+			[
+				'Missing parameter $ (int) in call to callable callable(int, int): void.',
+				23,
+			],
+			[
+				'Missing parameter $$i (int) in call to callable callable(int, int): void.',
+				24,
+			],
+			[
+				'Missing parameter $$j (int) in call to callable callable(int, int): void.',
+				24,
 			],
 		]);
 	}

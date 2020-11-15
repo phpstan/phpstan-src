@@ -18,7 +18,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), true, true, true, true)
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), true, true, true, true)
 		);
 	}
 
@@ -437,6 +437,21 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Unable to resolve the template type A in call to function CallGenericFunction\g',
 				26,
+			],
+		]);
+	}
+
+	public function testNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		require_once __DIR__ . '/data/named-arguments-define.php';
+		$this->analyse([__DIR__ . '/data/named-arguments.php'], [
+			[
+				'Missing parameter $j (int) in call to function FunctionNamedArguments\foo.',
+				7,
 			],
 		]);
 	}

@@ -61,6 +61,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 				'Result of function ' . $function->getName() . ' (void) is used.',
 				'Parameter #%d %s of function ' . $function->getName() . ' is passed by reference, so it expects variables only.',
 				'Unable to resolve the template type %s in call to function ' . $function->getName(),
+				'Missing parameter $%s in call to function ' . $function->getName() . '.',
 			]
 		);
 	}

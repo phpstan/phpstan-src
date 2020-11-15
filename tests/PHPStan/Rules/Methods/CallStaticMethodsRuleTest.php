@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
@@ -22,7 +23,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($broker, true, $this->checkThisOnly, true, false);
 		return new CallStaticMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), true, true, true, true),
 			$ruleLevelHelper,
 			new ClassCaseSensitivityCheck($broker),
 			true,

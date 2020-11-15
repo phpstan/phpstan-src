@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
@@ -32,7 +33,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), true, true, true, true),
 			$ruleLevelHelper,
 			true,
 			true
@@ -1575,6 +1576,27 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter #1 $passedByRef of method NullsafeMethodCall\Foo::doBaz() is passed by reference, so it expects variables only.',
 				27,
+			],
+		]);
+	}
+
+	public function testDisallowNamedArguments(): void
+	{
+		if (PHP_VERSION_ID >= 80000) {
+			$this->markTestSkipped('Test requires PHP earlier than 8.0.');
+		}
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/disallow-named-arguments.php'], [
+			[
+				'Named arguments are supported only on PHP 8.0 and later.',
+				10,
 			],
 		]);
 	}

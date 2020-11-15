@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\RuleLevelHelper;
@@ -17,7 +18,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), true, true, true, true)
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), true, true, true, true)
 		);
 	}
 

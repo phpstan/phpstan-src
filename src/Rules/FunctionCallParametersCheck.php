@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
@@ -20,6 +21,8 @@ class FunctionCallParametersCheck
 
 	private NullsafeCheck $nullsafeCheck;
 
+	private PhpVersion $phpVersion;
+
 	private bool $checkArgumentTypes;
 
 	private bool $checkArgumentsPassedByReference;
@@ -31,6 +34,7 @@ class FunctionCallParametersCheck
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
 		NullsafeCheck $nullsafeCheck,
+		PhpVersion $phpVersion,
 		bool $checkArgumentTypes,
 		bool $checkArgumentsPassedByReference,
 		bool $checkExtraArguments,
@@ -39,6 +43,7 @@ class FunctionCallParametersCheck
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;
 		$this->nullsafeCheck = $nullsafeCheck;
+		$this->phpVersion = $phpVersion;
 		$this->checkArgumentTypes = $checkArgumentTypes;
 		$this->checkArgumentsPassedByReference = $checkArgumentsPassedByReference;
 		$this->checkExtraArguments = $checkExtraArguments;
@@ -77,8 +82,12 @@ class FunctionCallParametersCheck
 		$arguments = [];
 		/** @var array<int, \PhpParser\Node\Arg> $args */
 		$args = $funcCall->args;
+		$hasNamedArguments = false;
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
+			if ($arg->name !== null) {
+				$hasNamedArguments = true;
+			}
 			if ($arg->unpack) {
 				$arrays = TypeUtils::getConstantArrays($type);
 				if (count($arrays) > 0) {
@@ -121,6 +130,11 @@ class FunctionCallParametersCheck
 		}
 
 		$errors = [];
+
+		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments()) {
+			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->nonIgnorable()->build();
+		}
+
 		$invokedParametersCount = count($arguments);
 		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack]) {
 			if ($unpack) {

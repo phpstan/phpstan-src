@@ -83,8 +83,12 @@ class FunctionCallParametersCheck
 		/** @var array<int, \PhpParser\Node\Arg> $args */
 		$args = $funcCall->args;
 		$hasNamedArguments = false;
+		$errors = [];
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
+			if ($hasNamedArguments && $arg->name === null) {
+				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($arg->getLine())->nonIgnorable()->build();
+			}
 			if ($arg->name !== null) {
 				$hasNamedArguments = true;
 			}
@@ -128,8 +132,6 @@ class FunctionCallParametersCheck
 				false,
 			];
 		}
-
-		$errors = [];
 
 		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments()) {
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->nonIgnorable()->build();

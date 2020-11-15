@@ -27,13 +27,16 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var bool */
 	private $checkExplicitMixed = false;
 
+	/** @var int */
+	private $phpVersion = PHP_VERSION_ID;
+
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), true, true, true, true),
 			$ruleLevelHelper,
 			true,
 			true
@@ -1597,6 +1600,29 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Named arguments are supported only on PHP 8.0 and later.',
 				10,
+			],
+		]);
+	}
+
+	public function testNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->phpVersion = 80000;
+
+		$this->analyse([__DIR__ . '/data/named-arguments.php'], [
+			[
+				'Named argument cannot be followed by a positional argument.',
+				21,
+			],
+			[
+				'Named argument cannot be followed by a positional argument.',
+				22,
 			],
 		]);
 	}

@@ -480,8 +480,12 @@ class TypeNodeResolver
 		$parameters = array_map(
 			function (CallableTypeParameterNode $parameterNode) use ($nameScope, &$isVariadic): NativeParameterReflection {
 				$isVariadic = $isVariadic || $parameterNode->isVariadic;
+				$parameterName = $parameterNode->parameterName;
+				if (strpos($parameterName, '$') === 0) {
+					$parameterName = substr($parameterName, 1);
+				}
 				return new NativeParameterReflection(
-					$parameterNode->parameterName,
+					$parameterName,
 					$parameterNode->isOptional || $parameterNode->isVariadic,
 					$this->resolve($parameterNode->type, $nameScope),
 					$parameterNode->isReference ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),

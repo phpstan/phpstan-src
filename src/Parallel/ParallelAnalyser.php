@@ -65,8 +65,8 @@ class ParallelAnalyser
 		$server = new \React\Socket\TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server);
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs): void {
-			$decoder = new Decoder($connection, true, 512, 0, $this->decoderBufferSize);
-			$encoder = new Encoder($connection);
+			$decoder = new Decoder($connection, true, 512, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0, $this->decoderBufferSize);
+			$encoder = new Encoder($connection, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0);
 			$decoder->on('data', function (array $data) use (&$jobs, $decoder, $encoder): void {
 				if ($data['action'] !== 'hello') {
 					return;

@@ -145,8 +145,8 @@ class FixerApplication
 		);
 
 		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $reanalyseProcessQueue, $inceptionResult): void {
-			$decoder = new Decoder($connection, true, 512, 0, 128 * 1024 * 1024);
-			$encoder = new Encoder($connection);
+			$decoder = new Decoder($connection, true, 512, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0, 128 * 1024 * 1024);
+			$encoder = new Encoder($connection, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0);
 			$encoder->write(['action' => 'initialData', 'data' => [
 				'fileSpecificErrors' => $fileSpecificErrors,
 				'notFileSpecificErrors' => $notFileSpecificErrors,

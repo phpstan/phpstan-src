@@ -257,8 +257,7 @@ class FunctionCallParametersCheck
 				$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType);
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[6],
-					$i + 1,
-					sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName()),
+					sprintf('#%d %s', $i + 1, sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName())),
 					$parameterType->describe($verbosityLevel),
 					$argumentValueType->describe($verbosityLevel)
 				))->build();
@@ -274,8 +273,7 @@ class FunctionCallParametersCheck
 			if ($this->nullsafeCheck->containsNullSafe($argumentValue)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[8],
-					$i + 1,
-					sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName())
+					sprintf('#%d %s', $i + 1, sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName()))
 				))->build();
 				continue;
 			}
@@ -289,8 +287,7 @@ class FunctionCallParametersCheck
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
-				$i + 1,
-				sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName())
+				sprintf('#%d %s', $i + 1, sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName()))
 			))->build();
 		}
 

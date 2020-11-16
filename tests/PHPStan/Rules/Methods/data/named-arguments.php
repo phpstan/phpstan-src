@@ -45,6 +45,30 @@ class Foo
 			3,
 			z: 4
 		);
+
+		$this->doFoo(
+			'foo',
+			j: 2,
+			k: 3
+		);
+
+		$this->doFoo(
+			1,
+			j: 'foo',
+			k: 3
+		);
+
+	}
+
+	public function doBaz(&$i): void
+	{
+
+	}
+
+	public function doLorem(?\stdClass $foo): void
+	{
+		$this->doBaz(i: 1);
+		$this->doBaz(i: $foo?->bar);
 	}
 
 }

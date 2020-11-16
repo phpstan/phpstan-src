@@ -255,9 +255,14 @@ class FunctionCallParametersCheck
 				&& !$this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes())
 			) {
 				$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType);
+				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[6],
-					sprintf('#%d %s', $i + 1, sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName())),
+					$argumentName === null ? sprintf(
+						'#%d %s',
+						$i + 1,
+						$parameterDescription
+					) : $parameterDescription,
 					$parameterType->describe($verbosityLevel),
 					$argumentValueType->describe($verbosityLevel)
 				))->build();
@@ -271,9 +276,10 @@ class FunctionCallParametersCheck
 			}
 
 			if ($this->nullsafeCheck->containsNullSafe($argumentValue)) {
+				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[8],
-					sprintf('#%d %s', $i + 1, sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName()))
+					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
 				))->build();
 				continue;
 			}
@@ -285,9 +291,10 @@ class FunctionCallParametersCheck
 				continue;
 			}
 
+			$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
-				sprintf('#%d %s', $i + 1, sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName()))
+				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
 			))->build();
 		}
 

@@ -1640,6 +1640,22 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Unknown parameter $z in call to method NamedArgumentsMethod\Foo::doFoo().',
 				42,
 			],
+			[
+				'Parameter #1 $i of method NamedArgumentsMethod\Foo::doFoo() expects int, string given.',
+				49,
+			],
+			[
+				'Parameter $j of method NamedArgumentsMethod\Foo::doFoo() expects int, string given.',
+				55,
+			],
+			[
+				'Parameter $i of method NamedArgumentsMethod\Foo::doBaz() is passed by reference, so it expects variables only.',
+				70,
+			],
+			[
+				'Parameter $i of method NamedArgumentsMethod\Foo::doBaz() is passed by reference, so it expects variables only.',
+				71,
+			],
 		]);
 	}
 

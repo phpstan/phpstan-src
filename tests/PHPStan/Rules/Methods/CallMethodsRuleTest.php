@@ -1625,6 +1625,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				22,
 			],
 			[
+				'Missing parameter $j (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
+				19,
+			],
+			[
+				'Missing parameter $k (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
+				19,
+			],
+			[
 				'Argument for parameter $i has already been passed.',
 				26,
 			],
@@ -1663,6 +1671,50 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter $j of method NamedArgumentsMethod\Foo::doFoo() expects int, string given.',
 				75,
+			],
+			[
+				'Named argument cannot be followed by a positional argument.',
+				77,
+			],
+			[
+				'Missing parameter $j (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
+				77,
+			],
+			[
+				'Parameter #3 ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				87,
+			],
+			[
+				'Parameter $b of method NamedArgumentsMethod\Foo::doIpsum() expects int, string given.',
+				90,
+			],
+			[
+				'Parameter $b of method NamedArgumentsMethod\Foo::doIpsum() expects int, string given.',
+				91,
+			],
+			[
+				'Parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				91,
+			],
+			[
+				'Unknown parameter $foo in call to method NamedArgumentsMethod\Foo::doIpsum().',
+				92,
+			],
+			[
+				'Missing parameter $b (int) in call to method NamedArgumentsMethod\Foo::doIpsum().',
+				92,
+			],
+			[
+				'Unknown parameter $foo in call to method NamedArgumentsMethod\Foo::doIpsum().',
+				93,
+			],
+			[
+				'Missing parameter $a (int) in call to method NamedArgumentsMethod\Foo::doIpsum().',
+				93,
+			],
+			[
+				'Unpacked argument (...) cannot be followed by a non-unpacked argument.',
+				94,
 			],
 		]);
 	}

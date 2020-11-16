@@ -153,10 +153,6 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				23,
 			],
 			[
-				'Missing parameter $ (int) in call to callable callable(int, int): void.',
-				23,
-			],
-			[
 				'Missing parameter $j (int) in call to callable callable(int, int): void.',
 				24,
 			],

@@ -73,6 +73,25 @@ class Foo
 		$this->doFoo(i: 1, ...['j' => 2, 'k' => 3]);
 
 		$this->doFoo(...['k' => 3, 'i' => 1, 'j' => 'str']);
+
+		$this->doFoo(...['k' => 3, 'i' => 1, 'str']);
+	}
+
+	public function doIpsum(int $a, int $b, string ...$args): void
+	{
+
+	}
+
+	public function doDolor(): void
+	{
+		$this->doIpsum(...[1, 2, 3, 'foo' => 'foo']);
+		$this->doIpsum(...[1, 2, 'foo' => 'foo']);
+		$this->doIpsum(...['a' => 1, 'b' => 2, 'foo' => 'foo']);
+		$this->doIpsum(...['a' => 1, 'b' => 'foo', 'foo' => 'foo']);
+		$this->doIpsum(...['a' => 1, 'b' => 'foo', 'foo' => 1]);
+		$this->doIpsum(...['a' => 1, 'foo' => 'foo']);
+		$this->doIpsum(...['b' => 1, 'foo' => 'foo']);
+		$this->doIpsum(...[1, 2], 'foo');
 	}
 
 }

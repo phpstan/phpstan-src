@@ -67,8 +67,13 @@ class FunctionCallParametersCheck
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
 		$parametersByName = [];
+		$unusedParametersByName = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter;
+
+			if (!$parameter->isVariadic()) {
+				$unusedParametersByName[$parameter->getName()] = $parameter;
+			}
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
 			}
@@ -85,14 +90,18 @@ class FunctionCallParametersCheck
 		/** @var array<int, \PhpParser\Node\Arg> $args */
 		$args = $funcCall->args;
 		$hasNamedArguments = false;
+		$hasUnpackedArgument = false;
 		$errors = [];
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
-			if ($hasNamedArguments && $arg->name === null && !$arg->unpack) {
-				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($arg->getLine())->nonIgnorable()->build();
-			}
 			if ($hasNamedArguments && $arg->unpack) {
 				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')->line($arg->getLine())->nonIgnorable()->build();
+			}
+			if ($hasUnpackedArgument && !$arg->unpack) {
+				$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')->line($arg->getLine())->nonIgnorable()->build();
+			}
+			if ($arg->unpack) {
+				$hasUnpackedArgument = true;
 			}
 			$argumentName = null;
 			if ($arg->name !== null) {
@@ -127,6 +136,7 @@ class FunctionCallParametersCheck
 						$keyArgumentName = null;
 						if (is_string($commonKey)) {
 							$keyArgumentName = $commonKey;
+							$hasNamedArguments = true;
 						}
 						$arguments[] = [
 							$arg->value,
@@ -210,7 +220,7 @@ class FunctionCallParametersCheck
 		}
 
 		$parameters = $parametersAcceptor->getParameters();
-		$alreadyPassedParameters = [];
+		$namedArgumentAlreadyOccurred = false;
 
 		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
 			if ($this->checkArgumentTypes && $unpack) {
@@ -235,6 +245,11 @@ class FunctionCallParametersCheck
 				}
 			}
 
+			if ($namedArgumentAlreadyOccurred && $argumentName === null && !$unpack) {
+				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($argumentLine)->nonIgnorable()->build();
+				continue;
+			}
+
 			if ($argumentName === null) {
 				if (!isset($parameters[$i])) {
 					if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
@@ -249,21 +264,34 @@ class FunctionCallParametersCheck
 					$parameter = $parameters[$i];
 				}
 			} elseif (array_key_exists($argumentName, $parametersByName)) {
+				$namedArgumentAlreadyOccurred = true;
 				$parameter = $parametersByName[$argumentName];
 			} else {
-				$errors[] = RuleErrorBuilder::message(sprintf($messages[11], $argumentName))->line($argumentLine)->build();
-				continue;
+				$namedArgumentAlreadyOccurred = true;
+
+				$parametersCount = count($parameters);
+				if (
+					count($unusedParametersByName) === 0
+					&& $parametersAcceptor->isVariadic()
+					&& $parametersCount > 0
+				) {
+					$parameter = $parameters[$parametersCount - 1];
+				} else {
+					$errors[] = RuleErrorBuilder::message(sprintf($messages[11], $argumentName))->line($argumentLine)->build();
+					continue;
+				}
 			}
 
 			if (
 				$hasNamedArguments
-				&& array_key_exists($parameter->getName(), $alreadyPassedParameters)
+				&& !$parameter->isVariadic()
+				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))->line($argumentLine)->build();
 				continue;
 			}
 
-			$alreadyPassedParameters[$parameter->getName()] = true;
+			unset($unusedParametersByName[$parameter->getName()]);
 
 			$parameterType = $parameter->getType();
 			if (
@@ -316,11 +344,8 @@ class FunctionCallParametersCheck
 		}
 
 		if ($hasNamedArguments) {
-			foreach ($parameters as $parameter) {
+			foreach ($unusedParametersByName as $parameter) {
 				if ($parameter->isOptional()) {
-					continue;
-				}
-				if (array_key_exists($parameter->getName(), $alreadyPassedParameters)) {
 					continue;
 				}
 

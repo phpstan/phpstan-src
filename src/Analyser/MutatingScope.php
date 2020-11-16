@@ -2710,7 +2710,7 @@ class MutatingScope implements Scope
 			}
 			$variableTypes[$variableName] = VariableTypeHolder::createYes($variableType);
 			foreach ($this->moreSpecificTypes as $exprString => $moreSpecificType) {
-				$matches = \Nette\Utils\Strings::matchAll($exprString, '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				$matches = \Nette\Utils\Strings::matchAll((string) $exprString, '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
 				if ($matches === []) {
 					continue;
 				}

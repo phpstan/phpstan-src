@@ -69,6 +69,10 @@ class Foo
 	{
 		$this->doBaz(i: 1);
 		$this->doBaz(i: $foo?->bar);
+
+		$this->doFoo(i: 1, ...['j' => 2, 'k' => 3]);
+
+		$this->doFoo(...['k' => 3, 'i' => 1, 'j' => 'str']);
 	}
 
 }

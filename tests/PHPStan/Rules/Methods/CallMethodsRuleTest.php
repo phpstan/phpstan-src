@@ -442,15 +442,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Only iterables can be unpacked, array<int>|null given in argument #5.',
-				1456,
+				1459,
 			],
 			[
 				'Only iterables can be unpacked, int given in argument #6.',
-				1456,
+				1460,
 			],
 			[
 				'Only iterables can be unpacked, string given in argument #7.',
-				1456,
+				1461,
 			],
 			[
 				'Parameter #1 $s of method Test\ClassStringWithUpperBounds::doFoo() expects class-string<Exception>, string given.',
@@ -1626,11 +1626,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Argument for parameter $i has already been passed.',
-				24,
+				26,
 			],
 			[
 				'Argument for parameter $i has already been passed.',
-				30,
+				32,
 			],
 			[
 				'Missing parameter $k (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
@@ -1638,15 +1638,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Unknown parameter $z in call to method NamedArgumentsMethod\Foo::doFoo().',
-				42,
+				46,
 			],
 			[
 				'Parameter #1 $i of method NamedArgumentsMethod\Foo::doFoo() expects int, string given.',
-				49,
+				50,
 			],
 			[
 				'Parameter $j of method NamedArgumentsMethod\Foo::doFoo() expects int, string given.',
-				55,
+				57,
 			],
 			[
 				'Parameter $i of method NamedArgumentsMethod\Foo::doBaz() is passed by reference, so it expects variables only.',
@@ -1655,6 +1655,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter $i of method NamedArgumentsMethod\Foo::doBaz() is passed by reference, so it expects variables only.',
 				71,
+			],
+			[
+				'Named argument cannot be followed by an unpacked (...) argument.',
+				73,
+			],
+			[
+				'Parameter $j of method NamedArgumentsMethod\Foo::doFoo() expects int, string given.',
+				75,
 			],
 		]);
 	}

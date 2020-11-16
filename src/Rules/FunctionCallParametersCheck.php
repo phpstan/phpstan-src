@@ -80,7 +80,7 @@ class FunctionCallParametersCheck
 			$functionParametersMaxCount = -1;
 		}
 
-		/** @var array<int, array{Expr, Type, bool, string|null}> $arguments */
+		/** @var array<int, array{Expr, Type, bool, string|null, int}> $arguments */
 		$arguments = [];
 		/** @var array<int, \PhpParser\Node\Arg> $args */
 		$args = $funcCall->args;
@@ -88,8 +88,11 @@ class FunctionCallParametersCheck
 		$errors = [];
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
-			if ($hasNamedArguments && $arg->name === null) {
+			if ($hasNamedArguments && $arg->name === null && !$arg->unpack) {
 				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($arg->getLine())->nonIgnorable()->build();
+			}
+			if ($hasNamedArguments && $arg->unpack) {
+				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')->line($arg->getLine())->nonIgnorable()->build();
 			}
 			$argumentName = null;
 			if ($arg->name !== null) {
@@ -111,14 +114,26 @@ class FunctionCallParametersCheck
 
 					for ($j = 0; $j < $minKeys; $j++) {
 						$types = [];
+						$commonKey = null;
 						foreach ($arrays as $constantArray) {
 							$types[] = $constantArray->getValueTypes()[$j];
+							$keyType = $constantArray->getKeyTypes()[$j];
+							if ($commonKey === null) {
+								$commonKey = $keyType->getValue();
+							} elseif ($commonKey !== $keyType->getValue()) {
+								$commonKey = false;
+							}
+						}
+						$keyArgumentName = null;
+						if (is_string($commonKey)) {
+							$keyArgumentName = $commonKey;
 						}
 						$arguments[] = [
 							$arg->value,
 							TypeCombinator::union(...$types),
 							false,
-							$argumentName,
+							$keyArgumentName,
+							$arg->getLine(),
 						];
 					}
 				} else {
@@ -126,7 +141,8 @@ class FunctionCallParametersCheck
 						$arg->value,
 						$type->getIterableValueType(),
 						true,
-						$argumentName,
+						null,
+						$arg->getLine(),
 					];
 				}
 				continue;
@@ -137,6 +153,7 @@ class FunctionCallParametersCheck
 				$type,
 				false,
 				$argumentName,
+				$arg->getLine(),
 			];
 		}
 
@@ -195,7 +212,7 @@ class FunctionCallParametersCheck
 		$parameters = $parametersAcceptor->getParameters();
 		$alreadyPassedParameters = [];
 
-		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName]) {
+		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
 			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
@@ -214,7 +231,7 @@ class FunctionCallParametersCheck
 						'Only iterables can be unpacked, %s given in argument #%d.',
 						$iterableTypeResultType->describe(VerbosityLevel::typeOnly()),
 						$i + 1
-					))->build();
+					))->line($argumentLine)->build();
 				}
 			}
 
@@ -234,7 +251,7 @@ class FunctionCallParametersCheck
 			} elseif (array_key_exists($argumentName, $parametersByName)) {
 				$parameter = $parametersByName[$argumentName];
 			} else {
-				$errors[] = RuleErrorBuilder::message(sprintf($messages[11], $argumentName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf($messages[11], $argumentName))->line($argumentLine)->build();
 				continue;
 			}
 
@@ -242,7 +259,7 @@ class FunctionCallParametersCheck
 				$hasNamedArguments
 				&& array_key_exists($parameter->getName(), $alreadyPassedParameters)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))->line($argumentLine)->build();
 				continue;
 			}
 
@@ -265,7 +282,7 @@ class FunctionCallParametersCheck
 					) : $parameterDescription,
 					$parameterType->describe($verbosityLevel),
 					$argumentValueType->describe($verbosityLevel)
-				))->build();
+				))->line($argumentLine)->build();
 			}
 
 			if (
@@ -280,7 +297,7 @@ class FunctionCallParametersCheck
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[8],
 					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
-				))->build();
+				))->line($argumentLine)->build();
 				continue;
 			}
 
@@ -295,7 +312,7 @@ class FunctionCallParametersCheck
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
 				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
-			))->build();
+			))->line($argumentLine)->build();
 		}
 
 		if ($hasNamedArguments) {

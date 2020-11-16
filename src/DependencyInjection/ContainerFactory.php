@@ -104,13 +104,12 @@ class ContainerFactory
 
 		BetterReflection::$phpVersion = $container->getByType(PhpVersion::class)->getVersionId();
 
-		// @phpstan-ignore-next-line
 		BetterReflection::populate(
-			$container->getService('betterReflectionSourceLocator'),
-			$container->getService('betterReflectionClassReflector'),
-			$container->getService('betterReflectionFunctionReflector'),
-			$container->getService('betterReflectionConstantReflector'),
-			$container->getService('phpParserDecorator'),
+			$container->getService('betterReflectionSourceLocator'), // @phpstan-ignore-line
+			$container->getService('betterReflectionClassReflector'), // @phpstan-ignore-line
+			$container->getService('betterReflectionFunctionReflector'), // @phpstan-ignore-line
+			$container->getService('betterReflectionConstantReflector'), // @phpstan-ignore-line
+			$container->getService('phpParserDecorator'), // @phpstan-ignore-line
 			$container->getByType(PhpStormStubsSourceStubber::class)
 		);
 

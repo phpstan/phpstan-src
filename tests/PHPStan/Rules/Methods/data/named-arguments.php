@@ -8,7 +8,7 @@ class Foo
 	public function doFoo(
 		int $i,
 		int $j,
-		int $k
+		int $k, ?int $l = null
 	)
 	{
 

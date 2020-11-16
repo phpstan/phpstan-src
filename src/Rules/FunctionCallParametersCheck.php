@@ -271,15 +271,15 @@ class FunctionCallParametersCheck
 
 				$parametersCount = count($parameters);
 				if (
-					count($unusedParametersByName) === 0
-					&& $parametersAcceptor->isVariadic()
-					&& $parametersCount > 0
+					count($unusedParametersByName) !== 0
+					|| !$parametersAcceptor->isVariadic()
+					|| $parametersCount <= 0
 				) {
-					$parameter = $parameters[$parametersCount - 1];
-				} else {
 					$errors[] = RuleErrorBuilder::message(sprintf($messages[11], $argumentName))->line($argumentLine)->build();
 					continue;
 				}
+
+				$parameter = $parameters[$parametersCount - 1];
 			}
 
 			if (

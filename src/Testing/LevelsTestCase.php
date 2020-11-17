@@ -24,6 +24,11 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 		return '';
 	}
 
+	protected function shouldAutoloadAnalysedFile(): bool
+	{
+		return true;
+	}
+
 	/**
 	 * @dataProvider dataTopics
 	 * @param string $topic
@@ -47,7 +52,7 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 			if ($clearResultCacheExitCode !== 0) {
 				throw new \PHPStan\ShouldNotHappenException('Could not clear result cache: ' . implode("\n", $clearResultCacheOutputLines));
 			}
-			exec(sprintf('%s %s analyse --no-progress --error-format=prettyJson --level=%d %s --autoload-file %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', escapeshellarg($file), escapeshellarg($file)), $outputLines);
+			exec(sprintf('%s %s analyse --no-progress --error-format=prettyJson --level=%d %s %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', $this->shouldAutoloadAnalysedFile() ? sprintf('--autoload-file %s', escapeshellarg($file)) : '', escapeshellarg($file)), $outputLines);
 
 			$output = implode("\n", $outputLines);
 

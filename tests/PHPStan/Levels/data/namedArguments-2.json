@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Named argument cannot be followed by an unpacked (...) argument.",
+        "line": 64,
+        "ignorable": false
+    }
+]

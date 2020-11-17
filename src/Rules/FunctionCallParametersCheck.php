@@ -66,14 +66,7 @@ class FunctionCallParametersCheck
 	{
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
-		$parametersByName = [];
-		$unusedParametersByName = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
-			$parametersByName[$parameter->getName()] = $parameter;
-
-			if (!$parameter->isVariadic()) {
-				$unusedParametersByName[$parameter->getName()] = $parameter;
-			}
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
 			}
@@ -215,14 +208,16 @@ class FunctionCallParametersCheck
 			$errors[] = RuleErrorBuilder::message($messages[7])->build();
 		}
 
+		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
+		foreach ($addedErrors as $error) {
+			$errors[] = $error;
+		}
+
 		if (!$this->checkArgumentTypes && !$this->checkArgumentsPassedByReference) {
 			return $errors;
 		}
 
-		$parameters = $parametersAcceptor->getParameters();
-		$namedArgumentAlreadyOccurred = false;
-
-		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
+		foreach ($argumentsWithParameters as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter]) {
 			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
@@ -245,53 +240,9 @@ class FunctionCallParametersCheck
 				}
 			}
 
-			if ($namedArgumentAlreadyOccurred && $argumentName === null && !$unpack) {
-				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($argumentLine)->nonIgnorable()->build();
+			if ($parameter === null) {
 				continue;
 			}
-
-			if ($argumentName === null) {
-				if (!isset($parameters[$i])) {
-					if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
-						break;
-					}
-
-					$parameter = $parameters[count($parameters) - 1];
-					if (!$parameter->isVariadic()) {
-						break; // func_get_args
-					}
-				} else {
-					$parameter = $parameters[$i];
-				}
-			} elseif (array_key_exists($argumentName, $parametersByName)) {
-				$namedArgumentAlreadyOccurred = true;
-				$parameter = $parametersByName[$argumentName];
-			} else {
-				$namedArgumentAlreadyOccurred = true;
-
-				$parametersCount = count($parameters);
-				if (
-					count($unusedParametersByName) !== 0
-					|| !$parametersAcceptor->isVariadic()
-					|| $parametersCount <= 0
-				) {
-					$errors[] = RuleErrorBuilder::message(sprintf($messages[11], $argumentName))->line($argumentLine)->build();
-					continue;
-				}
-
-				$parameter = $parameters[$parametersCount - 1];
-			}
-
-			if (
-				$hasNamedArguments
-				&& !$parameter->isVariadic()
-				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
-			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))->line($argumentLine)->build();
-				continue;
-			}
-
-			unset($unusedParametersByName[$parameter->getName()]);
 
 			$parameterType = $parameter->getType();
 			if (
@@ -343,16 +294,6 @@ class FunctionCallParametersCheck
 			))->line($argumentLine)->build();
 		}
 
-		if ($hasNamedArguments) {
-			foreach ($unusedParametersByName as $parameter) {
-				if ($parameter->isOptional()) {
-					continue;
-				}
-
-				$errors[] = RuleErrorBuilder::message(sprintf($messages[10], sprintf('%s (%s)', $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly()))))->build();
-			}
-		}
-
 		if ($this->checkMissingTypehints) {
 			foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
 				if (!($type instanceof ErrorType) && !($type instanceof NeverType)) {
@@ -364,6 +305,108 @@ class FunctionCallParametersCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @param ParametersAcceptor $parametersAcceptor
+	 * @param array<int, array{Expr, Type, bool, string|null, int}> $arguments
+	 * @param bool $hasNamedArguments
+	 * @param string $missingParameterMessage
+	 * @param string $unknownParameterMessage
+	 * @return array{RuleError[], array<int, array{Expr, Type, bool, string|null, int, \PHPStan\Reflection\ParameterReflection|null}>}
+	 */
+	private function processArguments(
+		ParametersAcceptor $parametersAcceptor,
+		array $arguments,
+		bool $hasNamedArguments,
+		string $missingParameterMessage,
+		string $unknownParameterMessage
+	): array
+	{
+		$parameters = $parametersAcceptor->getParameters();
+		$parametersByName = [];
+		$unusedParametersByName = [];
+		$errors = [];
+		foreach ($parametersAcceptor->getParameters() as $parameter) {
+			$parametersByName[$parameter->getName()] = $parameter;
+
+			if ($parameter->isVariadic()) {
+				continue;
+			}
+
+			$unusedParametersByName[$parameter->getName()] = $parameter;
+		}
+
+		$newArguments = [];
+
+		$namedArgumentAlreadyOccurred = false;
+		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
+			if ($argumentName === null) {
+				if (!isset($parameters[$i])) {
+					if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
+						$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null];
+						break;
+					}
+
+					$parameter = $parameters[count($parameters) - 1];
+					if (!$parameter->isVariadic()) {
+						$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter];
+						break; // func_get_args
+					}
+				} else {
+					$parameter = $parameters[$i];
+				}
+			} elseif (array_key_exists($argumentName, $parametersByName)) {
+				$namedArgumentAlreadyOccurred = true;
+				$parameter = $parametersByName[$argumentName];
+			} else {
+				$namedArgumentAlreadyOccurred = true;
+
+				$parametersCount = count($parameters);
+				if (
+					count($unusedParametersByName) !== 0
+					|| !$parametersAcceptor->isVariadic()
+					|| $parametersCount <= 0
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf($unknownParameterMessage, $argumentName))->line($argumentLine)->build();
+					$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null];
+					continue;
+				}
+
+				$parameter = $parameters[$parametersCount - 1];
+			}
+
+			if ($namedArgumentAlreadyOccurred && $argumentName === null && !$unpack) {
+				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($argumentLine)->nonIgnorable()->build();
+				$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null];
+				continue;
+			}
+
+			$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter];
+
+			if (
+				$hasNamedArguments
+				&& !$parameter->isVariadic()
+				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))->line($argumentLine)->build();
+				continue;
+			}
+
+			unset($unusedParametersByName[$parameter->getName()]);
+		}
+
+		if ($hasNamedArguments) {
+			foreach ($unusedParametersByName as $parameter) {
+				if ($parameter->isOptional()) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf($missingParameterMessage, sprintf('%s (%s)', $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly()))))->build();
+			}
+		}
+
+		return [$errors, $newArguments];
 	}
 
 }

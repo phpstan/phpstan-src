@@ -1,7 +1,42 @@
 [
     {
+        "message": "Missing parameter $j (int) in call to method NamedArgumentsIntegrationTest\\Foo::doFoo().",
+        "line": 19,
+        "ignorable": true
+    },
+    {
+        "message": "Missing parameter $k (int) in call to method NamedArgumentsIntegrationTest\\Foo::doFoo().",
+        "line": 19,
+        "ignorable": true
+    },
+    {
+        "message": "Named argument cannot be followed by a positional argument.",
+        "line": 21,
+        "ignorable": false
+    },
+    {
+        "message": "Named argument cannot be followed by a positional argument.",
+        "line": 22,
+        "ignorable": false
+    },
+    {
+        "message": "Missing parameter $k (int) in call to method NamedArgumentsIntegrationTest\\Foo::doFoo().",
+        "line": 24,
+        "ignorable": true
+    },
+    {
         "message": "Named argument cannot be followed by an unpacked (...) argument.",
         "line": 38,
+        "ignorable": false
+    },
+    {
+        "message": "Missing parameter $j (int) in call to method NamedArgumentsIntegrationTest\\Foo::doFoo().",
+        "line": 40,
+        "ignorable": true
+    },
+    {
+        "message": "Named argument cannot be followed by a positional argument.",
+        "line": 40,
         "ignorable": false
     }
 ]

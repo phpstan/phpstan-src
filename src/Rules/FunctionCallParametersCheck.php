@@ -352,7 +352,7 @@ class FunctionCallParametersCheck
 
 					$parameter = $parameters[count($parameters) - 1];
 					if (!$parameter->isVariadic()) {
-						$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter];
+						$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null];
 						break; // func_get_args
 					}
 				} else {

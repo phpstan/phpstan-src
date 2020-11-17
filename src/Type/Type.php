@@ -87,6 +87,8 @@ interface Type
 
 	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic;
 
+	public function isNumericString(): TrinaryLogic;
+
 	/**
 	 * Infers template types
 	 *

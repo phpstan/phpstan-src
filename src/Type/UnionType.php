@@ -365,10 +365,6 @@ class UnionType implements CompoundType
 	public function isNumericString(): TrinaryLogic
 	{
 		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			if (!method_exists($type, 'isNumericString')) {
-				return TrinaryLogic::createNo();
-			}
-
 			return $type->isNumericString();
 		});
 	}

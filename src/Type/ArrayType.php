@@ -299,11 +299,7 @@ class ArrayType implements Type
 				return $offsetType;
 			}
 
-			if ($offsetType instanceof FloatType || $offsetType instanceof BooleanType) {
-				return new IntegerType();
-			}
-
-			if (method_exists($offsetType, 'isNumericString') && $offsetType->isNumericString()->yes()) {
+			if ($offsetType instanceof FloatType || $offsetType instanceof BooleanType || $offsetType->isNumericString()->yes()) {
 				return new IntegerType();
 			}
 

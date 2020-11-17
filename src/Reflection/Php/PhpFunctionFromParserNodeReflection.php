@@ -216,4 +216,9 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isBuiltin(): bool
+	{
+		return false;
+	}
+
 }

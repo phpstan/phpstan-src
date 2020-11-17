@@ -79,4 +79,9 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 		return $this->hasSideEffects;
 	}
 
+	public function isBuiltin(): bool
+	{
+		return true;
+	}
+
 }

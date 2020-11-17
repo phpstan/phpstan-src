@@ -49,6 +49,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 				$function->getVariants()
 			),
 			$scope,
+			$function->isBuiltin(),
 			$node,
 			[
 				'Function ' . $function->getName() . ' invoked with %d parameter, %d required.',

@@ -27,4 +27,6 @@ interface FunctionReflection
 
 	public function hasSideEffects(): TrinaryLogic;
 
+	public function isBuiltin(): bool;
+
 }

@@ -133,4 +133,9 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		return null;
 	}
 
+	public function isBuiltin(): bool
+	{
+		return false;
+	}
+
 }

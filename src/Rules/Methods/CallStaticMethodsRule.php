@@ -278,6 +278,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 				$method->getVariants()
 			),
 			$scope,
+			$method->getDeclaringClass()->isBuiltin(),
 			$node,
 			[
 				$displayMethodName . ' invoked with %d parameter, %d required.',

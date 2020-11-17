@@ -112,6 +112,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 			$this->check->check(
 				$parametersAcceptor,
 				$scope,
+				false,
 				$node,
 				[
 					ucfirst($callableDescription) . ' invoked with %d parameter, %d required.',

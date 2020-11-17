@@ -123,14 +123,15 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 		}
 
 		$methodReflection = $type->getMethod($name, $scope);
-		$messagesMethodName = $methodReflection->getDeclaringClass()->getDisplayName() . '::' . $methodReflection->getName() . '()';
+		$declaringClass = $methodReflection->getDeclaringClass();
+		$messagesMethodName = $declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()';
 		$errors = [];
 		if (!$scope->canCallMethod($methodReflection)) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Call to %s method %s() of class %s.',
 				$methodReflection->isPrivate() ? 'private' : 'protected',
 				$methodReflection->getName(),
-				$methodReflection->getDeclaringClass()->getDisplayName()
+				$declaringClass->getDisplayName()
 			))->build();
 		}
 
@@ -141,6 +142,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 				$methodReflection->getVariants()
 			),
 			$scope,
+			$declaringClass->isBuiltin(),
 			$node,
 			[
 				'Method ' . $messagesMethodName . ' invoked with %d parameter, %d required.',

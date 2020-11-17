@@ -178,6 +178,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				$constructorReflection->getVariants()
 			),
 			$scope,
+			$constructorReflection->getDeclaringClass()->isBuiltin(),
 			$node,
 			[
 				'Class ' . $classReflection->getDisplayName() . ' constructor invoked with %d parameter, %d required.',

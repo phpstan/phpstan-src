@@ -276,4 +276,9 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isBuiltin(): bool
+	{
+		return $this->reflection->isInternal();
+	}
+
 }

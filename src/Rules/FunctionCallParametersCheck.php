@@ -60,6 +60,7 @@ class FunctionCallParametersCheck
 	public function check(
 		ParametersAcceptor $parametersAcceptor,
 		Scope $scope,
+		bool $isBuiltin,
 		$funcCall,
 		array $messages
 	): array
@@ -208,7 +209,7 @@ class FunctionCallParametersCheck
 			$errors[] = RuleErrorBuilder::message($messages[7])->build();
 		}
 
-		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
+		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
 		foreach ($addedErrors as $error) {
 			$errors[] = $error;
 		}
@@ -317,6 +318,7 @@ class FunctionCallParametersCheck
 	 */
 	private function processArguments(
 		ParametersAcceptor $parametersAcceptor,
+		bool $isBuiltin,
 		array $arguments,
 		bool $hasNamedArguments,
 		string $missingParameterMessage,
@@ -367,6 +369,7 @@ class FunctionCallParametersCheck
 					count($unusedParametersByName) !== 0
 					|| !$parametersAcceptor->isVariadic()
 					|| $parametersCount <= 0
+					|| $isBuiltin
 				) {
 					$errors[] = RuleErrorBuilder::message(sprintf($unknownParameterMessage, $argumentName))->line($argumentLine)->build();
 					$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null];

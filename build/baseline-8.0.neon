@@ -49,4 +49,4 @@ parameters:
 		-
 			message: "#^Call to function method_exists\\(\\) with ReflectionClass and 'getAttributes' will always evaluate to true\\.$#"
 			count: 1
-			path: src/Reflection/ClassReflection.php
+			path: ../src/Reflection/ClassReflection.php

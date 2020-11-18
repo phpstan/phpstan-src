@@ -2,6 +2,10 @@
 
 namespace PHPStan\Reflection;
 
+use Attributes\IsAttribute;
+use Attributes\IsAttribute2;
+use Attributes\IsAttribute3;
+use Attributes\IsNotAttribute;
 use PHPStan\Broker\Broker;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Type\FileTypeMapper;
@@ -162,6 +166,49 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		$broker = self::getContainer()->getService('broker');
 		$reflection = $broker->getClass(\ReflectionClass::class);
 		$this->assertTrue($reflection->isGeneric());
+	}
+
+	public function dataIsAttributeClass(): array
+	{
+		return [
+			[
+				IsNotAttribute::class,
+				false,
+			],
+			[
+				IsAttribute::class,
+				true,
+			],
+			[
+				IsAttribute2::class,
+				true,
+				\Attribute::IS_REPEATABLE,
+			],
+			[
+				IsAttribute3::class,
+				true,
+				\Attribute::IS_REPEATABLE | \Attribute::TARGET_PROPERTY,
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIsAttributeClass
+	 * @param string $className
+	 * @param bool $expected
+	 */
+	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = \Attribute::TARGET_ALL): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$reflectionProvider = $this->createBroker();
+		$reflection = $reflectionProvider->getClass($className);
+		$this->assertSame($expected, $reflection->isAttributeClass());
+		if (!$expected) {
+			return;
+		}
+		$this->assertSame($expectedFlags, $reflection->getAttributeClassFlags());
 	}
 
 }

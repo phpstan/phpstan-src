@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use Attribute;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
@@ -22,6 +23,7 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionMethod;
+use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
 
 class ClassReflection implements ReflectionWithFilename
 {
@@ -778,6 +780,46 @@ class ClassReflection implements ReflectionWithFilename
 	public function isFinalByKeyword(): bool
 	{
 		return $this->reflection->isFinal();
+	}
+
+	public function isAttributeClass(): bool
+	{
+		return $this->findAttributeClass() !== null;
+	}
+
+	private function findAttributeClass(): ?Attribute
+	{
+		if ($this->isInterface() || $this->isTrait()) {
+			return null;
+		}
+
+		if ($this->reflection instanceof ReflectionClass) {
+			foreach ($this->reflection->getBetterReflection()->getAttributes() as $attribute) {
+				if ($attribute->getName() === \Attribute::class) {
+					return $attribute->newInstance();
+				}
+			}
+
+			return null;
+		}
+
+		if (!method_exists($this->reflection, 'getAttributes')) {
+			return null;
+		}
+
+		$nativeAttributes = $this->reflection->getAttributes(\Attribute::class);
+
+		return count($nativeAttributes) === 1 ? $nativeAttributes[0]->newInstance() : null;
+	}
+
+	public function getAttributeClassFlags(): int
+	{
+		$attribute = $this->findAttributeClass();
+		if ($attribute === null) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		return $attribute->flags;
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap

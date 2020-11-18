@@ -41,6 +41,7 @@ rules:
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+	- PHPStan\Rules\Functions\FunctionAttributesRule
 	- PHPStan\Rules\Functions\InnerFunctionRule
 	- PHPStan\Rules\Functions\ParamAttributesRule
 	- PHPStan\Rules\Functions\PrintfParametersRule

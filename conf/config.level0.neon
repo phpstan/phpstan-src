@@ -34,6 +34,7 @@ rules:
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
+	- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule

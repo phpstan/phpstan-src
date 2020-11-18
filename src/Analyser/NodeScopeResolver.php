@@ -2381,6 +2381,7 @@ class NodeScopeResolver
 				}
 			}
 		}
+		$nodeCallback($param, $scope);
 		if ($param->type !== null) {
 			$nodeCallback($param->type, $scope);
 		}

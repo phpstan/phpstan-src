@@ -111,6 +111,14 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 	 */
 	public function getFileName()
 	{
+		if ($this->filename === false) {
+			return false;
+		}
+
+		if (!file_exists($this->filename)) {
+			return false;
+		}
+
 		return $this->filename;
 	}
 

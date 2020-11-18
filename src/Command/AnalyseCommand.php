@@ -347,7 +347,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				return $inceptionResult->handleReturn(1);
 			}
 
-			if (!$analysisResult->isResultCacheSaved()) {
+			if (!$analysisResult->isResultCacheSaved() && !$onlyFiles) {
 				// this can happen only if there are some regex-related errors in ignoreErrors configuration
 				$stdOutput = $inceptionResult->getStdOutput();
 				if (count($analysisResult->getFileSpecificErrors()) > 0) {

@@ -627,6 +627,9 @@ services:
 		factory: @PHPStan\Reflection\SignatureMap\SignatureMapProviderFactory::create()
 
 	-
+		class: PHPStan\Rules\AttributesCheck
+
+	-
 		class: PHPStan\Rules\ClassCaseSensitivityCheck
 		arguments:
 			checkInternalClassCaseSensitivity: %checkInternalClassCaseSensitivity%

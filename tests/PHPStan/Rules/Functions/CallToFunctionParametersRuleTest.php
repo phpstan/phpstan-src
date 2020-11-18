@@ -465,7 +465,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			$errors[] = [
 				'Missing parameter $arr1 (array) in call to function array_merge.',
 				14,
-			],
+			];
 		}
 
 		require_once __DIR__ . '/data/named-arguments-define.php';

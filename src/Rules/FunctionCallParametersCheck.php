@@ -162,7 +162,7 @@ class FunctionCallParametersCheck
 		}
 
 		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments()) {
-			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->nonIgnorable()->build();
+			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->line($funcCall->getLine())->nonIgnorable()->build();
 		}
 
 		if (!$hasNamedArguments) {
@@ -183,20 +183,20 @@ class FunctionCallParametersCheck
 						$invokedParametersCount === 1 ? $messages[0] : $messages[1],
 						$invokedParametersCount,
 						$functionParametersMinCount
-					))->build();
+					))->line($funcCall->getLine())->build();
 				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[2] : $messages[3],
 						$invokedParametersCount,
 						$functionParametersMinCount
-					))->build();
+					))->line($funcCall->getLine())->build();
 				} elseif ($functionParametersMaxCount !== -1) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[4] : $messages[5],
 						$invokedParametersCount,
 						$functionParametersMinCount,
 						$functionParametersMaxCount
-					))->build();
+					))->line($funcCall->getLine())->build();
 				}
 			}
 		}
@@ -206,10 +206,10 @@ class FunctionCallParametersCheck
 			&& !$scope->isInFirstLevelStatement()
 			&& !$funcCall instanceof \PhpParser\Node\Expr\New_
 		) {
-			$errors[] = RuleErrorBuilder::message($messages[7])->build();
+			$errors[] = RuleErrorBuilder::message($messages[7])->line($funcCall->getLine())->build();
 		}
 
-		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
+		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getLine(), $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
 		foreach ($addedErrors as $error) {
 			$errors[] = $error;
 		}
@@ -301,7 +301,7 @@ class FunctionCallParametersCheck
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->line($funcCall->getLine())->build();
 			}
 		}
 
@@ -318,6 +318,7 @@ class FunctionCallParametersCheck
 	 */
 	private function processArguments(
 		ParametersAcceptor $parametersAcceptor,
+		int $line,
 		bool $isBuiltin,
 		array $arguments,
 		bool $hasNamedArguments,
@@ -405,7 +406,7 @@ class FunctionCallParametersCheck
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf($missingParameterMessage, sprintf('%s (%s)', $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly()))))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf($missingParameterMessage, sprintf('%s (%s)', $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly()))))->line($line)->build();
 			}
 		}
 

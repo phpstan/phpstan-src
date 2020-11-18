@@ -80,6 +80,9 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			if (!class_exists($className, false)) {
 				return true;
 			}
+			if (in_array(strtolower($className), ['reflectionuniontype', 'attribute'], true)) {
+				return true;
+			}
 			$reflection = new \ReflectionClass($className);
 			if ($reflection->getFileName() === false) {
 				return true;

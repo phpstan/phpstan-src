@@ -29,6 +29,7 @@ rules:
 	- PHPStan\Rules\Classes\InstantiationRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
 	- PHPStan\Rules\Classes\NewStaticRule
+	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule

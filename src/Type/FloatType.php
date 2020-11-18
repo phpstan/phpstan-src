@@ -62,7 +62,7 @@ class FloatType implements Type
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self;
+		return get_class($type) === static::class;
 	}
 
 	public function describe(VerbosityLevel $level): string

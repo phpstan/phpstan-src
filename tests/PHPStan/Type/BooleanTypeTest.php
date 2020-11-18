@@ -3,43 +3,42 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 
-class IntegerTypeTest extends \PHPStan\Testing\TestCase
+class BooleanTypeTest extends \PHPStan\Testing\TestCase
 {
 
 	public function dataAccepts(): array
 	{
 		return [
 			[
-				new IntegerType(),
-				new IntegerType(),
+				new BooleanType(),
+				new BooleanType(),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new IntegerType(),
-				new ConstantIntegerType(1),
+				new BooleanType(),
+				new ConstantBooleanType(true),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new IntegerType(),
+				new BooleanType(),
 				new NullType(),
 				TrinaryLogic::createNo(),
 			],
 			[
-				new IntegerType(),
+				new BooleanType(),
 				new MixedType(),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new IntegerType(),
+				new BooleanType(),
 				new FloatType(),
 				TrinaryLogic::createNo(),
 			],
 			[
-				new IntegerType(),
+				new BooleanType(),
 				new StringType(),
 				TrinaryLogic::createNo(),
 			],
@@ -48,11 +47,11 @@ class IntegerTypeTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param IntegerType  $type
+	 * @param BooleanType  $type
 	 * @param Type $otherType
 	 * @param TrinaryLogic $expectedResult
 	 */
-	public function testAccepts(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	public function testAccepts(BooleanType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true);
 		$this->assertSame(
@@ -65,31 +64,31 @@ class IntegerTypeTest extends \PHPStan\Testing\TestCase
 	public function dataIsSuperTypeOf(): iterable
 	{
 		yield [
-			new IntegerType(),
-			new IntegerType(),
+			new BooleanType(),
+			new BooleanType(),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
-			new IntegerType(),
-			new ConstantIntegerType(1),
+			new BooleanType(),
+			new ConstantBooleanType(true),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
-			new IntegerType(),
+			new BooleanType(),
 			new MixedType(),
 			TrinaryLogic::createMaybe(),
 		];
 
 		yield [
-			new IntegerType(),
-			new UnionType([new IntegerType(), new StringType()]),
+			new BooleanType(),
+			new UnionType([new BooleanType(), new StringType()]),
 			TrinaryLogic::createMaybe(),
 		];
 
 		yield [
-			new IntegerType(),
+			new BooleanType(),
 			new StringType(),
 			TrinaryLogic::createNo(),
 		];
@@ -97,11 +96,11 @@ class IntegerTypeTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param IntegerType $type
+	 * @param BooleanType $type
 	 * @param Type $otherType
 	 * @param TrinaryLogic $expectedResult
 	 */
-	public function testIsSuperTypeOf(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	public function testIsSuperTypeOf(BooleanType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
 		$this->assertSame(
@@ -115,43 +114,38 @@ class IntegerTypeTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				new IntegerType(),
-				new IntegerType(),
+				new BooleanType(),
+				new BooleanType(),
 				true,
 			],
 			[
-				new ConstantIntegerType(0),
-				new ConstantIntegerType(0),
+				new ConstantBooleanType(false),
+				new ConstantBooleanType(false),
 				true,
 			],
 			[
-				new ConstantIntegerType(0),
-				new ConstantIntegerType(1),
+				new ConstantBooleanType(true),
+				new ConstantBooleanType(false),
 				false,
 			],
 			[
+				new BooleanType(),
+				new ConstantBooleanType(false),
+				false,
+			],
+			[
+				new ConstantBooleanType(false),
+				new BooleanType(),
+				false,
+			],
+			[
+				new BooleanType(),
 				new IntegerType(),
-				new ConstantIntegerType(0),
 				false,
 			],
 			[
+				new ConstantBooleanType(false),
 				new ConstantIntegerType(0),
-				new IntegerType(),
-				false,
-			],
-			[
-				new IntegerType(),
-				new FloatType(),
-				false,
-			],
-			[
-				new ConstantIntegerType(0),
-				new ConstantFloatType(0.0),
-				false,
-			],
-			[
-				new ConstantIntegerType(0),
-				new ConstantStringType('0'),
 				false,
 			],
 		];
@@ -159,11 +153,11 @@ class IntegerTypeTest extends \PHPStan\Testing\TestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param IntegerType $type
+	 * @param BooleanType $type
 	 * @param Type $otherType
 	 * @param bool $expectedResult
 	 */
-	public function testEquals(IntegerType $type, Type $otherType, bool $expectedResult): void
+	public function testEquals(BooleanType $type, Type $otherType, bool $expectedResult): void
 	{
 		$actualResult = $type->equals($otherType);
 		$this->assertSame(

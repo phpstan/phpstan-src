@@ -116,4 +116,36 @@ class ClassStringTypeTest extends TestCase
 		);
 	}
 
+	public function dataEquals(): array
+	{
+		return [
+			[
+				new ClassStringType(),
+				new ClassStringType(),
+				true,
+			],
+			[
+				new ClassStringType(),
+				new StringType(),
+				false,
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataEquals
+	 * @param ClassStringType $type
+	 * @param Type $otherType
+	 * @param bool $expectedResult
+	 */
+	public function testEquals(ClassStringType $type, Type $otherType, bool $expectedResult): void
+	{
+		$actualResult = $type->equals($otherType);
+		$this->assertSame(
+			$expectedResult,
+			$actualResult,
+			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+		);
+	}
+
 }

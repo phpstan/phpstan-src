@@ -796,6 +796,7 @@ class ClassReflection implements ReflectionWithFilename
 		if ($this->reflection instanceof ReflectionClass) {
 			foreach ($this->reflection->getBetterReflection()->getAttributes() as $attribute) {
 				if ($attribute->getName() === \Attribute::class) {
+					/** @var \Attribute */
 					return $attribute->newInstance();
 				}
 			}

@@ -234,4 +234,43 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/class-constant-on-expr.php'], $errors);
 	}
 
+	public function testAttributes(): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/class-constant-attribute.php'], [
+			[
+				'Access to undefined constant ClassConstantAttribute\Foo::BAR.',
+				5,
+			],
+			[
+				'Access to undefined constant ClassConstantAttribute\Foo::BAR.',
+				9,
+			],
+			[
+				'Access to undefined constant ClassConstantAttribute\Foo::BAR.',
+				12,
+			],
+			[
+				'Access to undefined constant ClassConstantAttribute\Foo::BAR.',
+				15,
+			],
+			[
+				'Access to undefined constant ClassConstantAttribute\Foo::BAR.',
+				17,
+			],
+			[
+				'Access to private constant FOO of class ClassConstantAttribute\Foo.',
+				26,
+			],
+			[
+				'Access to undefined constant ClassConstantAttribute\Foo::BAR.',
+				26,
+			],
+		]);
+	}
+
 }

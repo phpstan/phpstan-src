@@ -384,6 +384,13 @@ class NodeScopeResolver
 			}
 		} elseif ($stmt instanceof Node\Stmt\Function_) {
 			$hasYield = false;
+			foreach ($stmt->attrGroups as $attrGroup) {
+				foreach ($attrGroup->attrs as $attr) {
+					foreach ($attr->args as $arg) {
+						$nodeCallback($arg->value, $scope);
+					}
+				}
+			}
 			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
@@ -424,6 +431,13 @@ class NodeScopeResolver
 			), $functionScope);
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 			$hasYield = false;
+			foreach ($stmt->attrGroups as $attrGroup) {
+				foreach ($attrGroup->attrs as $attr) {
+					foreach ($attr->args as $arg) {
+						$nodeCallback($arg->value, $scope);
+					}
+				}
+			}
 			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
@@ -606,6 +620,14 @@ class NodeScopeResolver
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
+			foreach ($stmt->attrGroups as $attrGroup) {
+				foreach ($attrGroup->attrs as $attr) {
+					foreach ($attr->args as $arg) {
+						$nodeCallback($arg->value, $classScope);
+					}
+				}
+			}
+
 			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer);
 			$nodeCallback(new ClassPropertiesNode($stmt, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
@@ -613,6 +635,13 @@ class NodeScopeResolver
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches()), $classScope);
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
+			foreach ($stmt->attrGroups as $attrGroup) {
+				foreach ($attrGroup->attrs as $attr) {
+					foreach ($attr->args as $arg) {
+						$nodeCallback($arg->value, $scope);
+					}
+				}
+			}
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
 				$docComment = $stmt->getDocComment();
@@ -1160,6 +1189,15 @@ class NodeScopeResolver
 			$scope = $scope->assignVariable($stmt->var->name, new MixedType());
 		} elseif ($stmt instanceof Node\Stmt\Const_ || $stmt instanceof Node\Stmt\ClassConst) {
 			$hasYield = false;
+			if ($stmt instanceof Node\Stmt\ClassConst) {
+				foreach ($stmt->attrGroups as $attrGroup) {
+					foreach ($attrGroup->attrs as $attr) {
+						foreach ($attr->args as $arg) {
+							$nodeCallback($arg->value, $scope);
+						}
+					}
+				}
+			}
 			foreach ($stmt->consts as $const) {
 				$nodeCallback($const, $scope);
 				$this->processExprNode($const->value, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -2336,6 +2374,13 @@ class NodeScopeResolver
 		callable $nodeCallback
 	): void
 	{
+		foreach ($param->attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				foreach ($attr->args as $arg) {
+					$nodeCallback($arg->value, $scope);
+				}
+			}
+		}
 		if ($param->type !== null) {
 			$nodeCallback($param->type, $scope);
 		}

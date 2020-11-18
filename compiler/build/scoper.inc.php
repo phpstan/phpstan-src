@@ -189,6 +189,13 @@ return [
 			return str_replace(sprintf('%s\\ReflectionUnionType', $prefix), 'ReflectionUnionType', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
+			if (strpos($filePath, 'src/') !== 0) {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\Attribute', $prefix), 'Attribute', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
 			return str_replace('private static final', 'private static', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {

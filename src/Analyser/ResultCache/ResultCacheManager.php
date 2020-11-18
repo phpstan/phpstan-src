@@ -87,11 +87,17 @@ class ResultCacheManager
 	 * @param bool $debug
 	 * @return ResultCache
 	 */
-	public function restore(array $allAnalysedFiles, bool $debug, Output $output, ?string $resultCacheName = null): ResultCache
+	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, Output $output, ?string $resultCacheName = null): ResultCache
 	{
 		if ($debug) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
+			}
+			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+		}
+		if ($onlyFiles) {
+			if ($output->isDebug()) {
+				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
 		}
@@ -255,7 +261,7 @@ class ResultCacheManager
 	 * @return ResultCacheProcessResult
 	 * @throws \PHPStan\ShouldNotHappenException
 	 */
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, $save): ResultCacheProcessResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -263,7 +269,13 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output): bool {
+		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles): bool {
+			if ($onlyFiles) {
+				if ($output->isDebug()) {
+					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
+				}
+				return false;
+			}
 			if ($dependencies === null) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because of error in dependencies.');

@@ -470,7 +470,7 @@ class FixerApplication
 	{
 		$resultCacheManager = $this->resultCacheManagerFactory->create([$insteadOfFile => $tmpFile]);
 		[$inceptionFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, $inceptionResult->getErrorOutput());
+		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $inceptionResult->getErrorOutput());
 		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $resultCache->getFilesToAnalyse());
 
 		$process = new ProcessPromise($loop, $fixerSuggestionId, ProcessHelper::getWorkerCommand(
@@ -508,12 +508,13 @@ class FixerApplication
 
 		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
 		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
+		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
 		if (count($resultCache->getFilesToAnalyse()) === 0) {
 			$result = $resultCacheManager->process(
 				new AnalyserResult([], [], [], [], false),
 				$resultCache,
 				$inceptionResult->getErrorOutput(),
+				false,
 				true
 			)->getAnalyserResult();
 			$intermediateErrors = $ignoredErrorHelperResult->process(

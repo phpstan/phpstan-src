@@ -93,7 +93,7 @@ class AnalyseApplication
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
 		} else {
-			$resultCache = $resultCacheManager->restore($files, $debug, $errorOutput);
+			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,
@@ -103,7 +103,7 @@ class AnalyseApplication
 				$errorOutput,
 				$input
 			);
-			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, true);
+			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());

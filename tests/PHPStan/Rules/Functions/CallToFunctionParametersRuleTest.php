@@ -461,10 +461,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Unknown parameter $a in call to function array_merge.',
 				14,
 			],
-			[
-				'Missing parameter $arr1 (array) in call to function array_merge.',
-				14,
-			],
 		]);
 	}
 

@@ -809,8 +809,12 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		$nativeAttributes = $this->reflection->getAttributes(\Attribute::class);
+		if (count($nativeAttributes) === 1) {
+			/** @var Attribute */
+			return $nativeAttributes[0]->newInstance();
+		}
 
-		return count($nativeAttributes) === 1 ? $nativeAttributes[0]->newInstance() : null;
+		return null;
 	}
 
 	public function getAttributeClassFlags(): int

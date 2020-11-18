@@ -45,3 +45,8 @@ parameters:
 			message: "#^Call to function method_exists\\(\\) with ReflectionParameter and 'isPromoted' will always evaluate to true\\.$#"
 			paths:
 				- ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to function method_exists\\(\\) with ReflectionClass and 'getAttributes' will always evaluate to true\\.$#"
+			count: 1
+			path: src/Reflection/ClassReflection.php

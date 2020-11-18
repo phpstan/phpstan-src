@@ -169,6 +169,7 @@ class CommandHelperTest extends TestCase
 					'bootstrap' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 					'bootstrapFiles' => [
 						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/Attribute.php'),
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 					],
 					'autoload_files' => [

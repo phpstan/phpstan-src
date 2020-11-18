@@ -26,9 +26,17 @@ class NonClassAttributeClassRuleTest extends RuleTestCase
 				'Interface cannot be an Attribute class.',
 				5,
 			],
-			[
+			/* [ reported by a separate rule
 				'Trait cannot be an Attribute class.',
 				11,
+			], */
+			[
+				'Abstract class NonClassAttributeClass\Lorem cannot be an Attribute class.',
+				23,
+			],
+			[
+				'Attribute class NonClassAttributeClass\Ipsum constructor must be public.',
+				29,
 			],
 		]);
 	}

@@ -55,7 +55,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				'typeId' => 'phpstan',
 				'message' => $notFileSpecificError,
 				// the file is required
-				'file' => './',
+				'file' => $analysisResult->getProjectConfigFile() !== null ? $this->relativePathHelper->getRelativePath($analysisResult->getProjectConfigFile()) : '.',
 				'SEVERITY' => 'ERROR',
 			]);
 		}
@@ -65,7 +65,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 				'typeId' => 'phpstan',
 				'message' => $warning,
 				// the file is required
-				'file' => './',
+				'file' => $analysisResult->getProjectConfigFile() !== null ? $this->relativePathHelper->getRelativePath($analysisResult->getProjectConfigFile()) : '.',
 				'SEVERITY' => 'WARNING',
 			]);
 		}

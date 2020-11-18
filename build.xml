@@ -135,6 +135,8 @@
 			<arg path="tests/PHPStan/Rules/Operators/data/invalid-assign-var.php"/>
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Rules/Functions/data/arrow-function-nullsafe-by-ref.php"/>
+			<arg value="--exclude"/>
+			<arg path="tests/PHPStan/Levels/data/namedArguments.php"/>
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />

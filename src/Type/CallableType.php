@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -268,7 +269,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 			return $this;
 		}
 
-		$parameters = array_map(static function (NativeParameterReflection $param) use ($cb): NativeParameterReflection {
+		$parameters = array_map(static function (ParameterReflection $param) use ($cb): NativeParameterReflection {
 			$defaultValue = $param->getDefaultValue();
 			return new NativeParameterReflection(
 				$param->getName(),

@@ -49,6 +49,7 @@ class AnalyseApplication
 	 * @param bool $defaultLevelUsed
 	 * @param bool $debug
 	 * @param string|null $projectConfigFile
+	 * @param mixed[]|null $projectConfigArray
 	 * @return AnalysisResult
 	 */
 	public function analyse(
@@ -59,6 +60,7 @@ class AnalyseApplication
 		bool $defaultLevelUsed,
 		bool $debug,
 		?string $projectConfigFile,
+		?array $projectConfigArray,
 		InputInterface $input
 	): AnalysisResult
 	{
@@ -93,7 +95,7 @@ class AnalyseApplication
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
 		} else {
-			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $errorOutput);
+			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,
@@ -103,7 +105,7 @@ class AnalyseApplication
 				$errorOutput,
 				$input
 			);
-			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
+			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, $projectConfigArray, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());

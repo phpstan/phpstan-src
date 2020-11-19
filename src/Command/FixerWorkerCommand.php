@@ -141,8 +141,9 @@ class FixerWorkerCommand extends Command
 		}
 		/** @var ResultCacheManager $resultCacheManager */
 		$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create($fileReplacements);
+		$projectConfigArray = $inceptionResult->getProjectConfigArray();
 		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $inceptionResult->getErrorOutput(), $restoreResultCache);
+		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput(), $restoreResultCache);
 
 		$intermediateAnalyserResult = $analyserRunner->runAnalyser(
 			$resultCache->getFilesToAnalyse(),
@@ -161,6 +162,7 @@ class FixerWorkerCommand extends Command
 			$resultCache,
 			$inceptionResult->getErrorOutput(),
 			false,
+			$projectConfigArray,
 			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null
 		)->getAnalyserResult();
 

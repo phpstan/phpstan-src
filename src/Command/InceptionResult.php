@@ -24,6 +24,9 @@ class InceptionResult
 
 	private ?string $projectConfigFile;
 
+	/** @var mixed[]|null */
+	private ?array $projectConfigArray;
+
 	private ?string $generateBaselineFile;
 
 	/**
@@ -34,6 +37,7 @@ class InceptionResult
 	 * @param bool $isDefaultLevelUsed
 	 * @param string $memoryLimitFile
 	 * @param string|null $projectConfigFile
+	 * @param mixed[] $projectConfigArray
 	 * @param string|null $generateBaselineFile
 	 */
 	public function __construct(
@@ -44,6 +48,7 @@ class InceptionResult
 		bool $isDefaultLevelUsed,
 		string $memoryLimitFile,
 		?string $projectConfigFile,
+		?array $projectConfigArray,
 		?string $generateBaselineFile
 	)
 	{
@@ -54,6 +59,7 @@ class InceptionResult
 		$this->isDefaultLevelUsed = $isDefaultLevelUsed;
 		$this->memoryLimitFile = $memoryLimitFile;
 		$this->projectConfigFile = $projectConfigFile;
+		$this->projectConfigArray = $projectConfigArray;
 		$this->generateBaselineFile = $generateBaselineFile;
 	}
 
@@ -90,6 +96,14 @@ class InceptionResult
 	public function getProjectConfigFile(): ?string
 	{
 		return $this->projectConfigFile;
+	}
+
+	/**
+	 * @return mixed[]|null
+	 */
+	public function getProjectConfigArray(): ?array
+	{
+		return $this->projectConfigArray;
 	}
 
 	public function getGenerateBaselineFile(): ?string

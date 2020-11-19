@@ -67,6 +67,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 			false,
 			false,
 			null,
+			null,
 			$this->createMock(InputInterface::class)
 		);
 		if (file_exists($memoryLimitFile)) {

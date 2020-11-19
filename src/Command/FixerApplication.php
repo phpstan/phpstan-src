@@ -470,7 +470,7 @@ class FixerApplication
 	{
 		$resultCacheManager = $this->resultCacheManagerFactory->create([$insteadOfFile => $tmpFile]);
 		[$inceptionFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $inceptionResult->getErrorOutput());
+		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $inceptionResult->getProjectConfigArray(), $inceptionResult->getErrorOutput());
 		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $resultCache->getFilesToAnalyse());
 
 		$process = new ProcessPromise($loop, $fixerSuggestionId, ProcessHelper::getWorkerCommand(
@@ -506,15 +506,18 @@ class FixerApplication
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		$projectConfigArray = $inceptionResult->getProjectConfigArray();
+
 		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
 		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
+		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
 		if (count($resultCache->getFilesToAnalyse()) === 0) {
 			$result = $resultCacheManager->process(
 				new AnalyserResult([], [], [], [], false),
 				$resultCache,
 				$inceptionResult->getErrorOutput(),
 				false,
+				$projectConfigArray,
 				true
 			)->getAnalyserResult();
 			$intermediateErrors = $ignoredErrorHelperResult->process(

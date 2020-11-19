@@ -259,7 +259,6 @@ parametersSchema:
 
 	# internal parameters only for DerivativeContainerFactory
 	additionalConfigFiles: listOf(string())
-	allCustomConfigFiles: listOf(string())
 	analysedPaths: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())
 	analysedPathsFromConfig: listOf(string())
@@ -392,7 +391,6 @@ services:
 		arguments:
 			cacheFilePath: %tmpDir%/resultCache.php
 			tempResultCachePath: %tempResultCachePath%
-			allCustomConfigFiles: %allCustomConfigFiles%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			stubFiles: %stubFiles%
@@ -467,7 +465,6 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
-			allCustomConfigFiles: %allCustomConfigFiles%
 			usedLevel: %usedLevel%
 
 	-

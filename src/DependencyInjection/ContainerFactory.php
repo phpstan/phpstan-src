@@ -46,7 +46,6 @@ class ContainerFactory
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
-	 * @param string[] $allCustomConfigFiles
 	 * @param string $usedLevel
 	 * @param string|null $generateBaselineFile
 	 * @param string|null $cliAutoloadFile
@@ -59,7 +58,6 @@ class ContainerFactory
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths = [],
 		array $analysedPathsFromConfig = [],
-		array $allCustomConfigFiles = [],
 		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
 		?string $generateBaselineFile = null,
 		?string $cliAutoloadFile = null,
@@ -87,7 +85,6 @@ class ContainerFactory
 			'analysedPaths' => $analysedPaths,
 			'composerAutoloaderProjectPaths' => $composerAutoloaderProjectPaths,
 			'analysedPathsFromConfig' => $analysedPathsFromConfig,
-			'allCustomConfigFiles' => $allCustomConfigFiles,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
 			'fixerTmpDir' => sys_get_temp_dir() . '/phpstan-fixer',

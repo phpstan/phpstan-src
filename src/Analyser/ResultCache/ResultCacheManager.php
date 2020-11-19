@@ -24,9 +24,6 @@ class ResultCacheManager
 	private string $tempResultCachePath;
 
 	/** @var string[] */
-	private array $allCustomConfigFiles;
-
-	/** @var string[] */
 	private array $analysedPaths;
 
 	/** @var string[] */
@@ -49,7 +46,6 @@ class ResultCacheManager
 	 * @param ExportedNodeFetcher $exportedNodeFetcher
 	 * @param string $cacheFilePath
 	 * @param string $tempResultCachePath
-	 * @param string[] $allCustomConfigFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $stubFiles
@@ -61,7 +57,6 @@ class ResultCacheManager
 		ExportedNodeFetcher $exportedNodeFetcher,
 		string $cacheFilePath,
 		string $tempResultCachePath,
-		array $allCustomConfigFiles,
 		array $analysedPaths,
 		array $composerAutoloaderProjectPaths,
 		array $stubFiles,
@@ -73,7 +68,6 @@ class ResultCacheManager
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
 		$this->cacheFilePath = $cacheFilePath;
 		$this->tempResultCachePath = $tempResultCachePath;
-		$this->allCustomConfigFiles = $allCustomConfigFiles;
 		$this->analysedPaths = $analysedPaths;
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 		$this->stubFiles = $stubFiles;
@@ -84,10 +78,11 @@ class ResultCacheManager
 
 	/**
 	 * @param string[] $allAnalysedFiles
+	 * @param mixed[]|null $projectConfigArray
 	 * @param bool $debug
 	 * @return ResultCache
 	 */
-	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, Output $output, ?string $resultCacheName = null): ResultCache
+	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, ?array $projectConfigArray, Output $output, ?string $resultCacheName = null): ResultCache
 	{
 		if ($debug) {
 			if ($output->isDebug()) {
@@ -134,7 +129,7 @@ class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
 		}
 
-		if ($data['meta'] !== $this->getMeta()) {
+		if ($data['meta'] !== $this->getMeta($projectConfigArray)) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
 			}
@@ -257,11 +252,12 @@ class ResultCacheManager
 	/**
 	 * @param AnalyserResult $analyserResult
 	 * @param ResultCache $resultCache
+	 * @param mixed[]|null $projectConfigArray
 	 * @param bool|string $save
 	 * @return ResultCacheProcessResult
 	 * @throws \PHPStan\ShouldNotHappenException
 	 */
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, ?array $projectConfigArray, $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -269,7 +265,7 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles): bool {
+		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles, $projectConfigArray): bool {
 			if ($onlyFiles) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -304,7 +300,7 @@ class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $dependencies, $exportedNodes);
+			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $dependencies, $exportedNodes, $projectConfigArray);
 
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -438,13 +434,15 @@ class ResultCacheManager
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
+	 * @param mixed[]|null $projectConfigArray
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
 		?string $resultCacheName,
 		array $errors,
 		array $dependencies,
-		array $exportedNodes
+		array $exportedNodes,
+		?array $projectConfigArray
 	): void
 	{
 		$invertedDependencies = [];
@@ -510,7 +508,7 @@ php;
 			sprintf(
 				$template,
 				var_export($lastFullAnalysisTime, true),
-				var_export($this->getMeta(), true),
+				var_export($this->getMeta($projectConfigArray), true),
 				var_export($errors, true),
 				var_export($invertedDependencies, true),
 				var_export($exportedNodes, true)
@@ -519,20 +517,31 @@ php;
 	}
 
 	/**
+	 * @param mixed[]|null $projectConfigArray
 	 * @return mixed[]
 	 */
-	private function getMeta(): array
+	private function getMeta(?array $projectConfigArray): array
 	{
 		$extensions = array_values(array_filter(get_loaded_extensions(), static function (string $extension): bool {
 			return $extension !== 'xdebug';
 		}));
 		sort($extensions);
 
+		if ($projectConfigArray !== null) {
+			unset($projectConfigArray['parameters']['ignoreErrors']);
+			unset($projectConfigArray['parameters']['tipsOfTheDay']);
+			unset($projectConfigArray['parameters']['parallel']);
+			unset($projectConfigArray['parameters']['internalErrorsCountLimit']);
+			unset($projectConfigArray['parameters']['cache']);
+			unset($projectConfigArray['parameters']['reportUnmatchedIgnoredErrors']);
+			unset($projectConfigArray['parameters']['memoryLimitFile']);
+		}
+
 		return [
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => $this->getPhpStanVersion(),
 			'phpVersion' => PHP_VERSION_ID,
-			'configFiles' => $this->getConfigFiles(),
+			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,
 			'composerLocks' => $this->getComposerLocks(),
 			'cliAutoloadFile' => $this->cliAutoloadFile,
@@ -540,19 +549,6 @@ php;
 			'stubFiles' => $this->getStubFiles(),
 			'level' => $this->usedLevel,
 		];
-	}
-
-	/**
-	 * @return array<string, string>
-	 */
-	private function getConfigFiles(): array
-	{
-		$configFiles = [];
-		foreach ($this->allCustomConfigFiles as $configFile) {
-			$configFiles[$configFile] = $this->getFileHash($configFile);
-		}
-
-		return $configFiles;
 	}
 
 	private function getFileHash(string $path): string

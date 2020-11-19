@@ -141,6 +141,7 @@ class CommandHelper
 
 		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);
+		$projectConfig = null;
 		if ($projectConfigFile !== null) {
 			if (!is_file($projectConfigFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Project config file at path %s does not exist.', $projectConfigFile));
@@ -233,21 +234,8 @@ class CommandHelper
 			$createDir($tmpDir);
 		}
 
-		if ($projectConfigFile !== null) {
-			$allCustomConfigFiles = self::getConfigFiles(
-				$currentWorkingDirectoryFileHelper,
-				new NeonAdapter(),
-				new PhpAdapter(),
-				$projectConfigFile,
-				$loaderParameters,
-				$generateBaselineFile
-			);
-		} else {
-			$allCustomConfigFiles = [];
-		}
-
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $allCustomConfigFiles, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());
@@ -414,6 +402,7 @@ class CommandHelper
 			$defaultLevelUsed,
 			$memoryLimitFile,
 			$projectConfigFile,
+			$projectConfig,
 			$generateBaselineFile
 		);
 	}

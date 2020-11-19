@@ -223,6 +223,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			$inceptionResult->isDefaultLevelUsed(),
 			$debug,
 			$inceptionResult->getProjectConfigFile(),
+			$inceptionResult->getProjectConfigArray(),
 			$input
 		);
 

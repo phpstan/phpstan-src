@@ -84,6 +84,9 @@ class AutoloadSourceLocator implements SourceLocator
 			if (!is_string($reflectionFileName)) {
 				return null;
 			}
+			if (!file_exists($reflectionFileName)) {
+				return null;
+			}
 
 			return $this->findReflection($reflector, $reflectionFileName, $identifier, null);
 		}

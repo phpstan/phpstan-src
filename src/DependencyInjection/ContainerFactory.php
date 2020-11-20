@@ -85,6 +85,7 @@ class ContainerFactory
 			'analysedPaths' => $analysedPaths,
 			'composerAutoloaderProjectPaths' => $composerAutoloaderProjectPaths,
 			'analysedPathsFromConfig' => $analysedPathsFromConfig,
+			'generateBaselineFile' => $generateBaselineFile,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
 			'fixerTmpDir' => sys_get_temp_dir() . '/phpstan-fixer',

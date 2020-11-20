@@ -259,6 +259,7 @@ parametersSchema:
 
 	# internal parameters only for DerivativeContainerFactory
 	additionalConfigFiles: listOf(string())
+	generateBaselineFile: schema(string(), nullable())
 	analysedPaths: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())
 	analysedPathsFromConfig: listOf(string())
@@ -466,6 +467,7 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
 			usedLevel: %usedLevel%
+			generateBaselineFile: %generateBaselineFile%
 
 	-
 		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider

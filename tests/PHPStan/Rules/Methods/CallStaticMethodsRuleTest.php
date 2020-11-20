@@ -220,10 +220,6 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				303,
 			],
 			[
-				'Call to static method doFoo() on trait CallStaticMethods\TraitWithStaticMethod.',
-				323,
-			],
-			[
 				'Call to static method doFoo() on an unknown class CallStaticMethods\TraitWithStaticMethod.',
 				328,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',

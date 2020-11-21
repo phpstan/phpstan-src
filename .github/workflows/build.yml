@@ -146,7 +146,7 @@ jobs:
           ini-values: memory_limit=640M
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest -vvv"
+        run: "composer update --no-interaction --no-progress --no-suggest"
 
       - name: "Update PHPUnit"
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0'

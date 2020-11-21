@@ -163,22 +163,24 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		$isNativelyVariadic = $this->reflection->isVariadic();
 		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false) {
 			$fileName = $this->reflection->getFileName();
-			$functionName = $this->reflection->getName();
-			$modifiedTime = filemtime($fileName);
-			if ($modifiedTime === false) {
-				$modifiedTime = time();
-			}
-			$variableCacheKey = sprintf('%d-v1', $modifiedTime);
-			$key = sprintf('variadic-function-%s-%s', $functionName, $fileName);
-			$cachedResult = $this->cache->load($key, $variableCacheKey);
-			if ($cachedResult === null) {
-				$nodes = $this->parser->parseFile($fileName);
-				$result = $this->callsFuncGetArgs($nodes);
-				$this->cache->save($key, $variableCacheKey, $result);
-				return $result;
-			}
+			if (file_exists($fileName)) {
+				$functionName = $this->reflection->getName();
+				$modifiedTime = filemtime($fileName);
+				if ($modifiedTime === false) {
+					$modifiedTime = time();
+				}
+				$variableCacheKey = sprintf('%d-v1', $modifiedTime);
+				$key = sprintf('variadic-function-%s-%s', $functionName, $fileName);
+				$cachedResult = $this->cache->load($key, $variableCacheKey);
+				if ($cachedResult === null) {
+					$nodes = $this->parser->parseFile($fileName);
+					$result = $this->callsFuncGetArgs($nodes);
+					$this->cache->save($key, $variableCacheKey, $result);
+					return $result;
+				}
 
-			return $cachedResult;
+				return $cachedResult;
+			}
 		}
 
 		return $isNativelyVariadic;

@@ -3171,6 +3171,7 @@ class MutatingScope implements Scope
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;
 			if (Strings::startsWith($exprString, $exprStringToInvalidate)) {
@@ -3180,6 +3181,7 @@ class MutatingScope implements Scope
 				$nextLetter = substr($exprString, strlen($exprStringToInvalidate), 1);
 				if (Strings::match($nextLetter, '#[a-zA-Z_0-9\x7f-\xff]#') === null) {
 					unset($moreSpecificTypeHolders[$exprString]);
+					unset($nativeExpressionTypes[$exprString]);
 					continue;
 				}
 			}
@@ -3195,6 +3197,7 @@ class MutatingScope implements Scope
 			}
 
 			unset($moreSpecificTypeHolders[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
 		}
 
 		return $this->scopeFactory->create(
@@ -3209,7 +3212,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
-			[],
+			$nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
 			$this->parentScope
@@ -3992,6 +3995,10 @@ class MutatingScope implements Scope
 		foreach ($this->constantTypes as $name => $type) {
 			$key = sprintf('const %s', $name);
 			$descriptions[$key] = $type->describe(VerbosityLevel::precise());
+		}
+		foreach ($this->nativeExpressionTypes as $exprString => $nativeType) {
+			$key = sprintf('native %s', $exprString);
+			$descriptions[$key] = $nativeType->describe(VerbosityLevel::precise());
 		}
 
 		return $descriptions;

@@ -912,6 +912,14 @@ class MutatingScope implements Scope
 				return new ErrorType();
 			}
 
+			if ($leftStringType instanceof ConstantStringType && $leftStringType->getValue() === '') {
+				return $rightStringType;
+			}
+
+			if ($rightStringType instanceof ConstantStringType && $rightStringType->getValue() === '') {
+				return $leftStringType;
+			}
+
 			if ($leftStringType instanceof ConstantStringType && $rightStringType instanceof ConstantStringType) {
 				return $leftStringType->append($rightStringType);
 			}

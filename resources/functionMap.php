@@ -7250,7 +7250,7 @@ return [
 'mysqli_free_result' => ['void', 'link'=>'mysqli_result'],
 'mysqli_get_cache_stats' => ['array'],
 'mysqli_get_charset' => ['object', 'link'=>'mysqli'],
-'mysqli_get_client_info' => ['string', 'link'=>'mysqli'],
+'mysqli_get_client_info' => ['string', 'link='=>'mysqli'],
 'mysqli_get_client_stats' => ['array|false'],
 'mysqli_get_client_version' => ['int', 'link'=>'mysqli'],
 'mysqli_get_connection_stats' => ['array|false', 'link'=>'mysqli'],

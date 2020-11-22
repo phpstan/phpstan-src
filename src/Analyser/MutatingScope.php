@@ -2039,6 +2039,17 @@ class MutatingScope implements Scope
 			return $this->nativeExpressionTypes[$key];
 		}
 
+		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+			return $this->getNullsafeShortCircuitingType(
+				$expr->var,
+				$this->getTypeFromArrayDimFetch(
+					$expr,
+					$this->getNativeType($expr->dim),
+					$this->getNativeType($expr->var)
+				)
+			);
+		}
+
 		return $this->getType($expr);
 	}
 

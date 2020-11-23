@@ -54,7 +54,6 @@ rules:
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
-	- PHPStan\Rules\Ternary\RequireParenthesesForNestedTernaryRule
 	- PHPStan\Rules\Variables\UnsetRule
 
 services:

@@ -517,9 +517,6 @@ services:
 		class: PHPStan\Parser\FunctionCallStatementFinder
 
 	-
-		class: PHPStan\Parser\NodeChildrenVisitor
-
-	-
 		class: PHPStan\Process\CpuCoreCounter
 
 	-
@@ -1177,7 +1174,6 @@ services:
 		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
-			lexer: @currentPhpVersionLexer
 		autowired: no
 
 	currentPhpVersionSimpleParser:

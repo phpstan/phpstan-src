@@ -10,7 +10,6 @@ use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
-use PHPStan\Parser\NodeChildrenVisitor;
 use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -523,12 +522,9 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$nodeScopeResolver,
 			new RichParser(
 				new \PhpParser\Parser\Php7($lexer),
-				$lexer,
 				new \PhpParser\NodeVisitor\NameResolver(),
 				new NodeConnectingVisitor(),
-				new StatementOrderVisitor(),
-				new NodeChildrenVisitor(),
-				self::getContainer()->getByType(PhpVersion::class)
+				new StatementOrderVisitor()
 			),
 			new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
 			$reportUnmatchedIgnoredErrors

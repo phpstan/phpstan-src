@@ -10,9 +10,9 @@
  * This contains the information needed to convert the function signatures for php 8.0 to php 7.4 (and vice versa)
  *
  * This has two sections.
- * The 'new' section contains function/method names from FunctionSignatureMap (And alternates, if applicable) that do not exist in php7.3 or have different signatures in php 7.4.
+ * The 'new' section contains function/method names from FunctionSignatureMap (And alternates, if applicable) that do not exist in php7.4 or have different signatures in php 8.0.
  *   If they were just updated, the function/method will be present in the 'added' signatures.
- * The 'old' signatures contains the signatures that are different in php 7.3.
+ * The 'old' signatures contains the signatures that are different in php 7.4.
  *   Functions are expected to be removed only in major releases of php.
  *
  * @see FunctionSignatureMap.php
@@ -68,6 +68,7 @@ return [
 		'imagerotate' => ['false|object', 'src_im'=>'resource', 'angle'=>'float', 'bgdcolor'=>'int', 'ignoretransparent='=>'int'],
 		'imagescale' => ['false|object', 'im'=>'resource', 'new_width'=>'int', 'new_height='=>'int', 'method='=>'int'],
 		'mb_decode_numericentity' => ['string|false', 'string'=>'string', 'convmap'=>'array', 'encoding='=>'string'],
+		'mb_str_split' => ['array<int,string>', 'str'=>'string', 'split_length='=>'int', 'encoding='=>'string'],
 		'mktime' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
 		'parse_str' => ['void', 'encoded_string'=>'string', '&w_result'=>'array'],
 		'password_hash' => ['string', 'password'=>'string', 'algo'=>'string|int|null', 'options='=>'array'],

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8ad802a78a7e37d1f5f89842327e3201",
+    "content-hash": "78311ade999e02d0cb8fd47fb35d15c5",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1334,18 +1334,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "7a3c489a915d08576b6ff5090ae59598ef68ff31"
+                "reference": "a0c9712d0319f5d153c2357f8bd336e7746abff1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/7a3c489a915d08576b6ff5090ae59598ef68ff31",
-                "reference": "7a3c489a915d08576b6ff5090ae59598ef68ff31",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/a0c9712d0319f5d153c2357f8bd336e7746abff1",
+                "reference": "a0c9712d0319f5d153c2357f8bd336e7746abff1",
                 "shasum": ""
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.16",
-                "nikic/php-parser": "^4",
-                "php": "^7.4",
+                "nikic/php-parser": "dev-master",
+                "php": "^8.0",
                 "phpdocumentor/reflection-docblock": "dev-master",
                 "phpunit/phpunit": "^9"
             },
@@ -1375,7 +1375,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2020-09-14T12:37:46+00:00"
+            "time": "2020-11-22T13:24:52+00:00"
         },
         {
             "name": "nette/bootstrap",

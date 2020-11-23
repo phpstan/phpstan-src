@@ -1,3 +1,5 @@
+includes:
+	- config.stubFiles.neon
 parameters:
 	bootstrap: null
 	bootstrapFiles:
@@ -77,18 +79,6 @@ parameters:
 	typeAliases: []
 	universalObjectCratesClasses:
 		- stdClass
-	stubFiles:
-		- ../stubs/ReflectionClass.stub
-		- ../stubs/iterable.stub
-		- ../stubs/ArrayObject.stub
-		- ../stubs/WeakReference.stub
-		- ../stubs/ext-ds.stub
-		- ../stubs/PDOStatement.stub
-		- ../stubs/ReflectionFunctionAbstract.stub
-		- ../stubs/date.stub
-		- ../stubs/zip.stub
-		- ../stubs/dom.stub
-		- ../stubs/spl.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
@@ -353,8 +343,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\StubValidator
-		arguments:
-			stubFiles: %stubFiles%
 
 	-
 		class: PHPStan\Analyser\Analyser

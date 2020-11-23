@@ -65,7 +65,11 @@ class AnalyseApplication
 	): AnalysisResult
 	{
 		$this->updateMemoryLimitFile();
-		$stubErrors = $this->stubValidator->validate();
+		$projectStubFiles = [];
+		if ($projectConfigArray !== null) {
+			$projectStubFiles = $projectConfigArray['parameters']['stubFiles'] ?? [];
+		}
+		$stubErrors = $this->stubValidator->validate($projectStubFiles);
 
 		register_shutdown_function(function (): void {
 			$error = error_get_last();

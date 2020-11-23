@@ -1,0 +1,13 @@
+parameters:
+	stubFiles:
+		- ../stubs/ReflectionClass.stub
+		- ../stubs/iterable.stub
+		- ../stubs/ArrayObject.stub
+		- ../stubs/WeakReference.stub
+		- ../stubs/ext-ds.stub
+		- ../stubs/PDOStatement.stub
+		- ../stubs/ReflectionFunctionAbstract.stub
+		- ../stubs/date.stub
+		- ../stubs/zip.stub
+		- ../stubs/dom.stub
+		- ../stubs/spl.stub

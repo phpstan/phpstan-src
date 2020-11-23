@@ -437,6 +437,27 @@
 		</exec>
 	</target>
 
+	<target name="phpstan-validate-stub-files">
+		<touch file="empty.php"/>
+		<exec
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg value="-d"/>
+			<arg value="memory_limit=768M"/>
+			<arg path="bin/phpstan"/>
+			<arg value="analyse"/>
+			<arg value="-c"/>
+			<arg path="conf/config.stubFiles.neon"/>
+			<arg value="-l"/>
+			<arg value="8"/>
+			<arg path="empty.php"/>
+		</exec>
+		<delete file="empty.php"/>
+	</target>
+
 	<target name="phpstan-pro">
 		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>

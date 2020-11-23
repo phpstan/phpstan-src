@@ -47,28 +47,25 @@ use PHPStan\Type\FileTypeMapper;
 class StubValidator
 {
 
-	/** @var string[] */
-	private array $stubFiles;
-
 	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
 
-	/**
-	 * @param string[] $stubFiles
-	 */
 	public function __construct(
-		array $stubFiles,
 		DerivativeContainerFactory $derivativeContainerFactory
 	)
 	{
-		$this->stubFiles = $stubFiles;
 		$this->derivativeContainerFactory = $derivativeContainerFactory;
 	}
 
 	/**
+	 * @param string[] $stubFiles
 	 * @return \PHPStan\Analyser\Error[]
 	 */
-	public function validate(): array
+	public function validate(array $stubFiles): array
 	{
+		if (count($stubFiles) === 0) {
+			return [];
+		}
+
 		$originalBroker = Broker::getInstance();
 		$container = $this->derivativeContainerFactory->create([
 			__DIR__ . '/../../conf/config.stubValidator.neon',
@@ -81,12 +78,12 @@ class StubValidator
 
 		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
-		$nodeScopeResolver->setAnalysedFiles($this->stubFiles);
+		$nodeScopeResolver->setAnalysedFiles($stubFiles);
 
-		$analysedFiles = array_fill_keys($this->stubFiles, true);
+		$analysedFiles = array_fill_keys($stubFiles, true);
 
 		$errors = [];
-		foreach ($this->stubFiles as $stubFile) {
+		foreach ($stubFiles as $stubFile) {
 			$tmpErrors = $fileAnalyser->analyseFile(
 				$stubFile,
 				$analysedFiles,

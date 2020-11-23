@@ -209,6 +209,7 @@ jobs:
         script:
           - "vendor/bin/phing phpstan"
           - "vendor/bin/phing phpstan-static-reflection"
+          - "vendor/bin/phing phpstan-validate-stub-files"
         exclude:
           - operating-system: windows-latest
             script: "vendor/bin/phing phpstan-static-reflection"

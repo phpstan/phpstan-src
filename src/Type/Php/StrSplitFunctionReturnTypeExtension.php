@@ -21,7 +21,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'str_split';
+		return in_array($functionReflection->getName(), ['str_split', 'mb_str_split'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type

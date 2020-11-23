@@ -9553,6 +9553,68 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
+	public function dataPhp74Functions(): array
+	{
+		return [
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithoutDefinedParameters',
+			],
+			[
+				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				'$mbStrSplitConstantStringWithoutDefinedSplitLength',
+			],
+			[
+				'array<int, string>',
+				'$mbStrSplitStringWithoutDefinedSplitLength',
+			],
+			[
+				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				'$mbStrSplitConstantStringWithOneSplitLength',
+			],
+			[
+				"array('abcdef')",
+				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLength',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithFailureSplitLength',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
+			],
+			[
+				'array<int, string>',
+				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataPhp74Functions
+	 * @param string $description
+	 * @param string $expression
+	 */
+	public function testPhp74Functions(
+		string $description,
+		string $expression
+	): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4');
+		}
+		$this->assertTypes(
+			__DIR__ . '/data/php74_functions.php',
+			$description,
+			$expression
+		);
+	}
+
 	public function dataUnionMethods(): array
 	{
 		return [

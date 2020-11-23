@@ -7,5 +7,6 @@ parameters:
 		fileWhitespace: true
 		unusedClassElements: true
 		readComposerPhpVersion: true
+		dateTimeInstantiation: true
 	stubFiles:
 		- ../stubs/SplObjectStorage.stub

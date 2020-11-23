@@ -19,6 +19,7 @@ parameters:
 		fileWhitespace: false
 		unusedClassElements: false
 		readComposerPhpVersion: false
+		dateTimeInstantiation: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -151,6 +152,7 @@ parametersSchema:
 		fileWhitespace: bool(),
 		unusedClassElements: bool(),
 		readComposerPhpVersion: bool()
+		dateTimeInstantiation: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

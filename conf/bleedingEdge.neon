@@ -1,3 +1,4 @@
+# All stuff in bleedingEdge gets into the default set when a new major version is out.
 parameters:
 	featureToggles:
 		bleedingEdge: true

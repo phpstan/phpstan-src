@@ -40,7 +40,7 @@ jobs:
         run: "composer validate"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
@@ -74,7 +74,7 @@ jobs:
         run: "composer validate"
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
@@ -108,7 +108,7 @@ jobs:
           tools: composer:v2
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Composer Require Checker"
         run: "vendor/bin/phing composer-require-checker"
@@ -146,7 +146,7 @@ jobs:
           ini-values: memory_limit=640M
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Update PHPUnit"
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
@@ -177,7 +177,7 @@ jobs:
           extensions: ds
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Tests"
         run: |
@@ -227,7 +227,7 @@ jobs:
           tools: composer:v2
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Update PHPUnit"
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
@@ -263,7 +263,7 @@ jobs:
           tools: composer:v2
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Cache Result cache"
         uses: actions/cache@v2
@@ -311,7 +311,7 @@ jobs:
           tools: composer:v2
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Tests"
         run: |
@@ -346,7 +346,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-composer-"
 
       - name: "Install dependencies"
-        run: "composer update --no-dev --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-dev --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
         run: php bin/transform-source.php
@@ -382,7 +382,7 @@ jobs:
           tools: composer:v2
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Generate baseline"
         run: |
@@ -420,7 +420,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
 
       - name: "Install dependencies"
-        run: "composer update --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Test"
         run: ${{ matrix.script }}

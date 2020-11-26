@@ -1161,7 +1161,6 @@ return [
 	'is_writable' => ['hasSideEffects' => false],
 	'is_writeable' => ['hasSideEffects' => false],
 	'iterator_count' => ['hasSideEffects' => false],
-	'iterator_to_array' => ['hasSideEffects' => false],
 	'join' => ['hasSideEffects' => false],
 	'json_last_error' => ['hasSideEffects' => false],
 	'json_last_error_msg' => ['hasSideEffects' => false],

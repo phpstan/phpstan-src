@@ -82,7 +82,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 *
 	 * @param FuncCall $functionCall
 	 * @param Scope $scope
-	 * @return NullType|StringType|UnionType
+	 * @return NullType|Type|UnionType
 	 */
 	private function getTypeForBcSqrt(FuncCall $functionCall, Scope $scope)
 	{
@@ -132,7 +132,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 * > Returns the result as a string, or FALSE if modulus is 0 or exponent is negative.
 	 * @param FuncCall $functionCall
 	 * @param Scope $scope
-	 * @return BooleanType|StringType|UnionType
+	 * @return BooleanType|Type|UnionType
 	 */
 	private function getTypeForBcPowMod(FuncCall $functionCall, Scope $scope)
 	{

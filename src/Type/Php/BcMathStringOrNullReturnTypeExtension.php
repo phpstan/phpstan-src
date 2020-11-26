@@ -14,6 +14,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function in_array;
 use function is_numeric;
@@ -36,10 +37,12 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			return $this->getTypeForBcPowMod($functionCall, $scope);
 		}
 
-		$defaultReturnType = new UnionType([new StringType(), new NullType()]);
+		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
+
+		$defaultReturnType = new UnionType([$stringAndNumericStringType, new NullType()]);
 
 		if (isset($functionCall->args[1]) === false) {
-			return $defaultReturnType;
+			return $stringAndNumericStringType;
 		}
 
 		$secondArgument = $scope->getType($functionCall->args[1]->value);
@@ -51,7 +54,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 
 		if (isset($functionCall->args[2]) === false) {
 			if ($secondArgument instanceof ConstantScalarType || $secondArgumentIsNumeric) {
-				return new StringType();
+				return $stringAndNumericStringType;
 			}
 
 			return $defaultReturnType;
@@ -65,7 +68,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 		}
 
 		if (($secondArgument instanceof ConstantScalarType || $secondArgumentIsNumeric) && $thirdArgumentIsNumeric) {
-			return new StringType();
+			return $stringAndNumericStringType;
 		}
 
 		return $defaultReturnType;
@@ -82,7 +85,8 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 */
 	private function getTypeForBcSqrt(FuncCall $functionCall, Scope $scope)
 	{
-		$defaultReturnType = new UnionType([new StringType(), new NullType()]);
+		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
+		$defaultReturnType = new UnionType([$stringAndNumericStringType, new NullType()]);
 
 		if (isset($functionCall->args[0]) === false) {
 			return $defaultReturnType;
@@ -100,7 +104,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 
 		if (isset($functionCall->args[1]) === false) {
 			if ($firstArgumentIsPositive) {
-				return new StringType();
+				return $stringAndNumericStringType;
 			}
 
 			return $defaultReturnType;
@@ -115,7 +119,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 		}
 
 		if ($firstArgumentIsPositive && $secondArgumentIsValid) {
-			return new StringType();
+			return $stringAndNumericStringType;
 		}
 
 		return $defaultReturnType;
@@ -131,8 +135,10 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 */
 	private function getTypeForBcPowMod(FuncCall $functionCall, Scope $scope)
 	{
+		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
+
 		if (isset($functionCall->args[1]) === false) {
-			return new UnionType([new StringType(), new ConstantBooleanType(false)]);
+			return new UnionType([$stringAndNumericStringType, new ConstantBooleanType(false)]);
 		}
 
 		$exponent = $scope->getType($functionCall->args[1]->value);
@@ -156,11 +162,11 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			}
 
 			if ($modulus instanceof ConstantScalarType) {
-				return new StringType();
+				return $stringAndNumericStringType;
 			}
 		}
 
-		return new UnionType([new StringType(), new ConstantBooleanType(false)]);
+		return new UnionType([$stringAndNumericStringType, new ConstantBooleanType(false)]);
 	}
 
 	/**

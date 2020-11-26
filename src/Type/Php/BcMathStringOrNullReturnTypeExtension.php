@@ -16,6 +16,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use function in_array;
 use function is_numeric;
 

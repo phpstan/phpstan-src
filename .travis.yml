@@ -11,7 +11,7 @@ env:
 
 before_script:
   - if php --ri xdebug >/dev/null; then phpenv config-rm xdebug.ini; fi
-  - composer update --no-interaction
+  - composer install --no-interaction
 
 jobs:
   include:

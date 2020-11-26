@@ -83,7 +83,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 * @param Scope $scope
 	 * @return Type
 	 */
-	private function getTypeForBcSqrt(FuncCall $functionCall, Scope $scope)
+	private function getTypeForBcSqrt(FuncCall $functionCall, Scope $scope): Type
 	{
 		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
 		$defaultReturnType = new UnionType([$stringAndNumericStringType, new NullType()]);
@@ -133,7 +133,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 * @param Scope $scope
 	 * @return Type
 	 */
-	private function getTypeForBcPowMod(FuncCall $functionCall, Scope $scope)
+	private function getTypeForBcPowMod(FuncCall $functionCall, Scope $scope): Type
 	{
 		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
 

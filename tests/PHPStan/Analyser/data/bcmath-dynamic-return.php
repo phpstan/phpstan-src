@@ -28,7 +28,7 @@ $nonNumeric = 'foo';
 \PHPStan\Analyser\assertType('string&numeric', bcdiv('10', $iNeg));
 \PHPStan\Analyser\assertType('string&numeric', bcdiv('10', $iPos));
 \PHPStan\Analyser\assertType('string&numeric', bcdiv($iPos, $iPos));
-\PHPStan\Analyser\assertType('string&numeric|null', bcdiv('10', $mixed));
+\PHPStan\Analyser\assertType('(string&numeric)|null', bcdiv('10', $mixed));
 \PHPStan\Analyser\assertType('string&numeric', bcdiv('10', $iPos, $iPos));
 \PHPStan\Analyser\assertType('string&numeric', bcdiv('10', $iUnknown));
 \PHPStan\Analyser\assertType('null', bcdiv('10', $iPos, $nonNumeric)); // Warning: expects parameter 3 to be int, string given in
@@ -50,7 +50,7 @@ $nonNumeric = 'foo';
 \PHPStan\Analyser\assertType('string&numeric', bcmod('10', $iPos));
 \PHPStan\Analyser\assertType('string&numeric', bcmod('10', -$iNeg));
 \PHPStan\Analyser\assertType('string&numeric', bcmod('10', -$iPos));
-\PHPStan\Analyser\assertType('string&numeric|null', bcmod('10', $mixed));
+\PHPStan\Analyser\assertType('(string&numeric)|null', bcmod('10', $mixed));
 
 //  bcpowmod ( string $base , string $exponent , string $modulus [, int $scale = 0 ] ) : string
 // Returns the result as a numeric-string, or FALSE if modulus is 0 or exponent is negative.
@@ -70,11 +70,11 @@ $nonNumeric = 'foo';
 \PHPStan\Analyser\assertType('string&numeric', bcpowmod('10', '2', '2'));
 \PHPStan\Analyser\assertType('string&numeric', bcpowmod('10', $iUnknown, '2'));
 \PHPStan\Analyser\assertType('string&numeric', bcpowmod($iPos, '2', '2'));
-\PHPStan\Analyser\assertType('string&numeric|false', bcpowmod('10', $mixed, $mixed));
+\PHPStan\Analyser\assertType('(string&numeric)|false', bcpowmod('10', $mixed, $mixed));
 \PHPStan\Analyser\assertType('string&numeric', bcpowmod('10', '2', '2'));
 \PHPStan\Analyser\assertType('string&numeric', bcpowmod('10', -$iNeg, '2'));
 \PHPStan\Analyser\assertType('string&numeric', bcpowmod('10', $nonNumeric, '2')); // Warning: bcmath function argument is not well-formed
-\PHPStan\Analyser\assertType('string&numeric|false', bcpowmod('10', $iUnknown, $iUnknown));
+\PHPStan\Analyser\assertType('(string&numeric)|false', bcpowmod('10', $iUnknown, $iUnknown));
 
 //  bcsqrt ( string $operand [, int $scale = 0 ] ) : string
 // Returns the square root as a numeric-string, or NULL if operand is negative.
@@ -83,15 +83,15 @@ $nonNumeric = 'foo';
 \PHPStan\Analyser\assertType('string&numeric', bcsqrt('0.00', 1));
 \PHPStan\Analyser\assertType('string&numeric', bcsqrt(0.0, 1));
 \PHPStan\Analyser\assertType('string&numeric', bcsqrt('0', 1));
-\PHPStan\Analyser\assertType('string&numeric|null', bcsqrt($iUnknown, $iUnknown));
+\PHPStan\Analyser\assertType('(string&numeric)|null', bcsqrt($iUnknown, $iUnknown));
 \PHPStan\Analyser\assertType('string&numeric', bcsqrt('10', $iPos));
 \PHPStan\Analyser\assertType('null', bcsqrt('-10', 0)); // Warning: Square root of negative number
 \PHPStan\Analyser\assertType('null', bcsqrt($iNeg, 0));
 \PHPStan\Analyser\assertType('null', bcsqrt('10', $nonNumeric)); // Warning: Second argument must be ?int (Fatal in PHP8)
 \PHPStan\Analyser\assertType('string&numeric', bcsqrt('10'));
-\PHPStan\Analyser\assertType('string&numeric|null', bcsqrt($iUnknown));
+\PHPStan\Analyser\assertType('(string&numeric)|null', bcsqrt($iUnknown));
 \PHPStan\Analyser\assertType('null', bcsqrt('-10')); // Warning: Square root of negative number
 
-\PHPStan\Analyser\assertType('string&numeric|null', bcsqrt($nonNumeric, -1)); // Warning: bcmath function argument is not well-formed
-\PHPStan\Analyser\assertType('string&numeric|null', bcsqrt('10', $mixed));
+\PHPStan\Analyser\assertType('(string&numeric)|null', bcsqrt($nonNumeric, -1)); // Warning: bcmath function argument is not well-formed
+\PHPStan\Analyser\assertType('(string&numeric)|null', bcsqrt('10', $mixed));
 \PHPStan\Analyser\assertType('string&numeric', bcsqrt($iPos));

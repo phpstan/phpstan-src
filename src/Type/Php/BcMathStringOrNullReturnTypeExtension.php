@@ -6,7 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\UnaryMinus;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\BooleanType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\IntegerRangeType;
@@ -16,7 +16,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use function in_array;
 use function is_numeric;
 
@@ -82,7 +81,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 *
 	 * @param FuncCall $functionCall
 	 * @param Scope $scope
-	 * @return NullType|Type|UnionType
+	 * @return Type
 	 */
 	private function getTypeForBcSqrt(FuncCall $functionCall, Scope $scope)
 	{
@@ -132,7 +131,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 * > Returns the result as a string, or FALSE if modulus is 0 or exponent is negative.
 	 * @param FuncCall $functionCall
 	 * @param Scope $scope
-	 * @return BooleanType|Type|UnionType
+	 * @return Type
 	 */
 	private function getTypeForBcPowMod(FuncCall $functionCall, Scope $scope)
 	{

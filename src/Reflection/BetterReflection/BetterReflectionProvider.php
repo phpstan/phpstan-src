@@ -27,6 +27,8 @@ use Roave\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use Roave\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionFunction;
+use Roave\BetterReflection\Reflection\Exception\NotAClassReflection;
+use Roave\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -335,7 +337,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$constantValue = $constantReflection->getValue();
 			$constantValueType = ConstantTypeHelper::getTypeFromValue($constantValue);
 			$fileName = $constantReflection->getFileName();
-		} catch (UnableToCompileNode $e) {
+		} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
 			$constantValueType = new MixedType();
 			$fileName = null;
 		}
@@ -355,7 +357,7 @@ class BetterReflectionProvider implements ReflectionProvider
 				return true;
 			} catch (\Roave\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
 				// pass
-			} catch (UnableToCompileNode $e) {
+			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
 				// pass
 			}
 			return false;

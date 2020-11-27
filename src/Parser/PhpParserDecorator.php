@@ -24,7 +24,11 @@ class PhpParserDecorator implements \PhpParser\Parser
 		try {
 			return $this->wrappedParser->parseString($code);
 		} catch (\PHPStan\Parser\ParserErrorsException $e) {
-			throw new \PhpParser\Error($e->getMessage());
+			$message = $e->getMessage();
+			if ($e->getParsedFile() !== null) {
+				$message .= sprintf(' in file %s', $e->getParsedFile());
+			}
+			throw new \PhpParser\Error($message);
 		}
 	}
 

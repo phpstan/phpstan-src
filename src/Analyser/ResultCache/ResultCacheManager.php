@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use Nette\Neon\Neon;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\Output;
@@ -541,7 +542,7 @@ php;
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => $this->getPhpStanVersion(),
 			'phpVersion' => PHP_VERSION_ID,
-			'projectConfig' => $projectConfigArray,
+			'projectConfig' => Neon::encode($projectConfigArray),
 			'analysedPaths' => $this->analysedPaths,
 			'composerLocks' => $this->getComposerLocks(),
 			'cliAutoloadFile' => $this->cliAutoloadFile,

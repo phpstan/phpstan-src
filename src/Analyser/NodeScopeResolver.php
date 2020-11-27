@@ -338,6 +338,8 @@ class NodeScopeResolver
 			|| $stmt instanceof If_
 			|| $stmt instanceof While_
 			|| $stmt instanceof Switch_
+			|| $stmt instanceof Node\Stmt\Use_
+			|| $stmt instanceof Node\Stmt\GroupUse
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 		} elseif (

@@ -358,7 +358,6 @@ class FileTypeMapper
 					foreach ($node->uses as $use) {
 						$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
 					}
-					return null;
 				} elseif ($node instanceof \PhpParser\Node\Stmt\GroupUse) {
 					$prefix = (string) $node->prefix;
 					foreach ($node->uses as $use) {
@@ -368,7 +367,6 @@ class FileTypeMapper
 
 						$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
 					}
-					return null;
 				} elseif ($node instanceof Node\Stmt\ClassMethod) {
 					$functionName = $node->name->name;
 					if (array_key_exists($functionName, $traitMethodAliases)) {

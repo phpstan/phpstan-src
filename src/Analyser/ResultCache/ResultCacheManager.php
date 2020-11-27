@@ -537,13 +537,15 @@ php;
 			unset($projectConfigArray['parameters']['reportUnmatchedIgnoredErrors']);
 			unset($projectConfigArray['parameters']['memoryLimitFile']);
 			unset($projectConfigArray['parametersSchema']);
+
+			$projectConfigArray = Neon::encode($projectConfigArray);
 		}
 
 		return [
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => $this->getPhpStanVersion(),
 			'phpVersion' => PHP_VERSION_ID,
-			'projectConfig' => Neon::encode($projectConfigArray),
+			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,
 			'composerLocks' => $this->getComposerLocks(),
 			'cliAutoloadFile' => $this->cliAutoloadFile,

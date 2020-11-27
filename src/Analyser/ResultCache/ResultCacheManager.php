@@ -536,6 +536,7 @@ php;
 			unset($projectConfigArray['parameters']['cache']);
 			unset($projectConfigArray['parameters']['reportUnmatchedIgnoredErrors']);
 			unset($projectConfigArray['parameters']['memoryLimitFile']);
+			unset($projectConfigArray['parametersSchema']);
 		}
 
 		return [

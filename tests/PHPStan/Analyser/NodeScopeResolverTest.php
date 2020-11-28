@@ -9523,7 +9523,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$hrtime2',
 			],
 			[
-				'float|int',
+				'(float|int)',
 				'$hrtime3',
 			],
 			[

@@ -9,13 +9,11 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class StaticType implements TypeWithClassName
 {
 
-	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
@@ -252,6 +250,11 @@ class StaticType implements TypeWithClassName
 	public function toArray(): Type
 	{
 		return $this->getStaticObjectType()->toArray();
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		return $this->getStaticObjectType()->toBoolean();
 	}
 
 	public function traverse(callable $cb): Type

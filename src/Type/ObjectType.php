@@ -14,16 +14,15 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 class ObjectType implements TypeWithClassName, SubtractableType
 {
 
-	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
@@ -394,6 +393,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		} while ($classReflection !== false);
 
 		return new ConstantArrayType($arrayKeys, $arrayValues);
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
+			return new BooleanType();
+		}
+
+		return new ConstantBooleanType(true);
 	}
 
 	public function canAccessProperties(): TrinaryLogic

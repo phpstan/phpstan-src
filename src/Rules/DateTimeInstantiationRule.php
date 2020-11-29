@@ -46,14 +46,6 @@ class DateTimeInstantiationRule implements \PHPStan\Rules\Rule
 		}
 		$lastErrors = DateTime::getLastErrors();
 		if ($lastErrors !== false) {
-			foreach ($lastErrors['warnings'] as $warning) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Instantiating %s with %s produces a warning: %s',
-					(string) $node->class,
-					$dateString,
-					$warning
-				))->build();
-			}
 			foreach ($lastErrors['errors'] as $error) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Instantiating %s with %s produces an error: %s',

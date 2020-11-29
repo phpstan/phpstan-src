@@ -20,6 +20,10 @@ class ObjectWithoutClassType implements SubtractableType
 		?Type $subtractedType = null
 	)
 	{
+		if ($subtractedType instanceof NeverType) {
+			$subtractedType = null;
+		}
+
 		$this->subtractedType = $subtractedType;
 	}
 

@@ -3440,6 +3440,24 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				NeverType::class,
 				'*NEVER*',
 			],
+			[
+				new MixedType(),
+				new NeverType(),
+				MixedType::class,
+				'mixed',
+			],
+			[
+				new ObjectWithoutClassType(),
+				new NeverType(),
+				ObjectWithoutClassType::class,
+				'object',
+			],
+			[
+				new ObjectType(\stdClass::class),
+				new NeverType(),
+				ObjectType::class,
+				'stdClass',
+			],
 		];
 	}
 

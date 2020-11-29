@@ -36,6 +36,10 @@ class MixedType implements CompoundType, SubtractableType
 		?Type $subtractedType = null
 	)
 	{
+		if ($subtractedType instanceof NeverType) {
+			$subtractedType = null;
+		}
+
 		$this->isExplicitMixed = $isExplicitMixed;
 		$this->subtractedType = $subtractedType;
 	}

@@ -13110,7 +13110,7 @@ return [
 'XMLWriter::startDTDElement' => ['bool', 'qualifiedname'=>'string'],
 'XMLWriter::startDTDEntity' => ['bool', 'name'=>'string', 'isparam'=>'bool'],
 'XMLWriter::startElement' => ['bool', 'name'=>'string'],
-'XMLWriter::startElementNS' => ['bool', 'prefix|null'=>'string', 'name'=>'string', 'uri'=>'string'],
+'XMLWriter::startElementNS' => ['bool', 'prefix'=>'string|null', 'name'=>'string', 'uri'=>'string'],
 'XMLWriter::startPI' => ['bool', 'target'=>'string'],
 'XMLWriter::text' => ['bool', 'content'=>'string'],
 'XMLWriter::writeAttribute' => ['bool', 'name'=>'string', 'value'=>'string'],

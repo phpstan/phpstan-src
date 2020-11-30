@@ -14,12 +14,15 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
 class ConstantStringType extends StringType implements ConstantScalarType
@@ -297,6 +300,45 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return new ClassStringType();
 		}
 		return new StringType();
+	}
+
+	public function getSmallerType(bool $orEqual = false): Type
+	{
+		$subtractedTypes = [
+			IntegerRangeType::createAllGreaterThan((float) $this->value, !$orEqual),
+		];
+
+		if ($this->value === '' && !$orEqual) {
+			$subtractedTypes[] = new NullType();
+			$subtractedTypes[] = new StringType();
+		}
+
+		$boolValue = (bool) $this->value;
+		if (!$boolValue && !$orEqual) {
+			$subtractedTypes[] = new ConstantBooleanType(false);
+		}
+		if (!$boolValue || !$orEqual) {
+			$subtractedTypes[] = new ConstantBooleanType(true);
+		}
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getGreaterType(bool $orEqual = false): Type
+	{
+		$subtractedTypes = [
+			IntegerRangeType::createAllSmallerThan((float) $this->value, !$orEqual),
+		];
+
+		$boolValue = (bool) $this->value;
+		if ($boolValue || !$orEqual) {
+			$subtractedTypes[] = new ConstantBooleanType(false);
+		}
+		if ($boolValue && !$orEqual) {
+			$subtractedTypes[] = new ConstantBooleanType(true);
+		}
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
 	/**

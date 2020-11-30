@@ -7,6 +7,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -16,6 +17,7 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 
 	use ConstantScalarTypeTrait;
 	use ConstantScalarToBooleanTrait;
+	use ConstantNumericComparisonTypeTrait;
 
 	private int $value;
 

@@ -4,6 +4,9 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -28,6 +31,38 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $this->value ? 'true' : 'false';
+	}
+
+	public function getSmallerType(bool $orEqual = false): Type
+	{
+		if ($orEqual) {
+			if ($this->value) {
+				return new MixedType();
+			}
+			return StaticTypeFactory::falsey();
+		}
+
+		if ($this->value) {
+			return StaticTypeFactory::falsey();
+		}
+
+		return new NeverType();
+	}
+
+	public function getGreaterType(bool $orEqual = false): Type
+	{
+		if ($orEqual) {
+			if ($this->value) {
+				return StaticTypeFactory::truthy();
+			}
+			return new MixedType();
+		}
+
+		if ($this->value) {
+			return new NeverType();
+		}
+
+		return StaticTypeFactory::truthy();
 	}
 
 	public function toBoolean(): BooleanType

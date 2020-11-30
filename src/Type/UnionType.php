@@ -447,6 +447,20 @@ class UnionType implements CompoundType
 		});
 	}
 
+	public function getSmallerType(bool $orEqual = false): Type
+	{
+		return $this->unionTypes(static function (Type $type) use ($orEqual): Type {
+			return $type->getSmallerType($orEqual);
+		});
+	}
+
+	public function getGreaterType(bool $orEqual = false): Type
+	{
+		return $this->unionTypes(static function (Type $type) use ($orEqual): Type {
+			return $type->getGreaterType($orEqual);
+		});
+	}
+
 	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
 	{
 		return $this->unionResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {

@@ -45,6 +45,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		?ClassReflection $classReflection = null
 	)
 	{
+		if ($subtractedType instanceof NeverType) {
+			$subtractedType = null;
+		}
+
 		$this->className = $className;
 		$this->subtractedType = $subtractedType;
 		$this->classReflection = $classReflection;

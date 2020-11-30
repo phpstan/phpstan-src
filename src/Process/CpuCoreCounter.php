@@ -15,7 +15,7 @@ class CpuCoreCounter
 
 		// from brianium/paratest
 		$cores = 2;
-		if (is_file('/proc/cpuinfo')) {
+		if (@is_file('/proc/cpuinfo')) {
 			// Linux (and potentially Windows with linux sub systems)
 			$cpuinfo = @file_get_contents('/proc/cpuinfo');
 			if ($cpuinfo !== false) {
@@ -27,7 +27,7 @@ class CpuCoreCounter
 		if (\DIRECTORY_SEPARATOR === '\\') {
 			// Windows
 			$process = @popen('wmic cpu get NumberOfLogicalProcessors', 'rb');
-			if ($process !== false) {
+			if (is_resource($process)) {
 				fgets($process);
 				$cores = (int) fgets($process);
 				pclose($process);
@@ -37,7 +37,7 @@ class CpuCoreCounter
 		}
 
 		$process = @\popen('sysctl -n hw.ncpu', 'rb');
-		if ($process !== false) {
+		if (is_resource($process)) {
 			// *nix (Linux, BSD and Mac)
 			$cores = (int) fgets($process);
 			pclose($process);

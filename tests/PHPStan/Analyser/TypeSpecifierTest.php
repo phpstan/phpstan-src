@@ -704,10 +704,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new LNumber(3)
 				),
 				[
-					'$n' => '~int<3, max>',
+					'$n' => 'mixed~int<3, max>|true',
 				],
 				[
-					'$n' => '~int<min, 2>',
+					'$n' => 'mixed~int<min, 2>|false|null',
 				],
 			],
 			[
@@ -715,16 +715,24 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Variable('n'),
 					new LNumber(PHP_INT_MIN)
 				),
-				[], // would be nice to specify that $n cannot be an int
-				[],
+				[
+					'$n' => 'mixed~int<' . PHP_INT_MIN . ', max>|true',
+				],
+				[
+					'$n' => 'mixed~false|null',
+				],
 			],
 			[
 				new Expr\BinaryOp\Greater(
 					new Variable('n'),
 					new LNumber(PHP_INT_MAX)
 				),
-				[], // would be nice to specify that $n cannot be an int
-				[],
+				[
+					'$n' => 'mixed~bool|int<min, ' . PHP_INT_MAX . '>|null',
+				],
+				[
+					'$n' => 'mixed',
+				],
 			],
 			[
 				new Expr\BinaryOp\SmallerOrEqual(
@@ -732,10 +740,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new LNumber(PHP_INT_MIN)
 				),
 				[
-					'$n' => '~int<' . (PHP_INT_MIN + 1) . ', max>',
+					'$n' => 'mixed~int<' . (PHP_INT_MIN + 1) . ', max>',
 				],
 				[
-					'$n' => '~int<min, ' . PHP_INT_MIN . '>',
+					'$n' => 'mixed~bool|int<min, ' . PHP_INT_MIN . '>|null',
 				],
 			],
 			[
@@ -744,10 +752,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new LNumber(PHP_INT_MAX)
 				),
 				[
-					'$n' => '~int<min, ' . (PHP_INT_MAX - 1) . '>',
+					'$n' => 'mixed~int<min, ' . (PHP_INT_MAX - 1) . '>|false|null',
 				],
 				[
-					'$n' => '~int<' . PHP_INT_MAX . ', max>',
+					'$n' => 'mixed~int<' . PHP_INT_MAX . ', max>|true',
 				],
 			],
 			[
@@ -762,10 +770,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					)
 				),
 				[
-					'$n' => '~int<min, 2>|int<6, max>',
+					'$n' => 'mixed~int<min, 2>|int<6, max>|false|null',
 				],
 				[
-					'$n' => '~int<3, 5>',
+					'$n' => 'mixed~int<3, 5>|true',
 				],
 			],
 			[
@@ -780,8 +788,8 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					)
 				),
 				[
+					'$n' => 'mixed~int<6, max>',
 					'$foo' => self::SURE_NOT_FALSEY,
-					'$n' => '~int<6, max>',
 				],
 				[],
 			],

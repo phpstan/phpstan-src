@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
@@ -153,6 +155,40 @@ class NullType implements ConstantScalarType
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getSmallerType(bool $orEqual = false): Type
+	{
+		if ($orEqual) {
+			// All falsey types except '0'
+			return new UnionType([
+				new NullType(),
+				new ConstantBooleanType(false),
+				new ConstantIntegerType(0),
+				new ConstantFloatType(0.0),
+				new ConstantStringType(''),
+				new ConstantArrayType([], []),
+			]);
+		}
+
+		return new NeverType();
+	}
+
+	public function getGreaterType(bool $orEqual = false): Type
+	{
+		if ($orEqual) {
+			return new MixedType();
+		}
+
+		// All truthy types, but also '0'
+		return new MixedType(false, new UnionType([
+			new NullType(),
+			new ConstantBooleanType(false),
+			new ConstantIntegerType(0),
+			new ConstantFloatType(0.0),
+			new ConstantStringType(''),
+			new ConstantArrayType([], []),
+		]));
 	}
 
 	/**

@@ -366,7 +366,8 @@ class TypeSpecifier
 			);
 
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Smaller || $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual) {
-			$offset = $expr instanceof Node\Expr\BinaryOp\Smaller ? 1 : 0;
+			$orEqual = $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual;
+			$offset = $orEqual ? 0 : 1;
 			$leftType = $scope->getType($expr->left);
 			$rightType = $scope->getType($expr->right);
 
@@ -431,12 +432,6 @@ class TypeSpecifier
 						$context
 					));
 				}
-
-				$result = $result->unionWith($this->createRangeTypes(
-					$expr->right,
-					IntegerRangeType::fromInterval($leftType->getValue(), null, $offset),
-					$context
-				));
 			}
 
 			if ($rightType instanceof ConstantIntegerType) {
@@ -459,12 +454,22 @@ class TypeSpecifier
 						$context
 					));
 				}
+			}
 
-				$result = $result->unionWith($this->createRangeTypes(
-					$expr->left,
-					IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset),
-					$context
-				));
+			if ($context->truthy()) {
+				if (!$expr->left instanceof Node\Scalar) {
+					$result = $result->unionWith($this->create($expr->left, $rightType->getSmallerType($orEqual), TypeSpecifierContext::createTruthy()));
+				}
+				if (!$expr->right instanceof Node\Scalar) {
+					$result = $result->unionWith($this->create($expr->right, $leftType->getGreaterType($orEqual), TypeSpecifierContext::createTruthy()));
+				}
+			} elseif ($context->falsey()) {
+				if (!$expr->left instanceof Node\Scalar) {
+					$result = $result->unionWith($this->create($expr->left, $rightType->getGreaterType(!$orEqual), TypeSpecifierContext::createTruthy()));
+				}
+				if (!$expr->right instanceof Node\Scalar) {
+					$result = $result->unionWith($this->create($expr->right, $leftType->getSmallerType(!$orEqual), TypeSpecifierContext::createTruthy()));
+				}
 			}
 
 			return $result;

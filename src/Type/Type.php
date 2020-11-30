@@ -89,6 +89,10 @@ interface Type
 
 	public function isNumericString(): TrinaryLogic;
 
+	public function getSmallerType(bool $orEqual = false): Type;
+
+	public function getGreaterType(bool $orEqual = false): Type;
+
 	/**
 	 * Infers template types
 	 *

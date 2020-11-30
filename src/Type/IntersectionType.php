@@ -351,6 +351,20 @@ class IntersectionType implements CompoundType
 		});
 	}
 
+	public function getSmallerType(bool $orEqual = false): Type
+	{
+		return $this->intersectTypes(static function (Type $type) use ($orEqual): Type {
+			return $type->getSmallerType($orEqual);
+		});
+	}
+
+	public function getGreaterType(bool $orEqual = false): Type
+	{
+		return $this->intersectTypes(static function (Type $type) use ($orEqual): Type {
+			return $type->getGreaterType($orEqual);
+		});
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		$type = $this->intersectTypes(static function (Type $type): BooleanType {

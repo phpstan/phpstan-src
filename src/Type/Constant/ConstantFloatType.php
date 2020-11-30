@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -15,6 +16,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	use ConstantScalarTypeTrait;
 	use ConstantScalarToBooleanTrait;
+	use ConstantNumericComparisonTypeTrait;
 
 	private float $value;
 

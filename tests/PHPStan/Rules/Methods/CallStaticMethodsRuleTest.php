@@ -397,4 +397,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug577(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-577.php'], []);
+	}
+
 }

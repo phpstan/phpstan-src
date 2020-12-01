@@ -57,6 +57,9 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 		} elseif ($classNameArgExprType instanceof ConstantStringType) {
 			$objectType = new ObjectType($classNameArgExprType->getValue());
 			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
+		} elseif ($classNameArgExprType instanceof GenericClassStringType) {
+			$objectType = $classNameArgExprType->getGenericType();
+			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
 		} elseif ($context->true()) {
 			$objectType = new ObjectWithoutClassType();
 			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);

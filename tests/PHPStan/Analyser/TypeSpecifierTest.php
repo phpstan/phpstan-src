@@ -17,7 +17,9 @@ use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -57,6 +59,8 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 		$this->scope = $this->scope->assignVariable('stringOrFalse', new UnionType([new StringType(), new ConstantBooleanType(false)]));
 		$this->scope = $this->scope->assignVariable('array', new ArrayType(new MixedType(), new MixedType()));
 		$this->scope = $this->scope->assignVariable('foo', new MixedType());
+		$this->scope = $this->scope->assignVariable('classString', new ClassStringType());
+		$this->scope = $this->scope->assignVariable('genericClassString', new GenericClassStringType(new ObjectType('Bar')));
 	}
 
 	/**
@@ -436,6 +440,22 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 				]),
 				['$foo' => 'static(DateTime)'],
 				['$foo' => '~static(DateTime)'],
+			],
+			[
+				new FuncCall(new Name('is_a'), [
+					new Arg(new Variable('foo')),
+					new Arg(new Variable('classString')),
+				]),
+				['$foo' => 'object'],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_a'), [
+					new Arg(new Variable('foo')),
+					new Arg(new Variable('genericClassString')),
+				]),
+				['$foo' => 'Bar'],
+				['$foo' => '~Bar'],
 			],
 			[
 				new FuncCall(new Name('is_a'), [

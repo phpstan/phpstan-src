@@ -13,6 +13,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -367,6 +368,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				return ConstantArrayTypeAndMethod::createUnknown();
 			}
 			$type = new ObjectType($broker->getClass($classOrObject->getValue())->getName());
+		} elseif ($classOrObject instanceof GenericClassStringType) {
+			$type = $classOrObject->getGenericType();
 		} elseif ((new \PHPStan\Type\ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
 			$type = $classOrObject;
 		} else {

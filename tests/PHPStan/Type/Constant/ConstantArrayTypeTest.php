@@ -5,12 +5,14 @@ namespace PHPStan\Type\Constant;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -708,6 +710,17 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
 				new ConstantStringType('bind'),
 			]),
 			TrinaryLogic::createNo(),
+		];
+
+		yield 'class-string' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new GenericClassStringType(new ObjectType(\Closure::class)),
+				new ConstantStringType('bind'),
+			]),
+			TrinaryLogic::createYes(),
 		];
 	}
 

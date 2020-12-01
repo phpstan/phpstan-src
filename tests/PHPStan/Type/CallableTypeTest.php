@@ -6,6 +6,10 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -336,6 +340,17 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 			[
 				new CallableType(),
 				TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new CallableType()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType(),
+				new ConstantArrayType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				], [
+					new GenericClassStringType(new ObjectType(\Closure::class)),
+					new ConstantStringType('bind'),
+				]),
 				TrinaryLogic::createYes(),
 			],
 		];

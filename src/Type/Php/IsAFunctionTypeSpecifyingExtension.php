@@ -11,13 +11,14 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
-use PHPStan\Type\StringType;
 
 class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -65,7 +66,11 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 
 		if (isset($node->args[2]) && $context->true()) {
 			if (!$scope->getType($node->args[2]->value)->isSuperTypeOf(new ConstantBooleanType(true))->no()) {
-				$types = $types->intersectWith($this->typeSpecifier->create($node->args[0]->value, new StringType(), $context));
+				$types = $types->intersectWith($this->typeSpecifier->create(
+					$node->args[0]->value,
+					isset($objectType) ? new GenericClassStringType($objectType) : new ClassStringType(),
+					$context
+				));
 			}
 		}
 

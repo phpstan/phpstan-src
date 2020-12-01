@@ -443,7 +443,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new String_('Foo')),
 					new Arg(new Expr\ConstFetch(new Name('true'))),
 				]),
-				['$foo' => 'Foo|string'],
+				['$foo' => 'class-string<Foo>|Foo'],
 				['$foo' => '~Foo'],
 			],
 			[
@@ -452,7 +452,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new Variable('className')),
 					new Arg(new Expr\ConstFetch(new Name('true'))),
 				]),
-				['$foo' => 'object|string'],
+				['$foo' => 'class-string<object>|object'],
 				[],
 			],
 			[
@@ -461,7 +461,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new String_('Foo')),
 					new Arg(new Variable('unknown')),
 				]),
-				['$foo' => 'Foo|string'],
+				['$foo' => 'class-string<Foo>|Foo'],
 				['$foo' => '~Foo'],
 			],
 			[
@@ -470,7 +470,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new Variable('className')),
 					new Arg(new Variable('unknown')),
 				]),
-				['$foo' => 'object|string'],
+				['$foo' => 'class-string<object>|object'],
 				[],
 			],
 			[

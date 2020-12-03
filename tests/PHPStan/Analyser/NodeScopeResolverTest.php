@@ -9592,6 +9592,78 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
+			[
+				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				'$mbStrSplitConstantStringWithOneSplitLengthAndValidEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithOneSplitLengthAndInvalidEncoding',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithOneSplitLengthAndVariableEncoding',
+			],
+			[
+				"array('abcdef')",
+				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndValidEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndInvalidEncoding',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndVariableEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithFailureSplitLengthAndValidEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithFailureSplitLengthAndInvalidEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithFailureSplitLengthAndVariableEncoding',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndValidEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndInvalidEncoding',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
+			],
+			[
+				'array<int, string>',
+				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndValidEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndInvalidEncoding',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndVariableEncoding',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndValidEncoding',
+			],
+			[
+				'false',
+				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndInvalidEncoding',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndVariableEncoding',
+			],
 		];
 	}
 

@@ -238,6 +238,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					786,
 				],
+				[
+					'Call to function is_subclass_of() with \'DateTime\' and class-string<DateTimeInterface> will always evaluate to true.',
+					857,
+				],
 			]
 		);
 	}
@@ -383,6 +387,13 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3994.php'], []);
+	}
+
+	public function testIsSubclassOfClassStringDoesNotReturnError(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/class-strings.php'], []);
 	}
 
 }

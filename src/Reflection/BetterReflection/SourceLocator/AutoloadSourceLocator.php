@@ -221,7 +221,7 @@ class AutoloadSourceLocator implements SourceLocator
 					if (count($classNode->getNode()->attrGroups) > 0 && PHP_VERSION_ID < 80000) {
 						$startLine--;
 					}
-					if ($startLine !== $classNode->getNode()->getStartLine()) {
+					if ($classNode->getNode()->name === null || $startLine !== $classNode->getNode()->name->getStartLine()) {
 						continue;
 					}
 				}

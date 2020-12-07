@@ -78,4 +78,16 @@ class Baz
 
 	}
 
+	public function doIpsum(int|string|null $nullable): void
+	{
+		assertType('int|null|string', $nullable);
+		assertNativeType('int|null|string', $nullable);
+		assertType('int|null|string', $this->doDolor());
+	}
+
+	public function doDolor(): int|string|null
+	{
+
+	}
+
 }

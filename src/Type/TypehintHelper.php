@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Broker\Broker;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionNamedType;
 use ReflectionType;
@@ -18,6 +19,8 @@ class TypehintHelper
 				return new IntegerType();
 			case 'bool':
 				return new BooleanType();
+			case 'false':
+				return new ConstantBooleanType(false);
 			case 'string':
 				return new StringType();
 			case 'float':
@@ -47,6 +50,8 @@ class TypehintHelper
 				return new NonexistentParentClassType();
 			case 'static':
 				return $selfClass !== null ? new StaticType($selfClass) : new ErrorType();
+			case 'null':
+				return new NullType();
 			default:
 				return new ObjectType($typeString);
 		}
@@ -84,6 +89,12 @@ class TypehintHelper
 		}
 		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\mixed')) {
 			$reflectionTypeString = 'mixed';
+		}
+		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\false')) {
+			$reflectionTypeString = 'false';
+		}
+		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\null')) {
+			$reflectionTypeString = 'null';
 		}
 
 		$type = self::getTypeObjectFromTypehint($reflectionTypeString, $selfClass);

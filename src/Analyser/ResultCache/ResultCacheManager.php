@@ -119,6 +119,9 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
 			}
+
+			@unlink($cacheFilePath);
+
 			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
 		}
 
@@ -127,6 +130,7 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
+
 			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
 		}
 

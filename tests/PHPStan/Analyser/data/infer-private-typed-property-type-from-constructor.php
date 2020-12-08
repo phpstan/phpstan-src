@@ -2,14 +2,30 @@
 
 namespace InferPrivateTypedPropertyTypeFromConstructor;
 
+use function PHPStan\Analyser\assertType;
+
 class Foo
 {
 	private GenericFoo $genericFoo;
+	private int $notIntInConstructorTypehint;
+	private int $notIntInConstructorPhpdoc;
+	private array $typedArrayPhpdoc;
 	private array $typedArray;
 
-	public function __construct(string ...$typedArray)
-	{
+	/**
+	 * @param string $notIntInConstructorPhpdoc
+	 * @param string[] $typedArrayPhpdoc
+	 */
+	public function __construct(
+		$notIntInConstructorPhpdoc,
+		string $notIntInConstructorTypehint,
+		array $typedArrayPhpdoc,
+		string ...$typedArray
+	) {
 		$this->genericFoo = $this->newGenericFoo(\stdClass::class);
+		$this->notIntInConstructorPhpdoc = $notIntInConstructorPhpdoc;
+		$this->notIntInConstructorTypehint = $notIntInConstructorTypehint;
+		$this->typedArrayPhpdoc = $typedArrayPhpdoc;
 		$this->typedArray = $typedArray;
 	}
 
@@ -25,9 +41,13 @@ class Foo
 		return new GenericFoo();
 	}
 
-	public function doFoo()
+	public function method()
 	{
-		die;
+		assertType('InferPrivateTypedPropertyTypeFromConstructor\GenericFoo<stdClass>', $this->genericFoo);
+		assertType('int', $this->notIntInConstructorPhpdoc);
+		assertType('int', $this->notIntInConstructorTypehint);
+		assertType('array<string>', $this->typedArrayPhpdoc);
+		assertType('array<int, string>', $this->typedArray);
 	}
 }
 

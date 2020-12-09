@@ -71,12 +71,12 @@ class Foo
 		};
 
 		match ($i) {
-			default => 1, // always true - report with strict-rules
+			default => 1,
 		};
 
 		match ($i) {
-			default => 1, // always true - report with strict-rules
-			1 => 2, // unreachable
+			default => 1,
+			1 => 2,
 		};
 	}
 

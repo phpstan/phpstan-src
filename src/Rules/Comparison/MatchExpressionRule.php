@@ -45,15 +45,6 @@ class MatchExpressionRule implements Rule
 			$armConditions = $arm->getConditions();
 			if (count($armConditions) === 0) {
 				$hasDefault = true;
-				$nextArmIsDead = true;
-				if (
-					$this->checkAlwaysTrueStrictComparison
-					&& ($i !== $armsCount - 1 || $i === 0)
-				) {
-					$errors[] = RuleErrorBuilder::message(
-						'Match arm comparison is always true.'
-					)->line($arm->getLine())->build();
-				}
 			}
 			foreach ($armConditions as $armCondition) {
 				$armConditionScope = $armCondition->getScope();

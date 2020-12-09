@@ -84,18 +84,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 				70,
 			],
 			[
-				'Match arm comparison is always true.',
-				74,
-			],
-			[
-				'Match arm comparison is always true.',
-				78,
-			],
-			[
-				'Match arm is unreachable because previous comparison is always true.',
-				79,
-			],
-			[
 				'Match arm comparison between true and false is always false.',
 				86,
 			],

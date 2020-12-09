@@ -10439,6 +10439,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2945.php');
 	}
 
+	public function dataInferPrivateTypedPropertyTypeFromConstructor(): array
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/infer-private-typed-property-type-from-constructor.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10627,6 +10636,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2997
 	 * @dataProvider dataBug1657
 	 * @dataProvider dataBug2945
+	 * @dataProvider dataInferPrivateTypedPropertyTypeFromConstructor
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

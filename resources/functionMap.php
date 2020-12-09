@@ -3314,7 +3314,7 @@ return [
 'get_extension_funcs' => ['array', 'extension_name'=>'string'],
 'get_headers' => ['array|false', 'url'=>'string', 'format='=>'int', 'context='=>'resource'],
 'get_html_translation_table' => ['array', 'table='=>'int', 'flags='=>'int', 'encoding='=>'string'],
-'get_include_path' => ['string'],
+'get_include_path' => ['string|false'],
 'get_included_files' => ['array'],
 'get_loaded_extensions' => ['array', 'zend_extensions='=>'bool'],
 'get_magic_quotes_gpc' => ['bool'],

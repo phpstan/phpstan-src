@@ -10448,6 +10448,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/infer-private-typed-property-type-from-constructor.php');
 	}
 
+	public function dataBug4207(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4207.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10637,6 +10642,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug1657
 	 * @dataProvider dataBug2945
 	 * @dataProvider dataInferPrivateTypedPropertyTypeFromConstructor
+	 * @dataProvider dataBug4207
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

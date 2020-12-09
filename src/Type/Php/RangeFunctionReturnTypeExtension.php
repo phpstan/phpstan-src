@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -14,6 +15,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -60,11 +62,20 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 						continue;
 					}
 
-					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
-						$arrayBuilder->degradeToGeneralArray();
+						return new IntersectionType([
+							new ArrayType(
+								new IntegerType(),
+								TypeCombinator::union(
+									$startConstant->generalize(),
+									$endConstant->generalize()
+								)
+							),
+							new NonEmptyArrayType(),
+						]);
 					}
+					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($rangeValues as $value) {
 						$arrayBuilder->setOffsetValueType(null, $scope->getTypeFromValue($value));
 					}

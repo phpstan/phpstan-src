@@ -6100,7 +6100,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'range(3, -1)',
 			],
 			[
-				'array<int, int>',
+				'array<int, int>&nonEmpty',
 				'range(0, 50)',
 			],
 		];

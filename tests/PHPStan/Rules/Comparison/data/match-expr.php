@@ -103,4 +103,38 @@ class Foo
 		};
 	}
 
+	public function doFooConstants(int $i): void
+	{
+
+	}
+
+}
+
+class BarConstants
+{
+
+	const TEST1 = 1;
+	const TEST2 = 2;
+
+	/**
+	 * @param BarConstants::TEST1|BarConstants::TEST2 $i
+	 */
+	public function doFoo(int $i): void {
+		match ($i) {
+			BarConstants::TEST1 => 'foo',
+			BarConstants::TEST2 => 'bar',
+		};
+	}
+
+	/**
+	 * @param BarConstants::TEST* $i
+	 */
+	public function doBar(int $i): void {
+		match ($i) {
+			BarConstants::TEST1 => 'foo',
+			BarConstants::TEST2 => 'bar',
+		};
+	}
+
+
 }

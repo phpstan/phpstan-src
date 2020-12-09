@@ -8925,7 +8925,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				"'afterFirst'",
 			],
 			[
-				'int',
+				'int<min, -1>|int<1, max>',
 				'$a',
 				"'afterSecond'",
 			],
@@ -8940,12 +8940,12 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				"'afterSecond'",
 			],
 			[
-				'int',
+				'int<min, -1>|int<1, max>',
 				'$a',
 				"'afterThird'",
 			],
 			[
-				'int',
+				'int<min, -1>|int<1, max>',
 				'$b',
 				"'afterThird'",
 			],
@@ -10453,6 +10453,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4207.php');
 	}
 
+	public function dataBug4206(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4206.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10643,6 +10648,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2945
 	 * @dataProvider dataInferPrivateTypedPropertyTypeFromConstructor
 	 * @dataProvider dataBug4207
+	 * @dataProvider dataBug4206
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

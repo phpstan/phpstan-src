@@ -27,6 +27,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -232,29 +233,26 @@ class TypeSpecifier
 					return $leftTypes->unionWith($rightTypes);
 				}
 
+				$exprLeftType = $scope->getType($expr->left);
+				$exprRightType = $scope->getType($expr->right);
+
 				if (
-					(
-						$expr->left instanceof Node\Scalar
-						|| $expr->left instanceof Expr\Array_
-					)
-					&& !$expr->right instanceof Node\Scalar
+					$exprLeftType instanceof ConstantType
+					&& !$exprRightType instanceof ConstantType
 				) {
 					return $this->create(
 						$expr->right,
-						$scope->getType($expr->left),
+						$exprLeftType,
 						$context
 					);
 				}
 				if (
-					(
-						$expr->right instanceof Node\Scalar
-						|| $expr->right instanceof Expr\Array_
-					)
-					&& !$expr->left instanceof Node\Scalar
+					$exprRightType instanceof ConstantType
+					&& !$exprLeftType instanceof ConstantType
 				) {
 					return $this->create(
 						$expr->left,
-						$scope->getType($expr->right),
+						$exprRightType,
 						$context
 					);
 				}

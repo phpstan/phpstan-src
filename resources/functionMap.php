@@ -12638,7 +12638,7 @@ return [
 'uniqid' => ['string', 'prefix='=>'string', 'more_entropy='=>'bool'],
 'unixtojd' => ['int', 'timestamp='=>'int'],
 'unlink' => ['bool', 'filename'=>'string', 'context='=>'resource'],
-'unpack' => ['array', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],
+'unpack' => ['array|false', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],
 'unregister_tick_function' => ['void', 'function_name'=>'string'],
 'unserialize' => ['mixed', 'variable_representation'=>'string', 'allowed_classes='=>'array{allowed_classes?:string[]|bool}'],
 'unset' => ['void', 'var='=>'mixed', '...args='=>'mixed'],

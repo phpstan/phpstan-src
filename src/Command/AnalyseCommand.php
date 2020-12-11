@@ -137,6 +137,15 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
+		$obsoleteDockerImage = $_SERVER['PHPSTAN_OBSOLETE_DOCKER_IMAGE'] ?? 'false';
+		if ($obsoleteDockerImage === 'true') {
+			$errorOutput->writeLineFormatted('⚠️  You\'re using an obsolete PHPStan Docker image. ⚠️️');
+			$errorOutput->writeLineFormatted('   You can obtain the current one from <fg=cyan>ghcr.io/phpstan/phpstan</>.');
+			$errorOutput->writeLineFormatted('   Read more about it here:');
+			$errorOutput->writeLineFormatted('   <fg=cyan>https://phpstan.org/user-guide/docker</>');
+			$errorOutput->writeLineFormatted('');
+		}
+
 		$errorFormat = $input->getOption('error-format');
 
 		if (!is_string($errorFormat) && $errorFormat !== null) {

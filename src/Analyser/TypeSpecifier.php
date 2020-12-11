@@ -236,11 +236,13 @@ class TypeSpecifier
 				$exprLeftType = $scope->getType($expr->left);
 				$exprRightType = $scope->getType($expr->right);
 
+				$types = null;
+
 				if (
 					$exprLeftType instanceof ConstantType
-					&& !$exprRightType instanceof ConstantType
+					&& !$expr->right instanceof Node\Scalar
 				) {
-					return $this->create(
+					$types = $this->create(
 						$expr->right,
 						$exprLeftType,
 						$context
@@ -248,13 +250,22 @@ class TypeSpecifier
 				}
 				if (
 					$exprRightType instanceof ConstantType
-					&& !$exprLeftType instanceof ConstantType
+					&& !$expr->left instanceof Node\Scalar
 				) {
-					return $this->create(
+					$leftType = $this->create(
 						$expr->left,
 						$exprRightType,
 						$context
 					);
+					if ($types !== null) {
+						$types = $types->unionWith($leftType);
+					} else {
+						$types = $leftType;
+					}
+				}
+
+				if ($types !== null) {
+					return $types;
 				}
 			}
 

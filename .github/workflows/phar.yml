@@ -70,7 +70,7 @@ jobs:
 
       - name: "Sign PHAR"
         working-directory: phpstan-dist
-        run: rm phpstan.phar.asc && gpg --command-fd 0 --pinentry-mode loopback -u "$GPG_ID" --batch --detach-sign --output phpstan.phar.asc phpstan.phar
+        run: rm phpstan.phar.asc && gpg --command-fd 0 --pinentry-mode loopback -u "$GPG_ID" --batch --detach-sign --armor --output phpstan.phar.asc phpstan.phar
         env:
           GPG_ID: ${{ secrets.GPG_ID }}
 

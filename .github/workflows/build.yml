@@ -116,7 +116,6 @@ jobs:
   tests:
     name: "Tests"
     runs-on: ${{ matrix.operating-system }}
-    continue-on-error: ${{ matrix.php-version == '8.0' }}
 
     strategy:
       fail-fast: false

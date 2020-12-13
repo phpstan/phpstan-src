@@ -190,13 +190,25 @@ class CommandHelper
 		}
 
 		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
+			$generatedConfigReflection = new \ReflectionClass('PHPStan\ExtensionInstaller\GeneratedConfig');
+			$generatedConfigDirectory = dirname($generatedConfigReflection->getFileName());
 			foreach (\PHPStan\ExtensionInstaller\GeneratedConfig::EXTENSIONS as $name => $extensionConfig) {
 				foreach ($extensionConfig['extra']['includes'] ?? [] as $includedFile) {
 					if (!is_string($includedFile)) {
 						$errorOutput->writeLineFormatted(sprintf('Cannot include config from package %s, expecting string file path but got %s', $name, gettype($includedFile)));
 						throw new \PHPStan\Command\InceptionNotSuccessfulException();
 					}
-					$includedFilePath = sprintf('%s/%s', $extensionConfig['install_path'], $includedFile);
+					$includedFilePath = null;
+					if (isset($extensionConfig['relative_install_path'])) {
+						$includedFilePath = sprintf('%s/%s/%s', $generatedConfigDirectory, $extensionConfig['relative_install_path'], $includedFile);
+						if (!file_exists($includedFilePath) || !is_readable($includedFilePath)) {
+							$includedFilePath = null;
+						}
+					}
+
+					if ($includedFilePath === null) {
+						$includedFilePath = sprintf('%s/%s', $extensionConfig['install_path'], $includedFile);
+					}
 					if (!file_exists($includedFilePath) || !is_readable($includedFilePath)) {
 						$errorOutput->writeLineFormatted(sprintf('Config file %s does not exist or isn\'t readable', $includedFilePath));
 						throw new \PHPStan\Command\InceptionNotSuccessfulException();

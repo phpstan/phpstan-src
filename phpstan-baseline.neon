@@ -11,6 +11,16 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Parameter \\#1 \\$argument of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
+			count: 1
+			path: src/Command/CommandHelper.php
+
+		-
+			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/Command/CommandHelper.php
+
+		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 2
 			path: src/Command/CommandHelper.php

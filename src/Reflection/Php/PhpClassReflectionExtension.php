@@ -875,11 +875,11 @@ class PhpClassReflectionExtension
 	private function inferPrivatePropertyType(
 		string $propertyName,
 		MethodReflection $constructor
-	): Type
+	): ?Type
 	{
 		$declaringClassName = $constructor->getDeclaringClass()->getName();
 		if (isset($this->inferClassConstructorPropertyTypesInProcess[$declaringClassName])) {
-			return new MixedType();
+			return null;
 		}
 		$this->inferClassConstructorPropertyTypesInProcess[$declaringClassName] = true;
 		$propertyTypes = $this->inferAndCachePropertyTypes($constructor);
@@ -888,7 +888,7 @@ class PhpClassReflectionExtension
 			return $propertyTypes[$propertyName];
 		}
 
-		return new MixedType();
+		return null;
 	}
 
 	/**

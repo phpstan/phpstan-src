@@ -87,7 +87,7 @@ class UnionTypeHelper
 			}
 
 			if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
-				return $a->getMin() <=> $b->getMin();
+				return ($a->getMin() ?? PHP_INT_MIN) <=> ($b->getMin() ?? PHP_INT_MIN);
 			}
 
 			if ($a instanceof ConstantStringType && $b instanceof ConstantStringType) {

@@ -735,7 +735,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'$n' => '~int<' . (PHP_INT_MIN + 1) . ', max>',
 				],
 				[
-					'$n' => '~' . PHP_INT_MIN,
+					'$n' => '~int<min, ' . PHP_INT_MIN . '>',
 				],
 			],
 			[
@@ -747,7 +747,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					'$n' => '~int<min, ' . (PHP_INT_MAX - 1) . '>',
 				],
 				[
-					'$n' => '~' . PHP_INT_MAX,
+					'$n' => '~int<' . PHP_INT_MAX . ', max>',
 				],
 			],
 			[

@@ -33,31 +33,39 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	private function createRange(Type $minType, Type $maxType): Type
 	{
-		$minValue = array_reduce($minType instanceof UnionType ? $minType->getTypes() : [$minType], static function (int $carry, Type $type): int {
-			if ($type instanceof IntegerRangeType) {
-				$value = $type->getMin();
-			} elseif ($type instanceof ConstantIntegerType) {
-				$value = $type->getValue();
-			} else {
-				$value = PHP_INT_MIN;
-			}
+		$minValues = array_map(
+			static function (Type $type): ?int {
+				if ($type instanceof IntegerRangeType) {
+					return $type->getMin();
+				}
+				if ($type instanceof ConstantIntegerType) {
+					return $type->getValue();
+				}
+				return null;
+			},
+			$minType instanceof UnionType ? $minType->getTypes() : [$minType]
+		);
 
-			return min($value, $carry);
-		}, PHP_INT_MAX);
+		$maxValues = array_map(
+			static function (Type $type): ?int {
+				if ($type instanceof IntegerRangeType) {
+					return $type->getMax();
+				}
+				if ($type instanceof ConstantIntegerType) {
+					return $type->getValue();
+				}
+				return null;
+			},
+			$maxType instanceof UnionType ? $maxType->getTypes() : [$maxType]
+		);
 
-		$maxValue = array_reduce($maxType instanceof UnionType ? $maxType->getTypes() : [$maxType], static function (int $carry, Type $type): int {
-			if ($type instanceof IntegerRangeType) {
-				$value = $type->getMax();
-			} elseif ($type instanceof ConstantIntegerType) {
-				$value = $type->getValue();
-			} else {
-				$value = PHP_INT_MAX;
-			}
+		assert(count($minValues) > 0);
+		assert(count($maxValues) > 0);
 
-			return max($value, $carry);
-		}, PHP_INT_MIN);
-
-		return IntegerRangeType::fromInterval($minValue, $maxValue);
+		return IntegerRangeType::fromInterval(
+			in_array(null, $minValues, true) ? null : min($minValues),
+			in_array(null, $maxValues, true) ? null : max($maxValues)
+		);
 	}
 
 }

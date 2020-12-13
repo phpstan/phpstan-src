@@ -55,7 +55,6 @@
 		"platform": {
 			"php": "7.4.6"
 		},
-		"platform-check": false,
 		"sort-packages": true
 	},
 	"extra": {

@@ -37,7 +37,9 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 		}
 
 		if ($type instanceof IntegerRangeType) {
-			if ($type->getMin() <= $this->value && $this->value <= $type->getMax()) {
+			$min = $type->getMin();
+			$max = $type->getMax();
+			if (($min === null || $min <= $this->value) && ($max === null || $this->value <= $max)) {
 				return TrinaryLogic::createMaybe();
 			}
 

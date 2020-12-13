@@ -39,6 +39,10 @@ parameters:
 		-
 			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php
+		-
+			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
+			count: 1
+			path: ../src/Command/CommandHelper.php
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp
 	stubFiles:

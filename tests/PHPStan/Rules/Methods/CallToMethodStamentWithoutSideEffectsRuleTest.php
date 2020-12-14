@@ -49,4 +49,9 @@ class CallToMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4232(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4232.php'], []);
+	}
+
 }

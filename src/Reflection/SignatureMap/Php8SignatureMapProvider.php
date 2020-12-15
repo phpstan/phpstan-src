@@ -207,16 +207,21 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		}
 
 		$nativeReturnType = $nativeSignature->getNativeReturnType();
-
-		return new FunctionSignature(
-			$parameters,
-			TypehintHelper::decideType(
+		if ($nativeReturnType instanceof MixedType && !$nativeReturnType->isExplicitMixed()) {
+			$returnType = $functionMapSignature->getReturnType();
+		} else {
+			$returnType = TypehintHelper::decideType(
 				$nativeReturnType,
 				TypehintHelper::decideType(
 					$nativeSignature->getReturnType(),
 					$functionMapSignature->getReturnType()
 				)
-			),
+			);
+		}
+
+		return new FunctionSignature(
+			$parameters,
+			$returnType,
 			$nativeReturnType,
 			$nativeSignature->isVariadic()
 		);

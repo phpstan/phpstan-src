@@ -211,7 +211,7 @@ class Php8SignatureMapProviderTest extends TestCase
 						'variadic' => false,
 					],
 				],
-				new BooleanType(),
+				new VoidType(),
 				new MixedType(),
 				false,
 			],

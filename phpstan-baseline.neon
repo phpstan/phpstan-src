@@ -216,6 +216,11 @@ parameters:
 			path: src/Rules/Registry.php
 
 		-
+			message: "#^Binary operation \"\\+\" between array\\(class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\) and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
+			count: 1
+			path: src/Rules/Registry.php
+
+		-
 			message: "#^Cannot call method getActiveTemplateTypeMap\\(\\) on PHPStan\\\\Reflection\\\\ClassReflection\\|null\\.$#"
 			count: 2
 			path: src/Type/Generic/GenericObjectType.php

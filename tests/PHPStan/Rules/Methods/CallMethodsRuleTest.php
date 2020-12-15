@@ -1719,4 +1719,22 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4199(): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/bug-4199.php'], [
+			[
+				'Cannot call method answer() on Bug4199\Baz|null.',
+				37,
+			],
+		]);
+	}
+
 }

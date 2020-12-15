@@ -126,6 +126,11 @@ class RuleLevelHelper
 		if (!$this->checkNullables && !$type instanceof NullType) {
 			$type = \PHPStan\Type\TypeCombinator::removeNull($type);
 		}
+
+		if (TypeCombinator::containsNull($type)) {
+			$type = $scope->getType($this->getNullsafeShortcircuitedExpr($var));
+		}
+
 		if (
 			$this->checkExplicitMixed
 			&& $type instanceof MixedType
@@ -186,6 +191,52 @@ class RuleLevelHelper
 		}
 
 		return new FoundTypeResult($type, $directClassNames, []);
+	}
+
+	private function getNullsafeShortcircuitedExpr(Expr $expr): Expr
+	{
+		if ($expr instanceof Expr\NullsafeMethodCall) {
+			return new Expr\MethodCall($this->getNullsafeShortcircuitedExpr($expr->var), $expr->name, $expr->args);
+		}
+
+		if ($expr instanceof Expr\MethodCall) {
+			return new Expr\MethodCall($this->getNullsafeShortcircuitedExpr($expr->var), $expr->name, $expr->args);
+		}
+
+		if ($expr instanceof Expr\StaticCall && $expr->class instanceof Expr) {
+			return new Expr\StaticCall(
+				$this->getNullsafeShortcircuitedExpr($expr->class),
+				$expr->name,
+				$expr->args
+			);
+		}
+
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return new Expr\ArrayDimFetch($this->getNullsafeShortcircuitedExpr($expr->var), $expr->dim);
+		}
+
+		if ($expr instanceof Expr\NullsafePropertyFetch) {
+			return new Expr\PropertyFetch(
+				$this->getNullsafeShortcircuitedExpr($expr->var),
+				$expr->name
+			);
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return new Expr\PropertyFetch(
+				$this->getNullsafeShortcircuitedExpr($expr->var),
+				$expr->name
+			);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
+			return new Expr\StaticPropertyFetch(
+				$this->getNullsafeShortcircuitedExpr($expr->class),
+				$expr->name
+			);
+		}
+
+		return $expr;
 	}
 
 }

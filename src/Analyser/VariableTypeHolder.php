@@ -15,9 +15,6 @@ class VariableTypeHolder
 
 	public function __construct(Type $type, TrinaryLogic $certainty)
 	{
-		if ($certainty->no()) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
 		$this->type = $type;
 		$this->certainty = $certainty;
 	}
@@ -30,6 +27,15 @@ class VariableTypeHolder
 	public static function createMaybe(Type $type): self
 	{
 		return new self($type, TrinaryLogic::createMaybe());
+	}
+
+	public function equals(self $other): bool
+	{
+		if (!$this->certainty->equals($other->certainty)) {
+			return false;
+		}
+
+		return $this->type->equals($other->type);
 	}
 
 	public function and(self $other): self

@@ -3182,7 +3182,8 @@ class MutatingScope implements Scope
 			}
 
 			$nativeTypes = $this->nativeExpressionTypes;
-			$nativeTypes[sprintf('$%s', $variableName)] = $nativeType;
+			$exprString = sprintf('$%s', $variableName);
+			$nativeTypes[$exprString] = $nativeType;
 
 			return $this->scopeFactory->create(
 				$this->context,
@@ -3362,19 +3363,89 @@ class MutatingScope implements Scope
 		});
 
 		$scope = $this;
+		$typeGuards = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
-				$scope = $scope->specifyExpressionType($expr, $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getType($expr)));
+				$typeGuard = TypeCombinator::intersect($type, $this->getType($expr));
+				$scope = $scope->specifyExpressionType($expr, $specifiedTypes->shouldOverwrite() ? $type : $typeGuard);
 
 				if ($expr instanceof Variable && is_string($expr->name)) {
 					$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getNativeType($expr));
 				}
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
+				$typeGuard = TypeCombinator::remove($scope->getType($expr), $type);
+			}
+
+			if (
+				!$expr instanceof Variable
+				|| !is_string($expr->name)
+				|| $specifiedTypes->shouldOverwrite()
+			) {
+				continue;
+			}
+
+			$scope->typeGuards['$' . $expr->name] = $typeGuard;
+			$typeGuards['$' . $expr->name] = $typeGuard;
+		}
+
+		$newConditionalExpressions = [];
+		foreach ($this->conditionalExpressions as $variableExprString => $conditionalExpressions) {
+			if (array_key_exists($variableExprString, $typeGuards)) {
+				continue;
+			}
+
+			$typeHolder = null;
+
+			$variableName = substr($variableExprString, 1);
+			foreach ($conditionalExpressions as $conditionalExpression) {
+				$matchingConditions = [];
+				foreach ($conditionalExpression->getConditionExpressionTypes() as $conditionExprString => $conditionalType) {
+					if (!array_key_exists($conditionExprString, $typeGuards)) {
+						continue;
+					}
+
+					if (!$typeGuards[$conditionExprString]->equals($conditionalType)) {
+						continue 2;
+					}
+
+					$matchingConditions[$conditionExprString] = $conditionalType;
+				}
+
+				if (count($matchingConditions) === 0) {
+					$newConditionalExpressions[$variableExprString][$conditionalExpression->getKey()] = $conditionalExpression;
+					continue;
+				}
+
+				if (count($matchingConditions) < count($conditionalExpression->getConditionExpressionTypes())) {
+					$filteredConditions = $conditionalExpression->getConditionExpressionTypes();
+					foreach (array_keys($matchingConditions) as $conditionExprString) {
+						unset($filteredConditions[$conditionExprString]);
+					}
+
+					$holder = new ConditionalExpressionHolder($filteredConditions, $conditionalExpression->getTypeHolder());
+					$newConditionalExpressions[$variableExprString][$holder->getKey()] = $holder;
+					continue;
+				}
+
+				$typeHolder = $conditionalExpression->getTypeHolder();
+				break;
+			}
+
+			if ($typeHolder === null) {
+				continue;
+			}
+
+			if ($typeHolder->getCertainty()->no()) {
+				unset($scope->variableTypes[$variableName]);
+			} else {
+				$scope->variableTypes[$variableName] = $typeHolder;
 			}
 		}
+
+		$scope->conditionalExpressions = $newConditionalExpressions;
 
 		return $scope;
 	}
@@ -3473,6 +3544,33 @@ class MutatingScope implements Scope
 			}
 		}
 
+		$mergedVariableHolders = $this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes);
+		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
+		$conditionalExpressions = $this->createConditionalExpressions(
+			$conditionalExpressions,
+			$this->typeGuards,
+			$ourVariableTypes,
+			$mergedVariableHolders
+		);
+		$conditionalExpressions = $this->createConditionalExpressions(
+			$conditionalExpressions,
+			$otherScope->typeGuards,
+			$theirVariableTypes,
+			$mergedVariableHolders
+		);
+		$typeGuards = [];
+		foreach ($this->typeGuards as $guardExprString => $typeGuard) {
+			if (!array_key_exists($guardExprString, $otherScope->typeGuards)) {
+				continue;
+			}
+
+			if (!$typeGuard->equals($otherScope->typeGuards[$guardExprString])) {
+				continue;
+			}
+
+			$typeGuards[$guardExprString] = $typeGuard;
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -3482,10 +3580,10 @@ class MutatingScope implements Scope
 			)),
 			$this->getFunction(),
 			$this->getNamespace(),
-			$this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes),
+			$mergedVariableHolders,
 			$this->mergeVariableHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes),
-			[], // todo
-			[], // todo
+			$typeGuards,
+			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -3500,6 +3598,77 @@ class MutatingScope implements Scope
 			$this->afterExtractCall && $otherScope->afterExtractCall,
 			$this->parentScope
 		);
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $otherConditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function intersectConditionalExpressions(array $otherConditionalExpressions): array
+	{
+		$newConditionalExpressions = [];
+		foreach ($this->conditionalExpressions as $exprString => $holders) {
+			if (!array_key_exists($exprString, $otherConditionalExpressions)) {
+				continue;
+			}
+
+			$otherHolders = $otherConditionalExpressions[$exprString];
+			foreach (array_keys($holders) as $key) {
+				if (!array_key_exists($key, $otherHolders)) {
+					continue 2;
+				}
+			}
+
+			$newConditionalExpressions[$exprString] = $holders;
+		}
+
+		return $newConditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, Type> $typeGuards
+	 * @param array<string, VariableTypeHolder> $variableTypes
+	 * @param array<string, VariableTypeHolder> $mergedVariableHolders
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function createConditionalExpressions(
+		array $conditionalExpressions,
+		array $typeGuards,
+		array $variableTypes,
+		array $mergedVariableHolders
+	): array
+	{
+		if (count($typeGuards) === 0) {
+			return $conditionalExpressions;
+		}
+
+		foreach ($variableTypes as $name => $holder) {
+			if (array_key_exists('$' . $name, $typeGuards)) {
+				continue;
+			}
+
+			if (
+				array_key_exists($name, $mergedVariableHolders)
+				&& $mergedVariableHolders[$name]->equals($holder)
+			) {
+				continue;
+			}
+
+			$conditionalExpression = new ConditionalExpressionHolder($typeGuards, $holder);
+			$conditionalExpressions['$' . $name][$conditionalExpression->getKey()] = $conditionalExpression;
+		}
+
+		foreach (array_keys($mergedVariableHolders) as $name) {
+			if (array_key_exists($name, $variableTypes)) {
+				continue;
+			}
+
+			$conditionalExpression = new ConditionalExpressionHolder($typeGuards, new VariableTypeHolder(new ErrorType(), TrinaryLogic::createNo()));
+			$conditionalExpressions['$' . $name][$conditionalExpression->getKey()] = $conditionalExpression;
+		}
+
+		return $conditionalExpressions;
 	}
 
 	/**

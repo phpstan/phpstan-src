@@ -484,7 +484,7 @@ class FixerApplication
 				escapeshellarg($insteadOfFile),
 				'--save-result-cache',
 				escapeshellarg($fixerSuggestionId),
-				'--allow-parallel', // todo max threads same as computed here
+				'--allow-parallel',
 			],
 			$input
 		));

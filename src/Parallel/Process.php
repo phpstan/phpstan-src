@@ -124,12 +124,7 @@ class Process
 			$pipe->close();
 		}
 
-		// todo should I close/end something here or is it enough to terminate the process?
 		$this->in->end();
-
-		// todo what are all the events I should listen to?
-		// process: just exit now
-		// connection: connection, data, error?
 	}
 
 	public function bindConnection(ReadableStreamInterface $out, WritableStreamInterface $in): void

@@ -92,7 +92,6 @@ class ParallelAnalyser
 
 		$internalErrorsCount = 0;
 
-		// todo should probably differentiate between not showing unmatched ignores + showing "Internal error limit reached..."
 		$reachedInternalErrorsCountLimit = false;
 
 		$handleError = function (\Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {

@@ -263,7 +263,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
-		return []; // todo
+		return [];
 	}
 
 }

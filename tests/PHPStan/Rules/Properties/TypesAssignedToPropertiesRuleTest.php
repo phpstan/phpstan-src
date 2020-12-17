@@ -95,4 +95,84 @@ class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testTypesAssignedToPropertiesExpressionNames(): void
+	{
+		$this->analyse([__DIR__ . '/data/properties-from-array-into-object.php'], [
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$lall (int) does not accept string.',
+				42,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$lall (int) does not accept string.',
+				54,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$test (int|null) does not accept stdClass.',
+				66,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$float_test (float) does not accept float|int|string.',
+				69,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept float|int|string.',
+				69,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$lall (int) does not accept float|int|string.',
+				69,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept (float|int).',
+				73,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept float.',
+				83,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept float|int|string.',
+				97,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$float_test (float) does not accept float|int|string.',
+				110,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept float|int|string.',
+				110,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$lall (int) does not accept float|int|string.',
+				110,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\Foo::$test (int|null) does not accept float|int|string.',
+				110,
+			],
+			[
+				'Property PropertiesFromArrayIntoObject\FooBar::$foo (string) does not accept float.',
+				147,
+			],
+		]);
+	}
+
+	public function testTypesAssignedToStaticPropertiesExpressionNames(): void
+	{
+		$this->analyse([__DIR__ . '/data/properties-from-array-into-static-object.php'], [
+			[
+				'Static property PropertiesFromArrayIntoStaticObject\Foo::$lall (stdClass|null) does not accept string.',
+				29,
+			],
+			[
+				'Static property PropertiesFromArrayIntoStaticObject\Foo::$foo (string) does not accept float.',
+				36,
+			],
+			[
+				'Static property PropertiesFromArrayIntoStaticObject\FooBar::$foo (string) does not accept float.',
+				72,
+			],
+		]);
+	}
+
 }

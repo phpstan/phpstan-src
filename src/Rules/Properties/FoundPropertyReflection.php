@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
@@ -14,24 +15,42 @@ class FoundPropertyReflection implements PropertyReflection
 
 	private PropertyReflection $originalPropertyReflection;
 
+	private Scope $scope;
+
+	private string $propertyName;
+
 	private Type $readableType;
 
 	private Type $writableType;
 
 	public function __construct(
 		PropertyReflection $originalPropertyReflection,
+		Scope $scope,
+		string $propertyName,
 		Type $readableType,
 		Type $writableType
 	)
 	{
 		$this->originalPropertyReflection = $originalPropertyReflection;
+		$this->scope = $scope;
+		$this->propertyName = $propertyName;
 		$this->readableType = $readableType;
 		$this->writableType = $writableType;
+	}
+
+	public function getScope(): Scope
+	{
+		return $this->scope;
 	}
 
 	public function getDeclaringClass(): ClassReflection
 	{
 		return $this->originalPropertyReflection->getDeclaringClass();
+	}
+
+	public function getName(): string
+	{
+		return $this->propertyName;
 	}
 
 	public function isStatic(): bool

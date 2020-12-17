@@ -2,15 +2,96 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PhpParser\Node\Expr;
+use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeUtils;
 
 class PropertyReflectionFinder
 {
+
+	/**
+	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+	 * @param \PHPStan\Analyser\Scope $scope
+	 * @return FoundPropertyReflection[]
+	 */
+	public function findPropertyReflectionsFromNode($propertyFetch, Scope $scope): array
+	{
+		if ($propertyFetch instanceof \PhpParser\Node\Expr\PropertyFetch) {
+			if ($propertyFetch->name instanceof \PhpParser\Node\Identifier) {
+				$names = [$propertyFetch->name->name];
+			} else {
+				$names = array_map(static function (ConstantStringType $name): string {
+					return $name->getValue();
+				}, TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
+			}
+
+			$reflections = [];
+			$propertyHolderType = $scope->getType($propertyFetch->var);
+			$fetchedOnThis = $propertyHolderType instanceof ThisType && $scope->isInClass();
+			foreach ($names as $name) {
+				$reflection = $this->findPropertyReflection(
+					$propertyHolderType,
+					$name,
+					$propertyFetch->name instanceof Expr ? $scope->filterByTruthyValue(new Expr\BinaryOp\Identical(
+						$propertyFetch->name,
+						new String_($name)
+					)) : $scope,
+					$fetchedOnThis
+				);
+				if ($reflection === null) {
+					continue;
+				}
+
+				$reflections[] = $reflection;
+			}
+
+			return $reflections;
+		}
+
+		if ($propertyFetch->class instanceof \PhpParser\Node\Name) {
+			$propertyHolderType = new ObjectType($scope->resolveName($propertyFetch->class));
+		} else {
+			$propertyHolderType = $scope->getType($propertyFetch->class);
+		}
+
+		$fetchedOnThis = $propertyHolderType instanceof ThisType && $scope->isInClass();
+
+		if ($propertyFetch->name instanceof VarLikeIdentifier) {
+			$names = [$propertyFetch->name->name];
+		} else {
+			$names = array_map(static function (ConstantStringType $name): string {
+				return $name->getValue();
+			}, TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
+		}
+
+		$reflections = [];
+		foreach ($names as $name) {
+			$reflection = $this->findPropertyReflection(
+				$propertyHolderType,
+				$name,
+				$propertyFetch->name instanceof Expr ? $scope->filterByTruthyValue(new Expr\BinaryOp\Identical(
+					$propertyFetch->name,
+					new String_($name)
+				)) : $scope,
+				$fetchedOnThis
+			);
+			if ($reflection === null) {
+				continue;
+			}
+
+			$reflections[] = $reflection;
+		}
+
+		return $reflections;
+	}
 
 	/**
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
@@ -68,6 +149,8 @@ class PropertyReflectionFinder
 
 		return new FoundPropertyReflection(
 			$originalProperty,
+			$scope,
+			$propertyName,
 			$readableType,
 			$writableType
 		);

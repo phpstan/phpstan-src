@@ -471,11 +471,11 @@ class TypeCombinator
 	 */
 	private static function processArrayTypes(array $arrayTypes, array $accessoryTypes): array
 	{
-		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType instanceof ConstantArrayType) {
+		foreach ($arrayTypes as $arrayType1) {
+			if (!$arrayType1 instanceof ConstantArrayType) {
 				continue;
 			}
-			if (count($arrayType->getKeyTypes()) > 0) {
+			if (count($arrayType1->getKeyTypes()) > 0) {
 				continue;
 			}
 
@@ -504,17 +504,17 @@ class TypeCombinator
 		/** @var int|float $nextConstantKeyTypeIndex */
 		$nextConstantKeyTypeIndex = 1;
 
-		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType instanceof ConstantArrayType || $generalArrayOccurred) {
-				$keyTypesForGeneralArray[] = $arrayType->getKeyType();
-				$valueTypesForGeneralArray[] = $arrayType->getItemType();
+		foreach ($arrayTypes as $arrayType2) {
+			if (!$arrayType2 instanceof ConstantArrayType || $generalArrayOccurred) {
+				$keyTypesForGeneralArray[] = $arrayType2->getKeyType();
+				$valueTypesForGeneralArray[] = $arrayType2->getItemType();
 				$generalArrayOccurred = true;
 				continue;
 			}
 
-			foreach ($arrayType->getKeyTypes() as $i => $keyType) {
+			foreach ($arrayType2->getKeyTypes() as $i => $keyType) {
 				$keyTypesForGeneralArray[] = $keyType;
-				$valueTypesForGeneralArray[] = $arrayType->getValueTypes()[$i];
+				$valueTypesForGeneralArray[] = $arrayType2->getValueTypes()[$i];
 
 				$keyTypeValue = $keyType->getValue();
 				if (array_key_exists($keyTypeValue, $constantKeyTypesNumbered)) {

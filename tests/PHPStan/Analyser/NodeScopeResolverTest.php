@@ -10541,6 +10541,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1865.php');
 	}
 
+	public function dataConditionalTypeWithNonEmptyArray(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/conditional-non-empty-array.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10735,6 +10740,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4205
 	 * @dataProvider dataDependentVariableCertainty
 	 * @dataProvider dataBug1865
+	 * @dataProvider dataConditionalTypeWithNonEmptyArray
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

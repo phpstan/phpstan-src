@@ -10556,6 +10556,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-type-guard-same-as-type.php');
 	}
 
+	public function dataDependentVariablesArrowFunction(): array
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-arrow-function.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10753,6 +10762,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataConditionalTypeWithNonEmptyArray
 	 * @dataProvider dataForeachDependentKeyValue
 	 * @dataProvider dataDependentVariablesTypeGuardIsTheSameAsType
+	 * @dataProvider dataDependentVariablesArrowFunction
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

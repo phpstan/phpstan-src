@@ -2809,6 +2809,7 @@ class MutatingScope implements Scope
 	{
 		$variableTypes = $this->variableTypes;
 		$mixed = new MixedType();
+		$parameterVariables = [];
 		foreach ($arrowFunction->params as $parameter) {
 			if ($parameter->type === null) {
 				$parameterType = $mixed;
@@ -2822,6 +2823,7 @@ class MutatingScope implements Scope
 			}
 
 			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes($parameterType);
+			$parameterVariables[] = $parameter->var->name;
 		}
 
 		if ($arrowFunction->static) {
@@ -2833,6 +2835,61 @@ class MutatingScope implements Scope
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		$conditionalExpressions = [];
+		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
+			$newHolders = [];
+			foreach ($parameterVariables as $parameterVariable) {
+				$exprString = '$' . $parameterVariable;
+				if ($exprString === $conditionalExprString) {
+					continue 2;
+				}
+			}
+
+			foreach ($holders as $holder) {
+				foreach ($parameterVariables as $parameterVariable) {
+					$exprString = '$' . $parameterVariable;
+					foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionalExprString2) {
+						if ($exprString === $conditionalExprString2) {
+							continue 3;
+						}
+					}
+				}
+
+				$newHolders[] = $holder;
+			}
+
+			if (count($newHolders) === 0) {
+				continue;
+			}
+
+			$conditionalExpressions[$conditionalExprString] = $newHolders;
+		}
+		foreach ($parameterVariables as $parameterVariable) {
+			$exprString = '$' . $parameterVariable;
+			foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
+				if ($exprString === $conditionalExprString) {
+					continue;
+				}
+
+				$newHolders = [];
+				foreach ($holders as $holder) {
+					foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionalExprString2) {
+						if ($exprString === $conditionalExprString2) {
+							continue 2;
+						}
+					}
+
+					$newHolders[] = $holder;
+				}
+
+				if (count($newHolders) === 0) {
+					continue;
+				}
+
+				$conditionalExpressions[$conditionalExprString] = $newHolders;
+			}
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -2842,7 +2899,7 @@ class MutatingScope implements Scope
 			$variableTypes,
 			$this->moreSpecificTypes,
 			[],
-			$this->conditionalExpressions, // todo filter based on function params
+			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
 			true,

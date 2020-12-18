@@ -245,6 +245,19 @@ function (bool $a, bool $b): void
 	}
 };
 
+function (): void {
+	$from = null;
+	$to = null;
+	if (rand(0, 1)) {
+		$from = new \stdClass();
+		$to = new \stdClass();
+	}
+
+	if ($from !== null) {
+		assertType('stdClass', $to);
+	}
+};
+
 /*function (bool $b, bool $c): void {
 	if ($b) {
 		if ($c) {

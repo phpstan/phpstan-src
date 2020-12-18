@@ -193,6 +193,22 @@ function (bool $a, bool $b): void
 	}
 };
 
+function (bool $is_valid_a): void {
+	if ($is_valid_a) {
+		$a = new \stdClass();
+	} else {
+		$a = null;
+	}
+
+	assertType('stdClass|null', $a);
+
+	if ($is_valid_a) {
+		assertType('stdClass', $a);
+	} else {
+		assertType('null', $a);
+	}
+};
+
 function (bool $a, bool $b): void
 {
 	if ($a) {

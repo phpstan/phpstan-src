@@ -3140,7 +3140,15 @@ class MutatingScope implements Scope
 			$variableTypes = $this->getVariableTypes();
 			unset($variableTypes[$expr->name]);
 			$nativeTypes = $this->nativeExpressionTypes;
-			unset($nativeTypes[sprintf('$%s', $expr->name)]);
+
+			$exprString = sprintf('$%s', $expr->name);
+			unset($nativeTypes[$exprString]);
+
+			$typeGuards = $this->typeGuards;
+			unset($typeGuards[$exprString]);
+
+			$conditionalExpressions = $this->conditionalExpressions;
+			unset($conditionalExpressions[$exprString]);
 
 			return $this->scopeFactory->create(
 				$this->context,
@@ -3150,8 +3158,8 @@ class MutatingScope implements Scope
 				$this->getNamespace(),
 				$variableTypes,
 				$this->moreSpecificTypes,
-				$this->typeGuards,
-				[], // todo keep the ones unrelated to the current variable
+				$typeGuards,
+				$conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
 				$this->inFirstLevelStatement,

@@ -157,6 +157,61 @@ function (bool $a, bool $b) {
 	}
 };
 
+function (bool $a, bool $b): void
+{
+	if ($a) {
+		$lorem = 'test';
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+
+	unset($b);
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+};
+
+function (bool $a, bool $b): void
+{
+	if ($a) {
+		$lorem = 'test';
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+
+	unset($lorem);
+
+	assertVariableCertainty(TrinaryLogic::createNo(), $lorem);
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createNo(), $lorem);
+	}
+};
+
+function (bool $a, bool $b): void
+{
+	if ($a) {
+		$lorem = 'test';
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+
+	unset($a);
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $lorem);
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $lorem);
+	}
+};
+
 /*function (bool $b, bool $c): void {
 	if ($b) {
 		if ($c) {

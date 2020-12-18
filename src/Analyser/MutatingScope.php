@@ -3967,8 +3967,8 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypeHolders,
 			$moreSpecificTypes,
-			[], // todo
-			[], // todo
+			[],
+			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

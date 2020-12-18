@@ -75,6 +75,68 @@ function (bool $b): void {
 	}
 };
 
+function (bool $a, bool $b) {
+	if ($a) {
+		$lorem = 'test';
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+
+	while ($b) {
+		$foo = 'foo';
+		if (rand(0, 1)) {
+			break;
+		}
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	if ($b) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+};
+
+function (bool $a, bool $b) {
+	if ($a) {
+		$lorem = 'test';
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+
+	$i = 0;
+	while ($b) {
+		$foo = 'foo';
+		$i++;
+		if (rand(0, 1)) {
+			break;
+		}
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	if ($b) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $lorem);
+	}
+};
+
 /*function (bool $b, bool $c): void {
 	if ($b) {
 		if ($c) {

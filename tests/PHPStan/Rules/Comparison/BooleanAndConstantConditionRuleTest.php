@@ -183,4 +183,10 @@ class BooleanAndConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/boolean-and-treat-phpdoc-types-regression.php'], []);
 	}
 
+	public function testBugComposerDependentVariables(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-composer-dependent-variables.php'], []);
+	}
+
 }

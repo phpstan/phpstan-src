@@ -3364,6 +3364,8 @@ class MutatingScope implements Scope
 
 		$scope = $this;
 		$typeGuards = [];
+		$skipVariables = [];
+		$saveConditionalVariables = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
@@ -3384,11 +3386,23 @@ class MutatingScope implements Scope
 				|| !is_string($expr->name)
 				|| $specifiedTypes->shouldOverwrite()
 			) {
+				$match = \Nette\Utils\Strings::match((string) $typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				if ($match !== null) {
+					$skipVariables[$match[1]] = true;
+				}
 				continue;
 			}
 
-			$scope->typeGuards['$' . $expr->name] = $typeGuard;
-			$typeGuards['$' . $expr->name] = $typeGuard;
+			$saveConditionalVariables[$expr->name] = $typeGuard;
+		}
+
+		foreach ($saveConditionalVariables as $variableName => $typeGuard) {
+			if (array_key_exists($variableName, $skipVariables)) {
+				continue;
+			}
+
+			$scope->typeGuards['$' . $variableName] = $typeGuard;
+			$typeGuards['$' . $variableName] = $typeGuard;
 		}
 
 		$newConditionalExpressions = [];

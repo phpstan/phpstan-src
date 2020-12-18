@@ -3369,8 +3369,9 @@ class MutatingScope implements Scope
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
+			$originalExprType = $this->getType($expr);
 			if ($typeSpecification['sure']) {
-				$typeGuard = TypeCombinator::intersect($type, $this->getType($expr));
+				$typeGuard = TypeCombinator::intersect($type, $originalExprType);
 				$scope = $scope->specifyExpressionType($expr, $specifiedTypes->shouldOverwrite() ? $type : $typeGuard);
 
 				if ($expr instanceof Variable && is_string($expr->name)) {
@@ -3378,7 +3379,11 @@ class MutatingScope implements Scope
 				}
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
-				$typeGuard = TypeCombinator::remove($scope->getType($expr), $type);
+				$typeGuard = TypeCombinator::remove($originalExprType, $type);
+			}
+
+			if ($originalExprType->equals($typeGuard)) {
+				continue;
 			}
 
 			if (

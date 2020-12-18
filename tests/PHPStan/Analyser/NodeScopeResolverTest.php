@@ -10551,6 +10551,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/foreach-dependent-key-value.php');
 	}
 
+	public function dataDependentVariablesTypeGuardIsTheSameAsType(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-type-guard-same-as-type.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10747,6 +10752,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug1865
 	 * @dataProvider dataConditionalTypeWithNonEmptyArray
 	 * @dataProvider dataForeachDependentKeyValue
+	 * @dataProvider dataDependentVariablesTypeGuardIsTheSameAsType
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

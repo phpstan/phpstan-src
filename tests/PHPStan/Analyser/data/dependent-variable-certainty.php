@@ -19,6 +19,26 @@ function (bool $b, bool $c): void {
 		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 	}
 
+	if ($b) {
+
+	}
+
+	if ($b) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	}
+
+	if ($b) {
+		$d = true;
+	}
+
+	if ($b) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	}
+
 	if ($c) {
 		$bar = 'ble';
 	}

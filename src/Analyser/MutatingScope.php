@@ -2793,7 +2793,7 @@ class MutatingScope implements Scope
 			$variableTypes,
 			$moreSpecificTypes,
 			[],
-			[], // todo filter current $this->conditionalExpressions based on closure uses
+			[],
 			$this->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
 			true,

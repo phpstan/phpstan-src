@@ -135,9 +135,6 @@ class MutatingScope implements Scope
 	/** @var \PHPStan\Analyser\VariableTypeHolder[] */
 	private array $moreSpecificTypes;
 
-	/** @var array<string, Type> */
-	private array $typeGuards;
-
 	/** @var array<string, ConditionalExpressionHolder[]> */
 	private array $conditionalExpressions;
 
@@ -181,7 +178,6 @@ class MutatingScope implements Scope
 	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
-	 * @param array<string, Type> $typeGuards
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param string|null $inClosureBindScopeClass
 	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
@@ -210,7 +206,6 @@ class MutatingScope implements Scope
 		?string $namespace = null,
 		array $variablesTypes = [],
 		array $moreSpecificTypes = [],
-		array $typeGuards = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
@@ -243,7 +238,6 @@ class MutatingScope implements Scope
 		$this->namespace = $namespace;
 		$this->variableTypes = $variablesTypes;
 		$this->moreSpecificTypes = $moreSpecificTypes;
-		$this->typeGuards = $typeGuards;
 		$this->conditionalExpressions = $conditionalExpressions;
 		$this->inClosureBindScopeClass = $inClosureBindScopeClass;
 		$this->anonymousFunctionReflection = $anonymousFunctionReflection;
@@ -367,7 +361,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2089,7 +2082,6 @@ class MutatingScope implements Scope
 			$this->namespace,
 			$this->variableTypes,
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2129,7 +2121,6 @@ class MutatingScope implements Scope
 			$this->namespace,
 			$variableTypes,
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2352,7 +2343,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2378,7 +2368,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2437,7 +2426,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
-			[],
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection
@@ -2609,7 +2597,6 @@ class MutatingScope implements Scope
 			$variableTypes,
 			[],
 			[],
-			[],
 			null,
 			null,
 			true,
@@ -2651,7 +2638,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$scopeClass,
 			$this->anonymousFunctionReflection
@@ -2675,7 +2661,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$originalScope->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection
@@ -2695,7 +2680,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$thisType instanceof TypeWithClassName ? $thisType->getClassName() : null,
 			$this->anonymousFunctionReflection
@@ -2792,7 +2776,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			$moreSpecificTypes,
-			[],
 			[],
 			$this->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
@@ -2898,7 +2881,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			$this->moreSpecificTypes,
-			[],
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
@@ -3015,7 +2997,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3042,7 +3023,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3118,7 +3098,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			$moreSpecificTypeHolders,
-			$this->typeGuards,
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3144,9 +3123,6 @@ class MutatingScope implements Scope
 			$exprString = sprintf('$%s', $expr->name);
 			unset($nativeTypes[$exprString]);
 
-			$typeGuards = $this->typeGuards;
-			unset($typeGuards[$exprString]);
-
 			$conditionalExpressions = $this->conditionalExpressions;
 			unset($conditionalExpressions[$exprString]);
 
@@ -3158,7 +3134,6 @@ class MutatingScope implements Scope
 				$this->getNamespace(),
 				$variableTypes,
 				$this->moreSpecificTypes,
-				$typeGuards,
 				$conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
@@ -3219,7 +3194,6 @@ class MutatingScope implements Scope
 				$this->getNamespace(),
 				$this->getVariableTypes(),
 				$this->moreSpecificTypes,
-				$this->typeGuards,
 				$this->conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
@@ -3258,7 +3232,6 @@ class MutatingScope implements Scope
 				$this->getNamespace(),
 				$variableTypes,
 				$this->moreSpecificTypes,
-				$this->typeGuards,
 				$this->conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
@@ -3340,7 +3313,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$moreSpecificTypeHolders,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3436,19 +3408,13 @@ class MutatingScope implements Scope
 			$type = $typeSpecification['type'];
 			$originalExprType = $this->getType($expr);
 			if ($typeSpecification['sure']) {
-				$typeGuard = TypeCombinator::intersect($type, $originalExprType);
-				$scope = $scope->specifyExpressionType($expr, $specifiedTypes->shouldOverwrite() ? $type : $typeGuard);
+				$scope = $scope->specifyExpressionType($expr, $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $originalExprType));
 
 				if ($expr instanceof Variable && is_string($expr->name)) {
 					$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getNativeType($expr));
 				}
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
-				$typeGuard = TypeCombinator::remove($originalExprType, $type);
-			}
-
-			if ($originalExprType->equals($typeGuard)) {
-				continue;
 			}
 
 			if (
@@ -3463,7 +3429,11 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$saveConditionalVariables[$expr->name] = $typeGuard;
+			if ($scope->hasVariableType($expr->name)->no()) {
+				continue;
+			}
+
+			$saveConditionalVariables[$expr->name] = $scope->getVariableType($expr->name);
 		}
 
 		foreach ($saveConditionalVariables as $variableName => $typeGuard) {
@@ -3471,7 +3441,6 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$scope->typeGuards['$' . $variableName] = $typeGuard;
 			$typeGuards['$' . $variableName] = $typeGuard;
 		}
 
@@ -3551,7 +3520,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->variableTypes,
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3574,7 +3542,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3612,7 +3579,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$this->getVariableTypes(),
 			$moreSpecificTypeHolders,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3672,19 +3638,6 @@ class MutatingScope implements Scope
 			$ourVariableTypes,
 			$mergedVariableHolders
 		);
-		$typeGuards = [];
-		foreach ($this->typeGuards as $guardExprString => $typeGuard) {
-			if (!array_key_exists($guardExprString, $otherScope->typeGuards)) {
-				continue;
-			}
-
-			if (!$typeGuard->equals($otherScope->typeGuards[$guardExprString])) {
-				continue;
-			}
-
-			$typeGuards[$guardExprString] = $typeGuard;
-		}
-
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -3696,7 +3649,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$mergedVariableHolders,
 			$this->mergeVariableHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes),
-			$typeGuards,
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3870,7 +3822,6 @@ class MutatingScope implements Scope
 				$originalFinallyScope->moreSpecificTypes
 			),
 			[], // todo
-			[], // todo
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -3967,7 +3918,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			$this->moreSpecificTypes,
-			$this->typeGuards,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4019,7 +3969,6 @@ class MutatingScope implements Scope
 			$variableTypeHolders,
 			$moreSpecificTypes,
 			[], // todo
-			[], // todo
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -4065,7 +4014,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypeHolders,
 			$moreSpecificTypes,
-			[],
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,

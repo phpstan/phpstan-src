@@ -70,7 +70,6 @@ class DirectScopeFactory implements ScopeFactory
 	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
-	 * @param array<string, Type> $typeGuards
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param string|null $inClosureBindScopeClass
 	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
@@ -91,7 +90,6 @@ class DirectScopeFactory implements ScopeFactory
 		?string $namespace = null,
 		array $variablesTypes = [],
 		array $moreSpecificTypes = [],
-		array $typeGuards = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
@@ -124,7 +122,6 @@ class DirectScopeFactory implements ScopeFactory
 			$namespace,
 			$variablesTypes,
 			$moreSpecificTypes,
-			$typeGuards,
 			$conditionalExpressions,
 			$inClosureBindScopeClass,
 			$anonymousFunctionReflection,

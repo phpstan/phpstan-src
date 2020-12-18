@@ -799,10 +799,11 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			} elseif ($isIterableAtLeastOnce->maybe()) {
 				if ($this->polluteScopeWithAlwaysIterableForeach) {
-					$finalScope = $finalScope->filterByTruthyValue(new BinaryOp\NotIdentical(
+					$arrayComparisonExpr = new BinaryOp\NotIdentical(
 						$stmt->expr,
 						new Array_([])
-					))->mergeWith($scope);
+					);
+					$finalScope = $finalScope->filterByTruthyValue($arrayComparisonExpr)->mergeWith($scope->filterByFalseyValue($arrayComparisonExpr));
 				} else {
 					$finalScope = $finalScope->mergeWith($scope);
 				}

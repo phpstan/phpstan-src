@@ -48,7 +48,7 @@ class Foo
 			assertType('float', $f);
 			assertVariableCertainty(TrinaryLogic::createMaybe(), $foo); // could be Yes, but float type is not subtractable
 		} else {
-			assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $foo); // could be No, but float type is not subtractable
 		}
 
 		if ($f !== 2.0) {

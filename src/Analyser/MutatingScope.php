@@ -3662,14 +3662,14 @@ class MutatingScope implements Scope
 		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$this->typeGuards,
 			$ourVariableTypes,
+			$theirVariableTypes,
 			$mergedVariableHolders
 		);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$otherScope->typeGuards,
 			$theirVariableTypes,
+			$ourVariableTypes,
 			$mergedVariableHolders
 		);
 		$typeGuards = [];
@@ -3741,27 +3741,51 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, Type> $typeGuards
 	 * @param array<string, VariableTypeHolder> $variableTypes
+	 * @param array<string, VariableTypeHolder> $theirVariableTypes
 	 * @param array<string, VariableTypeHolder> $mergedVariableHolders
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function createConditionalExpressions(
 		array $conditionalExpressions,
-		array $typeGuards,
 		array $variableTypes,
+		array $theirVariableTypes,
 		array $mergedVariableHolders
 	): array
 	{
+		$newVariableTypes = $variableTypes;
+		foreach ($theirVariableTypes as $name => $holder) {
+			if (!array_key_exists($name, $mergedVariableHolders)) {
+				continue;
+			}
+
+			if (!$mergedVariableHolders[$name]->getType()->equals($holder->getType())) {
+				continue;
+			}
+
+			unset($newVariableTypes[$name]);
+		}
+
+		$typeGuards = [];
+		foreach ($newVariableTypes as $name => $holder) {
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+			if (!array_key_exists($name, $mergedVariableHolders)) {
+				continue;
+			}
+			if ($mergedVariableHolders[$name]->getType()->equals($holder->getType())) {
+				continue;
+			}
+
+			$typeGuards['$' . $name] = $holder->getType();
+		}
+
 		if (count($typeGuards) === 0) {
 			return $conditionalExpressions;
 		}
 
-		foreach ($variableTypes as $name => $holder) {
-			if (array_key_exists('$' . $name, $typeGuards)) {
-				continue;
-			}
-
+		foreach ($newVariableTypes as $name => $holder) {
 			if (
 				array_key_exists($name, $mergedVariableHolders)
 				&& $mergedVariableHolders[$name]->equals($holder)
@@ -3769,8 +3793,12 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$conditionalExpression = new ConditionalExpressionHolder($typeGuards, $holder);
-			$conditionalExpressions['$' . $name][$conditionalExpression->getKey()] = $conditionalExpression;
+			$exprString = '$' . $name;
+			$variableTypeGuards = $typeGuards;
+			unset($variableTypeGuards[$exprString]);
+
+			$conditionalExpression = new ConditionalExpressionHolder($variableTypeGuards, $holder);
+			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
 		foreach (array_keys($mergedVariableHolders) as $name) {

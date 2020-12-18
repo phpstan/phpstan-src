@@ -209,6 +209,23 @@ function (bool $is_valid_a): void {
 	}
 };
 
+function (?\stdClass $a): void {
+	if ($a) {
+		$is_valid_a = true;
+	} else {
+		$is_valid_a = false;
+	}
+
+	assertType('stdClass|null', $a);
+
+	if ($is_valid_a) {
+		assertType('stdClass', $a);
+	} else {
+		assertType('null', $a);
+	}
+};
+
+
 function (bool $a, bool $b): void
 {
 	if ($a) {

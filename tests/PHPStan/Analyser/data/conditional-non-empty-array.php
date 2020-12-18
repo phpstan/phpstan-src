@@ -21,6 +21,9 @@ class Foo
 		if (count($a) > 0) {
 			assertType('array&nonEmpty', $a);
 			assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		} else {
+			assertType('array()', $a);
+			assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 		}
 	}
 

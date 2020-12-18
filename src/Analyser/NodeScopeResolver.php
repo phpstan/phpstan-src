@@ -798,10 +798,14 @@ class NodeScopeResolver
 			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 				$finalScope = $scope;
 			} elseif ($isIterableAtLeastOnce->maybe()) {
-				$finalScope = $finalScope->filterByTruthyValue(new BinaryOp\NotIdentical(
-					$stmt->expr,
-					new Array_([])
-				))->mergeWith($scope);
+				if ($this->polluteScopeWithAlwaysIterableForeach) {
+					$finalScope = $finalScope->filterByTruthyValue(new BinaryOp\NotIdentical(
+						$stmt->expr,
+						new Array_([])
+					))->mergeWith($scope);
+				} else {
+					$finalScope = $finalScope->mergeWith($scope);
+				}
 			} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {
 				$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope);
 				// get types from finalScope, but don't create new variables

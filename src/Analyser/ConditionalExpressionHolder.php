@@ -34,20 +34,6 @@ class ConditionalExpressionHolder
 		return $this->conditionExpressionTypes;
 	}
 
-	/**
-	 * @param array<string, Type> $conditionExpressionTypes
-	 * @return self
-	 */
-	public function addConditionExpressionTypes(array $conditionExpressionTypes, VariableTypeHolder $newTypeHolder): self
-	{
-		$newConditionExpressionTypes = $this->conditionExpressionTypes;
-		foreach ($conditionExpressionTypes as $exprString => $type) {
-			$newConditionExpressionTypes[$exprString] = $type; // todo what about rewriting?
-		}
-
-		return new self($newConditionExpressionTypes, $newTypeHolder);
-	}
-
 	public function getTypeHolder(): VariableTypeHolder
 	{
 		return $this->typeHolder;

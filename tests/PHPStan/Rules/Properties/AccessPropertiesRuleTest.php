@@ -466,4 +466,11 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3371(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3371.php'], []);
+	}
+
 }

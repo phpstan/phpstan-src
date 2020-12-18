@@ -10570,6 +10570,21 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-801.php');
 	}
 
+	public function dataBug1209(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1209.php');
+	}
+
+	public function dataBug2980(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2980.php');
+	}
+
+	public function dataBug3986(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3986.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10769,6 +10784,9 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataDependentVariablesTypeGuardIsTheSameAsType
 	 * @dataProvider dataDependentVariablesArrowFunction
 	 * @dataProvider dataBug801
+	 * @dataProvider dataBug1209
+	 * @dataProvider dataBug2980
+	 * @dataProvider dataBug3986
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

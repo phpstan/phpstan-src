@@ -10546,6 +10546,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/conditional-non-empty-array.php');
 	}
 
+	public function dataForeachDependentKeyValue(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/foreach-dependent-key-value.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10741,6 +10746,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataDependentVariableCertainty
 	 * @dataProvider dataBug1865
 	 * @dataProvider dataConditionalTypeWithNonEmptyArray
+	 * @dataProvider dataForeachDependentKeyValue
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

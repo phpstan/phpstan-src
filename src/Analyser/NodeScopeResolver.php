@@ -2753,6 +2753,7 @@ class NodeScopeResolver
 	private function enterForeach(MutatingScope $scope, Foreach_ $stmt): MutatingScope
 	{
 		$comment = CommentHelper::getDocComment($stmt);
+		$iterateeType = $scope->getType($stmt->expr);
 		if ($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)) {
 			$scope = $scope->enterForeach(
 				$stmt->expr,
@@ -2776,6 +2777,26 @@ class NodeScopeResolver
 			if ($comment !== null) {
 				$scope = $this->processVarAnnotation($scope, $stmt->keyVar->name, $comment, true);
 			}
+		}
+
+		if (
+			$comment === null
+			&& $iterateeType instanceof ConstantArrayType
+			&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
+			&& $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
+		) {
+			$conditionalHolders = [];
+			foreach ($iterateeType->getKeyTypes() as $i => $keyType) {
+				$valueType = $iterateeType->getValueTypes()[$i];
+				$conditionalHolders[] = new ConditionalExpressionHolder([
+					'$' . $stmt->keyVar->name => $keyType,
+				], new VariableTypeHolder($valueType, TrinaryLogic::createYes()));
+			}
+
+			$scope = $scope->addConditionalExpressions(
+				'$' . $stmt->valueVar->name,
+				$conditionalHolders
+			);
 		}
 
 		if ($stmt->valueVar instanceof List_ || $stmt->valueVar instanceof Array_) {

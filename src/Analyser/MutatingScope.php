@@ -3464,6 +3464,36 @@ class MutatingScope implements Scope
 		return $scope;
 	}
 
+	/**
+	 * @param string $exprString
+	 * @param ConditionalExpressionHolder[] $conditionalExpressionHolders
+	 * @return self
+	 */
+	public function addConditionalExpressions(string $exprString, array $conditionalExpressionHolders): self
+	{
+		$conditionalExpressions = $this->conditionalExpressions;
+		$conditionalExpressions[$exprString] = $conditionalExpressionHolders;
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->variableTypes,
+			$this->moreSpecificTypes,
+			$this->typeGuards,
+			$conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->nativeExpressionTypes,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope
+		);
+	}
+
 	public function exitFirstLevelStatements(): self
 	{
 		return $this->scopeFactory->create(

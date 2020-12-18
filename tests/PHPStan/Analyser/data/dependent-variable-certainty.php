@@ -258,7 +258,55 @@ function (): void {
 	}
 };
 
-/*function (bool $b, bool $c): void {
+/*function (): void {
+	$from = null;
+	$to = null;
+	if (rand(0, 1)) {
+		$from = new \stdClass();
+		$to = new \stdClass();
+	}
+
+	if (rand(0, 1)) {
+		$from = new \stdClass();
+		$to = new \stdClass();
+	}
+
+	if ($from !== null) {
+		assertType('stdClass', $to);
+	}
+};
+
+function (bool $b): void {
+	$from = null;
+	$to = null;
+	if ($b) {
+		$from = new \stdClass();
+		$to = new \stdClass();
+	}
+
+	if ($from !== null) {
+		assertType('true', $b);
+		assertType('stdClass', $from);
+		assertType('stdClass', $to);
+	}
+};
+
+function (bool $b): void {
+	$from = null;
+	$to = null;
+	if ($b) {
+		$from = new \stdClass();
+		$to = new \stdClass();
+	}
+
+	if ($b) {
+		assertType('true', $b);
+		assertType('stdClass', $from);
+		assertType('stdClass', $to);
+	}
+};
+
+function (bool $b, bool $c): void {
 	if ($b) {
 		if ($c) {
 			$foo = 'bla';

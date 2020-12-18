@@ -22,6 +22,9 @@ class ConditionalExpressionHolder
 		VariableTypeHolder $typeHolder
 	)
 	{
+		if (count($conditionExpressionTypes) === 0) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
 		$this->conditionExpressionTypes = $conditionExpressionTypes;
 		$this->typeHolder = $typeHolder;
 	}

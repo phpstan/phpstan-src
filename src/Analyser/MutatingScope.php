@@ -3749,6 +3749,10 @@ class MutatingScope implements Scope
 			$variableTypeGuards = $typeGuards;
 			unset($variableTypeGuards[$exprString]);
 
+			if (count($variableTypeGuards) === 0) {
+				continue;
+			}
+
 			$conditionalExpression = new ConditionalExpressionHolder($variableTypeGuards, $holder);
 			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}

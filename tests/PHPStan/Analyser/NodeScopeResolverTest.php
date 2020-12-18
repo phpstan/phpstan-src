@@ -6301,7 +6301,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				false,
 			],
 			[
-				'int|null',
+				'int',
 				'$bar',
 				false,
 			],
@@ -10565,6 +10565,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-arrow-function.php');
 	}
 
+	public function dataBug801(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-801.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10763,6 +10768,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataForeachDependentKeyValue
 	 * @dataProvider dataDependentVariablesTypeGuardIsTheSameAsType
 	 * @dataProvider dataDependentVariablesArrowFunction
+	 * @dataProvider dataBug801
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

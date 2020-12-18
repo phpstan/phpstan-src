@@ -85,6 +85,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\CommentHelper;
@@ -103,6 +104,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -2546,6 +2548,12 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$type = $scope->getType($assignedExpr);
 			$scope = $result->getScope()->assignVariable($var->name, $type);
+
+			if ($type instanceof BooleanType) {
+				$truthyScope = $scope->filterByTruthyValue($assignedExpr)->assignVariable($var->name, TypeCombinator::remove($type, StaticTypeFactory::falsey()));
+				$falseyScope = $scope->filterByFalseyValue($assignedExpr)->assignVariable($var->name, TypeCombinator::intersect($type, StaticTypeFactory::falsey()));
+				$scope = $truthyScope->mergeWith($falseyScope);
+			}
 		} elseif ($var instanceof ArrayDimFetch) {
 			$dimExprStack = [];
 			while ($var instanceof ArrayDimFetch) {

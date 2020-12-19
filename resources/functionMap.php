@@ -1007,7 +1007,7 @@ return [
 'clusterObj::setGroup' => ['int', 'expression'=>'string'],
 'Collator::__construct' => ['void', 'locale'=>'string'],
 'Collator::asort' => ['bool', '&rw_arr'=>'array', 'sort_flag='=>'int'],
-'Collator::compare' => ['int', 'str1'=>'string', 'str2'=>'string'],
+'Collator::compare' => ['int|false', 'str1'=>'string', 'str2'=>'string'],
 'Collator::create' => ['Collator', 'locale'=>'string'],
 'Collator::getAttribute' => ['int', 'attr'=>'int'],
 'Collator::getErrorCode' => ['int'],

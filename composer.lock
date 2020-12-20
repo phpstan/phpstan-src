@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "54324518f1443ecf908f87735d240ef5",
+    "content-hash": "2170a8823895a50b436b76b525f0c46e",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1343,11 +1343,11 @@
                 "shasum": ""
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.16",
-                "nikic/php-parser": "dev-master",
+                "jetbrains/phpstorm-attributes": "@stable",
+                "nikic/php-parser": "@stable",
                 "php": "^8.0",
-                "phpdocumentor/reflection-docblock": "dev-master",
-                "phpunit/phpunit": "^9"
+                "phpdocumentor/reflection-docblock": "@stable",
+                "phpunit/phpunit": "@stable"
             },
             "default-branch": true,
             "type": "library",
@@ -1375,7 +1375,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2020-12-05T10:13:52+00:00"
+            "time": "2020-12-19T17:08:33+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -1945,16 +1945,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.10.3",
+            "version": "v4.10.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "dbe56d23de8fcb157bbc0cfb3ad7c7de0cfb0984"
+                "reference": "c6d052fc58cb876152f89f532b95a8d7907e7f0e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/dbe56d23de8fcb157bbc0cfb3ad7c7de0cfb0984",
-                "reference": "dbe56d23de8fcb157bbc0cfb3ad7c7de0cfb0984",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/c6d052fc58cb876152f89f532b95a8d7907e7f0e",
+                "reference": "c6d052fc58cb876152f89f532b95a8d7907e7f0e",
                 "shasum": ""
             },
             "require": {
@@ -1995,9 +1995,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v4.10.3"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v4.10.4"
             },
-            "time": "2020-12-03T17:45:45+00:00"
+            "time": "2020-12-20T10:01:03+00:00"
         },
         {
             "name": "ondram/ci-detector",
@@ -2073,22 +2073,22 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.46",
+            "version": "4.3.47",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "9d00528f44889546efa2e930a86661401ae89b71"
+                "reference": "79c0ffb0c3a9903ecffc59d53bb2f1299b6c8a56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/9d00528f44889546efa2e930a86661401ae89b71",
-                "reference": "9d00528f44889546efa2e930a86661401ae89b71",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/79c0ffb0c3a9903ecffc59d53bb2f1299b6c8a56",
+                "reference": "79c0ffb0c3a9903ecffc59d53bb2f1299b6c8a56",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "dev-master#b2402e4a525593f68ff46303dcc6bc625437276a",
-                "nikic/php-parser": "4.10.3",
+                "nikic/php-parser": "4.10.4",
                 "php": ">=7.1.0",
                 "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
                 "phpdocumentor/type-resolver": "^1.0.0",
@@ -2141,9 +2141,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.46"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.47"
             },
-            "time": "2020-12-09T13:47:21+00:00"
+            "time": "2020-12-20T10:07:07+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",

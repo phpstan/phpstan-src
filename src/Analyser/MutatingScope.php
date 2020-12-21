@@ -3825,7 +3825,7 @@ class MutatingScope implements Scope
 				$finallyScope->moreSpecificTypes,
 				$originalFinallyScope->moreSpecificTypes
 			),
-			[], // todo
+			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -3972,7 +3972,7 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypeHolders,
 			$moreSpecificTypes,
-			[], // todo
+			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

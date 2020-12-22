@@ -80,6 +80,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -1306,8 +1307,11 @@ class MutatingScope implements Scope
 				);
 			}
 
-			if ($node->returnType === null && $node instanceof Expr\ArrowFunction) {
+			if ($node instanceof Expr\ArrowFunction) {
 				$returnType = $this->getType($node->expr);
+				if ($node->returnType !== null) {
+					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+				}
 			} else {
 				$returnType = $this->getFunctionType($node->returnType, $node->returnType === null, false);
 			}

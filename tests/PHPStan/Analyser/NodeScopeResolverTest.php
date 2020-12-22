@@ -10915,12 +10915,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'Closure(string): int',
+				'Closure(string): 1',
 				'$x',
 			],
 			[
-				'int',
+				'1',
 				'$x()',
+			],
+			[
+				'array(\'a\' => 1, \'b\' => 2)',
+				'$y()',
 			],
 		];
 	}

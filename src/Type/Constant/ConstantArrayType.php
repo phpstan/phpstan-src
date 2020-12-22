@@ -793,23 +793,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function traverse(callable $cb): Type
 	{
-		$keyTypes = [];
 		$valueTypes = [];
 
 		$stillOriginal = true;
-		foreach ($this->keyTypes as $keyType) {
-			$transformedKeyType = $cb($keyType);
-			if ($transformedKeyType !== $keyType) {
-				$stillOriginal = false;
-			}
-
-			if (!$transformedKeyType instanceof ConstantIntegerType && !$transformedKeyType instanceof ConstantStringType) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-
-			$keyTypes[] = $transformedKeyType;
-		}
-
 		foreach ($this->valueTypes as $valueType) {
 			$transformedValueType = $cb($valueType);
 			if ($transformedValueType !== $valueType) {
@@ -823,7 +809,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		return new self($keyTypes, $valueTypes, $this->nextAutoIndex, $this->optionalKeys);
+		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $this->optionalKeys);
 	}
 
 	public function isKeysSupersetOf(self $otherArray): bool

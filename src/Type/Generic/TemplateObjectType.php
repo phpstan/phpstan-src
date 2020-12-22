@@ -9,7 +9,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -150,7 +149,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 
 		if ($this->getBound()->isSuperTypeOf($receivedType)->yes()) {
 			return new TemplateTypeMap([
-				$this->name => TypeUtils::generalizeType($receivedType),
+				$this->name => TemplateTypeHelper::generalizeType($receivedType),
 			]);
 		}
 

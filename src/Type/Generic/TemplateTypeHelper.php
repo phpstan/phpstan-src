@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
@@ -52,6 +54,17 @@ class TemplateTypeHelper
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof TemplateType) {
 				return $traverse($type->toArgument());
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	public static function generalizeType(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof ConstantType && !$type instanceof ConstantArrayType) {
+				return $type->generalize();
 			}
 
 			return $traverse($type);

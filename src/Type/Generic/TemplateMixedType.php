@@ -7,7 +7,6 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -134,7 +133,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 
 		if ($this->getBound()->isSuperTypeOf($receivedType)->yes()) {
 			return new TemplateTypeMap([
-				$this->name => TypeUtils::generalizeType($receivedType),
+				$this->name => TemplateTypeHelper::generalizeType($receivedType),
 			]);
 		}
 

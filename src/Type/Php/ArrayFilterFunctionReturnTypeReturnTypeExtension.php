@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
@@ -53,18 +54,29 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 				);
 			}
 
-			if ($flagArg === null && $callbackArg instanceof Closure && count($callbackArg->stmts) === 1) {
-				$statement = $callbackArg->stmts[0];
-				if ($statement instanceof Return_ && $statement->expr !== null && count($callbackArg->params) > 0) {
-					if (!$callbackArg->params[0]->var instanceof Variable || !is_string($callbackArg->params[0]->var->name)) {
+			if ($flagArg === null) {
+				$var = null;
+				$expr = null;
+				if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
+					$statement = $callbackArg->stmts[0];
+					if ($statement instanceof Return_ && $statement->expr !== null) {
+						$var = $callbackArg->params[0]->var;
+						$expr = $statement->expr;
+					}
+				} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
+					$var = $callbackArg->params[0]->var;
+					$expr = $callbackArg->expr;
+				}
+				if ($var !== null && $expr !== null) {
+					if (!$var instanceof Variable || !is_string($var->name)) {
 						throw new \PHPStan\ShouldNotHappenException();
 					}
-					$itemVariableName = $callbackArg->params[0]->var->name;
+					$itemVariableName = $var->name;
 					if (!$scope instanceof MutatingScope) {
 						throw new \PHPStan\ShouldNotHappenException();
 					}
 					$scope = $scope->assignVariable($itemVariableName, $itemType);
-					$scope = $scope->filterByTruthyValue($statement->expr);
+					$scope = $scope->filterByTruthyValue($expr);
 					$itemType = $scope->getVariableType($itemVariableName);
 				}
 			}

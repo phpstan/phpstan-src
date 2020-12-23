@@ -161,7 +161,7 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 
 		-
-			message: "#^Comparison operation \"\\<\" between array\\|float\\|int\\<0, max\\> and int results in an error\\.$#"
+			message: "#^Comparison operation \"\\<\" between \\(array\\|float\\|int\\<0, max\\>\\) and int results in an error\\.$#"
 			count: 2
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 

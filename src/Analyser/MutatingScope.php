@@ -2453,7 +2453,8 @@ class MutatingScope implements Scope
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		bool $isFinal
+		bool $isFinal,
+		bool $isPure
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2476,7 +2477,8 @@ class MutatingScope implements Scope
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal,
-				$isFinal
+				$isFinal,
+				$isPure
 			),
 			!$classMethod->isStatic()
 		);
@@ -2544,7 +2546,8 @@ class MutatingScope implements Scope
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		bool $isFinal
+		bool $isFinal,
+		bool $isPure
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -2562,7 +2565,8 @@ class MutatingScope implements Scope
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal,
-				$isFinal
+				$isFinal,
+				$isPure
 			),
 			false
 		);

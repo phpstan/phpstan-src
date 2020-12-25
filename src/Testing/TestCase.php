@@ -305,6 +305,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				bool $isDeprecated,
 				bool $isInternal,
 				bool $isFinal,
+				bool $isPure,
 				?string $stubPhpDocString
 			): PhpMethodReflection
 			{
@@ -324,6 +325,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$isDeprecated,
 					$isInternal,
 					$isFinal,
+					$isPure,
 					$stubPhpDocString
 				);
 			}
@@ -504,6 +506,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				bool $isDeprecated,
 				bool $isInternal,
 				bool $isFinal,
+				bool $isPure,
 				$filename
 			): PhpFunctionReflection
 			{
@@ -520,6 +523,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$isDeprecated,
 					$isInternal,
 					$isFinal,
+					$isPure,
 					$filename
 				);
 			}

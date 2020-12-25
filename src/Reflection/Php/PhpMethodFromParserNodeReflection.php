@@ -49,7 +49,8 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		bool $isFinal
+		bool $isFinal,
+		bool $isPure
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -87,7 +88,8 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$isFinal || $classMethod->isFinal()
+			$isFinal || $classMethod->isFinal(),
+			$isPure
 		);
 		$this->declaringClass = $declaringClass;
 	}

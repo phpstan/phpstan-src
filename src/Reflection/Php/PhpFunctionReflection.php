@@ -49,6 +49,8 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 
 	private bool $isFinal;
 
+	private bool $isPure;
+
 	/** @var string|false */
 	private $filename;
 
@@ -83,6 +85,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
+		bool $isPure,
 		$filename
 	)
 	{
@@ -98,6 +101,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		$this->deprecatedDescription = $deprecatedDescription;
 		$this->isInternal = $isInternal;
 		$this->isFinal = $isFinal;
+		$this->isPure = $isPure;
 		$this->filename = $filename;
 	}
 
@@ -283,6 +287,10 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		if ($this->getReturnType() instanceof VoidType) {
 			return TrinaryLogic::createYes();
 		}
+		if ($this->isPure) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

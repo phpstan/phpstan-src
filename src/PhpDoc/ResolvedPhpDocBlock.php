@@ -70,6 +70,8 @@ class ResolvedPhpDocBlock
 
 	private ?bool $isFinal = null;
 
+	private ?bool $isPure = null;
+
 	private function __construct()
 	{
 	}
@@ -129,6 +131,7 @@ class ResolvedPhpDocBlock
 		$self->isDeprecated = false;
 		$self->isInternal = false;
 		$self->isFinal = false;
+		$self->isPure = false;
 
 		return $self;
 	}
@@ -164,6 +167,8 @@ class ResolvedPhpDocBlock
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
+		$result->isPure = $this->isPure();
+
 		return $result;
 	}
 
@@ -204,6 +209,7 @@ class ResolvedPhpDocBlock
 		$self->isDeprecated = $this->isDeprecated;
 		$self->isInternal = $this->isInternal;
 		$self->isFinal = $this->isFinal;
+		$self->isPure = $this->isPure;
 
 		return $self;
 	}
@@ -415,6 +421,16 @@ class ResolvedPhpDocBlock
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->templateTypeMap;
+	}
+
+	public function isPure(): bool
+	{
+		if ($this->isPure === null) {
+			$this->isPure = $this->phpDocNodeResolver->resolveIsPure(
+				$this->phpDocNode
+			);
+		}
+		return $this->isPure;
 	}
 
 	/**

@@ -598,6 +598,7 @@ class PhpClassReflectionExtension
 		$isDeprecated = false;
 		$isInternal = false;
 		$isFinal = false;
+		$isPure = false;
 		if (
 			$methodReflection instanceof NativeBuiltinMethodReflection
 			&& $methodReflection->isConstructor()
@@ -664,6 +665,7 @@ class PhpClassReflectionExtension
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
+			$isPure = $resolvedPhpDoc->isPure();
 		}
 
 		return $this->methodReflectionFactory->create(
@@ -678,6 +680,7 @@ class PhpClassReflectionExtension
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
+			$isPure,
 			$stubPhpDocString
 		);
 	}
@@ -933,7 +936,7 @@ class PhpClassReflectionExtension
 			$constructor,
 			$namespace
 		)->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -943,7 +946,8 @@ class PhpClassReflectionExtension
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$isFinal
+			$isFinal,
+			$isPure
 		);
 
 		$propertyTypes = [];

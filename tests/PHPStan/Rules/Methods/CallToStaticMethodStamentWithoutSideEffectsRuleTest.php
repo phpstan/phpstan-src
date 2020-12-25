@@ -39,4 +39,18 @@ class CallToStaticMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhpDoc(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-method-call-statement-no-side-effects-phpdoc.php'], [
+			[
+				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure1() on a separate line has no effect.',
+				17,
+			],
+			[
+				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure2() on a separate line has no effect.',
+				18,
+			],
+		]);
+	}
+
 }

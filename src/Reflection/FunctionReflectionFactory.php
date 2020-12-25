@@ -32,6 +32,7 @@ interface FunctionReflectionFactory
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
+		bool $isPure,
 		$filename
 	): PhpFunctionReflection;
 

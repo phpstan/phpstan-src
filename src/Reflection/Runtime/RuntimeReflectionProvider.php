@@ -259,6 +259,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$isDeprecated = false;
 		$isInternal = false;
 		$isFinal = false;
+		$isPure = false;
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName());
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
 			$fileName = $reflectionFunction->getFileName();
@@ -275,6 +276,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
+			$isPure = $resolvedPhpDoc->isPure();
 		}
 
 		$functionReflection = $this->functionReflectionFactory->create(
@@ -289,6 +291,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
+			$isPure,
 			$reflectionFunction->getFileName()
 		);
 		$this->customFunctionReflections[$lowerCasedFunctionName] = $functionReflection;

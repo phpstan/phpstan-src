@@ -54,4 +54,18 @@ class CallToMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4232.php'], []);
 	}
 
+	public function testPhpDoc(): void
+	{
+		$this->analyse([__DIR__ . '/data/method-call-statement-no-side-effects-phpdoc.php'], [
+			[
+				'Call to method MethodCallStatementNoSideEffects\Bzz::pure1() on a separate line has no effect.',
+				17,
+			],
+			[
+				'Call to method MethodCallStatementNoSideEffects\Bzz::pure2() on a separate line has no effect.',
+				18,
+			],
+		]);
+	}
+
 }

@@ -393,7 +393,7 @@ class NodeScopeResolver
 					}
 				}
 			}
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -412,7 +412,8 @@ class NodeScopeResolver
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal,
-				$isFinal
+				$isFinal,
+				$isPure
 			);
 			$nodeCallback(new InFunctionNode($stmt), $functionScope);
 
@@ -440,7 +441,7 @@ class NodeScopeResolver
 					}
 				}
 			}
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -474,7 +475,8 @@ class NodeScopeResolver
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal,
-				$isFinal
+				$isFinal,
+				$isPure
 			);
 
 			if ($stmt->name->toLowerString() === '__construct') {
@@ -2893,7 +2895,7 @@ class NodeScopeResolver
 	/**
 	 * @param Scope $scope
 	 * @param Node\FunctionLike $functionLike
-	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool}
+	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike $functionLike): array
 	{
@@ -2905,6 +2907,7 @@ class NodeScopeResolver
 		$isDeprecated = false;
 		$isInternal = false;
 		$isFinal = false;
+		$isPure = false;
 		$docComment = $functionLike->getDocComment() !== null
 			? $functionLike->getDocComment()->getText()
 			: null;
@@ -3001,9 +3004,10 @@ class NodeScopeResolver
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
+			$isPure = $resolvedPhpDoc->isPure();
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure];
 	}
 
 	private function getPhpDocReturnType(ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type

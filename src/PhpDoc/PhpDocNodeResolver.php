@@ -387,6 +387,17 @@ class PhpDocNodeResolver
 		return count($finalTags) > 0;
 	}
 
+	public function resolveIsPure(PhpDocNode $phpDocNode): bool
+	{
+		foreach ($phpDocNode->getTags() as $phpDocTagNode) {
+			if (in_array($phpDocTagNode->name, ['@psalm-pure', '@phpstan-pure'], true)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private function shouldSkipType(string $tagName, Type $type): bool
 	{
 		if (strpos($tagName, '@psalm-') !== 0) {

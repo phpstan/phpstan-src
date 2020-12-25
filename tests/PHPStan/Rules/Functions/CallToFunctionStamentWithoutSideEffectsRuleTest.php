@@ -26,4 +26,18 @@ class CallToFunctionStamentWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhpDoc(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-phpdoc.php'], [
+			[
+				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pure1() on a separate line has no effect.',
+				15,
+			],
+			[
+				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pure2() on a separate line has no effect.',
+				16,
+			],
+		]);
+	}
+
 }

@@ -261,12 +261,6 @@ class CommandHelper
 
 		$memoryLimitFile = $container->getParameter('memoryLimitFile');
 		if ($manageMemoryLimitFile && file_exists($memoryLimitFile)) {
-			$memoryLimitFileContents = FileReader::read($memoryLimitFile);
-			$errorOutput->writeLineFormatted('PHPStan crashed in the previous run probably because of excessive memory consumption.');
-			$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('To avoid this issue, allow to use more memory with the --memory-limit option.');
 			@unlink($memoryLimitFile);
 		}
 

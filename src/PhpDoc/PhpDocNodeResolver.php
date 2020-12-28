@@ -390,7 +390,7 @@ class PhpDocNodeResolver
 	public function resolveIsPure(PhpDocNode $phpDocNode): bool
 	{
 		foreach ($phpDocNode->getTags() as $phpDocTagNode) {
-			if (in_array($phpDocTagNode->name, ['@psalm-pure', '@phpstan-pure'], true)) {
+			if (in_array($phpDocTagNode->name, ['@pure', '@psalm-pure', '@phpstan-pure'], true)) {
 				return true;
 			}
 		}

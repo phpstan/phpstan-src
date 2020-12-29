@@ -58,7 +58,7 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 					68,
 				],
 				[
-					'Cannot assign offset array(1, 2, 3) to SplObjectStorage.',
+					'Cannot assign offset array(1, 2, 3) to SplObjectStorage<object, mixed>.',
 					72,
 				],
 				[
@@ -100,7 +100,7 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 					68,
 				],
 				[
-					'Cannot assign offset array(1, 2, 3) to SplObjectStorage.',
+					'Cannot assign offset array(1, 2, 3) to SplObjectStorage<object, mixed>.',
 					72,
 				],
 				[

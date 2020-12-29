@@ -38,3 +38,23 @@ class Bar
 	}
 
 }
+
+class BazVoid
+{
+
+	public function doFoo(): void
+	{
+
+	}
+
+	public function doBar(): void
+	{
+		$this->doBaz(fn () => $this->doFoo());
+	}
+
+	public function doBaz(callable $cb): void
+	{
+
+	}
+
+}

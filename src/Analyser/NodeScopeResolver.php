@@ -1843,7 +1843,7 @@ class NodeScopeResolver
 
 			$arrowFunctionScope = $scope->enterArrowFunction($expr);
 			$nodeCallback(new InArrowFunctionNode($expr), $arrowFunctionScope);
-			$this->processExprNode($expr->expr, $arrowFunctionScope, $nodeCallback, $context);
+			$this->processExprNode($expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 			$hasYield = false;
 
 		} elseif ($expr instanceof ErrorSuppress) {

@@ -15,3 +15,18 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function doFoo(): void
+	{
+
+	}
+
+	public function doBar(): void
+	{
+		fn () => $this->doFoo();
+	}
+
+}

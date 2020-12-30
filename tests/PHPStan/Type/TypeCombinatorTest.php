@@ -2,6 +2,13 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Expr\ArrayDimFetch;
+use PhpParser\Node\Expr\Isset_;
+use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Scalar\String_;
+use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\ScopeContext;
+use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Broker\Broker;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -3497,6 +3504,26 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 		$resultType = TypeCombinator::union(...$arrays);
 		$this->assertInstanceOf(ConstantArrayType::class, $resultType);
 		$this->assertSame('array(0 => string, ?\'test\' => string, ?1 => string, ?2 => string, ?3 => string, ?4 => string)', $resultType->describe(VerbosityLevel::precise()));
+	}
+
+	public function testTheWeirdestBug(): void
+	{
+		/** @var MutatingScope $scope */
+		$scope = self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create('test.php'));
+		$scope = $scope->assignVariable('data', TypeCombinator::intersect(new ConstantArrayType([
+			new ConstantStringType('a'),
+			new ConstantStringType('b'),
+		], [
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(2),
+		], 0, [0, 1]), new NonEmptyArrayType()));
+		$this->assertTrue($scope->getVariableType('data')->hasOffsetValueType(new ConstantStringType('a'))->maybe());
+		$newScope = $scope->filterByTruthyValue(new Isset_([new ArrayDimFetch(
+			new Variable('data'),
+			new String_('a')
+		)]));
+		$this->assertTrue($scope->getVariableType('data')->hasOffsetValueType(new ConstantStringType('a'))->maybe());
+		$this->assertTrue($newScope->getVariableType('data')->hasOffsetValueType(new ConstantStringType('a'))->yes());
 	}
 
 }

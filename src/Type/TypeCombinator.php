@@ -626,6 +626,8 @@ class TypeCombinator
 			array_splice($types, $i, 1, $type->getTypes());
 		}
 
+		$originalTypes = $types;
+
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
 		// transform Child & Parent to Child
 		// transform Object & ~null to Object

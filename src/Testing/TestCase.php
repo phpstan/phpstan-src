@@ -41,6 +41,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\BetterReflection\BetterReflectionProvider;
@@ -70,6 +71,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeAliasResolver;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -567,6 +569,20 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			false,
 			$container
+		);
+	}
+
+	/**
+	 * @param array<string, string> $globalTypeAliases
+	 */
+	public function createTypeAliasResolver(array $globalTypeAliases, ReflectionProvider $reflectionProvider): TypeAliasResolver
+	{
+		$container = self::getContainer();
+
+		return new TypeAliasResolver(
+			$globalTypeAliases,
+			$container->getByType(TypeStringResolver::class),
+			$reflectionProvider,
 		);
 	}
 

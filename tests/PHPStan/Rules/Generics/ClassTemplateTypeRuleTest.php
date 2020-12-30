@@ -2,9 +2,12 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\TypeAliasResolver;
+
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ClassTemplateTypeRule>
@@ -15,13 +18,14 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
+		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $broker);
 
 		return new ClassTemplateTypeRule(
 			new TemplateTypeCheck(
 				$broker,
 				new ClassCaseSensitivityCheck($broker),
 				new GenericObjectTypeCheck(),
-				['TypeAlias' => 'int'],
+				$typeAliasResolver,
 				true
 			)
 		);

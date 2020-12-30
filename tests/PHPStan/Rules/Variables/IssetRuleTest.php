@@ -101,4 +101,9 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4290(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4290.php'], []);
+	}
+
 }

@@ -618,12 +618,13 @@ class TypeCombinator
 		}
 
 		// transform A & (B & C) to A & B & C
-		foreach ($types as $i => &$type) {
+		for ($i = 0; $i < count($types); $i++) {
+			$type = $types[$i];
 			if (!($type instanceof IntersectionType)) {
 				continue;
 			}
 
-			array_splice($types, $i, 1, $type->getTypes());
+			array_splice($types, $i--, 1, $type->getTypes());
 		}
 
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType

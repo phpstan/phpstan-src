@@ -376,6 +376,11 @@ class TypeSpecifier
 				&& $expr->left->name instanceof Name
 				&& strtolower((string) $expr->left->name) === 'count'
 				&& $rightType instanceof ConstantIntegerType
+				&& (
+					!$expr->right instanceof FuncCall
+					|| !$expr->right->name instanceof Name
+					|| strtolower((string) $expr->right->name) !== 'count'
+				)
 			) {
 				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
 					? new Node\Expr\BinaryOp\SmallerOrEqual($expr->right, $expr->left)

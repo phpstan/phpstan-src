@@ -291,6 +291,14 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertCount(0, $errors);
 	}
 
+	public function testBug4300(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4300.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[0]->getMessage());
+		$this->assertSame(13, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

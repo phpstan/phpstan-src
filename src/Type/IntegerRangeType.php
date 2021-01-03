@@ -6,7 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
-class IntegerRangeType extends IntegerType implements CompoundType
+class IntegerRangeType extends IntegerType implements CompoundType, ImplementsSubTypeOfUnion
 {
 
 	private ?int $min;
@@ -248,11 +248,58 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
+		if ($otherType instanceof IntersectionType) {
 			return $otherType->isSuperTypeOf($this);
 		}
 
+		if ($otherType instanceof UnionType) {
+			/** @var array<array{int,int}> */
+			$otherRanges = [];
+			foreach ($otherType->getTypes() as $component) {
+				if (get_class($component) === IntegerType::class) {
+					return TrinaryLogic::createYes();
+				}
+				if ($component instanceof ConstantIntegerType) {
+					$otherRanges[] = [$component->getValue(), $component->getValue()];
+				} elseif ($component instanceof self) {
+					$otherRanges[] = [$component->getMin() ?? PHP_INT_MIN, $component->getMax() ?? PHP_INT_MAX];
+				}
+			}
+			self::unionIntRanges($otherRanges);
+			foreach ($otherRanges as $otherRange) {
+				// The $otherRanges are disjoint so only one of these conditions
+				// will ever match.
+				if ($otherRange[0] <= ($this->getMin() ?? PHP_INT_MIN) &&
+					$otherRange[1] >= ($this->getMax() ?? PHP_INT_MAX)) {
+					return TrinaryLogic::createYes();
+				}
+				if (!self::isDisjoint($this->getMin(), $this->getMax(), ...$otherRange)) {
+					return TrinaryLogic::createMaybe();
+				}
+			}
+		}
+
 		return TrinaryLogic::createNo();
+	}
+
+	/**
+	 * Take the union of a list of ranges, merging all adjacent ranges.
+	 * @param array<array{int,int}> $ranges A list of closed, integer intervals.
+	 */
+	private static function unionIntRanges(array &$ranges): void
+	{
+		usort($ranges, static function ($a, $b): int {
+			return $a[0] <=> $b[0];
+		});
+		for ($i = 0; $i < count($ranges) - 1;) {
+			$thisMax = $ranges[$i][1];
+			if ($thisMax === PHP_INT_MAX || $thisMax + 1 >= $ranges[$i + 1][0]) {
+				$ranges[$i][1] = max($ranges[$i][1], $ranges[$i + 1][1]);
+				array_splice($ranges, $i + 1, 1);
+			} else {
+				$i++;
+			}
+		}
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic

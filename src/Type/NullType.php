@@ -157,29 +157,26 @@ class NullType implements ConstantScalarType
 		return TrinaryLogic::createNo();
 	}
 
-	public function getSmallerType(bool $orEqual = false): Type
+	public function getSmallerType(): Type
 	{
-		if ($orEqual) {
-			// All falsey types except '0'
-			return new UnionType([
-				new NullType(),
-				new ConstantBooleanType(false),
-				new ConstantIntegerType(0),
-				new ConstantFloatType(0.0),
-				new ConstantStringType(''),
-				new ConstantArrayType([], []),
-			]);
-		}
-
 		return new NeverType();
 	}
 
-	public function getGreaterType(bool $orEqual = false): Type
+	public function getSmallerOrEqualType(): Type
 	{
-		if ($orEqual) {
-			return new MixedType();
-		}
+		// All falsey types except '0'
+		return new UnionType([
+			new NullType(),
+			new ConstantBooleanType(false),
+			new ConstantIntegerType(0),
+			new ConstantFloatType(0.0),
+			new ConstantStringType(''),
+			new ConstantArrayType([], []),
+		]);
+	}
 
+	public function getGreaterType(): Type
+	{
 		// All truthy types, but also '0'
 		return new MixedType(false, new UnionType([
 			new NullType(),
@@ -189,6 +186,11 @@ class NullType implements ConstantScalarType
 			new ConstantStringType(''),
 			new ConstantArrayType([], []),
 		]));
+	}
+
+	public function getGreaterOrEqualType(): Type
+	{
+		return new MixedType();
 	}
 
 	/**

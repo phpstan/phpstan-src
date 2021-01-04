@@ -48,59 +48,95 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	}
 
 	/**
-	 * Return the range of integers smaller than (or equal to) the given value
+	 * Return the range of integers smaller than the given value
 	 *
 	 * @param int|float $value
-	 * @param bool $orEqual
 	 * @return Type
 	 */
-	public static function createAllSmallerThan($value, bool $orEqual = false): Type
+	public static function createAllSmallerThan($value): Type
 	{
 		if (is_int($value)) {
-			return self::fromInterval(null, $value, $orEqual ? 0 : -1);
+			return self::fromInterval(null, $value, -1);
 		}
 
-		if ($value > PHP_INT_MAX || $value >= PHP_INT_MAX && $orEqual) {
+		if ($value > PHP_INT_MAX) {
 			return new IntegerType();
 		}
 
-		if ($value < PHP_INT_MIN || $value <= PHP_INT_MIN && !$orEqual) {
+		if ($value <= PHP_INT_MIN) {
 			return new NeverType();
-		}
-
-		if ($orEqual) {
-			return self::fromInterval(null, (int) floor($value));
 		}
 
 		return self::fromInterval(null, (int) ceil($value), -1);
 	}
 
 	/**
-	 * Return the range of integers greater than (or equal to) the given value
+	 * Return the range of integers smaller than or equal to the given value
 	 *
 	 * @param int|float $value
-	 * @param bool $orEqual
 	 * @return Type
 	 */
-	public static function createAllGreaterThan($value, bool $orEqual = false): Type
+	public static function createAllSmallerThanOrEqualTo($value): Type
 	{
 		if (is_int($value)) {
-			return self::fromInterval($value, null, $orEqual ? 0 : 1);
+			return self::fromInterval(null, $value);
 		}
 
-		if ($value < PHP_INT_MIN || $value <= PHP_INT_MIN && $orEqual) {
+		if ($value >= PHP_INT_MAX) {
 			return new IntegerType();
 		}
 
-		if ($value > PHP_INT_MAX || $value >= PHP_INT_MAX && !$orEqual) {
+		if ($value < PHP_INT_MIN) {
 			return new NeverType();
 		}
 
-		if ($orEqual) {
-			return self::fromInterval((int) ceil($value), null);
+		return self::fromInterval(null, (int) floor($value));
+	}
+
+	/**
+	 * Return the range of integers greater than the given value
+	 *
+	 * @param int|float $value
+	 * @return Type
+	 */
+	public static function createAllGreaterThan($value): Type
+	{
+		if (is_int($value)) {
+			return self::fromInterval($value, null, 1);
+		}
+
+		if ($value < PHP_INT_MIN) {
+			return new IntegerType();
+		}
+
+		if ($value >= PHP_INT_MAX) {
+			return new NeverType();
 		}
 
 		return self::fromInterval((int) floor($value), null, 1);
+	}
+
+	/**
+	 * Return the range of integers greater than or equal to the given value
+	 *
+	 * @param int|float $value
+	 * @return Type
+	 */
+	public static function createAllGreaterThanOrEqualTo($value): Type
+	{
+		if (is_int($value)) {
+			return self::fromInterval($value, null);
+		}
+
+		if ($value <= PHP_INT_MIN) {
+			return new IntegerType();
+		}
+
+		if ($value > PHP_INT_MAX) {
+			return new NeverType();
+		}
+
+		return self::fromInterval((int) ceil($value), null);
 	}
 
 	public function getMin(): ?int
@@ -269,38 +305,59 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
-	public function getSmallerType(bool $orEqual = false): Type
+	public function getSmallerType(): Type
+	{
+		$subtractedTypes = [
+			new ConstantBooleanType(true),
+		];
+
+		if ($this->max !== null) {
+			$subtractedTypes[] = self::createAllGreaterThanOrEqualTo($this->max);
+		}
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getSmallerOrEqualType(): Type
 	{
 		$subtractedTypes = [];
 
 		if ($this->max !== null) {
-			$subtractedTypes[] = self::createAllGreaterThan($this->max, !$orEqual);
+			$subtractedTypes[] = self::createAllGreaterThan($this->max);
 		}
 
-		if (!$orEqual) {
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getGreaterType(): Type
+	{
+		$subtractedTypes = [
+			new NullType(),
+			new ConstantBooleanType(false),
+		];
+
+		if ($this->min !== null) {
+			$subtractedTypes[] = self::createAllSmallerThanOrEqualTo($this->min);
+		}
+
+		if ($this->min !== null && $this->min > 0 || $this->max !== null && $this->max < 0) {
 			$subtractedTypes[] = new ConstantBooleanType(true);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterType(bool $orEqual = false): Type
+	public function getGreaterOrEqualType(): Type
 	{
 		$subtractedTypes = [];
 
 		if ($this->min !== null) {
-			$subtractedTypes[] = self::createAllSmallerThan($this->min, !$orEqual);
+			$subtractedTypes[] = self::createAllSmallerThan($this->min);
 		}
 
-		$alwaysTruthy = $this->min !== null && $this->min > 0 || $this->max !== null && $this->max < 0;
-
-		if ($alwaysTruthy || !$orEqual) {
+		if ($this->min !== null && $this->min > 0 || $this->max !== null && $this->max < 0) {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new ConstantBooleanType(false);
-		}
-
-		if ($alwaysTruthy && !$orEqual) {
-			$subtractedTypes[] = new ConstantBooleanType(true);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));

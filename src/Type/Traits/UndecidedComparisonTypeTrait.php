@@ -14,12 +14,22 @@ trait UndecidedComparisonTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getSmallerType(bool $orEqual = false): Type
+	public function getSmallerType(): Type
 	{
 		return new MixedType();
 	}
 
-	public function getGreaterType(bool $orEqual = false): Type
+	public function getSmallerOrEqualType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getGreaterType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getGreaterOrEqualType(): Type
 	{
 		return new MixedType();
 	}

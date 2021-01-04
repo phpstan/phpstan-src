@@ -33,36 +33,36 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return $this->value ? 'true' : 'false';
 	}
 
-	public function getSmallerType(bool $orEqual = false): Type
+	public function getSmallerType(): Type
 	{
-		if ($orEqual) {
-			if ($this->value) {
-				return new MixedType();
-			}
-			return StaticTypeFactory::falsey();
-		}
-
 		if ($this->value) {
 			return StaticTypeFactory::falsey();
 		}
-
 		return new NeverType();
 	}
 
-	public function getGreaterType(bool $orEqual = false): Type
+	public function getSmallerOrEqualType(): Type
 	{
-		if ($orEqual) {
-			if ($this->value) {
-				return StaticTypeFactory::truthy();
-			}
+		if ($this->value) {
 			return new MixedType();
 		}
+		return StaticTypeFactory::falsey();
+	}
 
+	public function getGreaterType(): Type
+	{
 		if ($this->value) {
 			return new NeverType();
 		}
-
 		return StaticTypeFactory::truthy();
+	}
+
+	public function getGreaterOrEqualType(): Type
+	{
+		if ($this->value) {
+			return StaticTypeFactory::truthy();
+		}
+		return new MixedType();
 	}
 
 	public function toBoolean(): BooleanType

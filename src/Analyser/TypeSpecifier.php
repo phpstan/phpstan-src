@@ -453,17 +453,41 @@ class TypeSpecifier
 
 			if ($context->truthy()) {
 				if (!$expr->left instanceof Node\Scalar) {
-					$result = $result->unionWith($this->create($expr->left, $rightType->getSmallerType($orEqual), TypeSpecifierContext::createTruthy()));
+					$result = $result->unionWith(
+						$this->create(
+							$expr->left,
+							$orEqual ? $rightType->getSmallerOrEqualType() : $rightType->getSmallerType(),
+							TypeSpecifierContext::createTruthy()
+						)
+					);
 				}
 				if (!$expr->right instanceof Node\Scalar) {
-					$result = $result->unionWith($this->create($expr->right, $leftType->getGreaterType($orEqual), TypeSpecifierContext::createTruthy()));
+					$result = $result->unionWith(
+						$this->create(
+							$expr->right,
+							$orEqual ? $leftType->getGreaterOrEqualType() : $leftType->getGreaterType(),
+							TypeSpecifierContext::createTruthy()
+						)
+					);
 				}
 			} elseif ($context->falsey()) {
 				if (!$expr->left instanceof Node\Scalar) {
-					$result = $result->unionWith($this->create($expr->left, $rightType->getGreaterType(!$orEqual), TypeSpecifierContext::createTruthy()));
+					$result = $result->unionWith(
+						$this->create(
+							$expr->left,
+							$orEqual ? $rightType->getGreaterType() : $rightType->getGreaterOrEqualType(),
+							TypeSpecifierContext::createTruthy()
+						)
+					);
 				}
 				if (!$expr->right instanceof Node\Scalar) {
-					$result = $result->unionWith($this->create($expr->right, $leftType->getSmallerType(!$orEqual), TypeSpecifierContext::createTruthy()));
+					$result = $result->unionWith(
+						$this->create(
+							$expr->right,
+							$orEqual ? $leftType->getSmallerType() : $leftType->getSmallerOrEqualType(),
+							TypeSpecifierContext::createTruthy()
+						)
+					);
 				}
 			}
 

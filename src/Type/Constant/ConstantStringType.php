@@ -302,40 +302,60 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new StringType();
 	}
 
-	public function getSmallerType(bool $orEqual = false): Type
+	public function getSmallerType(): Type
 	{
 		$subtractedTypes = [
-			IntegerRangeType::createAllGreaterThan((float) $this->value, !$orEqual),
+			new ConstantBooleanType(true),
+			IntegerRangeType::createAllGreaterThanOrEqualTo((float) $this->value),
 		];
 
-		if ($this->value === '' && !$orEqual) {
+		if ($this->value === '') {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new StringType();
 		}
 
-		$boolValue = (bool) $this->value;
-		if (!$boolValue && !$orEqual) {
+		if (!(bool) $this->value) {
 			$subtractedTypes[] = new ConstantBooleanType(false);
 		}
-		if (!$boolValue || !$orEqual) {
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getSmallerOrEqualType(): Type
+	{
+		$subtractedTypes = [
+			IntegerRangeType::createAllGreaterThan((float) $this->value),
+		];
+
+		if (!(bool) $this->value) {
 			$subtractedTypes[] = new ConstantBooleanType(true);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterType(bool $orEqual = false): Type
+	public function getGreaterType(): Type
 	{
 		$subtractedTypes = [
-			IntegerRangeType::createAllSmallerThan((float) $this->value, !$orEqual),
+			new ConstantBooleanType(false),
+			IntegerRangeType::createAllSmallerThanOrEqualTo((float) $this->value),
 		];
 
-		$boolValue = (bool) $this->value;
-		if ($boolValue || !$orEqual) {
-			$subtractedTypes[] = new ConstantBooleanType(false);
-		}
-		if ($boolValue && !$orEqual) {
+		if ((bool) $this->value) {
 			$subtractedTypes[] = new ConstantBooleanType(true);
+		}
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getGreaterOrEqualType(): Type
+	{
+		$subtractedTypes = [
+			IntegerRangeType::createAllSmallerThan((float) $this->value),
+		];
+
+		if ((bool) $this->value) {
+			$subtractedTypes[] = new ConstantBooleanType(false);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));

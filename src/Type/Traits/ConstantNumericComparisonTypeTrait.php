@@ -12,37 +12,58 @@ use PHPStan\Type\TypeCombinator;
 trait ConstantNumericComparisonTypeTrait
 {
 
-	public function getSmallerType(bool $orEqual = false): Type
+	public function getSmallerType(): Type
 	{
 		$subtractedTypes = [
-			IntegerRangeType::createAllGreaterThan($this->value, !$orEqual),
+			new ConstantBooleanType(true),
+			IntegerRangeType::createAllGreaterThanOrEqualTo($this->value),
 		];
 
-		$boolValue = (bool) $this->value;
-		if (!$boolValue && !$orEqual) {
+		if (!(bool) $this->value) {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new ConstantBooleanType(false);
 		}
-		if (!$boolValue || !$orEqual) {
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getSmallerOrEqualType(): Type
+	{
+		$subtractedTypes = [
+			IntegerRangeType::createAllGreaterThan($this->value),
+		];
+
+		if (!(bool) $this->value) {
 			$subtractedTypes[] = new ConstantBooleanType(true);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterType(bool $orEqual = false): Type
+	public function getGreaterType(): Type
 	{
 		$subtractedTypes = [
-			IntegerRangeType::createAllSmallerThan($this->value, !$orEqual),
+			new NullType(),
+			new ConstantBooleanType(false),
+			IntegerRangeType::createAllSmallerThanOrEqualTo($this->value),
 		];
 
-		$boolValue = (bool) $this->value;
-		if ($boolValue || !$orEqual) {
+		if ((bool) $this->value) {
+			$subtractedTypes[] = new ConstantBooleanType(true);
+		}
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getGreaterOrEqualType(): Type
+	{
+		$subtractedTypes = [
+			IntegerRangeType::createAllSmallerThan($this->value),
+		];
+
+		if ((bool) $this->value) {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new ConstantBooleanType(false);
-		}
-		if ($boolValue && !$orEqual) {
-			$subtractedTypes[] = new ConstantBooleanType(true);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));

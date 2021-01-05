@@ -75,7 +75,7 @@ class DependencyDumperTest extends TestCase
 		$scopeFactory = $container->getByType(ScopeFactory::class);
 
 		/** @var FileFinder $fileFinder */
-		$fileFinder = $container->getByType(FileFinder::class);
+		$fileFinder = $container->getService('fileFinderAnalyse');
 
 		$dumper = new DependencyDumper(
 			new DependencyResolver($fileHelper, $mockBroker, new ExportedNodeResolver(self::getContainer()->getByType(FileTypeMapper::class), new Standard())),

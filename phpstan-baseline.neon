@@ -76,6 +76,16 @@ parameters:
 			path: src/DependencyInjection/ParametersSchemaExtension.php
 
 		-
+			message: "#^Parameter \\#1 \\$analyseExcludes of method PHPStan\\\\File\\\\FileExcluderRawFactory\\:\\:create\\(\\) expects array\\<string\\>, array\\<int\\|string, array\\<int, string\\>\\|string\\> given\\.$#"
+			count: 2
+			path: src/File/FileExcluderFactory.php
+
+		-
+			message: "#^Parameter \\#1 \\$input of function array_unique expects array, array\\<int, string\\>\\|string given\\.$#"
+			count: 2
+			path: src/File/FileExcluderFactory.php
+
+		-
 			message: "#^Variable method call on PHPStan\\\\Reflection\\\\ClassReflection\\.$#"
 			count: 2
 			path: src/PhpDoc/PhpDocBlock.php

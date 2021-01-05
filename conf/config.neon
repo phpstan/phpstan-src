@@ -6,6 +6,7 @@ parameters:
 		- ../stubs/runtime/ReflectionUnionType.php
 		- ../stubs/runtime/Attribute.php
 	excludes_analyse: []
+	excludePaths: null
 	autoload_directories: []
 	autoload_files: []
 	level: null
@@ -139,6 +140,19 @@ parametersSchema:
 	bootstrap: schema(string(), nullable())
 	bootstrapFiles: listOf(string())
 	excludes_analyse: listOf(string())
+	excludePaths: schema(anyOf(
+		listOf(string()),
+		structure([
+			analyse: listOf(string()),
+		]),
+		structure([
+			analyseAndScan: listOf(string()),
+		])
+		structure([
+			analyse: listOf(string()),
+			analyseAndScan: listOf(string())
+		])
+	), nullable())
 	autoload_directories: listOf(string())
 	autoload_files: listOf(string())
 	level: schema(anyOf(int(), string()), nullable())
@@ -425,6 +439,8 @@ services:
 
 	-
 		class: PHPStan\Dependency\DependencyDumper
+		arguments:
+			fileFinder: @fileFinderAnalyse
 
 	-
 		class: PHPStan\Dependency\DependencyResolver
@@ -479,18 +495,44 @@ services:
 			workingDirectory: %currentWorkingDirectory%
 
 	-
-		class: PHPStan\File\FileExcluder
+		class: PHPStan\File\FileExcluderFactory
 		arguments:
-			analyseExcludes: %excludes_analyse%
-			stubFiles: %stubFiles%
+			obsoleteExcludesAnalyse: %excludes_analyse%
+			excludePaths: %excludePaths%
 
 	-
+		implement: PHPStan\File\FileExcluderRawFactory
+		arguments:
+			stubFiles: %stubFiles%
+
+	fileExcluderAnalyse:
+		class: PHPStan\File\FileExcluder
+		factory: @PHPStan\File\FileExcluderFactory::createAnalyseFileExcluder()
+		autowired: false
+
+	fileExcluderScan:
+		class: PHPStan\File\FileExcluder
+		factory: @PHPStan\File\FileExcluderFactory::createAnalyseFileExcluder()
+		autowired: false
+
+	fileFinderAnalyse:
 		class: PHPStan\File\FileFinder
 		arguments:
+			fileExcluder: @fileExcluderAnalyse
 			fileExtensions: %fileExtensions%
+		autowired: false
+
+	fileFinderScan:
+		class: PHPStan\File\FileFinder
+		arguments:
+			fileExcluder: @fileExcluderScan
+			fileExtensions: %fileExtensions%
+		autowired: false
 
 	-
 		class: PHPStan\File\FileMonitor
+		arguments:
+			fileFinder: @fileFinderAnalyse
 
 	-
 		class: PHPStan\NodeVisitor\StatementOrderVisitor
@@ -544,6 +586,8 @@ services:
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory
+		arguments:
+			fileFinder: @fileFinderScan
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository

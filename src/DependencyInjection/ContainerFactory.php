@@ -10,6 +10,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use Roave\BetterReflection\BetterReflection;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Symfony\Component\Finder\Finder;
 use function sys_get_temp_dir;
 
 class ContainerFactory
@@ -117,6 +118,38 @@ class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		return $container->getByType(Container::class);
+	}
+
+	public function clearOldContainers(string $tempDirectory): void
+	{
+		$configurator = new Configurator(new LoaderFactory(
+			$this->fileHelper,
+			$this->rootDirectory,
+			$this->currentWorkingDirectory,
+			null
+		));
+		$configurator->setDebugMode(true);
+		$configurator->setTempDirectory($tempDirectory);
+
+		$finder = new Finder();
+		$finder->name('Container_*')->in($configurator->getContainerCacheDirectory());
+		$twoDaysAgo = time() - 24 * 60 * 60 * 2;
+
+		foreach ($finder as $containerFile) {
+			if ($containerFile->getATime() > $twoDaysAgo) {
+				continue;
+			}
+			if ($containerFile->getCTime() > $twoDaysAgo) {
+				continue;
+			}
+
+			$path = $containerFile->getRealPath();
+			if ($path === false) {
+				continue;
+			}
+
+			@unlink($path);
+		}
 	}
 
 	public function getCurrentWorkingDirectory(): string

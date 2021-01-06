@@ -30,10 +30,15 @@ class Configurator extends \Nette\Configurator
 		return [];
 	}
 
+	public function getContainerCacheDirectory(): string
+	{
+		return $this->getCacheDirectory() . '/nette.configurator';
+	}
+
 	public function loadContainer(): string
 	{
 		$loader = new ContainerLoader(
-			$this->getCacheDirectory() . '/nette.configurator',
+			$this->getContainerCacheDirectory(),
 			$this->parameters['debugMode']
 		);
 

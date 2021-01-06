@@ -254,6 +254,8 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
+		$containerFactory->clearOldContainers($tmpDir);
+
 		if (count($paths) === 0) {
 			$errorOutput->writeLineFormatted('At least one path must be specified to analyse.');
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();

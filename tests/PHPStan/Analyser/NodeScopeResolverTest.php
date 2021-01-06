@@ -5507,6 +5507,70 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'\'foo\'',
 				'$poppedFoo',
 			],
+			[
+				'int',
+				'array_rand([1 => 1, 2 => "2"])',
+			],
+			[
+				'string',
+				'array_rand(["a" => 1, "b" => "2"])',
+			],
+			[
+				'int|string',
+				'array_rand(["a" => 1, 2 => "b"])',
+			],
+			[
+				'int|string',
+				'array_rand([1 => 1, 2 => "b", $mixed => $mixed])',
+			],
+			[
+				'int',
+				'array_rand([1 => 1, 2 => "b"], 1)',
+			],
+			[
+				'string',
+				'array_rand(["a" => 1, "b" => "b"], 1)',
+			],
+			[
+				'int|string',
+				'array_rand(["a" => 1, 2 => "b"], 1)',
+			],
+			[
+				'int|string',
+				'array_rand([1 => 1, 2 => "b", $mixed => $mixed], 1)',
+			],
+			[
+				'array<int, int>',
+				'array_rand([1 => 1, 2 => "b"], 2)',
+			],
+			[
+				'array<int, string>',
+				'array_rand(["a" => 1, "b" => "b"], 2)',
+			],
+			[
+				'array<int, int|string>',
+				'array_rand(["a" => 1, 2 => "b"], 2)',
+			],
+			[
+				'array<int, int|string>',
+				'array_rand([1 => 1, 2 => "2", $mixed => $mixed], 2)',
+			],
+			[
+				'array<int, int>|int',
+				'array_rand([1 => 1, 2 => "b"], $mixed)',
+			],
+			[
+				'array<int, string>|string',
+				'array_rand(["a" => 1, "b" => "b"], $mixed)',
+			],
+			[
+				'array<int, int|string>|int|string',
+				'array_rand(["a" => 1, 2 => "b"], $mixed)',
+			],
+			[
+				'array<int, int|string>|int|string',
+				'array_rand([1 => 1, 2 => "b", $mixed => $mixed], $mixed)',
+			],
 		];
 	}
 

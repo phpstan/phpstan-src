@@ -13721,7 +13721,7 @@ return [
 'zip_entry_name' => ['string|false', 'zip_entry'=>'resource'],
 'zip_entry_open' => ['bool', 'zip_dp'=>'resource', 'zip_entry'=>'resource', 'mode='=>'string'],
 'zip_entry_read' => ['string|false', 'zip_entry'=>'resource', 'len='=>'int'],
-'zip_open' => ['resource', 'filename'=>'string'],
+'zip_open' => ['resource|false|int', 'filename'=>'string'],
 'zip_read' => ['resource', 'zip'=>'resource'],
 'ZipArchive::addEmptyDir' => ['bool', 'dirname'=>'string'],
 'ZipArchive::addFile' => ['bool', 'filepath'=>'string', 'entryname='=>'string', 'start='=>'int', 'length='=>'int'],

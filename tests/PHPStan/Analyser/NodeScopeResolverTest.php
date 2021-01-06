@@ -4993,7 +4993,35 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
+				'array_combine($array, $array2)',
+			],
+			[
+				'array(1 => 2)',
 				'array_combine([1], [2])',
+			],
+			[
+				'false',
+				'array_combine([1, 2], [3])',
+			],
+			[
+				'array(\'a\' => \'d\', \'b\' => \'e\', \'c\' => \'f\')',
+				'array_combine([\'a\', \'b\', \'c\'], [\'d\', \'e\', \'f\'])',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<1|2|3, mixed>|false' : 'array<1|2|3, mixed>',
+				'array_combine([1, 2, 3], $array)',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'array<1|2|3>|false' : 'array<1|2|3>',
+				'array_combine($array, [1, 2, 3])',
+			],
+			[
+				'array',
+				'array_combine($array, $array)',
+			],
+			[
+				'array<string, string>',
+				'array_combine($stringArray, $stringArray)',
 			],
 			[
 				'array<0|1|2, 1|2|3>',

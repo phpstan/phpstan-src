@@ -91,4 +91,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function throwsTypeErrorForInternalFunctions(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

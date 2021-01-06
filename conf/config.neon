@@ -512,7 +512,7 @@ services:
 
 	fileExcluderScan:
 		class: PHPStan\File\FileExcluder
-		factory: @PHPStan\File\FileExcluderFactory::createAnalyseFileExcluder()
+		factory: @PHPStan\File\FileExcluderFactory::createScanFileExcluder()
 		autowired: false
 
 	fileFinderAnalyse:

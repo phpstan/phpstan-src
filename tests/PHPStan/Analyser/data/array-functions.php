@@ -160,6 +160,12 @@ $mixed = doFoo();
 /** @var array $array */
 $array = doFoo();
 
+/** @var array $array2 */
+$array2 = doFoo();
+
+/** @var string[] $stringArray */
+$stringArray = doFoo();
+
 $slicedOffset = array_slice(['4' => 'foo', 1 => 'bar', 'baz' => 'qux', 0 => 'quux', 'quuz' => 'corge'], 0, null, false);
 $slicedOffsetWithKeys = array_slice(['4' => 'foo', 1 => 'bar', 'baz' => 'qux', 0 => 'quux', 'quuz' => 'corge'], 0, null, true);
 

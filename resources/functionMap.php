@@ -317,7 +317,7 @@ return [
 'array_uintersect_assoc\'1' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'arr3'=>'array', 'arg4'=>'array|callable(mixed,mixed):int', '...rest='=>'array|callable(mixed,mixed):int'],
 'array_uintersect_uassoc' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'data_compare_func'=>'callable(mixed,mixed):int', 'key_compare_func'=>'callable(mixed,mixed):int'],
 'array_uintersect_uassoc\'1' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'arr3'=>'array', 'arg4'=>'array|callable(mixed,mixed):int', 'arg5'=>'array|callable(mixed,mixed):int', '...rest='=>'array|callable(mixed,mixed):int'],
-'array_unique' => ['array', 'input'=>'array', 'sort_flags='=>'int'],
+'array_unique' => ['array', 'array'=>'array', 'flags='=>'int'],
 'array_unshift' => ['int', '&rw_stack'=>'array', 'var'=>'mixed', '...vars='=>'mixed'],
 'array_values' => ['array', 'input'=>'array'],
 'array_walk' => ['bool', '&rw_input'=>'array', 'callback'=>'callable', 'userdata='=>'mixed'],

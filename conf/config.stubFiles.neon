@@ -11,4 +11,3 @@ parameters:
 		- ../stubs/zip.stub
 		- ../stubs/dom.stub
 		- ../stubs/spl.stub
-		- ../stubs/SplObjectStorage.stub

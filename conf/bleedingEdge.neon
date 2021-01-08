@@ -9,5 +9,3 @@ parameters:
 		readComposerPhpVersion: true
 		dateTimeInstantiation: true
 		detectDuplicateStubFiles: true
-	stubFiles:
-		- ../stubs/SplObjectStorage.stub

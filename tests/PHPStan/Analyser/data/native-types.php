@@ -83,8 +83,8 @@ class Foo
 		assertNativeType('array', $array);
 
 		foreach ($array as $key => $value) {
-			assertType('array<string, int>', $array);
-			assertNativeType('array', $array);
+			assertType('array<string, int>&nonEmpty', $array);
+			assertNativeType('array&nonEmpty', $array);
 
 			assertType('string', $key);
 			assertNativeType('(int|string)', $key);
@@ -124,8 +124,8 @@ class Foo
 		assertType('array<string, array(int, string)>', $array);
 		assertNativeType('array', $array);
 		foreach ($array as $key => [$i, $s]) {
-			assertType('array<string, array(int, string)>', $array);
-			assertNativeType('array', $array);
+			assertType('array<string, array(int, string)>&nonEmpty', $array);
+			assertNativeType('array&nonEmpty', $array);
 
 			assertType('string', $key);
 			assertNativeType('(int|string)', $key);

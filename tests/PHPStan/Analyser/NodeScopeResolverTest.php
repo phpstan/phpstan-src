@@ -4774,7 +4774,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				__DIR__ . '/data/foreach/foreach-with-specified-key-type.php',
-				'array<string, float|int|string>',
+				'array<string, float|int|string>&nonEmpty',
 				'$list',
 			],
 			[
@@ -6537,7 +6537,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$unionBar',
 			],
 			[
-				'array',
+				'array&nonEmpty',
 				'$mixedUnionIterableType',
 			],
 			[
@@ -10603,6 +10603,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4339.php');
 	}
 
+	public function dataBug4343(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4343.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10807,6 +10812,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3986
 	 * @dataProvider dataBug4188
 	 * @dataProvider dataBug4339
+	 * @dataProvider dataBug4343
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -761,12 +761,16 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Foreach_) {
 			$condResult = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$scope = $condResult->getScope();
-			$bodyScope = $this->enterForeach($scope, $stmt);
+			$arrayComparisonExpr = new BinaryOp\NotIdentical(
+				$stmt->expr,
+				new Array_([])
+			);
+			$bodyScope = $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt);
 			$hasYield = false;
 			$count = 0;
 			do {
 				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($scope);
+				$bodyScope = $bodyScope->mergeWith($scope->filterByTruthyValue($arrayComparisonExpr));
 				$bodyScope = $this->enterForeach($bodyScope, $stmt);
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 				})->filterOutLoopExitPoints();
@@ -785,7 +789,7 @@ class NodeScopeResolver
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
 
-			$bodyScope = $bodyScope->mergeWith($scope);
+			$bodyScope = $bodyScope->mergeWith($scope->filterByTruthyValue($arrayComparisonExpr));
 			$bodyScope = $this->enterForeach($bodyScope, $stmt);
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
@@ -801,11 +805,7 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			} elseif ($isIterableAtLeastOnce->maybe()) {
 				if ($this->polluteScopeWithAlwaysIterableForeach) {
-					$arrayComparisonExpr = new BinaryOp\NotIdentical(
-						$stmt->expr,
-						new Array_([])
-					);
-					$finalScope = $finalScope->filterByTruthyValue($arrayComparisonExpr)->mergeWith($scope->filterByFalseyValue($arrayComparisonExpr));
+					$finalScope = $finalScope->mergeWith($scope->filterByFalseyValue($arrayComparisonExpr));
 				} else {
 					$finalScope = $finalScope->mergeWith($scope);
 				}

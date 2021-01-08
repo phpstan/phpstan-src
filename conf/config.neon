@@ -21,6 +21,7 @@ parameters:
 		unusedClassElements: false
 		readComposerPhpVersion: false
 		dateTimeInstantiation: false
+		detectDuplicateStubFiles: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -165,8 +166,9 @@ parametersSchema:
 		nullCoalesce: bool(),
 		fileWhitespace: bool(),
 		unusedClassElements: bool(),
-		readComposerPhpVersion: bool()
-		dateTimeInstantiation: bool()
+		readComposerPhpVersion: bool(),
+		dateTimeInstantiation: bool(),
+		detectDuplicateStubFiles: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

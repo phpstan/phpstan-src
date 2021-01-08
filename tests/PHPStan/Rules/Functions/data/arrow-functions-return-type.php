@@ -27,6 +27,7 @@ class Bar
 	public function doBar(): void
 	{
 		fn () => $this->doFoo();
+		fn (?string $value): string => $value ?? '-';
 	}
 
 }

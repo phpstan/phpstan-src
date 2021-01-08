@@ -1,0 +1,15 @@
+<?php // lint >= 7.4
+
+namespace Bug4339;
+
+use function PHPStan\Analyser\assertType;
+
+function (?string $v) {
+	assertType('string', $v ?? '-');
+	fn (?string $value): string => assertType('string', $value ?? '-');
+	fn (?string $value): void => assertType('string|null', $value);
+
+	$f = fn (?string $value): string => $value ?? '-';
+
+	assertType('string', $f($v));
+};

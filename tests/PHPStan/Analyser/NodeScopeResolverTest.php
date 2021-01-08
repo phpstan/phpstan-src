@@ -10594,6 +10594,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4188.php');
 	}
 
+	public function dataBug4339(): array
+	{
+		if (PHP_VERSION_ID < 70400) {
+			return [];
+		}
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4339.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10797,6 +10806,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2980
 	 * @dataProvider dataBug3986
 	 * @dataProvider dataBug4188
+	 * @dataProvider dataBug4339
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

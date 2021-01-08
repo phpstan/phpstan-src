@@ -1308,7 +1308,7 @@ class MutatingScope implements Scope
 			}
 
 			if ($node instanceof Expr\ArrowFunction) {
-				$returnType = $this->getType($node->expr);
+				$returnType = $this->enterArrowFunctionWithoutReflection($node)->getType($node->expr);
 				if ($node->returnType !== null) {
 					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 				}
@@ -2790,6 +2790,35 @@ class MutatingScope implements Scope
 
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction): self
 	{
+		$anonymousFunctionReflection = $this->getType($arrowFunction);
+		if (!$anonymousFunctionReflection instanceof ClosureType) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction);
+
+		return $this->scopeFactory->create(
+			$scope->context,
+			$scope->isDeclareStrictTypes(),
+			$scope->constantTypes,
+			$scope->getFunction(),
+			$scope->getNamespace(),
+			$scope->variableTypes,
+			$scope->moreSpecificTypes,
+			$scope->conditionalExpressions,
+			$scope->inClosureBindScopeClass,
+			$anonymousFunctionReflection,
+			true,
+			[],
+			[],
+			[],
+			$scope->afterExtractCall,
+			$scope->parentScope
+		);
+	}
+
+	private function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction): self
+	{
 		$variableTypes = $this->variableTypes;
 		$mixed = new MixedType();
 		$parameterVariables = [];
@@ -2811,11 +2840,6 @@ class MutatingScope implements Scope
 
 		if ($arrowFunction->static) {
 			unset($variableTypes['this']);
-		}
-
-		$anonymousFunctionReflection = $this->getType($arrowFunction);
-		if (!$anonymousFunctionReflection instanceof ClosureType) {
-			throw new \PHPStan\ShouldNotHappenException();
 		}
 
 		$conditionalExpressions = [];
@@ -2883,7 +2907,7 @@ class MutatingScope implements Scope
 			$this->moreSpecificTypes,
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
-			$anonymousFunctionReflection,
+			null,
 			true,
 			[],
 			[],

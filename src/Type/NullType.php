@@ -75,17 +75,27 @@ class NullType implements ConstantScalarType
 		return $type instanceof self;
 	}
 
-	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
-			if ($orEqual) {
-				return TrinaryLogic::createFromBoolean(null <= $otherType->getValue());
-			}
 			return TrinaryLogic::createFromBoolean(null < $otherType->getValue());
 		}
 
 		if ($otherType instanceof CompoundType) {
-			return $otherType->isGreaterThan($this, $orEqual);
+			return $otherType->isGreaterThan($this);
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		if ($otherType instanceof ConstantScalarType) {
+			return TrinaryLogic::createFromBoolean(null <= $otherType->getValue());
+		}
+
+		if ($otherType instanceof CompoundType) {
+			return $otherType->isGreaterThanOrEqual($this);
 		}
 
 		return TrinaryLogic::createMaybe();

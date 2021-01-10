@@ -337,17 +337,31 @@ class IntersectionType implements CompoundType
 		});
 	}
 
-	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
-		return $this->intersectResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
-			return $type->isSmallerThan($otherType, $orEqual);
+		return $this->intersectResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $type->isSmallerThan($otherType);
 		});
 	}
 
-	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
 	{
-		return $this->intersectResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
-			return $otherType->isSmallerThan($type, $orEqual);
+		return $this->intersectResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $type->isSmallerThanOrEqual($otherType);
+		});
+	}
+
+	public function isGreaterThan(Type $otherType): TrinaryLogic
+	{
+		return $this->intersectResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $otherType->isSmallerThan($type);
+		});
+	}
+
+	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		return $this->intersectResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $otherType->isSmallerThanOrEqual($type);
 		});
 	}
 

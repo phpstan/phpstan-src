@@ -9,7 +9,12 @@ use PHPStan\Type\Type;
 trait UndecidedComparisonTypeTrait
 {
 
-	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThan(Type $otherType): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
 	}

@@ -271,35 +271,69 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return new parent();
 	}
 
-	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createYes();
 		} else {
-			$minIsSmaller = (new ConstantIntegerType($this->min))->isSmallerThan($otherType, $orEqual);
+			$minIsSmaller = (new ConstantIntegerType($this->min))->isSmallerThan($otherType);
 		}
 
 		if ($this->max === null) {
 			$maxIsSmaller = TrinaryLogic::createNo();
 		} else {
-			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThan($otherType, $orEqual);
+			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThan($otherType);
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
-	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		if ($this->min === null) {
+			$minIsSmaller = TrinaryLogic::createYes();
+		} else {
+			$minIsSmaller = (new ConstantIntegerType($this->min))->isSmallerThanOrEqual($otherType);
+		}
+
+		if ($this->max === null) {
+			$maxIsSmaller = TrinaryLogic::createNo();
+		} else {
+			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThanOrEqual($otherType);
+		}
+
+		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
+	}
+
+	public function isGreaterThan(Type $otherType): TrinaryLogic
 	{
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createNo();
 		} else {
-			$minIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->min)), $orEqual);
+			$minIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->min)));
 		}
 
 		if ($this->max === null) {
 			$maxIsSmaller = TrinaryLogic::createYes();
 		} else {
-			$maxIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->max)), $orEqual);
+			$maxIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->max)));
+		}
+
+		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
+	}
+
+	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		if ($this->min === null) {
+			$minIsSmaller = TrinaryLogic::createNo();
+		} else {
+			$minIsSmaller = $otherType->isSmallerThanOrEqual((new ConstantIntegerType($this->min)));
+		}
+
+		if ($this->max === null) {
+			$maxIsSmaller = TrinaryLogic::createYes();
+		} else {
+			$maxIsSmaller = $otherType->isSmallerThanOrEqual((new ConstantIntegerType($this->max)));
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);

@@ -10,7 +10,12 @@ trait UndecidedComparisonCompoundTypeTrait
 
 	use UndecidedComparisonTypeTrait;
 
-	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isGreaterThan(Type $otherType): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
 	}

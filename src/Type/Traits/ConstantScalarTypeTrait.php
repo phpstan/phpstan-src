@@ -46,17 +46,27 @@ trait ConstantScalarTypeTrait
 		return $type instanceof self && $this->value === $type->value;
 	}
 
-	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
-			if ($orEqual) {
-				return TrinaryLogic::createFromBoolean($this->value <= $otherType->getValue());
-			}
 			return TrinaryLogic::createFromBoolean($this->value < $otherType->getValue());
 		}
 
 		if ($otherType instanceof CompoundType) {
-			return $otherType->isGreaterThan($this, $orEqual);
+			return $otherType->isGreaterThan($this);
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		if ($otherType instanceof ConstantScalarType) {
+			return TrinaryLogic::createFromBoolean($this->value <= $otherType->getValue());
+		}
+
+		if ($otherType instanceof CompoundType) {
+			return $otherType->isGreaterThanOrEqual($this);
 		}
 
 		return TrinaryLogic::createMaybe();

@@ -440,10 +440,17 @@ class UnionType implements CompoundType
 		});
 	}
 
-	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
-			return $type->isSmallerThan($otherType, $orEqual);
+		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $type->isSmallerThan($otherType);
+		});
+	}
+
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $type->isSmallerThanOrEqual($otherType);
 		});
 	}
 
@@ -475,10 +482,17 @@ class UnionType implements CompoundType
 		});
 	}
 
-	public function isGreaterThan(Type $otherType, bool $orEqual = false): TrinaryLogic
+	public function isGreaterThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($otherType, $orEqual): TrinaryLogic {
-			return $otherType->isSmallerThan($type, $orEqual);
+		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $otherType->isSmallerThan($type);
+		});
+	}
+
+	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
+			return $otherType->isSmallerThanOrEqual($type);
 		});
 	}
 

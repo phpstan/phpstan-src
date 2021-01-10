@@ -85,7 +85,9 @@ interface Type
 
 	public function toArray(): Type;
 
-	public function isSmallerThan(Type $otherType, bool $orEqual = false): TrinaryLogic;
+	public function isSmallerThan(Type $otherType): TrinaryLogic;
+
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
 
 	public function isNumericString(): TrinaryLogic;
 

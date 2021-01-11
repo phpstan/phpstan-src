@@ -70,7 +70,8 @@ class ResolvedPhpDocBlock
 
 	private ?bool $isFinal = null;
 
-	private ?bool $isPure = null;
+	/** @var bool|'notLoaded'|null */
+	private $isPure = 'notLoaded';
 
 	private function __construct()
 	{
@@ -131,7 +132,7 @@ class ResolvedPhpDocBlock
 		$self->isDeprecated = false;
 		$self->isInternal = false;
 		$self->isFinal = false;
-		$self->isPure = false;
+		$self->isPure = null;
 
 		return $self;
 	}
@@ -167,7 +168,7 @@ class ResolvedPhpDocBlock
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
-		$result->isPure = $this->isPure() ?? false;
+		$result->isPure = $this->isPure();
 
 		return $result;
 	}
@@ -425,16 +426,27 @@ class ResolvedPhpDocBlock
 
 	public function isPure(): ?bool
 	{
-		if ($this->isPure === null) {
-			$this->isPure = $this->phpDocNodeResolver->resolveIsPure(
+		if ($this->isPure === 'notLoaded') {
+			$pure = $this->phpDocNodeResolver->resolveIsPure(
 				$this->phpDocNode
 			);
-		}
-		if (!$this->isPure) {
-			return null;
+			if ($pure) {
+				$this->isPure = true;
+				return $this->isPure;
+			} else {
+				$impure = $this->phpDocNodeResolver->resolveIsImpure(
+					$this->phpDocNode
+				);
+				if ($impure) {
+					$this->isPure = false;
+					return $this->isPure;
+				}
+			}
+
+			$this->isPure = null;
 		}
 
-		return true;
+		return $this->isPure;
 	}
 
 	/**

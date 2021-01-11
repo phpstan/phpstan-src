@@ -49,6 +49,7 @@ use PhpParser\Node\Stmt\While_;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Node\BooleanAndNode;
 use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
@@ -1904,6 +1905,8 @@ class NodeScopeResolver
 			$leftResult = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($expr->right, $leftResult->getTruthyScope(), $nodeCallback, $context);
 			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
+
+			$nodeCallback(new BooleanAndNode($expr, $leftResult->getTruthyScope()), $scope);
 
 			return new ExpressionResult(
 				$leftMergedWithRightScope,

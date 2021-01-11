@@ -9,3 +9,4 @@ parameters:
 		readComposerPhpVersion: true
 		dateTimeInstantiation: true
 		detectDuplicateStubFiles: true
+		checkLogicalAndConstantCondition: true

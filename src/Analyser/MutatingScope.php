@@ -2442,6 +2442,7 @@ class MutatingScope implements Scope
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
+	 * @param bool|null $isPure
 	 * @return self
 	 */
 	public function enterClassMethod(
@@ -2454,7 +2455,7 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		bool $isPure
+		?bool $isPure = null
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2535,6 +2536,7 @@ class MutatingScope implements Scope
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
+	 * @param bool|null $isPure
 	 * @return self
 	 */
 	public function enterFunction(
@@ -2547,7 +2549,7 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		bool $isPure
+		?bool $isPure = null
 	): self
 	{
 		return $this->enterFunctionLike(

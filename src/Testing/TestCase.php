@@ -291,6 +291,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			 * @param bool $isInternal
 			 * @param bool $isFinal
 			 * @param string|null $stubPhpDocString
+			 * @param bool|null $isPure
 			 * @return PhpMethodReflection
 			 */
 			public function create(
@@ -305,8 +306,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				bool $isDeprecated,
 				bool $isInternal,
 				bool $isFinal,
-				bool $isPure,
-				?string $stubPhpDocString
+				?string $stubPhpDocString,
+				?bool $isPure = null
 			): PhpMethodReflection
 			{
 				return new PhpMethodReflection(
@@ -325,8 +326,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$isDeprecated,
 					$isInternal,
 					$isFinal,
-					$isPure,
-					$stubPhpDocString
+					$stubPhpDocString,
+					$isPure
 				);
 			}
 
@@ -494,6 +495,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			 * @param bool $isInternal
 			 * @param bool $isFinal
 			 * @param string|false $filename
+			 * @param bool|null $isPure
 			 * @return PhpFunctionReflection
 			 */
 			public function create(
@@ -506,8 +508,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				bool $isDeprecated,
 				bool $isInternal,
 				bool $isFinal,
-				bool $isPure,
-				$filename
+				$filename,
+				?bool $isPure = null
 			): PhpFunctionReflection
 			{
 				return new PhpFunctionReflection(
@@ -523,8 +525,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$isDeprecated,
 					$isInternal,
 					$isFinal,
-					$isPure,
-					$filename
+					$filename,
+					$isPure
 				);
 			}
 

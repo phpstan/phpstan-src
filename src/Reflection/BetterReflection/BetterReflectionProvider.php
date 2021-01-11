@@ -302,8 +302,8 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$isPure,
-			$reflectionFunction->getFileName()
+			$reflectionFunction->getFileName(),
+			$isPure
 		);
 	}
 

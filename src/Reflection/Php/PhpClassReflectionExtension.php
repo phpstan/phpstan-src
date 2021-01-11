@@ -680,8 +680,8 @@ class PhpClassReflectionExtension
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$isPure,
-			$stubPhpDocString
+			$stubPhpDocString,
+			$isPure
 		);
 	}
 

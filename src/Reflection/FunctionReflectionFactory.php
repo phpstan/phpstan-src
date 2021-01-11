@@ -20,6 +20,7 @@ interface FunctionReflectionFactory
 	 * @param bool $isInternal
 	 * @param bool $isFinal
 	 * @param string|false $filename
+	 * @param bool|null $isPure
 	 * @return PhpFunctionReflection
 	 */
 	public function create(
@@ -32,8 +33,8 @@ interface FunctionReflectionFactory
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		bool $isPure,
-		$filename
+		$filename,
+		?bool $isPure = null
 	): PhpFunctionReflection;
 
 }

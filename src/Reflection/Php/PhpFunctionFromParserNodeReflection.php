@@ -44,7 +44,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 	private bool $isFinal;
 
-	private bool $isPure;
+	private ?bool $isPure;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
@@ -62,6 +62,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
+	 * @param bool|null $isPure
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
@@ -76,7 +77,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		bool $isDeprecated = false,
 		bool $isInternal = false,
 		bool $isFinal = false,
-		bool $isPure = false
+		?bool $isPure = null
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -217,8 +218,8 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		if ($this->getReturnType() instanceof VoidType) {
 			return TrinaryLogic::createYes();
 		}
-		if ($this->isPure) {
-			return TrinaryLogic::createNo();
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
 
 		return TrinaryLogic::createMaybe();

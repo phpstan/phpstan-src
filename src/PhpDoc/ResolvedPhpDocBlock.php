@@ -167,7 +167,7 @@ class ResolvedPhpDocBlock
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
-		$result->isPure = $this->isPure();
+		$result->isPure = $this->isPure() ?? false;
 
 		return $result;
 	}
@@ -423,14 +423,18 @@ class ResolvedPhpDocBlock
 		return $this->templateTypeMap;
 	}
 
-	public function isPure(): bool
+	public function isPure(): ?bool
 	{
 		if ($this->isPure === null) {
 			$this->isPure = $this->phpDocNodeResolver->resolveIsPure(
 				$this->phpDocNode
 			);
 		}
-		return $this->isPure;
+		if (!$this->isPure) {
+			return null;
+		}
+
+		return true;
 	}
 
 	/**

@@ -35,6 +35,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
+	 * @param bool|null $isPure
 	 */
 	public function __construct(
 		ClassReflection $declaringClass,
@@ -50,7 +51,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		bool $isPure
+		?bool $isPure = null
 	)
 	{
 		$name = strtolower($classMethod->name->name);

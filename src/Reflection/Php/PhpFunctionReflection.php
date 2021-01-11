@@ -49,10 +49,10 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 
 	private bool $isFinal;
 
-	private bool $isPure;
-
 	/** @var string|false */
 	private $filename;
+
+	private ?bool $isPure;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
@@ -71,6 +71,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 	 * @param bool $isInternal
 	 * @param bool $isFinal
 	 * @param string|false $filename
+	 * @param bool|null $isPure
 	 */
 	public function __construct(
 		\ReflectionFunction $reflection,
@@ -85,8 +86,8 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		bool $isPure,
-		$filename
+		$filename,
+		?bool $isPure = null
 	)
 	{
 		$this->reflection = $reflection;
@@ -101,8 +102,8 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		$this->deprecatedDescription = $deprecatedDescription;
 		$this->isInternal = $isInternal;
 		$this->isFinal = $isFinal;
-		$this->isPure = $isPure;
 		$this->filename = $filename;
+		$this->isPure = $isPure;
 	}
 
 	public function getName(): string
@@ -287,8 +288,8 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		if ($this->getReturnType() instanceof VoidType) {
 			return TrinaryLogic::createYes();
 		}
-		if ($this->isPure) {
-			return TrinaryLogic::createNo();
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
 
 		return TrinaryLogic::createMaybe();

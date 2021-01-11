@@ -70,7 +70,7 @@ class PhpMethodReflection implements MethodReflection
 
 	private bool $isFinal;
 
-	private bool $isPure;
+	private ?bool $isPure;
 
 	private ?string $stubPhpDocString;
 
@@ -110,8 +110,8 @@ class PhpMethodReflection implements MethodReflection
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		bool $isPure,
-		?string $stubPhpDocString
+		?string $stubPhpDocString,
+		?bool $isPure = null
 	)
 	{
 		$this->declaringClass = $declaringClass;
@@ -129,8 +129,8 @@ class PhpMethodReflection implements MethodReflection
 		$this->isDeprecated = $isDeprecated;
 		$this->isInternal = $isInternal;
 		$this->isFinal = $isFinal;
-		$this->isPure = $isPure;
 		$this->stubPhpDocString = $stubPhpDocString;
+		$this->isPure = $isPure;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -454,8 +454,8 @@ class PhpMethodReflection implements MethodReflection
 		if ($this->getReturnType() instanceof VoidType) {
 			return TrinaryLogic::createYes();
 		}
-		if ($this->isPure) {
-			return TrinaryLogic::createNo();
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
 
 		return TrinaryLogic::createMaybe();

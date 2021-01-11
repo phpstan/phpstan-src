@@ -50,6 +50,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
+use PHPStan\Node\BooleanOrNode;
 use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
@@ -1922,6 +1923,8 @@ class NodeScopeResolver
 			$leftResult = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($expr->right, $leftResult->getFalseyScope(), $nodeCallback, $context);
 			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
+
+			$nodeCallback(new BooleanOrNode($expr, $leftResult->getFalseyScope()), $scope);
 
 			return new ExpressionResult(
 				$leftMergedWithRightScope,

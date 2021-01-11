@@ -50,6 +50,7 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			checkLogicalOrConstantCondition: %featureToggles.checkLogicalOrConstantCondition%
 		tags:
 			- phpstan.rules.rule
 

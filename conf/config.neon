@@ -23,6 +23,7 @@ parameters:
 		dateTimeInstantiation: false
 		detectDuplicateStubFiles: false
 		checkLogicalAndConstantCondition: false
+		checkLogicalOrConstantCondition: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -170,7 +171,8 @@ parametersSchema:
 		readComposerPhpVersion: bool(),
 		dateTimeInstantiation: bool(),
 		detectDuplicateStubFiles: bool(),
-		checkLogicalAndConstantCondition: bool()
+		checkLogicalAndConstantCondition: bool(),
+		checkLogicalOrConstantCondition: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

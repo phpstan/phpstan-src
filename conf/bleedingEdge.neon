@@ -10,3 +10,4 @@ parameters:
 		dateTimeInstantiation: true
 		detectDuplicateStubFiles: true
 		checkLogicalAndConstantCondition: true
+		checkLogicalOrConstantCondition: true

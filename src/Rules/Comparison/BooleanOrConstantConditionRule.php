@@ -2,11 +2,13 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node\Expr\BinaryOp\BooleanOr;
+use PHPStan\Node\BooleanOrNode;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp\BooleanOr>
+ * @implements \PHPStan\Rules\Rule<BooleanOrNode>
  */
 class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 {
@@ -15,18 +17,22 @@ class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $checkLogicalOrConstantCondition;
+
 	public function __construct(
 		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
+		bool $checkLogicalOrConstantCondition
 	)
 	{
 		$this->helper = $helper;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->checkLogicalOrConstantCondition = $checkLogicalOrConstantCondition;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\BinaryOp\BooleanOr::class;
+		return BooleanOrNode::class;
 	}
 
 	public function processNode(
@@ -34,16 +40,21 @@ class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 		\PHPStan\Analyser\Scope $scope
 	): array
 	{
+		$originalNode = $node->getOriginalNode();
+		if (!$originalNode instanceof BooleanOr && !$this->checkLogicalOrConstantCondition) {
+			return [];
+		}
+
 		$messages = [];
-		$leftType = $this->helper->getBooleanType($scope, $node->left);
+		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		if ($leftType instanceof ConstantBooleanType) {
-			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $tipText): RuleErrorBuilder {
+			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode, $tipText): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;
 				}
 
-				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->left);
+				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $originalNode->left);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
 					return $ruleErrorBuilder;
 				}
@@ -53,22 +64,23 @@ class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 			$messages[] = $addTipLeft(RuleErrorBuilder::message(sprintf(
 				'Left side of || is always %s.',
 				$leftType->getValue() ? 'true' : 'false'
-			)))->line($node->left->getLine())->build();
+			)))->line($originalNode->left->getLine())->build();
 		}
 
+		$rightScope = $node->getRightScope();
 		$rightType = $this->helper->getBooleanType(
-			$scope->filterByFalseyValue($node->left),
-			$node->right
+			$rightScope,
+			$originalNode->right
 		);
 		if ($rightType instanceof ConstantBooleanType) {
-			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $tipText): RuleErrorBuilder {
+			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode, $tipText): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType(
-					$scope->doNotTreatPhpDocTypesAsCertain()->filterByFalseyValue($node->left),
-					$node->right
+					$rightScope->doNotTreatPhpDocTypesAsCertain(),
+					$originalNode->right
 				);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
 					return $ruleErrorBuilder;
@@ -79,18 +91,18 @@ class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 			$messages[] = $addTipRight(RuleErrorBuilder::message(sprintf(
 				'Right side of || is always %s.',
 				$rightType->getValue() ? 'true' : 'false'
-			)))->line($node->right->getLine())->build();
+			)))->line($originalNode->right->getLine())->build();
 		}
 
 		if (count($messages) === 0) {
-			$nodeType = $scope->getType($node);
+			$nodeType = $scope->getType($originalNode);
 			if ($nodeType instanceof ConstantBooleanType) {
-				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $tipText): RuleErrorBuilder {
+				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode, $tipText): RuleErrorBuilder {
 					if (!$this->treatPhpDocTypesAsCertain) {
 						return $ruleErrorBuilder;
 					}
 
-					$booleanNativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getType($node);
+					$booleanNativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getType($originalNode);
 					if ($booleanNativeType instanceof ConstantBooleanType) {
 						return $ruleErrorBuilder;
 					}

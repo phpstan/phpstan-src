@@ -23,7 +23,8 @@ class BooleanOrConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 				),
 				$this->treatPhpDocTypesAsCertain
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
+			true
 		);
 	}
 

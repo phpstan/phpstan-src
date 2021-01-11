@@ -136,15 +136,14 @@ class ContainerFactory
 		$twoDaysAgo = time() - 24 * 60 * 60 * 2;
 
 		foreach ($finder as $containerFile) {
+			$path = $containerFile->getRealPath();
+			if ($path === false) {
+				continue;
+			}
 			if ($containerFile->getATime() > $twoDaysAgo) {
 				continue;
 			}
 			if ($containerFile->getCTime() > $twoDaysAgo) {
-				continue;
-			}
-
-			$path = $containerFile->getRealPath();
-			if ($path === false) {
 				continue;
 			}
 

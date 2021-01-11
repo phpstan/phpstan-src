@@ -30,6 +30,7 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 		'@phpstan-ignore-line',
 		'@phpstan-method',
 		'@phpstan-pure',
+		'@phpstan-impure',
 	];
 
 	private Lexer $phpDocLexer;

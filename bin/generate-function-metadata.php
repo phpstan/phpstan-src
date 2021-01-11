@@ -25,12 +25,6 @@ use PhpParser\ParserFactory;
 		public function enterNode(Node $node)
 		{
 			if ($node instanceof Node\Stmt\Function_) {
-				if ($node->getDocComment() !== null) {
-					$phpDoc = $node->getDocComment()->getText();
-					if (strpos($phpDoc, '@throws') !== false) {
-						return null;
-					}
-				}
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
 						if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
@@ -42,12 +36,6 @@ use PhpParser\ParserFactory;
 			}
 
 			if ($node instanceof Node\Stmt\ClassMethod) {
-				if ($node->getDocComment() !== null) {
-					$phpDoc = $node->getDocComment()->getText();
-					if (strpos($phpDoc, '@throws') !== false) {
-						return null;
-					}
-				}
 				$class = $node->getAttribute('parent');
 				if (!$class instanceof Node\Stmt\ClassLike) {
 					throw new \PHPStan\ShouldNotHappenException($node->name->toString());

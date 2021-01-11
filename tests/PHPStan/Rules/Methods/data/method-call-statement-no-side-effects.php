@@ -22,3 +22,47 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function doFoo()
+	{
+
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doPure()
+	{
+
+	}
+
+	/**
+	 * @phpstan-pure
+	 * @throws void
+	 */
+	public function doPureWithThrowsVoid()
+	{
+
+	}
+
+	/**
+	 * @phpstan-pure
+	 * @throws \Exception
+	 */
+	public function doPureWithThrowsException()
+	{
+
+	}
+
+	public function doBar(): void
+	{
+		$this->doFoo();
+		$this->doPure(); // report
+		$this->doPureWithThrowsVoid(); // report
+		$this->doPureWithThrowsException(); // do not report
+	}
+
+}

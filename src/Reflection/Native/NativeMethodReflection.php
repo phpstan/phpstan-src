@@ -27,6 +27,8 @@ class NativeMethodReflection implements MethodReflection
 
 	private ?string $stubPhpDocString;
 
+	private ?Type $throwType;
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
@@ -34,6 +36,7 @@ class NativeMethodReflection implements MethodReflection
 	 * @param \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] $variants
 	 * @param TrinaryLogic $hasSideEffects
 	 * @param string|null $stubPhpDocString
+	 * @param Type|null $throwType
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -41,7 +44,8 @@ class NativeMethodReflection implements MethodReflection
 		BuiltinMethodReflection $reflection,
 		array $variants,
 		TrinaryLogic $hasSideEffects,
-		?string $stubPhpDocString
+		?string $stubPhpDocString,
+		?Type $throwType
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -50,6 +54,7 @@ class NativeMethodReflection implements MethodReflection
 		$this->variants = $variants;
 		$this->hasSideEffects = $hasSideEffects;
 		$this->stubPhpDocString = $stubPhpDocString;
+		$this->throwType = $throwType;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -133,7 +138,7 @@ class NativeMethodReflection implements MethodReflection
 
 	public function getThrowType(): ?Type
 	{
-		return null;
+		return $this->throwType;
 	}
 
 	public function hasSideEffects(): TrinaryLogic

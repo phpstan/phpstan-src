@@ -42,6 +42,10 @@ class CallToFunctionStamentWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pure3() on a separate line has no effect.',
 				10,
 			],
+			[
+				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pureAndThrowsVoid() on a separate line has no effect.',
+				11,
+			],
 		]);
 	}
 

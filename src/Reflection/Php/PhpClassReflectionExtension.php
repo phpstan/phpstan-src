@@ -462,6 +462,7 @@ class PhpClassReflectionExtension
 			$stubPhpDocString = null;
 			$variants = [];
 			$reflectionMethod = null;
+			$throwType = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			} elseif (class_exists($classReflection->getName(), false)) {
@@ -514,6 +515,10 @@ class PhpClassReflectionExtension
 								$reflectionMethod->getName(),
 								$reflectionMethod->getDocComment()
 							);
+							$throwsTag = $phpDocBlock->getThrowsTag();
+							if ($throwsTag !== null) {
+								$throwType = $throwsTag->getType();
+							}
 							$returnTag = $phpDocBlock->getReturnTag();
 							if ($returnTag !== null) {
 								$phpDocReturnType = $returnTag->getType();
@@ -547,7 +552,8 @@ class PhpClassReflectionExtension
 				$methodReflection,
 				$variants,
 				$hasSideEffects,
-				$stubPhpDocString
+				$stubPhpDocString,
+				$throwType
 			);
 		}
 

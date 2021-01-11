@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\VoidType;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
@@ -49,6 +50,11 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 
 		$constructor = $classReflection->getConstructor();
 		if ($constructor->hasSideEffects()->no()) {
+			$throwsType = $constructor->getThrowType();
+			if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Call to %s::%s() on a separate line has no effect.',

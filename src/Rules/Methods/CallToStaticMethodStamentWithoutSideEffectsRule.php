@@ -11,6 +11,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\VoidType;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
@@ -89,6 +90,11 @@ class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 		}
 
 		if ($method->hasSideEffects()->no()) {
+			$throwsType = $method->getThrowType();
+			if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Call to %s %s::%s() on a separate line has no effect.',

@@ -54,6 +54,10 @@ class CallToStaticMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure3() on a separate line has no effect.',
 				41,
 			],
+			[
+				'Call to static method StaticMethodCallStatementNoSideEffects\PureThrows::pureAndThrowsVoid() on a separate line has no effect.',
+				67,
+			],
 		]);
 	}
 

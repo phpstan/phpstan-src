@@ -451,7 +451,12 @@ class PhpMethodReflection implements MethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		if ($this->getReturnType() instanceof VoidType) {
+		$name = strtolower($this->getName());
+
+		if (
+			$name !== '__construct'
+			&& $this->getReturnType() instanceof VoidType
+		) {
 			return TrinaryLogic::createYes();
 		}
 		if ($this->isPure !== null) {

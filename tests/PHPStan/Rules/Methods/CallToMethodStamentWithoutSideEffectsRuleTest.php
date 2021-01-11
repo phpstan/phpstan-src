@@ -32,6 +32,14 @@ class CallToMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to method Exception::getCode() on a separate line has no effect.',
 				21,
 			],
+			[
+				'Call to method MethodCallStatementNoSideEffects\Bar::doPure() on a separate line has no effect.',
+				63,
+			],
+			[
+				'Call to method MethodCallStatementNoSideEffects\Bar::doPureWithThrowsVoid() on a separate line has no effect.',
+				64,
+			],
 		]);
 	}
 

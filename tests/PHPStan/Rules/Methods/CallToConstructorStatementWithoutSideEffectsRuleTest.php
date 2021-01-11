@@ -23,6 +23,14 @@ class CallToConstructorStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to Exception::__construct() on a separate line has no effect.',
 				6,
 			],
+			[
+				'Call to ConstructorStatementNoSideEffects\ConstructorWithPure::__construct() on a separate line has no effect.',
+				57,
+			],
+			[
+				'Call to ConstructorStatementNoSideEffects\ConstructorWithPureAndThrowsVoid::__construct() on a separate line has no effect.',
+				58,
+			],
 		]);
 	}
 

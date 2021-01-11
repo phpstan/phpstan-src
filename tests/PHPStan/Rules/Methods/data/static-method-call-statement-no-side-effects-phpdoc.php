@@ -40,3 +40,32 @@ function(): void {
 	BzzStatic::pure2('test');
 	BzzStatic::pure3('test');
 };
+
+class PureThrows
+{
+
+	/**
+	 * @phpstan-pure
+	 * @throws void
+	 */
+	public static function pureAndThrowsVoid()
+	{
+
+	}
+
+	/**
+	 * @phpstan-pure
+	 * @throws \Exception
+	 */
+	public static function pureAndThrowsException()
+	{
+
+	}
+
+	public function doFoo(): void
+	{
+		self::pureAndThrowsVoid();
+		self::pureAndThrowsException();
+	}
+
+}

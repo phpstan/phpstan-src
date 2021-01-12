@@ -28,6 +28,11 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap;
 	}
 
+	public function getOriginalParametersAcceptor(): ParametersAcceptor
+	{
+		return $this->parametersAcceptor;
+	}
+
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->parametersAcceptor->getTemplateTypeMap();

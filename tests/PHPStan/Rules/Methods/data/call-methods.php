@@ -1477,10 +1477,10 @@ class ClassStringWithUpperBounds
 	 * @template T of \Exception
 	 * @param class-string<T> $s
 	 * @param T $object
+	 * @return T
 	 */
 	public function doFoo(string $s, $object)
 	{
-
 	}
 
 	public function doBar(\Throwable $t)

@@ -1750,4 +1750,17 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4188.php'], []);
 	}
 
+	public function testOnlyRelevantUnableToResolveTemplateType(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/only-relevant-unable-to-resolve-template-type.php'], [
+			[
+				'Unable to resolve the template type T in call to method OnlyRelevantUnableToResolve\Foo::doBaz()',
+				41,
+			],
+		]);
+	}
+
 }

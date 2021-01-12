@@ -427,10 +427,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				15,
 			],
 			[
-				'Unable to resolve the template type B in call to function CallGenericFunction\f',
-				15,
-			],
-			[
 				'Parameter #1 $a of function CallGenericFunction\g expects DateTime, DateTimeImmutable given.',
 				26,
 			],

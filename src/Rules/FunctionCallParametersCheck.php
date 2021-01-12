@@ -6,10 +6,13 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -295,9 +298,24 @@ class FunctionCallParametersCheck
 			))->line($argumentLine)->build();
 		}
 
-		if ($this->checkMissingTypehints) {
+		if ($this->checkMissingTypehints && $parametersAcceptor instanceof ResolvedFunctionVariant) {
+			$originalReturnType = $parametersAcceptor->getOriginalParametersAcceptor()->getReturnType();
+			$returnTemplateTypes = [];
+			TypeTraverser::map($originalReturnType, static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
+				if ($type instanceof TemplateType) {
+					$returnTemplateTypes[$type->getName()] = true;
+					return $type;
+				}
+
+				return $traverse($type);
+			});
+
 			foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
 				if (!($type instanceof ErrorType) && !($type instanceof NeverType)) {
+					continue;
+				}
+
+				if (!array_key_exists($name, $returnTemplateTypes)) {
 					continue;
 				}
 

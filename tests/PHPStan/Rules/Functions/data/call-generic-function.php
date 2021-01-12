@@ -7,9 +7,9 @@ namespace CallGenericFunction;
  * @template B
  * @param int|array<A> $a
  * @param int|array<B> $b
+ * @return A[]
  */
-function f($a, $b): void {
-}
+function f($a, $b): array {}
 
 function test(): void {
 	f(1, 2);
@@ -18,9 +18,9 @@ function test(): void {
 /**
  * @template A of \DateTime
  * @param A $a
+ * @return A
  */
-function g($a): void {
-}
+function g($a) {}
 
 function testg(): void {
 	g(new \DateTimeImmutable());

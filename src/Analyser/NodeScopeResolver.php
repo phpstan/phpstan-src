@@ -78,6 +78,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
@@ -360,6 +361,9 @@ class NodeScopeResolver
 				&& $scope->getClassReflection()->hasNativeMethod($stmt->name->toString())
 			) {
 				$methodReflection = $scope->getClassReflection()->getNativeMethod($stmt->name->toString());
+				if ($methodReflection instanceof NativeMethodReflection) {
+					return new StatementResult($scope, false, false, []);
+				}
 				if ($methodReflection instanceof PhpMethodReflection) {
 					$declaringTrait = $methodReflection->getDeclaringTrait();
 					if ($declaringTrait === null || $declaringTrait->getName() !== $scope->getTraitReflection()->getName()) {

@@ -59,4 +59,9 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3406_2.php'], []);
 	}
 
+	public function testBug4214(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4214.php'], []);
+	}
+
 }

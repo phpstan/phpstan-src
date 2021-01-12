@@ -78,6 +78,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -1799,6 +1800,21 @@ class NodeScopeResolver
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
+			$scopeFunction = $scope->getFunction();
+			if (
+				$methodReflection !== null
+				&& !$methodReflection->isStatic()
+				&& $methodReflection->hasSideEffects()->yes()
+				&& $scopeFunction instanceof MethodReflection
+				&& !$scopeFunction->isStatic()
+				&& $scope->isInClass()
+				&& (
+					$scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
+					|| $scope->getClassReflection()->isSubclassOf($methodReflection->getDeclaringClass()->getName())
+				)
+			) {
+				$scope = $scope->invalidateExpression(new Variable('this'), true);
+			}
 			$hasYield = $hasYield || $result->hasYield();
 		} elseif ($expr instanceof PropertyFetch) {
 			$result = $this->processExprNode($expr->var, $scope, $nodeCallback, $context->enterDeep());

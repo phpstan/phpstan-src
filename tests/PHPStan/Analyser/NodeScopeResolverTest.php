@@ -10705,6 +10705,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/impure-method.php');
 	}
 
+	public function dataBug4351(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4351.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10911,6 +10916,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4339
 	 * @dataProvider dataBug4343
 	 * @dataProvider dataImpureMethod
+	 * @dataProvider dataBug4351
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

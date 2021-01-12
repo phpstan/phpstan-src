@@ -9,6 +9,9 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
+/**
+ * @deprecated Use PHPStan\Reflection\ResolvedFunctionVariant
+ */
 class ResolvedFunctionVariant implements ParametersAcceptor
 {
 

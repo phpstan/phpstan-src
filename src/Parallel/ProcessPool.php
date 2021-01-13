@@ -41,7 +41,7 @@ class ProcessPool
 		$this->quitProcess($identifier);
 	}
 
-	public function quitProcess(string $identifier): void
+	private function quitProcess(string $identifier): void
 	{
 		$process = $this->getProcess($identifier);
 		$process->quit();

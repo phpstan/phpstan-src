@@ -76,7 +76,7 @@ class ParallelAnalyser
 				$process = $this->processPool->getProcess($identifier);
 				$process->bindConnection($decoder, $encoder);
 				if (count($jobs) === 0) {
-					$this->processPool->quitProcess($identifier);
+					$this->processPool->tryQuitProcess($identifier);
 					return;
 				}
 
@@ -174,7 +174,7 @@ class ParallelAnalyser
 				}
 
 				if (count($jobs) === 0) {
-					$this->processPool->quitProcess($processIdentifier);
+					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}
 

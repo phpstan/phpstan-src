@@ -319,7 +319,7 @@ class FunctionCallParametersCheck
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->line($funcCall->getLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->line($funcCall->getLine())->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')->build();
 			}
 		}
 

@@ -463,6 +463,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Unable to resolve the template type T in call to method Test\ClassStringWithUpperBounds::doFoo()',
 				1490,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
 				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
@@ -732,6 +733,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Unable to resolve the template type T in call to method Test\ClassStringWithUpperBounds::doFoo()',
 				1490,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
 				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
@@ -1759,6 +1761,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Unable to resolve the template type T in call to method OnlyRelevantUnableToResolve\Foo::doBaz()',
 				41,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}

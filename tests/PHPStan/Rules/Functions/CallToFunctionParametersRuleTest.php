@@ -425,6 +425,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Unable to resolve the template type A in call to function CallGenericFunction\f',
 				15,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
 				'Parameter #1 $a of function CallGenericFunction\g expects DateTime, DateTimeImmutable given.',
@@ -433,6 +434,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Unable to resolve the template type A in call to function CallGenericFunction\g',
 				26,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}

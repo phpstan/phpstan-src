@@ -40,7 +40,7 @@ class NewStaticRule implements Rule
 
 		$messages = [
 			RuleErrorBuilder::message('Unsafe usage of new static().')
-				->tip('Consider making the class or the constructor final.')
+				->tip('See: https://phpstan.org/blog/solving-phpstan-error-unsafe-usage-of-new-static')
 				->build(),
 		];
 		if (!$classReflection->hasConstructor()) {

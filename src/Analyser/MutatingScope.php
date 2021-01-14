@@ -292,7 +292,11 @@ class MutatingScope implements Scope
 	{
 		return $this->scopeFactory->create(
 			$this->context,
-			true
+			true,
+			[],
+			null,
+			null,
+			$this->variableTypes
 		);
 	}
 

@@ -336,21 +336,19 @@ class NodeScopeResolver
 	): StatementResult
 	{
 		if (
-			$stmt instanceof Echo_
-			|| (
-				$stmt instanceof Node\Stmt\Expression
-				&& !$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef
-			)
-			|| $stmt instanceof If_
-			|| $stmt instanceof While_
-			|| $stmt instanceof Switch_
-		) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
-		} elseif (
 			$stmt instanceof Throw_
 			|| $stmt instanceof Return_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, $stmt->expr);
+		} elseif (
+			!$stmt instanceof Static_
+			&& !$stmt instanceof Foreach_
+			&& (
+				!$stmt instanceof Node\Stmt\Expression
+				|| !$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef
+			)
+		) {
+			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 		}
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {

@@ -202,7 +202,7 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v2', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v3', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -353,12 +353,10 @@ class FileTypeMapper
 					return null;
 				} elseif ($node instanceof \PhpParser\Node\Stmt\Namespace_) {
 					$namespace = (string) $node->name;
-					return null;
 				} elseif ($node instanceof \PhpParser\Node\Stmt\Use_ && $node->type === \PhpParser\Node\Stmt\Use_::TYPE_NORMAL) {
 					foreach ($node->uses as $use) {
 						$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
 					}
-					return null;
 				} elseif ($node instanceof \PhpParser\Node\Stmt\GroupUse) {
 					$prefix = (string) $node->prefix;
 					foreach ($node->uses as $use) {
@@ -368,7 +366,6 @@ class FileTypeMapper
 
 						$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
 					}
-					return null;
 				} elseif ($node instanceof Node\Stmt\ClassMethod) {
 					$functionName = $node->name->name;
 					if (array_key_exists($functionName, $traitMethodAliases)) {
@@ -385,22 +382,11 @@ class FileTypeMapper
 					$resolvableTemplateTypes = true;
 				} elseif ($node instanceof Node\Stmt\Property) {
 					$resolvableTemplateTypes = true;
-				} elseif (!in_array(get_class($node), [
-					Node\Stmt\Foreach_::class,
-					Node\Expr\Assign::class,
-					Node\Expr\AssignRef::class,
-					Node\Stmt\Class_::class,
-					Node\Stmt\ClassConst::class,
-					Node\Stmt\Static_::class,
-					Node\Stmt\Echo_::class,
-					Node\Stmt\Return_::class,
-					Node\Stmt\Expression::class,
-					Node\Stmt\Throw_::class,
-					Node\Stmt\If_::class,
-					Node\Stmt\While_::class,
-					Node\Stmt\Switch_::class,
-					Node\Stmt\Nop::class,
-				], true)) {
+				} elseif (
+					!$node instanceof Node\Stmt
+					&& !$node instanceof Node\Expr\Assign
+					&& !$node instanceof Node\Expr\AssignRef
+				) {
 					return null;
 				}
 

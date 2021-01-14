@@ -90,4 +90,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/wrong-variable-name-var-empty-this.php'], []);
 	}
 
+	public function testAboveUse(): void
+	{
+		$this->analyse([__DIR__ . '/data/var-above-use.php'], []);
+	}
+
+	public function testAboveDeclare(): void
+	{
+		$this->analyse([__DIR__ . '/data/var-above-declare.php'], []);
+	}
+
 }

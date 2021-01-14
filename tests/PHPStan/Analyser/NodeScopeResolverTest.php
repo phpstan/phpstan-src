@@ -10710,6 +10710,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4351.php');
 	}
 
+	public function dataVarAboveUse(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/var-above-use.php');
+	}
+
+	public function dataVarAboveDeclare(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/var-above-declare.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10917,6 +10927,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4343
 	 * @dataProvider dataImpureMethod
 	 * @dataProvider dataBug4351
+	 * @dataProvider dataVarAboveUse
+	 * @dataProvider dataVarAboveDeclare
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -351,7 +351,7 @@ class MutatingScope implements Scope
 		return $this->variableTypes;
 	}
 
-	private function canAnyVariableExist(): bool
+	public function canAnyVariableExist(): bool
 	{
 		return ($this->function === null && !$this->isInAnonymousFunction()) || $this->afterExtractCall;
 	}

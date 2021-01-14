@@ -39,6 +39,8 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function getVariableType(string $variableName): Type;
 
+	public function canAnyVariableExist(): bool;
+
 	/**
 	 * @return array<int, string>
 	 */

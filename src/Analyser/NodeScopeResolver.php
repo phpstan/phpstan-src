@@ -2745,7 +2745,7 @@ class NodeScopeResolver
 					continue;
 				}
 
-				if ($scope->getFunction() === null && !$scope->isInAnonymousFunction()) {
+				if ($scope->canAnyVariableExist()) {
 					$certainty = TrinaryLogic::createYes();
 				}
 

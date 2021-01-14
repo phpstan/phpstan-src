@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt>
  */
 class WrongVariableNameInVarTagRule implements Rule
 {
@@ -24,15 +24,13 @@ class WrongVariableNameInVarTagRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node::class;
+		return \PhpParser\Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
 			!$node instanceof Node\Stmt\Foreach_
-			&& !$node instanceof Node\Expr\Assign
-			&& !$node instanceof Node\Expr\AssignRef
 			&& !$node instanceof Node\Stmt\Static_
 			&& !$node instanceof Node\Stmt\Echo_
 			&& !$node instanceof Node\Stmt\Return_
@@ -63,9 +61,6 @@ class WrongVariableNameInVarTagRule implements Rule
 		$varTags = $resolvedPhpDoc->getVarTags();
 		if (count($varTags) === 0) {
 			return [];
-		}
-		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {
-			return $this->processAssign($scope, $node->var, $varTags);
 		}
 
 		if ($node instanceof Node\Stmt\Foreach_) {
@@ -254,7 +249,7 @@ class WrongVariableNameInVarTagRule implements Rule
 	private function processExpression(Scope $scope, Expr $expr, array $varTags): array
 	{
 		if ($expr instanceof Node\Expr\Assign || $expr instanceof Node\Expr\AssignRef) {
-			return [];
+			return $this->processAssign($scope, $expr->var, $varTags);
 		}
 
 		return $this->processStmt($scope, $varTags, null);

@@ -865,4 +865,23 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1306.php'], []);
 	}
 
+	public function testBug3515(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteCatchScopeWithTryAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-3515.php'], [
+			[
+				'Undefined variable: $anArray',
+				19,
+			],
+			[
+				'Undefined variable: $anArray',
+				20,
+			],
+		]);
+	}
+
 }

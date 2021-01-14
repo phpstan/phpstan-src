@@ -343,10 +343,6 @@ class NodeScopeResolver
 		} elseif (
 			!$stmt instanceof Static_
 			&& !$stmt instanceof Foreach_
-			&& (
-				!$stmt instanceof Node\Stmt\Expression
-				|| !$stmt->expr instanceof Assign && !$stmt->expr instanceof AssignRef
-			)
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 		}
@@ -2734,9 +2730,24 @@ class NodeScopeResolver
 				$function !== null ? $function->getName() : null,
 				$comment->getText()
 			);
+
+			$assignedVariable = null;
+			if (
+				$stmt instanceof Node\Stmt\Expression
+				&& ($stmt->expr instanceof Assign || $stmt->expr instanceof AssignRef)
+				&& $stmt->expr->var instanceof Variable
+				&& is_string($stmt->expr->var->name)
+			) {
+				$assignedVariable = $stmt->expr->var->name;
+			}
+
 			foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
 				if (is_int($name)) {
 					$variableLessTags[] = $varTag;
+					continue;
+				}
+
+				if ($name === $assignedVariable) {
 					continue;
 				}
 

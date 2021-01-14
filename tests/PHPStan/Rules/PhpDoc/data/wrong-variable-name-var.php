@@ -188,4 +188,12 @@ class Foo
 		$demo = $this->demo();
 	}
 
+	public function overrideDifferentVariableAboveAssign()
+	{
+		$foo = 'foo';
+
+		/** @var int $foo */
+		$bar = $foo + 1;
+	}
+
 }

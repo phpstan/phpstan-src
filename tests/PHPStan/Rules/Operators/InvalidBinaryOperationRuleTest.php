@@ -117,4 +117,9 @@ class InvalidBinaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug2964.php'], []);
 	}
 
+	public function testBug3515(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3515.php'], []);
+	}
+
 }

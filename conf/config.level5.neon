@@ -19,3 +19,10 @@ services:
 			reportMaybes: %reportMaybes%
 	-
 		class: PHPStan\Rules\DateTimeInstantiationRule
+	-
+		class: PHPStan\Rules\Comparison\InsaneComparisonRule
+		arguments:
+			treatMixedAsPossibleString: %reportMaybes%
+		tags:
+			- phpstan.rules.rule
+

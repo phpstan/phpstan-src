@@ -11,7 +11,8 @@ use PHPStan\Testing\RuleTestCase;
 class InsaneComparisonRuleTest extends RuleTestCase
 {
 
-	private bool $treatMixedAsPossibleString;
+	/** @var bool */
+	private $treatMixedAsPossibleString;
 
 	protected function getRule(): Rule
 	{

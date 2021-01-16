@@ -39,6 +39,10 @@ class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Anonymous function should return SomeOtherNamespace\Baz but returns ClosureReturnTypes\Foo.',
 				46,
 			],
+			[
+				'Anonymous function should return array()|null but empty return statement found.',
+				88,
+			],
 		]);
 	}
 

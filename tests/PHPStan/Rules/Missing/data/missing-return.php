@@ -476,3 +476,23 @@ class NeverReturn
 	}
 
 }
+
+class ClosureWithMissingReturnWithoutTypehint
+{
+
+	public function doFoo(): void
+	{
+		function () {
+			if (rand(0, 1)) {
+				return;
+			}
+		};
+
+		function () {
+			if (rand(0, 1)) {
+				return null;
+			}
+		};
+	}
+
+}

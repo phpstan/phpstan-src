@@ -47,6 +47,7 @@ class ArrowFunctionReturnTypeRule implements \PHPStan\Rules\Rule
 			$scope,
 			$returnType,
 			$originalNode->expr,
+			$originalNode->expr,
 			'Anonymous function should return %s but empty return statement found.',
 			'Anonymous function with return type void returns %s but should not return anything.',
 			'Anonymous function should return %s but returns %s.',

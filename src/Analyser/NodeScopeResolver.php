@@ -2303,8 +2303,16 @@ class NodeScopeResolver
 		$nodeCallback(new InClosureNode($expr), $closureScope);
 
 		$gatheredReturnStatements = [];
-		$closureStmtsCallback = static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements): void {
+		$encounteredAnotherClosure = false;
+		$closureStmtsCallback = static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements, &$encounteredAnotherClosure): void {
 			$nodeCallback($node, $scope);
+			if ($encounteredAnotherClosure) {
+				return;
+			}
+			if ($node instanceof Expr\Closure || ($node instanceof New_ && $node->class instanceof Class_)) {
+				$encounteredAnotherClosure = true;
+				return;
+			}
 			if (!$node instanceof Return_) {
 				return;
 			}

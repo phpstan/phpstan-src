@@ -53,6 +53,9 @@ class MissingReturnRule implements Rule
 		if ($anonymousFunctionReturnType !== null) {
 			$returnType = $anonymousFunctionReturnType;
 			$description = 'Anonymous function';
+			if (!$node->hasNativeReturnTypehint()) {
+				return [];
+			}
 		} elseif ($scopeFunction !== null) {
 			$returnType = ParametersAcceptorSelector::selectSingle($scopeFunction->getVariants())->getReturnType();
 			if ($scopeFunction instanceof MethodReflection) {

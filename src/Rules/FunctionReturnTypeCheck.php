@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\GenericTypeVariableResolver;
@@ -35,6 +36,7 @@ class FunctionReturnTypeCheck
 		Scope $scope,
 		Type $returnType,
 		?Expr $returnValue,
+		Node $returnNode,
 		string $emptyReturnStatementMessage,
 		string $voidMessage,
 		string $typeMismatchMessage,
@@ -43,7 +45,11 @@ class FunctionReturnTypeCheck
 	): array
 	{
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-			return [RuleErrorBuilder::message($neverMessage)->build()];
+			return [
+				RuleErrorBuilder::message($neverMessage)
+					->line($returnNode->getLine())
+					->build(),
+			];
 		}
 
 		if ($isGenerator) {
@@ -72,7 +78,7 @@ class FunctionReturnTypeCheck
 				RuleErrorBuilder::message(sprintf(
 					$emptyReturnStatementMessage,
 					$returnType->describe($verbosityLevel)
-				))->build(),
+				))->line($returnNode->getLine())->build(),
 			];
 		}
 
@@ -83,7 +89,7 @@ class FunctionReturnTypeCheck
 				RuleErrorBuilder::message(sprintf(
 					$voidMessage,
 					$returnValueType->describe($verbosityLevel)
-				))->build(),
+				))->line($returnNode->getLine())->build(),
 			];
 		}
 
@@ -93,7 +99,7 @@ class FunctionReturnTypeCheck
 					$typeMismatchMessage,
 					$returnType->describe($verbosityLevel),
 					$returnValueType->describe($verbosityLevel)
-				))->build(),
+				))->line($returnNode->getLine())->build(),
 			];
 		}
 

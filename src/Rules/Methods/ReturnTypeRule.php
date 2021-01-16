@@ -51,6 +51,7 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 			$scope,
 			ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType(),
 			$node->expr,
+			$node,
 			sprintf(
 				'Method %s::%s() should return %%s but empty return statement found.',
 				$method->getDeclaringClass()->getDisplayName(),

@@ -52,8 +52,8 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 			$maxHeaderWidth = $length;
 		}
 
-		$wrap = static function ($rows) use ($terminalWidth, $maxHeaderWidth) {
-			return array_map(static function ($row) use ($terminalWidth, $maxHeaderWidth) {
+		$wrap = static function ($rows) use ($terminalWidth, $maxHeaderWidth): array {
+			return array_map(static function ($row) use ($terminalWidth, $maxHeaderWidth): array {
 				return array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
 					if ($terminalWidth > $maxHeaderWidth + 5) {
 						return wordwrap(

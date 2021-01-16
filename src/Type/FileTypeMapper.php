@@ -274,7 +274,7 @@ class FileTypeMapper
 		$uses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$phpDocMap, &$classStack, &$namespace, &$functionName, &$uses, &$typeMapStack) {
+			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$phpDocMap, &$classStack, &$namespace, &$functionName, &$uses, &$typeMapStack): ?int {
 				$resolvableTemplateTypes = false;
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($lookForTrait !== null) {

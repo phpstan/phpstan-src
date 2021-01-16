@@ -205,7 +205,7 @@ class FooImpl implements FooInterface
 class ClosureAccepts
 {
 
-	public function doFoo()
+	public function doFoo(ParentFooInterface $parent)
 	{
 		$c = function (FooInterface $x, $y): FooInterface {
 			return new FooImpl();
@@ -244,17 +244,17 @@ class ClosureAccepts
 		$this->doBar($c);
 		$this->doBaz($c);
 
-		$c = function (FooInterface $x): ParentFooInterface { // return type contravariance - error
-			return new FooImpl();
+		$c = function (FooInterface $x) use ($parent): ParentFooInterface { // return type contravariance - error
+			return $parent;
 		};
 		$this->doBar($c);
 		$this->doBaz($c);
 	}
 
-	public function doFooUnionClosures()
+	public function doFooUnionClosures(FooInterface $foo, ParentFooInterface $parent)
 	{
-		$closure = function (): FooInterface {
-			return new FooImpl();
+		$closure = function () use ($foo): FooInterface {
+			return $foo;
 		};
 		$c = function (FooInterface $x, $y): FooInterface {
 			return new FooImpl();
@@ -310,8 +310,8 @@ class ClosureAccepts
 		$this->doBar($c);
 		$this->doBaz($c);
 
-		$c = function (FooInterface $x): ParentFooInterface { // return type contravariance - error
-			return new FooImpl();
+		$c = function (FooInterface $x) use ($parent): ParentFooInterface { // return type contravariance - error
+			return $parent;
 		};
 		if (rand(0, 1) === 0) {
 			$c = $closure;
@@ -319,8 +319,8 @@ class ClosureAccepts
 		$this->doBar($c);
 		$this->doBaz($c);
 
-		$c = function () {
-
+		$c = function ($mixed) {
+			return $mixed;
 		};
 		$this->doBar($c);
 		$this->doBaz($c);

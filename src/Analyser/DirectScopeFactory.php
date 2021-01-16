@@ -32,6 +32,8 @@ class DirectScopeFactory implements ScopeFactory
 
 	private \PHPStan\Parser\Parser $parser;
 
+	private NodeScopeResolver $nodeScopeResolver;
+
 	private bool $treatPhpDocTypesAsCertain;
 
 	/** @var string[] */
@@ -46,6 +48,7 @@ class DirectScopeFactory implements ScopeFactory
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
 		\PHPStan\Parser\Parser $parser,
+		NodeScopeResolver $nodeScopeResolver,
 		bool $treatPhpDocTypesAsCertain,
 		Container $container
 	)
@@ -58,6 +61,7 @@ class DirectScopeFactory implements ScopeFactory
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
 		$this->parser = $parser;
+		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 	}
@@ -115,6 +119,7 @@ class DirectScopeFactory implements ScopeFactory
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
 			$this->parser,
+			$this->nodeScopeResolver,
 			$context,
 			$declareStrictTypes,
 			$constantTypes,

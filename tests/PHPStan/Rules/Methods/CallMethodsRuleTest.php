@@ -466,7 +466,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
+				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array(\'foo\')|null given.',
 				1533,
 			],
 			[
@@ -736,7 +736,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array|null given.',
+				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array(\'foo\')|null given.',
 				1533,
 			],
 			[

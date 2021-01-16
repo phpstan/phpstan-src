@@ -555,6 +555,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
 			$this->getParser(),
+			self::getContainer()->getByType(NodeScopeResolver::class),
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container
 		);

@@ -49,7 +49,7 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 					32,
 				],
 				[
-					'Array (array<callable(): string>) does not accept Closure(): int.',
+					'Array (array<callable(): string>) does not accept Closure(): 1.',
 					45,
 				],
 				[

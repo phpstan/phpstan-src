@@ -39,7 +39,7 @@ class EchoRuleTest extends RuleTestCase
 				11,
 			],
 			[
-				'Parameter #1 (Closure(): mixed) of echo cannot be converted to string.',
+				'Parameter #1 (Closure(): void) of echo cannot be converted to string.',
 				13,
 			],
 			[

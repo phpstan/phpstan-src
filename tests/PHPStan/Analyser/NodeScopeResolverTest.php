@@ -10720,6 +10720,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/var-above-declare.php');
 	}
 
+	public function dataClosureReturnType(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10929,6 +10934,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4351
 	 * @dataProvider dataVarAboveUse
 	 * @dataProvider dataVarAboveDeclare
+	 * @dataProvider dataClosureReturnType
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

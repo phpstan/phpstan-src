@@ -31,7 +31,7 @@ class PrintRuleTest extends RuleTestCase
 				7,
 			],
 			[
-				'Parameter Closure(): mixed of print cannot be converted to string.',
+				'Parameter Closure(): void of print cannot be converted to string.',
 				9,
 			],
 			[
@@ -43,7 +43,7 @@ class PrintRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Parameter Closure(): mixed of print cannot be converted to string.',
+				'Parameter Closure(): void of print cannot be converted to string.',
 				17,
 			],
 			[

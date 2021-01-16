@@ -634,6 +634,8 @@ class FileTypeMapper
 						}
 					}
 				}
+
+				return null;
 			},
 			static function (): void {
 			}

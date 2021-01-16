@@ -86,6 +86,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPStan\Type\VoidType;
 use function array_key_exists;
 
 class MutatingScope implements Scope
@@ -114,6 +115,8 @@ class MutatingScope implements Scope
 	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
 	private Parser $parser;
+
+	private NodeScopeResolver $nodeScopeResolver;
 
 	private \PHPStan\Analyser\ScopeContext $context;
 
@@ -172,6 +175,7 @@ class MutatingScope implements Scope
 	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder
 	 * @param Parser $parser
+	 * @param NodeScopeResolver $nodeScopeResolver
 	 * @param \PHPStan\Analyser\ScopeContext $context
 	 * @param bool $declareStrictTypes
 	 * @param array<string, Type> $constantTypes
@@ -200,6 +204,7 @@ class MutatingScope implements Scope
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
 		Parser $parser,
+		NodeScopeResolver $nodeScopeResolver,
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
 		array $constantTypes = [],
@@ -232,6 +237,7 @@ class MutatingScope implements Scope
 		$this->typeSpecifier = $typeSpecifier;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
 		$this->parser = $parser;
+		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->context = $context;
 		$this->declareStrictTypes = $declareStrictTypes;
 		$this->constantTypes = $constantTypes;
@@ -1317,7 +1323,37 @@ class MutatingScope implements Scope
 					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 				}
 			} else {
-				$returnType = $this->getFunctionType($node->returnType, $node->returnType === null, false);
+				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node);
+				$closureReturnStatements = [];
+				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use (&$closureReturnStatements): void {
+					if (!$node instanceof Node\Stmt\Return_) {
+						return;
+					}
+
+					$closureReturnStatements[] = [$node, $scope];
+				});
+
+				$returnTypes = [];
+				$hasNull = false;
+				foreach ($closureReturnStatements as [$returnNode, $returnScope]) {
+					if ($returnNode->expr === null) {
+						$hasNull = true;
+						continue;
+					}
+
+					$returnTypes[] = $returnScope->getType($returnNode->expr);
+				}
+
+				if (count($returnTypes) === 0) {
+					$returnType = new VoidType();
+				} else {
+					if ($hasNull) {
+						$returnTypes[] = new NullType();
+					}
+					$returnType = TypeCombinator::union(...$returnTypes);
+				}
+
+				$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 			}
 
 			return new ClosureType(
@@ -2079,6 +2115,7 @@ class MutatingScope implements Scope
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
 			$this->parser,
+			$this->nodeScopeResolver,
 			$this->context,
 			$this->declareStrictTypes,
 			$this->constantTypes,
@@ -2711,6 +2748,43 @@ class MutatingScope implements Scope
 		?array $callableParameters = null
 	): self
 	{
+		$anonymousFunctionReflection = $this->getType($closure);
+		if (!$anonymousFunctionReflection instanceof ClosureType) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters);
+
+		return $this->scopeFactory->create(
+			$scope->context,
+			$scope->isDeclareStrictTypes(),
+			$scope->constantTypes,
+			$scope->getFunction(),
+			$scope->getNamespace(),
+			$scope->variableTypes,
+			$scope->moreSpecificTypes,
+			[],
+			$scope->inClosureBindScopeClass,
+			$anonymousFunctionReflection,
+			true,
+			[],
+			$scope->nativeExpressionTypes,
+			[],
+			false,
+			$this
+		);
+	}
+
+	/**
+	 * @param \PhpParser\Node\Expr\Closure $closure
+	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
+	 * @return self
+	 */
+	private function enterAnonymousFunctionWithoutReflection(
+		Expr\Closure $closure,
+		?array $callableParameters = null
+	): self
+	{
 		$variableTypes = [];
 		foreach ($closure->params as $i => $parameter) {
 			if ($callableParameters === null || $parameter->type !== null) {
@@ -2773,11 +2847,6 @@ class MutatingScope implements Scope
 			$variableTypes['this'] = VariableTypeHolder::createYes($this->getVariableType('this'));
 		}
 
-		$anonymousFunctionReflection = $this->getType($closure);
-		if (!$anonymousFunctionReflection instanceof ClosureType) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -2788,7 +2857,7 @@ class MutatingScope implements Scope
 			$moreSpecificTypes,
 			[],
 			$this->inClosureBindScopeClass,
-			$anonymousFunctionReflection,
+			null,
 			true,
 			[],
 			$nativeTypes,

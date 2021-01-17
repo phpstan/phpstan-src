@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeCombinator;
 
 /**
@@ -37,7 +36,6 @@ class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 		$returnType = $scope->getAnonymousFunctionReturnType();
 		$containsNull = TypeCombinator::containsNull($returnType);
 		$hasNativeTypehint = $node->getClosureExpr()->returnType !== null;
-		$generatorType = new ObjectType(\Generator::class);
 
 		$messages = [];
 		foreach ($node->getReturnStatements() as $returnStatement) {
@@ -55,7 +53,7 @@ class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 				'Anonymous function with return type void returns %s but should not return anything.',
 				'Anonymous function should return %s but returns %s.',
 				'Anonymous function should never return but return statement found.',
-				$generatorType->isSuperTypeOf($returnType)->yes()
+				count($node->getYieldStatements()) > 0
 			);
 
 			foreach ($returnMessages as $returnMessage) {

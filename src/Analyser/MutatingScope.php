@@ -1325,12 +1325,17 @@ class MutatingScope implements Scope
 			} else {
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node);
 				$closureReturnStatements = [];
-				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use (&$closureReturnStatements): void {
-					if (!$node instanceof Node\Stmt\Return_) {
+				$closureYieldStatements = [];
+				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use (&$closureReturnStatements, &$closureYieldStatements): void {
+					if ($node instanceof Node\Stmt\Return_) {
+						$closureReturnStatements[] = [$node, $scope];
+					}
+
+					if (!$node instanceof Expr\Yield_ && !$node instanceof Expr\YieldFrom) {
 						return;
 					}
 
-					$closureReturnStatements[] = [$node, $scope];
+					$closureYieldStatements[] = [$node, $scope];
 				});
 
 				$returnTypes = [];
@@ -1353,7 +1358,40 @@ class MutatingScope implements Scope
 					$returnType = TypeCombinator::union(...$returnTypes);
 				}
 
-				$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+				if (count($closureYieldStatements) > 0) {
+					$keyTypes = [];
+					$valueTypes = [];
+					foreach ($closureYieldStatements as [$yieldNode, $yieldScope]) {
+						if ($yieldNode instanceof Expr\Yield_) {
+							if ($yieldNode->key === null) {
+								$keyTypes[] = new IntegerType();
+							} else {
+								$keyTypes[] = $yieldScope->getType($yieldNode->key);
+							}
+
+							if ($yieldNode->value === null) {
+								$valueTypes[] = new NullType();
+							} else {
+								$valueTypes[] = $yieldScope->getType($yieldNode->value);
+							}
+
+							continue;
+						}
+
+						$yieldFromType = $yieldScope->getType($yieldNode->expr);
+						$keyTypes[] = $yieldFromType->getIterableKeyType();
+						$valueTypes[] = $yieldFromType->getIterableValueType();
+					}
+
+					$returnType = new GenericObjectType(\Generator::class, [
+						TypeCombinator::union(...$keyTypes),
+						TypeCombinator::union(...$valueTypes),
+						new MixedType(),
+						$returnType,
+					]);
+				} else {
+					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+				}
 			}
 
 			return new ClosureType(

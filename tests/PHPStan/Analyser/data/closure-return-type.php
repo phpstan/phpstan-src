@@ -56,6 +56,23 @@ class Foo
 			return;
 		};
 		assertType('int|null', $f());
+
+		$f = function () {
+			yield 1;
+			return 2;
+		};
+		assertType('Generator<int, 1, mixed, 2>', $f());
+
+		$g = function () use ($f) {
+			yield from $f();
+		};
+		assertType('Generator<int, 1, mixed, void>', $g());
+
+		$h = function (): \Generator {
+			yield 1;
+			return 2;
+		};
+		assertType('Generator<int, 1, mixed, 2>', $h());
 	}
 
 }

@@ -2303,8 +2303,9 @@ class NodeScopeResolver
 		$nodeCallback(new InClosureNode($expr), $closureScope);
 
 		$gatheredReturnStatements = [];
+		$gatheredYieldStatements = [];
 		$encounteredAnotherClosure = false;
-		$closureStmtsCallback = static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements, &$encounteredAnotherClosure): void {
+		$closureStmtsCallback = static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements, &$gatheredYieldStatements, &$encounteredAnotherClosure): void {
 			$nodeCallback($node, $scope);
 			if ($encounteredAnotherClosure) {
 				return;
@@ -2312,6 +2313,9 @@ class NodeScopeResolver
 			if ($node instanceof Expr\Closure || ($node instanceof New_ && $node->class instanceof Class_)) {
 				$encounteredAnotherClosure = true;
 				return;
+			}
+			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+				$gatheredYieldStatements[] = $node;
 			}
 			if (!$node instanceof Return_) {
 				return;
@@ -2324,6 +2328,7 @@ class NodeScopeResolver
 			$nodeCallback(new ClosureReturnStatementsNode(
 				$expr,
 				$gatheredReturnStatements,
+				$gatheredYieldStatements,
 				$statementResult
 			), $closureScope);
 
@@ -2352,6 +2357,7 @@ class NodeScopeResolver
 		$nodeCallback(new ClosureReturnStatementsNode(
 			$expr,
 			$gatheredReturnStatements,
+			$gatheredYieldStatements,
 			$statementResult
 		), $closureScope);
 

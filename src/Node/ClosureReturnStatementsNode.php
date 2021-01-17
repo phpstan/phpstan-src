@@ -3,6 +3,8 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node\Expr\Closure;
+use PhpParser\Node\Expr\Yield_;
+use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
 
@@ -14,22 +16,28 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 	/** @var \PHPStan\Node\ReturnStatement[] */
 	private array $returnStatements;
 
+	/** @var array<int, Yield_|YieldFrom> */
+	private array $yieldStatements;
+
 	private StatementResult $statementResult;
 
 	/**
 	 * @param \PhpParser\Node\Expr\Closure $closureExpr
 	 * @param \PHPStan\Node\ReturnStatement[] $returnStatements
+	 * @param array<int, Yield_|YieldFrom> $yieldStatements
 	 * @param \PHPStan\Analyser\StatementResult $statementResult
 	 */
 	public function __construct(
 		Closure $closureExpr,
 		array $returnStatements,
+		array $yieldStatements,
 		StatementResult $statementResult
 	)
 	{
 		parent::__construct($closureExpr->getAttributes());
 		$this->closureExpr = $closureExpr;
 		$this->returnStatements = $returnStatements;
+		$this->yieldStatements = $yieldStatements;
 		$this->statementResult = $statementResult;
 	}
 
@@ -44,6 +52,14 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;
+	}
+
+	/**
+	 * @return array<int, Yield_|YieldFrom>
+	 */
+	public function getYieldStatements(): array
+	{
+		return $this->yieldStatements;
 	}
 
 	public function getStatementResult(): StatementResult

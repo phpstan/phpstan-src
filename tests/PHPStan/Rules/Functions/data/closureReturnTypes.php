@@ -99,3 +99,21 @@ function (): string {
 
 	return 'bar';
 };
+
+function (): string {
+	if (rand(0, 1)) {
+		return 1;
+	}
+
+	$c = new class () {
+		public function doFoo(): int {
+			return 2;
+		}
+	};
+
+	if (rand(0, 1)) {
+		return 3;
+	}
+
+	return 4;
+};

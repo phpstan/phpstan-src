@@ -43,6 +43,18 @@ class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Anonymous function should return array()|null but empty return statement found.',
 				88,
 			],
+			[
+				'Anonymous function should return string but returns int.',
+				105,
+			],
+			[
+				'Anonymous function should return string but returns int.',
+				115,
+			],
+			[
+				'Anonymous function should return string but returns int.',
+				118,
+			],
 		]);
 	}
 

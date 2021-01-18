@@ -517,8 +517,14 @@ class NodeScopeResolver
 
 			if ($stmt->stmts !== null) {
 				$gatheredReturnStatements = [];
-				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements): void {
+				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements): void {
 					$nodeCallback($node, $scope);
+					if ($scope->getFunction() !== $methodScope->getFunction()) {
+						return;
+					}
+					if ($scope->isInAnonymousFunction()) {
+						return;
+					}
 					if (!$node instanceof Return_) {
 						return;
 					}

@@ -31,4 +31,18 @@ class Foo
 		return null;
 	}
 
+	private function dolor(): ?string {
+		$f = function () {
+			return null;
+		};
+
+		$c = new class () {
+			public function doFoo() {
+				return null;
+			}
+		};
+
+		return 'str';
+	}
+
 }

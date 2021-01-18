@@ -28,6 +28,10 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 				'Function TooWideFunctionReturnType\baz() never returns null so it can be removed from the return typehint.',
 				15,
 			],
+			[
+				'Function TooWideFunctionReturnType\ipsum() never returns null so it can be removed from the return typehint.',
+				27,
+			],
 		]);
 	}
 

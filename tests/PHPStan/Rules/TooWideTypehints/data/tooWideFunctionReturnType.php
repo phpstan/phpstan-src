@@ -23,3 +23,17 @@ function lorem(): ?string {
 
 	return null;
 }
+
+function ipsum(): ?string {
+	$f = function () {
+		return null;
+	};
+
+	$c = new class () {
+		public function doFoo() {
+			return null;
+		}
+	};
+
+	return 'str';
+}

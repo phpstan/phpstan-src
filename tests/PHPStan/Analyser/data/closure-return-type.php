@@ -75,4 +75,27 @@ class Foo
 		assertType('Generator<int, 1, mixed, 2>', $h());
 	}
 
+	public function doBar(): void
+	{
+		$f = function () {
+			if (rand(0, 1)) {
+				return 1;
+			}
+
+			function () {
+				return 'foo';
+			};
+
+			$c = new class() {
+				public function doFoo() {
+					return 2.0;
+				}
+			};
+
+			return 2;
+		};
+
+		assertType('1|2', $f());
+	}
+
 }

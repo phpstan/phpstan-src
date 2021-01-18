@@ -40,6 +40,7 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
@@ -1326,7 +1327,11 @@ class MutatingScope implements Scope
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
-				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use (&$closureReturnStatements, &$closureYieldStatements): void {
+				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements): void {
+					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+						return;
+					}
+
 					if ($node instanceof Node\Stmt\Return_) {
 						$closureReturnStatements[] = [$node, $scope];
 					}
@@ -2895,7 +2900,7 @@ class MutatingScope implements Scope
 			$moreSpecificTypes,
 			[],
 			$this->inClosureBindScopeClass,
-			null,
+			new TrivialParametersAcceptor(),
 			true,
 			[],
 			$nativeTypes,

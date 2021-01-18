@@ -141,3 +141,17 @@ class Ipsum
 	}
 
 }
+
+class DolorWithAnonymous
+{
+
+	private $foo;
+
+	public function doFoo()
+	{
+		new class () {
+			private $bar;
+		};
+	}
+
+}

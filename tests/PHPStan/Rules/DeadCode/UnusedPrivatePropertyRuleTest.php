@@ -100,6 +100,14 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				'Property UnusedPrivateProperty\Lorem::$baz is never read, only written.',
 				117,
 			],
+			[
+				'Property class@anonymous/tests/PHPStan/Rules/DeadCode/data/unused-private-property.php:152::$bar is unused.',
+				153,
+			],
+			[
+				'Property UnusedPrivateProperty\DolorWithAnonymous::$foo is unused.',
+				148,
+			],
 		]);
 		$this->analyse([__DIR__ . '/data/TestExtension.php'], [
 			[

@@ -1181,6 +1181,11 @@ services:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\SimpleXMLElementXpathMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\StrSplitFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

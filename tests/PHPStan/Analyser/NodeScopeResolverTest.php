@@ -3226,6 +3226,18 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'bool',
 				'$simpleXMLWritingXML',
 			],
+			[
+				'array<SimpleXMLElement>',
+				'$simpleXMLRightXpath',
+			],
+			[
+				'false',
+				'$simpleXMLWrongXpath',
+			],
+			[
+				'array<static(SimpleXMLElement)>|false',
+				'$simpleXMLUnknownXpath',
+			],
 		];
 	}
 

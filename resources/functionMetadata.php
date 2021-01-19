@@ -522,7 +522,7 @@ return [
 	'ResourceBundle::getErrorMessage' => ['hasSideEffects' => false],
 	'ResourceBundle::getIterator' => ['hasSideEffects' => false],
 	'SQLiteException::__construct' => ['hasSideEffects' => false],
-	'SimpleXMLElement::__construct' => ['hasSideEffects' => false],
+	'SimpleXMLElement::__construct' => ['hasSideEffects' => true],
 	'SimpleXMLElement::children' => ['hasSideEffects' => false],
 	'SimpleXMLElement::count' => ['hasSideEffects' => false],
 	'SimpleXMLElement::current' => ['hasSideEffects' => false],

@@ -170,6 +170,13 @@ class Foo
 
 		$simpleXMLWritingXML = $simpleXML->asXML('path.xml');
 
+		/** @var string $stringForXpath */
+		$stringForXpath = doFoo();
+
+		$simpleXMLRightXpath = $simpleXML->xpath('/a/b/c');
+		$simpleXMLWrongXpath = $simpleXML->xpath('[foo]');
+		$simpleXMLUnknownXpath = $simpleXML->xpath($stringForXpath);
+
 		if (rand(0, 1)) {
 			$maybeDefinedVariable = 'foo';
 		}

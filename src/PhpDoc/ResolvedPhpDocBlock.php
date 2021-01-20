@@ -18,6 +18,9 @@ class ResolvedPhpDocBlock
 
 	private PhpDocNode $phpDocNode;
 
+	/** @var PhpDocNode[] */
+	private array $phpDocNodes;
+
 	private string $phpDocString;
 
 	private ?string $filename;
@@ -100,6 +103,7 @@ class ResolvedPhpDocBlock
 		// new property also needs to be added to createEmpty() and merge()
 		$self = new self();
 		$self->phpDocNode = $phpDocNode;
+		$self->phpDocNodes = [$phpDocNode];
 		$self->phpDocString = $phpDocString;
 		$self->filename = $filename;
 		$self->nameScope = $nameScope;
@@ -115,6 +119,7 @@ class ResolvedPhpDocBlock
 		// new property also needs to be added to merge()
 		$self = new self();
 		$self->phpDocString = '/** */';
+		$self->phpDocNodes = [];
 		$self->filename = null;
 		$self->templateTypeMap = TemplateTypeMap::createEmpty();
 		$self->templateTags = [];
@@ -149,6 +154,13 @@ class ResolvedPhpDocBlock
 		// we will resolve everything on $this here so these properties don't have to be populated
 		// skip $result->phpDocNode
 		// skip $result->phpDocString - just for stubs
+		$phpDocNodes = $this->phpDocNodes;
+		foreach ($parents as $parent) {
+			foreach ($parent->phpDocNodes as $phpDocNode) {
+				$phpDocNodes[] = $phpDocNode;
+			}
+		}
+		$result->phpDocNodes = $phpDocNodes;
 		$result->filename = $this->filename;
 		// skip $result->nameScope
 		$result->templateTypeMap = $this->templateTypeMap;
@@ -191,6 +203,7 @@ class ResolvedPhpDocBlock
 
 		$self = new self();
 		$self->phpDocNode = $this->phpDocNode;
+		$self->phpDocNodes = $this->phpDocNodes;
 		$self->phpDocString = $this->phpDocString;
 		$self->filename = $this->filename;
 		$self->nameScope = $this->nameScope;
@@ -218,6 +231,14 @@ class ResolvedPhpDocBlock
 	public function getPhpDocString(): string
 	{
 		return $this->phpDocString;
+	}
+
+	/**
+	 * @return PhpDocNode[]
+	 */
+	public function getPhpDocNodes(): array
+	{
+		return $this->phpDocNodes;
 	}
 
 	public function getFilename(): ?string

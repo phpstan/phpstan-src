@@ -36,8 +36,6 @@ $reducedIntegersToStringWithInt = array_reduce($uniquedIntegers, function (): st
 
 }, 1);
 
-$reversedIntegers = array_reverse($integers);
-
 $filledIntegers = array_fill(0, 5, 1);
 $filledIntegersWithKeys = array_fill_keys([0], 1);
 

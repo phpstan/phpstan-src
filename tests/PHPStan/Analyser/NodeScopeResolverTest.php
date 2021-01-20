@@ -4984,10 +4984,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$reducedToInt',
 			],
 			[
-				'1|2|3',
-				'$reversedIntegers[0]',
-			],
-			[
 				'array<0|1|2, 1|2|3>',
 				'array_change_key_case($integers)',
 			],
@@ -10725,6 +10721,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type.php');
 	}
 
+	public function dataBug4398(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4398.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10935,6 +10936,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataVarAboveUse
 	 * @dataProvider dataVarAboveDeclare
 	 * @dataProvider dataClosureReturnType
+	 * @dataProvider dataBug4398
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

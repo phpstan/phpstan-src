@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PHPStan\File\FileFinder;
 use Roave\BetterReflection\Identifier\Identifier;
 use Roave\BetterReflection\Identifier\IdentifierType;
 use Roave\BetterReflection\Reflection\Reflection;
@@ -16,9 +15,8 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 	private \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher $fileNodesFetcher;
 
-	private \PHPStan\File\FileFinder $fileFinder;
-
-	private string $directory;
+	/** @var string[] */
+	private array $files;
 
 	/** @var array<string, string>|null */
 	private ?array $classToFile = null;
@@ -35,15 +33,17 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
 	private array $locatedSourcesByFile = [];
 
+	/**
+	 * @param FileNodesFetcher $fileNodesFetcher
+	 * @param string[] $files
+	 */
 	public function __construct(
 		FileNodesFetcher $fileNodesFetcher,
-		FileFinder $fileFinder,
-		string $directory
+		array $files
 	)
 	{
 		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->fileFinder = $fileFinder;
-		$this->directory = $directory;
+		$this->files = $files;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
@@ -162,10 +162,9 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 	private function init(): void
 	{
-		$fileFinderResult = $this->fileFinder->findFiles([$this->directory]);
 		$classToFile = [];
 		$functionToFiles = [];
-		foreach ($fileFinderResult->getFiles() as $file) {
+		foreach ($this->files as $file) {
 			$symbols = $this->findSymbols($file);
 			$classesInFile = $symbols['classes'];
 			$functionsInFile = $symbols['functions'];

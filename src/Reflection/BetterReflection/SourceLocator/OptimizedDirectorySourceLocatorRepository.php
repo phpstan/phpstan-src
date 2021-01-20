@@ -21,7 +21,7 @@ class OptimizedDirectorySourceLocatorRepository
 			return $this->locators[$directory];
 		}
 
-		$this->locators[$directory] = $this->factory->create($directory);
+		$this->locators[$directory] = $this->factory->createByDirectory($directory);
 
 		return $this->locators[$directory];
 	}

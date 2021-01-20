@@ -45,7 +45,7 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 	public function testClass(string $className, string $expectedClassName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
-		$locator = $factory->create(__DIR__ . '/data/directory');
+		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
 		$classReflector = new ClassReflector($locator);
 		$classReflection = $classReflector->reflect($className);
 		$this->assertSame($expectedClassName, $classReflection->getName());
@@ -93,7 +93,7 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 	public function testFunctionExists(string $functionName, string $expectedFunctionName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
-		$locator = $factory->create(__DIR__ . '/data/directory');
+		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
 		$classReflector = new ClassReflector($locator);
 		$functionReflector = new FunctionReflector($locator, $classReflector);
 		$functionReflection = $functionReflector->reflect($functionName);
@@ -117,7 +117,7 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 	public function testFunctionDoesNotExist(string $functionName): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
-		$locator = $factory->create(__DIR__ . '/data/directory');
+		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
 		$classReflector = new ClassReflector($locator);
 		$functionReflector = new FunctionReflector($locator, $classReflector);
 

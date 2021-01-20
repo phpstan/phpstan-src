@@ -14,19 +14,19 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 
 	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository;
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
-
 	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory;
+
+	private OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory;
 
 	public function __construct(
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
-		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
-		OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory
+		OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
+		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory
 	)
 	{
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
-		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->optimizedPsrAutoloaderLocatorFactory = $optimizedPsrAutoloaderLocatorFactory;
+		$this->optimizedDirectorySourceLocatorFactory = $optimizedDirectorySourceLocatorFactory;
 	}
 
 	public function create(string $projectInstallationPath): ?SourceLocator
@@ -115,11 +115,17 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
 		}
 
+		$files = [];
+
 		foreach (array_merge($classMapFiles, $filePaths) as $file) {
 			if (!is_file($file)) {
 				continue;
 			}
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($file);
+			$files[] = $file;
+		}
+
+		if (count($files) > 0) {
+			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($files);
 		}
 
 		return new AggregateSourceLocator($locators);

@@ -921,7 +921,7 @@ class ClassReflection implements ReflectionWithFilename
 		);
 	}
 
-	private function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
+	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
 	{
 		if ($this->stubPhpDocBlock !== null) {
 			return $this->stubPhpDocBlock;

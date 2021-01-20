@@ -14,33 +14,54 @@ class OptimizedPsrAutoloaderLocator implements SourceLocator
 
 	private PsrAutoloaderMapping $mapping;
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory;
+
+	/** @var array<string, OptimizedDirectorySourceLocator|null> */
+	private array $locators = [];
 
 	public function __construct(
 		PsrAutoloaderMapping $mapping,
-		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository
+		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory
 	)
 	{
 		$this->mapping = $mapping;
-		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
+		$this->optimizedDirectorySourceLocatorFactory = $optimizedDirectorySourceLocatorFactory;
+	}
+
+	private function getLocator(Identifier $identifier): ?OptimizedDirectorySourceLocator
+	{
+		if (!array_key_exists($identifier->getName(), $this->locators)) {
+			$files = [];
+			foreach ($this->mapping->resolvePossibleFilePaths($identifier) as $file) {
+				if (!is_file($file)) {
+					continue;
+				}
+
+				$files[] = $file;
+			}
+
+			if (count($files) > 0) {
+				$this->locators[$identifier->getName()] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($files);
+			} else {
+				$this->locators[$identifier->getName()] = null;
+			}
+		}
+
+		return $this->locators[$identifier->getName()];
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
-		foreach ($this->mapping->resolvePossibleFilePaths($identifier) as $file) {
-			if (!file_exists($file)) {
-				continue;
-			}
-
-			$reflection = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($file)->locateIdentifier($reflector, $identifier);
-			if ($reflection === null) {
-				continue;
-			}
-
-			return $reflection;
+		if (!$identifier->isClass()) {
+			return null;
 		}
 
-		return null;
+		$locator = $this->getLocator($identifier);
+		if ($locator === null) {
+			return null;
+		}
+
+		return $locator->locateIdentifier($reflector, $identifier);
 	}
 
 	/**

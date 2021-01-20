@@ -8,8 +8,8 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ClassBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ClassWhitelistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
-use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use Roave\BetterReflection\Reflector\FunctionReflector;
@@ -38,8 +38,8 @@ class BetterReflectionSourceLocatorFactory
 	/** @var ReflectionSourceStubber */
 	private $reflectionSourceStubber;
 
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
-	private $optimizedSingleFileSourceLocatorRepository;
+	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory */
+	private $optimizedDirectorySourceLocatorFactory;
 
 	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository */
 	private $optimizedDirectorySourceLocatorRepository;
@@ -96,7 +96,7 @@ class BetterReflectionSourceLocatorFactory
 		\PhpParser\Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber,
-		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
+		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
@@ -116,7 +116,7 @@ class BetterReflectionSourceLocatorFactory
 		$this->php8Parser = $php8Parser;
 		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 		$this->reflectionSourceStubber = $reflectionSourceStubber;
-		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
+		$this->optimizedDirectorySourceLocatorFactory = $optimizedDirectorySourceLocatorFactory;
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->autoloadSourceLocator = $autoloadSourceLocator;
@@ -137,7 +137,7 @@ class BetterReflectionSourceLocatorFactory
 		$locators = [];
 
 		if ($this->singleReflectionFile !== null) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
+			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles([$this->singleReflectionFile]);
 		}
 
 		$analysedDirectories = [];
@@ -157,8 +157,8 @@ class BetterReflectionSourceLocatorFactory
 		}
 
 		$analysedFiles = array_unique(array_merge($analysedFiles, $this->autoloadFiles, $this->scanFiles));
-		foreach ($analysedFiles as $analysedFile) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
+		if (count($analysedFiles) > 0) {
+			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($analysedFiles);
 		}
 
 		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories, $this->scanDirectories));

@@ -133,6 +133,7 @@ parameters:
 		- PHP_CONFIG_FILE_SCAN_DIR
 		- PHP_SHLIB_SUFFIX
 		- PHP_FD_SETSIZE
+		- OPENSSL_VERSION_NUMBER
 
 extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension

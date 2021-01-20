@@ -71,7 +71,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s type has no prototype specified for callable type %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
-				$node->name->name,
+				$node->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly())
 			))->build();
 		}

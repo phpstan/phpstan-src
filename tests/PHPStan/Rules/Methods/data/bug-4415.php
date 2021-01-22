@@ -55,7 +55,7 @@ interface MutableCategoryCollectionInterface extends CategoryCollectionInterface
 class CategoryCollection implements MutableCategoryCollectionInterface
 {
 	/** @var array<Category> */
-	private array $categories = [];
+	private $categories = [];
 
 	public function add($item): self
 	{

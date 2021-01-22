@@ -525,11 +525,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\IteratorAggregate::class)->yes()) {
-			return RecursionGuard::run($this, static function () use ($classReflection): Type {
+			$keyType = RecursionGuard::run($this, static function () use ($classReflection): Type {
 				return ParametersAcceptorSelector::selectSingle(
 					$classReflection->getNativeMethod('getIterator')->getVariants()
 				)->getReturnType()->getIterableKeyType();
 			});
+			if (!$keyType instanceof MixedType || $keyType->isExplicitMixed()) {
+				return $keyType;
+			}
 		}
 
 		if ($this->isInstanceOf(\Traversable::class)->yes()) {
@@ -558,11 +561,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\IteratorAggregate::class)->yes()) {
-			return RecursionGuard::run($this, static function () use ($classReflection): Type {
+			$valueType = RecursionGuard::run($this, static function () use ($classReflection): Type {
 				return ParametersAcceptorSelector::selectSingle(
 					$classReflection->getNativeMethod('getIterator')->getVariants()
 				)->getReturnType()->getIterableValueType();
 			});
+			if (!$valueType instanceof MixedType || $valueType->isExplicitMixed()) {
+				return $valueType;
+			}
 		}
 
 		if ($this->isInstanceOf(\Traversable::class)->yes()) {

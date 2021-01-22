@@ -4893,13 +4893,13 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				__DIR__ . '/data/foreach/object-type.php',
-				'*ERROR*',
+				'mixed',
 				'$keyFromRecursiveAggregate',
 				"'insideThirdForeach'",
 			],
 			[
 				__DIR__ . '/data/foreach/object-type.php',
-				'*ERROR*',
+				'mixed',
 				'$valueFromRecursiveAggregate',
 				"'insideThirdForeach'",
 			],
@@ -10726,6 +10726,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4398.php');
 	}
 
+	public function dataBug4415(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4415.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10937,6 +10942,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataVarAboveDeclare
 	 * @dataProvider dataClosureReturnType
 	 * @dataProvider dataBug4398
+	 * @dataProvider dataBug4415
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

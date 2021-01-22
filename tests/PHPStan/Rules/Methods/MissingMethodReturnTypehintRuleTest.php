@@ -63,4 +63,15 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/array-typehint-without-null-in-phpdoc.php'], []);
 	}
 
+	public function testBug4415(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4415.php'], [
+			[
+				'Method Bug4415Rule\CategoryCollection::getIterator() return type has no value type specified in iterable type Iterator.',
+				76,
+				"Consider adding something like <fg=cyan>Iterator<Foo></> to the PHPDoc.\nYou can turn off this check by setting <fg=cyan>checkMissingIterableValueType: false</> in your <fg=cyan>%configurationFile%</>.",
+			],
+		]);
+	}
+
 }

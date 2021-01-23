@@ -68,7 +68,7 @@ class CategoryCollection implements MutableCategoryCollectionInterface
 		return isset($this->categories[$item->getName()]);
 	}
 
-	public function sort(): self
+	public function sort(): CollectionInterface
 	{
 		return $this;
 	}

@@ -98,4 +98,57 @@ class Foo
 		assertType('1|2', $f());
 	}
 
+	/**
+	 * @return never
+	 */
+	public function returnNever(): void
+	{
+
+	}
+
+	public function doBaz(): void
+	{
+		$f = function() {
+			$this->returnNever();
+		};
+		assertType('*NEVER*', $f());
+
+		$f = function(): void {
+			$this->returnNever();
+		};
+		assertType('*NEVER*', $f());
+
+		$f = function() {
+			if (rand(0, 1)) {
+				return;
+			}
+
+			$this->returnNever();
+		};
+		assertType('void', $f());
+
+		$f = function(array $a) {
+			foreach ($a as $v) {
+				continue;
+			}
+
+			$this->returnNever();
+		};
+		assertType('*NEVER*', $f([]));
+
+		$f = function(array $a) {
+			foreach ($a as $v) {
+				$this->returnNever();
+			}
+		};
+		assertType('void', $f([]));
+
+		$f = function() {
+			foreach ([1, 2, 3] as $v) {
+				$this->returnNever();
+			}
+		};
+		assertType('*NEVER*', $f());
+	}
+
 }

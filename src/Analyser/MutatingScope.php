@@ -25,6 +25,7 @@ use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\EncapsedStringPart;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -1327,8 +1328,28 @@ class MutatingScope implements Scope
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
-				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements): void {
+				$closureExecutionEnds = [];
+				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds): void {
 					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+						return;
+					}
+
+					if ($node instanceof ExecutionEndNode) {
+						if ($node->getStatementResult()->isAlwaysTerminating()) {
+							foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
+								if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
+									continue;
+								}
+
+								$closureExecutionEnds[] = $node;
+								break;
+							}
+
+							if (count($node->getStatementResult()->getExitPoints()) === 0) {
+								$closureExecutionEnds[] = $node;
+							}
+						}
+
 						return;
 					}
 
@@ -1355,8 +1376,15 @@ class MutatingScope implements Scope
 				}
 
 				if (count($returnTypes) === 0) {
-					$returnType = new VoidType();
+					if (count($closureExecutionEnds) > 0 && !$hasNull) {
+						$returnType = new NeverType(true);
+					} else {
+						$returnType = new VoidType();
+					}
 				} else {
+					if (count($closureExecutionEnds) > 0) {
+						$returnTypes[] = new NeverType(true);
+					}
 					if ($hasNull) {
 						$returnTypes[] = new NullType();
 					}

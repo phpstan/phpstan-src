@@ -603,6 +603,12 @@ services:
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory
 
 	-
+		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory
+
+	-
+		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository
+
+	-
 		class: PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension
 		tags:
 			- phpstan.broker.methodsClassReflectionExtension

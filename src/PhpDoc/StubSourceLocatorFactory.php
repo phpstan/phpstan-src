@@ -3,7 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\DependencyInjection\Container;
-use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -19,7 +19,7 @@ class StubSourceLocatorFactory
 
 	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory;
+	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
 	private \PHPStan\DependencyInjection\Container $container;
 
@@ -32,14 +32,14 @@ class StubSourceLocatorFactory
 	public function __construct(
 		\PhpParser\Parser $parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
-		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
+		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		Container $container,
 		array $stubFiles
 	)
 	{
 		$this->parser = $parser;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
-		$this->optimizedDirectorySourceLocatorFactory = $optimizedDirectorySourceLocatorFactory;
+		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->container = $container;
 		$this->stubFiles = $stubFiles;
 	}
@@ -50,8 +50,8 @@ class StubSourceLocatorFactory
 		$astLocator = new Locator($this->parser, function (): FunctionReflector {
 			return $this->container->getService('stubFunctionReflector');
 		});
-		if (count($this->stubFiles) > 0) {
-			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($this->stubFiles);
+		foreach ($this->stubFiles as $stubFile) {
+			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($stubFile);
 		}
 
 		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);

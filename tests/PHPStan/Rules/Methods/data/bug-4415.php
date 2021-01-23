@@ -57,7 +57,7 @@ class CategoryCollection implements MutableCategoryCollectionInterface
 	/** @var array<Category> */
 	private $categories = [];
 
-	public function add($item): self
+	public function add($item): MutableCollectionInterface
 	{
 		$this->categories[$item->getName()] = $item;
 		return $this;

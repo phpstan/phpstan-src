@@ -2777,6 +2777,10 @@ class NodeScopeResolver
 					continue;
 				}
 
+				if ($scope->isInClass() && $scope->getFunction() === null) {
+					continue;
+				}
+
 				if ($scope->canAnyVariableExist()) {
 					$certainty = TrinaryLogic::createYes();
 				}

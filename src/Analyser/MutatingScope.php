@@ -2663,7 +2663,7 @@ class MutatingScope implements Scope
 		bool $preserveThis
 	): self
 	{
-		$variableTypes = $this->getVariableTypes();
+		$variableTypes = [];
 		$nativeExpressionTypes = [];
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
@@ -2674,8 +2674,8 @@ class MutatingScope implements Scope
 			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
 		}
 
-		if (!$preserveThis && array_key_exists('this', $variableTypes)) {
-			unset($variableTypes['this']);
+		if ($preserveThis && array_key_exists('this', $this->variableTypes)) {
+			$variableTypes['this'] = $this->variableTypes['this'];
 		}
 
 		return $this->scopeFactory->create(

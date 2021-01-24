@@ -67,7 +67,7 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($returnType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Function %s() return type has no signature specified for callable type %s.',
+				'Function %s() return type has no signature specified for %s.',
 				$functionReflection->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly())
 			))->build();

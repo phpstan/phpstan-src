@@ -94,7 +94,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() has parameter $%s with no signature specified for callable type %s.',
+				'Method %s::%s() has parameter $%s with no signature specified for %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterReflection->getName(),

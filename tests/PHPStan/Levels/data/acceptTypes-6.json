@@ -55,7 +55,7 @@
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\Foo::expectCallable() has parameter $callable with no signature specified for callable type callable.",
+        "message": "Method Levels\\AcceptTypes\\Foo::expectCallable() has parameter $callable with no signature specified for callable.",
         "line": 148,
         "ignorable": true
     },
@@ -150,12 +150,12 @@
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has parameter $callables with no signature specified for callable type callable.",
+        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has parameter $callables with no signature specified for callable.",
         "line": 570,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has parameter $iterable with no signature specified for callable type callable.",
+        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has parameter $iterable with no signature specified for callable.",
         "line": 570,
         "ignorable": true
     },
@@ -165,7 +165,7 @@
         "ignorable": true
     },
     {
-        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doBar() has parameter $one with no signature specified for callable type callable.",
+        "message": "Method Levels\\AcceptTypes\\ArrayShapes::doBar() has parameter $one with no signature specified for callable.",
         "line": 603,
         "ignorable": true
     }

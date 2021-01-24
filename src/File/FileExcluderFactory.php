@@ -44,7 +44,7 @@ class FileExcluderFactory
 			$paths = $this->excludePaths['analyse'];
 		}
 		if (array_key_exists('analyseAndScan', $this->excludePaths)) {
-			$paths = $this->excludePaths['analyseAndScan'];
+			$paths = array_merge($paths, $this->excludePaths['analyseAndScan']);
 		}
 
 		return $this->fileExcluderRawFactory->create(array_values(array_unique($paths)));

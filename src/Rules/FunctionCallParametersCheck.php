@@ -311,7 +311,13 @@ class FunctionCallParametersCheck
 			});
 
 			foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
-				if (!($type instanceof ErrorType) && !($type instanceof NeverType)) {
+				if (
+					!($type instanceof ErrorType)
+					&& (
+						!$type instanceof NeverType
+						|| $type->isExplicit()
+					)
+				) {
 					continue;
 				}
 

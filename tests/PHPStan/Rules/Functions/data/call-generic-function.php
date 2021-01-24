@@ -25,3 +25,20 @@ function g($a) {}
 function testg(): void {
 	g(new \DateTimeImmutable());
 }
+
+/**
+ * @template TReturnType
+ * @param (callable(): TReturnType) $callback
+ * @return TReturnType
+ */
+function scope(callable $callback) {
+	return $callback();
+}
+
+function (): void {
+	scope(
+		function (): void {
+			throw new \Exception();
+		}
+	);
+};

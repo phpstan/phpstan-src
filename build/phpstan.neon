@@ -10,6 +10,7 @@ parameters:
 	bootstrapFiles:
 		- ../tests/phpstan-bootstrap.php
 	checkUninitializedProperties: true
+	checkMissingCallableSignature: true
 	excludes_analyse:
 		- ../src/Reflection/SignatureMap/functionMap.php
 		- ../src/Reflection/SignatureMap/functionMetadata.php

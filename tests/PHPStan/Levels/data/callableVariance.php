@@ -53,9 +53,9 @@ function c(callable $cb): void
  */
 function testC($a, $b, $c): void
 {
-	c(function (): A { throw new \Exception(); });
-	c(function (): B { throw new \Exception(); });
-	c(function (): C { throw new \Exception(); });
+	c(function (): A { return new A(); });
+	c(function (): B { return new B(); });
+	c(function (): C { return new C(); });
 
 	c($a);
 	c($b);

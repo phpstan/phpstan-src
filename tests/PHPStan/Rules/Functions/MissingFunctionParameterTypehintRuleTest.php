@@ -13,7 +13,7 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingFunctionParameterTypehintRule(new MissingTypehintCheck($broker, true, true));
+		return new MissingFunctionParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true));
 	}
 
 	public function testRule(): void
@@ -76,6 +76,10 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 				'Function MissingFunctionParameterTypehint\missingTraversableTypehintPhpDoc() has parameter $traversable with no value type specified in iterable type Traversable.',
 				156,
 				"Consider adding something like <fg=cyan>Traversable<Foo></> to the PHPDoc.\nYou can turn off this check by setting <fg=cyan>checkMissingIterableValueType: false</> in your <fg=cyan>%configurationFile%</>.",
+			],
+			[
+				'Function MissingFunctionParameterTypehint\missingCallableSignature() has parameter $cb with no signature specified for callable.',
+				161,
 			],
 		]);
 	}

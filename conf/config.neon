@@ -36,6 +36,7 @@ parameters:
 	checkGenericClassInNonGenericObjectType: false
 	checkInternalClassCaseSensitivity: false
 	checkMissingIterableValueType: false
+	checkMissingCallableSignature: false
 	checkMissingVarTagTypehint: false
 	checkArgumentsPassedByReference: false
 	checkMaybeUndefinedVariables: false
@@ -186,6 +187,7 @@ parametersSchema:
 	checkGenericClassInNonGenericObjectType: bool()
 	checkInternalClassCaseSensitivity: bool()
 	checkMissingIterableValueType: bool()
+	checkMissingCallableSignature: bool()
 	checkMissingVarTagTypehint: bool()
 	checkArgumentsPassedByReference: bool()
 	checkMaybeUndefinedVariables: bool()
@@ -733,6 +735,7 @@ services:
 		arguments:
 			checkMissingIterableValueType: %checkMissingIterableValueType%
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
+			checkMissingCallableSignature: %checkMissingCallableSignature%
 
 	-
 		class: PHPStan\Rules\NullsafeCheck

@@ -13,7 +13,7 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true));
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true));
 	}
 
 	public function testRule(): void
@@ -71,6 +71,12 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 				170,
 			];
 		}
+
+		$errors[] = [
+			'Method MissingMethodParameterTypehint\CallableSignature::doFoo() has parameter $cb with no signature specified for callable.',
+			180,
+		];
+
 		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], $errors);
 	}
 

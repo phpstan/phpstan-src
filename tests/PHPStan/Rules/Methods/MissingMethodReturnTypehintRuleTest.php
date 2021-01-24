@@ -13,7 +13,7 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck($broker, true, true));
+		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck($broker, true, true, true));
 	}
 
 	public function testRule(): void
@@ -49,6 +49,10 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Method MissingMethodReturnTypehint\Bar::returnsGenericClass() return type with generic class MissingMethodReturnTypehint\GenericClass does not specify its types: A, B',
 				89,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Method MissingMethodReturnTypehint\CallableSignature::doFoo() return type has no signature specified for callable.',
+				99,
 			],
 		]);
 	}

@@ -173,3 +173,13 @@ class SerializableImpl implements \Serializable
 	}
 
 }
+
+class CallableSignature
+{
+
+	public function doFoo(callable $cb): void
+	{
+
+	}
+
+}

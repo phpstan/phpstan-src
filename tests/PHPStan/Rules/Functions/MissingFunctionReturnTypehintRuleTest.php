@@ -13,7 +13,7 @@ class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCas
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck($broker, true, true));
+		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck($broker, true, true, true));
 	}
 
 	public function testRule(): void
@@ -47,6 +47,18 @@ class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCas
 				'Function MissingFunctionReturnTypehint\genericGenericMissingTemplateArgs() return type with generic class MissingFunctionReturnTypehint\GenericClass does not specify its types: A, B',
 				105,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Function MissingFunctionReturnTypehint\closureWithNoPrototype() return type has no signature specified for Closure.',
+				113,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\callableWithNoPrototype() return type has no signature specified for callable.',
+				127,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\callableNestedNoPrototype() return type has no signature specified for callable.',
+				141,
 			],
 		]);
 	}

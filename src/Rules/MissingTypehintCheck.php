@@ -3,6 +3,7 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -32,15 +33,19 @@ class MissingTypehintCheck
 
 	private bool $checkGenericClassInNonGenericObjectType;
 
+	private bool $checkMissingCallableSignature;
+
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		bool $checkMissingIterableValueType,
-		bool $checkGenericClassInNonGenericObjectType
+		bool $checkGenericClassInNonGenericObjectType,
+		bool $checkMissingCallableSignature
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
+		$this->checkMissingCallableSignature = $checkMissingCallableSignature;
 	}
 
 	/**
@@ -131,6 +136,29 @@ class MissingTypehintCheck
 		});
 
 		return $objectTypes;
+	}
+
+	/**
+	 * @param \PHPStan\Type\Type $type
+	 * @return \PHPStan\Type\Type[]
+	 */
+	public function getCallablesWithMissingSignature(Type $type): array
+	{
+		if (!$this->checkMissingCallableSignature) {
+			return [];
+		}
+
+		$result = [];
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$result): Type {
+			if (
+				($type instanceof CallableType && $type->isCommonCallable()) ||
+				($type instanceof ObjectType && $type->getClassName() === \Closure::class)) {
+				$result[] = $type;
+			}
+			return $traverse($type);
+		});
+
+		return $result;
 	}
 
 }

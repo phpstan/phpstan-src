@@ -92,3 +92,13 @@ class Bar
 	}
 
 }
+
+class CallableSignature
+{
+
+	public function doFoo(): callable
+	{
+
+	}
+
+}

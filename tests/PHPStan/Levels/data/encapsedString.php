@@ -7,7 +7,7 @@ class Foo
 
 	/**
 	 * @param mixed[] $array
-	 * @param mixed[]|callable $arrayOrCallable
+	 * @param mixed[]|(callable(): mixed) $arrayOrCallable
 	 * @param mixed[]|float|int $arrayOrFloatOrInt
 	 * @param mixed[]|string $arrayOrString
 	 */

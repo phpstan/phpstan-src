@@ -92,6 +92,15 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
+		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Function %s() has parameter $%s with no signature specified for %s.',
+				$functionReflection->getName(),
+				$parameterReflection->getName(),
+				$callableType->describe(VerbosityLevel::typeOnly())
+			))->build();
+		}
+
 		return $messages;
 	}
 

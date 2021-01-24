@@ -13,7 +13,7 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true));
+		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true, true));
 	}
 
 	public function testRule(): void
@@ -45,6 +45,10 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Property MissingPropertyTypehint\Bar::$baz with generic class MissingPropertyTypehint\GenericClass does not specify its types: A, B',
 				80,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Property MissingPropertyTypehint\CallableSignature::$cb type has no signature specified for callable.',
+				93,
 			],
 		]);
 	}

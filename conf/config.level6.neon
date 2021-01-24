@@ -4,7 +4,6 @@ includes:
 parameters:
 	checkGenericClassInNonGenericObjectType: true
 	checkMissingIterableValueType: true
-	checkMissingCallablePrototype: true
 	checkMissingVarTagTypehint: true
 	checkMissingTypehints: true
 

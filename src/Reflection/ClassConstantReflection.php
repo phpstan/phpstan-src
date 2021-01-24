@@ -19,6 +19,8 @@ class ClassConstantReflection implements ConstantReflection
 
 	private bool $isInternal;
 
+	private ?Type $valueType = null;
+
 	public function __construct(
 		ClassReflection $declaringClass,
 		\ReflectionClassConstant $reflection,
@@ -59,7 +61,10 @@ class ClassConstantReflection implements ConstantReflection
 
 	public function getValueType(): Type
 	{
-		return ConstantTypeHelper::getTypeFromValue($this->getValue());
+		if ($this->valueType === null) {
+			$this->valueType = ConstantTypeHelper::getTypeFromValue($this->getValue());
+		}
+		return $this->valueType;
 	}
 
 	public function getDeclaringClass(): ClassReflection

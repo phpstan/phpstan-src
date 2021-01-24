@@ -116,7 +116,7 @@ class Foo
 		$f = function(): void {
 			$this->returnNever();
 		};
-		assertType('void', $f());
+		assertType('*NEVER*', $f());
 
 		$f = function() {
 			if (rand(0, 1)) {

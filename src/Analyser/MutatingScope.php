@@ -1423,12 +1423,7 @@ class MutatingScope implements Scope
 						$returnType,
 					]);
 				} else {
-					$nativeReturnType = $this->getFunctionType($node->returnType, false, false);
-					if ($nativeReturnType instanceof VoidType) {
-						$returnType = $nativeReturnType;
-					} else {
-						$returnType = TypehintHelper::decideType($nativeReturnType, $returnType);
-					}
+					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 				}
 			}
 

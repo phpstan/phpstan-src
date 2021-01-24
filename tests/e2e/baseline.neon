@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#1 \\$autoload_function of function spl_autoload_register expects callable\\(string\\)\\: void, array\\('PhpParser\\\\\\\\Autoloader', 'autoload'\\) given\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/Autoloader.php
-
-		-
 			message: "#^PHPDoc tag @param references unknown parameter\\: \\$interfaces$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/Builder/Class_.php

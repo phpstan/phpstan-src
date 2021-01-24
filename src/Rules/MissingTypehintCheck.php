@@ -33,20 +33,19 @@ class MissingTypehintCheck
 
 	private bool $checkGenericClassInNonGenericObjectType;
 
-	/** @var bool */
-	private $checkMissingCallablePrototype;
+	private bool $checkMissingCallableSignature;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		bool $checkMissingIterableValueType,
 		bool $checkGenericClassInNonGenericObjectType,
-		bool $checkMissingCallablePrototype
+		bool $checkMissingCallableSignature
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
-		$this->checkMissingCallablePrototype = $checkMissingCallablePrototype;
+		$this->checkMissingCallableSignature = $checkMissingCallableSignature;
 	}
 
 	/**
@@ -143,9 +142,9 @@ class MissingTypehintCheck
 	 * @param \PHPStan\Type\Type $type
 	 * @return \PHPStan\Type\Type[]
 	 */
-	public function getCallablesWithMissingPrototype(Type $type): array
+	public function getCallablesWithMissingSignature(Type $type): array
 	{
-		if (!$this->checkMissingCallablePrototype) {
+		if (!$this->checkMissingCallableSignature) {
 			return [];
 		}
 

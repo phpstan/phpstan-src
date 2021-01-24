@@ -70,9 +70,9 @@ final class MissingMethodReturnTypehintRule implements \PHPStan\Rules\Rule
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
-		foreach ($this->missingTypehintCheck->getCallablesWithMissingPrototype($returnType) as $callableType) {
+		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($returnType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() return type has no prototype specified for callable type %s.',
+				'Method %s::%s() return type has no signature specified for callable type %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly())

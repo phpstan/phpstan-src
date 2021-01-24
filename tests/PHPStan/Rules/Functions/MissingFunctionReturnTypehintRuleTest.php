@@ -49,15 +49,15 @@ class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCas
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
-				'Function MissingFunctionReturnTypehint\closureWithNoPrototype() return type has no prototype specified for callable type Closure.',
+				'Function MissingFunctionReturnTypehint\closureWithNoPrototype() return type has no signature specified for callable type Closure.',
 				113,
 			],
 			[
-				'Function MissingFunctionReturnTypehint\callableWithNoPrototype() return type has no prototype specified for callable type callable.',
+				'Function MissingFunctionReturnTypehint\callableWithNoPrototype() return type has no signature specified for callable type callable.',
 				127,
 			],
 			[
-				'Function MissingFunctionReturnTypehint\callableNestedNoPrototype() return type has no prototype specified for callable type callable.',
+				'Function MissingFunctionReturnTypehint\callableNestedNoPrototype() return type has no signature specified for callable type callable.',
 				141,
 			],
 		]);

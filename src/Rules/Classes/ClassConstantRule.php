@@ -70,7 +70,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					];
 				}
 
-				$className = $scope->getClassReflection()->getName();
+				$classReflection = $scope->getClassReflection();
 			} elseif ($lowercasedClassName === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
@@ -87,7 +87,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 						))->build(),
 					];
 				}
-				$className = $currentClassReflection->getParentClass()->getName();
+				$classReflection = $currentClassReflection->getParentClass();
 			} else {
 				if (!$this->reflectionProvider->hasClass($className)) {
 					if ($scope->isInClassExists($className)) {
@@ -109,12 +109,14 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 				}
 
-				$className = $this->reflectionProvider->getClass($className)->getName();
+				$classReflection = $this->reflectionProvider->getClass($className);
 			}
 
 			if (strtolower($constantName) === 'class') {
 				return $messages;
 			}
+
+			$className = $classReflection->getName();
 
 			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
 				$classType = new ThisType($scope->getClassReflection());

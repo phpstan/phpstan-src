@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -89,7 +90,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 						))->build(),
 					];
 				}
-				$className = $scope->getClassReflection()->getName();
+				$classReflection = $scope->getClassReflection();
 			} elseif ($lowercasedClass === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
@@ -122,7 +123,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 					return [];
 				}
 
-				$className = $scope->getClassReflection()->getParentClass()->getName();
+				$classReflection = $scope->getClassReflection()->getParentClass();
 			} else {
 				if (!$this->reflectionProvider->hasClass($class)) {
 					if ($scope->isInClassExists($class)) {
@@ -141,19 +142,25 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				}
 
 				$classReflection = $this->reflectionProvider->getClass($class);
-				$className = $this->reflectionProvider->getClass($class)->getName();
-				if ($classReflection->isTrait()) {
-					return [
-						RuleErrorBuilder::message(sprintf(
-							'Access to static property $%s on trait %s.',
-							$name,
-							$className
-						))->build(),
-					];
-				}
 			}
 
-			$classType = new ObjectType($className);
+			$className = $classReflection->getName();
+			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
+				$classType = new ThisType($scope->getClassReflection());
+				$classReflection = $scope->getClassReflection();
+			} else {
+				$classType = new ObjectType($className);
+			}
+
+			if ($classReflection->isTrait()) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Access to static property $%s on trait %s.',
+						$name,
+						$className
+					))->build(),
+				];
+			}
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
@@ -174,6 +181,9 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 		}
 
 		$typeForDescribe = $classType;
+		if ($classType instanceof ThisType) {
+			$typeForDescribe = $classType->getStaticObjectType();
+		}
 		$classType = TypeCombinator::remove($classType, new StringType());
 
 		if ($scope->isInExpressionAssign($node)) {

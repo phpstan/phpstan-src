@@ -20,6 +20,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -139,7 +140,12 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			}
 
 			$className = $classReflection->getName();
-			$classType = new ObjectType($className);
+			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
+				$classType = new ThisType($scope->getClassReflection());
+				$classReflection = $scope->getClassReflection();
+			} else {
+				$classType = new ObjectType($className);
+			}
 
 			if ($classReflection->hasNativeMethod($methodName) && $lowercasedClassName !== 'static') {
 				$nativeMethodReflection = $classReflection->getNativeMethod($methodName);
@@ -169,6 +175,9 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 		}
 
 		$typeForDescribe = $classType;
+		if ($classType instanceof ThisType) {
+			$typeForDescribe = $classType->getStaticObjectType();
+		}
 		$classType = TypeCombinator::remove($classType, new StringType());
 
 		if (!$classType->canCallMethods()->yes()) {

@@ -85,3 +85,11 @@ $foo = new class() {
 	/** @var float */
 	private $dateTime;
 };
+
+class CallableSignature
+{
+
+	/** @var callable */
+	private $cb;
+
+}

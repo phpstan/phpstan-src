@@ -50,6 +50,10 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 				89,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Method MissingMethodReturnTypehint\CallableSignature::doFoo() return type has no signature specified for callable.',
+				99,
+			],
 		]);
 	}
 

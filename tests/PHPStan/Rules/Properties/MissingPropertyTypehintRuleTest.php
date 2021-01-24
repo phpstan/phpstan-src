@@ -46,6 +46,10 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 				80,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Property MissingPropertyTypehint\CallableSignature::$cb type has no signature specified for callable.',
+				93,
+			],
 		]);
 	}
 

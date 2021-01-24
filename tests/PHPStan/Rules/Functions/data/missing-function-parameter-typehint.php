@@ -158,4 +158,9 @@ namespace MissingFunctionParameterTypehint
 
 	}
 
+	function missingCallableSignature(callable $cb)
+	{
+
+	}
+
 }

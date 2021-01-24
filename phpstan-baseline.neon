@@ -81,11 +81,6 @@ parameters:
 			path: src/File/FileExcluderFactory.php
 
 		-
-			message: "#^Parameter \\#1 \\$array of function array_unique expects array, array\\<int, string\\>\\|string given\\.$#"
-			count: 2
-			path: src/File/FileExcluderFactory.php
-
-		-
 			message: "#^Variable method call on PHPStan\\\\Reflection\\\\ClassReflection\\.$#"
 			count: 2
 			path: src/PhpDoc/PhpDocBlock.php

@@ -274,3 +274,29 @@ class ClassExtendingAbstractConstructor extends AbstractConstructor
 	}
 
 }
+
+final class IntRange
+{
+    /**
+     * @psalm-var 1|2|3|4|5|6|7|8
+     */
+    private $x;
+
+    public static function fromInt(int $x): self
+    {
+        if ($x < 1 || $x > 8) {
+            throw new \InvalidArgumentException;
+        }
+
+        return new self($x, $x);
+    }
+
+    /**
+     * @psalm-param 1|2|3|4|5|6|7|8 $x
+     * @psalm-param 1|2|3|4|5|6|7 $y
+     */
+    private function __construct(int $x, int $y)
+    {
+        $y = $this->x = $x;
+    }
+}

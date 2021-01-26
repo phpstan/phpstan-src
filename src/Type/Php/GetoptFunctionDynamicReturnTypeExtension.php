@@ -6,10 +6,8 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 
 class GetoptFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -22,10 +20,7 @@ class GetoptFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		return TypeUtils::toBenevolentUnion(TypeCombinator::union(
-			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType(),
-			new ConstantBooleanType(false)
-		));
+		return TypeUtils::toBenevolentUnion(ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType());
 	}
 
 }

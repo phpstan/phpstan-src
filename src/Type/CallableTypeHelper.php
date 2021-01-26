@@ -16,6 +16,10 @@ class CallableTypeHelper
 	{
 		$theirParameters = $theirs->getParameters();
 		$ourParameters = $ours->getParameters();
+		if(count($ourParameters) === 1 && $ourParameters[0] instanceof NeverType){
+			//a parameter with NEVER type is impossible to satisfy, meaning that such acceptors are not callable and therefore can accept anything with any number of arguments
+			return TrinaryLogic::createYes();
+		}
 
 		$result = null;
 		foreach ($theirParameters as $i => $theirParameter) {

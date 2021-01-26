@@ -299,6 +299,13 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertSame(13, $errors[0]->getLine());
 	}
 
+	public function testUncallableCallable(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/uncallable-callables.php');
+		$this->assertCount(1, $errors);
+		$this->assertStringContainsString('expects *NEVER*, 1 given', $errors[0]->getMessage());
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

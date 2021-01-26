@@ -595,31 +595,7 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\ClassLike) {
 			$hasYield = false;
 			if (isset($stmt->namespacedName)) {
-				$nodeToReflection = new NodeToReflection();
-				$betterReflectionClass = $nodeToReflection->__invoke(
-					$this->classReflector,
-					$stmt,
-					new LocatedSource(FileReader::read($scope->getFile()), $scope->getFile()),
-					$scope->getNamespace() !== null ? new Node\Stmt\Namespace_(new Name($scope->getNamespace())) : null,
-					null
-				);
-				if (!$betterReflectionClass instanceof \Roave\BetterReflection\Reflection\ReflectionClass) {
-					throw new \PHPStan\ShouldNotHappenException();
-				}
-				$classReflection = new ClassReflection(
-					$this->reflectionProvider,
-					$this->fileTypeMapper,
-					$this->phpVersion,
-					$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
-					$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
-					$betterReflectionClass->getName(),
-					new ReflectionClass($betterReflectionClass),
-					null,
-					null,
-					null,
-					sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine())
-				);
-				$this->reflectionProvider->hasClass($classReflection->getName());
+				$classReflection = $this->getCurrentClassReflection($stmt, $scope);
 				$classScope = $scope->enterClass($classReflection);
 				$nodeCallback(new InClassNode($stmt, $classReflection), $classScope);
 			} elseif ($stmt instanceof Class_) {
@@ -1241,6 +1217,54 @@ class NodeScopeResolver
 		}
 
 		return new StatementResult($scope, $hasYield, false, []);
+	}
+
+	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, Scope $scope): ClassReflection
+	{
+		$className = $stmt->namespacedName->toString();
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return $this->createAstClassReflection($stmt, $scope);
+		}
+
+		$defaultClassReflection = $this->reflectionProvider->getClass($stmt->namespacedName->toString());
+		if ($defaultClassReflection->getFileName() !== $scope->getFile()) {
+			return $this->createAstClassReflection($stmt, $scope);
+		}
+
+		$startLine = $defaultClassReflection->getNativeReflection()->getStartLine();
+		if ($startLine !== $stmt->getStartLine()) {
+			return $this->createAstClassReflection($stmt, $scope);
+		}
+
+		return $defaultClassReflection;
+	}
+
+	private function createAstClassReflection(Node\Stmt\ClassLike $stmt, Scope $scope): ClassReflection
+	{
+		$nodeToReflection = new NodeToReflection();
+		$betterReflectionClass = $nodeToReflection->__invoke(
+			$this->classReflector,
+			$stmt,
+			new LocatedSource(FileReader::read($scope->getFile()), $scope->getFile()),
+			$scope->getNamespace() !== null ? new Node\Stmt\Namespace_(new Name($scope->getNamespace())) : null
+		);
+		if (!$betterReflectionClass instanceof \Roave\BetterReflection\Reflection\ReflectionClass) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		return new ClassReflection(
+			$this->reflectionProvider,
+			$this->fileTypeMapper,
+			$this->phpVersion,
+			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
+			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
+			$betterReflectionClass->getName(),
+			new ReflectionClass($betterReflectionClass),
+			null,
+			null,
+			null,
+			sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine())
+		);
 	}
 
 	/**

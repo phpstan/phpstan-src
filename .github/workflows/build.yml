@@ -329,6 +329,9 @@ jobs:
           php-version: "7.3"
           tools: composer:snapshot
 
+      - name: "Update Composer again"
+        run: composer self-update --snapshot
+
       - name: "Cache dependencies"
         uses: "actions/cache@v2"
         with:

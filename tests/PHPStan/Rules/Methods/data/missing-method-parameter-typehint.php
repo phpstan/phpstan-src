@@ -181,5 +181,19 @@ class CallableSignature
 	{
 
 	}
+}
+
+class SerializableImpl2 implements \Serializable
+{
+
+	public function serialize(): string
+	{
+		return serialize([]);
+	}
+
+	public function unserialize($data): void
+	{
+
+	}
 
 }

@@ -105,9 +105,16 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			$rootDir = __DIR__ . '/../..';
 			$containerFactory = new ContainerFactory($rootDir);
-			self::$containers[$cacheKey] = $containerFactory->create($tmpDir, array_merge([
+			$container = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',
 			], $additionalConfigFiles), []);
+			self::$containers[$cacheKey] = $container;
+
+			foreach ($container->getParameter('bootstrapFiles') as $bootstrapFile) {
+				(static function (string $file) use ($container): void {
+					require_once $file;
+				})($bootstrapFile);
+			}
 		}
 
 		return self::$containers[$cacheKey];

@@ -25,7 +25,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "7.4"
-          tools: composer:v1
+          tools: composer:snapshot
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"

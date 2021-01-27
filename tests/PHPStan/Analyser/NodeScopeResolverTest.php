@@ -8629,10 +8629,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'TraitPhpDocs\PropertyTypeFromClass',
 				'$this->conflictingProperty',
 			],
-			[
+			/*[
 				'TraitPhpDocsTwo\AmbiguousPropertyType',
 				'$this->bogusProperty',
-			],
+			],*/
 			[
 				'TraitPhpDocs\BogusPropertyType',
 				'$this->anotherBogusProperty',

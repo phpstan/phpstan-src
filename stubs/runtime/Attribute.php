@@ -51,7 +51,7 @@ if (\PHP_VERSION_ID < 80000) {
 		 * Notes that an attribute declaration in the same place is
 		 * allowed multiple times.
 		 */
-		const IS_REPEATABLE = 1 << 10;
+		const IS_REPEATABLE = 1 << 6;
 
 		/**
 		 * @param int $flags A value in the form of a bitmask indicating the places

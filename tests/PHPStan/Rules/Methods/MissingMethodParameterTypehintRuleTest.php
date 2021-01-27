@@ -64,17 +64,10 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 				119,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
-		];
-		if (PHP_VERSION_ID >= 80000) {
-			$errors[] = [
-				'Method MissingMethodParameterTypehint\SerializableImpl::unserialize() has parameter $serialized with no typehint specified.',
-				170,
-			];
-		}
-
-		$errors[] = [
-			'Method MissingMethodParameterTypehint\CallableSignature::doFoo() has parameter $cb with no signature specified for callable.',
-			180,
+			[
+				'Method MissingMethodParameterTypehint\CallableSignature::doFoo() has parameter $cb with no signature specified for callable.',
+				180,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], $errors);

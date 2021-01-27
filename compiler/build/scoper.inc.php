@@ -8,6 +8,7 @@ $stubs = [
 	'../../resources/functionMap_php80delta.php',
 	'../../resources/functionMetadata.php',
 	'../../vendor/hoa/consistency/Prelude.php',
+	'../../vendor/composer/InstalledVersions.php',
 ];
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
 foreach ($stubFinder->files()->name('*.php')->in([

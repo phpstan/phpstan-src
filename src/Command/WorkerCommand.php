@@ -223,7 +223,7 @@ class WorkerCommand extends Command
 						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
 						"\n",
 						"\n",
-						'https://github.com/phpstan/phpstan/issues/new'
+						'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md'
 					);
 					$errors[] = $internalErrorMessage;
 				}

@@ -25,10 +25,10 @@ jobs:
         with:
           coverage: "none"
           php-version: "7.4"
-          tools: composer:snapshot
+          tools: composer:v2
 
       - name: "Update Composer again"
-        run: composer self-update --snapshot
+        run: composer self-update
 
       - name: "Cache dependencies"
         uses: "actions/cache@v2"

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e05dff0d48cd0edac09e27f48f6028b5",
+    "content-hash": "5dec3df5dc7b68559ac5af15a6330d7b",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1334,16 +1334,15 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "b2402e4a525593f68ff46303dcc6bc625437276a"
+                "reference": "2be9baa0c8933fb8852ff9d892390a9d3bad6301"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/b2402e4a525593f68ff46303dcc6bc625437276a",
-                "reference": "b2402e4a525593f68ff46303dcc6bc625437276a",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/2be9baa0c8933fb8852ff9d892390a9d3bad6301",
+                "reference": "2be9baa0c8933fb8852ff9d892390a9d3bad6301",
                 "shasum": ""
             },
             "require-dev": {
-                "jetbrains/phpstorm-attributes": "@stable",
                 "nikic/php-parser": "@stable",
                 "php": "^8.0",
                 "phpdocumentor/reflection-docblock": "@stable",
@@ -1375,7 +1374,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2020-12-19T17:08:33+00:00"
+            "time": "2021-01-26T19:29:36+00:00"
         },
         {
             "name": "nette/bootstrap",

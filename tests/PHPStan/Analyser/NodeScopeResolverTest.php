@@ -10743,11 +10743,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4415.php');
 	}
 
-	public function dataGetoptDynamicReturnTypeExtension(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/getopt.php');
-	}
-
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10960,7 +10955,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataClosureReturnType
 	 * @dataProvider dataBug4398
 	 * @dataProvider dataBug4415
-	 * @dataProvider dataGetoptDynamicReturnTypeExtension
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

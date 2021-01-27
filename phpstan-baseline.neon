@@ -226,6 +226,11 @@ parameters:
 			path: src/Rules/Registry.php
 
 		-
+			message: "#^Anonymous function has an unused use \\$container\\.$#"
+			count: 1
+			path: src/Testing/TestCase.php
+
+		-
 			message: "#^Cannot call method getActiveTemplateTypeMap\\(\\) on PHPStan\\\\Reflection\\\\ClassReflection\\|null\\.$#"
 			count: 2
 			path: src/Type/Generic/GenericObjectType.php

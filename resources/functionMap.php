@@ -6479,7 +6479,7 @@ return [
 'MemcachePool::decrement' => ['int', 'key'=>'string', 'value='=>'int'],
 'MemcachePool::delete' => ['bool', 'key'=>'string', 'timeout='=>'int'],
 'MemcachePool::flush' => ['bool'],
-'MemcachePool::get' => ['array', 'key'=>'string', 'flags='=>'array', 'keys='=>'array'],
+'MemcachePool::get' => ['string|array|false', 'key'=>'string', 'flags='=>'array', 'keys='=>'array'],
 'MemcachePool::getExtendedStats' => ['array', 'type='=>'string', 'slabid='=>'int', 'limit='=>'int'],
 'MemcachePool::getServerStatus' => ['int', 'host'=>'string', 'port='=>'int'],
 'MemcachePool::getStats' => ['array', 'type='=>'string', 'slabid='=>'int', 'limit='=>'int'],

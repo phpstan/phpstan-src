@@ -150,7 +150,14 @@ class TypehintHelper
 				}
 			}
 
-			$resultType = $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes() ? $phpDocType : $type;
+			if (
+				(!$phpDocType instanceof NeverType || ($type instanceof MixedType && !$type->isExplicitMixed()))
+				&& $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes()
+			) {
+				$resultType = $phpDocType;
+			} else {
+				$resultType = $type;
+			}
 
 			if ($type instanceof UnionType) {
 				$addToUnionTypes = [];

@@ -149,6 +149,11 @@ class Foo
 			}
 		};
 		assertType('*NEVER*', $f());
+
+		$f = function (): \stdClass {
+			throw new \Exception();
+		};
+		assertType('stdClass', $f());
 	}
 
 }

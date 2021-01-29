@@ -154,7 +154,7 @@ class ExportedNodeResolver
 		if ($node instanceof Node\Stmt\PropertyProperty) {
 			$parentNode = $node->getAttribute('parent');
 			if (!$parentNode instanceof Property) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new \PHPStan\ShouldNotHappenException(sprintf('Expected node type %s, %s occurred.', Property::class, is_object($parentNode) ? get_class($parentNode) : gettype($parentNode)));
 			}
 			if ($parentNode->isPrivate()) {
 				return null;

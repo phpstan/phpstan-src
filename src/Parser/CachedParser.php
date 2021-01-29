@@ -16,6 +16,9 @@ class CachedParser implements Parser
 
 	private int $cachedNodesByStringCountMax;
 
+	/** @var array<string, true> */
+	private array $parsedByString = [];
+
 	public function __construct(
 		Parser $originalParser,
 		int $cachedNodesByStringCountMax
@@ -43,9 +46,10 @@ class CachedParser implements Parser
 		}
 
 		$sourceCode = FileReader::read($file);
-		if (!isset($this->cachedNodesByString[$sourceCode])) {
+		if (!isset($this->cachedNodesByString[$sourceCode]) || isset($this->parsedByString[$sourceCode])) {
 			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseFile($file);
 			$this->cachedNodesByStringCount++;
+			unset($this->parsedByString[$sourceCode]);
 		}
 
 		return $this->cachedNodesByString[$sourceCode];
@@ -71,6 +75,7 @@ class CachedParser implements Parser
 		if (!isset($this->cachedNodesByString[$sourceCode])) {
 			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseString($sourceCode);
 			$this->cachedNodesByStringCount++;
+			$this->parsedByString[$sourceCode] = true;
 		}
 
 		return $this->cachedNodesByString[$sourceCode];

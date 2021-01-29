@@ -2,7 +2,11 @@
 
 namespace PHPStan\Parser;
 
-class CachedParserTest extends \PHPUnit\Framework\TestCase
+use PhpParser\Node\Stmt\Namespace_;
+use PHPStan\File\FileReader;
+use PHPStan\Testing\TestCase;
+
+class CachedParserTest extends TestCase
 {
 
 	/**
@@ -73,6 +77,24 @@ class CachedParserTest extends \PHPUnit\Framework\TestCase
 	private function getPhpParserNodeMock(): \PhpParser\Node
 	{
 		return $this->createMock(\PhpParser\Node::class);
+	}
+
+	public function testParseTheSameFileWithDifferentMethod(): void
+	{
+		$parser = new CachedParser(self::getContainer()->getService('pathRoutingParser'), 500);
+		$path = __DIR__ . '/data/test.php';
+		$contents = FileReader::read($path);
+		$stmts = $parser->parseString($contents);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
+		$this->assertNull($stmts[0]->stmts[0]->getAttribute('parent'));
+
+		$stmts = $parser->parseFile($path);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]->stmts[0]->getAttribute('parent'));
+
+		$stmts = $parser->parseString($contents);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]->stmts[0]->getAttribute('parent'));
 	}
 
 }

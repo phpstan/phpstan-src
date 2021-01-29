@@ -36,8 +36,8 @@ EOT
 		$process = $this->createMock(Process::class);
 
 		$processFactory = $this->createMock(ProcessFactory::class);
-		$processFactory->expects(self::at(0))->method('setOutput');
-		$processFactory->expects(self::at(1))->method('create')->with(['php', 'box.phar', 'compile', '--no-parallel'], 'foo')->willReturn($process);
+		$processFactory->method('setOutput');
+		$processFactory->method('create')->with(['php', 'box.phar', 'compile', '--no-parallel'], 'foo')->willReturn($process);
 
 		$application = new Application();
 		$application->add(new CompileCommand($filesystem, $processFactory, 'foo', 'bar'));

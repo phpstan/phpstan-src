@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\VoidType;
 
 /**
@@ -46,6 +47,11 @@ class CallToFunctionStamentWithoutSideEffectsRule implements Rule
 		if ($function->hasSideEffects()->no()) {
 			$throwsType = $function->getThrowType();
 			if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				return [];
+			}
+
+			$functionResult = $scope->getType($funcCall);
+			if ($functionResult instanceof NeverType && $functionResult->isExplicit()) {
 				return [];
 			}
 

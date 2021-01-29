@@ -4560,6 +4560,11 @@ class MutatingScope implements Scope
 			return TypeCombinator::union(...$resolvedTypes);
 		}
 
+		$methodResult = $this->getType($methodCall);
+		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
+			return $methodResult;
+		}
+
 		if (!$classReflection->isGeneric()) {
 			return new ObjectType($resolvedClassName);
 		}

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\VoidType;
 
 /**
@@ -52,6 +53,11 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 		if ($constructor->hasSideEffects()->no()) {
 			$throwsType = $constructor->getThrowType();
 			if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				return [];
+			}
+
+			$methodResult = $scope->getType($instantiation);
+			if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 				return [];
 			}
 

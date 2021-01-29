@@ -49,4 +49,10 @@ class CallToFunctionStamentWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4455(): void
+	{
+		require_once __DIR__ . '/data/bug-4455.php';
+		$this->analyse([__DIR__ . '/data/bug-4455.php'], []);
+	}
+
 }

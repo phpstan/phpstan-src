@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
@@ -92,6 +93,11 @@ class CallToStaticMethodStamentWithoutSideEffectsRule implements Rule
 		if ($method->hasSideEffects()->no()) {
 			$throwsType = $method->getThrowType();
 			if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				return [];
+			}
+
+			$methodResult = $scope->getType($staticCall);
+			if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 				return [];
 			}
 

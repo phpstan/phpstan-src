@@ -1,5 +1,4 @@
 /build/phpstan-generated.neon
-/compiler/composer.lock
 /compiler/tmp
 /compiler/vendor
 /conf/config.local.yml

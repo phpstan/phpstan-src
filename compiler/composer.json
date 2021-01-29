@@ -4,7 +4,7 @@
     "description": "PHAR Compiler for PHPStan",
     "license": ["MIT"],
     "require": {
-        "php": "^7.1",
+        "php": "^7.3",
         "nette/neon": "^3.0.0",
         "symfony/console": "^4.1",
         "symfony/process": "^4.1",
@@ -24,5 +24,12 @@
     "require-dev": {
         "phpunit/phpunit": "^8.4",
         "phpstan/phpstan-phpunit": "^0.12.8"
-    }
+    },
+	"config": {
+		"platform": {
+			"php": "7.3.24"
+		},
+		"platform-check": false,
+		"sort-packages": true
+	}
 }

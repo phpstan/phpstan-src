@@ -385,4 +385,16 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 		$this->analyse([__DIR__ . '/data/bug-3994.php'], []);
 	}
 
+	public function testBug4371(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4371.php'], [
+			[
+				"Call to function is_a() with 'Bug4371\\\\Bar' and 'Bug4371\\\\Foo' will always evaluate to false.",
+				12,
+			],
+		]);
+	}
+
 }

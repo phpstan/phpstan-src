@@ -33,14 +33,11 @@ class MissingMethodImplementationRule implements Rule
 		$messages = [];
 
 		try {
-			$nativeMethods = $classReflection->getNativeMethods();
+			$nativeMethods = $classReflection->getNativeReflection()->getMethods();
 		} catch (IdentifierNotFound $e) {
 			return [];
 		}
 		foreach ($nativeMethods as $method) {
-			if (!method_exists($method, 'isAbstract')) {
-				continue;
-			}
 			if (!$method->isAbstract()) {
 				continue;
 			}
@@ -52,7 +49,7 @@ class MissingMethodImplementationRule implements Rule
 				$classReflection->getDisplayName(),
 				$method->getName(),
 				$declaringClass->isInterface() ? 'interface' : 'class',
-				$declaringClass->getDisplayName()
+				$declaringClass->getName()
 			))->nonIgnorable()->build();
 		}
 

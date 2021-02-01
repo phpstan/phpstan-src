@@ -82,23 +82,28 @@ class UninitializedPropertyRule implements Rule
 			$constructors[] = $classReflection->getConstructor()->getName();
 		}
 
+		$nativeReflection = $classReflection->getNativeReflection();
 		foreach ($this->additionalConstructors as $additionalConstructor) {
 			[$className, $methodName] = explode('::', $additionalConstructor);
-			foreach ($classReflection->getNativeMethods() as $nativeMethod) {
-				if ($nativeMethod->getName() !== $methodName) {
-					continue;
-				}
-				if ($nativeMethod->getDeclaringClass()->getName() !== $classReflection->getName()) {
-					continue;
-				}
-
-				$prototype = $nativeMethod->getPrototype();
-				if ($prototype->getDeclaringClass()->getName() !== $className) {
-					continue;
-				}
-
-				$constructors[] = $methodName;
+			if (!$nativeReflection->hasMethod($methodName)) {
+				continue;
 			}
+			$nativeMethod = $nativeReflection->getMethod($methodName);
+			if ($nativeMethod->getDeclaringClass()->getName() !== $nativeReflection->getName()) {
+				continue;
+			}
+
+			try {
+				$prototype = $nativeMethod->getPrototype();
+			} catch (\ReflectionException $e) {
+				$prototype = $nativeMethod;
+			}
+
+			if ($prototype->getDeclaringClass()->getName() !== $className) {
+				continue;
+			}
+
+			$constructors[] = $methodName;
 		}
 
 		$this->additionalConstructorsCache[$classReflection->getName()] = $constructors;

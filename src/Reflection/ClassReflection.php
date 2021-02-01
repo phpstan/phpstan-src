@@ -400,6 +400,7 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/**
+	 * @deprecated Use ClassReflection::getNativeReflection() instead.
 	 * @return MethodReflection[]
 	 */
 	public function getNativeMethods(): array

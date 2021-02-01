@@ -48,8 +48,8 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];
-		foreach ($this->getClassNames($node, $scope) as $class) {
-			$errors = array_merge($errors, $this->checkClassName($class, $node, $scope));
+		foreach ($this->getClassNames($node, $scope) as [$class, $isName]) {
+			$errors = array_merge($errors, $this->checkClassName($class, $isName, $node, $scope));
 		}
 		return $errors;
 	}
@@ -60,7 +60,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
-	private function checkClassName(string $class, Node $node, Scope $scope): array
+	private function checkClassName(string $class, bool $isName, Node $node, Scope $scope): array
 	{
 		$lowercasedClass = strtolower($class);
 		$messages = [];
@@ -131,7 +131,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			$classReflection = $this->reflectionProvider->getClass($class);
 		}
 
-		if (!$isStatic && $classReflection->isInterface()) {
+		if (!$isStatic && $classReflection->isInterface() && $isName) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName())
@@ -139,12 +139,16 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			];
 		}
 
-		if (!$isStatic && $classReflection->isAbstract()) {
+		if (!$isStatic && $classReflection->isAbstract() && $isName) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName())
 				)->build(),
 			];
+		}
+
+		if (!$isName) {
+			return [];
 		}
 
 		if (!$classReflection->hasConstructor()) {
@@ -200,12 +204,12 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	/**
 	 * @param \PhpParser\Node\Expr\New_ $node $node
 	 * @param Scope $scope
-	 * @return string[]
+	 * @return array<int, array{string, bool}>
 	 */
 	private function getClassNames(Node $node, Scope $scope): array
 	{
 		if ($node->class instanceof \PhpParser\Node\Name) {
-			return [(string) $node->class];
+			return [[(string) $node->class, true]];
 		}
 
 		if ($node->class instanceof Node\Stmt\Class_) {
@@ -214,19 +218,24 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
-			return [$anonymousClassType->getClassName()];
+			return [[$anonymousClassType->getClassName(), true]];
 		}
 
 		$type = $scope->getType($node->class);
 
 		return array_merge(
 			array_map(
-				static function (ConstantStringType $type): string {
-					return $type->getValue();
+				static function (ConstantStringType $type): array {
+					return [$type->getValue(), true];
 				},
 				TypeUtils::getConstantStrings($type)
 			),
-			TypeUtils::getDirectClassNames($type)
+			array_map(
+				static function (string $name): array {
+					return [$name, false];
+				},
+				TypeUtils::getDirectClassNames($type)
+			)
 		);
 	}
 

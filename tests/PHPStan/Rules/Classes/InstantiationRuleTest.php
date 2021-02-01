@@ -312,4 +312,23 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4471(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4471.php'], [
+			[
+				'Instantiated class Bug4471\Baz not found.',
+				19,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Instantiated class Bug4471\Foo is abstract.',
+				24,
+			],
+			[
+				'Cannot instantiate interface Bug4471\Bar.',
+				27,
+			],
+		]);
+	}
+
 }

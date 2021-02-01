@@ -83,10 +83,6 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 					41,
 				],
 				[
-					'Class TestInstantiation\BarInstantiation constructor invoked with 0 parameters, 1 required.',
-					44,
-				],
-				[
 					'Class TestInstantiation\InstantiatingClass constructor invoked with 0 parameters, 1 required.',
 					57,
 				],

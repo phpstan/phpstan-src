@@ -138,8 +138,19 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		$thisDescription = $this->describe(VerbosityLevel::cache());
-		$description = $type->describe(VerbosityLevel::cache());
+		if (static::class === self::class) {
+			$thisDescription = $this->describeCache();
+		} else {
+			$thisDescription = $this->describe(VerbosityLevel::cache());
+		}
+
+		if (get_class($type) === self::class) {
+			/** @var self $type */
+			$description = $type->describeCache();
+		} else {
+			$description = $type->describe(VerbosityLevel::cache());
+		}
+
 		if (isset(self::$superTypes[$thisDescription][$description])) {
 			return self::$superTypes[$thisDescription][$description];
 		}
@@ -296,6 +307,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				return $description;
 			}
 		);
+	}
+
+	private function describeCache(): string
+	{
+		$description = $this->className;
+		if ($this->subtractedType !== null) {
+			$description .= sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
+		}
+
+		return $description;
 	}
 
 	public function toNumber(): Type

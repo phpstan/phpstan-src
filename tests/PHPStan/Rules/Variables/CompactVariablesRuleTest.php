@@ -30,6 +30,10 @@ class CompactVariablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Call to function compact() contains possibly undefined variable $baz.',
 				23,
 			],
+			[
+				'Call to function compact() contains undefined variable $foo.',
+				29,
+			],
 		]);
 	}
 

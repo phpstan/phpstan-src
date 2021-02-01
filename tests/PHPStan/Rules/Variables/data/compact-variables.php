@@ -23,4 +23,9 @@ class Foo
 			'baz'
 		);
 	}
+
+	public function doBar(): void
+	{
+		compact([[['foo']]]);
+	}
 }

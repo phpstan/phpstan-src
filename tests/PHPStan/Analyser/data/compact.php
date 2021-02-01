@@ -4,7 +4,7 @@ namespace CompactExtension;
 
 use function PHPStan\Analyser\assertType;
 
-assertType('array<string, mixed>', compact(['foo' => 'bar']));
+assertType('array(?\'bar\' => mixed)', compact(['foo' => 'bar']));
 
 function (string $dolor): void {
 	$foo = 'bar';

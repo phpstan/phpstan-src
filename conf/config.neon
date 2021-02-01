@@ -897,6 +897,11 @@ services:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\CompactFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\CountFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

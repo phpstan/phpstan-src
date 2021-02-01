@@ -1048,7 +1048,7 @@ return [
 'com_message_pump' => ['bool', 'timeoutms='=>'int'],
 'com_print_typeinfo' => ['bool', 'comobject_or_typelib'=>'object', 'dispinterface='=>'string', 'wantsink='=>'bool'],
 'com_release' => [''],
-'compact' => ['array', '...var_names='=>'string|array'],
+'compact' => ['array<string, mixed>', '...var_names='=>'string|array'],
 'COMPersistHelper::__construct' => ['void', 'com_object'=>'object'],
 'COMPersistHelper::GetCurFile' => ['string'],
 'COMPersistHelper::GetMaxStreamSize' => ['int'],

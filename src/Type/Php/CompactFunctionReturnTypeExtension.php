@@ -15,6 +15,13 @@ use PHPStan\Type\Type;
 class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
+	private bool $checkMaybeUndefinedVariables;
+
+	public function __construct(bool $checkMaybeUndefinedVariables)
+	{
+		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
+	}
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'compact';
@@ -31,7 +38,7 @@ class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 			return $defaultReturnType;
 		}
 
-		if ($scope->canAnyVariableExist()) {
+		if ($scope->canAnyVariableExist() && !$this->checkMaybeUndefinedVariables) {
 			return $defaultReturnType;
 		}
 

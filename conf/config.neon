@@ -900,6 +900,8 @@ services:
 		class: PHPStan\Type\Php\CompactFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+		arguments:
+			checkMaybeUndefinedVariables: %checkMaybeUndefinedVariables%
 
 	-
 		class: PHPStan\Type\Php\CountFunctionReturnTypeExtension

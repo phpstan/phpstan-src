@@ -56,7 +56,12 @@ class CallableType implements CompoundType, ParametersAcceptor
 	 */
 	public function getReferencedClasses(): array
 	{
-		return [];
+		$classes = [];
+		foreach ($this->parameters as $parameter) {
+			$classes = array_merge($classes, $parameter->getType()->getReferencedClasses());
+		}
+
+		return array_merge($classes, $this->returnType->getReferencedClasses());
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

@@ -105,3 +105,14 @@ class FooMethodTypehints
 	}
 
 }
+
+class CallableTypehints
+{
+
+	/** @param callable(Bla): Ble $cb */
+	public function doFoo(callable $cb): void
+	{
+
+	}
+
+}

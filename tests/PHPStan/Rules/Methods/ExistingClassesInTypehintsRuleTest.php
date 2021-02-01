@@ -116,6 +116,14 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter $array of method TestMethodTypehints\FooMethodTypehints::unknownTypesInArrays() has invalid typehint type TestMethodTypehints\AnotherNonexistentClass.',
 				102,
 			],
+			[
+				'Parameter $cb of method TestMethodTypehints\CallableTypehints::doFoo() has invalid typehint type TestMethodTypehints\Bla.',
+				113,
+			],
+			[
+				'Parameter $cb of method TestMethodTypehints\CallableTypehints::doFoo() has invalid typehint type TestMethodTypehints\Ble.',
+				113,
+			],
 		]);
 	}
 

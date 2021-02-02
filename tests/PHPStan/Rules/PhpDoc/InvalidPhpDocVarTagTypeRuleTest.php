@@ -84,7 +84,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var for variable $test has no value type specified in iterable type array.',
 				58,
-				"Consider adding something like <fg=cyan>array<Foo></> to the PHPDoc.\nYou can turn off this check by setting <fg=cyan>checkMissingIterableValueType: false</> in your <fg=cyan>%configurationFile%</>.",
+				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'PHPDoc tag @var for variable $test contains generic class InvalidPhpDocDefinitions\FooGeneric but does not specify its types: T, U',

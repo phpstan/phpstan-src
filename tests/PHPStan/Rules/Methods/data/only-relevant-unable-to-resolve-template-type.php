@@ -27,18 +27,33 @@ class Foo
 	/**
 	 * @template T
 	 * @template U
+	 * @param T[] $a
 	 * @return T
 	 */
-	public function doBaz()
+	public function doBaz($a)
 	{
-
 	}
 
 	public function doLorem()
 	{
 		$this->doFoo(1);
 		$this->doBar();
-		$this->doBaz();
+		$this->doBaz(1);
+	}
+
+	/**
+	 * @template T
+	 * @param mixed $a
+	 * @return T
+	 */
+	public function doIpsum($a)
+	{
+
+	}
+
+	public function doDolor()
+	{
+		$this->doIpsum(1);
 	}
 
 }

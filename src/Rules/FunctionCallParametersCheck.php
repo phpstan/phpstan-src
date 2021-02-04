@@ -299,9 +299,9 @@ class FunctionCallParametersCheck
 		}
 
 		if ($this->checkMissingTypehints && $parametersAcceptor instanceof ResolvedFunctionVariant) {
-			$originalReturnType = $parametersAcceptor->getOriginalParametersAcceptor()->getReturnType();
+			$originalParametersAcceptor = $parametersAcceptor->getOriginalParametersAcceptor();
 			$returnTemplateTypes = [];
-			TypeTraverser::map($originalReturnType, static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
+			TypeTraverser::map($originalParametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
 				if ($type instanceof TemplateType) {
 					$returnTemplateTypes[$type->getName()] = true;
 					return $type;
@@ -309,6 +309,18 @@ class FunctionCallParametersCheck
 
 				return $traverse($type);
 			});
+
+			$parameterTemplateTypes = [];
+			foreach ($originalParametersAcceptor->getParameters() as $parameter) {
+				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$parameterTemplateTypes): Type {
+					if ($type instanceof TemplateType) {
+						$parameterTemplateTypes[$type->getName()] = true;
+						return $type;
+					}
+
+					return $traverse($type);
+				});
+			}
 
 			foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
 				if (
@@ -322,6 +334,10 @@ class FunctionCallParametersCheck
 				}
 
 				if (!array_key_exists($name, $returnTemplateTypes)) {
+					continue;
+				}
+
+				if (!array_key_exists($name, $parameterTemplateTypes)) {
 					continue;
 				}
 

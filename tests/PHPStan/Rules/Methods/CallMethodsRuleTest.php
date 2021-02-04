@@ -1759,6 +1759,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/only-relevant-unable-to-resolve-template-type.php'], [
 			[
+				'Parameter #1 $a of method OnlyRelevantUnableToResolve\Foo::doBaz() expects array, int given.',
+				41,
+			],
+			[
 				'Unable to resolve the template type T in call to method OnlyRelevantUnableToResolve\Foo::doBaz()',
 				41,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',

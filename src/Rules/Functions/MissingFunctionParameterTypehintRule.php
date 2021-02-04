@@ -79,7 +79,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$iterableTypeDescription
-			))->tip(sprintf(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP, $iterableTypeDescription))->build();
+			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {

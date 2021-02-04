@@ -54,7 +54,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$iterableTypeDescription
-			))->tip(sprintf(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP, $iterableTypeDescription))->build();
+			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($propertyType) as [$name, $genericTypeNames]) {

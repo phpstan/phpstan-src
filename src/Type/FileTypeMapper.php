@@ -202,7 +202,7 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v3', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v4-uses', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -353,19 +353,6 @@ class FileTypeMapper
 					return null;
 				} elseif ($node instanceof \PhpParser\Node\Stmt\Namespace_) {
 					$namespace = (string) $node->name;
-				} elseif ($node instanceof \PhpParser\Node\Stmt\Use_ && $node->type === \PhpParser\Node\Stmt\Use_::TYPE_NORMAL) {
-					foreach ($node->uses as $use) {
-						$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
-					}
-				} elseif ($node instanceof \PhpParser\Node\Stmt\GroupUse) {
-					$prefix = (string) $node->prefix;
-					foreach ($node->uses as $use) {
-						if ($node->type !== \PhpParser\Node\Stmt\Use_::TYPE_NORMAL && $use->type !== \PhpParser\Node\Stmt\Use_::TYPE_NORMAL) {
-							continue;
-						}
-
-						$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
-					}
 				} elseif ($node instanceof Node\Stmt\ClassMethod) {
 					$functionName = $node->name->name;
 					if (array_key_exists($functionName, $traitMethodAliases)) {
@@ -452,6 +439,21 @@ class FileTypeMapper
 					};
 
 					return self::POP_TYPE_MAP_STACK;
+				}
+
+				if ($node instanceof \PhpParser\Node\Stmt\Use_ && $node->type === \PhpParser\Node\Stmt\Use_::TYPE_NORMAL) {
+					foreach ($node->uses as $use) {
+						$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
+					}
+				} elseif ($node instanceof \PhpParser\Node\Stmt\GroupUse) {
+					$prefix = (string) $node->prefix;
+					foreach ($node->uses as $use) {
+						if ($node->type !== \PhpParser\Node\Stmt\Use_::TYPE_NORMAL && $use->type !== \PhpParser\Node\Stmt\Use_::TYPE_NORMAL) {
+							continue;
+						}
+
+						$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
+					}
 				}
 
 				return null;

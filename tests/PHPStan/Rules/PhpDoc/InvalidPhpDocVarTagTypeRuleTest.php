@@ -99,4 +99,25 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4486(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4486.php'], [
+			[
+				'PHPDoc tag @var for variable $one contains unknown class Bug4486\ClassName1.',
+				10,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'PHPDoc tag @var for variable $two contains unknown class Bug4486\ClassName2.',
+				10,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'PHPDoc tag @var for variable $three contains unknown class Some\Namespaced\ClassName1.',
+				15,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

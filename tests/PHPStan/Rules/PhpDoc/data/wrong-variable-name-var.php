@@ -196,4 +196,20 @@ class Foo
 		$bar = $foo + 1;
 	}
 
+	public function testIf($foo)
+	{
+		/** @var int $foo */
+		do {
+
+		} while (true);
+	}
+
+	public function testIf2()
+	{
+		/** @var int $foo */
+		do {
+
+		} while (true);
+	}
+
 }

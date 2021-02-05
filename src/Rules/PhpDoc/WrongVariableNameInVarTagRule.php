@@ -30,16 +30,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
-			!$node instanceof Node\Stmt\Foreach_
-			&& !$node instanceof Node\Stmt\Static_
-			&& !$node instanceof Node\Stmt\Echo_
-			&& !$node instanceof Node\Stmt\Return_
-			&& !$node instanceof Node\Stmt\Expression
-			&& !$node instanceof Node\Stmt\Throw_
-			&& !$node instanceof Node\Stmt\If_
-			&& !$node instanceof Node\Stmt\While_
-			&& !$node instanceof Node\Stmt\Switch_
-			&& !$node instanceof Node\Stmt\Nop
+			$node instanceof Node\Stmt\Property
+			|| $node instanceof Node\Stmt\PropertyProperty
 		) {
 			return [];
 		}

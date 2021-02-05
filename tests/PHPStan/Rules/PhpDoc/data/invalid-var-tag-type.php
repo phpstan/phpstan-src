@@ -61,9 +61,25 @@ class Foo
 		$test = doFoo();
 	}
 
+	public function doBar($foo)
+	{
+		/** @var Blabla $foo */
+		if (true) {
+
+		}
+	}
+
 }
 
 trait FooTrait
 {
+
+}
+
+class Bar
+{
+
+	/** @var Blabla */
+	private $foo;
 
 }

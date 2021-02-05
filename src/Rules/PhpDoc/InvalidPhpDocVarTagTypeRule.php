@@ -18,7 +18,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt>
  */
 class InvalidPhpDocVarTagTypeRule implements Rule
 {
@@ -58,16 +58,14 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node::class;
+		return \PhpParser\Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
-			!$node instanceof Node\Stmt\Foreach_
-			&& !$node instanceof Node\Expr\Assign
-			&& !$node instanceof Node\Expr\AssignRef
-			&& !$node instanceof Node\Stmt\Static_
+			$node instanceof Node\Stmt\Property
+			|| $node instanceof Node\Stmt\PropertyProperty
 		) {
 			return [];
 		}

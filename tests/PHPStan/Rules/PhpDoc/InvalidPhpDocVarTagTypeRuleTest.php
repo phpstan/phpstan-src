@@ -91,6 +91,11 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 				61,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'PHPDoc tag @var for variable $foo contains unknown class InvalidVarTagType\Blabla.',
+				67,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
 		]);
 	}
 

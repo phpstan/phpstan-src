@@ -34,7 +34,6 @@ class WrongVariableNameInVarTagRule implements Rule
 			|| $node instanceof Node\Stmt\PropertyProperty
 			|| $node instanceof Node\Stmt\ClassConst
 			|| $node instanceof Node\Stmt\Const_
-			|| $node instanceof Node\Const_
 		) {
 			return [];
 		}

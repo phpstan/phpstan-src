@@ -32,6 +32,9 @@ class WrongVariableNameInVarTagRule implements Rule
 		if (
 			$node instanceof Node\Stmt\Property
 			|| $node instanceof Node\Stmt\PropertyProperty
+			|| $node instanceof Node\Stmt\ClassConst
+			|| $node instanceof Node\Stmt\Const_
+			|| $node instanceof Node\Const_
 		) {
 			return [];
 		}

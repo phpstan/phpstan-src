@@ -213,3 +213,14 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	/** @var int */
+	private $test;
+
+	/** @var string */
+	const TEST = 'str';
+
+}

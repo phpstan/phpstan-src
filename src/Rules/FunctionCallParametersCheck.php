@@ -300,48 +300,51 @@ class FunctionCallParametersCheck
 
 		if ($this->checkMissingTypehints && $parametersAcceptor instanceof ResolvedFunctionVariant) {
 			$originalParametersAcceptor = $parametersAcceptor->getOriginalParametersAcceptor();
-			$returnTemplateTypes = [];
-			TypeTraverser::map($originalParametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
-				if ($type instanceof TemplateType) {
-					$returnTemplateTypes[$type->getName()] = true;
-					return $type;
-				}
-
-				return $traverse($type);
-			});
-
-			$parameterTemplateTypes = [];
-			foreach ($originalParametersAcceptor->getParameters() as $parameter) {
-				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$parameterTemplateTypes): Type {
+			$resolvedTypes = $parametersAcceptor->getResolvedTemplateTypeMap()->getTypes();
+			if (count($resolvedTypes) > 0) {
+				$returnTemplateTypes = [];
+				TypeTraverser::map($originalParametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
 					if ($type instanceof TemplateType) {
-						$parameterTemplateTypes[$type->getName()] = true;
+						$returnTemplateTypes[$type->getName()] = true;
 						return $type;
 					}
 
 					return $traverse($type);
 				});
-			}
 
-			foreach ($parametersAcceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
-				if (
-					!($type instanceof ErrorType)
-					&& (
-						!$type instanceof NeverType
-						|| $type->isExplicit()
-					)
-				) {
-					continue;
+				$parameterTemplateTypes = [];
+				foreach ($originalParametersAcceptor->getParameters() as $parameter) {
+					TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$parameterTemplateTypes): Type {
+						if ($type instanceof TemplateType) {
+							$parameterTemplateTypes[$type->getName()] = true;
+							return $type;
+						}
+
+						return $traverse($type);
+					});
 				}
 
-				if (!array_key_exists($name, $returnTemplateTypes)) {
-					continue;
-				}
+				foreach ($resolvedTypes as $name => $type) {
+					if (
+						!($type instanceof ErrorType)
+						&& (
+							!$type instanceof NeverType
+							|| $type->isExplicit()
+						)
+					) {
+						continue;
+					}
 
-				if (!array_key_exists($name, $parameterTemplateTypes)) {
-					continue;
-				}
+					if (!array_key_exists($name, $returnTemplateTypes)) {
+						continue;
+					}
 
-				$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->line($funcCall->getLine())->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')->build();
+					if (!array_key_exists($name, $parameterTemplateTypes)) {
+						continue;
+					}
+
+					$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->line($funcCall->getLine())->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')->build();
+				}
 			}
 		}
 

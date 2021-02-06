@@ -49,7 +49,8 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 				$scope->getClassReflection()->getDisplayName(),
 				$methodReflection->getName()
 			),
-			sprintf('Method %s::%s() uses native union types but they\'re supported only on PHP 8.0 and later.', $scope->getClassReflection()->getDisplayName(), $methodReflection->getName())
+			sprintf('Method %s::%s() uses native union types but they\'re supported only on PHP 8.0 and later.', $scope->getClassReflection()->getDisplayName(), $methodReflection->getName()),
+			sprintf('Template type %%s of method %s::%s() is not referenced in a parameter.', $scope->getClassReflection()->getDisplayName(), $methodReflection->getName())
 		);
 	}
 

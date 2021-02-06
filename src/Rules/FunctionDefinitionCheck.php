@@ -19,7 +19,10 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NonexistentParentClassType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
@@ -36,12 +39,15 @@ class FunctionDefinitionCheck
 
 	private bool $checkThisOnly;
 
+	private bool $checkMissingTemplateTypeInParameter;
+
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		PhpVersion $phpVersion,
 		bool $checkClassCaseSensitivity,
-		bool $checkThisOnly
+		bool $checkThisOnly,
+		bool $checkMissingTemplateTypeInParameter
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -49,6 +55,7 @@ class FunctionDefinitionCheck
 		$this->phpVersion = $phpVersion;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkThisOnly = $checkThisOnly;
+		$this->checkMissingTemplateTypeInParameter = $checkMissingTemplateTypeInParameter;
 	}
 
 	/**
@@ -56,6 +63,7 @@ class FunctionDefinitionCheck
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @param string $unionTypesMessage
+	 * @param string $templateTypeMissingInParameterMessage
 	 * @return RuleError[]
 	 */
 	public function checkFunction(
@@ -63,7 +71,8 @@ class FunctionDefinitionCheck
 		FunctionReflection $functionReflection,
 		string $parameterMessage,
 		string $returnMessage,
-		string $unionTypesMessage
+		string $unionTypesMessage,
+		string $templateTypeMissingInParameterMessage
 	): array
 	{
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
@@ -73,7 +82,8 @@ class FunctionDefinitionCheck
 			$function,
 			$parameterMessage,
 			$returnMessage,
-			$unionTypesMessage
+			$unionTypesMessage,
+			$templateTypeMissingInParameterMessage
 		);
 	}
 
@@ -170,6 +180,7 @@ class FunctionDefinitionCheck
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @param string $unionTypesMessage
+	 * @param string $templateTypeMissingInParameterMessage
 	 * @return RuleError[]
 	 */
 	public function checkClassMethod(
@@ -177,7 +188,8 @@ class FunctionDefinitionCheck
 		ClassMethod $methodNode,
 		string $parameterMessage,
 		string $returnMessage,
-		string $unionTypesMessage
+		string $unionTypesMessage,
+		string $templateTypeMissingInParameterMessage
 	): array
 	{
 		/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
@@ -188,7 +200,8 @@ class FunctionDefinitionCheck
 			$methodNode,
 			$parameterMessage,
 			$returnMessage,
-			$unionTypesMessage
+			$unionTypesMessage,
+			$templateTypeMissingInParameterMessage
 		);
 	}
 
@@ -198,6 +211,7 @@ class FunctionDefinitionCheck
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @param string $unionTypesMessage
+	 * @param string $templateTypeMissingInParameterMessage
 	 * @return RuleError[]
 	 */
 	private function checkParametersAcceptor(
@@ -205,7 +219,8 @@ class FunctionDefinitionCheck
 		FunctionLike $functionNode,
 		string $parameterMessage,
 		string $returnMessage,
-		string $unionTypesMessage
+		string $unionTypesMessage,
+		string $templateTypeMissingInParameterMessage
 	): array
 	{
 		$errors = [];
@@ -299,6 +314,25 @@ class FunctionDefinitionCheck
 		}
 		if ($parametersAcceptor->getReturnType() instanceof NonexistentParentClassType) {
 			$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $parametersAcceptor->getReturnType()->describe(VerbosityLevel::typeOnly())))->line($returnTypeNode->getLine())->build();
+		}
+
+		if ($this->checkMissingTemplateTypeInParameter) {
+			$templateTypeMap = $parametersAcceptor->getTemplateTypeMap();
+			$templateTypes = $templateTypeMap->getTypes();
+			foreach ($parametersAcceptor->getParameters() as $parameter) {
+				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+					if ($type instanceof TemplateType) {
+						unset($templateTypes[$type->getName()]);
+						return $type;
+					}
+
+					return $traverse($type);
+				});
+			}
+
+			foreach (array_keys($templateTypes) as $templateTypeName) {
+				$errors[] = RuleErrorBuilder::message(sprintf($templateTypeMissingInParameterMessage, $templateTypeName))->build();
+			}
 		}
 
 		return $errors;

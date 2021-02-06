@@ -19,7 +19,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ExistingClassesInTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker), new PhpVersion($this->phpVersionId), true, false));
+		return new ExistingClassesInTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker), new PhpVersion($this->phpVersionId), true, false, true));
 	}
 
 	public function testExistingClassInTypehint(): void
@@ -85,6 +85,10 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter $string of function TestFunctionTypehints\genericTemplateClassString() has invalid typehint type TestFunctionTypehints\SomeNonexistentClass.',
 				87,
+			],
+			[
+				'Template type T of function TestFunctionTypehints\templateTypeMissingInParameter() is not referenced in a parameter.',
+				96,
 			],
 		]);
 	}

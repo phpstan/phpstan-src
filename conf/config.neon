@@ -24,6 +24,7 @@ parameters:
 		detectDuplicateStubFiles: false
 		checkLogicalAndConstantCondition: false
 		checkLogicalOrConstantCondition: false
+		checkMissingTemplateTypeInParameter: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -174,7 +175,8 @@ parametersSchema:
 		dateTimeInstantiation: bool(),
 		detectDuplicateStubFiles: bool(),
 		checkLogicalAndConstantCondition: bool(),
-		checkLogicalOrConstantCondition: bool()
+		checkLogicalOrConstantCondition: bool(),
+		checkMissingTemplateTypeInParameter: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -699,6 +701,7 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+			checkMissingTemplateTypeInParameter: %featureToggles.checkMissingTemplateTypeInParameter%
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck

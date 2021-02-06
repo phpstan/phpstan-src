@@ -88,3 +88,12 @@ function genericTemplateClassString(string $string)
 {
 
 }
+
+/**
+ * @template T
+ * @param class-string $a
+ */
+function templateTypeMissingInParameter(string $a)
+{
+
+}

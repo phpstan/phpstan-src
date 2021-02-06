@@ -11,3 +11,4 @@ parameters:
 		detectDuplicateStubFiles: true
 		checkLogicalAndConstantCondition: true
 		checkLogicalOrConstantCondition: true
+		checkMissingTemplateTypeInParameter: true

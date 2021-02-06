@@ -116,3 +116,29 @@ class CallableTypehints
 	}
 
 }
+
+/**
+ * @template T
+ */
+class TemplateTypeMissingInParameter
+{
+
+	/**
+	 * @template U of object
+	 * @param class-string $class
+	 */
+	public function doFoo(string $class): void
+	{
+
+	}
+
+	/**
+	 * @template U of object
+	 * @param class-string<U> $class
+	 */
+	public function doBar(string $class): void
+	{
+
+	}
+
+}

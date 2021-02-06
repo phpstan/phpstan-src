@@ -319,19 +319,21 @@ class FunctionDefinitionCheck
 		if ($this->checkMissingTemplateTypeInParameter) {
 			$templateTypeMap = $parametersAcceptor->getTemplateTypeMap();
 			$templateTypes = $templateTypeMap->getTypes();
-			foreach ($parametersAcceptor->getParameters() as $parameter) {
-				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
-					if ($type instanceof TemplateType) {
-						unset($templateTypes[$type->getName()]);
-						return $type;
-					}
+			if (count($templateTypes) > 0) {
+				foreach ($parametersAcceptor->getParameters() as $parameter) {
+					TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+						if ($type instanceof TemplateType) {
+							unset($templateTypes[$type->getName()]);
+							return $type;
+						}
 
-					return $traverse($type);
-				});
-			}
+						return $traverse($type);
+					});
+				}
 
-			foreach (array_keys($templateTypes) as $templateTypeName) {
-				$errors[] = RuleErrorBuilder::message(sprintf($templateTypeMissingInParameterMessage, $templateTypeName))->build();
+				foreach (array_keys($templateTypes) as $templateTypeName) {
+					$errors[] = RuleErrorBuilder::message(sprintf($templateTypeMissingInParameterMessage, $templateTypeName))->build();
+				}
 			}
 		}
 

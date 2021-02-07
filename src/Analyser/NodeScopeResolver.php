@@ -1554,17 +1554,7 @@ class NodeScopeResolver
 					$this->processExprNode($arrayItem, $itemScope, $nodeCallback, $context->enterDeep());
 				}
 				$scope = $this->lookForArrayDestructuringArray($scope, $expr->var, $scope->getType($expr->expr));
-				$vars = [];
-				foreach ($expr->var->items as $arrayItem) {
-					if ($arrayItem === null) {
-						continue;
-					}
-					if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
-						continue;
-					}
-
-					$vars[] = $arrayItem->value->name;
-				}
+				$vars = $this->getAssignedVariables($expr->var);
 
 				if (count($vars) > 0) {
 					$varChangedScope = false;
@@ -2251,6 +2241,36 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * @param Expr $expr
+	 * @return string[]
+	 */
+	private function getAssignedVariables(Expr $expr): array
+	{
+		if ($expr instanceof Expr\Variable) {
+			if (is_string($expr->name)) {
+				return [$expr->name];
+			}
+
+			return [];
+		}
+
+		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
+			$names = [];
+			foreach ($expr->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+
+				$names = array_merge($names, $this->getAssignedVariables($item->value));
+			}
+
+			return $names;
+		}
+
+		return [];
+	}
+
+	/**
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 * @param Expr $expr
 	 * @param MutatingScope $scope
@@ -2923,16 +2943,7 @@ class NodeScopeResolver
 			$exprType = $scope->getType($stmt->expr);
 			$itemType = $exprType->getIterableValueType();
 			$scope = $this->lookForArrayDestructuringArray($scope, $stmt->valueVar, $itemType);
-			foreach ($stmt->valueVar->items as $arrayItem) {
-				if ($arrayItem === null) {
-					continue;
-				}
-				if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
-					continue;
-				}
-
-				$vars[] = $arrayItem->value->name;
-			}
+			$vars = array_merge($vars, $this->getAssignedVariables($stmt->valueVar));
 		}
 
 		$scope = $this->processVarAnnotation($scope, $vars, $stmt);

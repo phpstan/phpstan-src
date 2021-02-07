@@ -248,4 +248,39 @@ class MultipleDocComments
 		echo 'foo';
 	}
 
+	public function doBar(array $slots): void
+	{
+		/** @var \stdClass[] $itemSlots */
+		/** @var \stdClass[] $slots */
+		$itemSlots = [];
+	}
+
+	public function doBaz(): void
+	{
+		/** @var \stdClass[] $itemSlots */
+		/** @var \stdClass[] $slots */
+		$itemSlots = [];
+	}
+
+	public function doLorem(): void
+	{
+		/** @var \stdClass[] $slots */
+		$itemSlots['foo'] = 'bar';
+	}
+
+	public function doIpsum(): void
+	{
+		/** @var \stdClass[] */
+		$itemSlots['foo'] = 'bar';
+	}
+
+	public function doDolor(): void
+	{
+		/** @var \stdClass[] $slots */
+		$itemSlots = [];
+
+		/** @var int $test */
+		[[$test]] = doFoo();
+	}
+
 }

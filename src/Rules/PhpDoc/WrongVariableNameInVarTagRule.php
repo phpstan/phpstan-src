@@ -92,33 +92,71 @@ class WrongVariableNameInVarTagRule implements Rule
 	 */
 	private function processAssign(Scope $scope, Node\Expr $var, array $varTags): array
 	{
-		if ($var instanceof Node\Expr\Variable && is_string($var->name)) {
-			if (count($varTags) === 1) {
-				$key = key($varTags);
-				if (is_int($key)) {
-					return [];
-				}
-
-				if ($key !== $var->name) {
-					if (!$scope->hasVariableType($key)->no()) {
-						return [];
+		$errors = [];
+		$hasMultipleMessage = false;
+		$assignedVariables = $this->getAssignedVariables($var);
+		foreach (array_keys($varTags) as $key) {
+			if (is_int($key)) {
+				if (count($varTags) !== 1) {
+					if (!$hasMultipleMessage) {
+						$errors[] = RuleErrorBuilder::message('Multiple PHPDoc @var tags above single variable assignment are not supported.')->build();
+						$hasMultipleMessage = true;
 					}
-
-					return [
-						RuleErrorBuilder::message(sprintf(
-							'Variable $%s in PHPDoc tag @var does not match assigned variable $%s.',
-							$key,
-							$var->name
-						))->build(),
-					];
+				} elseif (count($assignedVariables) !== 1) {
+					$errors[] = RuleErrorBuilder::message(
+						'PHPDoc tag @var above assignment does not specify variable name.'
+					)->build();
 				}
-
-				return [];
+				continue;
 			}
 
-			return [
-				RuleErrorBuilder::message('Multiple PHPDoc @var tags above single variable assignment are not supported.')->build(),
-			];
+			if (count($assignedVariables) === 1 && $key === $assignedVariables[0]) {
+				continue;
+			}
+
+			if (!$scope->hasVariableType($key)->no()) {
+				continue;
+			}
+
+			if (count($assignedVariables) === 1 && count($varTags) === 1) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Variable $%s in PHPDoc tag @var does not match assigned variable $%s.',
+					$key,
+					$assignedVariables[0]
+				))->build();
+			} else {
+				$errors[] = RuleErrorBuilder::message(sprintf('Variable $%s in PHPDoc tag @var does not exist.', $key))->build();
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param Expr $expr
+	 * @return string[]
+	 */
+	private function getAssignedVariables(Expr $expr): array
+	{
+		if ($expr instanceof Expr\Variable) {
+			if (is_string($expr->name)) {
+				return [$expr->name];
+			}
+
+			return [];
+		}
+
+		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
+			$names = [];
+			foreach ($expr->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+
+				$names = array_merge($names, $this->getAssignedVariables($item->value));
+			}
+
+			return $names;
 		}
 
 		return [];
@@ -134,14 +172,9 @@ class WrongVariableNameInVarTagRule implements Rule
 	{
 		$variableNames = [];
 		if ($keyVar instanceof Node\Expr\Variable && is_string($keyVar->name)) {
-			$variableNames[$keyVar->name] = true;
+			$variableNames[] = $keyVar->name;
 		}
-		if ($valueVar instanceof Node\Expr\Variable && is_string($valueVar->name)) {
-			$variableNames[$valueVar->name] = true;
-		}
-		if ($valueVar instanceof Node\Expr\Array_ || $valueVar instanceof Node\Expr\List_) {
-			$variableNames = $this->getVariablesFromList($variableNames, $valueVar->items);
-		}
+		$variableNames = array_merge($variableNames, $this->getAssignedVariables($valueVar));
 
 		$errors = [];
 		foreach (array_keys($varTags) as $name) {
@@ -155,7 +188,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				continue;
 			}
 
-			if (isset($variableNames[$name])) {
+			if (in_array($name, $variableNames, true)) {
 				continue;
 			}
 
@@ -164,40 +197,11 @@ class WrongVariableNameInVarTagRule implements Rule
 				$name,
 				implode(', ', array_map(static function (string $name): string {
 					return sprintf('$%s', $name);
-				}, array_keys($variableNames)))
+				}, $variableNames))
 			))->build();
 		}
 
 		return $errors;
-	}
-
-	/**
-	 * @param array<string, true> $variableNames
-	 * @param (\PhpParser\Node\Expr\ArrayItem|null)[] $items
-	 * @return array<string, true>
-	 */
-	private function getVariablesFromList(array $variableNames, array $items): array
-	{
-		foreach ($items as $item) {
-			if ($item === null) {
-				continue;
-			}
-
-			$value = $item->value;
-
-			if ($value instanceof Node\Expr\Variable && is_string($value->name)) {
-				$variableNames[$value->name] = true;
-				continue;
-			}
-
-			if (!($value instanceof Node\Expr\Array_) && !($value instanceof Node\Expr\List_)) {
-				continue;
-			}
-
-			$variableNames = $this->getVariablesFromList($variableNames, $value->items);
-		}
-
-		return $variableNames;
 	}
 
 	/**

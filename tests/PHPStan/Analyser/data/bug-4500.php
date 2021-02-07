@@ -84,4 +84,44 @@ class Foo
 		assertType('stdClass', $modelType);
 	}
 
+	public function doAmet(array $slots): void
+	{
+		/** @var \stdClass[] $itemSlots */
+		/** @var \stdClass[] $slots */
+		$itemSlots = [];
+
+		assertType('array<stdClass>', $itemSlots);
+		assertType('array<stdClass>', $slots);
+	}
+
+	public function listDestructuring(): void
+	{
+		/** @var int $test */
+		[[$test]] = doFoo();
+		assertType('int', $test);
+	}
+
+	public function listDestructuring2(): void
+	{
+		/** @var int $test */
+		[$test] = doFoo();
+		assertType('int', $test);
+	}
+
+	public function listDestructuringForeach(): void
+	{
+		/** @var int $value */
+		foreach (doFoo() as [[$value]]) {
+			assertType('int', $value);
+		}
+	}
+
+	public function listDestructuringForeach2(): void
+	{
+		/** @var int $value */
+		foreach (doFoo() as [$value]) {
+		assertType('int', $value);
+	}
+	}
+
 }

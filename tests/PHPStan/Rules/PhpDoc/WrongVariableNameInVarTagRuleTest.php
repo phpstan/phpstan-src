@@ -94,6 +94,22 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'Variable $bar in PHPDoc tag @var does not exist.',
 				248,
 			],
+			[
+				'Variable $slots in PHPDoc tag @var does not exist.',
+				262,
+			],
+			[
+				'Variable $slots in PHPDoc tag @var does not exist.',
+				268,
+			],
+			[
+				'PHPDoc tag @var above assignment does not specify variable name.',
+				274,
+			],
+			[
+				'Variable $slots in PHPDoc tag @var does not match assigned variable $itemSlots.',
+				280,
+			],
 		]);
 	}
 

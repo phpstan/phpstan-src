@@ -138,6 +138,9 @@ class WrongVariableNameInVarTagRule implements Rule
 		$errors = [];
 		foreach (array_keys($varTags) as $name) {
 			if (is_int($name)) {
+				if (count($variableNames) === 1) {
+					continue;
+				}
 				$errors[] = RuleErrorBuilder::message(
 					'PHPDoc tag @var above foreach loop does not specify variable name.'
 				)->build();

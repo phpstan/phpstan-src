@@ -4771,6 +4771,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				__DIR__ . '/data/foreach/type-in-comment-no-variable.php',
+				'bool',
+				'$value',
+			],
+			[
+				__DIR__ . '/data/foreach/type-in-comment-no-variable-2.php',
 				'mixed',
 				'$value',
 			],

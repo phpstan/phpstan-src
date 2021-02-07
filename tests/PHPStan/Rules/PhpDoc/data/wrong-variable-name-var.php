@@ -224,3 +224,16 @@ class Bar
 	const TEST = 'str';
 
 }
+
+class ForeachJustValueVar
+{
+
+	public function doBar(array $list)
+	{
+		/** @var int */
+		foreach ($list as $val) {
+
+		}
+	}
+
+}

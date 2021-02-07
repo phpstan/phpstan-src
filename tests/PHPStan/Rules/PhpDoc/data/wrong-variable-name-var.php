@@ -237,3 +237,15 @@ class ForeachJustValueVar
 	}
 
 }
+
+class MultipleDocComments
+{
+
+	public function doFoo(): void
+	{
+		/** @var int $foo */
+		/** @var string $bar */
+		echo 'foo';
+	}
+
+}

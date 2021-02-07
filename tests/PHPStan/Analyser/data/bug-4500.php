@@ -71,4 +71,17 @@ class Foo
 		assertType('*ERROR*', $baz);
 	}
 
+	public function doSit(): void
+	{
+		/** @var array<int|\stdClass> $modelPropertyParameter */
+		$modelPropertyParameter = doFoo();
+
+		/** @var int $parameterIndex */
+		/** @var \stdClass $modelType */
+		[$parameterIndex, $modelType] = $modelPropertyParameter;
+
+		assertType('int', $parameterIndex);
+		assertType('stdClass', $modelType);
+	}
+
 }

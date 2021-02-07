@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PhpParser\Node;
 
+/** @deprecated */
 class CommentHelper
 {
 

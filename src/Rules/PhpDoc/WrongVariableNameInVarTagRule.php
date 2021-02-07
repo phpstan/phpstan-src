@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
@@ -38,21 +39,24 @@ class WrongVariableNameInVarTagRule implements Rule
 			return [];
 		}
 
-		$docComment = $node->getDocComment();
-		if ($docComment === null) {
-			return [];
+		$varTags = [];
+		$function = $scope->getFunction();
+		foreach ($node->getComments() as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText()
+			);
+			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {
+				$varTags[$key] = $varTag;
+			}
 		}
 
-		$function = $scope->getFunction();
-
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$scope->getFile(),
-			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$function !== null ? $function->getName() : null,
-			$docComment->getText()
-		);
-		$varTags = $resolvedPhpDoc->getVarTags();
 		if (count($varTags) === 0) {
 			return [];
 		}

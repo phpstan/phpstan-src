@@ -92,7 +92,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\CommentHelper;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -1169,10 +1168,7 @@ class NodeScopeResolver
 				$scope = $scope->assignVariable($var->name, new MixedType());
 				$vars[] = $var->name;
 			}
-			$comment = CommentHelper::getDocComment($stmt);
-			if ($comment !== null) {
-				$scope = $this->processVarAnnotation($scope, $vars, $comment);
-			}
+			$scope = $this->processVarAnnotation($scope, $vars, $stmt);
 		} elseif ($stmt instanceof Static_) {
 			$hasYield = false;
 
@@ -1186,10 +1182,7 @@ class NodeScopeResolver
 				$vars[] = $var->var->name;
 			}
 
-			$comment = CommentHelper::getDocComment($stmt);
-			if ($comment !== null) {
-				$scope = $this->processVarAnnotation($scope, $vars, $comment);
-			}
+			$scope = $this->processVarAnnotation($scope, $vars, $stmt);
 		} elseif ($stmt instanceof StaticVar) {
 			$hasYield = false;
 			if (!is_string($stmt->var->name)) {
@@ -1535,10 +1528,7 @@ class NodeScopeResolver
 				$hasYield = $result->hasYield();
 				$varChangedScope = false;
 				if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-					$comment = CommentHelper::getDocComment($expr);
-					if ($comment !== null) {
-						$scope = $this->processVarAnnotation($scope, [$expr->var->name], $comment, $varChangedScope);
-					}
+					$scope = $this->processVarAnnotation($scope, [$expr->var->name], $expr, $varChangedScope);
 				}
 
 				if (!$varChangedScope) {
@@ -1564,28 +1554,25 @@ class NodeScopeResolver
 					$this->processExprNode($arrayItem, $itemScope, $nodeCallback, $context->enterDeep());
 				}
 				$scope = $this->lookForArrayDestructuringArray($scope, $expr->var, $scope->getType($expr->expr));
-				$comment = CommentHelper::getDocComment($expr);
-				if ($comment !== null) {
-					$vars = [];
-					foreach ($expr->var->items as $arrayItem) {
-						if ($arrayItem === null) {
-							continue;
-						}
-						if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
-							continue;
-						}
-
-						$vars[] = $arrayItem->value->name;
+				$vars = [];
+				foreach ($expr->var->items as $arrayItem) {
+					if ($arrayItem === null) {
+						continue;
+					}
+					if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
+						continue;
 					}
 
-					if (count($vars) > 0) {
-						$varChangedScope = false;
-						$scope = $this->processVarAnnotation($scope, $vars, $comment, $varChangedScope);
-						if (!$varChangedScope) {
-							$scope = $this->processStmtVarAnnotation($scope, new Node\Stmt\Expression($expr, [
-								'comments' => $expr->getAttribute('comments'),
-							]), null);
-						}
+					$vars[] = $arrayItem->value->name;
+				}
+
+				if (count($vars) > 0) {
+					$varChangedScope = false;
+					$scope = $this->processVarAnnotation($scope, $vars, $expr, $varChangedScope);
+					if (!$varChangedScope) {
+						$scope = $this->processStmtVarAnnotation($scope, new Node\Stmt\Expression($expr, [
+							'comments' => $expr->getAttribute('comments'),
+						]), null);
 					}
 				}
 			}
@@ -2840,21 +2827,34 @@ class NodeScopeResolver
 	/**
 	 * @param MutatingScope $scope
 	 * @param array<int, string> $variableNames
-	 * @param string $comment
+	 * @param Node $node
 	 * @param bool $changed
 	 * @return MutatingScope
 	 */
-	private function processVarAnnotation(MutatingScope $scope, array $variableNames, string $comment, bool &$changed = false): MutatingScope
+	private function processVarAnnotation(MutatingScope $scope, array $variableNames, Node $node, bool &$changed = false): MutatingScope
 	{
 		$function = $scope->getFunction();
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$scope->getFile(),
-			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$function !== null ? $function->getName() : null,
-			$comment
-		);
-		$varTags = $resolvedPhpDoc->getVarTags();
+		$varTags = [];
+		foreach ($node->getComments() as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText()
+			);
+			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {
+				$varTags[$key] = $varTag;
+			}
+		}
+
+		if (count($varTags) === 0) {
+			return $scope;
+		}
 
 		foreach ($variableNames as $variableName) {
 			if (!isset($varTags[$variableName])) {
@@ -2899,9 +2899,8 @@ class NodeScopeResolver
 			$vars[] = $stmt->keyVar->name;
 		}
 
-		$comment = CommentHelper::getDocComment($stmt);
 		if (
-			$comment === null
+			$stmt->getDocComment() === null
 			&& $iterateeType instanceof ConstantArrayType
 			&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
 			&& $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
@@ -2924,23 +2923,19 @@ class NodeScopeResolver
 			$exprType = $scope->getType($stmt->expr);
 			$itemType = $exprType->getIterableValueType();
 			$scope = $this->lookForArrayDestructuringArray($scope, $stmt->valueVar, $itemType);
-			if ($comment !== null) {
-				foreach ($stmt->valueVar->items as $arrayItem) {
-					if ($arrayItem === null) {
-						continue;
-					}
-					if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
-						continue;
-					}
-
-					$vars[] = $arrayItem->value->name;
+			foreach ($stmt->valueVar->items as $arrayItem) {
+				if ($arrayItem === null) {
+					continue;
 				}
+				if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
+					continue;
+				}
+
+				$vars[] = $arrayItem->value->name;
 			}
 		}
 
-		if ($comment !== null) {
-			$scope = $this->processVarAnnotation($scope, $vars, $comment);
-		}
+		$scope = $this->processVarAnnotation($scope, $vars, $stmt);
 
 		return $scope;
 	}

@@ -283,4 +283,13 @@ class MultipleDocComments
 		[[$test]] = doFoo();
 	}
 
+	public function doSit(): void
+	{
+		/**
+		 * @var int $foo
+		 * @var int $bar
+		 */
+		[$foo, $bar] = doFoo();
+	}
+
 }

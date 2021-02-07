@@ -110,11 +110,11 @@ class WrongVariableNameInVarTagRule implements Rule
 				continue;
 			}
 
-			if (count($assignedVariables) === 1 && $key === $assignedVariables[0]) {
+			if (!$scope->hasVariableType($key)->no()) {
 				continue;
 			}
 
-			if (!$scope->hasVariableType($key)->no()) {
+			if (in_array($key, $assignedVariables, true)) {
 				continue;
 			}
 

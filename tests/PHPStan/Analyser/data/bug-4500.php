@@ -120,8 +120,20 @@ class Foo
 	{
 		/** @var int $value */
 		foreach (doFoo() as [$value]) {
-		assertType('int', $value);
+			assertType('int', $value);
+		}
 	}
+
+	public function doConseteur(): void
+	{
+		/**
+		 * @var int $foo
+		 * @var string $bar
+		 */
+		[$foo, $bar] = doFoo();
+
+		assertType('int', $foo);
+		assertType('string', $bar);
 	}
 
 }

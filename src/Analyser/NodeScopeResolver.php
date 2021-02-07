@@ -343,6 +343,7 @@ class NodeScopeResolver
 		} elseif (
 			!$stmt instanceof Static_
 			&& !$stmt instanceof Foreach_
+			&& !$stmt instanceof Node\Stmt\Global_
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 		}
@@ -1152,6 +1153,7 @@ class NodeScopeResolver
 			}
 		} elseif ($stmt instanceof Node\Stmt\Global_) {
 			$hasYield = false;
+			$vars = [];
 			foreach ($stmt->vars as $var) {
 				if (!$var instanceof Variable) {
 					throw new \PHPStan\ShouldNotHappenException();
@@ -1165,6 +1167,11 @@ class NodeScopeResolver
 				}
 
 				$scope = $scope->assignVariable($var->name, new MixedType());
+				$vars[] = $var->name;
+			}
+			$comment = CommentHelper::getDocComment($stmt);
+			if ($comment !== null) {
+				$scope = $this->processVarAnnotation($scope, $vars, $comment);
 			}
 		} elseif ($stmt instanceof Static_) {
 			$hasYield = false;

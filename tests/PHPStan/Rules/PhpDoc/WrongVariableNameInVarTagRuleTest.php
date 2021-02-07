@@ -109,4 +109,22 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3515.php'], []);
 	}
 
+	public function testBug4500(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4500.php'], [
+			[
+				'PHPDoc tag @var above multiple global variables does not specify variable name.',
+				23,
+			],
+			[
+				'Variable $baz in PHPDoc tag @var does not match any global variable: $lorem',
+				43,
+			],
+			[
+				'Variable $baz in PHPDoc tag @var does not match any global variable: $lorem',
+				49,
+			],
+		]);
+	}
+
 }

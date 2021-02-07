@@ -73,6 +73,10 @@ class WrongVariableNameInVarTagRule implements Rule
 			return $this->processStmt($scope, $varTags, $node->expr);
 		}
 
+		if ($node instanceof Node\Stmt\Global_) {
+			return $this->processGlobal($scope, $node, $varTags);
+		}
+
 		return $this->processStmt($scope, $varTags, null);
 	}
 
@@ -280,6 +284,54 @@ class WrongVariableNameInVarTagRule implements Rule
 			if (count($variableLessVarTags) > 0) {
 				$errors[] = RuleErrorBuilder::message('PHPDoc tag @var does not specify variable name.')->build();
 			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param \PHPStan\Analyser\Scope $scope
+	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
+	 * @return \PHPStan\Rules\RuleError[]
+	 */
+	private function processGlobal(Scope $scope, Node\Stmt\Global_ $node, array $varTags): array
+	{
+		$variableNames = [];
+		foreach ($node->vars as $var) {
+			if (!$var instanceof Expr\Variable) {
+				continue;
+			}
+			if (!is_string($var->name)) {
+				continue;
+			}
+
+			$variableNames[$var->name] = true;
+		}
+
+		$errors = [];
+		foreach (array_keys($varTags) as $name) {
+			if (is_int($name)) {
+				if (count($variableNames) === 1) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(
+					'PHPDoc tag @var above multiple global variables does not specify variable name.'
+				)->build();
+				continue;
+			}
+
+			if (isset($variableNames[$name])) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Variable $%s in PHPDoc tag @var does not match any global variable: %s',
+				$name,
+				implode(', ', array_map(static function (string $name): string {
+					return sprintf('$%s', $name);
+				}, array_keys($variableNames)))
+			))->build();
 		}
 
 		return $errors;

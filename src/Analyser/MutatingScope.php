@@ -4637,9 +4637,8 @@ class MutatingScope implements Scope
 
 		$methodReflection = $typeWithMethod->getMethod($methodName, $this);
 
+		$resolvedTypes = [];
 		if ($typeWithMethod instanceof TypeWithClassName) {
-			$resolvedTypes = [];
-
 			if ($methodCall instanceof MethodCall) {
 				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicMethodReturnTypeExtension) {
 					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
@@ -4657,16 +4656,17 @@ class MutatingScope implements Scope
 					$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($methodReflection, $methodCall, $this);
 				}
 			}
-			if (count($resolvedTypes) > 0) {
-				return TypeCombinator::union(...$resolvedTypes);
-			}
 		}
 
-		$methodReturnType = ParametersAcceptorSelector::selectFromArgs(
-			$this,
-			$methodCall->args,
-			$methodReflection->getVariants()
-		)->getReturnType();
+		if (count($resolvedTypes) > 0) {
+			$methodReturnType = TypeCombinator::union(...$resolvedTypes);
+		} else {
+			$methodReturnType = ParametersAcceptorSelector::selectFromArgs(
+				$this,
+				$methodCall->args,
+				$methodReflection->getVariants()
+			)->getReturnType();
+		}
 
 		if ($methodCall instanceof MethodCall) {
 			$calledOnThis = $calledOnType instanceof StaticType && $this->isInClass();

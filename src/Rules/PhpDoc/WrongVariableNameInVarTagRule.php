@@ -6,6 +6,7 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
@@ -35,6 +36,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			|| $node instanceof Node\Stmt\PropertyProperty
 			|| $node instanceof Node\Stmt\ClassConst
 			|| $node instanceof Node\Stmt\Const_
+			|| $node instanceof UnreachableStatementNode
 		) {
 			return [];
 		}

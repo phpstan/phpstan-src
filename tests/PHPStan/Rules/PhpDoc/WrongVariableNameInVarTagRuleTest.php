@@ -156,4 +156,9 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4504.php'], []);
 	}
 
+	public function testBug4505(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4505.php'], []);
+	}
+
 }

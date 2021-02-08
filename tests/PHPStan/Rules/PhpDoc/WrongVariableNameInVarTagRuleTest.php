@@ -31,11 +31,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				23,
 			],
 			[
-				'Variable $list in PHPDoc tag @var does not match any variable in the foreach loop: $key, $var',
-				29,
-			],
-			[
-				'Variable $foo in PHPDoc tag @var does not match any variable in the foreach loop: $key, $val',
+				'Variable $foo in PHPDoc tag @var does not match any variable in the foreach loop: $list, $key, $val',
 				66,
 			],
 			[
@@ -85,6 +81,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'Variable $foo in PHPDoc tag @var does not exist.',
 				210,
+			],
+			[
+				'PHPDoc tag @var above foreach loop does not specify variable name.',
+				234,
 			],
 			[
 				'Variable $foo in PHPDoc tag @var does not exist.',
@@ -149,6 +149,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				49,
 			],
 		]);
+	}
+
+	public function testBug4504(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4504.php'], []);
 	}
 
 }

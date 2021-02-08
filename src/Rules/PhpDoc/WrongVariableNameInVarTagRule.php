@@ -62,7 +62,7 @@ class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if ($node instanceof Node\Stmt\Foreach_) {
-			return $this->processForeach($node->keyVar, $node->valueVar, $varTags);
+			return $this->processForeach($node->expr, $node->keyVar, $node->valueVar, $varTags);
 		}
 
 		if ($node instanceof Node\Stmt\Static_) {
@@ -168,9 +168,12 @@ class WrongVariableNameInVarTagRule implements Rule
 	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
-	private function processForeach(?Node\Expr $keyVar, Node\Expr $valueVar, array $varTags): array
+	private function processForeach(Node\Expr $iterateeExpr, ?Node\Expr $keyVar, Node\Expr $valueVar, array $varTags): array
 	{
 		$variableNames = [];
+		if ($iterateeExpr instanceof Node\Expr\Variable && is_string($iterateeExpr->name)) {
+			$variableNames[] = $iterateeExpr->name;
+		}
 		if ($keyVar instanceof Node\Expr\Variable && is_string($keyVar->name)) {
 			$variableNames[] = $keyVar->name;
 		}

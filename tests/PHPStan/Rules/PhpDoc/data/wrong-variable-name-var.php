@@ -26,7 +26,7 @@ class Foo
 	public function doBar(array $list)
 	{
 		/** @var int[] $list */
-		foreach ($list as $key => $var) { // ERROR
+		foreach ($list as $key => $var) {
 
 		}
 

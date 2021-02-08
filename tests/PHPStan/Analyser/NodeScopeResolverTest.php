@@ -4776,7 +4776,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				__DIR__ . '/data/foreach/type-in-comment-no-variable-2.php',
-				'mixed',
+				'*ERROR*',
 				'$value',
 			],
 			[
@@ -10758,6 +10758,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4500.php');
 	}
 
+	public function dataBug4504(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4504.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -10972,6 +10977,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4415
 	 * @dataProvider dataCompact
 	 * @dataProvider dataBug4500
+	 * @dataProvider dataBug4504
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

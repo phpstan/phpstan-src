@@ -2897,6 +2897,9 @@ class NodeScopeResolver
 
 	private function enterForeach(MutatingScope $scope, Foreach_ $stmt): MutatingScope
 	{
+		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
+			$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+		}
 		$iterateeType = $scope->getType($stmt->expr);
 		$vars = [];
 		if ($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)) {

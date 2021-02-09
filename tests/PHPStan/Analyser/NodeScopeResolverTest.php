@@ -3231,12 +3231,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$simpleXMLRightXpath',
 			],
 			[
-				'false',
+				'array<SimpleXMLElement>|false',
 				'$simpleXMLWrongXpath',
 			],
 			[
 				'array<SimpleXMLElement>|false',
 				'$simpleXMLUnknownXpath',
+			],
+			[
+				'array<SimpleXMLElement>|false',
+				'$namespacedXpath',
 			],
 		];
 	}

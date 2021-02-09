@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -37,24 +36,18 @@ class SimpleXMLElementXpathMethodReturnTypeExtension implements \PHPStan\Type\Dy
 
 		$xmlElement = new \SimpleXMLElement('<foo />');
 
-		$result = null;
 		foreach (TypeUtils::getConstantStrings($argType) as $constantString) {
-			$newResult = @$xmlElement->xpath($constantString->getValue());
-
-			if ($result !== null && gettype($result) !== gettype($newResult)) {
+			$result = @$xmlElement->xpath($constantString->getValue());
+			if ($result === false) {
+				// We can't be sure since it's maybe a namespaced xpath
 				return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 			}
 
-			$result = $newResult;
 			$argType = TypeCombinator::remove($argType, $constantString);
 		}
 
-		if ($result === null || !$argType instanceof NeverType) {
+		if (!$argType instanceof NeverType) {
 			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
-		}
-
-		if ($result === false) {
-			return new ConstantBooleanType(false);
 		}
 
 		return new ArrayType(new MixedType(), $scope->getType($methodCall->var));

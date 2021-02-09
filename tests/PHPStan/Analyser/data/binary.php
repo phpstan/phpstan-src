@@ -177,6 +177,10 @@ class Foo
 		$simpleXMLWrongXpath = $simpleXML->xpath('[foo]');
 		$simpleXMLUnknownXpath = $simpleXML->xpath($stringForXpath);
 
+		$namespacedXML = new \SimpleXMLElement('<a><b><c/></b></a>');
+		$namespacedXML->registerXPathNamespace('ns', 'namespace');
+		$namespacedXpath = $namespacedXML->xpath('/ns:node');
+
 		if (rand(0, 1)) {
 			$maybeDefinedVariable = 'foo';
 		}

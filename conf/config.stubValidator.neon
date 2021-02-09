@@ -4,6 +4,7 @@ parameters:
 	checkGenericClassInNonGenericObjectType: true
 	checkMissingIterableValueType: true
 	checkMissingTypehints: true
+	checkMissingCallableSignature: false
 
 services:
 	-

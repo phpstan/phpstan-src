@@ -470,4 +470,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], $errors);
 	}
 
+	public function testBug4514(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4514.php'], []);
+	}
+
 }

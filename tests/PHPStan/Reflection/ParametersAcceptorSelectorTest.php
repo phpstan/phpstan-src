@@ -42,14 +42,16 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$arrayRandVariants[0],
 		];
 
-		yield [
-			[
-				new ArrayType(new MixedType(), new MixedType()),
-			],
-			$arrayRandVariants,
-			false,
-			$arrayRandVariants[1],
-		];
+		if (PHP_VERSION_ID < 80000) {
+			yield [
+				[
+					new ArrayType(new MixedType(), new MixedType()),
+				],
+				$arrayRandVariants,
+				false,
+				$arrayRandVariants[1],
+			];
+		}
 
 		$datePeriodConstructorVariants = $broker->getClass('DatePeriod')->getNativeMethod('__construct')->getVariants();
 		yield [
@@ -63,26 +65,29 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			false,
 			$datePeriodConstructorVariants[0],
 		];
-		yield [
-			[
-				new ObjectType(\DateTimeInterface::class),
-				new ObjectType(\DateInterval::class),
-				new ObjectType(\DateTimeInterface::class),
-				new IntegerType(),
-			],
-			$datePeriodConstructorVariants,
-			false,
-			$datePeriodConstructorVariants[1],
-		];
-		yield [
-			[
-				new StringType(),
-				new IntegerType(),
-			],
-			$datePeriodConstructorVariants,
-			false,
-			$datePeriodConstructorVariants[2],
-		];
+
+		if (PHP_VERSION_ID < 80000) {
+			yield [
+				[
+					new ObjectType(\DateTimeInterface::class),
+					new ObjectType(\DateInterval::class),
+					new ObjectType(\DateTimeInterface::class),
+					new IntegerType(),
+				],
+				$datePeriodConstructorVariants,
+				false,
+				$datePeriodConstructorVariants[1],
+			];
+			yield [
+				[
+					new StringType(),
+					new IntegerType(),
+				],
+				$datePeriodConstructorVariants,
+				false,
+				$datePeriodConstructorVariants[2],
+			];
+		}
 
 		$ibaseWaitEventVariants = $broker->getFunction(new Name('ibase_wait_event'), null)->getVariants();
 		yield [
@@ -196,14 +201,17 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 				new UnionType([new StringType(), new ConstantBooleanType(false)])
 			),
 		];
-		yield [
-			[
-				new StringType(),
-			],
-			$strtokVariants,
-			true,
-			ParametersAcceptorSelector::combineAcceptors($strtokVariants),
-		];
+
+		if (PHP_VERSION_ID < 80000) {
+			yield [
+				[
+					new StringType(),
+				],
+				$strtokVariants,
+				true,
+				ParametersAcceptorSelector::combineAcceptors($strtokVariants),
+			];
+		}
 
 		$variadicVariants = [
 			new FunctionVariant(

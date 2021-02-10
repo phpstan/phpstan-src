@@ -21,6 +21,7 @@ use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use const PHP_VERSION_ID;
 
 class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 {
@@ -175,7 +176,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 				null,
 				[
 					new NativeParameterReflection(
-						'str|token',
+						PHP_VERSION_ID < 80000 ? 'str|token' : 'string|token',
 						false,
 						new StringType(),
 						PassedByReference::createNo(),

@@ -25,6 +25,7 @@ parameters:
 		checkLogicalAndConstantCondition: false
 		checkLogicalOrConstantCondition: false
 		checkMissingTemplateTypeInParameter: false
+		wrongVarUsage: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -176,7 +177,8 @@ parametersSchema:
 		detectDuplicateStubFiles: bool(),
 		checkLogicalAndConstantCondition: bool(),
 		checkLogicalOrConstantCondition: bool(),
-		checkMissingTemplateTypeInParameter: bool()
+		checkMissingTemplateTypeInParameter: bool(),
+		wrongVarUsage: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

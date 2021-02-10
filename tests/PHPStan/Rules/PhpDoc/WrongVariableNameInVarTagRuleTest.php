@@ -15,7 +15,8 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new WrongVariableNameInVarTagRule(
-			self::getContainer()->getByType(FileTypeMapper::class)
+			self::getContainer()->getByType(FileTypeMapper::class),
+			true
 		);
 	}
 
@@ -109,6 +110,18 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'Variable $slots in PHPDoc tag @var does not match assigned variable $itemSlots.',
 				280,
+			],
+			[
+				'PHPDoc tag @var above a class has no effect.',
+				300,
+			],
+			[
+				'PHPDoc tag @var above a method has no effect.',
+				304,
+			],
+			[
+				'PHPDoc tag @var above a function has no effect.',
+				312,
 			],
 		]);
 	}

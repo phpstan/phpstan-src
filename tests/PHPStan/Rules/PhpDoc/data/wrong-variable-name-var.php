@@ -293,3 +293,23 @@ class MultipleDocComments
 	}
 
 }
+
+/**
+ * @var string
+ */
+class VarInWrongPlaces
+{
+
+	/** @var int $a */
+	public function doFoo($a)
+	{
+
+	}
+
+}
+
+/** @var int */
+function doFoo(): void
+{
+
+}

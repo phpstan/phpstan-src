@@ -6,7 +6,10 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\UnreachableStatementNode;
+use PHPStan\Node\InClassMethodNode;
+use PHPStan\Node\InClassNode;
+use PHPStan\Node\InFunctionNode;
+use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
@@ -19,9 +22,15 @@ class WrongVariableNameInVarTagRule implements Rule
 
 	private FileTypeMapper $fileTypeMapper;
 
-	public function __construct(FileTypeMapper $fileTypeMapper)
+	private bool $checkWrongVarUsage;
+
+	public function __construct(
+		FileTypeMapper $fileTypeMapper,
+		bool $checkWrongVarUsage = false
+	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->checkWrongVarUsage = $checkWrongVarUsage;
 	}
 
 	public function getNodeType(): string
@@ -36,7 +45,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			|| $node instanceof Node\Stmt\PropertyProperty
 			|| $node instanceof Node\Stmt\ClassConst
 			|| $node instanceof Node\Stmt\Const_
-			|| $node instanceof UnreachableStatementNode
+			|| ($node instanceof VirtualNode && !$node instanceof InFunctionNode && !$node instanceof InClassMethodNode && !$node instanceof InClassNode)
 		) {
 			return [];
 		}
@@ -81,6 +90,30 @@ class WrongVariableNameInVarTagRule implements Rule
 
 		if ($node instanceof Node\Stmt\Global_) {
 			return $this->processGlobal($scope, $node, $varTags);
+		}
+
+		if ($node instanceof InClassNode || $node instanceof InClassMethodNode || $node instanceof InFunctionNode) {
+			if ($this->checkWrongVarUsage) {
+				$description = 'a function';
+				$originalNode = $node->getOriginalNode();
+				if ($originalNode instanceof Node\Stmt\Interface_) {
+					$description = 'an interface';
+				} elseif ($originalNode instanceof Node\Stmt\Class_) {
+					$description = 'a class';
+				} elseif ($originalNode instanceof Node\Stmt\Trait_) {
+					throw new \PHPStan\ShouldNotHappenException();
+				} elseif ($originalNode instanceof Node\Stmt\ClassMethod) {
+					$description = 'a method';
+				}
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag @var above %s has no effect.',
+						$description
+					))->build(),
+				];
+			}
+
+			return [];
 		}
 
 		return $this->processStmt($scope, $varTags, null);

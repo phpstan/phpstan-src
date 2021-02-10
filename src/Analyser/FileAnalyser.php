@@ -18,7 +18,6 @@ use Roave\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use Roave\BetterReflection\Reflection\Exception\NotAClassReflection;
 use Roave\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use function array_fill_keys;
 use function array_key_exists;
 use function array_unique;
 
@@ -165,7 +164,7 @@ class FileAnalyser
 					}
 
 					foreach ($this->getLinesToIgnore($node) as $lineToIgnore) {
-						$linesToIgnore[] = $lineToIgnore;
+						$linesToIgnore[$scope->getFileDescription()][$lineToIgnore] = true;
 					}
 
 					try {
@@ -192,16 +191,16 @@ class FileAnalyser
 					$scope,
 					$nodeCallback
 				);
-				$linesToIgnoreKeys = array_fill_keys($linesToIgnore, true);
-				$unmatchedLineIgnores = $linesToIgnoreKeys;
+				$unmatchedLineIgnores = $linesToIgnore;
 				foreach ($temporaryFileErrors as $tmpFileError) {
 					$line = $tmpFileError->getLine();
 					if (
 						$line !== null
 						&& $tmpFileError->canBeIgnored()
-						&& array_key_exists($line, $linesToIgnoreKeys)
+						&& array_key_exists($tmpFileError->getFile(), $linesToIgnore)
+						&& array_key_exists($line, $linesToIgnore[$tmpFileError->getFile()])
 					) {
-						unset($unmatchedLineIgnores[$line]);
+						unset($unmatchedLineIgnores[$tmpFileError->getFile()][$line]);
 						continue;
 					}
 
@@ -209,26 +208,25 @@ class FileAnalyser
 				}
 
 				if ($this->reportUnmatchedIgnoredErrors) {
-					foreach (array_keys($unmatchedLineIgnores) as $line) {
-						$traitFilePath = null;
-						if ($scope->isInTrait()) {
-							$traitReflection = $scope->getTraitReflection();
-							if ($traitReflection->getFileName() !== false) {
-								$traitFilePath = $traitReflection->getFileName();
-							}
+					foreach ($unmatchedLineIgnores as $ignoredFile => $lines) {
+						if ($ignoredFile !== $file) {
+							continue;
 						}
-						$fileErrors[] = new Error(
-							sprintf('No error to ignore is reported on line %d.', $line),
-							$scope->getFileDescription(),
-							$line,
-							false,
-							$scope->getFile(),
-							$traitFilePath,
-							null,
-							null,
-							null,
-							'ignoredError.unmatchedOnLine'
-						);
+
+						foreach (array_keys($lines) as $line) {
+							$fileErrors[] = new Error(
+								sprintf('No error to ignore is reported on line %d.', $line),
+								$scope->getFileDescription(),
+								$line,
+								false,
+								$scope->getFile(),
+								null,
+								null,
+								null,
+								null,
+								'ignoredError.unmatchedOnLine'
+							);
+						}
 					}
 				}
 			} catch (\PhpParser\Error $e) {

@@ -191,7 +191,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 					new NativeParameterReflection(
 						'token',
 						true,
-						new StringType(),
+						PHP_VERSION_ID < 80000 ? new StringType() : new UnionType([new StringType(), new NullType()]),
 						PassedByReference::createNo(),
 						false,
 						null

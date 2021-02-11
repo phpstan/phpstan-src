@@ -675,6 +675,11 @@ services:
 		class: PHPStan\Rules\AttributesCheck
 
 	-
+		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchCheck
+		arguments:
+			reportMaybes: %reportMaybes%
+
+	-
 		class: PHPStan\Rules\ClassCaseSensitivityCheck
 		arguments:
 			checkInternalClassCaseSensitivity: %checkInternalClassCaseSensitivity%

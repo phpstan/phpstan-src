@@ -63,6 +63,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\GenericTypeVariableResolver;
@@ -4565,8 +4566,42 @@ class MutatingScope implements Scope
 			return $methodResult;
 		}
 
+		$objectType = new ObjectType($resolvedClassName);
 		if (!$classReflection->isGeneric()) {
-			return new ObjectType($resolvedClassName);
+			return $objectType;
+		}
+
+		$parentNode = $node->getAttribute('parent');
+		if (
+			(
+				$parentNode instanceof Expr\Assign
+				|| $parentNode instanceof Expr\AssignRef
+			)
+			&& $parentNode->var instanceof PropertyFetch
+		) {
+			$constructorVariant = ParametersAcceptorSelector::selectSingle($constructorMethod->getVariants());
+			$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
+			$originalClassTemplateTypes = $classTemplateTypes;
+			foreach ($constructorVariant->getParameters() as $parameter) {
+				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$classTemplateTypes): Type {
+					if ($type instanceof TemplateType && array_key_exists($type->getName(), $classTemplateTypes)) {
+						$classTemplateType = $classTemplateTypes[$type->getName()];
+						if ($classTemplateType instanceof TemplateType && $classTemplateType->getScope()->equals($type->getScope())) {
+							unset($classTemplateTypes[$type->getName()]);
+						}
+						return $type;
+					}
+
+					return $traverse($type);
+				});
+			}
+
+			if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
+				$propertyType = $this->getType($parentNode->var);
+				if ($objectType->isSuperTypeOf($propertyType)->yes()) {
+					return $propertyType;
+				}
+			}
 		}
 
 		if ($constructorMethod instanceof DummyConstructorReflection || $constructorMethod->getDeclaringClass()->getName() !== $classReflection->getName()) {

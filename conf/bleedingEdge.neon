@@ -13,3 +13,4 @@ parameters:
 		checkLogicalOrConstantCondition: true
 		checkMissingTemplateTypeInParameter: true
 		wrongVarUsage: true
+		arrayDeconstruction: true

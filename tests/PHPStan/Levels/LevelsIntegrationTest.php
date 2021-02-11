@@ -36,6 +36,7 @@ class LevelsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 			['arrayAccess'],
 			['typehints'],
 			['coalesce'],
+			['arrayDestructuring'],
 		];
 	}
 

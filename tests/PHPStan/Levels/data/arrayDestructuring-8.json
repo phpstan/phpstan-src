@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Cannot use array destructuring on array|null.",
+        "line": 15,
+        "ignorable": true
+    }
+]

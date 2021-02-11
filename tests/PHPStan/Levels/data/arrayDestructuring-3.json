@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Cannot use array destructuring on iterable<int, string>.",
+        "line": 23,
+        "ignorable": true
+    },
+    {
+        "message": "Offset 3 does not exist on array('a', 'b', 'c').",
+        "line": 30,
+        "ignorable": true
+    }
+]

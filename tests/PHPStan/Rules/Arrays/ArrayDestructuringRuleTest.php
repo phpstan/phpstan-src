@@ -7,16 +7,16 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<ArrayDeconstructionRule>
+ * @extends RuleTestCase<ArrayDestructuringRule>
  */
-class ArrayDeconstructionRuleTest extends RuleTestCase
+class ArrayDestructuringRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false);
 
-		return new ArrayDeconstructionRule(
+		return new ArrayDestructuringRule(
 			$ruleLevelHelper,
 			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true)
 		);

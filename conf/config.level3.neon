@@ -18,8 +18,8 @@ rules:
 	- PHPStan\Rules\Variables\VariableCloningRule
 
 conditionalTags:
-	PHPStan\Rules\Arrays\ArrayDeconstructionRule:
-		phpstan.rules.rule: %featureToggles.arrayDeconstruction%
+	PHPStan\Rules\Arrays\ArrayDestructuringRule:
+		phpstan.rules.rule: %featureToggles.arrayDestructuring%
 
 parameters:
 	checkPhpDocMethodSignatures: true
@@ -33,7 +33,7 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\Arrays\ArrayDeconstructionRule
+		class: PHPStan\Rules\Arrays\ArrayDestructuringRule
 
 	-
 		class: PHPStan\Rules\Arrays\InvalidKeyInArrayDimFetchRule

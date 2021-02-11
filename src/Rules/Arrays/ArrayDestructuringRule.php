@@ -20,7 +20,7 @@ use PHPStan\Type\VerbosityLevel;
 /**
  * @implements Rule<Assign>
  */
-class ArrayDeconstructionRule implements Rule
+class ArrayDestructuringRule implements Rule
 {
 
 	private RuleLevelHelper $ruleLevelHelper;

@@ -897,7 +897,7 @@ class ClassReflection implements ReflectionWithFilename
 
 		$list = [];
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
-			$list[] = $typeMap->getType($tag->getName()) ?? new ErrorType();
+			$list[] = $typeMap->getType($tag->getName()) ?? $tag->getBound();
 		}
 
 		return $list;

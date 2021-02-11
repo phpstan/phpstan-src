@@ -133,3 +133,40 @@ class Ipsum2
 	}
 
 }
+
+/**
+ * @template T of object
+ * @template U of object
+ */
+class Lorem3
+{
+
+	/**
+	 * @param T $t
+	 * @param U $u
+	 */
+	public function __construct($t, $u)
+	{
+
+	}
+
+}
+
+class Ipsum3
+{
+
+	/** @var Lorem3<\stdClass, \Exception> */
+	private $lorem3;
+
+	/** @var Lorem3<\stdClass, \Exception> */
+	private $ipsum3;
+
+	public function __construct()
+	{
+		$this->lorem3 = new Lorem3(new \stdClass, new \Exception());
+		assertType('Bug3777\Lorem3<stdClass, Exception>', $this->lorem3);
+		$this->ipsum3 = new Lorem3(new \Exception(), new \stdClass());
+		assertType('Bug3777\Lorem3<Exception, stdClass>', $this->ipsum3);
+	}
+
+}

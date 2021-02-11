@@ -15,4 +15,11 @@ class Foo
 		[[$a, $b, $c]] = [[1, 2]];
 	}
 
+	public function doBar(): void
+	{
+		['a' => $a] = ['a' => 1];
+
+		['a' => $a] = ['b' => 1];
+	}
+
 }

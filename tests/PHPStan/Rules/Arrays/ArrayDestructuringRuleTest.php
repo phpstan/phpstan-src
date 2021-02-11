@@ -41,6 +41,10 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 				'Offset 2 does not exist on array(1, 2).',
 				15,
 			],
+			[
+				'Offset \'a\' does not exist on array(\'b\' => 1).',
+				22,
+			],
 		]);
 	}
 

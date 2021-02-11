@@ -11,7 +11,7 @@ class Bar
 class Foo
 {
 	/** @var \SplObjectStorage<Bar, string> */
-	private \SplObjectStorage $storage;
+	private $storage;
 
 	public function __construct()
 	{

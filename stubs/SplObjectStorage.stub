@@ -61,4 +61,10 @@ class SplObjectStorage implements Countable, Iterator, Serializable, ArrayAccess
      */
     public function setInfo($data): void { }
 
+    /**
+     * @param TObject $offset
+     * @return TData
+     */
+    public function offsetGet($offset);
+
 }

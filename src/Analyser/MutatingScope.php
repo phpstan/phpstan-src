@@ -1007,56 +1007,6 @@ class MutatingScope implements Scope
 			return IntegerRangeType::fromInterval(-1, 1);
 		}
 
-		if ($node instanceof Expr\AssignOp\Coalesce) {
-			return $this->getType(new BinaryOp\Coalesce($node->var, $node->expr, $node->getAttributes()));
-		}
-
-		if ($node instanceof Expr\BinaryOp\Coalesce) {
-			if ($node->left instanceof Expr\ArrayDimFetch && $node->left->dim !== null) {
-				$dimType = $this->getType($node->left->dim);
-				$varType = $this->getType($node->left->var);
-				$hasOffset = $varType->hasOffsetValueType($dimType);
-				$leftType = $this->getType($node->left);
-				$rightType = $this->getType($node->right);
-				if ($hasOffset->no()) {
-					return $rightType;
-				} elseif ($hasOffset->yes()) {
-					$offsetValueType = $varType->getOffsetValueType($dimType);
-					if ($offsetValueType->isSuperTypeOf(new NullType())->no()) {
-						return TypeCombinator::removeNull($leftType);
-					}
-				}
-
-				return TypeCombinator::union(
-					TypeCombinator::removeNull($leftType),
-					$rightType
-				);
-			}
-
-			$leftType = $this->getType($node->left);
-			$rightType = $this->getType($node->right);
-			if ($leftType instanceof ErrorType || $leftType instanceof NullType) {
-				return $rightType;
-			}
-
-			if (
-				TypeCombinator::containsNull($leftType)
-				|| $node->left instanceof PropertyFetch
-				|| (
-					$node->left instanceof Variable
-					&& is_string($node->left->name)
-					&& !$this->hasVariableType($node->left->name)->yes()
-				)
-			) {
-				return TypeCombinator::union(
-					TypeCombinator::removeNull($leftType),
-					$rightType
-				);
-			}
-
-			return TypeCombinator::removeNull($leftType);
-		}
-
 		if ($node instanceof Expr\Clone_) {
 			return $this->getType($node->expr);
 		}
@@ -1661,6 +1611,56 @@ class MutatingScope implements Scope
 		$exprString = $this->getNodeKey($node);
 		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
 			return $this->moreSpecificTypes[$exprString]->getType();
+		}
+
+		if ($node instanceof Expr\AssignOp\Coalesce) {
+			return $this->getType(new BinaryOp\Coalesce($node->var, $node->expr, $node->getAttributes()));
+		}
+
+		if ($node instanceof Expr\BinaryOp\Coalesce) {
+			if ($node->left instanceof Expr\ArrayDimFetch && $node->left->dim !== null) {
+				$dimType = $this->getType($node->left->dim);
+				$varType = $this->getType($node->left->var);
+				$hasOffset = $varType->hasOffsetValueType($dimType);
+				$leftType = $this->getType($node->left);
+				$rightType = $this->getType($node->right);
+				if ($hasOffset->no()) {
+					return $rightType;
+				} elseif ($hasOffset->yes()) {
+					$offsetValueType = $varType->getOffsetValueType($dimType);
+					if ($offsetValueType->isSuperTypeOf(new NullType())->no()) {
+						return TypeCombinator::removeNull($leftType);
+					}
+				}
+
+				return TypeCombinator::union(
+					TypeCombinator::removeNull($leftType),
+					$rightType
+				);
+			}
+
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
+			if ($leftType instanceof ErrorType || $leftType instanceof NullType) {
+				return $rightType;
+			}
+
+			if (
+				TypeCombinator::containsNull($leftType)
+				|| $node->left instanceof PropertyFetch
+				|| (
+					$node->left instanceof Variable
+					&& is_string($node->left->name)
+					&& !$this->hasVariableType($node->left->name)->yes()
+				)
+			) {
+				return TypeCombinator::union(
+					TypeCombinator::removeNull($leftType),
+					$rightType
+				);
+			}
+
+			return TypeCombinator::removeNull($leftType);
 		}
 
 		if ($node instanceof ConstFetch) {

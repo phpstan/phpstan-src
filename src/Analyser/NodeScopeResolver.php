@@ -809,7 +809,7 @@ class NodeScopeResolver
 				$finalScope,
 				$finalScopeResult->hasYield() || $condResult->hasYield(),
 				$isIterableAtLeastOnce->yes() && $finalScopeResult->isAlwaysTerminating(),
-				[]
+				$finalScopeResult->getExitPointsForOuterLoop()
 			);
 		} elseif ($stmt instanceof While_) {
 			$condResult = $this->processExprNode($stmt->cond, $scope, static function (): void {
@@ -875,7 +875,7 @@ class NodeScopeResolver
 				$finalScope,
 				$finalScopeResult->hasYield() || $condResult->hasYield(),
 				$isAlwaysTerminating,
-				[]
+				$finalScopeResult->getExitPointsForOuterLoop()
 			);
 		} elseif ($stmt instanceof Do_) {
 			$finalScope = null;
@@ -940,7 +940,7 @@ class NodeScopeResolver
 				$finalScope,
 				$bodyScopeResult->hasYield() || $hasYield,
 				$alwaysTerminating,
-				[]
+				$bodyScopeResult->getExitPointsForOuterLoop()
 			);
 		} elseif ($stmt instanceof For_) {
 			$initScope = $scope;
@@ -1014,7 +1014,7 @@ class NodeScopeResolver
 				$finalScope,
 				$finalScopeResult->hasYield() || $hasYield,
 				false/* $finalScopeResult->isAlwaysTerminating() && $isAlwaysIterable*/,
-				[]
+				$finalScopeResult->getExitPointsForOuterLoop()
 			);
 		} elseif ($stmt instanceof Switch_) {
 			$condResult = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -1025,6 +1025,7 @@ class NodeScopeResolver
 			$hasDefaultCase = false;
 			$alwaysTerminating = true;
 			$hasYield = $condResult->hasYield();
+			$exitPointsForOuterLoop = [];
 			foreach ($stmt->cases as $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
@@ -1047,6 +1048,7 @@ class NodeScopeResolver
 				foreach ($branchScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 					$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
 				}
+				$exitPointsForOuterLoop = array_merge($exitPointsForOuterLoop, $branchFinalScopeResult->getExitPointsForOuterLoop());
 				if ($branchScopeResult->isAlwaysTerminating()) {
 					$alwaysTerminating = $alwaysTerminating && $branchFinalScopeResult->isAlwaysTerminating();
 					$prevScope = null;
@@ -1074,7 +1076,7 @@ class NodeScopeResolver
 				$finalScope = $scope->mergeWith($finalScope);
 			}
 
-			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, []);
+			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPointsForOuterLoop);
 		} elseif ($stmt instanceof TryCatch) {
 			$branchScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback);
 			$branchScope = $branchScopeResult->getScope();

@@ -10224,7 +10224,7 @@ return [
 'shuffle' => ['bool', '&rw_array_arg'=>'array'],
 'signeurlpaiement' => ['string', 'clent'=>'string', 'data'=>'string'],
 'similar_text' => ['int', 'str1'=>'string', 'str2'=>'string', '&w_percent='=>'float'],
-'simplexml_import_dom' => ['SimpleXMLElement|false', 'node'=>'DOMNode', 'class_name='=>'string'],
+'simplexml_import_dom' => ['SimpleXMLElement|null', 'node'=>'DOMNode', 'class_name='=>'string'],
 'simplexml_load_file' => ['SimpleXMLElement|false', 'filename'=>'string', 'class_name='=>'string', 'options='=>'int', 'ns='=>'string', 'is_prefix='=>'bool'],
 'simplexml_load_string' => ['SimpleXMLElement|false', 'data'=>'string', 'class_name='=>'string', 'options='=>'int', 'ns='=>'string', 'is_prefix='=>'bool'],
 'SimpleXMLElement::__construct' => ['void', 'data'=>'string', 'options='=>'int', 'data_is_url='=>'bool', 'ns='=>'string', 'is_prefix='=>'bool'],

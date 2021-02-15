@@ -9243,7 +9243,7 @@ return [
 'Redis::_serialize' => ['mixed', 'value'=>'mixed'],
 'Redis::_unserialize' => ['mixed', 'value'=>'string'],
 'Redis::append' => ['int', 'key'=>'string', 'value'=>'string'],
-'Redis::auth' => ['bool', 'password'=>'string'],
+'Redis::auth' => ['bool', 'password'=>'string|string[]'],
 'Redis::bgRewriteAOF' => ['bool'],
 'Redis::bgSave' => ['bool'],
 'Redis::bitCount' => ['int', 'key'=>'string'],

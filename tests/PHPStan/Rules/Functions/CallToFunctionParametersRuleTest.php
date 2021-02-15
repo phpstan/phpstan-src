@@ -411,6 +411,28 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testFputCsv(): void
+	{
+		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter.php'], [
+			[
+				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|string|null>, array<int, Fputcsv\Person> given.',
+				30,
+			],
+		]);
+	}
+
+
+	public function testPutCsvWithStringable(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test skipped under 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter-php8.php'], [
+			// No issues expected
+		]);
+	}
+
 	public function testFunctionWithNumericParameterThatCreatedByAddition(): void
 	{
 		$this->analyse([__DIR__ . '/data/function-with-int-parameter-that-created-by-addition.php'], [

@@ -16,7 +16,7 @@ use function array_key_exists;
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v6-installed';
+	private const CACHE_VERSION = 'v7-installed-php';
 
 	private ExportedNodeFetcher $exportedNodeFetcher;
 
@@ -610,17 +610,20 @@ php;
 	 */
 	private function getComposerInstalled(): array
 	{
-		$hashes = [];
+		$data = [];
 		foreach ($this->composerAutoloaderProjectPaths as $autoloadPath) {
 			$filePath = $autoloadPath . '/vendor/composer/installed.php';
 			if (!is_file($filePath)) {
 				continue;
 			}
 
-			$hashes[$filePath] = $this->getFileHash($filePath);
+			$installed = require $filePath;
+			unset($installed['root']);
+
+			$data[$filePath] = $installed;
 		}
 
-		return $hashes;
+		return $data;
 	}
 
 	/**

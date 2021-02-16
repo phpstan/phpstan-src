@@ -444,3 +444,18 @@ class Scalars
 	}
 
 }
+
+class Bug3282
+{
+	/**
+	 * @phpstan-param array{event: string, msg?: array{ts?: int}} $array
+	 */
+	public function foo(array $array): int
+	{
+		if (isset($array['msg']['ts'])) {
+			return 1;
+		}
+
+		return 0;
+	}
+}

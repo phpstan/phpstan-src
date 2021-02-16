@@ -85,7 +85,11 @@ class NonexistentOffsetInArrayDimFetchCheck
 			}
 		}
 
-		if (!$scope->isInExpressionAssign($var) && $report) {
+		if ($report) {
+			if ($scope->isInExpressionAssign($var)) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
 			];

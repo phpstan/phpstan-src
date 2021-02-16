@@ -618,8 +618,9 @@ php;
 			}
 
 			$installed = require $filePath;
+			$rootName = $installed['root']['name'];
 			unset($installed['root']);
-			unset($installed['versions']['__root__']);
+			unset($installed['versions'][$rootName]);
 
 			$data[$filePath] = $installed;
 		}

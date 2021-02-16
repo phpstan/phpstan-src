@@ -415,8 +415,8 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter.php'], [
 			[
-				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|string|null>, array<int, Fputcsv\Person> given.',
-				30,
+				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|string|null>, array<int, Person> given.',
+				33,
 			],
 		]);
 	}

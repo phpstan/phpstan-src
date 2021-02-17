@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace FputcsvPhp8;
+
 class StringablePerson implements \Stringable {
 	public function __toString(): string {
 		return "stringable name";

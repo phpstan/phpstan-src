@@ -415,8 +415,8 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter.php'], [
 			[
-				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|string|null>, array<int, Person> given.',
-				33,
+				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|string|null>, array<int, Fputcsv\Person> given.',
+				35,
 			],
 		]);
 	}
@@ -425,7 +425,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testPutCsvWithStringable(): void
 	{
 		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test skipped under 8.0');
+			$this->markTestSkipped('Test skipped on lower version than 8.0 (needs Stringable interface, added in PHP8)');
 		}
 
 		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter-php8.php'], [

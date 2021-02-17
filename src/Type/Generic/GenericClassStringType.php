@@ -142,11 +142,7 @@ class GenericClassStringType extends ClassStringType
 			return TemplateTypeMap::createEmpty();
 		}
 
-		if (!$this->type->isSuperTypeOf($typeToInfer)->no()) {
-			return $this->type->inferTemplateTypes($typeToInfer);
-		}
-
-		return TemplateTypeMap::createEmpty();
+		return $this->type->inferTemplateTypes($typeToInfer);
 	}
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array

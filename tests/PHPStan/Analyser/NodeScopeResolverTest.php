@@ -10812,6 +10812,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/proc_get_status.php');
 	}
 
+	public function dataBug4552(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-4552.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -11036,6 +11041,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug1283
 	 * @dataProvider dataBug4538
 	 * @dataProvider dataProcGetStatus
+	 * @dataProvider dataBug4552
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -28,15 +28,4 @@ class VarTag implements TypedTag
 		return new self($type);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return self
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['type']
-		);
-	}
-
 }

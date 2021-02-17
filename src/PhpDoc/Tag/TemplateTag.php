@@ -36,17 +36,4 @@ class TemplateTag
 		return $this->variance;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return self
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['name'],
-			$properties['bound'],
-			$properties['variance']
-		);
-	}
-
 }

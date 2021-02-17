@@ -41,16 +41,4 @@ class ReturnTag implements TypedTag
 		return new self($this->type, false);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return ReturnTag
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['type'],
-			$properties['isExplicit']
-		);
-	}
-
 }

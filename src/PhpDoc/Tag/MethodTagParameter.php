@@ -58,19 +58,4 @@ class MethodTagParameter
 		return $this->defaultValue;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return self
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['type'],
-			$properties['passedByReference'],
-			$properties['isOptional'],
-			$properties['isVariadic'],
-			$properties['defaultValue']
-		);
-	}
-
 }

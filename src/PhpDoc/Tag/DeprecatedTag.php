@@ -17,15 +17,4 @@ class DeprecatedTag
 		return $this->message;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return DeprecatedTag
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['message']
-		);
-	}
-
 }

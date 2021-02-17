@@ -36,16 +36,4 @@ class ParamTag implements TypedTag
 		return new self($type, $this->isVariadic);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return self
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['type'],
-			$properties['isVariadic']
-		);
-	}
-
 }

@@ -19,15 +19,4 @@ class ThrowsTag
 		return $this->type;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return ThrowsTag
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['type']
-		);
-	}
-
 }

@@ -39,17 +39,4 @@ class PropertyTag
 		return $this->writable;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return PropertyTag
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['type'],
-			$properties['readable'],
-			$properties['writable']
-		);
-	}
-
 }

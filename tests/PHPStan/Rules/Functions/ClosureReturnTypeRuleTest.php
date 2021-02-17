@@ -86,4 +86,9 @@ class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3891(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3891.php'], []);
+	}
+
 }

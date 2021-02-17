@@ -327,4 +327,9 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug1711(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1711.php'], []);
+	}
+
 }

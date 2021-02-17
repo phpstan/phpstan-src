@@ -137,6 +137,8 @@
 			<arg path="tests/PHPStan/Rules/Functions/data/arrow-function-nullsafe-by-ref.php"/>
 			<arg value="--exclude"/>
 			<arg path="tests/PHPStan/Levels/data/namedArguments.php"/>
+			<arg value="--exclude"/>
+			<arg path="tests/PHPStan/Rules/Keywords/data/continue-break.php"/>
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />

@@ -403,4 +403,19 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-577.php'], []);
 	}
 
+	public function testBug4550(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-4550.php'], [
+			[
+				'Parameter #1 $class of static method Bug4550\Test::valuesOf() expects class-string<Person>, string given.',
+				34,
+			],
+			[
+				'Parameter #1 $class of static method Bug4550\Test::valuesOf() expects class-string<Person>, string given.',
+				44,
+			],
+		]);
+	}
+
 }

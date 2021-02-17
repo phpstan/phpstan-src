@@ -21,7 +21,6 @@ use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use const PHP_VERSION_ID;
 
 class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 {
@@ -42,16 +41,14 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$arrayRandVariants[0],
 		];
 
-		if (PHP_VERSION_ID < 80000) {
-			yield [
-				[
-					new ArrayType(new MixedType(), new MixedType()),
-				],
-				$arrayRandVariants,
-				false,
-				$arrayRandVariants[1],
-			];
-		}
+		yield [
+			[
+				new ArrayType(new MixedType(), new MixedType()),
+			],
+			$arrayRandVariants,
+			false,
+			$arrayRandVariants[1],
+		];
 
 		$datePeriodConstructorVariants = $broker->getClass('DatePeriod')->getNativeMethod('__construct')->getVariants();
 		yield [
@@ -65,29 +62,26 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			false,
 			$datePeriodConstructorVariants[0],
 		];
-
-		if (PHP_VERSION_ID < 80000) {
-			yield [
-				[
-					new ObjectType(\DateTimeInterface::class),
-					new ObjectType(\DateInterval::class),
-					new ObjectType(\DateTimeInterface::class),
-					new IntegerType(),
-				],
-				$datePeriodConstructorVariants,
-				false,
-				$datePeriodConstructorVariants[1],
-			];
-			yield [
-				[
-					new StringType(),
-					new IntegerType(),
-				],
-				$datePeriodConstructorVariants,
-				false,
-				$datePeriodConstructorVariants[2],
-			];
-		}
+		yield [
+			[
+				new ObjectType(\DateTimeInterface::class),
+				new ObjectType(\DateInterval::class),
+				new ObjectType(\DateTimeInterface::class),
+				new IntegerType(),
+			],
+			$datePeriodConstructorVariants,
+			false,
+			$datePeriodConstructorVariants[1],
+		];
+		yield [
+			[
+				new StringType(),
+				new IntegerType(),
+			],
+			$datePeriodConstructorVariants,
+			false,
+			$datePeriodConstructorVariants[2],
+		];
 
 		$ibaseWaitEventVariants = $broker->getFunction(new Name('ibase_wait_event'), null)->getVariants();
 		yield [
@@ -181,7 +175,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 				null,
 				[
 					new NativeParameterReflection(
-						PHP_VERSION_ID < 80000 ? 'str|token' : 'string|token',
+						'str|token',
 						false,
 						new StringType(),
 						PassedByReference::createNo(),
@@ -191,7 +185,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 					new NativeParameterReflection(
 						'token',
 						true,
-						PHP_VERSION_ID < 80000 ? new StringType() : new UnionType([new StringType(), new NullType()]),
+						new StringType(),
 						PassedByReference::createNo(),
 						false,
 						null
@@ -201,17 +195,14 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 				new UnionType([new StringType(), new ConstantBooleanType(false)])
 			),
 		];
-
-		if (PHP_VERSION_ID < 80000) {
-			yield [
-				[
-					new StringType(),
-				],
-				$strtokVariants,
-				true,
-				ParametersAcceptorSelector::combineAcceptors($strtokVariants),
-			];
-		}
+		yield [
+			[
+				new StringType(),
+			],
+			$strtokVariants,
+			true,
+			ParametersAcceptorSelector::combineAcceptors($strtokVariants),
+		];
 
 		$variadicVariants = [
 			new FunctionVariant(

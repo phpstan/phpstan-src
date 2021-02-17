@@ -312,13 +312,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		];
 		if (PHP_VERSION_ID < 70400) {
 			$errors = [];
-		} elseif (PHP_VERSION_ID >= 80000) {
-			$errors = [
-				[
-					'Parameter #2 $array of function implode expects array, string given.',
-					8,
-				],
-			];
 		}
 
 		$this->analyse([__DIR__ . '/data/implode-74.php'], $errors);
@@ -331,7 +324,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 
 		$errors = [];
-		if (PHP_VERSION_ID >= 70400 && PHP_VERSION_ID < 80000) {
+		if (PHP_VERSION_ID >= 70400) {
 			$errors = [
 				[
 					'Parameter #1 $glue of function implode expects string, array given.',
@@ -339,13 +332,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				],
 				[
 					'Parameter #2 $pieces of function implode expects array, string given.',
-					8,
-				],
-			];
-		} elseif (PHP_VERSION_ID >= 80000) {
-			$errors = [
-				[
-					'Parameter #2 $array of function implode expects array, string given.',
 					8,
 				],
 			];
@@ -487,6 +473,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testBug4514(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4514.php'], []);
+	}
+
+	public function testBug4530(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4530.php'], []);
 	}
 
 }

@@ -147,7 +147,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				108,
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'Method PDO::query() invoked with 0 parameters, 1-4 required.' : 'Method PDO::query() invoked with 0 parameters, at least 1 required.',
+				'Method PDO::query() invoked with 0 parameters, 1-4 required.',
 				113,
 			],
 			[

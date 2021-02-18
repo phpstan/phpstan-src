@@ -10,16 +10,21 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+
+use function get_class;
 
 class ImpossibleCheckTypeHelper
 {
@@ -131,6 +136,14 @@ class ImpossibleCheckTypeHelper
 								return null;
 							}
 						}
+					}
+				} elseif ($functionName === 'is_subclass_of') {
+					$classType = $scope->getType($node->args[1]->value);
+
+					if (get_class($classType) === ClassStringType::class
+						|| ($classType instanceof GenericClassStringType
+							&& $classType->getGenericType() instanceof ObjectWithoutClassType)) {
+						return null;
 					}
 				} elseif ($functionName === 'method_exists' && count($node->args) >= 2) {
 					$objectType = $scope->getType($node->args[0]->value);

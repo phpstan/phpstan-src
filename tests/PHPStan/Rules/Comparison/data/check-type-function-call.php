@@ -845,3 +845,15 @@ class InArray2
 	}
 
 }
+
+class IsSubclassOfMatchingClassString
+{
+	/**
+	 * @param class-string<\DateTimeInterface> $classString
+	 * @return bool
+	 */
+	public function doFoo(string $classString): bool
+	{
+		return is_subclass_of(\DateTime::class, $classString);
+	}
+}

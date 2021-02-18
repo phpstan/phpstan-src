@@ -1616,7 +1616,9 @@ class NodeScopeResolver
 			) {
 				$arrayArg = $expr->args[0]->value;
 				$constantArrays = TypeUtils::getConstantArrays($scope->getType($arrayArg));
-				$scope = $scope->invalidateExpression($arrayArg);
+				$scope = $scope->invalidateExpression($arrayArg)
+					->invalidateExpression(new FuncCall(new Name\FullyQualified('count'), [$expr->args[0]]))
+					->invalidateExpression(new FuncCall(new Name('count'), [$expr->args[0]]));
 				if (count($constantArrays) > 0) {
 					$resultArrayTypes = [];
 

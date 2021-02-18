@@ -10,7 +10,7 @@ class HelloWorld
 	/**
 	 * @var DateTime[]
 	 */
-	private array $suggestions = [];
+	private $suggestions = [];
 
 	public function sayHello(): ?DateTime
 	{

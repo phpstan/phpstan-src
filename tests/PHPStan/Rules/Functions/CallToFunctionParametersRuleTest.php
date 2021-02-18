@@ -492,4 +492,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2434.php'], []);
 	}
 
+	public function testBug2846(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2846.php'], []);
+	}
+
 }

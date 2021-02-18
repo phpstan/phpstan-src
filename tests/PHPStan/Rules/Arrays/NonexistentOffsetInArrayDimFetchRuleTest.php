@@ -258,4 +258,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		$this->analyse([__DIR__ . '/data/bug-1664.php'], []);
 	}
 
+	public function testBug2689(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2689.php'], [
+			[
+				'Cannot access an offset on callable.',
+				14,
+			],
+		]);
+	}
+
 }

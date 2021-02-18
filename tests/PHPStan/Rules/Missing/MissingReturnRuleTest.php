@@ -131,4 +131,12 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3669(): void
+	{
+		$this->checkExplicitMixedMissingReturn = true;
+
+		require_once __DIR__ . '/data/bug-3669.php';
+		$this->analyse([__DIR__ . '/data/bug-3669.php'], []);
+	}
+
 }

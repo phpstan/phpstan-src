@@ -83,4 +83,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/is-generator.php'], []);
 	}
 
+	public function testBug2568(): void
+	{
+		require_once __DIR__ . '/data/bug-2568.php';
+		$this->analyse([__DIR__ . '/data/bug-2568.php'], []);
+	}
+
 }

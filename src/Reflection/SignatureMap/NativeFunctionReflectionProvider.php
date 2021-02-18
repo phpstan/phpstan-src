@@ -6,12 +6,14 @@ use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 
 class NativeFunctionReflectionProvider
@@ -63,6 +65,26 @@ class NativeFunctionReflectionProvider
 							new BooleanType(),
 						]);
 					}
+
+					if (
+						$parameterSignature->getName() === 'fields'
+						&& $lowerCasedFunctionName === 'fputcsv'
+					) {
+						$type = new ArrayType(
+							new UnionType([
+								new StringType(),
+								new IntegerType(),
+							]),
+							new UnionType([
+								new StringAlwaysAcceptingObjectWithToStringType(),
+								new IntegerType(),
+								new FloatType(),
+								new NullType(),
+								new BooleanType(),
+							])
+						);
+					}
+
 					return new NativeParameterReflection(
 						$parameterSignature->getName(),
 						$parameterSignature->isOptional(),

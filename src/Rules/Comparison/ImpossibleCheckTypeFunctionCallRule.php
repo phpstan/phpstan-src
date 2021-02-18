@@ -41,9 +41,6 @@ class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
 		}
 
 		$functionName = (string) $node->name;
-		if (strtolower($functionName) === 'is_a') {
-			return [];
-		}
 		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
 		if ($isAlways === null) {
 			return [];

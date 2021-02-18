@@ -10,12 +10,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -157,6 +159,20 @@ class ImpossibleCheckTypeHelper
 							}
 						}
 					}
+				} elseif ($functionName === 'is_a') {
+					$allowString = TrinaryLogic::createNo();
+					if (count($node->args) > 2) {
+						$allowStringParameterType = $scope->getType($node->args[2]->value);
+						$allowString = $allowStringParameterType instanceof ConstantBooleanType
+							? TrinaryLogic::createFromBoolean($allowStringParameterType->getValue())
+							: TrinaryLogic::createMaybe();
+					}
+					$objectType = $scope->getType($node->args[0]->value);
+					if ($allowString->no() && (new StringType())->isSuperTypeOf($objectType)->yes()) {
+						return false;
+					}
+
+					return null;
 				}
 			}
 		}

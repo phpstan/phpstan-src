@@ -54,4 +54,14 @@ class MissingClosureNativeReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2682(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2682.php'], [
+			[
+				'Anonymous function should have native return typehint "void".',
+				9,
+			],
+		]);
+	}
+
 }

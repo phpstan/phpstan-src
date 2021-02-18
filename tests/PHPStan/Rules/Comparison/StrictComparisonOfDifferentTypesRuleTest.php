@@ -438,4 +438,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 		$this->analyse([__DIR__ . '/data/bug-2675.php'], []);
 	}
 
+	public function testBug2220(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-2220.php'], []);
+	}
+
+	public function testBug1707(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-1707.php'], []);
+	}
+
 }

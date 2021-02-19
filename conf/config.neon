@@ -418,6 +418,7 @@ services:
 			stubFiles: %stubFiles%
 			usedLevel: %usedLevel%
 			cliAutoloadFile: %cliAutoloadFile%
+			bootstrapFiles: %bootstrapFiles%
 
 	-
 		class: PHPStan\Analyser\ResultCache\ResultCacheClearer

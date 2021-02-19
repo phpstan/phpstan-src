@@ -16,7 +16,7 @@ use function array_key_exists;
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v7-installed-php';
+	private const CACHE_VERSION = 'v8-executed-hash';
 
 	private ExportedNodeFetcher $exportedNodeFetcher;
 
@@ -37,6 +37,9 @@ class ResultCacheManager
 
 	private ?string $cliAutoloadFile;
 
+	/** @var string[] */
+	private array $bootstrapFiles;
+
 	/** @var array<string, string> */
 	private array $fileHashes = [];
 
@@ -52,6 +55,7 @@ class ResultCacheManager
 	 * @param string[] $stubFiles
 	 * @param string $usedLevel
 	 * @param string|null $cliAutoloadFile
+	 * @param string[] $bootstrapFiles
 	 * @param array<string, string> $fileReplacements
 	 */
 	public function __construct(
@@ -63,6 +67,7 @@ class ResultCacheManager
 		array $stubFiles,
 		string $usedLevel,
 		?string $cliAutoloadFile,
+		array $bootstrapFiles,
 		array $fileReplacements
 	)
 	{
@@ -74,6 +79,7 @@ class ResultCacheManager
 		$this->stubFiles = $stubFiles;
 		$this->usedLevel = $usedLevel;
 		$this->cliAutoloadFile = $cliAutoloadFile;
+		$this->bootstrapFiles = $bootstrapFiles;
 		$this->fileReplacements = $fileReplacements;
 	}
 
@@ -553,7 +559,7 @@ php;
 			'analysedPaths' => $this->analysedPaths,
 			'composerLocks' => $this->getComposerLocks(),
 			'composerInstalled' => $this->getComposerInstalled(),
-			'cliAutoloadFile' => $this->cliAutoloadFile,
+			'executedFilesHashes' => $this->getExecutedFileHashes(),
 			'phpExtensions' => $extensions,
 			'stubFiles' => $this->getStubFiles(),
 			'level' => $this->usedLevel,
@@ -576,6 +582,23 @@ php;
 		$this->fileHashes[$path] = $hash;
 
 		return $hash;
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	private function getExecutedFileHashes(): array
+	{
+		$hashes = [];
+		if ($this->cliAutoloadFile !== null) {
+			$hashes[$this->cliAutoloadFile] = $this->getFileHash($this->cliAutoloadFile);
+		}
+
+		foreach ($this->bootstrapFiles as $bootstrapFile) {
+			$hashes[$bootstrapFile] = $this->getFileHash($bootstrapFile);
+		}
+
+		return $hashes;
 	}
 
 	private function getPhpStanVersion(): string

@@ -753,10 +753,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if ($receivedType instanceof self && !$this->isSuperTypeOf($receivedType)->no()) {
+		if ($receivedType instanceof self) {
 			$typeMap = TemplateTypeMap::createEmpty();
 			foreach ($this->keyTypes as $i => $keyType) {
 				$valueType = $this->valueTypes[$i];
+				if ($receivedType->hasOffsetValueType($keyType)->no()) {
+					continue;
+				}
 				$receivedValueType = $receivedType->getOffsetValueType($keyType);
 				$typeMap = $typeMap->union($valueType->inferTemplateTypes($receivedValueType));
 			}
@@ -764,11 +767,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $typeMap;
 		}
 
-		if ($receivedType instanceof ArrayType) {
-			return parent::inferTemplateTypes($receivedType);
-		}
-
-		return TemplateTypeMap::createEmpty();
+		return parent::inferTemplateTypes($receivedType);
 	}
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array

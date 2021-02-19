@@ -7,7 +7,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ReflectionWithFilename;
 
 /**
- * @implements \IteratorAggregate<int, ReflectionWithFilename>
+ * @implements \IteratorAggregate<int|string, ReflectionWithFilename>
  */
 class NodeDependencies implements IteratorAggregate
 {

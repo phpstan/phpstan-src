@@ -187,20 +187,32 @@ final class GenericObjectType extends ObjectType
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
 		$reflection = parent::getProperty($propertyName, $scope);
+		$ancestor = $this->getAncestorWithClassName($reflection->getDeclaringClass()->getName());
+		if ($ancestor === null) {
+			$classReflection = $reflection->getDeclaringClass();
+		} else {
+			$classReflection = $ancestor->getClassReflection();
+		}
 
 		return new ResolvedPropertyReflection(
 			$reflection,
-			$this->getClassReflection()->getActiveTemplateTypeMap()
+			$classReflection->getActiveTemplateTypeMap()
 		);
 	}
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
 		$reflection = parent::getMethod($methodName, $scope);
+		$ancestor = $this->getAncestorWithClassName($reflection->getDeclaringClass()->getName());
+		if ($ancestor === null) {
+			$classReflection = $reflection->getDeclaringClass();
+		} else {
+			$classReflection = $ancestor->getClassReflection();
+		}
 
 		return new ResolvedMethodReflection(
 			$reflection,
-			$this->getClassReflection()->getActiveTemplateTypeMap()
+			$classReflection->getActiveTemplateTypeMap()
 		);
 	}
 

@@ -81,6 +81,16 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 				'doBaz',
 				'b.php',
 			],
+			[
+				'get_smarty',
+				'get_smarty',
+				'b.php',
+			],
+			[
+				'get_smarty2',
+				'get_smarty2',
+				'b.php',
+			],
 		];
 	}
 

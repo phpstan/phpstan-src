@@ -10867,6 +10867,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3134.php');
 	}
 
+	public function dataInferArrayKey(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/infer-array-key.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -11102,6 +11107,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug2869
 	 * @dataProvider dataBug3024
 	 * @dataProvider dataBug3134
+	 * @dataProvider dataInferArrayKey
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

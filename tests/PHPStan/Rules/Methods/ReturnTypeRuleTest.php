@@ -421,4 +421,9 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3034.php'], []);
 	}
 
+	public function testInferArrayKey(): void
+	{
+		$this->analyse([__DIR__ . '/data/infer-array-key.php'], []);
+	}
+
 }

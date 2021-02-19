@@ -406,4 +406,19 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3117(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3117.php'], [
+			[
+				'Method Bug3117\SimpleTemporal::adjustInto() should return T of Bug3117\Temporal but returns $this(Bug3117\SimpleTemporal).',
+				35,
+			],
+		]);
+	}
+
+	public function testBug3034(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3034.php'], []);
+	}
+
 }

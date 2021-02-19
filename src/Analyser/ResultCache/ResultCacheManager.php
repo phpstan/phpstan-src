@@ -598,6 +598,8 @@ php;
 			$hashes[$bootstrapFile] = $this->getFileHash($bootstrapFile);
 		}
 
+		ksort($hashes);
+
 		return $hashes;
 	}
 
@@ -660,6 +662,8 @@ php;
 		foreach ($this->stubFiles as $stubFile) {
 			$stubFiles[$stubFile] = $this->getFileHash($stubFile);
 		}
+
+		ksort($stubFiles);
 
 		return $stubFiles;
 	}

@@ -4,7 +4,7 @@ namespace Bug4289;
 
 class BaseClass
 {
-	protected array $fields = [];
+	protected $fields = [];
 
 	function populateFields(): void
 	{

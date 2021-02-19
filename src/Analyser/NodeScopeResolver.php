@@ -2651,6 +2651,7 @@ class NodeScopeResolver
 			}
 		} elseif ($var instanceof ArrayDimFetch) {
 			$dimExprStack = [];
+			$originalVar = $var;
 			while ($var instanceof ArrayDimFetch) {
 				$dimExprStack[] = $var->dim;
 				$var = $var->var;
@@ -2690,6 +2691,7 @@ class NodeScopeResolver
 			}
 
 			$valueToWrite = $scope->getType($assignedExpr);
+			$originalValueToWrite = $valueToWrite;
 
 			// 3. eval assigned expr
 			$result = $processExprCallback($scope);
@@ -2733,6 +2735,16 @@ class NodeScopeResolver
 						$var,
 						$valueToWrite
 					);
+				}
+
+				if ($originalVar->dim instanceof Variable) {
+					$currentVarType = $scope->getType($originalVar);
+					if (!$originalValueToWrite->isSuperTypeOf($currentVarType)->yes()) {
+						$scope = $scope->assignExpression(
+							$originalVar,
+							$originalValueToWrite
+						);
+					}
 				}
 			}
 		} elseif ($var instanceof PropertyFetch) {

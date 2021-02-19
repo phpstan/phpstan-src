@@ -399,10 +399,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testBug1903(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-1903.php'], [
-			/*[
+			[
 				'Method Bug1903\Test::doFoo() should return array but returns int.',
 				19,
-			],*/
+			],
 		]);
 	}
 

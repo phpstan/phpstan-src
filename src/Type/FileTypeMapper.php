@@ -111,7 +111,6 @@ class FileTypeMapper
 			$this->inProcess[$fileName][$phpDocKey] = $resolveCallback();
 		}
 
-		assert($this->inProcess[$fileName][$phpDocKey] instanceof NameScopedPhpDocString);
 		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$phpDocKey], $fileName);
 	}
 

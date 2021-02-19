@@ -10872,6 +10872,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/infer-array-key.php');
 	}
 
+	public function dataOffsetValueTypeAfterAssign(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/offset-value-after-assign.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -11108,6 +11113,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3024
 	 * @dataProvider dataBug3134
 	 * @dataProvider dataInferArrayKey
+	 * @dataProvider dataOffsetValueTypeAfterAssign
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

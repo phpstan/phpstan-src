@@ -385,7 +385,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				911,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(object, \'bar\') given.',
+				'Cannot call method foo() on class-string|object.',
+				914,
+			],
+			[
+				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'foo\') given.',
+				915,
+			],
+			[
+				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'bar\') given.',
 				916,
 			],
 			[
@@ -679,7 +687,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				867,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'foo\') given.',
+				915,
+			],
+			[
+				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'bar\') given.',
 				916,
 			],
 			[

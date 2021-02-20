@@ -411,6 +411,7 @@ services:
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory
 		arguments:
+			scanFileFinder: @fileFinderScan
 			cacheFilePath: %resultCachePath%
 			tempResultCachePath: %tempResultCachePath%
 			analysedPaths: %analysedPaths%
@@ -419,6 +420,8 @@ services:
 			usedLevel: %usedLevel%
 			cliAutoloadFile: %cliAutoloadFile%
 			bootstrapFiles: %bootstrapFiles%
+			scanFiles: %scanFiles%
+			scanDirectories: %scanDirectories%
 
 	-
 		class: PHPStan\Analyser\ResultCache\ResultCacheClearer

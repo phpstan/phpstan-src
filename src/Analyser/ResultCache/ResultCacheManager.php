@@ -8,6 +8,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
+use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use function array_fill_keys;
@@ -19,6 +20,8 @@ class ResultCacheManager
 	private const CACHE_VERSION = 'v8-executed-hash';
 
 	private ExportedNodeFetcher $exportedNodeFetcher;
+
+	private FileFinder $scanFileFinder;
 
 	private string $cacheFilePath;
 
@@ -40,6 +43,12 @@ class ResultCacheManager
 	/** @var string[] */
 	private array $bootstrapFiles;
 
+	/** @var string[] */
+	private array $scanFiles;
+
+	/** @var string[] */
+	private array $scanDirectories;
+
 	/** @var array<string, string> */
 	private array $fileHashes = [];
 
@@ -48,6 +57,7 @@ class ResultCacheManager
 
 	/**
 	 * @param ExportedNodeFetcher $exportedNodeFetcher
+	 * @param FileFinder $scanFileFinder
 	 * @param string $cacheFilePath
 	 * @param string $tempResultCachePath
 	 * @param string[] $analysedPaths
@@ -56,10 +66,13 @@ class ResultCacheManager
 	 * @param string $usedLevel
 	 * @param string|null $cliAutoloadFile
 	 * @param string[] $bootstrapFiles
+	 * @param string[] $scanFiles
+	 * @param string[] $scanDirectories
 	 * @param array<string, string> $fileReplacements
 	 */
 	public function __construct(
 		ExportedNodeFetcher $exportedNodeFetcher,
+		FileFinder $scanFileFinder,
 		string $cacheFilePath,
 		string $tempResultCachePath,
 		array $analysedPaths,
@@ -68,10 +81,13 @@ class ResultCacheManager
 		string $usedLevel,
 		?string $cliAutoloadFile,
 		array $bootstrapFiles,
+		array $scanFiles,
+		array $scanDirectories,
 		array $fileReplacements
 	)
 	{
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
+		$this->scanFileFinder = $scanFileFinder;
 		$this->cacheFilePath = $cacheFilePath;
 		$this->tempResultCachePath = $tempResultCachePath;
 		$this->analysedPaths = $analysedPaths;
@@ -80,6 +96,8 @@ class ResultCacheManager
 		$this->usedLevel = $usedLevel;
 		$this->cliAutoloadFile = $cliAutoloadFile;
 		$this->bootstrapFiles = $bootstrapFiles;
+		$this->scanFiles = $scanFiles;
+		$this->scanDirectories = $scanDirectories;
 		$this->fileReplacements = $fileReplacements;
 	}
 
@@ -95,13 +113,13 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
 		}
 		if ($onlyFiles) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
 		}
 
 		$cacheFilePath = $this->cacheFilePath;
@@ -116,7 +134,7 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
 		}
 
 		try {
@@ -128,7 +146,7 @@ class ResultCacheManager
 
 			@unlink($cacheFilePath);
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
 		}
 
 		if (!is_array($data)) {
@@ -137,10 +155,10 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
 		}
 
-		$meta = $this->getMeta($projectConfigArray);
+		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
 		if ($data['meta'] !== $meta) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
@@ -529,10 +547,11 @@ php;
 	}
 
 	/**
+	 * @param string[] $allAnalysedFiles
 	 * @param mixed[]|null $projectConfigArray
 	 * @return mixed[]
 	 */
-	private function getMeta(?array $projectConfigArray): array
+	private function getMeta(array $allAnalysedFiles, ?array $projectConfigArray): array
 	{
 		$extensions = array_values(array_filter(get_loaded_extensions(), static function (string $extension): bool {
 			return $extension !== 'xdebug';
@@ -558,6 +577,7 @@ php;
 			'phpVersion' => PHP_VERSION_ID,
 			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,
+			'scannedFiles' => $this->getScannedFiles($allAnalysedFiles),
 			'composerLocks' => $this->getComposerLocks(),
 			'composerInstalled' => $this->getComposerInstalled(),
 			'executedFilesHashes' => $this->getExecutedFileHashes(),
@@ -583,6 +603,29 @@ php;
 		$this->fileHashes[$path] = $hash;
 
 		return $hash;
+	}
+
+	/**
+	 * @param string[] $allAnalysedFiles
+	 * @return array<string, string>
+	 */
+	private function getScannedFiles(array $allAnalysedFiles): array
+	{
+		$scannedFiles = $this->scanFiles;
+		foreach ($this->scanFileFinder->findFiles($this->scanDirectories)->getFiles() as $file) {
+			$scannedFiles[] = $file;
+		}
+
+		$scannedFiles = array_unique($scannedFiles);
+
+		$hashes = [];
+		foreach (array_diff($scannedFiles, $allAnalysedFiles) as $file) {
+			$hashes[$file] = $this->getFileHash($file);
+		}
+
+		ksort($hashes);
+
+		return $hashes;
 	}
 
 	/**

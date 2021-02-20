@@ -517,7 +517,6 @@ class FixerApplication
 				$resultCache,
 				$inceptionResult->getErrorOutput(),
 				false,
-				$projectConfigArray,
 				true
 			)->getAnalyserResult();
 			$intermediateErrors = $ignoredErrorHelperResult->process(

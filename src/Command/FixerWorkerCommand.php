@@ -162,7 +162,6 @@ class FixerWorkerCommand extends Command
 			$resultCache,
 			$inceptionResult->getErrorOutput(),
 			false,
-			$projectConfigArray,
 			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null
 		)->getAnalyserResult();
 

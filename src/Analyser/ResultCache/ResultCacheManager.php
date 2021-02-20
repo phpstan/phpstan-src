@@ -95,13 +95,13 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
 		}
 		if ($onlyFiles) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
 		}
 
 		$cacheFilePath = $this->cacheFilePath;
@@ -116,7 +116,7 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
 		}
 
 		try {
@@ -128,7 +128,7 @@ class ResultCacheManager
 
 			@unlink($cacheFilePath);
 
-			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
 		}
 
 		if (!is_array($data)) {
@@ -137,14 +137,15 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($projectConfigArray), [], [], []);
 		}
 
-		if ($data['meta'] !== $this->getMeta($projectConfigArray)) {
+		$meta = $this->getMeta($projectConfigArray);
+		if ($data['meta'] !== $meta) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
 		}
 
 		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
@@ -152,7 +153,7 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
 			}
 			// run full analysis if the result cache is older than 7 days
-			return new ResultCache($allAnalysedFiles, true, time(), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
 		}
 
 		$invertedDependencies = $data['dependencies'];
@@ -232,7 +233,7 @@ class ResultCacheManager
 			}
 		}
 
-		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $filteredErrors, $invertedDependenciesToReturn, $filteredExportedNodes);
+		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $invertedDependenciesToReturn, $filteredExportedNodes);
 	}
 
 	/**
@@ -263,12 +264,11 @@ class ResultCacheManager
 	/**
 	 * @param AnalyserResult $analyserResult
 	 * @param ResultCache $resultCache
-	 * @param mixed[]|null $projectConfigArray
 	 * @param bool|string $save
 	 * @return ResultCacheProcessResult
 	 * @throws \PHPStan\ShouldNotHappenException
 	 */
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, ?array $projectConfigArray, $save): ResultCacheProcessResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -276,7 +276,8 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles, $projectConfigArray): bool {
+		$meta = $resultCache->getMeta();
+		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -311,7 +312,7 @@ class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $dependencies, $exportedNodes, $projectConfigArray);
+			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $dependencies, $exportedNodes, $meta);
 
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -445,7 +446,7 @@ class ResultCacheManager
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
-	 * @param mixed[]|null $projectConfigArray
+	 * @param mixed[] $meta
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
@@ -453,7 +454,7 @@ class ResultCacheManager
 		array $errors,
 		array $dependencies,
 		array $exportedNodes,
-		?array $projectConfigArray
+		array $meta
 	): void
 	{
 		$invertedDependencies = [];
@@ -519,7 +520,7 @@ php;
 			sprintf(
 				$template,
 				var_export($lastFullAnalysisTime, true),
-				var_export($this->getMeta($projectConfigArray), true),
+				var_export($meta, true),
 				var_export($errors, true),
 				var_export($invertedDependencies, true),
 				var_export($exportedNodes, true)

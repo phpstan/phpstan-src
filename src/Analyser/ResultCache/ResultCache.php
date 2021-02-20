@@ -15,6 +15,9 @@ class ResultCache
 
 	private int $lastFullAnalysisTime;
 
+	/** @var mixed[] */
+	private array $meta;
+
 	/** @var array<string, array<Error>> */
 	private array $errors;
 
@@ -28,6 +31,7 @@ class ResultCache
 	 * @param string[] $filesToAnalyse
 	 * @param bool $fullAnalysis
 	 * @param int $lastFullAnalysisTime
+	 * @param mixed[] $meta
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
@@ -36,6 +40,7 @@ class ResultCache
 		array $filesToAnalyse,
 		bool $fullAnalysis,
 		int $lastFullAnalysisTime,
+		array $meta,
 		array $errors,
 		array $dependencies,
 		array $exportedNodes
@@ -44,6 +49,7 @@ class ResultCache
 		$this->filesToAnalyse = $filesToAnalyse;
 		$this->fullAnalysis = $fullAnalysis;
 		$this->lastFullAnalysisTime = $lastFullAnalysisTime;
+		$this->meta = $meta;
 		$this->errors = $errors;
 		$this->dependencies = $dependencies;
 		$this->exportedNodes = $exportedNodes;
@@ -65,6 +71,14 @@ class ResultCache
 	public function getLastFullAnalysisTime(): int
 	{
 		return $this->lastFullAnalysisTime;
+	}
+
+	/**
+	 * @return mixed[]
+	 */
+	public function getMeta(): array
+	{
+		return $this->meta;
 	}
 
 	/**

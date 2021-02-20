@@ -66,7 +66,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 					new ObjectWithoutClassType(),
 					new HasMethodType($methodNameType->getValue()),
 				]),
-				new ClassStringType()
+				new ClassStringType(),
 			]),
 			$context
 		);

@@ -2859,20 +2859,21 @@ class MutatingScope implements Scope
 	{
 		$variableTypes = [];
 		foreach ($closure->params as $i => $parameter) {
-			if ($callableParameters === null || $parameter->type !== null) {
-				$isNullable = $this->isParameterValueNullable($parameter);
-				$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
-			} elseif (isset($callableParameters[$i])) {
-				$parameterType = $callableParameters[$i]->getType();
-			} elseif (count($callableParameters) > 0) {
-				$lastParameter = $callableParameters[count($callableParameters) - 1];
-				if ($lastParameter->isVariadic()) {
-					$parameterType = $lastParameter->getType();
+			$isNullable = $this->isParameterValueNullable($parameter);
+			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
+			if ($callableParameters !== null) {
+				if (isset($callableParameters[$i])) {
+					$parameterType = TypehintHelper::decideType($parameterType, $callableParameters[$i]->getType());
+				} elseif (count($callableParameters) > 0) {
+					$lastParameter = $callableParameters[count($callableParameters) - 1];
+					if ($lastParameter->isVariadic()) {
+						$parameterType = TypehintHelper::decideType($parameterType, $lastParameter->getType());
+					} else {
+						$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
+					}
 				} else {
-					$parameterType = new MixedType();
+					$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
 				}
-			} else {
-				$parameterType = new MixedType();
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {

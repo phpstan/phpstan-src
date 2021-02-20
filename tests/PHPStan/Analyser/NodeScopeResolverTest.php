@@ -10882,6 +10882,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2112.php');
 	}
 
+	public function dataArrayMapClosure(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/array-map-closure.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -11120,6 +11125,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataInferArrayKey
 	 * @dataProvider dataOffsetValueTypeAfterAssign
 	 * @dataProvider dataBug2112
+	 * @dataProvider dataArrayMapClosure
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

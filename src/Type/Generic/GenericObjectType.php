@@ -162,9 +162,8 @@ final class GenericObjectType extends ObjectType
 			if (!$templateType instanceof TemplateType) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			if (!$templateType->isValidVariance($this->types[$i], $ancestor->types[$i])) {
-				return TrinaryLogic::createNo();
-			}
+
+			return $templateType->isValidVariance($this->types[$i], $ancestor->types[$i])->and($nakedSuperTypeOf);
 		}
 
 		return $nakedSuperTypeOf;

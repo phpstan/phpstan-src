@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
@@ -94,26 +95,26 @@ class TemplateTypeVariance
 		return $other;
 	}
 
-	public function isValidVariance(Type $a, Type $b): bool
+	public function isValidVariance(Type $a, Type $b): TrinaryLogic
 	{
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
-			return true;
+			return TrinaryLogic::createYes();
 		}
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {
-			return true;
+			return TrinaryLogic::createYes();
 		}
 
 		if ($this->invariant()) {
-			return $a->equals($b);
+			return TrinaryLogic::createFromBoolean($a->equals($b));
 		}
 
 		if ($this->covariant()) {
-			return $a->isSuperTypeOf($b)->yes();
+			return $a->isSuperTypeOf($b);
 		}
 
 		if ($this->contravariant()) {
-			return $b->isSuperTypeOf($a)->yes();
+			return $b->isSuperTypeOf($a);
 		}
 
 		throw new \PHPStan\ShouldNotHappenException();

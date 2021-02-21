@@ -160,7 +160,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		);
 	}
 
-	public function isValidVariance(Type $a, Type $b): bool
+	public function isValidVariance(Type $a, Type $b): TrinaryLogic
 	{
 		return $this->variance->isValidVariance($a, $b);
 	}

@@ -7,6 +7,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Test\A;
 use PHPStan\Type\Test\B;
 use PHPStan\Type\Test\C;
@@ -84,7 +85,39 @@ class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
 			'covariant with super type' => [
 				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTime')]),
 				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTimeInterface')]),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new ObjectType(\ReflectionClass::class),
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectType(\stdClass::class),
+				]),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectType(\stdClass::class),
+				]),
+				new ObjectType(\ReflectionClass::class),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectWithoutClassType(),
+				]),
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectType(\stdClass::class),
+				]),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectType(\stdClass::class),
+				]),
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectWithoutClassType(),
+				]),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}

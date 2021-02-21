@@ -1,7 +1,0 @@
-[
-    {
-        "message": "Return type (Traversable<int, Generics\\Bug2620\\Bar>) of method Generics\\Bug2620\\SomeIterator::getIterator() should be compatible with return type (Traversable<int, Generics\\Bug2620\\Foo>) of method IteratorAggregate<int,Generics\\Bug2620\\Foo>::getIterator()",
-        "line": 17,
-        "ignorable": true
-    }
-]

@@ -93,7 +93,7 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		);
 	}
 
-	public function isValidVariance(Type $a, Type $b): bool
+	public function isValidVariance(Type $a, Type $b): TrinaryLogic
 	{
 		return $this->variance->isValidVariance($a, $b);
 	}

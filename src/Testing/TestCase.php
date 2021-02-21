@@ -629,7 +629,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			$reflectionProvider,
 			self::getContainer()->getServicesByTag(TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			array_merge($methodTypeSpecifyingExtensions, self::getContainer()->getServicesByTag(TypeSpecifierFactory::METHOD_TYPE_SPECIFYING_EXTENSION_TAG)),
-			array_merge($staticMethodTypeSpecifyingExtensions, self::getContainer()->getServicesByTag(TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG)),
+			array_merge($staticMethodTypeSpecifyingExtensions, self::getContainer()->getServicesByTag(TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG))
 		);
 	}
 

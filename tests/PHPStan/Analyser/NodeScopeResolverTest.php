@@ -1712,7 +1712,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$loremObjectLiteral',
 			],
 			[
-				'object',
+				'mixed~string',
 				'$mixedObjectLiteral',
 			],
 			[

@@ -149,6 +149,7 @@ final class GenericObjectType extends ObjectType
 		}
 
 		$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+		$results = [];
 		foreach ($typeList as $i => $templateType) {
 			if (!isset($ancestor->types[$i])) {
 				continue;
@@ -163,10 +164,14 @@ final class GenericObjectType extends ObjectType
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
-			return $templateType->isValidVariance($this->types[$i], $ancestor->types[$i])->and($nakedSuperTypeOf);
+			$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
 		}
 
-		return $nakedSuperTypeOf;
+		if (count($results) === 0) {
+			return $nakedSuperTypeOf;
+		}
+
+		return $nakedSuperTypeOf->and(...$results);
 	}
 
 	public function getClassReflection(): ?ClassReflection

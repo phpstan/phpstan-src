@@ -119,6 +119,15 @@ class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
 				]),
 				TrinaryLogic::createMaybe(),
 			],
+			[
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectType(\Exception::class),
+				]),
+				new GenericObjectType(\ReflectionClass::class, [
+					new ObjectType(\stdClass::class),
+				]),
+				TrinaryLogic::createNo(),
+			],
 		];
 	}
 

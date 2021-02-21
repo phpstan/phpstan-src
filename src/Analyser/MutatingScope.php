@@ -4641,7 +4641,7 @@ class MutatingScope implements Scope
 			foreach ($type->getTypes() as $innerType) {
 				$decidedType = $decideType($innerType);
 				if ($decidedType === null) {
-					return new MixedType();
+					return new ObjectWithoutClassType();
 				}
 
 				$types[] = $decidedType;
@@ -4652,7 +4652,7 @@ class MutatingScope implements Scope
 
 		$decidedType = $decideType($type);
 		if ($decidedType === null) {
-			return new MixedType();
+			return new ObjectWithoutClassType();
 		}
 
 		return $decidedType;

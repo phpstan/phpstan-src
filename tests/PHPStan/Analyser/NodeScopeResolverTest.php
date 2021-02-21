@@ -1712,7 +1712,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$loremObjectLiteral',
 			],
 			[
-				'mixed',
+				'object',
 				'$mixedObjectLiteral',
 			],
 			[
@@ -10897,6 +10897,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4577.php');
 	}
 
+	public function dataBug4579(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4579.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -11138,6 +11143,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataArrayMapClosure
 	 * @dataProvider dataBug4573
 	 * @dataProvider dataBug4577
+	 * @dataProvider dataBug4579
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

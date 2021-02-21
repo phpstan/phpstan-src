@@ -165,6 +165,8 @@ class MutatingScope implements Scope
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $objectFromNewClass;
+
 	private bool $afterExtractCall;
 
 	private ?Scope $parentScope;
@@ -195,6 +197,7 @@ class MutatingScope implements Scope
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 * @param string[] $dynamicConstantNames
 	 * @param bool $treatPhpDocTypesAsCertain
+	 * @param bool $objectFromNewClass
 	 * @param bool $afterExtractCall
 	 * @param Scope|null $parentScope
 	 */
@@ -224,6 +227,7 @@ class MutatingScope implements Scope
 		array $inFunctionCallsStack = [],
 		array $dynamicConstantNames = [],
 		bool $treatPhpDocTypesAsCertain = true,
+		bool $objectFromNewClass = false,
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null
 	)
@@ -257,6 +261,7 @@ class MutatingScope implements Scope
 		$this->inFunctionCallsStack = $inFunctionCallsStack;
 		$this->dynamicConstantNames = $dynamicConstantNames;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->objectFromNewClass = $objectFromNewClass;
 		$this->afterExtractCall = $afterExtractCall;
 		$this->parentScope = $parentScope;
 	}
@@ -2204,6 +2209,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->dynamicConstantNames,
 			false,
+			$this->objectFromNewClass,
 			$this->afterExtractCall,
 			$this->parentScope
 		);
@@ -4641,6 +4647,10 @@ class MutatingScope implements Scope
 			foreach ($type->getTypes() as $innerType) {
 				$decidedType = $decideType($innerType);
 				if ($decidedType === null) {
+					if ($this->objectFromNewClass) {
+						return new ObjectWithoutClassType();
+					}
+
 					return new MixedType(false, new StringType());
 				}
 
@@ -4652,6 +4662,10 @@ class MutatingScope implements Scope
 
 		$decidedType = $decideType($type);
 		if ($decidedType === null) {
+			if ($this->objectFromNewClass) {
+				return new ObjectWithoutClassType();
+			}
+
 			return new MixedType(false, new StringType());
 		}
 

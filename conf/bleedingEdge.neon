@@ -14,3 +14,4 @@ parameters:
 		checkMissingTemplateTypeInParameter: true
 		wrongVarUsage: true
 		arrayDestructuring: true
+		objectFromNewClass: true

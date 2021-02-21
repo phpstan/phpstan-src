@@ -27,6 +27,7 @@ parameters:
 		checkMissingTemplateTypeInParameter: false
 		wrongVarUsage: false
 		arrayDestructuring: false
+		objectFromNewClass: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -180,7 +181,8 @@ parametersSchema:
 		checkLogicalOrConstantCondition: bool(),
 		checkMissingTemplateTypeInParameter: bool(),
 		wrongVarUsage: bool(),
-		arrayDestructuring: bool()
+		arrayDestructuring: bool(),
+		objectFromNewClass: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

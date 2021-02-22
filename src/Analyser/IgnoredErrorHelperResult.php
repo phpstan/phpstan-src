@@ -139,7 +139,7 @@ class IgnoredErrorHelperResult
 			if ($shouldBeIgnored) {
 				if (!$error->canBeIgnored()) {
 					$addErrors[] = sprintf(
-						'Error message "%s" cannot be ignored, use excludes_analyse instead.',
+						'Error message "%s" cannot be ignored, use excludePaths instead.',
 						$error->getMessage()
 					);
 					return true;

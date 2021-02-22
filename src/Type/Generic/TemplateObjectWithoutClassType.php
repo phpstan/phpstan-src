@@ -155,8 +155,12 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->getBound()->isSuperTypeOf($this->getBound())
-			->and(TrinaryLogic::createMaybe());
+		if ($type->getBound()->isSuperTypeOf($this->getBound())->no() &&
+			$this->getBound()->isSuperTypeOf($type->getBound())->no()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

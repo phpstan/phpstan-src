@@ -11,7 +11,9 @@ use function PHPStan\Analyser\assertType;
  */
 function stringValues(array $in): array {
 	assertType('array<K of (int|string) (function Bug3769\stringValues(), argument), int>', $in);
-	return array_map(fn (int $int): string => (string) $int, $in);
+	return array_map(function (int $int): string {
+		return (string) $int;
+	}, $in);
 }
 
 /**

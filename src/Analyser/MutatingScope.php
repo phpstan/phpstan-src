@@ -4633,6 +4633,9 @@ class MutatingScope implements Scope
 	private function getTypeToInstantiateForNew(Type $type): Type
 	{
 		$decideType = static function (Type $type): ?Type {
+			if ($type instanceof ConstantStringType) {
+				return new ObjectType($type->getValue());
+			}
 			if ($type instanceof TypeWithClassName) {
 				return $type;
 			}

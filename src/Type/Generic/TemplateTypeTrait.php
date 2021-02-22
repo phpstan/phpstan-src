@@ -117,7 +117,8 @@ trait TemplateTypeTrait
 
 	public function isSubTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof UnionType || $type instanceof IntersectionType) {
+		$boundClass = get_class($this->getBound());
+		if (!$type instanceof $boundClass && ($type instanceof UnionType || $type instanceof IntersectionType)) {
 			return $type->isSuperTypeOf($this);
 		}
 

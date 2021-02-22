@@ -54,6 +54,11 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return $this->scope;
 	}
 
+	public function getBound(): Type
+	{
+		return $this->bound;
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		$basicDescription = function () use ($level): string {
@@ -73,6 +78,42 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		);
 	}
 
+	public function isArgument(): bool
+	{
+		return $this->strategy->isArgument();
+	}
+
+	public function toArgument(): TemplateType
+	{
+		return new self(
+			$this->scope,
+			new TemplateTypeArgumentStrategy(),
+			$this->variance,
+			$this->name,
+			$this->getClassName()
+		);
+	}
+
+	public function isValidVariance(Type $a, Type $b): TrinaryLogic
+	{
+		return $this->variance->isValidVariance($a, $b);
+	}
+
+	public function subtract(Type $type): Type
+	{
+		return $this;
+	}
+
+	public function getTypeWithoutSubtractedType(): Type
+	{
+		return $this;
+	}
+
+	public function changeSubtractedType(?Type $subtractedType): Type
+	{
+		return $this;
+	}
+
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self
@@ -81,9 +122,9 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			&& parent::equals($type);
 	}
 
-	public function getBound(): Type
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->bound;
+		return $this->isSubTypeOf($acceptingType);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -127,11 +168,6 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
-	{
-		return $this->isSubTypeOf($acceptingType);
-	}
-
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
@@ -159,42 +195,6 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		return [new TemplateTypeReference($this, $positionVariance)];
-	}
-
-	public function isArgument(): bool
-	{
-		return $this->strategy->isArgument();
-	}
-
-	public function toArgument(): TemplateType
-	{
-		return new self(
-			$this->scope,
-			new TemplateTypeArgumentStrategy(),
-			$this->variance,
-			$this->name,
-			$this->getClassName()
-		);
-	}
-
-	public function isValidVariance(Type $a, Type $b): TrinaryLogic
-	{
-		return $this->variance->isValidVariance($a, $b);
-	}
-
-	public function subtract(Type $type): Type
-	{
-		return $this;
-	}
-
-	public function getTypeWithoutSubtractedType(): Type
-	{
-		return $this;
-	}
-
-	public function changeSubtractedType(?Type $subtractedType): Type
-	{
-		return $this;
 	}
 
 	public function getVariance(): TemplateTypeVariance

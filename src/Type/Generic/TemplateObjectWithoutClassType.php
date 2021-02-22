@@ -131,6 +131,16 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		return $this->strategy->accepts($this, $type, $strictTypes);
 	}
 
+	public function isSuperTypeOf(Type $type): TrinaryLogic
+	{
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
+		return $this->getBound()->isSuperTypeOf($type)
+			->and(TrinaryLogic::createMaybe());
+	}
+
 	public function isSubTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {
@@ -146,16 +156,6 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		}
 
 		return $type->getBound()->isSuperTypeOf($this->getBound())
-			->and(TrinaryLogic::createMaybe());
-	}
-
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
-		}
-
-		return $this->getBound()->isSuperTypeOf($type)
 			->and(TrinaryLogic::createMaybe());
 	}
 

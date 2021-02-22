@@ -5,6 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 
 class TemplateTypeMap
 {
@@ -62,6 +63,21 @@ class TemplateTypeMap
 		foreach ($other->types as $name => $type) {
 			if (isset($result[$name])) {
 				$result[$name] = TypeCombinator::union($result[$name], $type);
+			} else {
+				$result[$name] = $type;
+			}
+		}
+
+		return new self($result);
+	}
+
+	public function benevolentUnion(self $other): self
+	{
+		$result = $this->types;
+
+		foreach ($other->types as $name => $type) {
+			if (isset($result[$name])) {
+				$result[$name] = TypeUtils::toBenevolentUnion(TypeCombinator::union($result[$name], $type));
 			} else {
 				$result[$name] = $type;
 			}

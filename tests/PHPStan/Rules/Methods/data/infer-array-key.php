@@ -16,7 +16,7 @@ class Foo implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('mixed', $it->key());
+		assertType('(int|string)', $it->key());
 
 		return $it;
 	}

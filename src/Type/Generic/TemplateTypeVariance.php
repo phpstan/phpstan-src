@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
@@ -110,6 +111,13 @@ class TemplateTypeVariance
 		}
 
 		if ($this->covariant()) {
+			if ($b instanceof BenevolentUnionType) {
+				$results = [];
+				foreach ($b->getTypes() as $innerType) {
+					$results[] = $a->isSuperTypeOf($innerType);
+				}
+				return TrinaryLogic::maxMin(...$results);
+			}
 			return $a->isSuperTypeOf($b);
 		}
 

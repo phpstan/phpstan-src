@@ -341,13 +341,7 @@ class ArrayType implements Type
 		}
 
 		if ($receivedType->isArray()->yes()) {
-			if ($receivedType instanceof ArrayType) {
-				$otherKeyType = $receivedType->getKeyType();
-			} else {
-				$otherKeyType = $receivedType->getIterableKeyType();
-			}
-
-			$keyTypeMap = $this->getKeyType()->inferTemplateTypes($otherKeyType);
+			$keyTypeMap = $this->getKeyType()->inferTemplateTypes($receivedType->getIterableKeyType());
 			$itemTypeMap = $this->getItemType()->inferTemplateTypes($receivedType->getIterableValueType());
 
 			return $keyTypeMap->union($itemTypeMap);

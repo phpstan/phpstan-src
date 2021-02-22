@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeMap;
 
 class BenevolentUnionType extends UnionType
 {
@@ -39,6 +40,28 @@ class BenevolentUnionType extends UnionType
 		}
 
 		return TrinaryLogic::createNo()->or(...$results);
+	}
+
+	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
+	{
+		$types = TemplateTypeMap::createEmpty();
+
+		foreach ($this->getTypes() as $type) {
+			$types = $types->benevolentUnion($type->inferTemplateTypes($receivedType));
+		}
+
+		return $types;
+	}
+
+	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap
+	{
+		$types = TemplateTypeMap::createEmpty();
+
+		foreach ($this->getTypes() as $type) {
+			$types = $types->benevolentUnion($templateType->inferTemplateTypes($type));
+		}
+
+		return $types;
 	}
 
 	public function traverse(callable $cb): Type

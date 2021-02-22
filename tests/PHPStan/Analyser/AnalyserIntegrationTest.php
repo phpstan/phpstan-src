@@ -319,6 +319,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 
 	public function testBug3769(): void
 	{
+		require_once __DIR__ . '/../Rules/Generics/data/bug-3769.php';
 		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Generics/data/bug-3769.php');
 		$this->assertCount(0, $errors);
 	}

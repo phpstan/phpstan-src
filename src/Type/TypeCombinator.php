@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 
 class TypeCombinator
@@ -61,13 +62,17 @@ class TypeCombinator
 				return new ConstantBooleanType(!$typeToRemove->getValue());
 			}
 		} elseif ($fromType instanceof IterableType) {
-			$traversableType = new ObjectType(\Traversable::class);
 			$arrayType = new ArrayType(new MixedType(), new MixedType());
 			if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
-				return $traversableType;
+				return new GenericObjectType(\Traversable::class, [
+					$fromType->getIterableKeyType(),
+					$fromType->getIterableValueType(),
+				]);
 			}
+
+			$traversableType = new ObjectType(\Traversable::class);
 			if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
-				return $arrayType;
+				return new ArrayType($fromType->getIterableKeyType(), $fromType->getIterableValueType());
 			}
 		} elseif ($fromType instanceof IntegerRangeType) {
 			$type = $fromType->tryRemove($typeToRemove);

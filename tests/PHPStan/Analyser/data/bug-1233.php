@@ -17,7 +17,7 @@ class HelloWorld
 		assertType('mixed~array', $value);
 
 		if (is_iterable($value)) {
-			assertType('Traversable', $value);
+			assertType('Traversable<mixed, mixed>', $value);
 			return iterator_to_array($value);
 		}
 

@@ -3176,7 +3176,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				new IterableType(new MixedType(), new MixedType()),
 				new ArrayType(new MixedType(), new MixedType()),
 				ObjectType::class,
-				'Traversable',
+				'Traversable<mixed, mixed>',
 			],
 			[
 				new IterableType(new MixedType(), new MixedType()),

@@ -167,7 +167,6 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instanceof between class-string<DateTimeInterface> and class-string<DateTimeInterface> will always evaluate to false.',
 					419,
-					$tipText,
 				],
 				[
 					'Instanceof between class-string<DateTimeInterface> and string will always evaluate to false.',
@@ -266,7 +265,6 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Instanceof between class-string<DateTimeInterface> and class-string<DateTimeInterface> will always evaluate to false.',
 					419,
-					$tipText,
 				],
 				[
 					'Instanceof between class-string<DateTimeInterface> and string will always evaluate to false.',

@@ -2,8 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Type\Type;
 use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\Type;
 
 final class TemplateBenevolentUnionType extends BenevolentUnionType implements TemplateType
 {

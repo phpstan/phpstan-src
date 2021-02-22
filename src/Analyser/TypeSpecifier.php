@@ -158,8 +158,13 @@ class TypeSpecifier
 						$type,
 						new ObjectWithoutClassType()
 					);
+					return $this->create($exprNode, $type, $context);
+				} elseif ($context->false()) {
+					$exprType = $scope->getType($expr->expr);
+					if (!$type->isSuperTypeOf($exprType)->yes()) {
+						return $this->create($exprNode, $type, $context);
+					}
 				}
-				return $this->create($exprNode, $type, $context);
 			}
 			if ($context->true()) {
 				return $this->create($exprNode, new ObjectWithoutClassType(), $context);

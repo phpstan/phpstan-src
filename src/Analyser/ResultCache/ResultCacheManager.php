@@ -158,7 +158,13 @@ class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
 		}
 
+		if ($output->isDebug()) {
+			$output->writeLineFormatted('Computing meta');
+		}
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
+		if ($output->isDebug()) {
+			$output->writeLineFormatted('Finished computing meta');
+		}
 		if ($data['meta'] !== $meta) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
@@ -183,6 +189,10 @@ class ResultCacheManager
 		$filteredErrors = [];
 		$filteredExportedNodes = [];
 		$newFileAppeared = false;
+
+		if ($output->isDebug()) {
+			$output->writeLineFormatted(sprintf('Hashing %d files to analyse', count($allAnalysedFiles)));
+		}
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];
@@ -228,6 +238,10 @@ class ResultCacheManager
 				}
 				$filesToAnalyse[] = $dependentFile;
 			}
+		}
+
+		if ($output->isDebug()) {
+			$output->writeLineFormatted('Finished hashing files to analyse');
 		}
 
 		foreach (array_keys($deletedFiles) as $deletedFile) {

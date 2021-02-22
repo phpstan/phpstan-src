@@ -3,10 +3,12 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\PhpDoc\Tag\TemplateTag;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 
 final class TemplateTypeFactory
 {
@@ -30,6 +32,16 @@ final class TemplateTypeFactory
 
 		if ($boundClass === MixedType::class) {
 			return new TemplateMixedType($scope, $strategy, $variance, $name);
+		}
+
+		if ($bound instanceof UnionType) {
+			if ($boundClass === UnionType::class) {
+				return new TemplateUnionType($scope, $strategy, $variance, $bound->getTypes(), $name);
+			}
+
+			if ($boundClass === BenevolentUnionType::class) {
+				return new TemplateBenevolentUnionType($scope, $strategy, $variance, $bound->getTypes(), $name);
+			}
 		}
 
 		return new TemplateMixedType($scope, $strategy, $variance, $name);

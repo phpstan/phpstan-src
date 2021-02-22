@@ -56,7 +56,10 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 					new StringType(),
 					new IntegerType(),
 				]),
-				new MixedType(),
+				new UnionType([
+					new StringType(),
+					new IntegerType(),
+				]),
 			],
 		];
 	}

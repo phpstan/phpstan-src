@@ -11,6 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_map;
@@ -106,6 +107,7 @@ class TemplateTypeCheck
 				$boundClass === MixedType::class
 				|| $boundClass === ObjectWithoutClassType::class
 				|| $bound instanceof ObjectType
+				|| $bound instanceof UnionType
 			) {
 				continue;
 			}

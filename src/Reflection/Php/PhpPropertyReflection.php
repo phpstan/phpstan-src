@@ -184,4 +184,9 @@ class PhpPropertyReflection implements PropertyReflection
 		return TrinaryLogic::createFromBoolean($this->isInternal);
 	}
 
+	public function getNativeReflection(): \ReflectionProperty
+	{
+		return $this->reflection;
+	}
+
 }

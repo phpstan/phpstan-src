@@ -13060,7 +13060,7 @@ return [
 'XMLReader::moveToFirstAttribute' => ['bool'],
 'XMLReader::moveToNextAttribute' => ['bool'],
 'XMLReader::next' => ['bool', 'localname='=>'string'],
-'XMLReader::open' => ['bool', 'uri'=>'string', 'encoding='=>'?string', 'options='=>'int'],
+'XMLReader::open' => ['bool|XMLReader', 'uri'=>'string', 'encoding='=>'?string', 'options='=>'int'],
 'XMLReader::read' => ['bool'],
 'XMLReader::readInnerXML' => ['string'],
 'XMLReader::readOuterXML' => ['string'],

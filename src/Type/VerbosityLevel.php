@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 
 class VerbosityLevel
 {
@@ -49,10 +51,9 @@ class VerbosityLevel
 		return self::create(self::CACHE);
 	}
 
-	public static function getRecommendedLevelByType(Type $type): self
+	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
-		$moreVerbose = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$moreVerbose): Type {
+		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose): Type {
 			if ($type->isCallable()->yes()) {
 				$moreVerbose = true;
 				return $type;
@@ -70,7 +71,51 @@ class VerbosityLevel
 				return $type;
 			}
 			return $traverse($type);
+		};
+
+		/** @var bool $moreVerbose */
+		$moreVerbose = false;
+		TypeTraverser::map($acceptingType, $moreVerboseCallback);
+
+		if ($moreVerbose) {
+			return self::value();
+		}
+
+		if ($acceptedType === null) {
+			return self::typeOnly();
+		}
+
+		$containsInvariantTemplateType = false;
+		TypeTraverser::map($acceptingType, static function (Type $type, callable $traverse) use (&$containsInvariantTemplateType): Type {
+			if ($type instanceof GenericObjectType) {
+				$reflection = $type->getClassReflection();
+				if ($reflection !== null) {
+					$templateTypeMap = $reflection->getTemplateTypeMap();
+					foreach ($templateTypeMap->getTypes() as $templateType) {
+						if (!$templateType instanceof TemplateType) {
+							continue;
+						}
+
+						if (!$templateType->getVariance()->invariant()) {
+							continue;
+						}
+
+						$containsInvariantTemplateType = true;
+						return $type;
+					}
+				}
+			}
+
+			return $traverse($type);
 		});
+
+		if (!$containsInvariantTemplateType) {
+			return self::typeOnly();
+		}
+
+		/** @var bool $moreVerbose */
+		$moreVerbose = false;
+		TypeTraverser::map($acceptedType, $moreVerboseCallback);
 
 		return $moreVerbose ? self::value() : self::typeOnly();
 	}

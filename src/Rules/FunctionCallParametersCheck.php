@@ -254,7 +254,7 @@ class FunctionCallParametersCheck
 				&& !$parameter->passedByReference()->createsNewVariable()
 				&& !$this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes())
 			) {
-				$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType);
+				$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);
 				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[6],

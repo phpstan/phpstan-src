@@ -68,7 +68,7 @@ class FunctionReturnTypeCheck
 		}
 
 		$isVoidSuperType = (new VoidType())->isSuperTypeOf($returnType);
-		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType);
+		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, null);
 		if ($returnValue === null) {
 			if (!$isVoidSuperType->no()) {
 				return [];
@@ -83,6 +83,7 @@ class FunctionReturnTypeCheck
 		}
 
 		$returnValueType = $scope->getType($returnValue);
+		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, $returnValueType);
 
 		if ($isVoidSuperType->yes()) {
 			return [

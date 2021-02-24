@@ -52,7 +52,7 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType);
+		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $defaultValueType);
 
 		return [
 			RuleErrorBuilder::message(sprintf(

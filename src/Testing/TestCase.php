@@ -10,6 +10,16 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierFactory;
+use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\ConstantReflector;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
@@ -60,16 +70,6 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension;
 use PHPStan\Type\Type;
-use Roave\BetterReflection\Reflector\ClassReflector;
-use Roave\BetterReflection\Reflector\ConstantReflector;
-use Roave\BetterReflection\Reflector\FunctionReflector;
-use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
-use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
-use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -238,7 +238,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				'#^PhpParser\\\\#',
 				'#^PHPStan\\\\#',
 				'#^Hoa\\\\#',
-				'#^Roave\\\\BetterReflection\\\\#',
 			],
 			null
 		);

@@ -2,21 +2,21 @@
 
 namespace PHPStan\Reflection\BetterReflection\Reflector;
 
-use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
 
 final class MemoizingFunctionReflector extends FunctionReflector
 {
 
-	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionFunction|\Throwable> */
+	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionFunction|\Throwable> */
 	private array $reflections = [];
 
 	/**
 	 * Create a ReflectionFunction for the specified $functionName.
 	 *
-	 * @return \Roave\BetterReflection\Reflection\ReflectionFunction
+	 * @return \PHPStan\BetterReflection\Reflection\ReflectionFunction
 	 *
-	 * @throws \Roave\BetterReflection\Reflector\Exception\IdentifierNotFound
+	 * @throws \PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound
 	 */
 	public function reflect(string $functionName): Reflection
 	{

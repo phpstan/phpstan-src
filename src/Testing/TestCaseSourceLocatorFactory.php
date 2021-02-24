@@ -3,19 +3,19 @@
 namespace PHPStan\Testing;
 
 use Composer\Autoload\ClassLoader;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
-use Roave\BetterReflection\Reflector\FunctionReflector;
-use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
-use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
-use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 
 class TestCaseSourceLocatorFactory
 {

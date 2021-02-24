@@ -4,12 +4,12 @@ namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Extensions\PhpExtension;
 use Phar;
+use PHPStan\BetterReflection\BetterReflection;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
-use Roave\BetterReflection\BetterReflection;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Symfony\Component\Finder\Finder;
 use function sys_get_temp_dir;
 

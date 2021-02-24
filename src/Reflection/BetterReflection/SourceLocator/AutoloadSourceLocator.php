@@ -6,18 +6,18 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
+use PHPStan\BetterReflection\Identifier\Identifier;
+use PHPStan\BetterReflection\Identifier\IdentifierType;
+use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Exception\ParseToAstFailure;
+use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
+use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
-use Roave\BetterReflection\Identifier\Identifier;
-use Roave\BetterReflection\Identifier\IdentifierType;
-use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflection\ReflectionConstant;
-use Roave\BetterReflection\Reflector\Reflector;
-use Roave\BetterReflection\SourceLocator\Ast\Exception\ParseToAstFailure;
-use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
-use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
-use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 use function array_key_exists;
 use function file_exists;
 use function restore_error_handler;
@@ -47,7 +47,7 @@ class AutoloadSourceLocator implements SourceLocator
 	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
 	private array $constantNodes = [];
 
-	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
+	/** @var array<string, \PHPStan\BetterReflection\SourceLocator\Located\LocatedSource> */
 	private array $locatedSourcesByFile = [];
 
 	public function __construct(FileNodesFetcher $fileNodesFetcher)

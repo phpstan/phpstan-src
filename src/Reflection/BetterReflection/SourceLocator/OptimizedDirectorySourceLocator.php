@@ -2,12 +2,12 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use Roave\BetterReflection\Identifier\Identifier;
-use Roave\BetterReflection\Identifier\IdentifierType;
-use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflector\Reflector;
-use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
-use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\BetterReflection\Identifier\Identifier;
+use PHPStan\BetterReflection\Identifier\IdentifierType;
+use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use function array_key_exists;
 
 class OptimizedDirectorySourceLocator implements SourceLocator
@@ -30,7 +30,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
 	private array $functionNodes = [];
 
-	/** @var array<string, \Roave\BetterReflection\SourceLocator\Located\LocatedSource> */
+	/** @var array<string, \PHPStan\BetterReflection\SourceLocator\Located\LocatedSource> */
 	private array $locatedSourcesByFile = [];
 
 	/**

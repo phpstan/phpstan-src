@@ -5,12 +5,12 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
-use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use Roave\BetterReflection\Reflector\FunctionReflector;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Return_>

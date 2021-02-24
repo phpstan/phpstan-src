@@ -2,12 +2,12 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use Roave\BetterReflection\Identifier\Identifier;
-use Roave\BetterReflection\Identifier\IdentifierType;
-use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflector\Reflector;
-use Roave\BetterReflection\SourceLocator\Type\Composer\Psr\PsrAutoloaderMapping;
-use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\BetterReflection\Identifier\Identifier;
+use PHPStan\BetterReflection\Identifier\IdentifierType;
+use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\PsrAutoloaderMapping;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 
 class OptimizedPsrAutoloaderLocator implements SourceLocator
 {

@@ -121,10 +121,6 @@ return [
 					return $class;
 				}
 
-				if (strpos($class, 'Roave\\BetterReflection\\') === 0) {
-					return $class;
-				}
-
 				if (strpos($class, '@') === 0) {
 					return $class;
 				}
@@ -217,7 +213,6 @@ return [
 		'PHPStan\*',
 		'PhpParser\*',
 		'Hoa\*',
-		'Roave\BetterReflection\*',
 	],
 	'whitelist-global-functions' => false,
 	'whitelist-global-classes' => false,

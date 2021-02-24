@@ -2,21 +2,21 @@
 
 namespace PHPStan\Reflection\BetterReflection\Reflector;
 
-use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflector\ConstantReflector;
+use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflector\ConstantReflector;
 
 final class MemoizingConstantReflector extends ConstantReflector
 {
 
-	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionConstant|\Throwable> */
+	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionConstant|\Throwable> */
 	private array $reflections = [];
 
 	/**
 	 * Create a ReflectionConstant for the specified $constantName.
 	 *
-	 * @return \Roave\BetterReflection\Reflection\ReflectionConstant
+	 * @return \PHPStan\BetterReflection\Reflection\ReflectionConstant
 	 *
-	 * @throws \Roave\BetterReflection\Reflector\Exception\IdentifierNotFound
+	 * @throws \PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound
 	 */
 	public function reflect(string $constantName): Reflection
 	{

@@ -2,10 +2,10 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceStubber;
 
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\StubData;
 use PHPStan\File\FileReader;
 use PHPStan\Php8StubsMap;
-use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
-use Roave\BetterReflection\SourceLocator\SourceStubber\StubData;
 
 class Php8StubsSourceStubber implements SourceStubber
 {

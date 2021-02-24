@@ -46,6 +46,10 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
+use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -114,10 +118,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
-use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
-use Roave\BetterReflection\Reflector\ClassReflector;
-use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
-use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 
 class NodeScopeResolver
 {
@@ -1257,7 +1257,7 @@ class NodeScopeResolver
 			new LocatedSource(FileReader::read($scope->getFile()), $scope->getFile()),
 			$scope->getNamespace() !== null ? new Node\Stmt\Namespace_(new Name($scope->getNamespace())) : null
 		);
-		if (!$betterReflectionClass instanceof \Roave\BetterReflection\Reflection\ReflectionClass) {
+		if (!$betterReflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionClass) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 

@@ -2,21 +2,21 @@
 
 namespace PHPStan\Reflection\BetterReflection\Reflector;
 
-use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflector\ClassReflector;
 
 final class MemoizingClassReflector extends ClassReflector
 {
 
-	/** @var array<string, \Roave\BetterReflection\Reflection\ReflectionClass|\Throwable> */
+	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionClass|\Throwable> */
 	private array $reflections = [];
 
 	/**
 	 * Create a ReflectionClass for the specified $className.
 	 *
-	 * @return \Roave\BetterReflection\Reflection\ReflectionClass
+	 * @return \PHPStan\BetterReflection\Reflection\ReflectionClass
 	 *
-	 * @throws \Roave\BetterReflection\Reflector\Exception\IdentifierNotFound
+	 * @throws \PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound
 	 */
 	public function reflect(string $className): Reflection
 	{

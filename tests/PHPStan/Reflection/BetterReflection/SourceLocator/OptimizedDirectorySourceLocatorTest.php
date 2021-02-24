@@ -2,10 +2,10 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\Testing\TestCase;
-use Roave\BetterReflection\Reflector\ClassReflector;
-use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use Roave\BetterReflection\Reflector\FunctionReflector;
 use TestDirectorySourceLocator\AFoo;
 
 class OptimizedDirectorySourceLocatorTest extends TestCase

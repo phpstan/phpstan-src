@@ -98,7 +98,6 @@ parameters:
 		- '#^PhpParser\\#'
 		- '#^PHPStan\\#'
 		- '#^Hoa\\#'
-		- '#^Roave\\BetterReflection\\#'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION
@@ -1331,7 +1330,7 @@ services:
 			- PHPStan\Reflection\ReflectionProvider
 
 	betterReflectionSourceLocator:
-		class: Roave\BetterReflection\SourceLocator\Type\SourceLocator
+		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
 		factory: @PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory::create
 		autowired: false
 
@@ -1405,17 +1404,17 @@ services:
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory
 
 	-
-		class: Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
+		class: PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 		arguments:
 			phpParser: @php8PhpParser
 			phpVersionId: %phpVersion%
 		autowired:
-			- Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
+			- PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 
 	-
-		class: Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
+		class: PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 		autowired:
-			- Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
+			- PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 
 	php8Lexer:
 		class: PhpParser\Lexer\Emulative

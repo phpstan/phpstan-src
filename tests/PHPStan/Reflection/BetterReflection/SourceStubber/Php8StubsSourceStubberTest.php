@@ -4,11 +4,11 @@ namespace PHPStan\Reflection\BetterReflection\SourceStubber;
 
 use PhpParser\Lexer\Emulative;
 use PhpParser\ParserFactory;
+use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
+use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPUnit\Framework\TestCase;
-use Roave\BetterReflection\Reflector\ClassReflector;
-use Roave\BetterReflection\Reflector\FunctionReflector;
-use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 
 class Php8StubsSourceStubberTest extends TestCase
 {

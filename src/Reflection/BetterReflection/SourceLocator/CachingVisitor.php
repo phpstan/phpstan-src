@@ -5,8 +5,8 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 use PhpParser\BuilderHelpers;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeVisitorAbstract;
-use Roave\BetterReflection\Reflection\Exception\InvalidConstantNode;
-use Roave\BetterReflection\Util\ConstantNodeChecker;
+use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
+use PHPStan\BetterReflection\Util\ConstantNodeChecker;
 
 class CachingVisitor extends NodeVisitorAbstract
 {

@@ -4,10 +4,10 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 
 /**
  * @implements Rule<InClassNode>

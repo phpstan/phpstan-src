@@ -4,12 +4,12 @@ namespace PHPStan\Reflection\ReflectionProvider;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\Scope;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {

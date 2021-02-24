@@ -201,10 +201,8 @@ php;
 		$output = '';
 		foreach ($finder->files()->name('*.php')->in([
 			$this->buildDir . '/src',
-			$this->buildDir . '/stubs/runtime',
 			$vendorDir . '/nikic/php-parser/lib/PhpParser',
 			$vendorDir . '/phpstan/phpdoc-parser/src',
-			$vendorDir . '/ondrejmirtes/better-reflection/src',
 		])->exclude([
 			'Testing',
 		]) as $phpFile) {

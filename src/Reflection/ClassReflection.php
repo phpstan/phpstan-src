@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
@@ -23,7 +24,6 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionMethod;
-use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
 
 class ClassReflection implements ReflectionWithFilename
 {

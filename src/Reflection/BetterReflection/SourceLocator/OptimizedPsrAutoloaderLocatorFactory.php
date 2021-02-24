@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use Roave\BetterReflection\SourceLocator\Type\Composer\Psr\PsrAutoloaderMapping;
+use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\PsrAutoloaderMapping;
 
 interface OptimizedPsrAutoloaderLocatorFactory
 {

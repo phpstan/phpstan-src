@@ -4,6 +4,10 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Comment;
 use PhpParser\Node;
+use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
+use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
+use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
@@ -14,10 +18,6 @@ use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\TipRuleError;
-use Roave\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
-use Roave\BetterReflection\Reflection\Exception\NotAClassReflection;
-use Roave\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
-use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use function array_key_exists;
 use function array_unique;
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89f3df5b8e07c793c27ab69f51f0c05f",
+    "content-hash": "73cb2009e1ae3bbefed51e995653ba4a",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2072,21 +2072,21 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.50",
+            "version": "4.3.51",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "e4f77fb14901488eef16b0f35007800df2ffeb46"
+                "reference": "34f2d24f6cda682b26465965bbeafb289caf3219"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/e4f77fb14901488eef16b0f35007800df2ffeb46",
-                "reference": "e4f77fb14901488eef16b0f35007800df2ffeb46",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/34f2d24f6cda682b26465965bbeafb289caf3219",
+                "reference": "34f2d24f6cda682b26465965bbeafb289caf3219",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "jetbrains/phpstorm-stubs": "dev-master#b2402e4a525593f68ff46303dcc6bc625437276a",
+                "jetbrains/phpstorm-stubs": "dev-master#0a73df114cdea7f30c8b5f6fbfbf8e6839a89e88",
                 "nikic/php-parser": "4.10.4",
                 "php": ">=7.1.0",
                 "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
@@ -2109,7 +2109,7 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Roave\\BetterReflection\\": "src"
+                    "PHPStan\\BetterReflection\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -2140,9 +2140,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.50"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.51"
             },
-            "time": "2021-02-18T10:40:17+00:00"
+            "time": "2021-02-24T12:12:21+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",

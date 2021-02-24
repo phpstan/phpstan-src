@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Runtime;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -19,7 +20,6 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use ReflectionClass;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class RuntimeReflectionProvider implements ReflectionProvider
 {

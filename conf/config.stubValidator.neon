@@ -25,27 +25,27 @@ services:
 		autowired: false
 
 	stubClassReflector:
-		class: Roave\BetterReflection\Reflector\ClassReflector
+		class: PHPStan\BetterReflection\Reflector\ClassReflector
 		arguments:
 			sourceLocator: @stubSourceLocator
 		autowired: false
 
 	stubFunctionReflector:
-		class: Roave\BetterReflection\Reflector\FunctionReflector
+		class: PHPStan\BetterReflection\Reflector\FunctionReflector
 		arguments:
 			classReflector: @stubClassReflector
 			sourceLocator: @stubSourceLocator
 		autowired: false
 
 	stubConstantReflector:
-		class: Roave\BetterReflection\Reflector\ConstantReflector
+		class: PHPStan\BetterReflection\Reflector\ConstantReflector
 		arguments:
 			classReflector: @stubClassReflector
 			sourceLocator: @stubSourceLocator
 		autowired: false
 
 	stubSourceLocator:
-		class: Roave\BetterReflection\SourceLocator\Type\SourceLocator
+		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
 		factory: @PHPStan\PhpDoc\StubSourceLocatorFactory::create()
 		autowired: false
 

@@ -3,15 +3,15 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\Node\Expr\FuncCall;
-use Roave\BetterReflection\Identifier\Identifier;
-use Roave\BetterReflection\Identifier\IdentifierType;
-use Roave\BetterReflection\Reflection\Reflection;
-use Roave\BetterReflection\Reflection\ReflectionClass;
-use Roave\BetterReflection\Reflection\ReflectionConstant;
-use Roave\BetterReflection\Reflection\ReflectionFunction;
-use Roave\BetterReflection\Reflector\Reflector;
-use Roave\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
-use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\BetterReflection\Identifier\Identifier;
+use PHPStan\BetterReflection\Identifier\IdentifierType;
+use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflection\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\BetterReflection\Reflection\ReflectionFunction;
+use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 
 class OptimizedSingleFileSourceLocator implements SourceLocator
 {

@@ -4,6 +4,17 @@ namespace PHPStan\Reflection\BetterReflection;
 
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
+use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
+use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
+use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
+use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
+use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\ConstantReflector;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
@@ -23,17 +34,6 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use Roave\BetterReflection\Identifier\Exception\InvalidIdentifierName;
-use Roave\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
-use Roave\BetterReflection\Reflection\Adapter\ReflectionClass;
-use Roave\BetterReflection\Reflection\Adapter\ReflectionFunction;
-use Roave\BetterReflection\Reflection\Exception\NotAClassReflection;
-use Roave\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
-use Roave\BetterReflection\Reflector\ClassReflector;
-use Roave\BetterReflection\Reflector\ConstantReflector;
-use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use Roave\BetterReflection\Reflector\FunctionReflector;
-use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 
 class BetterReflectionProvider implements ReflectionProvider
 {
@@ -42,11 +42,11 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	private \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
-	private \Roave\BetterReflection\Reflector\ClassReflector $classReflector;
+	private \PHPStan\BetterReflection\Reflector\ClassReflector $classReflector;
 
-	private \Roave\BetterReflection\Reflector\FunctionReflector $functionReflector;
+	private \PHPStan\BetterReflection\Reflector\FunctionReflector $functionReflector;
 
-	private \Roave\BetterReflection\Reflector\ConstantReflector $constantReflector;
+	private \PHPStan\BetterReflection\Reflector\ConstantReflector $constantReflector;
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
@@ -207,7 +207,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			return self::$anonymousClasses[$className];
 		}
 
-		$reflectionClass = \Roave\BetterReflection\Reflection\ReflectionClass::createFromNode(
+		$reflectionClass = \PHPStan\BetterReflection\Reflection\ReflectionClass::createFromNode(
 			$this->classReflector,
 			$classNode,
 			new LocatedSource($this->printer->prettyPrint([$classNode]), $scopeFile),
@@ -313,7 +313,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			try {
 				$this->functionReflector->reflect($name);
 				return true;
-			} catch (\Roave\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+			} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
 				// pass
 			} catch (InvalidIdentifierName $e) {
 				// pass
@@ -358,7 +358,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			try {
 				$this->constantReflector->reflect($name);
 				return true;
-			} catch (\Roave\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+			} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
 				// pass
 			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
 				// pass

@@ -2,9 +2,9 @@
 
 namespace PHPStan\Reflection\BetterReflection;
 
-use Roave\BetterReflection\Reflector\ClassReflector;
-use Roave\BetterReflection\Reflector\ConstantReflector;
-use Roave\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\ConstantReflector;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
 
 interface BetterReflectionProviderFactory
 {

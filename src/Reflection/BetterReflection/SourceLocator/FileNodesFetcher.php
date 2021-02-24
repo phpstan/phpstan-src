@@ -3,9 +3,9 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\NodeTraverser;
+use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\File\FileReader;
 use PHPStan\Parser\Parser;
-use Roave\BetterReflection\SourceLocator\Located\LocatedSource;
 
 class FileNodesFetcher
 {

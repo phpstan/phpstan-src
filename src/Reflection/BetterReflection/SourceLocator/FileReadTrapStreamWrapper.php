@@ -12,7 +12,7 @@ use function stream_wrapper_unregister;
  * in operation.
  *
  * @internal DO NOT USE: this is an implementation detail of
- *           the {@see \Roave\BetterReflection\SourceLocator\Type\AutoloadSourceLocator}
+ *           the {@see \PHPStan\BetterReflection\SourceLocator\Type\AutoloadSourceLocator}
  *
  * phpcs:disable SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
  * phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps

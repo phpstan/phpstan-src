@@ -10,6 +10,8 @@ use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -40,8 +42,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
-use Roave\BetterReflection\Reflection\Adapter\ReflectionMethod;
-use Roave\BetterReflection\Reflection\Adapter\ReflectionProperty;
 
 class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension

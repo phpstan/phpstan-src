@@ -3,11 +3,11 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use Nette\Utils\Json;
+use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr0Mapping;
+use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\File\FileReader;
-use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\Composer\Psr\Psr0Mapping;
-use Roave\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
-use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 
 class ComposerJsonAndInstalledJsonSourceLocatorMaker
 {

@@ -40,7 +40,7 @@ services:
 		autowired: false
 
 	testCaseSourceLocator:
-		class: Roave\BetterReflection\SourceLocator\Type\SourceLocator
+		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
 		factory: @PHPStan\Testing\TestCaseSourceLocatorFactory::create()
 		autowired: false
 

@@ -2,15 +2,15 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
-use Roave\BetterReflection\Reflector\FunctionReflector;
-use Roave\BetterReflection\SourceLocator\Ast\Locator;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
-use Roave\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
-use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 
 class StubSourceLocatorFactory
 {

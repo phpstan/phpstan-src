@@ -4,6 +4,7 @@ namespace PHPStan\Broker;
 
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
@@ -19,7 +20,6 @@ use PHPStan\Reflection\ReflectionProvider\SetterReflectionProviderProvider;
 use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Type\FileTypeMapper;
-use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 
 class BrokerTest extends \PHPStan\Testing\TestCase
 {

@@ -238,6 +238,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 				'#^PhpParser\\\\#',
 				'#^PHPStan\\\\#',
 				'#^Hoa\\\\#',
+				'#^Roave\\\\BetterReflection\\#',
 			],
 			null
 		);

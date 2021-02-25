@@ -89,6 +89,9 @@ class ClassReflection implements ReflectionWithFilename
 	/** @var string|false|null */
 	private $filename;
 
+	/** @var string|false|null */
+	private $reflectionDocComment;
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
@@ -933,12 +936,15 @@ class ClassReflection implements ReflectionWithFilename
 			return null;
 		}
 
-		$docComment = $this->reflection->getDocComment();
-		if ($docComment === false) {
+		if ($this->reflectionDocComment === null) {
+			$this->reflectionDocComment = $this->reflection->getDocComment();
+		}
+
+		if ($this->reflectionDocComment === false) {
 			return null;
 		}
 
-		return $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $docComment);
+		return $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $this->reflectionDocComment);
 	}
 
 	private function getFirstExtendsTag(): ?ExtendsTag

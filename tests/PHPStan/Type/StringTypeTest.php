@@ -162,7 +162,7 @@ class StringTypeTest extends TestCase
 				new StringType(),
 				TemplateTypeVariance::createInvariant()
 			)->toArgument(),
-			TrinaryLogic::createNo(),
+			TrinaryLogic::createYes(),
 		];
 	}
 

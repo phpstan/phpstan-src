@@ -92,7 +92,7 @@ trait TemplateTypeTrait
 		return $type instanceof self
 			&& $type->scope->equals($this->scope)
 			&& $type->name === $this->name
-			&& $this->bound->equals($type);
+			&& $this->bound->equals($type->bound);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic

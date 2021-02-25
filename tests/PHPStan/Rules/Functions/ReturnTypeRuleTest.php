@@ -89,4 +89,15 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2568.php'], []);
 	}
 
+	public function testBug2723(): void
+	{
+		require_once __DIR__ . '/data/bug-2723.php';
+		$this->analyse([__DIR__ . '/data/bug-2723.php'], [
+			[
+				'Function Bug2723\baz() should return Bug2723\Bar<Bug2723\Foo<T4>> but returns Bug2723\BarOfFoo<string>.',
+				55,
+			],
+		]);
+	}
+
 }

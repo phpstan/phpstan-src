@@ -11,6 +11,8 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
@@ -101,18 +103,21 @@ class TemplateTypeCheck
 				$messages = array_merge($messages, $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs));
 			}
 
-			$bound = $templateTag->getBound();
-			$boundClass = get_class($bound);
-			if (
-				$boundClass === MixedType::class
-				|| $boundClass === ObjectWithoutClassType::class
-				|| $bound instanceof ObjectType
-				|| $bound instanceof UnionType
-			) {
-				continue;
-			}
+			TypeTraverser::map($templateTag->getBound(), static function (Type $type, callable $traverse) use (&$messages, $notSupportedBoundMessage, $templateTagName): Type {
+				$boundClass = get_class($type);
+				if (
+					$boundClass === MixedType::class
+					|| $boundClass === ObjectWithoutClassType::class
+					|| $boundClass === ObjectType::class
+					|| $type instanceof UnionType
+				) {
+					return $traverse($type);
+				}
 
-			$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $type->describe(VerbosityLevel::typeOnly())))->build();
+
+				return $type;
+			});
 		}
 
 		return $messages;

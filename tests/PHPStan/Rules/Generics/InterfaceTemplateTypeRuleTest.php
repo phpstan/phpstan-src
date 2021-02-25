@@ -41,6 +41,10 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template for interface InterfaceTemplateType\Lorem cannot have existing type alias TypeAlias as its name.',
 				32,
 			],
+			[
+				'PHPDoc tag @template T for interface InterfaceTemplateType\UnionBound with bound type InterfaceTemplateType\NormalT<stdClass> is not supported.',
+				44,
+			],
 		]);
 	}
 

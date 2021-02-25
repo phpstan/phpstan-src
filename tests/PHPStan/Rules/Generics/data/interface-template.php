@@ -33,3 +33,15 @@ interface Lorem
 {
 
 }
+
+/** @template T */
+interface NormalT
+{
+
+}
+
+/** @template T of NormalT<\stdClass>|\stdClass */
+interface UnionBound
+{
+
+}

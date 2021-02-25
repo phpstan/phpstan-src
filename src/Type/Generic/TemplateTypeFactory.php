@@ -21,11 +21,10 @@ final class TemplateTypeFactory
 			return new TemplateMixedType($scope, $strategy, $variance, $name);
 		}
 
-		if ($bound instanceof ObjectType) {
+		$boundClass = get_class($bound);
+		if ($boundClass === ObjectType::class) {
 			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound->getClassName());
 		}
-
-		$boundClass = get_class($bound);
 		if ($boundClass === ObjectWithoutClassType::class) {
 			return new TemplateObjectWithoutClassType($scope, $strategy, $variance, $name);
 		}

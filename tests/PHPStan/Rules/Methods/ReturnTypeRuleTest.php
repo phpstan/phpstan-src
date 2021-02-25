@@ -449,4 +449,9 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/template-string-bound.php'], []);
 	}
 
+	public function testBug4605(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4605.php'], []);
+	}
+
 }

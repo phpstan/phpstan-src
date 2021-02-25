@@ -102,7 +102,7 @@ class TemplateTypeVariance
 			return TrinaryLogic::createYes();
 		}
 
-		if ($b instanceof BenevolentUnionType) {
+		if ($b instanceof BenevolentUnionType && !$a instanceof BenevolentUnionType) {
 			$results = [];
 			foreach ($b->getTypes() as $innerType) {
 				$results[] = $this->isValidVariance($a, $innerType);

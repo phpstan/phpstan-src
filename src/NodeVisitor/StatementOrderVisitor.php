@@ -40,7 +40,10 @@ class StatementOrderVisitor extends NodeVisitorAbstract
 		$node->setAttribute('statementOrder', $order);
 		$node->setAttribute('statementDepth', $this->depth);
 
-		if ($node instanceof Node\Expr && count($this->expressionOrderStack) > 0) {
+		if (
+			($node instanceof Node\Expr || $node instanceof Node\Arg)
+			&& count($this->expressionOrderStack) > 0
+		) {
 			$expressionOrder = $this->expressionOrderStack[count($this->expressionOrderStack) - 1];
 			$node->setAttribute('expressionOrder', $expressionOrder);
 			$node->setAttribute('expressionDepth', $this->expressionDepth);

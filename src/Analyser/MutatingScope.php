@@ -37,6 +37,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
@@ -1281,7 +1282,25 @@ class MutatingScope implements Scope
 					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 				}
 			} else {
-				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node);
+				$callableParameters = null;
+				$arg = $node->getAttribute('parent');
+				if ($arg instanceof Arg) {
+					$funcCall = $arg->getAttribute('parent');
+					$argOrder = $arg->getAttribute('expressionOrder');
+					if ($funcCall instanceof FuncCall && $funcCall->name instanceof Name) {
+						$functionName = $this->reflectionProvider->resolveFunctionName($funcCall->name, $this);
+						if (
+							$functionName === 'array_map'
+							&& $argOrder === 0
+							&& isset($funcCall->args[1])
+						) {
+							$callableParameters = [
+								new DummyParameter('item', $this->getType($funcCall->args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+							];
+						}
+					}
+				}
+				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
 				$closureExecutionEnds = [];

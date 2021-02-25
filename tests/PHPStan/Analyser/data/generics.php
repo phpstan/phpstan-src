@@ -218,7 +218,7 @@ function testArrayMap(array $listOfIntegers)
 
 		return (string) $int;
 	}, $listOfIntegers);
-	assertType('array<string>', $strings);
+	assertType('array<string&numeric>', $strings);
 }
 
 /**

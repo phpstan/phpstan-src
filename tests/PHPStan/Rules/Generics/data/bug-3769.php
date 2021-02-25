@@ -75,3 +75,36 @@ function (): void {
 	assertType('1', intBound(1));
 	assertType('\'str\'', stringBound('str'));
 };
+
+/** @template T of string */
+class Foo
+{
+
+	/** @var T */
+	private $value;
+
+	/**
+	 * @param T $value
+	 */
+	public function __construct($value)
+	{
+		$this->value = $value;
+	}
+
+	/**
+	 * @return T
+	 */
+	public function getValue()
+	{
+		return $this->value;
+	}
+
+}
+
+/** @param Foo<'bar'> $foo */
+function testTofString(Foo $foo): void {
+	assertType('\'bar\'', $foo->getValue());
+
+	$baz = new Foo('baz');
+	assertType('\'baz\'', $baz->getValue());
+};

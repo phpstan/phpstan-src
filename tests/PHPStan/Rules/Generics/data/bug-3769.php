@@ -38,3 +38,40 @@ function foo(
 function fooUnion($foo): void {
 	assertType('T of Exception|stdClass (function Bug3769\fooUnion(), argument)', $foo);
 }
+
+/**
+ * @template T
+ * @param T $a
+ * @return T
+ */
+function mixedBound($a)
+{
+	return $a;
+}
+
+/**
+ * @template T of int
+ * @param T $a
+ * @return T
+ */
+function intBound(int $a)
+{
+	return $a;
+}
+
+/**
+ * @template T of string
+ * @param T $a
+ * @return T
+ */
+function stringBound(string $a)
+{
+	return $a;
+}
+
+function (): void {
+	assertType('int', mixedBound(1));
+	assertType('string', mixedBound('str'));
+	assertType('1', intBound(1));
+	assertType('\'str\'', stringBound('str'));
+};

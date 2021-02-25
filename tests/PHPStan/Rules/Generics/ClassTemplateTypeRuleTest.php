@@ -33,7 +33,7 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				16,
 			],
 			[
-				'PHPDoc tag @template T for class ClassTemplateType\Baz with bound type int is not supported.',
+				'PHPDoc tag @template T for class ClassTemplateType\Baz with bound type float is not supported.',
 				24,
 			],
 			[
@@ -53,7 +53,7 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				50,
 			],
 			[
-				'PHPDoc tag @template T for anonymous class with bound type int is not supported.',
+				'PHPDoc tag @template T for anonymous class with bound type float is not supported.',
 				55,
 			],
 			[

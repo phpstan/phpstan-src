@@ -34,7 +34,7 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 				16,
 			],
 			[
-				'PHPDoc tag @template T for trait TraitTemplateType\Baz with bound type int is not supported.',
+				'PHPDoc tag @template T for trait TraitTemplateType\Baz with bound type float is not supported.',
 				24,
 			],
 			[

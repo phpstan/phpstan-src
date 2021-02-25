@@ -38,7 +38,7 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 				37,
 			],
 			[
-				'PHPDoc tag @template T for method MethodTemplateType\Baz::doFoo() with bound type int is not supported.',
+				'PHPDoc tag @template T for method MethodTemplateType\Baz::doFoo() with bound type float is not supported.',
 				50,
 			],
 			[

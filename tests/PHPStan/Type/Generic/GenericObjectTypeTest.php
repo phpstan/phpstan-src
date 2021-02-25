@@ -338,16 +338,12 @@ class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
 	public function dataGetReferencedTypeArguments(): array
 	{
 		$templateType = static function (string $name, ?Type $bound = null): TemplateType {
-			$templateType = TemplateTypeFactory::create(
+			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				$bound ?? new MixedType(),
 				TemplateTypeVariance::createInvariant()
 			);
-			if (!$templateType instanceof TemplateType) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-			return $templateType;
 		};
 
 		return [

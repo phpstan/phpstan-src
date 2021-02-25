@@ -34,7 +34,7 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				16,
 			],
 			[
-				'PHPDoc tag @template T for function FunctionTemplateType\baz() with bound type int is not supported.',
+				'PHPDoc tag @template T for function FunctionTemplateType\baz() with bound type float is not supported.',
 				24,
 			],
 			[

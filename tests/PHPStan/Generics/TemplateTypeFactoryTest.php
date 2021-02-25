@@ -3,7 +3,6 @@
 namespace PHPStan\Generics;
 
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -36,7 +35,11 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				new StringType(),
-				new MixedType(),
+				new StringType(),
+			],
+			[
+				new IntegerType(),
+				new IntegerType(),
 			],
 			[
 				new ErrorType(),
@@ -77,7 +80,6 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 			TemplateTypeVariance::createInvariant()
 		);
 
-		$this->assertInstanceOf(TemplateType::class, $templateType);
 		$this->assertTrue(
 			$expectedBound->equals($templateType->getBound()),
 			sprintf('%s -> equals(%s)', $expectedBound->describe(VerbosityLevel::precise()), $templateType->getBound()->describe(VerbosityLevel::precise()))

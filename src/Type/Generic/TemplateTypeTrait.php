@@ -155,7 +155,7 @@ trait TemplateTypeTrait
 
 		if ($this->getBound()->isSuperTypeOf($receivedType)->yes()) {
 			return new TemplateTypeMap([
-				$this->name => TemplateTypeHelper::generalizeType($receivedType),
+				$this->name => $this->shouldGeneralizeInferredType() ? TemplateTypeHelper::generalizeType($receivedType) : $receivedType,
 			]);
 		}
 
@@ -170,6 +170,11 @@ trait TemplateTypeTrait
 	public function getVariance(): TemplateTypeVariance
 	{
 		return $this->variance;
+	}
+
+	protected function shouldGeneralizeInferredType(): bool
+	{
+		return true;
 	}
 
 }

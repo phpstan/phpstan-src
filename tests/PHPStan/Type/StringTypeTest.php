@@ -7,6 +7,9 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use Test\ClassWithToString;
 
 class StringTypeTest extends TestCase
@@ -19,6 +22,66 @@ class StringTypeTest extends TestCase
 				new StringType(),
 				new GenericClassStringType(new ObjectType(\Exception::class)),
 				TrinaryLogic::createYes(),
+			],
+			[
+				new StringType(),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createYes(),
+			],
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant()
+				),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new ClassStringType(),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant()
+				),
+				new ClassStringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant()
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant()
+				),
+				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}
@@ -51,6 +114,55 @@ class StringTypeTest extends TestCase
 			new StringType(),
 			new ClassStringType(),
 			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new StringType(),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('foo'),
+				'T',
+				new StringType(),
+				TemplateTypeVariance::createInvariant()
+			),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('foo'),
+				'T',
+				new StringType(),
+				TemplateTypeVariance::createInvariant()
+			),
+			new StringType(),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('foo'),
+				'T',
+				new StringType(),
+				TemplateTypeVariance::createInvariant()
+			)->toArgument(),
+			new StringType(),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('foo'),
+				'T',
+				new StringType(),
+				TemplateTypeVariance::createInvariant()
+			)->toArgument(),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('foo'),
+				'T',
+				new StringType(),
+				TemplateTypeVariance::createInvariant()
+			)->toArgument(),
+			TrinaryLogic::createNo(),
 		];
 	}
 

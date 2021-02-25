@@ -8,9 +8,11 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
@@ -107,6 +109,8 @@ class TemplateTypeCheck
 				$boundClass = get_class($type);
 				if (
 					$boundClass === MixedType::class
+					|| $boundClass === StringType::class
+					|| $boundClass === IntegerType::class
 					|| $boundClass === ObjectWithoutClassType::class
 					|| $boundClass === ObjectType::class
 					|| $type instanceof UnionType

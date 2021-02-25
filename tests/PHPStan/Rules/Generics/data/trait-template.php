@@ -19,7 +19,7 @@ trait Bar
 }
 
 /**
- * @template T of int
+ * @template T of float
  */
 trait Baz
 {

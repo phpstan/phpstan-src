@@ -19,7 +19,7 @@ class Bar
 }
 
 /**
- * @template T of int
+ * @template T of float
  */
 class Baz
 {
@@ -52,7 +52,7 @@ new /** @template T of Zazzzu */ class
 
 };
 
-new /** @template T of int */ class
+new /** @template T of float */ class
 {
 
 };

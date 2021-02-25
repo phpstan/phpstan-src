@@ -19,7 +19,7 @@ function bar()
 }
 
 /**
- * @template T of int
+ * @template T of float
  */
 function baz()
 {

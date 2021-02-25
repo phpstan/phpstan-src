@@ -138,7 +138,7 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable
 }
 
 /**
- * @template T of \Traversable
+ * @template T of \RecursiveIterator|\IteratorAggregate
  * @mixin T
  */
 class RecursiveIteratorIterator

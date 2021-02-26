@@ -48,8 +48,10 @@ class PhpDocNodeResolver
 	 */
 	public function resolveVarTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		foreach (['@phpstan-var', '@psalm-var', '@var'] as $tagName) {
-			$resolved = [];
+		$resolved = [];
+		$resolvedByTag = [];
+		foreach (['@var', '@psalm-var', '@phpstan-var'] as $tagName) {
+			$tagResolved = [];
 			foreach ($phpDocNode->getVarTagValues($tagName) as $tagValue) {
 				$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 				if ($this->shouldSkipType($tagName, $type)) {
@@ -59,16 +61,23 @@ class PhpDocNodeResolver
 					$variableName = substr($tagValue->variableName, 1);
 					$resolved[$variableName] = new VarTag($type);
 				} else {
-					$resolved[] = new VarTag($type);
+					$varTag = new VarTag($type);
+					$tagResolved[] = $varTag;
 				}
 			}
 
-			if (count($resolved) > 0) {
-				return $resolved;
+			if (count($tagResolved) === 0) {
+				continue;
 			}
+
+			$resolvedByTag[] = $tagResolved;
 		}
 
-		return [];
+		if (count($resolvedByTag) > 0) {
+			return array_reverse($resolvedByTag)[0];
+		}
+
+		return $resolved;
 	}
 
 	/**

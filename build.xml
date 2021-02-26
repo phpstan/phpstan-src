@@ -4,18 +4,7 @@
 			  value="tmp/composer-require-checker-2.1.0.phar"/>
 	<property name="url.composer-require-checker"
 			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.1.0/composer-require-checker.phar"/>
-	<if>
-		<and>
-			<not><os family="windows"/></not>
-			<available file="vendor/bin/paratest"/>
-		</and>
-		<then>
-			<property name="phpunit.executable" value="vendor/bin/paratest"/>
-		</then>
-		<else>
-			<property name="phpunit.executable" value="vendor/bin/phpunit"/>
-		</else>
-	</if>
+	<property name="phpunit.executable" value="vendor/bin/phpunit"/>
 	<php expression="PHP_VERSION_ID &gt;= 70400 ?'true':'false'" returnProperty="isPHP74" level="verbose" />
 	<php expression="PHP_VERSION_ID &gt;= 80000 ?'true':'false'" returnProperty="isPHP80" level="verbose" />
 	<target name="check" depends="

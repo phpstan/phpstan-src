@@ -152,7 +152,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			new ReflectionClass($reflectionClass),
 			null,
 			null,
-			$this->stubPhpDocProvider->findClassPhpDoc($className)
+			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName())
 		);
 
 		$this->classReflections[$reflectionClassName] = $classReflection;

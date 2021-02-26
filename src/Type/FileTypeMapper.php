@@ -53,6 +53,9 @@ class FileTypeMapper
 	/** @var array<string, bool> */
 	private array $alreadyProcessedDependentFiles = [];
 
+	/** @var array<string, string> */
+	private array $docKeys = [];
+
 	public function __construct(
 		ReflectionProviderProvider $reflectionProviderProvider,
 		Parser $phpParser,
@@ -518,7 +521,11 @@ class FileTypeMapper
 		string $docComment
 	): string
 	{
-		$docComment = \Nette\Utils\Strings::replace($docComment, '#\s+#', ' ');
+		$cacheKey = md5($docComment);
+		if (!isset($this->docKeys[$cacheKey])) {
+			$this->docKeys[$cacheKey] = \Nette\Utils\Strings::replace($docComment, '#\s+#', ' ');
+		}
+		$docComment = $this->docKeys[$cacheKey];
 
 		return md5(sprintf('%s-%s-%s-%s', $class, $trait, $function, $docComment));
 	}

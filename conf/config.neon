@@ -802,7 +802,7 @@ services:
 	-
 		class: PHPStan\Type\TypeAliasResolver
 		arguments:
-			aliases: %typeAliases%
+			globalTypeAliases: %typeAliases%
 
 	-
 		class: PHPStan\Type\Php\ArgumentBasedFunctionReturnTypeExtension

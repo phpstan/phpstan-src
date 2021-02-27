@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\TemplateTypeScope;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Trait_>
@@ -53,6 +54,7 @@ class TraitTemplateTypeRule implements Rule
 
 		return $this->templateTypeCheck->check(
 			$node,
+			TemplateTypeScope::createWithClass($traitName),
 			$resolvedPhpDoc->getTemplateTags(),
 			sprintf('PHPDoc tag @template for trait %s cannot have existing class %%s as its name.', $traitName),
 			sprintf('PHPDoc tag @template for trait %s cannot have existing type alias %%s as its name.', $traitName),

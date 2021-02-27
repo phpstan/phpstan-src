@@ -9,6 +9,7 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -58,11 +59,13 @@ class TemplateTypeCheck
 
 	/**
 	 * @param \PhpParser\Node $node
+	 * @param TemplateTypeScope $templateTypeScope
 	 * @param array<string, \PHPStan\PhpDoc\Tag\TemplateTag> $templateTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	public function check(
 		Node $node,
+		TemplateTypeScope $templateTypeScope,
 		array $templateTags,
 		string $sameTemplateTypeNameAsClassMessage,
 		string $sameTemplateTypeNameAsTypeMessage,
@@ -79,7 +82,7 @@ class TemplateTypeCheck
 					$templateTagName
 				))->build();
 			}
-			if ($this->typeAliasResolver->hasTypeAlias($templateTagName)) {
+			if ($this->typeAliasResolver->hasTypeAlias($templateTagName, $templateTypeScope->getClassName())) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsTypeMessage,
 					$templateTagName

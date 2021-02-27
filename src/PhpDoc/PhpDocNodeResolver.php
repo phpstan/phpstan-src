@@ -14,6 +14,7 @@ use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
+use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
@@ -363,6 +364,24 @@ class PhpDocNodeResolver
 				$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope)
 			);
 		}, $phpDocNode->getMixinTagValues());
+	}
+
+	/**
+	 * @return array<string, TypeAliasTag>
+	 */
+	public function resolveTypeAliasTags(PhpDocNode $phpDocNode): array
+	{
+		$resolved = [];
+
+		foreach (['@phpstan-type', '@psalm-type'] as $tagName) {
+			foreach ($phpDocNode->getTypeAliasTagValues($tagName) as $typeAliasTagValue) {
+				$alias = $typeAliasTagValue->alias;
+				$type = (string) $typeAliasTagValue->type;
+				$resolved[$alias] = new TypeAliasTag($alias, $type);
+			}
+		}
+
+		return $resolved;
 	}
 
 	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\DeprecatedTag

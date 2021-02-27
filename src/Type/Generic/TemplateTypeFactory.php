@@ -28,6 +28,11 @@ final class TemplateTypeFactory
 		if ($bound instanceof TypeWithClassName && $boundClass === ObjectType::class) {
 			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound->getClassName());
 		}
+
+		if ($bound instanceof GenericObjectType && $boundClass === GenericObjectType::class) {
+			return new TemplateGenericObjectType($scope, $strategy, $variance, $name, $bound->getClassName(), $bound->getTypes());
+		}
+
 		if ($boundClass === ObjectWithoutClassType::class) {
 			return new TemplateObjectWithoutClassType($scope, $strategy, $variance, $name);
 		}

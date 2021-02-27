@@ -18,7 +18,7 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new MethodTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), new GenericObjectTypeCheck(), ['TypeAlias' => 'int'], true)
 		);
 	}
 

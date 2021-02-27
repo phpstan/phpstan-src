@@ -17,7 +17,13 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 
 		return new ClassTemplateTypeRule(
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
+			new TemplateTypeCheck(
+				$broker,
+				new ClassCaseSensitivityCheck($broker),
+				new GenericObjectTypeCheck(),
+				['TypeAlias' => 'int'],
+				true
+			)
 		);
 	}
 
@@ -63,6 +69,32 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template for anonymous class cannot have existing type alias TypeAlias as its name.',
 				65,
+			],
+		]);
+	}
+
+	public function testNestedGenericTypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/nested-generic-types.php'], [
+			[
+				'Type mixed in generic type NestedGenericTypesClassCheck\SomeObjectInterface<mixed> in PHPDoc tag @template U is not subtype of template type T of object of class NestedGenericTypesClassCheck\SomeObjectInterface.',
+				32,
+			],
+			[
+				'Type int in generic type NestedGenericTypesClassCheck\SomeObjectInterface<int> in PHPDoc tag @template U is not subtype of template type T of object of class NestedGenericTypesClassCheck\SomeObjectInterface.',
+				41,
+			],
+			[
+				'PHPDoc tag @template U bound contains generic type NestedGenericTypesClassCheck\NotGeneric<mixed> but class NestedGenericTypesClassCheck\NotGeneric is not generic.',
+				52,
+			],
+			[
+				'PHPDoc tag @template V bound has type NestedGenericTypesClassCheck\MultipleGenerics<stdClass> which does not specify all template types of class NestedGenericTypesClassCheck\MultipleGenerics: T, U',
+				52,
+			],
+			[
+				'PHPDoc tag @template W bound has type NestedGenericTypesClassCheck\MultipleGenerics<stdClass, Exception, SplFileInfo> which specifies 3 template types, but class NestedGenericTypesClassCheck\MultipleGenerics supports only 2: T, U',
+				52,
 			],
 		]);
 	}

@@ -153,13 +153,14 @@ trait TemplateTypeTrait
 			]);
 		}
 
-		if ($this->getBound()->isSuperTypeOf($receivedType)->yes()) {
-			return new TemplateTypeMap([
+		$resolvedBound = TemplateTypeHelper::resolveToBounds($this->getBound());
+		if ($resolvedBound->isSuperTypeOf($receivedType)->yes()) {
+			return (new TemplateTypeMap([
 				$this->name => $this->shouldGeneralizeInferredType() ? TemplateTypeHelper::generalizeType($receivedType) : $receivedType,
-			]);
+			]))->union($this->getBound()->inferTemplateTypes($receivedType));
 		}
 
-		return TemplateTypeMap::createEmpty();
+		return $this->getBound()->inferTemplateTypes($receivedType);
 	}
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array

@@ -135,6 +135,16 @@ class FileTypeMapper
 					$templateTypeMap->getTypes()
 				))
 			);
+			$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
+			$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
+				return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
+			}, $templateTags));
+			$nameScope = $nameScope->withTemplateTypeMap(
+				new TemplateTypeMap(array_merge(
+					$nameScope->getTemplateTypeMap()->getTypes(),
+					$templateTypeMap->getTypes()
+				))
+			);
 		} else {
 			$templateTypeMap = TemplateTypeMap::createEmpty();
 		}

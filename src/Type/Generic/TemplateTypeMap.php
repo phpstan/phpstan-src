@@ -51,9 +51,31 @@ class TemplateTypeMap
 		return $this->types;
 	}
 
+	public function hasType(string $name): bool
+	{
+		return array_key_exists($name, $this->types);
+	}
+
 	public function getType(string $name): ?Type
 	{
 		return $this->types[$name] ?? null;
+	}
+
+	public function unsetType(string $name): self
+	{
+		if (!$this->hasType($name)) {
+			return $this;
+		}
+
+		$types = $this->types;
+
+		unset($types[$name]);
+
+		if (count($types) === 0) {
+			return self::createEmpty();
+		}
+
+		return new self($types);
 	}
 
 	public function union(self $other): self

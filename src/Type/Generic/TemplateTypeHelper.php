@@ -19,13 +19,16 @@ class TemplateTypeHelper
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins): Type {
 			if ($type instanceof TemplateType && !$type->isArgument()) {
-				$newType = $standins->getType($type->getName()) ?? $type;
+				$newType = $standins->getType($type->getName());
+				if ($newType === null) {
+					return $traverse($type);
+				}
 
 				if ($newType instanceof ErrorType) {
-					$newType = $type->getBound();
+					return $traverse($type->getBound());
 				}
 				if ($newType instanceof StaticType) {
-					$newType = $newType->getStaticObjectType();
+					return $traverse($newType->getStaticObjectType());
 				}
 
 				return $newType;

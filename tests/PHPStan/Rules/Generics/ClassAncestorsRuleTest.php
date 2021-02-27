@@ -184,4 +184,14 @@ class ClassAncestorsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3922(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3922-ancestors.php'], [
+			[
+				'Type Bug3922Ancestors\BarQuery in generic type Bug3922Ancestors\QueryHandlerInterface<string, Bug3922Ancestors\BarQuery> in PHPDoc tag @implements is not subtype of template type TQuery of Bug3922Ancestors\QueryInterface<string> of interface Bug3922Ancestors\QueryHandlerInterface.',
+				54,
+			],
+		]);
+	}
+
 }

@@ -276,7 +276,7 @@ class PhpDocNodeResolver
 
 			$resolved[$valueNode->name] = new TemplateTag(
 				$valueNode->name,
-				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScope) : new MixedType(),
+				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScope->unsetTemplateType($valueNode->name)) : new MixedType(),
 				$variance
 			);
 			$resolvedPrefix[$valueNode->name] = $prefix;

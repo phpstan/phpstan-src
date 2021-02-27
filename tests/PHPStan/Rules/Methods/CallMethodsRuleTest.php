@@ -1870,4 +1870,17 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4498.php'], []);
 	}
 
+	public function testBug3922(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3922.php'], [
+			[
+				'Parameter #1 $query of method Bug3922\FooQueryHandler::handle() expects Bug3922\FooQuery, Bug3922\BarQuery given.',
+				63,
+			],
+		]);
+	}
+
 }

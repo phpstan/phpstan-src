@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\Generic\TemplateTypeScope;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Interface_>
@@ -54,7 +53,6 @@ class InterfaceTemplateTypeRule implements Rule
 
 		return $this->templateTypeCheck->check(
 			$node,
-			TemplateTypeScope::createWithClass($interfaceName),
 			$resolvedPhpDoc->getTemplateTags(),
 			sprintf('PHPDoc tag @template for interface %s cannot have existing class %%s as its name.', $interfaceName),
 			sprintf('PHPDoc tag @template for interface %s cannot have existing type alias %%s as its name.', $interfaceName),

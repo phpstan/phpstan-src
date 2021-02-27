@@ -843,11 +843,10 @@ class ClassReflection implements ReflectionWithFilename
 			return $this->templateTypeMap;
 		}
 
-		$templateTypeMap = new TemplateTypeMap(array_map(function (TemplateTag $tag): Type {
-			return TemplateTypeFactory::fromTemplateTag(
-				TemplateTypeScope::createWithClass($this->getName()),
-				$tag
-			);
+		$templateTypeScope = TemplateTypeScope::createWithClass($this->getName());
+
+		$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
+			return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
 		}, $this->getTemplateTags()));
 
 		$this->templateTypeMap = $templateTypeMap;

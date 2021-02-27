@@ -18,7 +18,7 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new InterfaceTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), ['TypeAlias' => 'int'], true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), new GenericObjectTypeCheck(), ['TypeAlias' => 'int'], true)
 		);
 	}
 
@@ -40,10 +40,6 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template for interface InterfaceTemplateType\Lorem cannot have existing type alias TypeAlias as its name.',
 				32,
-			],
-			[
-				'PHPDoc tag @template T for interface InterfaceTemplateType\UnionBound with bound type InterfaceTemplateType\NormalT<stdClass> is not supported.',
-				44,
 			],
 		]);
 	}

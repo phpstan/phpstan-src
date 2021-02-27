@@ -116,6 +116,22 @@ class NameScope
 		);
 	}
 
+	public function unsetTemplateType(string $name): self
+	{
+		$map = $this->templateTypeMap;
+		if (!$map->hasType($name)) {
+			return $this;
+		}
+
+		return new self(
+			$this->namespace,
+			$this->uses,
+			$this->className,
+			$this->functionName,
+			$this->templateTypeMap->unsetType($name)
+		);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return self

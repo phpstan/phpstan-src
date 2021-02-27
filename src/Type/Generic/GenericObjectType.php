@@ -19,7 +19,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-final class GenericObjectType extends ObjectType
+class GenericObjectType extends ObjectType
 {
 
 	/** @var array<int, Type> */
@@ -289,14 +289,25 @@ final class GenericObjectType extends ObjectType
 		}
 
 		if ($subtractedType !== $this->getSubtractedType() || $typesChanged) {
-			return new static(
-				$this->getClassName(),
-				$types,
-				$subtractedType
-			);
+			return $this->recreate($this->getClassName(), $types, $subtractedType);
 		}
 
 		return $this;
+	}
+
+	/**
+	 * @param string $className
+	 * @param Type[] $types
+	 * @param Type|null $subtractedType
+	 * @return self
+	 */
+	protected function recreate(string $className, array $types, ?Type $subtractedType): self
+	{
+		return new self(
+			$className,
+			$types,
+			$subtractedType
+		);
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type

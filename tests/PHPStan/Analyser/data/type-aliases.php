@@ -6,6 +6,7 @@ use function PHPStan\Analyser\assertType;
 
 /**
  * @phpstan-type LocalTypeAlias callable(string $value): (string|false)
+ * @phpstan-type NestedLocalTypeAlias LocalTypeAlias[]
  */
 class Foo
 {
@@ -24,6 +25,14 @@ class Foo
 	public function localAlias($parameter)
 	{
 		assertType('callable(string): string|false', $parameter);
+	}
+
+	/**
+	 * @param NestedLocalTypeAlias $parameter
+	 */
+	public function nestedLocalAlias($parameter)
+	{
+		assertType('array<callable(string): string|false>', $parameter);
 	}
 
 }

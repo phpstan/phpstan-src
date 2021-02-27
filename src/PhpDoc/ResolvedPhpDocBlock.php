@@ -7,6 +7,7 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
+use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\PhpDoc\Tag\TypedTag;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -67,6 +68,9 @@ class ResolvedPhpDocBlock
 
 	/** @var array<TypeAliasTag>|false */
 	private $typeAliasTags = false;
+
+	/** @var array<TypeAliasImportTag>|false */
+	private $typeAliasImportTags = false;
 
 	/** @var \PHPStan\PhpDoc\Tag\DeprecatedTag|false|null */
 	private $deprecatedTag = false;
@@ -138,6 +142,7 @@ class ResolvedPhpDocBlock
 		$self->throwsTag = null;
 		$self->mixinTags = [];
 		$self->typeAliasTags = [];
+		$self->typeAliasImportTags = [];
 		$self->deprecatedTag = null;
 		$self->isDeprecated = false;
 		$self->isInternal = false;
@@ -182,6 +187,7 @@ class ResolvedPhpDocBlock
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parents);
 		$result->mixinTags = $this->getMixinTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
+		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
 		$result->deprecatedTag = $this->getDeprecatedTag();
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
@@ -227,6 +233,7 @@ class ResolvedPhpDocBlock
 		$self->throwsTag = $this->throwsTag;
 		$self->mixinTags = $this->mixinTags;
 		$self->typeAliasTags = $this->typeAliasTags;
+		$self->typeAliasImportTags = $this->typeAliasImportTags;
 		$self->deprecatedTag = $this->deprecatedTag;
 		$self->isDeprecated = $this->isDeprecated;
 		$self->isInternal = $this->isInternal;
@@ -419,6 +426,21 @@ class ResolvedPhpDocBlock
 		}
 
 		return $this->typeAliasTags;
+	}
+
+	/**
+	 * @return array<TypeAliasImportTag>
+	 */
+	public function getTypeAliasImportTags(): array
+	{
+		if ($this->typeAliasImportTags === false) {
+			$this->typeAliasImportTags = $this->phpDocNodeResolver->resolveTypeAliasImportTags(
+				$this->phpDocNode,
+				$this->getNameScope()
+			);
+		}
+
+		return $this->typeAliasImportTags;
 	}
 
 	public function getDeprecatedTag(): ?\PHPStan\PhpDoc\Tag\DeprecatedTag

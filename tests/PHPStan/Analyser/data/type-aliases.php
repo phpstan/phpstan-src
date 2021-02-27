@@ -5,8 +5,17 @@ namespace TypeAliasesDataset;
 use function PHPStan\Analyser\assertType;
 
 /**
+ * @phpstan-type ExportedTypeAlias \Countable&\Traversable
+ */
+class Bar
+{
+}
+
+/**
  * @phpstan-type LocalTypeAlias callable(string $value): (string|false)
  * @phpstan-type NestedLocalTypeAlias LocalTypeAlias[]
+ * @phpstan-import-type ExportedTypeAlias from Bar as ImportedTypeAlias
+ * @phpstan-type NestedImportedTypeAlias iterable<ImportedTypeAlias>
  */
 class Foo
 {
@@ -33,6 +42,22 @@ class Foo
 	public function nestedLocalAlias($parameter)
 	{
 		assertType('array<callable(string): string|false>', $parameter);
+	}
+
+	/**
+	 * @param ImportedTypeAlias $parameter
+	 */
+	public function importedAlias($parameter)
+	{
+		assertType('Countable&Traversable', $parameter);
+	}
+
+	/**
+	 * @param NestedImportedTypeAlias $parameter
+	 */
+	public function nestedImportedAlias($parameter)
+	{
+		assertType('iterable<Countable&Traversable>', $parameter);
 	}
 
 }

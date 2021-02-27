@@ -14,6 +14,7 @@ use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
+use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -378,6 +379,25 @@ class PhpDocNodeResolver
 				$alias = $typeAliasTagValue->alias;
 				$type = (string) $typeAliasTagValue->type;
 				$resolved[$alias] = new TypeAliasTag($alias, $type);
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @return array<string, TypeAliasImportTag>
+	 */
+	public function resolveTypeAliasImportTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach (['@phpstan-import-type', '@psalm-import-type'] as $tagName) {
+			foreach ($phpDocNode->getTypeAliasImportTagValues($tagName) as $typeAliasImportTagValue) {
+				$importedAlias = $typeAliasImportTagValue->importedAlias;
+				$importedFrom = $this->typeNodeResolver->resolve($typeAliasImportTagValue->importedFrom, $nameScope);
+				$importedAs = $typeAliasImportTagValue->importedAs;
+				$resolved[$importedAs ?? $importedAlias] = new TypeAliasImportTag($importedAlias, $importedFrom, $importedAs);
 			}
 		}
 

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\PhpDoc\Tag;
 
@@ -44,7 +42,7 @@ final class TypeAliasImportTag
 		return new self(
 			$properties['importedAlias'],
 			$properties['importedFrom'],
-			$properties['importedAs'],
+			$properties['importedAs']
 		);
 	}
 

@@ -2,12 +2,9 @@
 
 namespace PHPStan\Rules\Generics;
 
-use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\TypeAliasResolver;
-
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ClassTemplateTypeRule>

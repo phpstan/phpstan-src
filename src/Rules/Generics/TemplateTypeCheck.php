@@ -35,13 +35,6 @@ class TemplateTypeCheck
 
 	private bool $checkClassCaseSensitivity;
 
-	/**
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param ClassCaseSensitivityCheck $classCaseSensitivityCheck
-	 * @param GenericObjectTypeCheck $genericObjectTypeCheck
-	 * @param TypeAliasResolver $typeAliasResolver
-	 * @param bool $checkClassCaseSensitivity
-	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,

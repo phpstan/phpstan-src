@@ -93,6 +93,6 @@ parameters:
 			count: 1
 			path: ../src/Reflection/ReflectionProvider/SetterReflectionProviderProvider.php
 		-
-			message: "#^Class class@anonymous/src/Testing/TestCase\\.php\\:267 has an uninitialized property \\$reflectionProvider\\. Give it default value or assign it in the constructor\\.$#"
+			message: "#^Class class@anonymous/src/Testing/TestCase\\.php\\:269 has an uninitialized property \\$reflectionProvider\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/Testing/TestCase.php

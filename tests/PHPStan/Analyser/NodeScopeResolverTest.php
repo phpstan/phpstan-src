@@ -10341,6 +10341,10 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/multi-assign.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/generics-reduce-types-first.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4803.php');
+
+		require_once __DIR__ . '/data/type-aliases.php';
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-aliases.php');
 	}
 
 	/**
@@ -10374,6 +10378,13 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
 			);
 		}
+	}
+
+	public function dataTypeAliases(): array
+	{
+		require_once __DIR__ . '/data/type-aliases.php';
+
+		return $this->gatherAssertTypes(__DIR__ . '/data/type-aliases.php');
 	}
 
 	/**
@@ -10993,6 +11004,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 			$scope,
 			$callback
 		);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [__DIR__ . '/typeAliases.neon'];
 	}
 
 	public function dataDeclareStrictTypes(): array

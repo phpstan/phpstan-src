@@ -134,7 +134,7 @@ class TemplateTypeCheck
 				sprintf('PHPDoc tag @template %s bound contains generic type %%s but class %%s is not generic.', $templateTagName),
 				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of class %%s: %%s', $templateTagName),
 				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $templateTagName),
-				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $templateTagName),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $templateTagName)
 			);
 			foreach ($genericObjectErrors as $genericObjectError) {
 				$messages[] = $genericObjectError;

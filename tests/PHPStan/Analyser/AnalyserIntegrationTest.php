@@ -327,7 +327,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testBug3922(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3922-integration.php');
-		$this->assertCount(1, $errors); // expected 0
+		$this->assertCount(0, $errors);
 	}
 
 	/**

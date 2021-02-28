@@ -187,16 +187,18 @@ class ClassAncestorsRuleTest extends RuleTestCase
 	public function testBug3922(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3922-ancestors.php'], [
-			/*[
+			[
 				'Type Bug3922Ancestors\BarQuery in generic type Bug3922Ancestors\QueryHandlerInterface<string, Bug3922Ancestors\BarQuery> in PHPDoc tag @implements is not subtype of template type TQuery of Bug3922Ancestors\QueryInterface<string> of interface Bug3922Ancestors\QueryHandlerInterface.',
 				54,
-			],*/
-			[
-				'Type Bug3922Ancestors\FooQuery in generic type Bug3922Ancestors\QueryHandlerInterface<string, Bug3922Ancestors\FooQuery> in PHPDoc tag @implements is not subtype of template type TQuery of Bug3922Ancestors\QueryInterface<TResult> of interface Bug3922Ancestors\QueryHandlerInterface.',
-				43,
 			],
+		]);
+	}
+
+	public function testBug3922Reversed(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3922-ancestors-reversed.php'], [
 			[
-				'Type Bug3922Ancestors\BarQuery in generic type Bug3922Ancestors\QueryHandlerInterface<string, Bug3922Ancestors\BarQuery> in PHPDoc tag @implements is not subtype of template type TQuery of Bug3922Ancestors\QueryInterface<TResult> of interface Bug3922Ancestors\QueryHandlerInterface.',
+				'Type string in generic type Bug3922AncestorsReversed\QueryHandlerInterface<Bug3922AncestorsReversed\BarQuery, string> in PHPDoc tag @implements is not subtype of template type int of interface Bug3922AncestorsReversed\QueryHandlerInterface.',
 				54,
 			],
 		]);

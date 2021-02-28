@@ -64,17 +64,27 @@ class GenericObjectTypeCheck
 				))->build();
 			}
 
-			foreach ($templateTypes as $i => $templateType) {
+			$templateTypesCount = count($templateTypes);
+			for ($i = 0; $i < $templateTypesCount; $i++) {
 				if (!isset($genericTypeTypes[$i])) {
 					continue;
 				}
 
-				$boundType = $templateType;
-				if ($templateType instanceof TemplateType) {
-					$boundType = $templateType->getBound();
-				}
+				$templateType = $templateTypes[$i];
+				$boundType = TemplateTypeHelper::resolveToBounds($templateType);
 				$genericTypeType = $genericTypeTypes[$i];
 				if ($boundType->isSuperTypeOf($genericTypeType)->yes()) {
+					if (!$templateType instanceof TemplateType) {
+						continue;
+					}
+					$map = $templateType->inferTemplateTypes($genericTypeType);
+					for ($j = 0; $j < $templateTypesCount; $j++) {
+						if ($i === $j) {
+							continue;
+						}
+
+						$templateTypes[$j] = TemplateTypeHelper::resolveTemplateTypes($templateTypes[$j], $map);
+					}
 					continue;
 				}
 

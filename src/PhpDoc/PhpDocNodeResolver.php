@@ -374,7 +374,7 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach (['@phpstan-type', '@psalm-type'] as $tagName) {
+		foreach (['@psalm-type', '@phpstan-type'] as $tagName) {
 			foreach ($phpDocNode->getTypeAliasTagValues($tagName) as $typeAliasTagValue) {
 				$alias = $typeAliasTagValue->alias;
 				$type = (string) $typeAliasTagValue->type;
@@ -392,7 +392,7 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach (['@phpstan-import-type', '@psalm-import-type'] as $tagName) {
+		foreach (['@psalm-import-type', '@phpstan-import-type'] as $tagName) {
 			foreach ($phpDocNode->getTypeAliasImportTagValues($tagName) as $typeAliasImportTagValue) {
 				$importedAlias = $typeAliasImportTagValue->importedAlias;
 				$importedFrom = $this->typeNodeResolver->resolve($typeAliasImportTagValue->importedFrom, $nameScope);

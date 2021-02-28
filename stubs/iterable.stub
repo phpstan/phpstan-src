@@ -159,3 +159,32 @@ class RecursiveIteratorIterator
 	}
 
 }
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ *
+ * @template-extends Iterator<TKey, TValue>
+ */
+interface OuterIterator extends Iterator {
+    /**
+     * @return Iterator<TKey, TValue>
+     */
+    public function getInnerIterator();
+}
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @template-implements OuterIterator<TKey, TValue>
+ *
+ * @mixin TIterator
+ */
+class IteratorIterator implements OuterIterator {
+    /**
+     * @param TIterator $iterator
+     */
+    public function __construct(Traversable $iterator) {}
+}

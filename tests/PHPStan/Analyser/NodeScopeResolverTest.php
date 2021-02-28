@@ -10956,6 +10956,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/nested-generic-incomplete-constructor.php');
 	}
 
+	public function dataIteratorIterator(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/iterator-iterator.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -11208,6 +11213,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3922
 	 * @dataProvider dataNestedGenericTypesUnwrapping
 	 * @dataProvider dataNestedGenericIncompleteConstructor
+	 * @dataProvider dataIteratorIterator
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

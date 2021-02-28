@@ -13723,7 +13723,7 @@ return [
 'zip_entry_open' => ['bool', 'zip_dp'=>'resource', 'zip_entry'=>'resource', 'mode='=>'string'],
 'zip_entry_read' => ['string|false', 'zip_entry'=>'resource', 'len='=>'int'],
 'zip_open' => ['resource|false|int', 'filename'=>'string'],
-'zip_read' => ['resource', 'zip'=>'resource'],
+'zip_read' => ['resource|false|int', 'zip'=>'resource'],
 'ZipArchive::addEmptyDir' => ['bool', 'dirname'=>'string'],
 'ZipArchive::addFile' => ['bool', 'filepath'=>'string', 'entryname='=>'string', 'start='=>'int', 'length='=>'int'],
 'ZipArchive::addFromString' => ['bool', 'entryname'=>'string', 'content'=>'string'],

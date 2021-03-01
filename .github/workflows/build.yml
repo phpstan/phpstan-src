@@ -322,13 +322,6 @@ jobs:
           coverage: "none"
           php-version: "7.3"
 
-      - name: "Cache dependencies"
-        uses: "actions/cache@v2"
-        with:
-          path: "~/.composer/cache"
-          key: "php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}-composer-"
-
       - name: "Install dependencies"
         run: "composer install --no-dev --no-interaction --no-progress --no-suggest"
 

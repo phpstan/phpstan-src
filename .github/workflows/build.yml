@@ -257,7 +257,7 @@ jobs:
         run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Cache Result cache"
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         with:
           path: ./tmp
           key: "result-cache-v4"

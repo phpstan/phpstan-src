@@ -6,6 +6,7 @@ includes:
 	- ../vendor/phpstan/phpstan-strict-rules/rules.neon
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
+	- ignore-by-php-version.neon.php
 parameters:
 	level: 8
 	paths:

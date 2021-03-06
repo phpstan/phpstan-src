@@ -17,8 +17,6 @@
 			<property name="phpunit.executable" value="vendor/bin/phpunit"/>
 		</else>
 	</if>
-	<php expression="PHP_VERSION_ID &gt;= 70400 ?'true':'false'" returnProperty="isPHP74" level="verbose" />
-	<php expression="PHP_VERSION_ID &gt;= 80000 ?'true':'false'" returnProperty="isPHP80" level="verbose" />
 	<target name="check" depends="
 		composer-validate,
 		composer-install,
@@ -244,34 +242,7 @@
 	</target>
 
 	<target name="phpstan">
-		<touch file="${phpstan.config}"/>
-		<append
-			destFile="${phpstan.config}"
-			text="includes: [ build/phpstan.neon"
-			append="false"
-		></append>
-		<if>
-			<equals arg1="${isPHP74}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/ignore-gte-php7.4-errors.neon"
-				></append>
-			</then>
-		</if>
-		<if>
-			<equals arg1="${isPHP80}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/baseline-8.0.neon"
-				></append>
-			</then>
-		</if>
-		<append
-				destFile="${phpstan.config}"
-				text=" ]"
-		></append>
+		<delete file="${phpstan.config}"/>
 		<exec
 			executable="php"
 			logoutput="true"
@@ -301,24 +272,6 @@
 			text="includes: [ build/phpstan.neon"
 			append="false"
 		></append>
-		<if>
-			<equals arg1="${isPHP74}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/ignore-gte-php7.4-errors.neon"
-				></append>
-			</then>
-		</if>
-		<if>
-			<equals arg1="${isPHP80}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/baseline-8.0.neon"
-				></append>
-			</then>
-		</if>
 		<append
 			destFile="${phpstan.config}"
 			text=", conf/staticReflection.neon"
@@ -352,34 +305,7 @@
 	</target>
 
 	<target name="phpstan-result-cache">
-		<touch file="${phpstan.config}"/>
-		<append
-			destFile="${phpstan.config}"
-			text="includes: [ build/phpstan.neon"
-			append="false"
-		></append>
-		<if>
-			<equals arg1="${isPHP74}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/ignore-gte-php7.4-errors.neon"
-				></append>
-			</then>
-		</if>
-		<if>
-			<equals arg1="${isPHP80}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/baseline-8.0.neon"
-				></append>
-			</then>
-		</if>
-		<append
-			destFile="${phpstan.config}"
-			text=" ]"
-		></append>
+		<delete file="${phpstan.config}"/>
 		<exec
 			executable="php"
 			logoutput="true"
@@ -414,34 +340,7 @@
 	</target>
 
 	<target name="phpstan-pro">
-		<touch file="${phpstan.config}"/>
-		<append
-			destFile="${phpstan.config}"
-			text="includes: [ build/phpstan.neon"
-			append="false"
-		></append>
-		<if>
-			<equals arg1="${isPHP74}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/ignore-gte-php7.4-errors.neon"
-				></append>
-			</then>
-		</if>
-		<if>
-			<equals arg1="${isPHP80}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/baseline-8.0.neon"
-				></append>
-			</then>
-		</if>
-		<append
-			destFile="${phpstan.config}"
-			text=" ]"
-		></append>
+		<delete file="${phpstan.config}"/>
 		<exec
 			executable="php"
 			logoutput="true"
@@ -456,35 +355,7 @@
 	</target>
 
 	<target name="phpstan-generate-baseline">
-		<touch file="${phpstan.config}"/>
-		<append
-			destFile="${phpstan.config}"
-			text="includes: [ build/phpstan.neon"
-			append="false"
-		></append>
-		<if>
-			<equals arg1="${isPHP74}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/ignore-gte-php7.4-errors.neon"
-				></append>
-			</then>
-		</if>
-		<if>
-			<equals arg1="${isPHP80}" arg2="true" />
-			<then>
-				<append
-					destFile="${phpstan.config}"
-					text=", build/baseline-8.0.neon"
-				></append>
-			</then>
-		</if>
-
-		<append
-			destFile="${phpstan.config}"
-			text=" ]"
-		></append>
+		<delete file="${phpstan.config}"/>
 		<exec
 			executable="php"
 			logoutput="true"

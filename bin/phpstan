@@ -85,6 +85,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		'PHPStan - PHP Static Analysis Tool',
 		$version
 	);
+	$application->setDefaultCommand('analyse');
 	ProgressBar::setFormatDefinition('file_download', ' [%bar%] %percent:3s%% %fileSize%');
 
 	$reversedComposerAutoloaderProjectPaths = array_reverse($composerAutoloaderProjectPaths);

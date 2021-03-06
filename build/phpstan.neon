@@ -29,6 +29,7 @@ parameters:
 		- ../tests/PHPStan/Reflection/StaticTypeTest.php
 		- ../tests/e2e/magic-setter/*
 		- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
+		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
 	featureToggles:
 		readComposerPhpVersion: false
 	ignoreErrors:

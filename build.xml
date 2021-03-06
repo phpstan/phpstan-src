@@ -269,10 +269,6 @@
 			</then>
 		</if>
 		<append
-			destFile="${phpstan.config}"
-			text=", build/ignore-hoa.neon"
-		></append>
-		<append
 				destFile="${phpstan.config}"
 				text=" ]"
 		></append>
@@ -323,10 +319,6 @@
 				></append>
 			</then>
 		</if>
-		<append
-			destFile="${phpstan.config}"
-			text=", build/ignore-hoa.neon"
-		></append>
 		<append
 			destFile="${phpstan.config}"
 			text=", conf/staticReflection.neon"
@@ -384,10 +376,6 @@
 				></append>
 			</then>
 		</if>
-		<append
-			destFile="${phpstan.config}"
-			text=", build/ignore-hoa.neon"
-		></append>
 		<append
 			destFile="${phpstan.config}"
 			text=" ]"
@@ -452,10 +440,6 @@
 		</if>
 		<append
 			destFile="${phpstan.config}"
-			text=", build/ignore-hoa.neon"
-		></append>
-		<append
-			destFile="${phpstan.config}"
 			text=" ]"
 		></append>
 		<exec
@@ -496,10 +480,7 @@
 				></append>
 			</then>
 		</if>
-		<append
-			destFile="${phpstan.config}"
-			text=", build/ignore-hoa.neon"
-		></append>
+
 		<append
 			destFile="${phpstan.config}"
 			text=" ]"

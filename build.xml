@@ -151,16 +151,6 @@
 			passthru="true"
 			checkreturn="true"
 		>
-			<arg value="--colors"/>
-			<arg value="--extensions=php"/>
-			<arg value="--encoding=utf-8"/>
-			<arg value="--tab-width=4"/>
-			<arg value="--cache=tmp/cache/phpcs"/>
-			<arg value="--ignore=tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
-			<arg value="-sp"/>
-			<arg path="src"/>
-			<arg path="tests"/>
-			<arg path="compiler/src" />
 		</exec>
 	</target>
 
@@ -171,15 +161,6 @@
 				passthru="true"
 				checkreturn="true"
 		>
-			<arg value="--colors"/>
-			<arg value="--extensions=php"/>
-			<arg value="--encoding=utf-8"/>
-			<arg value="--tab-width=4"/>
-			<arg value="--ignore=tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
-			<arg value="-sp"/>
-			<arg path="src"/>
-			<arg path="tests"/>
-			<arg path="compiler/src" />
 		</exec>
 	</target>
 

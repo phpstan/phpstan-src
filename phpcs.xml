@@ -1,5 +1,16 @@
 <?xml version="1.0"?>
 <ruleset name="PHPStan">
+	<arg name="colors"/>
+	<arg name="extensions" value="php"/>
+	<arg name="encoding" value="utf-8"/>
+	<arg name="tab-width" value="4"/>
+	<arg name="cache" value="tmp/cache/phpcs"/>
+	<arg name="ignore" value="tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
+	<arg value="sp"/>
+	<file>src</file>
+	<file>tests</file>
+	<file>compiler/src</file>
+
 	<rule ref="vendor/consistence-community/coding-standard/Consistence/ruleset.xml">
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat"/>
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.MissingVariable"/>

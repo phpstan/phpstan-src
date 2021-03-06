@@ -206,11 +206,14 @@
 
 	<target name="tests">
 		<exec
-				executable="${phpunit.executable}"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=768M"/>
+			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
 			<arg path="tests/PHPStan"/>
@@ -219,11 +222,14 @@
 
 	<target name="tests-fast">
 		<exec
-			executable="${phpunit.executable}"
+			executable="php"
 			logoutput="true"
 			passthru="true"
 			checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=768M"/>
+			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
 			<arg value="--exclude-group"/>
@@ -234,11 +240,14 @@
 
 	<target name="tests-fast-static-reflection">
 		<exec
-			executable="${phpunit.executable}"
+			executable="php"
 			logoutput="true"
 			passthru="true"
 			checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=768M"/>
+			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
 			<arg value="--exclude-group"/>

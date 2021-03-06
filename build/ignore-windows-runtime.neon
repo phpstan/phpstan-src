@@ -1,5 +1,0 @@
-parameters:
-	ignoreErrors:
-		- '#^Function pcntl_async_signals not found\.$#'
-		- '#^Function pcntl_signal not found\.$#'
-		- '#^Constant SIGINT not found\.$#'

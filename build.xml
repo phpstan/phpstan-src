@@ -146,44 +146,28 @@
 	</target>
 
 	<target name="cs">
-		<if>
-			<equals arg1="${isPHP74}" arg2="true" />
-			<then>
-				<exec
-					executable="composer"
-					logoutput="true"
-					passthru="true"
-					checkreturn="true"
-				>
-					<arg value="install"/>
-					<arg value="--working-dir"/>
-					<arg path="build-cs"/>
-					<arg value="--ansi"/>
-				</exec>
-				<exec
-					executable="build-cs/vendor/bin/phpcs"
-					logoutput="true"
-					passthru="true"
-					checkreturn="true"
-				>
-					<arg value="--colors"/>
-					<arg value="--extensions=php"/>
-					<arg value="--encoding=utf-8"/>
-					<arg value="--tab-width=4"/>
-					<arg value="--cache=tmp/cache/phpcs"/>
-					<arg value="--ignore=tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
-					<arg value="-sp"/>
-					<arg path="src"/>
-					<arg path="tests"/>
-					<arg path="compiler/src" />
-				</exec>
-			</then>
-		</if>
+		<exec
+			executable="vendor/bin/phpcs"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
+		>
+			<arg value="--colors"/>
+			<arg value="--extensions=php"/>
+			<arg value="--encoding=utf-8"/>
+			<arg value="--tab-width=4"/>
+			<arg value="--cache=tmp/cache/phpcs"/>
+			<arg value="--ignore=tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
+			<arg value="-sp"/>
+			<arg path="src"/>
+			<arg path="tests"/>
+			<arg path="compiler/src" />
+		</exec>
 	</target>
 
 	<target name="cs-fix">
 		<exec
-				executable="build-cs/vendor/bin/phpcbf"
+				executable="vendor/bin/phpcbf"
 				logoutput="true"
 				passthru="true"
 				checkreturn="true"
@@ -206,11 +190,14 @@
 
 	<target name="tests">
 		<exec
-				executable="${phpunit.executable}"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
+			executable="php"
+			logoutput="true"
+			passthru="true"
+			checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=768M"/>
+			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
 			<arg path="tests/PHPStan"/>
@@ -219,11 +206,14 @@
 
 	<target name="tests-fast">
 		<exec
-			executable="${phpunit.executable}"
+			executable="php"
 			logoutput="true"
 			passthru="true"
 			checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=768M"/>
+			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
 			<arg value="--exclude-group"/>
@@ -234,11 +224,14 @@
 
 	<target name="tests-fast-static-reflection">
 		<exec
-			executable="${phpunit.executable}"
+			executable="php"
 			logoutput="true"
 			passthru="true"
 			checkreturn="true"
 		>
+			<arg value="-d"/>
+			<arg value="memory_limit=768M"/>
+			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
 			<arg value="--exclude-group"/>

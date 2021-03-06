@@ -1,4 +1,4 @@
-/build/phpstan-generated.neon
+/phpstan.neon
 /compiler/tmp
 /compiler/vendor
 /conf/config.local.yml

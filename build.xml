@@ -4,6 +4,7 @@
 			  value="tmp/composer-require-checker-2.1.0.phar"/>
 	<property name="url.composer-require-checker"
 			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.1.0/composer-require-checker.phar"/>
+	<property name="phpstan.config" value="phpstan.neon"/>
 	<if>
 		<and>
 			<not><os family="windows"/></not>
@@ -243,11 +244,10 @@
 	</target>
 
 	<target name="phpstan">
-		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>
 		<append
 			destFile="${phpstan.config}"
-			text="includes: [ phpstan.neon"
+			text="includes: [ build/phpstan.neon"
 			append="false"
 		></append>
 		<if>
@@ -255,7 +255,7 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", ignore-gte-php7.4-errors.neon"
+					text=", build/ignore-gte-php7.4-errors.neon"
 				></append>
 			</then>
 		</if>
@@ -264,13 +264,13 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", baseline-8.0.neon"
+					text=", build/baseline-8.0.neon"
 				></append>
 			</then>
 		</if>
 		<append
 			destFile="${phpstan.config}"
-			text=", ignore-hoa.neon"
+			text=", build/ignore-hoa.neon"
 		></append>
 		<append
 				destFile="${phpstan.config}"
@@ -284,8 +284,6 @@
 		>
 			<arg path="bin/phpstan"/>
 			<arg value="clear-result-cache"/>
-			<arg value="-c"/>
-			<arg path="${phpstan.config}"/>
 			<arg value="-q"/>
 		</exec>
 		<exec
@@ -297,23 +295,14 @@
 			<arg value="-d"/>
 			<arg value="memory_limit=768M"/>
 			<arg path="bin/phpstan"/>
-			<arg value="analyse"/>
-			<arg value="-c"/>
-			<arg path="${phpstan.config}"/>
-			<arg value="-l"/>
-			<arg value="8"/>
-			<arg path="build/PHPStan"/>
-			<arg path="src"/>
-			<arg path="tests"/>
 		</exec>
 	</target>
 
 	<target name="phpstan-static-reflection">
-		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>
 		<append
 			destFile="${phpstan.config}"
-			text="includes: [ phpstan.neon"
+			text="includes: [ build/phpstan.neon"
 			append="false"
 		></append>
 		<if>
@@ -321,7 +310,7 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", ignore-gte-php7.4-errors.neon"
+					text=", build/ignore-gte-php7.4-errors.neon"
 				></append>
 			</then>
 		</if>
@@ -330,17 +319,17 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", baseline-8.0.neon"
+					text=", build/baseline-8.0.neon"
 				></append>
 			</then>
 		</if>
 		<append
 			destFile="${phpstan.config}"
-			text=", ignore-hoa.neon"
+			text=", build/ignore-hoa.neon"
 		></append>
 		<append
 			destFile="${phpstan.config}"
-			text=", ../conf/staticReflection.neon"
+			text=", conf/staticReflection.neon"
 		></append>
 		<append
 			destFile="${phpstan.config}"
@@ -367,23 +356,14 @@
 			<arg value="-d"/>
 			<arg value="memory_limit=768M"/>
 			<arg path="bin/phpstan"/>
-			<arg value="analyse"/>
-			<arg value="-c"/>
-			<arg path="${phpstan.config}"/>
-			<arg value="-l"/>
-			<arg value="8"/>
-			<arg path="build/PHPStan"/>
-			<arg path="src"/>
-			<arg path="tests"/>
 		</exec>
 	</target>
 
 	<target name="phpstan-result-cache">
-		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>
 		<append
 			destFile="${phpstan.config}"
-			text="includes: [ phpstan.neon"
+			text="includes: [ build/phpstan.neon"
 			append="false"
 		></append>
 		<if>
@@ -391,7 +371,7 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", ignore-gte-php7.4-errors.neon"
+					text=", build/ignore-gte-php7.4-errors.neon"
 				></append>
 			</then>
 		</if>
@@ -400,13 +380,13 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", baseline-8.0.neon"
+					text=", build/baseline-8.0.neon"
 				></append>
 			</then>
 		</if>
 		<append
 			destFile="${phpstan.config}"
-			text=", ignore-hoa.neon"
+			text=", build/ignore-hoa.neon"
 		></append>
 		<append
 			destFile="${phpstan.config}"
@@ -421,14 +401,6 @@
 			<arg value="-d"/>
 			<arg value="memory_limit=768M"/>
 			<arg path="bin/phpstan"/>
-			<arg value="analyse"/>
-			<arg value="-c"/>
-			<arg path="${phpstan.config}"/>
-			<arg value="-l"/>
-			<arg value="8"/>
-			<arg path="build/PHPStan"/>
-			<arg path="src"/>
-			<arg path="tests"/>
 		</exec>
 	</target>
 
@@ -454,11 +426,10 @@
 	</target>
 
 	<target name="phpstan-pro">
-		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>
 		<append
 			destFile="${phpstan.config}"
-			text="includes: [ phpstan.neon"
+			text="includes: [ build/phpstan.neon"
 			append="false"
 		></append>
 		<if>
@@ -466,7 +437,7 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", ignore-gte-php7.4-errors.neon"
+					text=", build/ignore-gte-php7.4-errors.neon"
 				></append>
 			</then>
 		</if>
@@ -475,13 +446,13 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", baseline-8.0.neon"
+					text=", build/baseline-8.0.neon"
 				></append>
 			</then>
 		</if>
 		<append
 			destFile="${phpstan.config}"
-			text=", ignore-hoa.neon"
+			text=", build/ignore-hoa.neon"
 		></append>
 		<append
 			destFile="${phpstan.config}"
@@ -496,24 +467,15 @@
 			<arg value="-d"/>
 			<arg value="memory_limit=1024M"/>
 			<arg path="bin/phpstan"/>
-			<arg value="analyse"/>
-			<arg value="-c"/>
-			<arg path="${phpstan.config}"/>
-			<arg value="-l"/>
-			<arg value="8"/>
 			<arg value="--pro"/>
-			<arg path="build/PHPStan"/>
-			<arg path="src"/>
-			<arg path="tests"/>
 		</exec>
 	</target>
 
 	<target name="phpstan-generate-baseline">
-		<property name="phpstan.config" value="build/phpstan-generated.neon"/>
 		<touch file="${phpstan.config}"/>
 		<append
 			destFile="${phpstan.config}"
-			text="includes: [ phpstan.neon"
+			text="includes: [ build/phpstan.neon"
 			append="false"
 		></append>
 		<if>
@@ -521,7 +483,7 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", ignore-gte-php7.4-errors.neon"
+					text=", build/ignore-gte-php7.4-errors.neon"
 				></append>
 			</then>
 		</if>
@@ -530,13 +492,13 @@
 			<then>
 				<append
 					destFile="${phpstan.config}"
-					text=", baseline-8.0.neon"
+					text=", build/baseline-8.0.neon"
 				></append>
 			</then>
 		</if>
 		<append
 			destFile="${phpstan.config}"
-			text=", ignore-hoa.neon"
+			text=", build/ignore-hoa.neon"
 		></append>
 		<append
 			destFile="${phpstan.config}"
@@ -551,14 +513,6 @@
 			<arg value="-d"/>
 			<arg value="memory_limit=768M"/>
 			<arg path="bin/phpstan"/>
-			<arg value="analyse"/>
-			<arg value="-c"/>
-			<arg path="${phpstan.config}"/>
-			<arg value="-l"/>
-			<arg value="8"/>
-			<arg path="build/PHPStan"/>
-			<arg path="src"/>
-			<arg path="tests"/>
 			<arg value="--generate-baseline"/>
 			<arg value="-vvv"/>
 		</exec>

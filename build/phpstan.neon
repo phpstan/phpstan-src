@@ -7,6 +7,11 @@ includes:
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
 parameters:
+	level: 8
+	paths:
+		- PHPStan
+		- ../src
+		- ../tests
 	bootstrapFiles:
 		- ../tests/phpstan-bootstrap.php
 	checkUninitializedProperties: true

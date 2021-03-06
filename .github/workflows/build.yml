@@ -74,10 +74,6 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress --no-suggest"
 
-      - name: "Transform source code"
-        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
-        run: php bin/transform-source.php
-
       - name: "Lint"
         run: "vendor/bin/phing lint"
 

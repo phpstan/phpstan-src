@@ -248,6 +248,12 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
+			[
+				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
+				new UnionType([new BooleanType(), new FloatType(), new IntegerType(), new StringType(), new NullType()]),
+				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createYes(),
+			],
 		];
 	}
 

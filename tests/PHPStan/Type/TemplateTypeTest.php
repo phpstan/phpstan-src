@@ -206,6 +206,48 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
+			[
+				$templateType('T', new MixedType(true)),
+				$templateType('U', new UnionType([new IntegerType(), new StringType()])),
+				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				$templateType('T', new MixedType(true)),
+				$templateType('U', new BenevolentUnionType([new IntegerType(), new StringType()])),
+				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				$templateType('T', new ObjectType(\stdClass::class)),
+				$templateType('U', new BenevolentUnionType([new IntegerType(), new StringType()])),
+				TrinaryLogic::createNo(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
+				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
+				TrinaryLogic::createYes(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
+				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
+				TrinaryLogic::createYes(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
+				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
+				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
+				$templateType('T', new IntegerType()),
+				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createMaybe(),
+			],
 		];
 	}
 

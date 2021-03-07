@@ -102,12 +102,16 @@ class TemplateTypeVariance
 			return TrinaryLogic::createYes();
 		}
 
-		if ($b instanceof BenevolentUnionType && !$a instanceof BenevolentUnionType) {
-			$results = [];
-			foreach ($b->getTypes() as $innerType) {
-				$results[] = $this->isValidVariance($a, $innerType);
+		if ($a instanceof BenevolentUnionType) {
+			if (!$a->isSuperTypeOf($b)->no()) {
+				return TrinaryLogic::createYes();
 			}
-			return TrinaryLogic::maxMin(...$results);
+		}
+
+		if ($b instanceof BenevolentUnionType) {
+			if (!$b->isSuperTypeOf($a)->no()) {
+				return TrinaryLogic::createYes();
+			}
 		}
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {

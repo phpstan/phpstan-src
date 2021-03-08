@@ -103,7 +103,7 @@ function (): void {
 
 function (): void {
 	$result = loadWithIndirectUnwrap2(SomePackage::class);
-	assertType('NestedGenericTypesUnwrapping\GenericPackage<NestedGenericTypesUnwrapping\SomeInnerPackage>', $result);
+	assertType(SomePackage::class, $result);
 };
 
 function (SomePackage $somePackage): void {
@@ -111,5 +111,5 @@ function (SomePackage $somePackage): void {
 	assertType(SomeInnerPackage::class, $result);
 
 	$result = unwrapGeneric2($somePackage);
-	assertType('NestedGenericTypesUnwrapping\GenericPackage<NestedGenericTypesUnwrapping\SomeInnerPackage>', $result);
+	assertType(SomePackage::class, $result);
 };

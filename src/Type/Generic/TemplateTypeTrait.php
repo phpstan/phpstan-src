@@ -117,6 +117,7 @@ trait TemplateTypeTrait
 
 	public function isSubTypeOf(Type $type): TrinaryLogic
 	{
+		/** @var Type $bound */
 		$bound = $this->getBound();
 		if (
 			!$type instanceof $bound

@@ -5,29 +5,29 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
+/**
+ * @method UnionType getBound()
+ */
 final class TemplateUnionType extends UnionType implements TemplateType
 {
 
 	use TemplateTypeTrait;
 
-	/**
-	 * @param Type[] $types
-	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
-		array $types,
-		string $name
+		string $name,
+		UnionType $bound
 	)
 	{
-		parent::__construct($types);
+		parent::__construct($bound->getTypes());
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new UnionType($types);
+		$this->bound = $bound;
 	}
 
 	public function toArgument(): TemplateType
@@ -36,9 +36,25 @@ final class TemplateUnionType extends UnionType implements TemplateType
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
-			$this->getTypes(),
-			$this->name
+			$this->name,
+			TemplateTypeHelper::toArgument($this->getBound())
 		);
+	}
+
+	public function traverse(callable $cb): Type
+	{
+		$newBound = $cb($this->getBound());
+		if ($this->getBound() !== $newBound && $newBound instanceof UnionType) {
+			return new self(
+				$this->scope,
+				$this->strategy,
+				$this->variance,
+				$this->name,
+				$newBound
+			);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -51,8 +67,8 @@ final class TemplateUnionType extends UnionType implements TemplateType
 			$properties['scope'],
 			$properties['strategy'],
 			$properties['variance'],
-			$properties['types'],
-			$properties['name']
+			$properties['name'],
+			$properties['bound']
 		);
 	}
 

@@ -6,6 +6,9 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
+/**
+ * @method MixedType getBound()
+ */
 final class TemplateMixedType extends MixedType implements TemplateType
 {
 
@@ -15,7 +18,8 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
-		string $name
+		string $name,
+		MixedType $bound
 	)
 	{
 		parent::__construct(true);
@@ -24,7 +28,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new MixedType(true);
+		$this->bound = $bound;
 	}
 
 	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic
@@ -47,8 +51,25 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
-			$this->name
+			$this->name,
+			TemplateTypeHelper::toArgument($this->getBound())
 		);
+	}
+
+	public function traverse(callable $cb): Type
+	{
+		$newBound = $cb($this->getBound());
+		if ($this->getBound() !== $newBound && $newBound instanceof MixedType) {
+			return new self(
+				$this->scope,
+				$this->strategy,
+				$this->variance,
+				$this->name,
+				$newBound
+			);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -61,7 +82,8 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$properties['scope'],
 			$properties['strategy'],
 			$properties['variance'],
-			$properties['name']
+			$properties['name'],
+			$properties['bound']
 		);
 	}
 

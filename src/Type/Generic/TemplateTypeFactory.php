@@ -10,7 +10,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 
 final class TemplateTypeFactory
@@ -21,45 +20,45 @@ final class TemplateTypeFactory
 		$strategy = new TemplateTypeParameterStrategy();
 
 		if ($bound === null) {
-			return new TemplateMixedType($scope, $strategy, $variance, $name);
+			return new TemplateMixedType($scope, $strategy, $variance, $name, new MixedType(true));
 		}
 
 		$boundClass = get_class($bound);
-		if ($bound instanceof TypeWithClassName && $boundClass === ObjectType::class) {
-			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound->getClassName());
+		if ($bound instanceof ObjectType && ($boundClass === ObjectType::class || $bound instanceof TemplateType)) {
+			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound);
 		}
 
-		if ($bound instanceof GenericObjectType && $boundClass === GenericObjectType::class) {
-			return new TemplateGenericObjectType($scope, $strategy, $variance, $name, $bound->getClassName(), $bound->getTypes());
+		if ($bound instanceof GenericObjectType && ($boundClass === GenericObjectType::class || $bound instanceof TemplateType)) {
+			return new TemplateGenericObjectType($scope, $strategy, $variance, $name, $bound);
 		}
 
-		if ($boundClass === ObjectWithoutClassType::class) {
-			return new TemplateObjectWithoutClassType($scope, $strategy, $variance, $name);
+		if ($bound instanceof ObjectWithoutClassType && ($boundClass === ObjectWithoutClassType::class || $bound instanceof TemplateType)) {
+			return new TemplateObjectWithoutClassType($scope, $strategy, $variance, $name, $bound);
 		}
 
-		if ($boundClass === StringType::class) {
-			return new TemplateStringType($scope, $strategy, $variance, $name);
+		if ($bound instanceof StringType && ($boundClass === StringType::class || $bound instanceof TemplateType)) {
+			return new TemplateStringType($scope, $strategy, $variance, $name, $bound);
 		}
 
-		if ($boundClass === IntegerType::class) {
-			return new TemplateIntegerType($scope, $strategy, $variance, $name);
+		if ($bound instanceof IntegerType && ($boundClass === IntegerType::class || $bound instanceof TemplateType)) {
+			return new TemplateIntegerType($scope, $strategy, $variance, $name, $bound);
 		}
 
-		if ($boundClass === MixedType::class) {
-			return new TemplateMixedType($scope, $strategy, $variance, $name);
+		if ($bound instanceof MixedType && ($boundClass === MixedType::class || $bound instanceof TemplateType)) {
+			return new TemplateMixedType($scope, $strategy, $variance, $name, $bound);
 		}
 
 		if ($bound instanceof UnionType) {
-			if ($boundClass === UnionType::class) {
-				return new TemplateUnionType($scope, $strategy, $variance, $bound->getTypes(), $name);
+			if ($boundClass === UnionType::class || $bound instanceof TemplateUnionType) {
+				return new TemplateUnionType($scope, $strategy, $variance, $name, $bound);
 			}
 
-			if ($boundClass === BenevolentUnionType::class) {
-				return new TemplateBenevolentUnionType($scope, $strategy, $variance, $bound->getTypes(), $name);
+			if ($bound instanceof BenevolentUnionType) {
+				return new TemplateBenevolentUnionType($scope, $strategy, $variance, $name, $bound);
 			}
 		}
 
-		return new TemplateMixedType($scope, $strategy, $variance, $name);
+		return new TemplateMixedType($scope, $strategy, $variance, $name, new MixedType(true));
 	}
 
 	public static function fromTemplateTag(TemplateTypeScope $scope, TemplateTag $tag): TemplateType

@@ -50,10 +50,13 @@ class TemplateTypeHelper
 	}
 
 	/**
-	 * Switches all template types to their argument strategy
+	 * @template T of Type
+	 * @param T $type
+	 * @return T
 	 */
 	public static function toArgument(Type $type): Type
 	{
+		/** @var T */
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof TemplateType) {
 				return $traverse($type->toArgument());

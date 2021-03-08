@@ -145,4 +145,9 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4643(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4643.php'], []);
+	}
+
 }

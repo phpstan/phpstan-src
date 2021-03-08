@@ -5,29 +5,29 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Type;
 
+/**
+ * @method BenevolentUnionType getBound()
+ */
 final class TemplateBenevolentUnionType extends BenevolentUnionType implements TemplateType
 {
 
 	use TemplateTypeTrait;
 
-	/**
-	 * @param Type[] $types
-	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
-		array $types,
-		string $name
+		string $name,
+		BenevolentUnionType $bound
 	)
 	{
-		parent::__construct($types);
+		parent::__construct($bound->getTypes());
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new BenevolentUnionType($types);
+		$this->bound = $bound;
 	}
 
 	public function toArgument(): TemplateType
@@ -36,9 +36,25 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
-			$this->getTypes(),
-			$this->name
+			$this->name,
+			TemplateTypeHelper::toArgument($this->getBound())
 		);
+	}
+
+	public function traverse(callable $cb): Type
+	{
+		$newBound = $cb($this->getBound());
+		if ($this->getBound() !== $newBound && $newBound instanceof BenevolentUnionType) {
+			return new self(
+				$this->scope,
+				$this->strategy,
+				$this->variance,
+				$this->name,
+				$newBound
+			);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -51,8 +67,8 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 			$properties['scope'],
 			$properties['strategy'],
 			$properties['variance'],
-			$properties['types'],
-			$properties['name']
+			$properties['name'],
+			$properties['bound']
 		);
 	}
 

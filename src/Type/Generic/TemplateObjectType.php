@@ -6,6 +6,9 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+/**
+ * @method ObjectType getBound()
+ */
 final class TemplateObjectType extends ObjectType implements TemplateType
 {
 
@@ -17,16 +20,16 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		string $class
+		ObjectType $bound
 	)
 	{
-		parent::__construct($class);
+		parent::__construct($bound->getClassName());
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new ObjectType($class);
+		$this->bound = $bound;
 	}
 
 	public function toArgument(): TemplateType
@@ -36,8 +39,24 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
 			$this->name,
-			$this->getClassName()
+			TemplateTypeHelper::toArgument($this->getBound())
 		);
+	}
+
+	public function traverse(callable $cb): Type
+	{
+		$newBound = $cb($this->getBound());
+		if ($this->getBound() !== $newBound && $newBound instanceof ObjectType) {
+			return new self(
+				$this->scope,
+				$this->strategy,
+				$this->variance,
+				$this->name,
+				$newBound
+			);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -51,7 +70,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			$properties['strategy'],
 			$properties['variance'],
 			$properties['name'],
-			$properties['className']
+			$properties['bound']
 		);
 	}
 

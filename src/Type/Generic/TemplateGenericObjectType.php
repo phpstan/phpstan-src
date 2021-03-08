@@ -5,31 +5,30 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+/**
+ * @method GenericObjectType getBound()
+ */
 final class TemplateGenericObjectType extends GenericObjectType implements TemplateType
 {
 
 	use UndecidedComparisonCompoundTypeTrait;
 	use TemplateTypeTrait;
 
-	/**
-	 * @param Type[] $types
-	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		string $mainType,
-		array $types
+		GenericObjectType $bound
 	)
 	{
-		parent::__construct($mainType, $types);
+		parent::__construct($bound->getClassName(), $bound->getTypes());
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new GenericObjectType($mainType, $types);
+		$this->bound = $bound;
 	}
 
 	public function toArgument(): TemplateType
@@ -39,9 +38,24 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
 			$this->name,
-			$this->getClassName(),
-			$this->getTypes()
+			TemplateTypeHelper::toArgument($this->getBound())
 		);
+	}
+
+	public function traverse(callable $cb): Type
+	{
+		$newBound = $cb($this->getBound());
+		if ($this->getBound() !== $newBound && $newBound instanceof GenericObjectType) {
+			return new self(
+				$this->scope,
+				$this->strategy,
+				$this->variance,
+				$this->name,
+				$newBound
+			);
+		}
+
+		return $this;
 	}
 
 	protected function recreate(string $className, array $types, ?Type $subtractedType): GenericObjectType
@@ -51,8 +65,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 			$this->strategy,
 			$this->variance,
 			$this->name,
-			$className,
-			$types
+			$this->getBound()
 		);
 	}
 
@@ -67,8 +80,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 			$properties['strategy'],
 			$properties['variance'],
 			$properties['name'],
-			$properties['className'],
-			$properties['types']
+			$properties['bound']
 		);
 	}
 

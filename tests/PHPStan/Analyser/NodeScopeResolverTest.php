@@ -10983,6 +10983,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4642.php');
 	}
 
+	public function dataBug4643(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/../Rules/PhpDoc/data/bug-4643.php');
+	}
+
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>
@@ -11237,6 +11242,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataNestedGenericIncompleteConstructor
 	 * @dataProvider dataIteratorIterator
 	 * @dataProvider dataBug4642
+	 * @dataProvider dataBug4643
 	 * @dataProvider dataPseudoTypeGlobal
 	 * @dataProvider dataPseudoTypeNamespace
 	 * @dataProvider dataPseudoTypeOverrides

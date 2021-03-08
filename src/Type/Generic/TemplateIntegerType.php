@@ -6,6 +6,9 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+/**
+ * @method IntegerType getBound()
+ */
 final class TemplateIntegerType extends IntegerType implements TemplateType
 {
 
@@ -16,14 +19,15 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
-		string $name
+		string $name,
+		IntegerType $bound
 	)
 	{
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new IntegerType();
+		$this->bound = $bound;
 	}
 
 	public function toArgument(): TemplateType
@@ -32,8 +36,25 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
-			$this->name
+			$this->name,
+			TemplateTypeHelper::toArgument($this->getBound())
 		);
+	}
+
+	public function traverse(callable $cb): Type
+	{
+		$newBound = $cb($this->getBound());
+		if ($this->getBound() !== $newBound && $newBound instanceof IntegerType) {
+			return new self(
+				$this->scope,
+				$this->strategy,
+				$this->variance,
+				$this->name,
+				$newBound
+			);
+		}
+
+		return $this;
 	}
 
 	protected function shouldGeneralizeInferredType(): bool
@@ -51,7 +72,8 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 			$properties['scope'],
 			$properties['strategy'],
 			$properties['variance'],
-			$properties['name']
+			$properties['name'],
+			$properties['bound']
 		);
 	}
 

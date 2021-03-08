@@ -6,6 +6,9 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+/**
+ * @method ObjectWithoutClassType getBound()
+ */
 class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements TemplateType
 {
 
@@ -16,7 +19,8 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
-		string $name
+		string $name,
+		ObjectWithoutClassType $bound
 	)
 	{
 		parent::__construct();
@@ -25,7 +29,7 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
-		$this->bound = new ObjectWithoutClassType();
+		$this->bound = $bound;
 	}
 
 	public function toArgument(): TemplateType
@@ -34,8 +38,25 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
-			$this->name
+			$this->name,
+			TemplateTypeHelper::toArgument($this->getBound())
 		);
+	}
+
+	public function traverse(callable $cb): Type
+	{
+		$newBound = $cb($this->getBound());
+		if ($this->getBound() !== $newBound && $newBound instanceof ObjectWithoutClassType) {
+			return new self(
+				$this->scope,
+				$this->strategy,
+				$this->variance,
+				$this->name,
+				$newBound
+			);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -48,7 +69,8 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 			$properties['scope'],
 			$properties['strategy'],
 			$properties['variance'],
-			$properties['name']
+			$properties['name'],
+			$properties['bound']
 		);
 	}
 

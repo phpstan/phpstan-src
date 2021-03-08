@@ -97,7 +97,32 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function throwsValueErrorForInternalFunctions(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	public function supportsHhPrintfSpecifier(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
+	public function isEmptyStringValidAliasForNoneInMbSubstituteCharacter(): bool
+	{
+		return $this->versionId < 80000;
+	}
+
+	public function supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter(): bool
+	{
+		return $this->versionId >= 70200;
+	}
+
+	public function isNumericStringValidArgInMbSubstituteCharacter(): bool
+	{
+		return $this->versionId < 80000;
+	}
+
+	public function isNullValidArgInMbSubstituteCharacter(): bool
 	{
 		return $this->versionId >= 80000;
 	}

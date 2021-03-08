@@ -247,4 +247,14 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional.php'], $errors);
 	}
 
+	public function testBug4641(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4641.php'], [
+			[
+				'Template type U of method Bug4641\I::getRepository() is not referenced in a parameter.',
+				26,
+			],
+		]);
+	}
+
 }

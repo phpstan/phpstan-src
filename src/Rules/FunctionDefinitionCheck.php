@@ -324,7 +324,7 @@ class FunctionDefinitionCheck
 					TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
 						if ($type instanceof TemplateType) {
 							unset($templateTypes[$type->getName()]);
-							return $type;
+							return $traverse($type);
 						}
 
 						return $traverse($type);

@@ -5636,6 +5636,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-global.php');
 	}
 
+	public function dataGenericTraits(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/generic-traits.php');
+	}
+
+	public function dataBug4423(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4423.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11246,6 +11256,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataPseudoTypeGlobal
 	 * @dataProvider dataPseudoTypeNamespace
 	 * @dataProvider dataPseudoTypeOverrides
+	 * @dataProvider dataGenericTraits
+	 * @dataProvider dataBug4423
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

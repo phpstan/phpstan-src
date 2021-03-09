@@ -16,8 +16,10 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function array_key_exists;
 use function file_exists;
@@ -214,7 +216,7 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v6-generic-bound', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v7-generic-traits', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -313,56 +315,7 @@ class FileTypeMapper
 						$resolvableTemplateTypes = true;
 					}
 				} elseif ($node instanceof Node\Stmt\TraitUse) {
-					$traitMethodAliases = [];
-					foreach ($node->adaptations as $traitUseAdaptation) {
-						if (!$traitUseAdaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
-							continue;
-						}
-
-						if ($traitUseAdaptation->trait === null) {
-							continue;
-						}
-
-						if ($traitUseAdaptation->newName === null) {
-							continue;
-						}
-
-						$traitMethodAliases[$traitUseAdaptation->trait->toString()][$traitUseAdaptation->method->toString()] = $traitUseAdaptation->newName->toString();
-					}
-
-					foreach ($node->traits as $traitName) {
-						/** @var class-string $traitName */
-						$traitName = (string) $traitName;
-						$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
-						if (!$reflectionProvider->hasClass($traitName)) {
-							continue;
-						}
-
-						$traitReflection = $reflectionProvider->getClass($traitName);
-						if (!$traitReflection->isTrait()) {
-							continue;
-						}
-						if ($traitReflection->getFileName() === false) {
-							continue;
-						}
-						if (!file_exists($traitReflection->getFileName())) {
-							continue;
-						}
-
-						$className = $classStack[count($classStack) - 1] ?? null;
-						if ($className === null) {
-							throw new \PHPStan\ShouldNotHappenException();
-						}
-
-						$traitPhpDocMap = $this->createFilePhpDocMap(
-							$traitReflection->getFileName(),
-							$traitName,
-							$className,
-							$traitMethodAliases[$traitName] ?? []
-						);
-						$phpDocMap = array_merge($phpDocMap, $traitPhpDocMap);
-					}
-					return null;
+					$resolvableTemplateTypes = true;
 				} elseif ($node instanceof Node\Stmt\ClassMethod) {
 					$functionName = $node->name->name;
 					if (array_key_exists($functionName, $traitMethodAliases)) {
@@ -431,10 +384,6 @@ class FileTypeMapper
 					}
 
 					$typeMapStack[] = function () use ($fileName, $className, $lookForTrait, $functionName, $phpDocString, $typeMapCb): TemplateTypeMap {
-						static $typeMap = null;
-						if ($typeMap !== null) {
-							return $typeMap;
-						}
 						$resolvedPhpDoc = $this->getResolvedPhpDoc(
 							$fileName,
 							$className,
@@ -465,6 +414,113 @@ class FileTypeMapper
 						}
 
 						$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
+					}
+				} elseif ($node instanceof Node\Stmt\TraitUse) {
+					$traitMethodAliases = [];
+					foreach ($node->adaptations as $traitUseAdaptation) {
+						if (!$traitUseAdaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
+							continue;
+						}
+
+						if ($traitUseAdaptation->trait === null) {
+							continue;
+						}
+
+						if ($traitUseAdaptation->newName === null) {
+							continue;
+						}
+
+						$traitMethodAliases[$traitUseAdaptation->trait->toString()][$traitUseAdaptation->method->toString()] = $traitUseAdaptation->newName->toString();
+					}
+
+					$useDocComment = null;
+					if ($node->getDocComment() !== null) {
+						$useDocComment = $node->getDocComment()->getText();
+					}
+
+					foreach ($node->traits as $traitName) {
+						/** @var class-string $traitName */
+						$traitName = (string) $traitName;
+						$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
+						if (!$reflectionProvider->hasClass($traitName)) {
+							continue;
+						}
+
+						$traitReflection = $reflectionProvider->getClass($traitName);
+						if (!$traitReflection->isTrait()) {
+							continue;
+						}
+						if ($traitReflection->getFileName() === false) {
+							continue;
+						}
+						if (!file_exists($traitReflection->getFileName())) {
+							continue;
+						}
+
+						$className = $classStack[count($classStack) - 1] ?? null;
+						if ($className === null) {
+							throw new \PHPStan\ShouldNotHappenException();
+						}
+
+						$traitPhpDocMap = $this->createFilePhpDocMap(
+							$traitReflection->getFileName(),
+							$traitName,
+							$className,
+							$traitMethodAliases[$traitName] ?? []
+						);
+						$finalTraitPhpDocMap = [];
+						foreach ($traitPhpDocMap as $phpDocKey => $callback) {
+							$finalTraitPhpDocMap[$phpDocKey] = function () use ($callback, $traitReflection, $fileName, $className, $lookForTrait, $useDocComment): NameScopedPhpDocString {
+								/** @var NameScopedPhpDocString $original */
+								$original = $callback();
+								if (!$traitReflection->isGeneric()) {
+									return $original;
+								}
+
+								$traitTemplateTypeMap = $traitReflection->getTemplateTypeMap();
+
+								$useType = null;
+								if ($useDocComment !== null) {
+									$useTags = $this->getResolvedPhpDoc(
+										$fileName,
+										$className,
+										$lookForTrait,
+										null,
+										$useDocComment
+									)->getUsesTags();
+									foreach ($useTags as $useTag) {
+										$useTagType = $useTag->getType();
+										if (!$useTagType instanceof GenericObjectType) {
+											continue;
+										}
+
+										if ($useTagType->getClassName() !== $traitReflection->getName()) {
+											continue;
+										}
+
+										$useType = $useTagType;
+										break;
+									}
+								}
+
+								if ($useType === null) {
+									return new NameScopedPhpDocString(
+										$original->getPhpDocString(),
+										$original->getNameScope()->withTemplateTypeMap($traitTemplateTypeMap->resolveToBounds())
+									);
+								}
+
+								$transformedTraitTypeMap = $traitReflection->typeMapFromList($useType->getTypes());
+
+								return new NameScopedPhpDocString(
+									$original->getPhpDocString(),
+									$original->getNameScope()->withTemplateTypeMap($traitTemplateTypeMap->map(static function (string $name, Type $type) use ($transformedTraitTypeMap): Type {
+										return TemplateTypeHelper::resolveTemplateTypes($type, $transformedTraitTypeMap);
+									}))
+								);
+							};
+						}
+						$phpDocMap = array_merge($phpDocMap, $finalTraitPhpDocMap);
 					}
 				}
 

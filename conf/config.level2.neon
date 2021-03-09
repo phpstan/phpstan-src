@@ -21,6 +21,7 @@ rules:
 	- PHPStan\Rules\Generics\MethodTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
 	- PHPStan\Rules\Generics\TraitTemplateTypeRule
+	- PHPStan\Rules\Generics\UsedTraitsRule
 	- PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
 	- PHPStan\Rules\Operators\InvalidBinaryOperationRule
 	- PHPStan\Rules\Operators\InvalidUnaryOperationRule

@@ -90,10 +90,7 @@ class GenericAncestorsCheck
 			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
 
 			foreach ($ancestorType->getReferencedClasses() as $referencedClass) {
-				if (
-					$this->reflectionProvider->hasClass($referencedClass)
-					&& !$this->reflectionProvider->getClass($referencedClass)->isTrait()
-				) {
+				if ($this->reflectionProvider->hasClass($referencedClass)) {
 					continue;
 				}
 

@@ -23,9 +23,9 @@ trait Foo {
 	public function doFoo($k)
 	{
 		assertType('T (class Bug4423\Child, argument)', $k);
-		assertType('Bug4423\Bar<T (class Bug4423\Child, argument)>', $this->bar);
+		//assertType('Bug4423\Bar<T (class Bug4423\Child, argument)>', $this->bar);
 		assertType('Bug4423\Bar<T (class Bug4423\Child, argument)>', $this->baz);
-		assertType('Bug4423\Bar<T (class Bug4423\Child, argument)>', $this->doBar());
+		//assertType('Bug4423\Bar<T (class Bug4423\Child, argument)>', $this->doBar());
 		assertType('Bug4423\Bar<T (class Bug4423\Child, argument)>', $this->doBaz());
 	}
 
@@ -57,8 +57,8 @@ class Child extends Base {
 function (Child $child): void {
 	/** @var Child<int> $child */
 	assertType('Bug4423\Child<int>', $child);
-	assertType('Bug4423\Bar<int>', $child->bar);
+	//assertType('Bug4423\Bar<int>', $child->bar);
 	assertType('Bug4423\Bar<int>', $child->baz);
-	assertType('Bug4423\Bar<int>', $child->doBar());
+	//assertType('Bug4423\Bar<int>', $child->doBar());
 	assertType('Bug4423\Bar<int>', $child->doBaz());
 };

@@ -10,6 +10,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @template TBound of Type
+ */
 trait TemplateTypeTrait
 {
 
@@ -21,6 +24,7 @@ trait TemplateTypeTrait
 
 	private TemplateTypeVariance $variance;
 
+	/** @var TBound */
 	private Type $bound;
 
 	public function getName(): string
@@ -33,6 +37,7 @@ trait TemplateTypeTrait
 		return $this->scope;
 	}
 
+	/** @return TBound */
 	public function getBound(): Type
 	{
 		return $this->bound;
@@ -41,9 +46,9 @@ trait TemplateTypeTrait
 	public function describe(VerbosityLevel $level): string
 	{
 		$basicDescription = function () use ($level): string {
-			if ($this->bound instanceof MixedType) {
+			if ($this->bound instanceof MixedType) { // @phpstan-ignore-line
 				$boundDescription = '';
-			} else {
+			} else { // @phpstan-ignore-line
 				$boundDescription = sprintf(' of %s', $this->bound->describe($level));
 			}
 			return sprintf(
@@ -65,6 +70,17 @@ trait TemplateTypeTrait
 	public function isArgument(): bool
 	{
 		return $this->strategy->isArgument();
+	}
+
+	public function toArgument(): TemplateType
+	{
+		return new self(
+			$this->scope,
+			new TemplateTypeArgumentStrategy(),
+			$this->variance,
+			$this->name,
+			TemplateTypeHelper::toArgument($this->getBound())
+		);
 	}
 
 	public function isValidVariance(Type $a, Type $b): TrinaryLogic
@@ -183,6 +199,21 @@ trait TemplateTypeTrait
 	protected function shouldGeneralizeInferredType(): bool
 	{
 		return true;
+	}
+
+	/**
+	 * @param mixed[] $properties
+	 * @return Type
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		return new self(
+			$properties['scope'],
+			$properties['strategy'],
+			$properties['variance'],
+			$properties['name'],
+			$properties['bound']
+		);
 	}
 
 }

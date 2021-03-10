@@ -6,12 +6,10 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-/**
- * @method MixedType getBound()
- */
 final class TemplateMixedType extends MixedType implements TemplateType
 {
 
+	/** @use TemplateTypeTrait<MixedType> */
 	use TemplateTypeTrait;
 
 	public function __construct(
@@ -45,17 +43,6 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return TrinaryLogic::createYes();
 	}
 
-	public function toArgument(): TemplateType
-	{
-		return new self(
-			$this->scope,
-			new TemplateTypeArgumentStrategy(),
-			$this->variance,
-			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
-		);
-	}
-
 	public function traverse(callable $cb): Type
 	{
 		$newBound = $cb($this->getBound());
@@ -70,21 +57,6 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		}
 
 		return $this;
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 * @return Type
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['scope'],
-			$properties['strategy'],
-			$properties['variance'],
-			$properties['name'],
-			$properties['bound']
-		);
 	}
 
 }

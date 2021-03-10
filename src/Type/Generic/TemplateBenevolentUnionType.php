@@ -5,12 +5,10 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Type;
 
-/**
- * @method BenevolentUnionType getBound()
- */
 final class TemplateBenevolentUnionType extends BenevolentUnionType implements TemplateType
 {
 
+	/** @use TemplateTypeTrait<BenevolentUnionType> */
 	use TemplateTypeTrait;
 
 	public function __construct(
@@ -30,17 +28,6 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		$this->bound = $bound;
 	}
 
-	public function toArgument(): TemplateType
-	{
-		return new self(
-			$this->scope,
-			new TemplateTypeArgumentStrategy(),
-			$this->variance,
-			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
-		);
-	}
-
 	public function traverse(callable $cb): Type
 	{
 		$newBound = $cb($this->getBound());
@@ -55,21 +42,6 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		}
 
 		return $this;
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 * @return Type
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['scope'],
-			$properties['strategy'],
-			$properties['variance'],
-			$properties['name'],
-			$properties['bound']
-		);
 	}
 
 }

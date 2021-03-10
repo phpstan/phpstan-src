@@ -5,12 +5,10 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
-/**
- * @method UnionType getBound()
- */
 final class TemplateUnionType extends UnionType implements TemplateType
 {
 
+	/** @use TemplateTypeTrait<UnionType> */
 	use TemplateTypeTrait;
 
 	public function __construct(
@@ -30,17 +28,6 @@ final class TemplateUnionType extends UnionType implements TemplateType
 		$this->bound = $bound;
 	}
 
-	public function toArgument(): TemplateType
-	{
-		return new self(
-			$this->scope,
-			new TemplateTypeArgumentStrategy(),
-			$this->variance,
-			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
-		);
-	}
-
 	public function traverse(callable $cb): Type
 	{
 		$newBound = $cb($this->getBound());
@@ -55,21 +42,6 @@ final class TemplateUnionType extends UnionType implements TemplateType
 		}
 
 		return $this;
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 * @return Type
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['scope'],
-			$properties['strategy'],
-			$properties['variance'],
-			$properties['name'],
-			$properties['bound']
-		);
 	}
 
 }

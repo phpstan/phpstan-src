@@ -6,13 +6,11 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
-/**
- * @method ObjectWithoutClassType getBound()
- */
 class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements TemplateType
 {
 
 	use UndecidedComparisonCompoundTypeTrait;
+	/** @use TemplateTypeTrait<ObjectWithoutClassType> */
 	use TemplateTypeTrait;
 
 	public function __construct(
@@ -32,17 +30,6 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		$this->bound = $bound;
 	}
 
-	public function toArgument(): TemplateType
-	{
-		return new self(
-			$this->scope,
-			new TemplateTypeArgumentStrategy(),
-			$this->variance,
-			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
-		);
-	}
-
 	public function traverse(callable $cb): Type
 	{
 		$newBound = $cb($this->getBound());
@@ -57,21 +44,6 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		}
 
 		return $this;
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 * @return Type
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['scope'],
-			$properties['strategy'],
-			$properties['variance'],
-			$properties['name'],
-			$properties['bound']
-		);
 	}
 
 }

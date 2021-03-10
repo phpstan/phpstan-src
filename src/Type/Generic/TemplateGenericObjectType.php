@@ -5,13 +5,11 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
-/**
- * @method GenericObjectType getBound()
- */
 final class TemplateGenericObjectType extends GenericObjectType implements TemplateType
 {
 
 	use UndecidedComparisonCompoundTypeTrait;
+	/** @use TemplateTypeTrait<GenericObjectType> */
 	use TemplateTypeTrait;
 
 	public function __construct(
@@ -29,17 +27,6 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
-	}
-
-	public function toArgument(): TemplateType
-	{
-		return new self(
-			$this->scope,
-			new TemplateTypeArgumentStrategy(),
-			$this->variance,
-			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
-		);
 	}
 
 	public function traverse(callable $cb): Type
@@ -66,21 +53,6 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 			$this->variance,
 			$this->name,
 			$this->getBound()
-		);
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 * @return Type
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['scope'],
-			$properties['strategy'],
-			$properties['variance'],
-			$properties['name'],
-			$properties['bound']
 		);
 	}
 

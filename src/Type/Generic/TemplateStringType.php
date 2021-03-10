@@ -6,12 +6,10 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
-/**
- * @method StringType getBound()
- */
 final class TemplateStringType extends StringType implements TemplateType
 {
 
+	/** @use TemplateTypeTrait<StringType> */
 	use TemplateTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
@@ -28,17 +26,6 @@ final class TemplateStringType extends StringType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
-	}
-
-	public function toArgument(): TemplateType
-	{
-		return new self(
-			$this->scope,
-			new TemplateTypeArgumentStrategy(),
-			$this->variance,
-			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
-		);
 	}
 
 	public function traverse(callable $cb): Type
@@ -60,21 +47,6 @@ final class TemplateStringType extends StringType implements TemplateType
 	protected function shouldGeneralizeInferredType(): bool
 	{
 		return false;
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 * @return Type
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['scope'],
-			$properties['strategy'],
-			$properties['variance'],
-			$properties['name'],
-			$properties['bound']
-		);
 	}
 
 }

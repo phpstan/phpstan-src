@@ -5646,6 +5646,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4423.php');
 	}
 
+	public function dataGenericUnions(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/generic-unions.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11258,6 +11263,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataPseudoTypeOverrides
 	 * @dataProvider dataGenericTraits
 	 * @dataProvider dataBug4423
+	 * @dataProvider dataGenericUnions
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

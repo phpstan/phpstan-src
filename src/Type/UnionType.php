@@ -554,8 +554,28 @@ class UnionType implements CompoundType
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		$types = TemplateTypeMap::createEmpty();
+		if ($receivedType instanceof UnionType) {
+			$myTypes = [];
+			$remainingReceivedTypes = [];
+			foreach ($receivedType->getTypes() as $receivedInnerType) {
+				foreach ($this->types as $type) {
+					if ($type->isSuperTypeOf($receivedInnerType)->yes()) {
+						$types = $types->union($type->inferTemplateTypes($receivedInnerType));
+						continue 2;
+					}
+					$myTypes[] = $type;
+				}
+				$remainingReceivedTypes[] = $receivedInnerType;
+			}
+			if (count($remainingReceivedTypes) === 0) {
+				return $types;
+			}
+			$receivedType = TypeCombinator::union(...$remainingReceivedTypes);
+		} else {
+			$myTypes = $this->types;
+		}
 
-		foreach ($this->types as $type) {
+		foreach ($myTypes as $type) {
 			$types = $types->union($type->inferTemplateTypes($receivedType));
 		}
 

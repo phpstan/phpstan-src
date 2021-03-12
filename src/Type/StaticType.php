@@ -20,7 +20,7 @@ class StaticType implements TypeWithClassName
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private ClassReflection $classReflection;
+	private ?ClassReflection $classReflection;
 
 	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
 
@@ -32,8 +32,19 @@ class StaticType implements TypeWithClassName
 	public function __construct($classReflection)
 	{
 		if (is_string($classReflection)) {
-			$classReflection = Broker::getInstance()->getClass($classReflection);
+			$broker = Broker::getInstance();
+			if ($broker->hasClass($classReflection)) {
+				$classReflection = $broker->getClass($classReflection);
+				$this->classReflection = $classReflection;
+				$this->baseClass = $classReflection->getName();
+				return;
+			}
+
+			$this->classReflection = null;
+			$this->baseClass = $classReflection;
+			return;
 		}
+
 		$this->classReflection = $classReflection;
 		$this->baseClass = $classReflection->getName();
 	}
@@ -51,7 +62,7 @@ class StaticType implements TypeWithClassName
 	public function getStaticObjectType(): ObjectType
 	{
 		if ($this->staticObjectType === null) {
-			if ($this->classReflection->isGeneric()) {
+			if ($this->classReflection !== null && $this->classReflection->isGeneric()) {
 				$typeMap = $this->classReflection->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
 					return TemplateTypeHelper::toArgument($type);
 				});
@@ -61,7 +72,7 @@ class StaticType implements TypeWithClassName
 				);
 			}
 
-			return $this->staticObjectType = new ObjectType($this->classReflection->getName(), null, $this->classReflection);
+			return $this->staticObjectType = new ObjectType($this->baseClass, null, $this->classReflection);
 		}
 
 		return $this->staticObjectType;

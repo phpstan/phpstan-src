@@ -10,6 +10,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeWithClassName;
 
 interface Scope extends ClassMemberAccessAnswerer
 {
@@ -70,7 +71,7 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function resolveName(Name $name): string;
 
-	public function resolveTypeByName(Name $name): Type;
+	public function resolveTypeByName(Name $name): TypeWithClassName;
 
 	/**
 	 * @param mixed $value

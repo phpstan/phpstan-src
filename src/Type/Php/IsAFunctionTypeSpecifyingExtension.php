@@ -18,7 +18,6 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StaticType;
 
 class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -47,12 +46,8 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 			&& $classNameArgExpr->name instanceof \PhpParser\Node\Identifier
 			&& strtolower($classNameArgExpr->name->name) === 'class'
 		) {
-			$className = $scope->resolveName($classNameArgExpr->class);
-			if (strtolower($classNameArgExpr->class->toString()) === 'static') {
-				$objectType = new StaticType($className);
-			} else {
-				$objectType = new ObjectType($className);
-			}
+			$objectType = $scope->resolveTypeByName($classNameArgExpr->class);
+			// todo static => StaticType
 			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
 		} elseif ($classNameArgExprType instanceof ConstantStringType) {
 			$objectType = new ObjectType($classNameArgExprType->getValue());

@@ -7,7 +7,6 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -57,7 +56,7 @@ class PropertyReflectionFinder
 		}
 
 		if ($propertyFetch->class instanceof \PhpParser\Node\Name) {
-			$propertyHolderType = new ObjectType($scope->resolveName($propertyFetch->class));
+			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
 		} else {
 			$propertyHolderType = $scope->getType($propertyFetch->class);
 		}
@@ -114,7 +113,7 @@ class PropertyReflectionFinder
 		}
 
 		if ($propertyFetch->class instanceof \PhpParser\Node\Name) {
-			$propertyHolderType = new ObjectType($scope->resolveName($propertyFetch->class));
+			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
 		} else {
 			$propertyHolderType = $scope->getType($propertyFetch->class);
 		}

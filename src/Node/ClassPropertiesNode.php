@@ -213,7 +213,8 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				if (!$methodCallNode->class instanceof Name) {
 					continue;
 				}
-				$calledOnType = new ObjectType($callScope->resolveName($methodCallNode->class));
+
+				$calledOnType = $callScope->resolveTypeByName($methodCallNode->class);
 			}
 			if ($classType->isSuperTypeOf($calledOnType)->no()) {
 				continue;

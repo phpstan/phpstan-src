@@ -84,7 +84,7 @@ class UnusedPrivateMethodRule implements Rule
 				if (!$methodCallNode->class instanceof Node\Name) {
 					continue;
 				}
-				$calledOnType = new ObjectType($callScope->resolveName($methodCallNode->class));
+				$calledOnType = $scope->resolveTypeByName($methodCallNode->class);
 			}
 			if ($classType->isSuperTypeOf($calledOnType)->no()) {
 				continue;

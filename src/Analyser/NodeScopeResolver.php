@@ -1438,7 +1438,7 @@ class NodeScopeResolver
 					$methodCalledOnType = $scope->getType($expr->var);
 				} else {
 					if ($expr->class instanceof Name) {
-						$methodCalledOnType = new ObjectType($scope->resolveName($expr->class));
+						$methodCalledOnType = $scope->resolveTypeByName($expr->class);
 					} else {
 						$methodCalledOnType = $scope->getType($expr->class);
 					}
@@ -2770,7 +2770,7 @@ class NodeScopeResolver
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
 			if ($var->class instanceof \PhpParser\Node\Name) {
-				$propertyHolderType = new ObjectType($scope->resolveName($var->class));
+				$propertyHolderType = $scope->resolveTypeByName($var->class);
 			} else {
 				$this->processExprNode($var->class, $scope, $nodeCallback, $context);
 				$propertyHolderType = $scope->getType($var->class);

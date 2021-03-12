@@ -854,8 +854,7 @@ class MutatingScope implements Scope
 			$uncertainty = false;
 
 			if ($node->class instanceof Node\Name) {
-				$className = $this->resolveName($node->class);
-				$classType = new ObjectType($className);
+				$classType = $this->resolveTypeByName($node->class);
 			} else {
 				$classType = $this->getType($node->class);
 				$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
@@ -1771,7 +1770,7 @@ class MutatingScope implements Scope
 					if ($resolvedName === 'parent' && strtolower($constantName) === 'class') {
 						return new ClassStringType();
 					}
-					$constantClassType = new ObjectType($resolvedName);
+					$constantClassType = $this->resolveTypeByName($node->class);
 				}
 
 				if (strtolower($constantName) === 'class') {
@@ -1932,7 +1931,7 @@ class MutatingScope implements Scope
 		if ($node instanceof Expr\StaticCall && $node->name instanceof Node\Identifier) {
 			$typeCallback = function () use ($node): Type {
 				if ($node->class instanceof Name) {
-					$staticMethodCalledOnType = new ObjectType($this->resolveName($node->class));
+					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
 				} else {
 					$staticMethodCalledOnType = $this->getType($node->class);
 					if ($staticMethodCalledOnType instanceof GenericClassStringType) {
@@ -2045,7 +2044,7 @@ class MutatingScope implements Scope
 		) {
 			$typeCallback = function () use ($node): Type {
 				if ($node->class instanceof Name) {
-					$staticPropertyFetchedOnType = new ObjectType($this->resolveName($node->class));
+					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
 				} else {
 					$staticPropertyFetchedOnType = $this->getType($node->class);
 					if ($staticPropertyFetchedOnType instanceof GenericClassStringType) {
@@ -2446,6 +2445,25 @@ class MutatingScope implements Scope
 		}
 
 		return $originalClass;
+	}
+
+	public function resolveTypeByName(Name $name): TypeWithClassName
+	{
+		if ($name->toLowerString() === 'static' && $this->isInClass()) {
+			$classReflection = $this->getClassReflection();
+
+			return new StaticType($classReflection->getName());
+		}
+		$originalClass = $this->resolveName($name);
+		if ($this->isInClass()) {
+			$thisType = new ThisType($this->getClassReflection());
+			$ancestor = $thisType->getAncestorWithClassName($originalClass);
+			if ($ancestor !== null) {
+				return $ancestor;
+			}
+		}
+
+		return new ObjectType($originalClass);
 	}
 
 	/**

@@ -549,7 +549,7 @@ class TypeSpecifier
 			}
 		} elseif ($expr instanceof StaticCall && $expr->name instanceof Node\Identifier) {
 			if ($expr->class instanceof Name) {
-				$calleeType = new ObjectType($scope->resolveName($expr->class));
+				$calleeType = $scope->resolveTypeByName($expr->class);
 			} else {
 				$calleeType = $scope->getType($expr->class);
 			}

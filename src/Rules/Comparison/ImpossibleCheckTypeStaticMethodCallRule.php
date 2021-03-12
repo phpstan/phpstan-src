@@ -7,7 +7,6 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectType;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\StaticCall>
@@ -102,7 +101,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 	): MethodReflection
 	{
 		if ($class instanceof Node\Name) {
-			$calledOnType = new ObjectType($scope->resolveName($class));
+			$calledOnType = $scope->resolveTypeByName($class);
 		} else {
 			$calledOnType = $scope->getType($class);
 		}

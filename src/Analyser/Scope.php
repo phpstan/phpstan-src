@@ -70,6 +70,8 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function resolveName(Name $name): string;
 
+	public function resolveTypeByName(Name $name): Type;
+
 	/**
 	 * @param mixed $value
 	 */

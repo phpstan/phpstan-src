@@ -147,7 +147,7 @@ class UnusedPrivatePropertyRule implements Rule
 					continue;
 				}
 
-				$fetchedOnType = new ObjectType($usage->getScope()->resolveName($fetch->class));
+				$fetchedOnType = $usage->getScope()->resolveTypeByName($fetch->class);
 			}
 
 			if ($classType->isSuperTypeOf($fetchedOnType)->no()) {

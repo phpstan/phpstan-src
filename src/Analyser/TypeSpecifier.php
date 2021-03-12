@@ -119,7 +119,7 @@ class TypeSpecifier
 				if ($lowercasedClassName === 'self' && $scope->isInClass()) {
 					$type = new ObjectType($scope->getClassReflection()->getName());
 				} elseif ($lowercasedClassName === 'static' && $scope->isInClass()) {
-					$type = new StaticType($scope->getClassReflection()->getName());
+					$type = new StaticType($scope->getClassReflection());
 				} elseif ($lowercasedClassName === 'parent') {
 					if (
 						$scope->isInClass()

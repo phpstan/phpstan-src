@@ -2,12 +2,15 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
@@ -17,13 +20,22 @@ class StaticType implements TypeWithClassName
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private string $baseClass;
+	private ClassReflection $classReflection;
 
 	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
 
-	public function __construct(string $baseClass)
+	private string $baseClass;
+
+	/**
+	 * @param string|ClassReflection $classReflection
+	 */
+	public function __construct($classReflection)
 	{
-		$this->baseClass = $baseClass;
+		if (is_string($classReflection)) {
+			$classReflection = Broker::getInstance()->getClass($classReflection);
+		}
+		$this->classReflection = $classReflection;
+		$this->baseClass = $classReflection->getName();
 	}
 
 	public function getClassName(): string
@@ -39,7 +51,17 @@ class StaticType implements TypeWithClassName
 	public function getStaticObjectType(): ObjectType
 	{
 		if ($this->staticObjectType === null) {
-			$this->staticObjectType = new ObjectType($this->baseClass);
+			if ($this->classReflection->isGeneric()) {
+				$typeMap = $this->classReflection->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
+					return TemplateTypeHelper::toArgument($type);
+				});
+				return $this->staticObjectType = new GenericObjectType(
+					$this->classReflection->getName(),
+					$this->classReflection->typeMapToList($typeMap)
+				);
+			}
+
+			return $this->staticObjectType = new ObjectType($this->classReflection->getName(), null, $this->classReflection);
 		}
 
 		return $this->staticObjectType;
@@ -155,7 +177,7 @@ class StaticType implements TypeWithClassName
 
 	public function changeBaseClass(ClassReflection $classReflection): self
 	{
-		return new self($classReflection->getName());
+		return new self($classReflection);
 	}
 
 	public function isIterable(): TrinaryLogic

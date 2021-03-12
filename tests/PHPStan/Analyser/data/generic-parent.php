@@ -39,3 +39,20 @@ class Bar extends Foo
 	}
 
 }
+
+class E {}
+
+/**
+ * @template T of E
+ */
+class R {
+
+	/** @return T */
+	function ret() { return $this->e; } // nonsense, to silence missing return
+
+	function test(): void {
+		assertType('T of GenericParent\E (class GenericParent\R, argument)', self::ret());
+		assertType('T of GenericParent\E (class GenericParent\R, argument)', $this->ret());
+		assertType('T of GenericParent\E (class GenericParent\R, argument)', static::ret());
+	}
+}

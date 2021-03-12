@@ -1419,7 +1419,7 @@ class MutatingScope implements Scope
 						return new ErrorType();
 					}
 
-					return new StaticType($this->getClassReflection()->getName());
+					return new StaticType($this->getClassReflection());
 				}
 				if ($lowercasedClassName === 'parent') {
 					return new NonexistentParentClassType();
@@ -1760,7 +1760,7 @@ class MutatingScope implements Scope
 						$namesToResolve[] = 'static';
 					} elseif (strtolower($constantClass) === 'static') {
 						if (strtolower($constantName) === 'class') {
-							return new GenericClassStringType(new StaticType($this->getClassReflection()->getName()));
+							return new GenericClassStringType(new StaticType($this->getClassReflection()));
 						}
 						return new MixedType();
 					}
@@ -2452,7 +2452,7 @@ class MutatingScope implements Scope
 		if ($name->toLowerString() === 'static' && $this->isInClass()) {
 			$classReflection = $this->getClassReflection();
 
-			return new StaticType($classReflection->getName());
+			return new StaticType($classReflection);
 		}
 		$originalClass = $this->resolveName($name);
 		if ($this->isInClass()) {

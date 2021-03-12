@@ -6,8 +6,16 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
+use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
+use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ResolvedMethodReflection;
+use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -54,16 +62,26 @@ class StaticType implements TypeWithClassName
 		return $this->baseClass;
 	}
 
-	public function getAncestorWithClassName(string $className): ?ObjectType
+	public function getClassReflection(): ?ClassReflection
 	{
-		return $this->getStaticObjectType()->getAncestorWithClassName($className);
+		return $this->classReflection;
+	}
+
+	public function getAncestorWithClassName(string $className): ?TypeWithClassName
+	{
+		$ancestor = $this->getStaticObjectType()->getAncestorWithClassName($className);
+		if ($ancestor === null) {
+			return null;
+		}
+
+		return $this->changeBaseClass($ancestor->getClassReflection() ?? $ancestor->getClassName());
 	}
 
 	public function getStaticObjectType(): ObjectType
 	{
 		if ($this->staticObjectType === null) {
 			if ($this->classReflection !== null && $this->classReflection->isGeneric()) {
-				$typeMap = $this->classReflection->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
+				$typeMap = $this->classReflection->getActiveTemplateTypeMap()->map(static function (string $name, Type $type): Type {
 					return TemplateTypeHelper::toArgument($type);
 				});
 				return $this->staticObjectType = new GenericObjectType(
@@ -153,7 +171,41 @@ class StaticType implements TypeWithClassName
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		return $this->getStaticObjectType()->getProperty($propertyName, $scope);
+		$staticObject = $this->getStaticObjectType();
+		$property = $staticObject->getPropertyWithoutTransformingStatic($propertyName, $scope);
+		$readableType = $this->transformStaticType($property->getReadableType(), $scope);
+		$writableType = $this->transformStaticType($property->getWritableType(), $scope);
+
+		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
+		$classReflection = null;
+		if ($ancestor !== null) {
+			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $property->getDeclaringClass();
+		}
+
+		return new ResolvedPropertyReflection(
+			new ChangedTypePropertyReflection($classReflection, $property, $readableType, $writableType),
+			$classReflection->getActiveTemplateTypeMap()
+		);
+	}
+
+	private function transformStaticType(Type $type, ClassMemberAccessAnswerer $scope): Type
+	{
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($scope): Type {
+			if ($type instanceof StaticType) {
+				$classReflection = $this->classReflection;
+				if ($classReflection === null) {
+					$classReflection = $this->baseClass;
+				} elseif ($scope->isInClass()) {
+					$classReflection = $scope->getClassReflection();
+				}
+				return $type->changeBaseClass($classReflection);
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	public function canCallMethods(): TrinaryLogic
@@ -168,7 +220,40 @@ class StaticType implements TypeWithClassName
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		return $this->getStaticObjectType()->getMethod($methodName, $scope);
+		$staticObject = $this->getStaticObjectType();
+		$method = $staticObject->getMethodWithoutTransformingStatic($methodName, $scope);
+		$variants = array_map(function (ParametersAcceptor $acceptor) use ($scope): ParametersAcceptor {
+			return new FunctionVariant(
+				$acceptor->getTemplateTypeMap(),
+				$acceptor->getResolvedTemplateTypeMap(),
+				array_map(function (ParameterReflection $parameter) use ($scope): ParameterReflection {
+					return new DummyParameter(
+						$parameter->getName(),
+						$this->transformStaticType($parameter->getType(), $scope),
+						$parameter->isOptional(),
+						$parameter->passedByReference(),
+						$parameter->isVariadic(),
+						$parameter->getDefaultValue()
+					);
+				}, $acceptor->getParameters()),
+				$acceptor->isVariadic(),
+				$this->transformStaticType($acceptor->getReturnType(), $scope)
+			);
+		}, $method->getVariants());
+
+		$ancestor = $this->getAncestorWithClassName($method->getDeclaringClass()->getName());
+		$classReflection = null;
+		if ($ancestor !== null) {
+			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $method->getDeclaringClass();
+		}
+
+		return new ResolvedMethodReflection(
+			new ChangedTypeMethodReflection($classReflection, $method, $variants),
+			$classReflection->getActiveTemplateTypeMap()
+		);
 	}
 
 	public function canAccessConstants(): TrinaryLogic
@@ -186,7 +271,11 @@ class StaticType implements TypeWithClassName
 		return $this->getStaticObjectType()->getConstant($constantName);
 	}
 
-	public function changeBaseClass(ClassReflection $classReflection): self
+	/**
+	 * @param ClassReflection|string $classReflection
+	 * @return self
+	 */
+	public function changeBaseClass($classReflection): self
 	{
 		return new self($classReflection);
 	}

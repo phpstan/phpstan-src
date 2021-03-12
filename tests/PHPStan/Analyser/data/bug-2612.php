@@ -26,7 +26,7 @@ class StringType
 	{
 		$valueType = new static();
 		$result = TypeFactory::singleton($valueType);
-		assertType('Bug2612\StringType', $result);
+		assertType('static(Bug2612\StringType)', $result);
 
 		return $result;
 	}

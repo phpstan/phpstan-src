@@ -2,15 +2,23 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
+use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
+use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ObjectTypeMethodReflection;
+use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ResolvedMethodReflection;
+use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -33,8 +41,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	private ?\PHPStan\Type\Type $subtractedType;
 
 	private ?ClassReflection $classReflection;
-
-	private ?GenericObjectType $genericObjectType = null;
 
 	/** @var array<string, array<string, \PHPStan\TrinaryLogic>> */
 	private static array $superTypes = [];
@@ -91,13 +97,82 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		$classReflection = $this->getClassReflection();
+		$property = $this->getPropertyWithoutTransformingStatic($propertyName, $scope);
+
+		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
+		$classReflection = null;
+		if ($ancestor !== null) {
+			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $property->getDeclaringClass();
+		}
+		if (!$classReflection->isGeneric()) {
+			return $this->transformPropertyWithStaticType($classReflection, $property);
+		}
+
+		return new ResolvedPropertyReflection(
+			$this->transformPropertyWithStaticType($classReflection, $property),
+			$classReflection->getActiveTemplateTypeMap()->resolveToBounds()
+		);
+	}
+
+	protected function transformMethodWithStaticType(ClassReflection $declaringClass, MethodReflection $method): MethodReflection
+	{
+		$variants = array_map(function (ParametersAcceptor $acceptor): ParametersAcceptor {
+			return new FunctionVariant(
+				$acceptor->getTemplateTypeMap(),
+				$acceptor->getResolvedTemplateTypeMap(),
+				array_map(function (ParameterReflection $parameter): ParameterReflection {
+					return new DummyParameter(
+						$parameter->getName(),
+						$this->transformStaticType($parameter->getType()),
+						$parameter->isOptional(),
+						$parameter->passedByReference(),
+						$parameter->isVariadic(),
+						$parameter->getDefaultValue()
+					);
+				}, $acceptor->getParameters()),
+				$acceptor->isVariadic(),
+				$this->transformStaticType($acceptor->getReturnType())
+			);
+		}, $method->getVariants());
+
+		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);
+	}
+
+	protected function transformPropertyWithStaticType(ClassReflection $declaringClass, PropertyReflection $property): PropertyReflection
+	{
+		$readableType = $this->transformStaticType($property->getReadableType());
+		$writableType = $this->transformStaticType($property->getWritableType());
+
+		return new ChangedTypePropertyReflection($declaringClass, $property, $readableType, $writableType);
+	}
+
+	private function transformStaticType(Type $type): Type
+	{
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof StaticType) {
+				return $this;
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	public function getPropertyWithoutTransformingStatic(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
+	{
+		$classReflection = $this->getNakedClassReflection();
 		if ($classReflection === null) {
 			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
 		}
 
-		if ($classReflection->isGeneric() && static::class === self::class) {
-			return $this->getGenericObjectType()->getProperty($propertyName, $scope);
+		if (!$classReflection->hasProperty($propertyName)) {
+			$classReflection = $this->getClassReflection();
+		}
+
+		if ($classReflection === null) {
+			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
 		}
 
 		return $classReflection->getProperty($propertyName, $scope);
@@ -360,7 +435,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($classReflection->hasNativeMethod('__toString')) {
-			return ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__toString')->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectSingle($this->getMethod('__toString', new OutOfClassScope())->getVariants())->getReturnType();
 		}
 
 		return new ErrorType();
@@ -464,37 +539,38 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		$classReflection = $this->getClassReflection();
+		$method = $this->getMethodWithoutTransformingStatic($methodName, $scope);
+		$ancestor = $this->getAncestorWithClassName($method->getDeclaringClass()->getName());
+		$classReflection = null;
+		if ($ancestor !== null) {
+			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $method->getDeclaringClass();
+		}
+
+		return new ResolvedMethodReflection(
+			$this->transformMethodWithStaticType($classReflection, $method),
+			$classReflection->getActiveTemplateTypeMap()->resolveToBounds()
+		);
+	}
+
+	public function getMethodWithoutTransformingStatic(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	{
+		$classReflection = $this->getNakedClassReflection();
 		if ($classReflection === null) {
 			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
 		}
 
-		if ($classReflection->isGeneric() && static::class === self::class) {
-			return $this->getGenericObjectType()->getMethod($methodName, $scope);
+		if (!$classReflection->hasMethod($methodName)) {
+			$classReflection = $this->getClassReflection();
 		}
 
-		return new ObjectTypeMethodReflection(
-			$this,
-			$classReflection->getMethod($methodName, $scope)
-		);
-	}
-
-	private function getGenericObjectType(): GenericObjectType
-	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection === null || !$classReflection->isGeneric()) {
-			throw new \PHPStan\ShouldNotHappenException();
+		if ($classReflection === null) {
+			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
 		}
 
-		if ($this->genericObjectType === null) {
-			$this->genericObjectType = new GenericObjectType(
-				$this->className,
-				array_values($classReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()),
-				$this->subtractedType
-			);
-		}
-
-		return $this->genericObjectType;
+		return $classReflection->getMethod($methodName, $scope);
 	}
 
 	public function canAccessConstants(): TrinaryLogic
@@ -543,13 +619,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\Iterator::class)->yes()) {
-			return ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('key')->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectSingle($this->getMethod('key', new OutOfClassScope())->getVariants())->getReturnType();
 		}
 
 		if ($this->isInstanceOf(\IteratorAggregate::class)->yes()) {
-			$keyType = RecursionGuard::run($this, static function () use ($classReflection): Type {
+			$keyType = RecursionGuard::run($this, function (): Type {
 				return ParametersAcceptorSelector::selectSingle(
-					$classReflection->getNativeMethod('getIterator')->getVariants()
+					$this->getMethod('getIterator', new OutOfClassScope())->getVariants()
 				)->getReturnType()->getIterableKeyType();
 			});
 			if (!$keyType instanceof MixedType || $keyType->isExplicitMixed()) {
@@ -578,14 +654,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($this->isInstanceOf(\Iterator::class)->yes()) {
 			return ParametersAcceptorSelector::selectSingle(
-				$classReflection->getNativeMethod('current')->getVariants()
+				$this->getMethod('current', new OutOfClassScope())->getVariants()
 			)->getReturnType();
 		}
 
 		if ($this->isInstanceOf(\IteratorAggregate::class)->yes()) {
-			$valueType = RecursionGuard::run($this, static function () use ($classReflection): Type {
+			$valueType = RecursionGuard::run($this, function (): Type {
 				return ParametersAcceptorSelector::selectSingle(
-					$classReflection->getNativeMethod('getIterator')->getVariants()
+					$this->getMethod('getIterator', new OutOfClassScope())->getVariants()
 				)->getReturnType()->getIterableValueType();
 			});
 			if (!$valueType instanceof MixedType || $valueType->isExplicitMixed()) {
@@ -657,8 +733,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\ArrayAccess::class)->yes()) {
-			$acceptedOffsetType = RecursionGuard::run($this, function () use ($classReflection): Type {
-				$parameters = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('offsetSet')->getVariants())->getParameters();
+			$acceptedOffsetType = RecursionGuard::run($this, function (): Type {
+				$parameters = ParametersAcceptorSelector::selectSingle($this->getMethod('offsetSet', new OutOfClassScope())->getVariants())->getParameters();
 				if (count($parameters) < 2) {
 					throw new \PHPStan\ShouldNotHappenException(sprintf(
 						'Method %s::%s() has less than 2 parameters.',
@@ -695,8 +771,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\ArrayAccess::class)->yes()) {
-			return RecursionGuard::run($this, static function () use ($classReflection): Type {
-				return ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('offsetGet')->getVariants())->getReturnType();
+			return RecursionGuard::run($this, function (): Type {
+				return ParametersAcceptorSelector::selectSingle($this->getMethod('offsetGet', new OutOfClassScope())->getVariants())->getReturnType();
 			});
 		}
 
@@ -715,8 +791,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				return new ErrorType();
 			}
 			$acceptedValueType = new NeverType();
-			$acceptedOffsetType = RecursionGuard::run($this, function () use ($classReflection, &$acceptedValueType): Type {
-				$parameters = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('offsetSet')->getVariants())->getParameters();
+			$acceptedOffsetType = RecursionGuard::run($this, function () use (&$acceptedValueType): Type {
+				$parameters = ParametersAcceptorSelector::selectSingle($this->getMethod('offsetSet', new OutOfClassScope())->getVariants())->getParameters();
 				if (count($parameters) < 2) {
 					throw new \PHPStan\ShouldNotHappenException(sprintf(
 						'Method %s::%s() has less than 2 parameters.',
@@ -792,7 +868,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($classReflection->hasNativeMethod('__invoke')) {
-			return $classReflection->getNativeMethod('__invoke')->getVariants();
+			return $this->getMethod('__invoke', new OutOfClassScope())->getVariants();
 		}
 
 		if (!$classReflection->getNativeReflection()->isFinal()) {
@@ -875,6 +951,21 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this;
 	}
 
+	public function getNakedClassReflection(): ?ClassReflection
+	{
+		if ($this->classReflection !== null) {
+			return $this->classReflection;
+		}
+		$broker = Broker::getInstance();
+		if (!$broker->hasClass($this->className)) {
+			return null;
+		}
+
+		$this->classReflection = $broker->getClass($this->className);
+
+		return $this->classReflection;
+	}
+
 	public function getClassReflection(): ?ClassReflection
 	{
 		if ($this->classReflection !== null) {
@@ -897,7 +988,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	 * @param string $className
 	 * @return self|null
 	 */
-	public function getAncestorWithClassName(string $className): ?ObjectType
+	public function getAncestorWithClassName(string $className): ?TypeWithClassName
 	{
 		$broker = Broker::getInstance();
 		if (!$broker->hasClass($className)) {

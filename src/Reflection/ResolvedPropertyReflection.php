@@ -8,7 +8,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
-class ResolvedPropertyReflection implements PropertyReflection
+class ResolvedPropertyReflection implements WrapperPropertyReflection
 {
 
 	private PropertyReflection $reflection;
@@ -70,6 +70,10 @@ class ResolvedPropertyReflection implements PropertyReflection
 			$this->reflection->getReadableType(),
 			$this->templateTypeMap
 		);
+		$type = TemplateTypeHelper::resolveTemplateTypes(
+			$type,
+			$this->templateTypeMap
+		);
 
 		$this->readableType = $type;
 
@@ -85,6 +89,10 @@ class ResolvedPropertyReflection implements PropertyReflection
 
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$this->reflection->getWritableType(),
+			$this->templateTypeMap
+		);
+		$type = TemplateTypeHelper::resolveTemplateTypes(
+			$type,
 			$this->templateTypeMap
 		);
 

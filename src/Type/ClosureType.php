@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -56,7 +57,12 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->objectType->getClassName();
 	}
 
-	public function getAncestorWithClassName(string $className): ?ObjectType
+	public function getClassReflection(): ?ClassReflection
+	{
+		return $this->objectType->getClassReflection();
+	}
+
+	public function getAncestorWithClassName(string $className): ?TypeWithClassName
 	{
 		return $this->objectType->getAncestorWithClassName($className);
 	}

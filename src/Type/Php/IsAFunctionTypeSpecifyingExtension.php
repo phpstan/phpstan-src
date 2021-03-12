@@ -47,7 +47,6 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 			&& strtolower($classNameArgExpr->name->name) === 'class'
 		) {
 			$objectType = $scope->resolveTypeByName($classNameArgExpr->class);
-			// todo static => StaticType
 			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
 		} elseif ($classNameArgExprType instanceof ConstantStringType) {
 			$objectType = new ObjectType($classNameArgExprType->getValue());

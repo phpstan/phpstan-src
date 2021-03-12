@@ -38,7 +38,8 @@ function (Wallet $wallet): void
 	$bankAccounts = $wallet->getBankAccountList();
 	assertType('DoctrineIntersectionTypeIsSupertypeOf\Collection&iterable<Bug2676\BankAccount>', $bankAccounts);
 
-	foreach ($bankAccounts as $bankAccount) {
+	foreach ($bankAccounts as $key => $bankAccount) {
+		assertType('(int|string)', $key);
 		assertType('Bug2676\BankAccount', $bankAccount);
 	}
 };

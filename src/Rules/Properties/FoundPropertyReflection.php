@@ -6,7 +6,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\ResolvedPropertyReflection;
+use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
@@ -116,7 +116,7 @@ class FoundPropertyReflection implements PropertyReflection
 	public function isNative(): bool
 	{
 		$reflection = $this->originalPropertyReflection;
-		if ($reflection instanceof ResolvedPropertyReflection) {
+		while ($reflection instanceof WrapperPropertyReflection) {
 			$reflection = $reflection->getOriginalReflection();
 		}
 
@@ -126,7 +126,7 @@ class FoundPropertyReflection implements PropertyReflection
 	public function getNativeType(): ?Type
 	{
 		$reflection = $this->originalPropertyReflection;
-		if ($reflection instanceof ResolvedPropertyReflection) {
+		while ($reflection instanceof WrapperPropertyReflection) {
 			$reflection = $reflection->getOriginalReflection();
 		}
 

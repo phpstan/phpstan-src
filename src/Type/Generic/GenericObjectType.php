@@ -190,32 +190,36 @@ class GenericObjectType extends ObjectType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		$reflection = parent::getProperty($propertyName, $scope);
+		$reflection = $this->getPropertyWithoutTransformingStatic($propertyName, $scope);
 		$ancestor = $this->getAncestorWithClassName($reflection->getDeclaringClass()->getName());
-		if ($ancestor === null) {
-			$classReflection = $reflection->getDeclaringClass();
-		} else {
+		$classReflection = null;
+		if ($ancestor !== null) {
 			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $reflection->getDeclaringClass();
 		}
 
 		return new ResolvedPropertyReflection(
-			$reflection,
+			$this->transformPropertyWithStaticType($classReflection, $reflection),
 			$classReflection->getActiveTemplateTypeMap()
 		);
 	}
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		$reflection = parent::getMethod($methodName, $scope);
+		$reflection = $this->getMethodWithoutTransformingStatic($methodName, $scope);
 		$ancestor = $this->getAncestorWithClassName($reflection->getDeclaringClass()->getName());
-		if ($ancestor === null) {
-			$classReflection = $reflection->getDeclaringClass();
-		} else {
+		$classReflection = null;
+		if ($ancestor !== null) {
 			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $reflection->getDeclaringClass();
 		}
 
 		return new ResolvedMethodReflection(
-			$reflection,
+			$this->transformMethodWithStaticType($classReflection, $reflection),
 			$classReflection->getActiveTemplateTypeMap()
 		);
 	}

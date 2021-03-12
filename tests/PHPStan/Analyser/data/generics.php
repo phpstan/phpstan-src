@@ -982,8 +982,8 @@ class CreateClassReflectionOfStaticClass
 	public function doFoo()
 	{
 		assertType('PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass', (new \ReflectionClass(self::class))->newInstanceWithoutConstructor());
-		assertType('PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass', (new \ReflectionClass(static::class))->newInstanceWithoutConstructor());
-		assertType('class-string<PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass>', (new \ReflectionClass(static::class))->name);
+		assertType('static(PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass)', (new \ReflectionClass(static::class))->newInstanceWithoutConstructor());
+		assertType('class-string<static(PHPStan\Generics\FunctionsAssertType\CreateClassReflectionOfStaticClass)>', (new \ReflectionClass(static::class))->name);
 	}
 
 }

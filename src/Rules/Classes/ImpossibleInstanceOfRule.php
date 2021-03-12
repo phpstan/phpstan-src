@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
@@ -41,7 +42,8 @@ class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
 		$expressionType = $scope->getType($node->expr);
 
 		if ($node->class instanceof Node\Name) {
-			$classType = $scope->resolveTypeByName($node->class);
+			$className = $scope->resolveName($node->class);
+			$classType = new ObjectType($className);
 		} else {
 			$classType = $scope->getType($node->class);
 			$allowed = TypeCombinator::union(

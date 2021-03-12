@@ -5,7 +5,6 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
@@ -26,9 +25,6 @@ class TemplateTypeHelper
 
 				if ($newType instanceof ErrorType) {
 					return $traverse($type->getBound());
-				}
-				if ($newType instanceof StaticType) {
-					return $traverse($newType->getStaticObjectType());
 				}
 
 				return $newType;

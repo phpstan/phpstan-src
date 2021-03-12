@@ -41,7 +41,7 @@ function (Baz $baz): void {
 };
 
 /**
- * @template T
+ * @template T of object
  * @mixin T
  */
 class GenericFoo

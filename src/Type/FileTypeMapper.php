@@ -87,7 +87,7 @@ class FileTypeMapper
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$phpDocKey = $this->getPhpDocKey($className, $traitName, $functionName, $docComment);
+		$phpDocKey = $this->getPhpDocKey($fileName, $className, $traitName, $functionName, $docComment);
 		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
@@ -349,7 +349,7 @@ class FileTypeMapper
 					$className = $classStack[count($classStack) - 1] ?? null;
 					$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 
-					$phpDocKey = $this->getPhpDocKey($className, $lookForTrait, $functionName, $phpDocString);
+					$phpDocKey = $this->getPhpDocKey($fileName, $className, $lookForTrait, $functionName, $phpDocString);
 					$phpDocMap[$phpDocKey] = static function () use ($phpDocString, $namespace, $uses, $className, $functionName, $typeMapCb, $resolvableTemplateTypes): NameScopedPhpDocString {
 						$nameScope = new NameScope(
 							$namespace,
@@ -581,6 +581,7 @@ class FileTypeMapper
 	}
 
 	private function getPhpDocKey(
+		string $file,
 		?string $class,
 		?string $trait,
 		?string $function,
@@ -593,7 +594,7 @@ class FileTypeMapper
 		}
 		$docComment = $this->docKeys[$cacheKey];
 
-		return md5(sprintf('%s-%s-%s-%s', $class, $trait, $function, $docComment));
+		return md5(sprintf('%s-%s-%s-%s-%s', $file, $class, $trait, $function, $docComment));
 	}
 
 	/**

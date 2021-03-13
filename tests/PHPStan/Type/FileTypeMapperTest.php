@@ -181,4 +181,5 @@ class FileTypeMapperTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('Namespace1\Foo', $doc1->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
 		$this->assertSame('Namespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
 	}
+
 }

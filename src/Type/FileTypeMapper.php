@@ -216,7 +216,7 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v8-generic-traits', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v9-generic-traits', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -594,7 +594,11 @@ class FileTypeMapper
 		}
 		$docComment = $this->docKeys[$cacheKey];
 
-		return md5(sprintf('%s-%s-%s-%s-%s', $file, $class, $trait, $function, $docComment));
+		if ($class === null && $trait === null && $function === null) {
+			return md5(sprintf('%s-%s', $file, $docComment));
+		}
+
+		return md5(sprintf('%s-%s-%s-%s', $class, $trait, $function, $docComment));
 	}
 
 	/**

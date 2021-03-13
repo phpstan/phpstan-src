@@ -170,4 +170,15 @@ class FileTypeMapperTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('CyclicPhpDocs\Foo|iterable<CyclicPhpDocs\Foo>', $returnTag->getType()->describe(VerbosityLevel::precise()));
 	}
 
+	public function testFilesWithIdenticalPhpDocsUsingDifferentAliases(): void
+	{
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
+
+		$doc1 = $fileTypeMapper->getResolvedPhpDoc(__DIR__ . '/data/alias-collision1.php', null, null, null, '/** @var Foo $x */');
+		$doc2 = $fileTypeMapper->getResolvedPhpDoc(__DIR__ . '/data/alias-collision2.php', null, null, null, '/** @var Foo $x */');
+
+		$this->assertSame('Namespace1\Foo', $doc1->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Namespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
+	}
 }

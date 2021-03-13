@@ -87,7 +87,7 @@ class FileTypeMapper
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$phpDocKey = $this->getPhpDocKey($className, $traitName, $functionName, $docComment);
+		$phpDocKey = $this->getPhpDocKey($fileName, $className, $traitName, $functionName, $docComment);
 		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
@@ -216,7 +216,7 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v7-generic-traits', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v8-alias-collision', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -349,7 +349,7 @@ class FileTypeMapper
 					$className = $classStack[count($classStack) - 1] ?? null;
 					$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 
-					$phpDocKey = $this->getPhpDocKey($className, $lookForTrait, $functionName, $phpDocString);
+					$phpDocKey = $this->getPhpDocKey($fileName, $className, $lookForTrait, $functionName, $phpDocString);
 					$phpDocMap[$phpDocKey] = static function () use ($phpDocString, $namespace, $uses, $className, $functionName, $typeMapCb, $resolvableTemplateTypes): NameScopedPhpDocString {
 						$nameScope = new NameScope(
 							$namespace,
@@ -581,6 +581,7 @@ class FileTypeMapper
 	}
 
 	private function getPhpDocKey(
+		string $file,
 		?string $class,
 		?string $trait,
 		?string $function,
@@ -592,6 +593,10 @@ class FileTypeMapper
 			$this->docKeys[$cacheKey] = \Nette\Utils\Strings::replace($docComment, '#\s+#', ' ');
 		}
 		$docComment = $this->docKeys[$cacheKey];
+
+		if ($class === null && $trait === null && $function === null) {
+			return md5(sprintf('%s-%s', $file, $docComment));
+		}
 
 		return md5(sprintf('%s-%s-%s-%s', $class, $trait, $function, $docComment));
 	}

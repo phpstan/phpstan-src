@@ -154,7 +154,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 		$xml->loadXML($this->getOutputContent());
 
 		$this->assertTrue(
-			$xml->schemaValidate('https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd'),
+			$xml->schemaValidate(__DIR__ . '/junit-schema.xsd'),
 			'Schema do not validate'
 		);
 

@@ -5784,6 +5784,33 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-function.php');
 	}
 
+	public function dataThrowPoints(): iterable
+	{
+		require_once __DIR__ . '/data/throw-points/helpers.php';
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/php8/null-safe-method-call.php');
+		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/and.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/array.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/array-dim-fetch.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/assign.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/assign-op.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/do-while.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/for.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/foreach.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/func-call.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/if.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/method-call.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/or.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/property-fetch.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/static-call.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/switch.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/throw.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch-finally.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/variable.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/while.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11423,6 +11450,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4190
 	 * @dataProvider dataClearStatCache
 	 * @dataProvider dataInvalidateObjectStateAfterPassingToImpureFunction
+	 * @dataProvider dataThrowPoints
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

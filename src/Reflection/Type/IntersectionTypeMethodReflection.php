@@ -79,7 +79,6 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function getVariants(): array
 	{
-		$variants = $this->methods[0]->getVariants();
 		$returnType = TypeCombinator::intersect(...array_map(static function (MethodReflection $method): Type {
 			return TypeCombinator::intersect(...array_map(static function (ParametersAcceptor $acceptor): Type {
 				return $acceptor->getReturnType();
@@ -94,7 +93,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 				$acceptor->isVariadic(),
 				$returnType
 			);
-		}, $variants);
+		}, $this->methods[0]->getVariants());
 	}
 
 	public function isDeprecated(): TrinaryLogic

@@ -9,6 +9,8 @@ use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
@@ -51,7 +53,20 @@ trait ObjectTypeTrait
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		return new DummyMethodReflection($methodName);
+		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+	}
+
+	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
+	{
+		$method = new DummyMethodReflection($methodName);
+		return new CallbackUnresolvedMethodPrototypeReflection(
+			$method,
+			$method->getDeclaringClass(),
+			false,
+			static function (Type $type): Type {
+				return $type;
+			}
+		);
 	}
 
 	public function canAccessConstants(): TrinaryLogic

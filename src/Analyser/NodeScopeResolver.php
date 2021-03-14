@@ -466,7 +466,11 @@ class NodeScopeResolver
 				$classReflection = $scope->getClassReflection();
 				$phpDocReturnType = TypeTraverser::map($phpDocReturnType, static function (Type $type, callable $traverse) use ($classReflection): Type {
 					if ($type instanceof StaticType) {
-						return $traverse($type->changeBaseClass($classReflection));
+						$changedType = $type->changeBaseClass($classReflection);
+						if ($classReflection->isFinal()) {
+							$changedType = $changedType->getStaticObjectType();
+						}
+						return $traverse($changedType);
 					}
 
 					return $traverse($type);

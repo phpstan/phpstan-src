@@ -374,7 +374,12 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testBug2164(): void
 	{
 		$this->checkThisOnly = false;
-		$this->analyse([__DIR__ . '/data/bug-2164.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-2164.php'], [
+			[
+				'Parameter #1 $arg of static method Bug2164\A::staticTest() expects static(Bug2164\B)|string, Bug2164\B|string given.',
+				24,
+			],
+		]);
 	}
 
 	public function testNamedArguments(): void

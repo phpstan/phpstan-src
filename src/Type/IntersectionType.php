@@ -7,7 +7,8 @@ use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
-use PHPStan\Reflection\Type\IntersectionTypeMethodReflection;
+use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -194,25 +195,30 @@ class IntersectionType implements CompoundType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		$methods = [];
+		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+	}
+
+	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
+	{
+		$methodPrototypes = [];
 		foreach ($this->types as $type) {
 			if (!$type->hasMethod($methodName)->yes()) {
 				continue;
 			}
 
-			$methods[] = $type->getMethod($methodName, $scope);
+			$methodPrototypes[] = $type->getUnresolvedMethodPrototype($methodName, $scope)->withCalledOnType($this);
 		}
 
-		$methodsCount = count($methods);
+		$methodsCount = count($methodPrototypes);
 		if ($methodsCount === 0) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
 		if ($methodsCount === 1) {
-			return $methods[0];
+			return $methodPrototypes[0];
 		}
 
-		return new IntersectionTypeMethodReflection($methodName, $methods);
+		return new IntersectionTypeUnresolvedMethodPrototypeReflection($methodName, $methodPrototypes);
 	}
 
 	public function canAccessConstants(): TrinaryLogic

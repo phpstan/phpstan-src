@@ -6,16 +6,12 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
-use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
+use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -191,23 +187,6 @@ class StaticType implements TypeWithClassName
 		);
 	}
 
-	private function transformStaticType(Type $type, ClassMemberAccessAnswerer $scope): Type
-	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($scope): Type {
-			if ($type instanceof StaticType) {
-				$classReflection = $this->classReflection;
-				if ($classReflection === null) {
-					$classReflection = $this->baseClass;
-				} elseif ($scope->isInClass()) {
-					$classReflection = $scope->getClassReflection();
-				}
-				return $type->changeBaseClass($classReflection);
-			}
-
-			return $traverse($type);
-		});
-	}
-
 	public function canCallMethods(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->canCallMethods();
@@ -220,40 +199,55 @@ class StaticType implements TypeWithClassName
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		$staticObject = $this->getStaticObjectType();
-		$method = $staticObject->getMethodWithoutTransformingStatic($methodName, $scope);
-		$variants = array_map(function (ParametersAcceptor $acceptor) use ($scope): ParametersAcceptor {
-			return new FunctionVariant(
-				$acceptor->getTemplateTypeMap(),
-				$acceptor->getResolvedTemplateTypeMap(),
-				array_map(function (ParameterReflection $parameter) use ($scope): ParameterReflection {
-					return new DummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType(), $scope),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue()
-					);
-				}, $acceptor->getParameters()),
-				$acceptor->isVariadic(),
-				$this->transformStaticType($acceptor->getReturnType(), $scope)
-			);
-		}, $method->getVariants());
+		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+	}
 
-		$ancestor = $this->getAncestorWithClassName($method->getDeclaringClass()->getName());
+	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
+	{
+		$staticObject = $this->getStaticObjectType();
+		$nakedMethod = $staticObject->getUnresolvedMethodPrototype($methodName, $scope)->getNakedMethod();
+
+		$ancestor = $this->getAncestorWithClassName($nakedMethod->getDeclaringClass()->getName());
 		$classReflection = null;
 		if ($ancestor !== null) {
 			$classReflection = $ancestor->getClassReflection();
 		}
 		if ($classReflection === null) {
-			$classReflection = $method->getDeclaringClass();
+			$classReflection = $nakedMethod->getDeclaringClass();
 		}
 
-		return new ResolvedMethodReflection(
-			new ChangedTypeMethodReflection($classReflection, $method, $variants),
-			$classReflection->getActiveTemplateTypeMap()
+		return new CallbackUnresolvedMethodPrototypeReflection(
+			$nakedMethod,
+			$classReflection,
+			false,
+			function (Type $type) use ($scope): Type {
+				return $this->transformStaticType($type, $scope);
+			}
 		);
+	}
+
+	private function transformStaticType(Type $type, ClassMemberAccessAnswerer $scope): Type
+	{
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($scope): Type {
+			if ($type instanceof StaticType) {
+				$classReflection = $this->classReflection;
+				$isFinal = false;
+				if ($classReflection === null) {
+					$classReflection = $this->baseClass;
+				} elseif ($scope->isInClass()) {
+					$classReflection = $scope->getClassReflection();
+					$isFinal = $classReflection->isFinal();
+				}
+				$type = $type->changeBaseClass($classReflection);
+				if (!$isFinal) {
+					return $type;
+				}
+
+				return $type->getStaticObjectType();
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	public function canAccessConstants(): TrinaryLogic

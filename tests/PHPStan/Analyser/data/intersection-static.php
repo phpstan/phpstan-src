@@ -51,3 +51,21 @@ class Lorem
 	}
 
 }
+
+abstract class Ipsum implements Foo
+{
+
+	public function testThis(): void
+	{
+		assertType('static(IntersectionStatic\Ipsum)', $this->returnStatic());
+		if ($this instanceof Bar) {
+			assertType('$this(IntersectionStatic\Ipsum)&IntersectionStatic\Bar', $this);
+			assertType('$this(IntersectionStatic\Ipsum)&IntersectionStatic\Bar', $this->returnStatic());
+		}
+		if ($this instanceof Baz) {
+			assertType('$this(IntersectionStatic\Ipsum)&IntersectionStatic\Baz', $this);
+			assertType('$this(IntersectionStatic\Ipsum)&IntersectionStatic\Baz', $this->returnStatic());
+		}
+	}
+
+}

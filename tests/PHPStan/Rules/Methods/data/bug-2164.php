@@ -24,3 +24,15 @@ class B extends A
 		B::staticTest($arg);
 	}
 }
+
+final class B2 extends A
+{
+	/**
+	 * @param B2|string $arg
+	 * @return void
+	 */
+	public function test($arg)
+	{
+		B2::staticTest($arg);
+	}
+}

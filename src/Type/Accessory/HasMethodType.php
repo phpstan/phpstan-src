@@ -6,6 +6,8 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
@@ -91,7 +93,20 @@ class HasMethodType implements AccessoryType, CompoundType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		return new DummyMethodReflection($this->methodName);
+		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+	}
+
+	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
+	{
+		$method = new DummyMethodReflection($this->methodName);
+		return new CallbackUnresolvedMethodPrototypeReflection(
+			$method,
+			$method->getDeclaringClass(),
+			false,
+			static function (Type $type): Type {
+				return $type;
+			}
+		);
 	}
 
 	public function isCallable(): TrinaryLogic

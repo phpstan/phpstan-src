@@ -7,19 +7,15 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
-use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -117,47 +113,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		);
 	}
 
-	protected function transformMethodWithStaticType(ClassReflection $declaringClass, MethodReflection $method): MethodReflection
-	{
-		$variants = array_map(function (ParametersAcceptor $acceptor): ParametersAcceptor {
-			return new FunctionVariant(
-				$acceptor->getTemplateTypeMap(),
-				$acceptor->getResolvedTemplateTypeMap(),
-				array_map(function (ParameterReflection $parameter): ParameterReflection {
-					return new DummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue()
-					);
-				}, $acceptor->getParameters()),
-				$acceptor->isVariadic(),
-				$this->transformStaticType($acceptor->getReturnType())
-			);
-		}, $method->getVariants());
-
-		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);
-	}
-
 	protected function transformPropertyWithStaticType(ClassReflection $declaringClass, PropertyReflection $property): PropertyReflection
 	{
 		$readableType = $this->transformStaticType($property->getReadableType());
 		$writableType = $this->transformStaticType($property->getWritableType());
 
 		return new ChangedTypePropertyReflection($declaringClass, $property, $readableType, $writableType);
-	}
-
-	private function transformStaticType(Type $type): Type
-	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
-			if ($type instanceof StaticType) {
-				return $this;
-			}
-
-			return $traverse($type);
-		});
 	}
 
 	public function getPropertyWithoutTransformingStatic(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
@@ -539,38 +500,51 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		$method = $this->getMethodWithoutTransformingStatic($methodName, $scope);
-		$ancestor = $this->getAncestorWithClassName($method->getDeclaringClass()->getName());
-		$classReflection = null;
-		if ($ancestor !== null) {
-			$classReflection = $ancestor->getClassReflection();
-		}
-		if ($classReflection === null) {
-			$classReflection = $method->getDeclaringClass();
+		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+	}
+
+	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
+	{
+		$nakedClassReflection = $this->getNakedClassReflection();
+		if ($nakedClassReflection === null) {
+			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
 		}
 
-		return new ResolvedMethodReflection(
-			$this->transformMethodWithStaticType($classReflection, $method),
-			$classReflection->getActiveTemplateTypeMap()->resolveToBounds()
+		if (!$nakedClassReflection->hasMethod($methodName)) {
+			$nakedClassReflection = $this->getClassReflection();
+		}
+
+		if ($nakedClassReflection === null) {
+			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
+		}
+
+		$method = $nakedClassReflection->getMethod($methodName, $scope);
+		$ancestor = $this->getAncestorWithClassName($method->getDeclaringClass()->getName());
+		$resolvedClassReflection = null;
+		if ($ancestor !== null) {
+			$resolvedClassReflection = $ancestor->getClassReflection();
+		}
+		if ($resolvedClassReflection === null) {
+			$resolvedClassReflection = $method->getDeclaringClass();
+		}
+
+		return new CalledOnTypeUnresolvedMethodPrototypeReflection(
+			$method,
+			$resolvedClassReflection,
+			true,
+			$this
 		);
 	}
 
-	public function getMethodWithoutTransformingStatic(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	private function transformStaticType(Type $type): Type
 	{
-		$classReflection = $this->getNakedClassReflection();
-		if ($classReflection === null) {
-			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
-		}
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof StaticType) {
+				return $this;
+			}
 
-		if (!$classReflection->hasMethod($methodName)) {
-			$classReflection = $this->getClassReflection();
-		}
-
-		if ($classReflection === null) {
-			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
-		}
-
-		return $classReflection->getMethod($methodName, $scope);
+			return $traverse($type);
+		});
 	}
 
 	public function canAccessConstants(): TrinaryLogic

@@ -1878,38 +1878,11 @@ class MutatingScope implements Scope
 
 		if ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
 			$typeCallback = function () use ($node): Type {
-				$methodCalledOnType = $this->getType($node->var);
-				$methodName = $node->name->name;
-				$map = function (Type $type, callable $traverse) use ($methodName, $node): Type {
-					if ($type instanceof UnionType) {
-						return $traverse($type);
-					}
-					if ($type instanceof IntersectionType) {
-						$returnTypes = [];
-						foreach ($type->getTypes() as $innerType) {
-							$returnType = $this->methodCallReturnType(
-								$innerType,
-								$methodName,
-								$node
-							);
-							if ($returnType === null) {
-								continue;
-							}
-
-							$returnTypes[] = $returnType;
-						}
-						if (count($returnTypes) === 0) {
-							return new NeverType();
-						}
-						return TypeCombinator::intersect(...$returnTypes);
-					}
-					return $this->methodCallReturnType(
-						$type,
-						$methodName,
-						$node
-					) ?? new NeverType();
-				};
-				$returnType = TypeTraverser::map($methodCalledOnType, $map);
+				$returnType = $this->methodCallReturnType(
+					$this->getType($node->var),
+					$node->name->name,
+					$node
+				) ?? new NeverType();
 				if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
 					return new ErrorType();
 				}
@@ -1938,37 +1911,11 @@ class MutatingScope implements Scope
 					}
 				}
 
-				$methodName = $node->name->toString();
-				$map = function (Type $type, callable $traverse) use ($methodName, $node): Type {
-					if ($type instanceof UnionType) {
-						return $traverse($type);
-					}
-					if ($type instanceof IntersectionType) {
-						$returnTypes = [];
-						foreach ($type->getTypes() as $innerType) {
-							$returnType = $this->methodCallReturnType(
-								$innerType,
-								$methodName,
-								$node
-							);
-							if ($returnType === null) {
-								continue;
-							}
-
-							$returnTypes[] = $returnType;
-						}
-						if (count($returnTypes) === 0) {
-							return new NeverType();
-						}
-						return TypeCombinator::intersect(...$returnTypes);
-					}
-					return $this->methodCallReturnType(
-						$type,
-						$methodName,
-						$node
-					) ?? new NeverType();
-				};
-				$returnType = TypeTraverser::map($staticMethodCalledOnType, $map);
+				$returnType = $this->methodCallReturnType(
+					$staticMethodCalledOnType,
+					$node->name->toString(),
+					$node
+				) ?? new NeverType();
 				if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
 					return new ErrorType();
 				}
@@ -1985,39 +1932,11 @@ class MutatingScope implements Scope
 
 		if ($node instanceof PropertyFetch && $node->name instanceof Node\Identifier) {
 			$typeCallback = function () use ($node): Type {
-				$propertyFetchedOnType = $this->getType($node->var);
-				$propertyName = $node->name->name;
-				$map = function (Type $type, callable $traverse) use ($propertyName, $node): Type {
-					if ($type instanceof UnionType) {
-						return $traverse($type);
-					}
-					if ($type instanceof IntersectionType) {
-						$returnTypes = [];
-						foreach ($type->getTypes() as $innerType) {
-							$returnType = $this->propertyFetchType(
-								$innerType,
-								$propertyName,
-								$node
-							);
-							if ($returnType === null) {
-								continue;
-							}
-
-							$returnTypes[] = $returnType;
-						}
-						if (count($returnTypes) === 0) {
-							return new NeverType();
-						}
-						return TypeCombinator::intersect(...$returnTypes);
-					}
-					return $this->propertyFetchType(
-						$type,
-						$propertyName,
-						$node
-					) ?? new NeverType();
-				};
-
-				$returnType = TypeTraverser::map($propertyFetchedOnType, $map);
+				$returnType = $this->propertyFetchType(
+					$this->getType($node->var),
+					$node->name->name,
+					$node
+				) ?? new NeverType();
 				if ($returnType instanceof NeverType) {
 					return new ErrorType();
 				}
@@ -2049,38 +1968,11 @@ class MutatingScope implements Scope
 					}
 				}
 
-				$staticPropertyName = $node->name->toString();
-				$map = function (Type $type, callable $traverse) use ($staticPropertyName, $node): Type {
-					if ($type instanceof UnionType) {
-						return $traverse($type);
-					}
-					if ($type instanceof IntersectionType) {
-						$returnTypes = [];
-						foreach ($type->getTypes() as $innerType) {
-							$returnType = $this->propertyFetchType(
-								$innerType,
-								$staticPropertyName,
-								$node
-							);
-							if ($returnType === null) {
-								continue;
-							}
-
-							$returnTypes[] = $returnType;
-						}
-						if (count($returnTypes) === 0) {
-							return new NeverType();
-						}
-						return TypeCombinator::intersect(...$returnTypes);
-					}
-					return $this->propertyFetchType(
-						$type,
-						$staticPropertyName,
-						$node
-					) ?? new NeverType();
-				};
-
-				$returnType = TypeTraverser::map($staticPropertyFetchedOnType, $map);
+				$returnType = $this->propertyFetchType(
+					$staticPropertyFetchedOnType,
+					$node->name->toString(),
+					$node
+				) ?? new NeverType();
 				if ($returnType instanceof NeverType) {
 					return new ErrorType();
 				}
@@ -4717,6 +4609,21 @@ class MutatingScope implements Scope
 	 */
 	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
 	{
+		if ($typeWithMethod instanceof UnionType) {
+			$newTypes = [];
+			foreach ($typeWithMethod->getTypes() as $innerType) {
+				if (!$innerType->hasMethod($methodName)->yes()) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
+			}
+			if (count($newTypes) === 0) {
+				return null;
+			}
+			$typeWithMethod = TypeCombinator::union(...$newTypes);
+		}
+
 		if (!$typeWithMethod->hasMethod($methodName)->yes()) {
 			return null;
 		}
@@ -4724,9 +4631,9 @@ class MutatingScope implements Scope
 		$methodReflection = $typeWithMethod->getMethod($methodName, $this);
 
 		$resolvedTypes = [];
-		if ($typeWithMethod instanceof TypeWithClassName) {
+		foreach (TypeUtils::getDirectClassNames($typeWithMethod) as $className) {
 			if ($methodCall instanceof MethodCall) {
-				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicMethodReturnTypeExtension) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
 					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
 						continue;
 					}
@@ -4734,7 +4641,7 @@ class MutatingScope implements Scope
 					$resolvedTypes[] = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $methodCall, $this);
 				}
 			} else {
-				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($typeWithMethod->getClassName()) as $dynamicStaticMethodReturnTypeExtension) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
 					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($methodReflection)) {
 						continue;
 					}
@@ -4763,6 +4670,20 @@ class MutatingScope implements Scope
 	 */
 	private function propertyFetchType(Type $fetchedOnType, string $propertyName, Expr $propertyFetch): ?Type
 	{
+		if ($fetchedOnType instanceof UnionType) {
+			$newTypes = [];
+			foreach ($fetchedOnType->getTypes() as $innerType) {
+				if (!$innerType->hasProperty($propertyName)->yes()) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
+			}
+			if (count($newTypes) === 0) {
+				return null;
+			}
+			$fetchedOnType = TypeCombinator::union(...$newTypes);
+		}
 		if (!$fetchedOnType->hasProperty($propertyName)->yes()) {
 			return null;
 		}

@@ -10,8 +10,9 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\Php\ClosureCallMethodReflection;
+use PHPStan\Reflection\Php\ClosureCallUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -165,14 +166,19 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
+		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+	}
+
+	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
+	{
 		if ($methodName === 'call') {
-			return new ClosureCallMethodReflection(
-				$this->objectType->getMethod($methodName, $scope),
+			return new ClosureCallUnresolvedMethodPrototypeReflection(
+				$this->objectType->getUnresolvedMethodPrototype($methodName, $scope),
 				$this
 			);
 		}
 
-		return $this->objectType->getMethod($methodName, $scope);
+		return $this->objectType->getUnresolvedMethodPrototype($methodName, $scope);
 	}
 
 	public function canAccessConstants(): TrinaryLogic

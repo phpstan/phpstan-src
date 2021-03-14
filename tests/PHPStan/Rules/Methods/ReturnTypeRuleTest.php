@@ -454,4 +454,9 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4605.php'], []);
 	}
 
+	public function testReturnStatic(): void
+	{
+		$this->analyse([__DIR__ . '/data/return-static.php'], []);
+	}
+
 }

@@ -1078,64 +1078,72 @@ class NodeScopeResolver
 
 			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPointsForOuterLoop);
 		} elseif ($stmt instanceof TryCatch) {
-			$branchScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback);
-			$branchScope = $branchScopeResult->getScope();
-			$tryScope = $branchScope;
-			$exitPoints = [];
-			$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
-			$alwaysTerminating = $branchScopeResult->isAlwaysTerminating();
-			$hasYield = $branchScopeResult->hasYield();
+			$tryScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback);
+			$tryScope = $tryScopeResult->getScope();
 
-			if ($stmt->finally !== null) {
-				$finallyScope = $branchScope;
-			} else {
-				$finallyScope = null;
-			}
-			foreach ($branchScopeResult->getExitPoints() as $exitPoint) {
-				if ($finallyScope !== null) {
-					$finallyScope = $finallyScope->mergeWith($exitPoint->getScope());
-				}
-				$exitPoints[] = $exitPoint;
-			}
+			$normalTryScope = $tryScope;
+			$uncaughtTryScope = $tryScope->mergeWith($scope);
+
+			$normalCatchScopes = [];
+			$uncaughtCatchScopes = [];
+			$caughtAll = false;
+
+			$hasYield = $tryScopeResult->hasYield();
+			$alwaysTerminating = $tryScopeResult->isAlwaysTerminating();
+			$exitPoints = $tryScopeResult->getExitPoints();
 
 			foreach ($stmt->catches as $catchNode) {
-				$nodeCallback($catchNode, $scope);
-				if (!$this->polluteCatchScopeWithTryAssignments) {
-					$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($tryScope), $nodeCallback);
-					$catchScopeForFinally = $catchScopeResult->getScope();
+				$nodeCallback($catchNode, $uncaughtTryScope);
+				$catchResult = $this->processCatchNode($catchNode, $uncaughtTryScope, $nodeCallback);
+				$catchScope = $catchResult->getScope();
+
+				if ($catchResult->isAlwaysTerminating()) {
+					$uncaughtCatchScopes[] = $catchScope;
 				} else {
-					$catchScopeForFinally = $this->processCatchNode($catchNode, $tryScope, $nodeCallback)->getScope();
-					$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($tryScope), static function (): void {
-					});
+					$normalCatchScopes[] = $catchScope;
 				}
 
-				$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
-				$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();
-				$hasYield = $hasYield || $catchScopeResult->hasYield();
+				$hasYield = $hasYield || $catchResult->hasYield();
+				$alwaysTerminating = $alwaysTerminating && $catchResult->isAlwaysTerminating();
+				$exitPoints = array_merge($exitPoints, $catchResult->getExitPoints());
 
-				if ($finallyScope !== null) {
-					$finallyScope = $finallyScope->mergeWith($catchScopeForFinally);
-				}
-				foreach ($catchScopeResult->getExitPoints() as $exitPoint) {
-					if ($finallyScope !== null) {
-						$finallyScope = $finallyScope->mergeWith($exitPoint->getScope());
+				foreach ($catchNode->types as $type) {
+					if ($scope->resolveName($type) === \Throwable::class) {
+						$caughtAll = true;
 					}
-					$exitPoints[] = $exitPoint;
 				}
 			}
 
-			if ($finalScope === null) {
-				$finalScope = $scope;
-			}
+			if ($stmt->finally) {
+				$finallyScope = $normalTryScope;
+				if (!$caughtAll) {
+					$finallyScope = $finallyScope->mergeWith($uncaughtTryScope);
+				}
+				foreach ($normalCatchScopes as $catchScope) {
+					$finallyScope = $finallyScope->mergeWith($catchScope);
+				}
+				foreach ($uncaughtCatchScopes as $catchScope) {
+					$finallyScope = $finallyScope->mergeWith($catchScope);
+				}
 
-			if ($finallyScope !== null && $stmt->finally !== null) {
-				$originalFinallyScope = $finallyScope;
-				$finallyResult = $this->processStmtNodes($stmt->finally, $stmt->finally->stmts, $finallyScope, $nodeCallback);
-				$alwaysTerminating = $alwaysTerminating || $finallyResult->isAlwaysTerminating();
+				$this->processStmtNodes($stmt->finally, $stmt->finally->stmts, $finallyScope, $nodeCallback);
+
+				$optimisticFinallyScope = $normalTryScope;
+				foreach ($normalCatchScopes as $catchScope) {
+					$optimisticFinallyScope = $optimisticFinallyScope->mergeWith($catchScope);
+				}
+				$finallyResult = $this->processStmtNodes($stmt->finally, $stmt->finally->stmts, $optimisticFinallyScope, static function (): void {
+				});
+
+				$finalScope = $finallyResult->getScope();
 				$hasYield = $hasYield || $finallyResult->hasYield();
-				$finallyScope = $finallyResult->getScope();
-				$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
-				$exitPoints = array_merge($exitPoints, $finallyResult->getExitPoints());
+				$alwaysTerminating = $alwaysTerminating || $finallyResult->isAlwaysTerminating();
+				$exitPoints = $finallyResult->getExitPoints();
+			} else {
+				$finalScope = $normalTryScope;
+				foreach ($normalCatchScopes as $catchScope) {
+					$finalScope = $finalScope->mergeWith($catchScope);
+				}
 			}
 
 			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints);

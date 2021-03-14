@@ -5656,6 +5656,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/generic-parent.php');
 	}
 
+	public function dataTryCatchV2(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/try-catch-scope-v2.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11270,6 +11275,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4423
 	 * @dataProvider dataGenericUnions
 	 * @dataProvider dataGenericParent
+	 * @dataProvider dataTryCatchV2
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

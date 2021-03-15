@@ -466,7 +466,12 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testBug3523(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-3523.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-3523.php'], [
+			[
+				'Method Bug3523\Bar::deserialize() should return static(Bug3523\Bar) but returns Bug3523\Bar.',
+				31,
+			],
+		]);
 	}
 
 	public function testBug3120(): void

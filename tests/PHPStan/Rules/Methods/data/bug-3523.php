@@ -20,3 +20,25 @@ final class Foo implements FooInterface
 		return new self();
 	}
 }
+
+class Bar implements FooInterface
+{
+	/**
+	 * @return static
+	 */
+	public function deserialize(): self
+	{
+		return new self();
+	}
+}
+
+class Baz implements FooInterface
+{
+	/**
+	 * @return self
+	 */
+	public function deserialize(): self
+	{
+		return new self();
+	}
+}

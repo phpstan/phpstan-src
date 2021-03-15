@@ -294,7 +294,12 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
-		$this->analyse([__DIR__ . '/data/bug-3523.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-3523.php'], [
+			[
+				'Return type (Bug3523\Baz) of method Bug3523\Baz::deserialize() should be covariant with return type (static(Bug3523\FooInterface)) of method Bug3523\FooInterface::deserialize()',
+				40,
+			],
+		]);
 	}
 
 }

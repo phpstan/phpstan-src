@@ -6,7 +6,8 @@ use function PHPStan\Analyser\assertType;
 
 abstract class BaseEnum
 {
-	private string $value;
+	/** @var string */
+	private $value;
 
 	final private function __construct(string $value)
 	{

@@ -38,7 +38,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 		$this->calledOnType = $calledOnType;
 	}
 
-	public function doNotResolveTemplateTypeMapToBounds(): self
+	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection
 	{
 		return new self(
 			$this->methodReflection,

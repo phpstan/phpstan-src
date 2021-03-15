@@ -43,7 +43,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 		$this->transformStaticTypeCallback = $transformStaticTypeCallback;
 	}
 
-	public function doNotResolveTemplateTypeMapToBounds(): self
+	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection
 	{
 		return new self(
 			$this->methodReflection,

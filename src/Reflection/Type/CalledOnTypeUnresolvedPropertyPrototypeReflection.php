@@ -34,7 +34,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 		$this->fetchedOnType = $fetchedOnType;
 	}
 
-	public function doNotResolveTemplateTypeMapToBounds(): self
+	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection
 	{
 		return new self(
 			$this->propertyReflection,

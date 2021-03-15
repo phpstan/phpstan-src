@@ -39,7 +39,7 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 		$this->transformStaticTypeCallback = $transformStaticTypeCallback;
 	}
 
-	public function doNotResolveTemplateTypeMapToBounds(): self
+	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection
 	{
 		return new self(
 			$this->propertyReflection,

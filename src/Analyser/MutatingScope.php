@@ -1882,8 +1882,8 @@ class MutatingScope implements Scope
 					$this->getType($node->var),
 					$node->name->name,
 					$node
-				) ?? new NeverType();
-				if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
+				);
+				if ($returnType === null) {
 					return new ErrorType();
 				}
 				return $returnType;
@@ -1915,8 +1915,8 @@ class MutatingScope implements Scope
 					$staticMethodCalledOnType,
 					$node->name->toString(),
 					$node
-				) ?? new NeverType();
-				if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
+				);
+				if ($returnType === null) {
 					return new ErrorType();
 				}
 				return $returnType;
@@ -1936,8 +1936,8 @@ class MutatingScope implements Scope
 					$this->getType($node->var),
 					$node->name->name,
 					$node
-				) ?? new NeverType();
-				if ($returnType instanceof NeverType) {
+				);
+				if ($returnType === null) {
 					return new ErrorType();
 				}
 				return $returnType;
@@ -1972,8 +1972,8 @@ class MutatingScope implements Scope
 					$staticPropertyFetchedOnType,
 					$node->name->toString(),
 					$node
-				) ?? new NeverType();
-				if ($returnType instanceof NeverType) {
+				);
+				if ($returnType === null) {
 					return new ErrorType();
 				}
 				return $returnType;

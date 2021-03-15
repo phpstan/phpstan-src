@@ -129,7 +129,13 @@ class StaticType implements TypeWithClassName
 		}
 
 		if ($type instanceof ObjectType) {
-			return TrinaryLogic::createMaybe()->and($this->getStaticObjectType()->isSuperTypeOf($type));
+			$result = $this->getStaticObjectType()->isSuperTypeOf($type);
+			$classReflection = $type->getClassReflection();
+			if ($result->yes() && $classReflection !== null && $classReflection->isFinal()) {
+				return $result;
+			}
+
+			return TrinaryLogic::createMaybe()->and($result);
 		}
 
 		if ($type instanceof CompoundType) {

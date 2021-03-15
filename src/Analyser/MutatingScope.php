@@ -854,8 +854,16 @@ class MutatingScope implements Scope
 			$uncertainty = false;
 
 			if ($node->class instanceof Node\Name) {
-				$className = $this->resolveName($node->class);
-				$classType = new ObjectType($className);
+				$unresolvedClassName = $node->class->toString();
+				if (
+					strtolower($unresolvedClassName) === 'static'
+					&& $this->isInClass()
+				) {
+					$classType = new StaticType($this->getClassReflection());
+				} else {
+					$className = $this->resolveName($node->class);
+					$classType = new ObjectType($className);
+				}
 			} else {
 				$classType = $this->getType($node->class);
 				$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {

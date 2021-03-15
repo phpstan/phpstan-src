@@ -290,4 +290,11 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4084.php'], []);
 	}
 
+	public function testBug3523(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-3523.php'], []);
+	}
+
 }

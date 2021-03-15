@@ -106,4 +106,12 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4290.php'], []);
 	}
 
+	public function testBug4671(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4671.php'], [[
+			'Offset string&numeric on array<string, string> in isset() does not exist.',
+			13,
+		]]);
+	}
+
 }

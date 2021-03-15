@@ -190,4 +190,15 @@ class BooleanAndConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-composer-dependent-variables.php'], []);
 	}
 
+	public function testBug2231(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-2231.php'], [
+			[
+				'Result of && is always false.',
+				21,
+			],
+		]);
+	}
+
 }

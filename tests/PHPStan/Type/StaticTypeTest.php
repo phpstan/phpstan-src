@@ -4,6 +4,9 @@ namespace PHPStan\Type;
 
 use PHPStan\Broker\Broker;
 use PHPStan\TrinaryLogic;
+use StaticTypeTest\Base;
+use StaticTypeTest\Child;
+use StaticTypeTest\FinalChild;
 
 class StaticTypeTest extends \PHPStan\Testing\TestCase
 {
@@ -224,6 +227,26 @@ class StaticTypeTest extends \PHPStan\Testing\TestCase
 			29 => [
 				new ObjectWithoutClassType(),
 				new ThisType($broker->getClass(\stdClass::class)),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new StaticType(Base::class),
+				new ObjectType(Child::class),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new StaticType(Base::class),
+				new StaticType(FinalChild::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new StaticType(Base::class),
+				new StaticType(Child::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new StaticType(Base::class),
+				new ObjectType(FinalChild::class),
 				TrinaryLogic::createYes(),
 			],
 		];

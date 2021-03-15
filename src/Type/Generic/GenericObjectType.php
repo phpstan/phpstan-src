@@ -7,8 +7,8 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -190,20 +190,14 @@ class GenericObjectType extends ObjectType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		$reflection = $this->getPropertyWithoutTransformingStatic($propertyName, $scope);
-		$ancestor = $this->getAncestorWithClassName($reflection->getDeclaringClass()->getName());
-		$classReflection = null;
-		if ($ancestor !== null) {
-			$classReflection = $ancestor->getClassReflection();
-		}
-		if ($classReflection === null) {
-			$classReflection = $reflection->getDeclaringClass();
-		}
+		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
 
-		return new ResolvedPropertyReflection(
-			$this->transformPropertyWithStaticType($classReflection, $reflection),
-			$classReflection->getActiveTemplateTypeMap()
-		);
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$prototype = parent::getUnresolvedPropertyPrototype($propertyName, $scope);
+
+		return $prototype->doNotResolveTemplateTypeMapToBounds();
 	}
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection

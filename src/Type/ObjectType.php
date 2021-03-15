@@ -7,15 +7,15 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -93,32 +93,40 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		$property = $this->getPropertyWithoutTransformingStatic($propertyName, $scope);
-
-		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
-		$classReflection = null;
-		if ($ancestor !== null) {
-			$classReflection = $ancestor->getClassReflection();
-		}
-		if ($classReflection === null) {
-			$classReflection = $property->getDeclaringClass();
-		}
-		if (!$classReflection->isGeneric()) {
-			return $this->transformPropertyWithStaticType($classReflection, $property);
-		}
-
-		return new ResolvedPropertyReflection(
-			$this->transformPropertyWithStaticType($classReflection, $property),
-			$classReflection->getActiveTemplateTypeMap()->resolveToBounds()
-		);
+		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
 	}
 
-	protected function transformPropertyWithStaticType(ClassReflection $declaringClass, PropertyReflection $property): PropertyReflection
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		$readableType = $this->transformStaticType($property->getReadableType());
-		$writableType = $this->transformStaticType($property->getWritableType());
+		$nakedClassReflection = $this->getNakedClassReflection();
+		if ($nakedClassReflection === null) {
+			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
+		}
 
-		return new ChangedTypePropertyReflection($declaringClass, $property, $readableType, $writableType);
+		if (!$nakedClassReflection->hasProperty($propertyName)) {
+			$nakedClassReflection = $this->getClassReflection();
+		}
+
+		if ($nakedClassReflection === null) {
+			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
+		}
+
+		$property = $nakedClassReflection->getProperty($propertyName, $scope);
+		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
+		$resolvedClassReflection = null;
+		if ($ancestor !== null) {
+			$resolvedClassReflection = $ancestor->getClassReflection();
+		}
+		if ($resolvedClassReflection === null) {
+			$resolvedClassReflection = $property->getDeclaringClass();
+		}
+
+		return new CalledOnTypeUnresolvedPropertyPrototypeReflection(
+			$property,
+			$resolvedClassReflection,
+			true,
+			$this
+		);
 	}
 
 	public function getPropertyWithoutTransformingStatic(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
@@ -534,17 +542,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			true,
 			$this
 		);
-	}
-
-	private function transformStaticType(Type $type): Type
-	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
-			if ($type instanceof StaticType) {
-				return $this;
-			}
-
-			return $traverse($type);
-		});
 	}
 
 	public function canAccessConstants(): TrinaryLogic

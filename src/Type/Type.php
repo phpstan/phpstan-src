@@ -7,6 +7,7 @@ use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeReference;
@@ -33,6 +34,8 @@ interface Type
 	public function hasProperty(string $propertyName): TrinaryLogic;
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection;
+
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection;
 
 	public function canCallMethods(): TrinaryLogic;
 

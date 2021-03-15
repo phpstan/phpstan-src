@@ -7,7 +7,9 @@ use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -250,14 +252,30 @@ class UnionType implements CompoundType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		return $this->getInternal(
-			static function (Type $type) use ($propertyName): TrinaryLogic {
-				return $type->hasProperty($propertyName);
-			},
-			static function (Type $type) use ($propertyName, $scope): PropertyReflection {
-				return $type->getProperty($propertyName, $scope);
+		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$propertyPrototypes = [];
+		foreach ($this->types as $type) {
+			if (!$type->hasProperty($propertyName)->yes()) {
+				continue;
 			}
-		);
+
+			$propertyPrototypes[] = $type->getUnresolvedPropertyPrototype($propertyName, $scope)->withFechedOnType($this);
+		}
+
+		$propertiesCount = count($propertyPrototypes);
+		if ($propertiesCount === 0) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		if ($propertiesCount === 1) {
+			return $propertyPrototypes[0];
+		}
+
+		return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
 	}
 
 	public function canCallMethods(): TrinaryLogic

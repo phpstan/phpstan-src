@@ -6,12 +6,12 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -167,23 +167,30 @@ class StaticType implements TypeWithClassName
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		$staticObject = $this->getStaticObjectType();
-		$property = $staticObject->getPropertyWithoutTransformingStatic($propertyName, $scope);
-		$readableType = $this->transformStaticType($property->getReadableType(), $scope);
-		$writableType = $this->transformStaticType($property->getWritableType(), $scope);
+		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
 
-		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$staticObject = $this->getStaticObjectType();
+		$nakedProperty = $staticObject->getUnresolvedPropertyPrototype($propertyName, $scope)->getNakedProperty();
+
+		$ancestor = $this->getAncestorWithClassName($nakedProperty->getDeclaringClass()->getName());
 		$classReflection = null;
 		if ($ancestor !== null) {
 			$classReflection = $ancestor->getClassReflection();
 		}
 		if ($classReflection === null) {
-			$classReflection = $property->getDeclaringClass();
+			$classReflection = $nakedProperty->getDeclaringClass();
 		}
 
-		return new ResolvedPropertyReflection(
-			new ChangedTypePropertyReflection($classReflection, $property, $readableType, $writableType),
-			$classReflection->getActiveTemplateTypeMap()
+		return new CallbackUnresolvedPropertyPrototypeReflection(
+			$nakedProperty,
+			$classReflection,
+			false,
+			function (Type $type) use ($scope): Type {
+				return $this->transformStaticType($type, $scope);
+			}
 		);
 	}
 

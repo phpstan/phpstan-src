@@ -8,7 +8,9 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -170,13 +172,30 @@ class IntersectionType implements CompoundType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
+		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$propertyPrototypes = [];
 		foreach ($this->types as $type) {
-			if ($type->hasProperty($propertyName)->yes()) {
-				return $type->getProperty($propertyName, $scope);
+			if (!$type->hasProperty($propertyName)->yes()) {
+				continue;
 			}
+
+			$propertyPrototypes[] = $type->getUnresolvedPropertyPrototype($propertyName, $scope)->withFechedOnType($this);
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		$propertiesCount = count($propertyPrototypes);
+		if ($propertiesCount === 0) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		if ($propertiesCount === 1) {
+			return $propertyPrototypes[0];
+		}
+
+		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
 	}
 
 	public function canCallMethods(): TrinaryLogic

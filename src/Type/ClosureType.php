@@ -13,6 +13,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\Php\ClosureCallUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -152,6 +153,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
 		return $this->objectType->getProperty($propertyName, $scope);
+	}
+
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		return $this->objectType->getUnresolvedPropertyPrototype($propertyName, $scope);
 	}
 
 	public function canCallMethods(): TrinaryLogic

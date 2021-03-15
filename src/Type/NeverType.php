@@ -8,6 +8,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -85,6 +86,11 @@ class NeverType implements CompoundType
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
+	{
+		throw new \PHPStan\ShouldNotHappenException();
+	}
+
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
 		throw new \PHPStan\ShouldNotHappenException();
 	}

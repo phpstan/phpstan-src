@@ -9,6 +9,7 @@ use Attributes\IsNotAttribute;
 use PHPStan\Broker\Broker;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Type\FileTypeMapper;
+use WrongClassConstantFile\SecuredRouter;
 
 class ClassReflectionTest extends \PHPStan\Testing\TestCase
 {
@@ -209,6 +210,14 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 			return;
 		}
 		$this->assertSame($expectedFlags, $reflection->getAttributeClassFlags());
+	}
+
+	public function testDeprecatedConstantFromAnotherFile(): void
+	{
+		$reflectionProvider = $this->createBroker();
+		$reflection = $reflectionProvider->getClass(SecuredRouter::class);
+		$constant = $reflection->getConstant('SECURED');
+		$this->assertTrue($constant->isDeprecated()->yes());
 	}
 
 }

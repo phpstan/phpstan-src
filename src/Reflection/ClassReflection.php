@@ -691,10 +691,11 @@ class ClassReflection implements ReflectionWithFilename
 			$deprecatedDescription = null;
 			$isDeprecated = false;
 			$isInternal = false;
-			if ($reflectionConstant->getDocComment() !== false && $this->getFileName() !== false) {
+			$declaringClass = $reflectionConstant->getDeclaringClass();
+			$fileName = $declaringClass->getFileName();
+			if ($reflectionConstant->getDocComment() !== false && $fileName !== false) {
 				$docComment = $reflectionConstant->getDocComment();
-				$fileName = $this->getFileName();
-				$className = $reflectionConstant->getDeclaringClass()->getName();
+				$className = $declaringClass->getName();
 				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $className, null, null, $docComment);
 
 				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
@@ -703,7 +704,7 @@ class ClassReflection implements ReflectionWithFilename
 			}
 
 			$this->constants[$name] = new ClassConstantReflection(
-				$this->reflectionProvider->getClass($reflectionConstant->getDeclaringClass()->getName()),
+				$this->reflectionProvider->getClass($declaringClass->getName()),
 				$reflectionConstant,
 				$deprecatedDescription,
 				$isDeprecated,

@@ -86,6 +86,10 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 				'Function %s() should never return but return statement found.',
 				$function->getName()
 			),
+			sprintf(
+				'Function %s() should never return an iterable directly when already using yield.',
+				$function->getName()
+			),
 			$reflection !== null && $reflection->isGenerator()
 		);
 	}

@@ -72,6 +72,11 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName()
 			),
+			sprintf(
+				'Method %s::%s() should never return an iterable directly when already using yield.',
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName()
+			),
 			$reflection !== null && $reflection->isGenerator()
 		);
 	}

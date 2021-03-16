@@ -180,3 +180,30 @@ function returnNever()
 {
 	return;
 }
+
+function countTo3Wrong(): iterable
+{
+	yield 1;
+
+	return yieldTwoAndThree();
+}
+
+function yieldTwoAndThree(): iterable
+{
+	yield 2;
+	yield from [3];
+}
+
+function countToThreeCorrectly(): iterable
+{
+	yield 1;
+
+	return yield from yieldTwoAndThree();
+}
+
+function countTo3Correctly(): iterable
+{
+	yield 1;
+
+	return (yield from yieldTwoAndThree());
+}

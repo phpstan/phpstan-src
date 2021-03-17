@@ -2,11 +2,13 @@
 
 namespace PHPStan\Analyser;
 
+use Bug4288\MyClass;
 use Bug4713\Service;
 use PHPStan\Broker\Broker;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use const PHP_VERSION_ID;
 use function array_reverse;
@@ -350,6 +352,26 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$defaultValue = $parameter->getDefaultValue();
 		$this->assertInstanceOf(ConstantStringType::class, $defaultValue);
 		$this->assertSame(Service::class, $defaultValue->getValue());
+	}
+
+	public function testBug4288(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288.php');
+		$this->assertCount(0, $errors);
+
+		$reflectionProvider = $this->createBroker();
+		$class = $reflectionProvider->getClass(MyClass::class);
+		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('paginate')->getVariants())->getParameters()[0];
+		$defaultValue = $parameter->getDefaultValue();
+		$this->assertInstanceOf(ConstantIntegerType::class, $defaultValue);
+		$this->assertSame(10, $defaultValue->getValue());
+
+		$nativeProperty = $class->getNativeReflection()->getProperty('test');
+		if (!method_exists($nativeProperty, 'getDefaultValue')) {
+			return;
+		}
+
+		$this->assertSame(10, $nativeProperty->getDefaultValue());
 	}
 
 	/**

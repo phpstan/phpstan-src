@@ -13,8 +13,10 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
@@ -62,6 +64,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 		$parameters = ParametersAcceptorSelector::selectSingle($method->getVariants());
 
 		$errors = [];
+		$declaringClass = $method->getDeclaringClass();
 		foreach ($this->collectParentMethods($methodName, $method->getDeclaringClass()) as $parentMethod) {
 			$parentVariants = $parentMethod->getVariants();
 			if (count($parentVariants) !== 1) {
@@ -72,7 +75,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 				continue;
 			}
 
-			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($parameters, $parentParameters);
+			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($declaringClass, $parameters, $parentParameters);
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Return type (%s) of method %s::%s() should be %s with return type (%s) of method %s::%s()',
@@ -86,7 +89,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 				))->build();
 			}
 
-			$parameterResults = $this->checkParameterTypeCompatibility($parameters->getParameters(), $parentParameters->getParameters());
+			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $parameters->getParameters(), $parentParameters->getParameters());
 			foreach ($parameterResults as $parameterIndex => [$parameterResult, $parameterType, $parentParameterType]) {
 				if ($parameterResult->yes()) {
 					continue;
@@ -149,6 +152,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	 * @return array{TrinaryLogic, Type, Type}
 	 */
 	private function checkReturnTypeCompatibility(
+		ClassReflection $declaringClass,
 		ParametersAcceptorWithPhpDocs $currentVariant,
 		ParametersAcceptorWithPhpDocs $parentVariant
 	): array
@@ -157,10 +161,11 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 			$currentVariant->getNativeReturnType(),
 			TemplateTypeHelper::resolveToBounds($currentVariant->getPhpDocReturnType())
 		);
-		$parentReturnType = TypehintHelper::decideType(
+		$originalParentReturnType = TypehintHelper::decideType(
 			$parentVariant->getNativeReturnType(),
 			TemplateTypeHelper::resolveToBounds($parentVariant->getPhpDocReturnType())
 		);
+		$parentReturnType = $this->transformStaticType($declaringClass, $originalParentReturnType);
 		// Allow adding `void` return type hints when the parent defines no return type
 		if ($returnType instanceof VoidType && $parentReturnType instanceof MixedType) {
 			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];
@@ -174,7 +179,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 		return [$parentReturnType->isSuperTypeOf($returnType), TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
 			$currentVariant->getPhpDocReturnType()
-		), $parentReturnType];
+		), $originalParentReturnType];
 	}
 
 	/**
@@ -183,6 +188,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	 * @return array<int, array{TrinaryLogic, Type, Type}>
 	 */
 	private function checkParameterTypeCompatibility(
+		ClassReflection $declaringClass,
 		array $parameters,
 		array $parentParameters
 	): array
@@ -198,18 +204,34 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 				$parameter->getNativeType(),
 				TemplateTypeHelper::resolveToBounds($parameter->getPhpDocType())
 			);
-			$parentParameterType = TypehintHelper::decideType(
+			$originalParameterType = TypehintHelper::decideType(
 				$parentParameter->getNativeType(),
 				TemplateTypeHelper::resolveToBounds($parentParameter->getPhpDocType())
 			);
+			$parentParameterType = $this->transformStaticType($declaringClass, $originalParameterType);
 
 			$parameterResults[] = [$parameterType->isSuperTypeOf($parentParameterType), TypehintHelper::decideType(
 				$parameter->getNativeType(),
 				$parameter->getPhpDocType()
-			), $parentParameterType];
+			), $originalParameterType];
 		}
 
 		return $parameterResults;
+	}
+
+	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($declaringClass): Type {
+			if ($type instanceof StaticType) {
+				$changedType = $type->changeBaseClass($declaringClass);
+				if ($declaringClass->isFinal()) {
+					$changedType = $changedType->getStaticObjectType();
+				}
+				return $traverse($changedType);
+			}
+
+			return $traverse($type);
+		});
 	}
 
 }

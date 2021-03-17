@@ -47,7 +47,7 @@ final class Row implements ChildNodeInterface
 	/** @var Block $parent */
 	private $parent;
 
-	public function getParent(): Block
+	public function getParent(): ParentNodeInterface
 	{
 		return $this->parent;
 	}
@@ -59,7 +59,7 @@ final class Row2 implements ChildNodeInterface
 	/** @var Block2 $parent */
 	private $parent;
 
-	public function getParent(): Block2
+	public function getParent(): ParentNodeInterface
 	{
 		return $this->parent;
 	}

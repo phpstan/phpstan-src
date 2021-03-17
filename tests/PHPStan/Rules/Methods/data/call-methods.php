@@ -1669,4 +1669,12 @@ class XmlReaderOpen
 		$xml->open('http://', null);
 	}
 
+	public function openStatically(): void
+	{
+		$xml = \XMLReader::open('http://', null);
+		if ($xml !== false) {
+			$xml->read();
+		}
+	}
+
 }

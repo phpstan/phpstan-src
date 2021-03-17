@@ -458,25 +458,6 @@ class NodeScopeResolver
 				$nodeCallback($stmt->returnType, $scope);
 			}
 
-			if ($phpDocReturnType !== null) {
-				if (!$scope->isInClass()) {
-					throw new \PHPStan\ShouldNotHappenException();
-				}
-
-				$classReflection = $scope->getClassReflection();
-				$phpDocReturnType = TypeTraverser::map($phpDocReturnType, static function (Type $type, callable $traverse) use ($classReflection): Type {
-					if ($type instanceof StaticType) {
-						$changedType = $type->changeBaseClass($classReflection);
-						if ($classReflection->isFinal()) {
-							$changedType = $changedType->getStaticObjectType();
-						}
-						return $traverse($changedType);
-					}
-
-					return $traverse($type);
-				});
-			}
-
 			$methodScope = $scope->enterClassMethod(
 				$stmt,
 				$templateTypeMap,
@@ -3133,10 +3114,17 @@ class NodeScopeResolver
 				if (array_key_exists($paramName, $phpDocParameterTypes)) {
 					continue;
 				}
-				$phpDocParameterTypes[$paramName] = $paramTag->getType();
+				$paramType = $paramTag->getType();
+				if ($scope->isInClass()) {
+					$paramType = $this->transformStaticType($scope->getClassReflection(), $paramType);
+				}
+				$phpDocParameterTypes[$paramName] = $paramType;
 			}
 			$nativeReturnType = $scope->getFunctionType($functionLike->getReturnType(), false, false);
 			$phpDocReturnType = $this->getPhpDocReturnType($resolvedPhpDoc, $nativeReturnType);
+			if ($phpDocReturnType !== null && $scope->isInClass()) {
+				$phpDocReturnType = $this->transformStaticType($scope->getClassReflection(), $phpDocReturnType);
+			}
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
@@ -3146,6 +3134,21 @@ class NodeScopeResolver
 		}
 
 		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure];
+	}
+
+	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($declaringClass): Type {
+			if ($type instanceof StaticType) {
+				$changedType = $type->changeBaseClass($declaringClass);
+				if ($declaringClass->isFinal()) {
+					$changedType = $changedType->getStaticObjectType();
+				}
+				return $traverse($changedType);
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	private function getPhpDocReturnType(ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use Nette\DI\Definitions\Statement;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
@@ -11,17 +12,20 @@ use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\Reflection\ReflectionProvider;
 use function array_fill_keys;
 use function array_key_exists;
 
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v8-executed-hash';
+	private const CACHE_VERSION = 'v9-project-extensions';
 
 	private ExportedNodeFetcher $exportedNodeFetcher;
 
 	private FileFinder $scanFileFinder;
+
+	private ReflectionProvider $reflectionProvider;
 
 	private string $cacheFilePath;
 
@@ -55,9 +59,13 @@ class ResultCacheManager
 	/** @var array<string, string> */
 	private array $fileReplacements = [];
 
+	/** @var array<string, true> */
+	private array $alreadyProcessed = [];
+
 	/**
 	 * @param ExportedNodeFetcher $exportedNodeFetcher
 	 * @param FileFinder $scanFileFinder
+	 * @param ReflectionProvider $reflectionProvider
 	 * @param string $cacheFilePath
 	 * @param string $tempResultCachePath
 	 * @param string[] $analysedPaths
@@ -73,6 +81,7 @@ class ResultCacheManager
 	public function __construct(
 		ExportedNodeFetcher $exportedNodeFetcher,
 		FileFinder $scanFileFinder,
+		ReflectionProvider $reflectionProvider,
 		string $cacheFilePath,
 		string $tempResultCachePath,
 		array $analysedPaths,
@@ -88,6 +97,7 @@ class ResultCacheManager
 	{
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
 		$this->scanFileFinder = $scanFileFinder;
+		$this->reflectionProvider = $reflectionProvider;
 		$this->cacheFilePath = $cacheFilePath;
 		$this->tempResultCachePath = $tempResultCachePath;
 		$this->analysedPaths = $analysedPaths;
@@ -159,7 +169,7 @@ class ResultCacheManager
 		}
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
-		if ($data['meta'] !== $meta) {
+		if ($this->isMetaDifferent($data['meta'], $meta)) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
 			}
@@ -171,6 +181,25 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
 			}
 			// run full analysis if the result cache is older than 7 days
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
+		}
+
+		foreach ($data['projectExtensionFiles'] as $extensionFile => $fileHash) {
+			if (!is_file($extensionFile)) {
+				if ($output->isDebug()) {
+					$output->writeLineFormatted(sprintf('Result cache not used because extension file %s was not found.', $extensionFile));
+				}
+				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
+			}
+
+			if ($this->getFileHash($extensionFile) === $fileHash) {
+				continue;
+			}
+
+			if ($output->isDebug()) {
+				$output->writeLineFormatted(sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile));
+			}
+
 			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
 		}
 
@@ -252,6 +281,21 @@ class ResultCacheManager
 		}
 
 		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $invertedDependenciesToReturn, $filteredExportedNodes);
+	}
+
+	/**
+	 * @param mixed[] $cachedMeta
+	 * @param mixed[] $currentMeta
+	 * @return bool
+	 */
+	private function isMetaDifferent(array $cachedMeta, array $currentMeta): bool
+	{
+		$projectConfig = $currentMeta['projectConfig'];
+		if ($projectConfig !== null) {
+			$currentMeta['projectConfig'] = Neon::encode($currentMeta['projectConfig']);
+		}
+
+		return $cachedMeta !== $currentMeta;
 	}
 
 	/**
@@ -520,6 +564,7 @@ class ResultCacheManager
 return [
 	'lastFullAnalysisTime' => %s,
 	'meta' => %s,
+	'projectExtensionFiles' => %s,
 	'errorsCallback' => static function (): array { return %s; },
 	'dependencies' => %s,
 	'exportedNodesCallback' => static function (): array { return %s; },
@@ -533,17 +578,121 @@ php;
 			$file = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
 		}
 
+		$projectConfigArray = $meta['projectConfig'];
+		if ($projectConfigArray !== null) {
+			$meta['projectConfig'] = Neon::encode($projectConfigArray);
+		}
+
 		FileWriter::write(
 			$file,
 			sprintf(
 				$template,
 				var_export($lastFullAnalysisTime, true),
 				var_export($meta, true),
+				var_export($this->getProjectExtensionFiles($projectConfigArray, $dependencies), true),
 				var_export($errors, true),
 				var_export($invertedDependencies, true),
 				var_export($exportedNodes, true)
 			)
 		);
+	}
+
+	/**
+	 * @param mixed[]|null $projectConfig
+	 * @param array<string, mixed> $dependencies
+	 * @return array<string, string>
+	 */
+	private function getProjectExtensionFiles(?array $projectConfig, array $dependencies): array
+	{
+		$this->alreadyProcessed = [];
+		$projectExtensionFiles = [];
+		if ($projectConfig !== null) {
+			$services = $projectConfig['services'] ?? [];
+			foreach ($services as $service) {
+				$classes = $this->getClassesFromConfigDefinition($service);
+				if (is_array($service)) {
+					foreach (['class', 'factory', 'implement'] as $key) {
+						if (!isset($service[$key])) {
+							continue;
+						}
+
+						$classes = array_merge($classes, $this->getClassesFromConfigDefinition($service[$key]));
+					}
+				}
+
+				foreach (array_unique($classes) as $class) {
+					if (!$this->reflectionProvider->hasClass($class)) {
+						continue;
+					}
+
+					$classReflection = $this->reflectionProvider->getClass($class);
+					$fileName = $classReflection->getFileName();
+					if ($fileName === false) {
+						continue;
+					}
+
+					$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
+					foreach ($allServiceFiles as $serviceFile) {
+						if (array_key_exists($serviceFile, $projectExtensionFiles)) {
+							continue;
+						}
+
+						$projectExtensionFiles[$serviceFile] = $this->getFileHash($serviceFile);
+					}
+				}
+			}
+		}
+
+		return $projectExtensionFiles;
+	}
+
+	/**
+	 * @param mixed $definition
+	 * @return string[]
+	 */
+	private function getClassesFromConfigDefinition($definition): array
+	{
+		if (is_string($definition)) {
+			return [$definition];
+		}
+
+		if ($definition instanceof Statement) {
+			$entity = $definition->entity;
+			if (is_string($entity)) {
+				return [$entity];
+			} elseif (is_array($entity) && isset($entity[0]) && is_string($entity[0])) {
+				return [$entity[0]];
+			}
+		}
+
+		return [];
+	}
+
+	/**
+	 * @param string $fileName
+	 * @param array<string, array<int, string>> $dependencies
+	 * @return array<int, string>
+	 */
+	private function getAllDependencies(string $fileName, array $dependencies): array
+	{
+		if (!array_key_exists($fileName, $dependencies)) {
+			return [];
+		}
+
+		if (array_key_exists($fileName, $this->alreadyProcessed)) {
+			return [];
+		}
+
+		$this->alreadyProcessed[$fileName] = true;
+
+		$files = [$fileName];
+		foreach ($dependencies[$fileName] as $fileDep) {
+			foreach ($this->getAllDependencies($fileDep, $dependencies) as $fileDep2) {
+				$files[] = $fileDep2;
+			}
+		}
+
+		return $files;
 	}
 
 	/**
@@ -567,8 +716,6 @@ php;
 			unset($projectConfigArray['parameters']['reportUnmatchedIgnoredErrors']);
 			unset($projectConfigArray['parameters']['memoryLimitFile']);
 			unset($projectConfigArray['parametersSchema']);
-
-			$projectConfigArray = Neon::encode($projectConfigArray);
 		}
 
 		return [

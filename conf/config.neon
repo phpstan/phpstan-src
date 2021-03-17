@@ -1233,6 +1233,12 @@ services:
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
+	-
+		class: PHPStan\Type\Php\XMLReaderOpenReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+
 	typeSpecifier:
 		class: PHPStan\Analyser\TypeSpecifier
 		factory: @typeSpecifierFactory::create

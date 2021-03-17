@@ -810,8 +810,13 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Identical) {
-			$leftType = $this->getType($node->left);
-			$rightType = $this->getType($node->right);
+			if ($this->treatPhpDocTypesAsCertain) {
+				$leftType = $this->getType($node->left);
+				$rightType = $this->getType($node->right);
+			} else {
+				$leftType = $this->getNativeType($node->left);
+				$rightType = $this->getNativeType($node->right);
+			}
 
 			if (
 				(
@@ -851,8 +856,13 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotIdentical) {
-			$leftType = $this->getType($node->left);
-			$rightType = $this->getType($node->right);
+			if ($this->treatPhpDocTypesAsCertain) {
+				$leftType = $this->getType($node->left);
+				$rightType = $this->getType($node->right);
+			} else {
+				$leftType = $this->getNativeType($node->left);
+				$rightType = $this->getNativeType($node->right);
+			}
 
 			if (
 				(

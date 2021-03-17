@@ -4000,6 +4000,7 @@ class MutatingScope implements Scope
 		array $byRefUses
 	): self
 	{
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$variableTypes = $this->variableTypes;
 		if (count($byRefUses) === 0) {
 			return $this;
@@ -4014,6 +4015,7 @@ class MutatingScope implements Scope
 
 			if (!$closureScope->hasVariableType($variableName)->yes()) {
 				$variableTypes[$variableName] = VariableTypeHolder::createYes(new NullType());
+				$nativeExpressionTypes[sprintf('$%s', $variableName)] = new NullType();
 				continue;
 			}
 
@@ -4028,6 +4030,7 @@ class MutatingScope implements Scope
 			}
 
 			$variableTypes[$variableName] = VariableTypeHolder::createYes($variableType);
+			$nativeExpressionTypes[sprintf('$%s', $variableName)] = $variableType;
 		}
 
 		return $this->scopeFactory->create(
@@ -4043,7 +4046,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
-			$this->nativeExpressionTypes,
+			$nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope

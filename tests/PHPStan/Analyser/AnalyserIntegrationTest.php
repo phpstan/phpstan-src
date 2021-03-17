@@ -2,9 +2,12 @@
 
 namespace PHPStan\Analyser;
 
+use Bug4713\Service;
 use PHPStan\Broker\Broker;
 use PHPStan\File\FileHelper;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\Type\Constant\ConstantStringType;
 use const PHP_VERSION_ID;
 use function array_reverse;
 
@@ -334,6 +337,19 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-1843.php');
 		$this->assertCount(0, $errors);
+	}
+
+	public function testBug4713(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4713.php');
+		$this->assertCount(0, $errors);
+
+		$reflectionProvider = $this->createBroker();
+		$class = $reflectionProvider->getClass(Service::class);
+		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('createInstance')->getVariants())->getParameters()[0];
+		$defaultValue = $parameter->getDefaultValue();
+		$this->assertInstanceOf(ConstantStringType::class, $defaultValue);
+		$this->assertSame(Service::class, $defaultValue->getValue());
 	}
 
 	/**

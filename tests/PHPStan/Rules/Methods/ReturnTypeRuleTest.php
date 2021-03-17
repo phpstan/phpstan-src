@@ -479,4 +479,14 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3120.php'], []);
 	}
 
+	public function testBug3118(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3118.php'], [
+			[
+				'Method Bug3118\CustomEnum2::all() should return Bug3118\EnumSet<static(Bug3118\CustomEnum2)> but returns Bug3118\CustomEnumSet.',
+				56,
+			],
+		]);
+	}
+
 }

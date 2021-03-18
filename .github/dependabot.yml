@@ -1,6 +1,11 @@
 version: 2
 updates:
 - package-ecosystem: composer
+  directory: "/build-cs"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+- package-ecosystem: composer
   directory: "/compiler"
   schedule:
     interval: weekly

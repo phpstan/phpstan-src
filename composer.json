@@ -42,8 +42,6 @@
 	},
 	"require-dev": {
 		"brianium/paratest": "^4.0",
-		"consistence-community/coding-standard": "^3.11",
-		"dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
 		"nategood/httpful": "^0.2.20",
 		"phing/phing": "^2.16.0",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
@@ -51,9 +49,7 @@
 		"phpstan/phpstan-php-parser": "^0.12",
 		"phpstan/phpstan-phpunit": "^0.12",
 		"phpstan/phpstan-strict-rules": "^0.12",
-		"phpunit/phpunit": "^7.5.18",
-		"slevomat/coding-standard": "^6.4",
-		"squizlabs/php_codesniffer": "^3.5"
+		"phpunit/phpunit": "^7.5.18"
 	},
 	"config": {
 		"platform": {

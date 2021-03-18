@@ -11,7 +11,7 @@
 	<file>tests</file>
 	<file>compiler/src</file>
 
-	<rule ref="vendor/consistence-community/coding-standard/Consistence/ruleset.xml">
+	<rule ref="build-cs/vendor/consistence-community/coding-standard/Consistence/ruleset.xml">
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat"/>
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.MissingVariable"/>
 		<exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameAfterKeyword"/>

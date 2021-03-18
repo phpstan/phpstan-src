@@ -618,11 +618,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getIterableValueType(): Type
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection === null) {
-			return new ErrorType();
-		}
-
 		if ($this->isInstanceOf(\Iterator::class)->yes()) {
 			return ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('current', new OutOfClassScope())->getVariants()
@@ -698,11 +693,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection === null) {
-			return TrinaryLogic::createNo();
-		}
-
 		if ($this->isInstanceOf(\ArrayAccess::class)->yes()) {
 			$acceptedOffsetType = RecursionGuard::run($this, function (): Type {
 				$parameters = ParametersAcceptorSelector::selectSingle($this->getMethod('offsetSet', new OutOfClassScope())->getVariants())->getParameters();
@@ -732,11 +722,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection === null) {
-			return new ErrorType();
-		}
-
 		if (!$this->isExtraOffsetAccessibleClass()->no()) {
 			return new MixedType();
 		}
@@ -757,10 +742,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\ArrayAccess::class)->yes()) {
-			$classReflection = $this->getClassReflection();
-			if ($classReflection === null) {
-				return new ErrorType();
-			}
 			$acceptedValueType = new NeverType();
 			$acceptedOffsetType = RecursionGuard::run($this, function () use (&$acceptedValueType): Type {
 				$parameters = ParametersAcceptorSelector::selectSingle($this->getMethod('offsetSet', new OutOfClassScope())->getVariants())->getParameters();

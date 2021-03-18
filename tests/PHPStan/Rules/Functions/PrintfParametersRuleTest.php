@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Php\PhpVersion;
+use const PHP_VERSION_ID;
+
 /**
  * @extends \PHPStan\Testing\RuleTestCase<PrintfParametersRule>
  */
@@ -10,7 +13,7 @@ class PrintfParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new PrintfParametersRule();
+		return new PrintfParametersRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
 	public function testFile(): void
@@ -89,6 +92,20 @@ class PrintfParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				54,
 			],
 		]);
+	}
+
+	public function testBug4717(): void
+	{
+		$errors = [
+			[
+				'Call to sprintf contains 1 placeholder, 2 values given.',
+				5,
+			],
+		];
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = [];
+		}
+		$this->analyse([__DIR__ . '/data/bug-4717.php'], $errors);
 	}
 
 }

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeUtils;
 
@@ -13,6 +14,13 @@ use PHPStan\Type\TypeUtils;
  */
 class PrintfParametersRule implements \PHPStan\Rules\Rule
 {
+
+	private PhpVersion $phpVersion;
+
+	public function __construct(PhpVersion $phpVersion)
+	{
+		$this->phpVersion = $phpVersion;
+	}
 
 	public function getNodeType(): string
 	{
@@ -94,7 +102,14 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 
 	private function getPlaceholdersCount(string $functionName, string $format): int
 	{
-		$specifiers = in_array($functionName, ['sprintf', 'printf'], true) ? '[bcdeEfFgGosuxX]' : '(?:[cdDeEfinosuxX]|\[[^\]]+\])';
+		$specifiers = in_array($functionName, ['sprintf', 'printf'], true) ? '[bcdeEfFgGosuxX%s]' : '(?:[cdDeEfinosuxX%s]|\[[^\]]+\])';
+		$addSpecifier = '';
+		if ($this->phpVersion->supportsHhPrintfSpecifier()) {
+			$addSpecifier .= 'hH';
+		}
+
+		$specifiers = sprintf($specifiers, $addSpecifier);
+
 		$pattern = '~(?<before>%*)%(?:(?<position>\d+)\$)?[-+]?(?:[ 0]|(?:\'[^%]))?-?\d*(?:\.\d*)?' . $specifiers . '~';
 
 		$matches = \Nette\Utils\Strings::matchAll($format, $pattern, PREG_SET_ORDER);

@@ -93,7 +93,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		FileHelper $fileHelper,
 		FunctionReflector $functionReflector,
 		ConstantReflector $constantReflector,
-		PhpstormStubsSourceStubber $phpstormStubsSourceStubber
+		PhpStormStubsSourceStubber $phpstormStubsSourceStubber
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;

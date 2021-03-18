@@ -394,6 +394,9 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 
 	public function testBug4715(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4715.php');
 		$this->assertCount(0, $errors);
 	}

@@ -392,6 +392,12 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('Function ldap_exop_passwd not found.', $errors[0]->getMessage());
 	}
 
+	public function testBug4715(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4715.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

@@ -302,7 +302,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->resolveName($nameNode, function (string $name): bool {
-			$exists = function_exists($name);
+			$exists = function_exists($name) || $this->nativeFunctionReflectionProvider->findFunctionReflection($name) !== null;
 			if ($exists) {
 				if ($this->phpStormStubsSourceStubber->isPresentFunction($name) === false) {
 					return false;

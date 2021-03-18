@@ -374,6 +374,12 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertSame(10, $nativeProperty->getDefaultValue());
 	}
 
+	public function testBug4702(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4702.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

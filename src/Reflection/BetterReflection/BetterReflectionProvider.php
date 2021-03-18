@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\Reflector\ConstantReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
@@ -66,6 +67,8 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	private \PHPStan\File\FileHelper $fileHelper;
 
+	private PhpStormStubsSourceStubber $phpstormStubsSourceStubber;
+
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
 	private array $functionReflections = [];
 
@@ -89,7 +92,8 @@ class BetterReflectionProvider implements ReflectionProvider
 		Standard $printer,
 		FileHelper $fileHelper,
 		FunctionReflector $functionReflector,
-		ConstantReflector $constantReflector
+		ConstantReflector $constantReflector,
+		PhpstormStubsSourceStubber $phpstormStubsSourceStubber
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;
@@ -106,6 +110,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$this->fileHelper = $fileHelper;
 		$this->functionReflector = $functionReflector;
 		$this->constantReflector = $constantReflector;
+		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 	}
 
 	public function hasClass(string $className): bool
@@ -319,6 +324,9 @@ class BetterReflectionProvider implements ReflectionProvider
 				// pass
 			}
 
+			if ($this->nativeFunctionReflectionProvider->findFunctionReflection($name) !== null) {
+				return $this->phpstormStubsSourceStubber->isPresentFunction($name) !== false;
+			}
 			return false;
 		}, $scope);
 	}

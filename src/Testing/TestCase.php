@@ -393,7 +393,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			self::getContainer()->getByType(Standard::class),
 			$fileHelper,
 			$functionReflector,
-			$constantReflector
+			$constantReflector,
+			self::getPhpStormStubsSourceStubber()
 		);
 
 		$this->setUpReflectionProvider(

@@ -28,6 +28,8 @@ parameters:
 		wrongVarUsage: false
 		arrayDestructuring: false
 		objectFromNewClass: false
+		skipCheckGenericClasses:
+			- RecursiveIterator
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -182,7 +184,8 @@ parametersSchema:
 		checkMissingTemplateTypeInParameter: bool(),
 		wrongVarUsage: bool(),
 		arrayDestructuring: bool(),
-		objectFromNewClass: bool()
+		objectFromNewClass: bool(),
+		skipCheckGenericClasses: listOf(string())
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -725,6 +728,7 @@ services:
 		class: PHPStan\Rules\Generics\GenericAncestorsCheck
 		arguments:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
+			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
 
 	-
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck

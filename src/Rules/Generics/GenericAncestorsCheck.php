@@ -21,17 +21,25 @@ class GenericAncestorsCheck
 
 	private bool $checkGenericClassInNonGenericObjectType;
 
+	/** @var string[] */
+	private array $skipCheckGenericClasses;
+
+	/**
+	 * @param string[] $skipCheckGenericClasses
+	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		VarianceCheck $varianceCheck,
-		bool $checkGenericClassInNonGenericObjectType
+		bool $checkGenericClassInNonGenericObjectType,
+		array $skipCheckGenericClasses = []
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
 		$this->varianceCheck = $varianceCheck;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
+		$this->skipCheckGenericClasses = $skipCheckGenericClasses;
 	}
 
 	/**
@@ -114,6 +122,9 @@ class GenericAncestorsCheck
 				}
 
 				$unusedNameClassReflection = $this->reflectionProvider->getClass($unusedName);
+				if (in_array($unusedNameClassReflection->getName(), $this->skipCheckGenericClasses, true)) {
+					continue;
+				}
 				if (!$unusedNameClassReflection->isGeneric()) {
 					continue;
 				}

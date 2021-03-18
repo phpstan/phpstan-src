@@ -116,9 +116,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$resolvedClassReflection = null;
 		if ($ancestor !== null) {
 			$resolvedClassReflection = $ancestor->getClassReflection();
-			$nakedAncestorClassReflection = $ancestor->getNakedClassReflection();
-			if ($nakedAncestorClassReflection !== null && $nakedAncestorClassReflection->hasProperty($propertyName)) {
-				$property = $nakedAncestorClassReflection->getProperty($propertyName, $scope);
+			if ($ancestor !== $this) {
+				$property = $ancestor->getUnresolvedPropertyPrototype($propertyName, $scope)->getNakedProperty();
 			}
 		}
 		if ($resolvedClassReflection === null) {
@@ -535,9 +534,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$resolvedClassReflection = null;
 		if ($ancestor !== null) {
 			$resolvedClassReflection = $ancestor->getClassReflection();
-			$nakedAncestorClassReflection = $ancestor->getNakedClassReflection();
-			if ($nakedAncestorClassReflection !== null && $nakedAncestorClassReflection->hasMethod($methodName)) {
-				$method = $nakedAncestorClassReflection->getMethod($methodName, $scope);
+			if ($ancestor !== $this) {
+				$method = $ancestor->getUnresolvedMethodPrototype($methodName, $scope)->getNakedMethod();
 			}
 		}
 		if ($resolvedClassReflection === null) {

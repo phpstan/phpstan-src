@@ -35,17 +35,25 @@ class MissingTypehintCheck
 
 	private bool $checkMissingCallableSignature;
 
+	/** @var string[] */
+	private array $skipCheckGenericClasses;
+
+	/**
+	 * @param string[] $skipCheckGenericClasses
+	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		bool $checkMissingIterableValueType,
 		bool $checkGenericClassInNonGenericObjectType,
-		bool $checkMissingCallableSignature
+		bool $checkMissingCallableSignature,
+		array $skipCheckGenericClasses = []
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
 		$this->checkMissingCallableSignature = $checkMissingCallableSignature;
+		$this->skipCheckGenericClasses = $skipCheckGenericClasses;
 	}
 
 	/**
@@ -97,7 +105,7 @@ class MissingTypehintCheck
 		}
 
 		$objectTypes = [];
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$objectTypes): Type {
+		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$objectTypes): Type {
 			if ($type instanceof GenericObjectType) {
 				$traverse($type);
 				return $type;
@@ -112,6 +120,9 @@ class MissingTypehintCheck
 				}
 				if (in_array($classReflection->getName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)) {
 					// checked by getIterableTypesWithMissingValueTypehint() already
+					return $type;
+				}
+				if (in_array($classReflection->getName(), $this->skipCheckGenericClasses, true)) {
 					return $type;
 				}
 				if ($classReflection->isTrait()) {

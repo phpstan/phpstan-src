@@ -758,6 +758,7 @@ services:
 			checkMissingIterableValueType: %checkMissingIterableValueType%
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			checkMissingCallableSignature: %checkMissingCallableSignature%
+			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
 
 	-
 		class: PHPStan\Rules\NullsafeCheck

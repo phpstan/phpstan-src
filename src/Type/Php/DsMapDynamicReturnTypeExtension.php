@@ -8,6 +8,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -27,14 +28,14 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		$returnType = $methodReflection->getVariants()[0]->getReturnType();
+		$returnType = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$methodCall->args,
+			$methodReflection->getVariants()
+		)->getReturnType();
 
 		if (count($methodCall->args) > 1) {
-			return ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$methodCall->args,
-				$methodReflection->getVariants()
-			)->getReturnType();
+			return $returnType;
 		}
 
 		if ($returnType instanceof UnionType) {
@@ -42,13 +43,28 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 				array_filter(
 					$returnType->getTypes(),
 					static function (Type $type): bool {
-						return !$type instanceof TemplateType;
+						if (
+							$type instanceof TemplateType
+							&& $type->getName() === 'TDefault'
+							&& (
+								$type->getScope()->equals(TemplateTypeScope::createWithMethod('Ds\Map', 'get'))
+								|| $type->getScope()->equals(TemplateTypeScope::createWithMethod('Ds\Map', 'remove'))
+							)
+						) {
+							return false;
+						}
+
+						return true;
 					}
 				)
 			);
 
 			if (count($types) === 1) {
 				return $types[0];
+			}
+
+			if (count($types) === 0) {
+				return $returnType;
 			}
 
 			return TypeCombinator::union(...$types);

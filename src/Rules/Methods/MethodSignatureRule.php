@@ -13,6 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -223,9 +224,10 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($declaringClass): Type {
 			if ($type instanceof StaticType) {
-				$changedType = $type->changeBaseClass($declaringClass);
 				if ($declaringClass->isFinal()) {
-					$changedType = $changedType->getStaticObjectType();
+					$changedType = new ObjectType($declaringClass->getName());
+				} else {
+					$changedType = $type->changeBaseClass($declaringClass);
 				}
 				return $traverse($changedType);
 			}

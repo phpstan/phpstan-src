@@ -224,11 +224,15 @@ class GenericObjectType extends ObjectType
 
 		$ancestor = $receivedType->getAncestorWithClassName($this->getClassName());
 
-		if ($ancestor === null || !$ancestor instanceof GenericObjectType) {
+		if ($ancestor === null) {
+			return TemplateTypeMap::createEmpty();
+		}
+		$ancestorClassReflection = $ancestor->getClassReflection();
+		if ($ancestorClassReflection === null) {
 			return TemplateTypeMap::createEmpty();
 		}
 
-		$otherTypes = $ancestor->getTypes();
+		$otherTypes = $ancestorClassReflection->typeMapToList($ancestorClassReflection->getActiveTemplateTypeMap());
 		$typeMap = TemplateTypeMap::createEmpty();
 
 		foreach ($this->getTypes() as $i => $type) {

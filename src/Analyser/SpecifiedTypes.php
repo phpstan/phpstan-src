@@ -15,20 +15,26 @@ class SpecifiedTypes
 
 	private bool $overwrite;
 
+	/** @var array<string, ConditionalExpressionHolder[]> */
+	private array $newConditionalExpressionHolders;
+
 	/**
 	 * @param mixed[] $sureTypes
 	 * @param mixed[] $sureNotTypes
 	 * @param bool $overwrite
+	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressionHolders
 	 */
 	public function __construct(
 		array $sureTypes = [],
 		array $sureNotTypes = [],
-		bool $overwrite = false
+		bool $overwrite = false,
+		array $newConditionalExpressionHolders = []
 	)
 	{
 		$this->sureTypes = $sureTypes;
 		$this->sureNotTypes = $sureNotTypes;
 		$this->overwrite = $overwrite;
+		$this->newConditionalExpressionHolders = $newConditionalExpressionHolders;
 	}
 
 	/**
@@ -50,6 +56,14 @@ class SpecifiedTypes
 	public function shouldOverwrite(): bool
 	{
 		return $this->overwrite;
+	}
+
+	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	public function getNewConditionalExpressionHolders(): array
+	{
+		return $this->newConditionalExpressionHolders;
 	}
 
 	public function intersectWith(SpecifiedTypes $other): self

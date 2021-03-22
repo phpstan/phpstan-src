@@ -19,6 +19,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -578,11 +579,21 @@ class TypeSpecifier
 		} elseif ($expr instanceof BooleanAnd || $expr instanceof LogicalAnd) {
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
 			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);
-			return $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->intersectWith($rightTypes);
+			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->intersectWith($rightTypes);
+			if ($context->false()) {
+				return $this->processBooleanConditionalTypes($scope, $types, $leftTypes, $rightTypes);
+			}
+
+			return $types;
 		} elseif ($expr instanceof BooleanOr || $expr instanceof LogicalOr) {
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
 			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);
-			return $context->true() ? $leftTypes->intersectWith($rightTypes) : $leftTypes->unionWith($rightTypes);
+			$types = $context->true() ? $leftTypes->intersectWith($rightTypes) : $leftTypes->unionWith($rightTypes);
+			if ($context->true()) {
+				return $this->processBooleanConditionalTypes($scope, $types, $leftTypes, $rightTypes);
+			}
+
+			return $types;
 		} elseif ($expr instanceof Node\Expr\BooleanNot && !$context->null()) {
 			return $this->specifyTypesInCondition($scope, $expr->expr, $context->negate());
 		} elseif ($expr instanceof Node\Expr\Assign) {
@@ -742,6 +753,46 @@ class TypeSpecifier
 		}
 
 		return new SpecifiedTypes();
+	}
+
+	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $types, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): SpecifiedTypes
+	{
+		$conditionExpressionTypes = [];
+		foreach ($leftTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+			if (!$expr instanceof Expr\Variable) {
+				continue;
+			}
+			if (!is_string($expr->name)) {
+				continue;
+			}
+
+			$conditionExpressionTypes[$exprString] = TypeCombinator::intersect($scope->getType($expr), $type);
+		}
+
+		if (count($conditionExpressionTypes) > 0) {
+			$holders = [];
+			foreach ($rightTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+				if (!$expr instanceof Expr\Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($holders[$exprString])) {
+					$holders[$exprString] = [];
+				}
+
+				$holders[$exprString][] = new ConditionalExpressionHolder(
+					$conditionExpressionTypes,
+					new VariableTypeHolder(TypeCombinator::remove($scope->getType($expr), $type), TrinaryLogic::createYes()) // todo yes is wrong
+				);
+			}
+
+			return new SpecifiedTypes($types->getSureTypes(), $types->getSureNotTypes(), false, $holders);
+		}
+
+		return $types;
 	}
 
 	/**

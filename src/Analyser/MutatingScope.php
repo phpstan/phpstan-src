@@ -3560,7 +3560,7 @@ class MutatingScope implements Scope
 			$typeGuards['$' . $variableName] = $typeGuard;
 		}
 
-		$newConditionalExpressions = [];
+		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
 		foreach ($this->conditionalExpressions as $variableExprString => $conditionalExpressions) {
 			if (array_key_exists($variableExprString, $typeGuards)) {
 				continue;
@@ -3614,9 +3614,33 @@ class MutatingScope implements Scope
 			}
 		}
 
-		$scope->conditionalExpressions = $newConditionalExpressions;
+		return $scope->changeConditionalExpressions($newConditionalExpressions);
+	}
 
-		return $scope;
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressionHolders
+	 * @return self
+	 */
+	public function changeConditionalExpressions(array $newConditionalExpressionHolders): self
+	{
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->variableTypes,
+			$this->moreSpecificTypes,
+			$newConditionalExpressionHolders,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->nativeExpressionTypes,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope
+		);
 	}
 
 	/**

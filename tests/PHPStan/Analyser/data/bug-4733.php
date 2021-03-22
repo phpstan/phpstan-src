@@ -1,0 +1,38 @@
+<?php
+
+namespace Bug4733;
+
+use function PHPStan\Analyser\assertType;
+
+class HelloWorld
+{
+	public function getDescription(?\DateTimeImmutable $start, ?string $someObject): void
+	{
+		if ($start === null && $someObject === null) {
+			return;
+		}
+
+		// $start !== null || $someObject !== null
+
+		if ($start !== null) {
+			return;
+		}
+
+		// $start === null therefore $someObject !== null
+
+		assertType('string', $someObject);
+	}
+
+	public function getDescription2(?\DateTimeImmutable $start, ?string $someObject): void
+	{
+		if ($start !== null || $someObject !== null) {
+			if ($start !== null) {
+				return;
+			}
+
+			// $start === null therefore $someObject !== null
+
+			assertType('string', $someObject);
+		}
+	}
+}

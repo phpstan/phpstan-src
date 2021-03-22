@@ -85,4 +85,14 @@ class InvalidPhpDocTagValueRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4731(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4731.php'], []);
+	}
+
+	public function testBug4731WithoutFirstTag(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4731-no-first-tag.php'], []);
+	}
+
 }

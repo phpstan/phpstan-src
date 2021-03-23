@@ -93,7 +93,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -2627,12 +2626,89 @@ class NodeScopeResolver
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$type = $scope->getType($assignedExpr);
-			$scope = $result->getScope()->assignVariable($var->name, $type);
+			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
+			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
 
-			if ($type instanceof BooleanType) {
-				$truthyScope = $scope->filterByTruthyValue($assignedExpr)->assignVariable($var->name, TypeCombinator::remove($type, StaticTypeFactory::falsey()));
-				$falseyScope = $scope->filterByFalseyValue($assignedExpr)->assignVariable($var->name, TypeCombinator::intersect($type, StaticTypeFactory::falsey()));
-				$scope = $truthyScope->mergeWith($falseyScope);
+			$conditionalExpressions = [];
+
+			// todo DRY
+			foreach ($truthySpecifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
+				if (!$expr instanceof Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($conditionalExpressions[$exprString])) {
+					$conditionalExpressions[$exprString] = [];
+				}
+
+				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+					'$' . $var->name => TypeCombinator::remove($type, StaticTypeFactory::falsey()),
+				], VariableTypeHolder::createYes(
+					TypeCombinator::intersect($scope->getType($expr), $exprType)
+				)); // todo why createYes?
+			}
+			foreach ($truthySpecifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
+				if (!$expr instanceof Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($conditionalExpressions[$exprString])) {
+					$conditionalExpressions[$exprString] = [];
+				}
+
+				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+					'$' . $var->name => TypeCombinator::remove($type, StaticTypeFactory::falsey()),
+				], VariableTypeHolder::createYes(
+					TypeCombinator::remove($scope->getType($expr), $exprType)
+				)); // todo why createYes?
+			}
+
+			foreach ($falseySpecifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
+				if (!$expr instanceof Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($conditionalExpressions[$exprString])) {
+					$conditionalExpressions[$exprString] = [];
+				}
+
+				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+					'$' . $var->name => TypeCombinator::intersect($type, StaticTypeFactory::falsey()),
+				], VariableTypeHolder::createYes(
+					TypeCombinator::intersect($scope->getType($expr), $exprType)
+				)); // todo why createYes?
+			}
+			foreach ($falseySpecifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
+				if (!$expr instanceof Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($conditionalExpressions[$exprString])) {
+					$conditionalExpressions[$exprString] = [];
+				}
+
+				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+					'$' . $var->name => TypeCombinator::intersect($type, StaticTypeFactory::falsey()),
+				], VariableTypeHolder::createYes(
+					TypeCombinator::remove($scope->getType($expr), $exprType)
+				)); // todo why createYes?
+			}
+
+			$scope = $result->getScope()->assignVariable($var->name, $type);
+			foreach ($conditionalExpressions as $exprString => $holders) {
+				$scope = $scope->addConditionalExpressions($exprString, $holders);
 			}
 		} elseif ($var instanceof ArrayDimFetch) {
 			$dimExprStack = [];

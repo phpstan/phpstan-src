@@ -1655,7 +1655,9 @@ class MutatingScope implements Scope
 				$varType = $this->getType($node->left->var);
 				$hasOffset = $varType->hasOffsetValueType($dimType);
 				$leftType = $this->getType($node->left);
-				$rightType = $this->getType($node->right);
+				$rightType = $this->filterByFalseyValue(
+					new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null')))
+				)->getType($node->right);
 				if ($hasOffset->no()) {
 					return $rightType;
 				} elseif ($hasOffset->yes()) {
@@ -1672,7 +1674,9 @@ class MutatingScope implements Scope
 			}
 
 			$leftType = $this->getType($node->left);
-			$rightType = $this->getType($node->right);
+			$rightType = $this->filterByFalseyValue(
+				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null')))
+			)->getType($node->right);
 			if ($leftType instanceof ErrorType || $leftType instanceof NullType) {
 				return $rightType;
 			}

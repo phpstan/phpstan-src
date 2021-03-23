@@ -587,7 +587,7 @@ class TypeSpecifier
 					false,
 					array_merge(
 						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes)
 					)
 				);
 			}
@@ -604,7 +604,7 @@ class TypeSpecifier
 					false,
 					array_merge(
 						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes)
 					)
 				);
 			}

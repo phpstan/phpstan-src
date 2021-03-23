@@ -581,7 +581,15 @@ class TypeSpecifier
 			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);
 			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->intersectWith($rightTypes);
 			if ($context->false()) {
-				return $this->processBooleanConditionalTypes($scope, $types, $leftTypes, $rightTypes);
+				return new SpecifiedTypes(
+					$types->getSureTypes(),
+					$types->getSureNotTypes(),
+					false,
+					array_merge(
+						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+					)
+				);
 			}
 
 			return $types;
@@ -590,7 +598,15 @@ class TypeSpecifier
 			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);
 			$types = $context->true() ? $leftTypes->intersectWith($rightTypes) : $leftTypes->unionWith($rightTypes);
 			if ($context->true()) {
-				return $this->processBooleanConditionalTypes($scope, $types, $leftTypes, $rightTypes);
+				return new SpecifiedTypes(
+					$types->getSureTypes(),
+					$types->getSureNotTypes(),
+					false,
+					array_merge(
+						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+					)
+				);
 			}
 
 			return $types;
@@ -755,7 +771,13 @@ class TypeSpecifier
 		return new SpecifiedTypes();
 	}
 
-	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $types, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): SpecifiedTypes
+	/**
+	 * @param Scope $scope
+	 * @param SpecifiedTypes $leftTypes
+	 * @param SpecifiedTypes $rightTypes
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
 	{
 		$conditionExpressionTypes = [];
 		foreach ($leftTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
@@ -789,10 +811,10 @@ class TypeSpecifier
 				);
 			}
 
-			return new SpecifiedTypes($types->getSureTypes(), $types->getSureNotTypes(), false, $holders);
+			return $holders;
 		}
 
-		return $types;
+		return [];
 	}
 
 	/**

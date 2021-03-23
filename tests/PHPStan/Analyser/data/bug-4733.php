@@ -48,9 +48,9 @@ class HelloWorld
 			return;
 		}
 
-		// does not tell anything about $start
+		// $someObject === null therefore $start cannot be null
 
-		assertType('DateTimeImmutable|null', $start);
+		assertType('DateTimeImmutable', $start);
 	}
 
 	public function getDescription4(?\DateTimeImmutable $start, ?string $someObject): void
@@ -60,9 +60,9 @@ class HelloWorld
 				return;
 			}
 
-			// does not tell anything about $start
+			// $someObject === null therefore $start cannot be null
 
-			assertType('DateTimeImmutable|null', $start);
+			assertType('DateTimeImmutable', $start);
 		}
 	}
 }

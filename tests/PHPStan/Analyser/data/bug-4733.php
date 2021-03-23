@@ -35,4 +35,34 @@ class HelloWorld
 			assertType('string', $someObject);
 		}
 	}
+
+	public function getDescription3(?\DateTimeImmutable $start, ?string $someObject): void
+	{
+		if ($start === null && $someObject === null) {
+			return;
+		}
+
+		// $start !== null || $someObject !== null
+
+		if ($someObject !== null) {
+			return;
+		}
+
+		// does not tell anything about $start
+
+		assertType('DateTimeImmutable|null', $start);
+	}
+
+	public function getDescription4(?\DateTimeImmutable $start, ?string $someObject): void
+	{
+		if ($start !== null || $someObject !== null) {
+			if ($someObject !== null) {
+				return;
+			}
+
+			// does not tell anything about $start
+
+			assertType('DateTimeImmutable|null', $start);
+		}
+	}
 }

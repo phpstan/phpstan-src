@@ -869,11 +869,38 @@ class TypeSpecifier
 		Expr $expr,
 		Type $type,
 		TypeSpecifierContext $context,
-		bool $overwrite = false
+		bool $overwrite = false,
+		?Scope $scope = null
 	): SpecifiedTypes
 	{
 		if ($expr instanceof New_ || $expr instanceof Instanceof_) {
 			return new SpecifiedTypes();
+		}
+
+		if (
+			$expr instanceof FuncCall
+			&& $expr->name instanceof Name
+			&& $this->reflectionProvider->hasFunction($expr->name, $scope)
+		) {
+			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+			if ($functionReflection->hasSideEffects()->yes()) {
+				return new SpecifiedTypes();
+			}
+		}
+
+		if (
+			$expr instanceof MethodCall
+			&& $expr->name instanceof Node\Identifier
+			&& $scope !== null
+		) {
+			$methodName = $expr->name->toString();
+			$calledOnType = $scope->getType($expr->var);
+			if ($calledOnType->hasMethod($methodName)->yes()) {
+				$methodReflection = $calledOnType->getMethod($methodName, $scope);
+				if ($methodReflection->hasSideEffects()->yes()) {
+					return new SpecifiedTypes();
+				}
+			}
 		}
 
 		$sureTypes = [];

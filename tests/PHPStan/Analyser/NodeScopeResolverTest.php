@@ -5760,6 +5760,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-560.php');
 	}
 
+	public function dataDoNotRememberImpureFunctions(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/do-not-remember-impure-functions.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11395,6 +11400,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug3190
 	 * @dataProvider dataTernarySpecifiedTypes
 	 * @dataProvider dataBug560
+	 * @dataProvider dataDoNotRememberImpureFunctions
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

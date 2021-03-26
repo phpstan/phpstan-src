@@ -184,14 +184,6 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				656,
 			],
 			[
-				'Method ReturnTypes\TernaryWithJsonEncode::toJsonOrNull() should return string|null but returns string|false|null.',
-				671,
-			],
-			[
-				'Method ReturnTypes\TernaryWithJsonEncode::toJson() should return string but returns string|false.',
-				684,
-			],
-			[
 				'Method ReturnTypes\TernaryWithJsonEncode::toJson() should return string but returns string|false.',
 				687,
 			],
@@ -234,10 +226,6 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Method ReturnTypes\WrongMagicMethods::__clone() with return type void returns int but should not return anything.',
 				757,
-			],
-			[
-				'Method ReturnTypes\ReturnSpecifiedMethodCall::doFoo() should return string but returns string|false.',
-				776,
 			],
 			[
 				'Method ReturnTypes\ArrayFillKeysIssue::getIPs2() should return array<string, array<ReturnTypes\Foo>> but returns array<string, array<int, ReturnTypes\Bar>>.',

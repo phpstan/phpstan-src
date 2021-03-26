@@ -179,6 +179,10 @@ class ImpossibleCheckTypeHelper
 				return null;
 			}
 
+			if ($sureType[0] === $node) {
+				return null;
+			}
+
 			if ($this->treatPhpDocTypesAsCertain) {
 				$argumentType = $scope->getType($sureType[0]);
 			} else {
@@ -199,6 +203,10 @@ class ImpossibleCheckTypeHelper
 		} elseif (count($sureNotTypes) === 1 && count($sureTypes) === 0) {
 			$sureNotType = reset($sureNotTypes);
 			if ($isSpecified($sureNotType[0])) {
+				return null;
+			}
+
+			if ($sureNotType[0] === $node) {
 				return null;
 			}
 

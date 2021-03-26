@@ -47,16 +47,16 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 			&& strtolower($classNameArgExpr->name->name) === 'class'
 		) {
 			$objectType = $scope->resolveTypeByName($classNameArgExpr->class);
-			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
+			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context, false, $scope);
 		} elseif ($classNameArgExprType instanceof ConstantStringType) {
 			$objectType = new ObjectType($classNameArgExprType->getValue());
-			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
+			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context, false, $scope);
 		} elseif ($classNameArgExprType instanceof GenericClassStringType) {
 			$objectType = $classNameArgExprType->getGenericType();
-			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
+			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context, false, $scope);
 		} elseif ($context->true()) {
 			$objectType = new ObjectWithoutClassType();
-			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context);
+			$types = $this->typeSpecifier->create($node->args[0]->value, $objectType, $context, false, $scope);
 		} else {
 			$types = new SpecifiedTypes();
 		}
@@ -66,7 +66,9 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 				$types = $types->intersectWith($this->typeSpecifier->create(
 					$node->args[0]->value,
 					isset($objectType) ? new GenericClassStringType($objectType) : new ClassStringType(),
-					$context
+					$context,
+					false,
+					$scope
 				));
 			}
 		}

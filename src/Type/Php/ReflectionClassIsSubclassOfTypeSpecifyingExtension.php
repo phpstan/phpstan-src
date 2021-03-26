@@ -48,7 +48,9 @@ class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSp
 			new GenericObjectType(\ReflectionClass::class, [
 				new ObjectType($valueType->getValue()),
 			]),
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

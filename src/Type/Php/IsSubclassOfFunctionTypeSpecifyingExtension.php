@@ -59,7 +59,9 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 				return $this->typeSpecifier->create(
 					$node->args[0]->value,
 					$type,
-					$context
+					$context,
+					false,
+					$scope
 				);
 			}
 
@@ -98,7 +100,9 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 		return $this->typeSpecifier->create(
 			$node->args[0]->value,
 			$type,
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

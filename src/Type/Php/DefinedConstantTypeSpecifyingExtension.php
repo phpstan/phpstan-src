@@ -54,7 +54,9 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 				new \PhpParser\Node\Name\FullyQualified($constantName->getValue())
 			),
 			new MixedType(),
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

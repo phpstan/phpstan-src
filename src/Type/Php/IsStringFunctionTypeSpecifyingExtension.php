@@ -30,7 +30,7 @@ class IsStringFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new StringType(), $context);
+		return $this->typeSpecifier->create($node->args[0]->value, new StringType(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

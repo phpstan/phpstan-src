@@ -39,7 +39,7 @@ class IsScalarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 			new IntegerType(),
 			new FloatType(),
 			new BooleanType(),
-		]), $context);
+		]), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

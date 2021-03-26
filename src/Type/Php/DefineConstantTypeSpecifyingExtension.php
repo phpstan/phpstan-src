@@ -53,7 +53,9 @@ class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 				new \PhpParser\Node\Name\FullyQualified($constantName->getValue())
 			),
 			$scope->getType($node->args[1]->value),
-			TypeSpecifierContext::createTruthy()
+			TypeSpecifierContext::createTruthy(),
+			false,
+			$scope
 		);
 	}
 

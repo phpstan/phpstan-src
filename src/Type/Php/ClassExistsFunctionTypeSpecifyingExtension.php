@@ -48,7 +48,9 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 						new Arg(new String_(ltrim($argType->getValue(), '\\'))),
 					]),
 					new ConstantBooleanType(true),
-					$context
+					$context,
+					false,
+					$scope
 				);
 			}
 
@@ -58,7 +60,9 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		return $this->typeSpecifier->create(
 			$node->args[0]->value,
 			$classStringType,
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

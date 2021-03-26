@@ -30,7 +30,7 @@ class IsObjectFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new ObjectWithoutClassType(), $context);
+		return $this->typeSpecifier->create($node->args[0]->value, new ObjectWithoutClassType(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

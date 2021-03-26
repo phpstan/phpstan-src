@@ -83,7 +83,9 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 				new ObjectWithoutClassType(),
 				new HasPropertyType($propertyNameType->getValue()),
 			]),
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

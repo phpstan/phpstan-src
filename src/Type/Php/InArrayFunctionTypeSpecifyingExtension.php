@@ -46,7 +46,9 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return $this->typeSpecifier->create(
 				$node->args[0]->value,
 				$arrayValueType,
-				$context
+				$context,
+				false,
+				$scope
 			);
 		}
 

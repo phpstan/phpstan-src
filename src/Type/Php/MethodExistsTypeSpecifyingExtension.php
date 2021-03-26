@@ -68,7 +68,9 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 				]),
 				new ClassStringType(),
 			]),
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

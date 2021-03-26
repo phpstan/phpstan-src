@@ -60,7 +60,7 @@ class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			return $this->methodExistsExtension->specifyTypes($functionReflection, $functionCall, $scope, $context);
 		}
 
-		return $this->typeSpecifier->create($value, new CallableType(), $context);
+		return $this->typeSpecifier->create($value, new CallableType(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

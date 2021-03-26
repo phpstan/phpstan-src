@@ -41,7 +41,7 @@ class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 			return new SpecifiedTypes([], []);
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new NonEmptyArrayType(), $context);
+		return $this->typeSpecifier->create($node->args[0]->value, new NonEmptyArrayType(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

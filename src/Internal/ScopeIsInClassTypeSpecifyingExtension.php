@@ -74,7 +74,9 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 			TypeCombinator::removeNull(
 				ParametersAcceptorSelector::selectSingle($methodVariants)->getReturnType()
 			),
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

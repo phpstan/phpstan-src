@@ -39,7 +39,9 @@ class IsCountableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 				new ArrayType(new MixedType(), new MixedType()),
 				new ObjectType(\Countable::class),
 			]),
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

@@ -57,7 +57,9 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		return $this->typeSpecifier->create(
 			$node->args[1]->value,
 			$type,
-			$context
+			$context,
+			false,
+			$scope
 		);
 	}
 

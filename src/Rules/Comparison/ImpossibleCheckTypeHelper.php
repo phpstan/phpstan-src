@@ -166,6 +166,10 @@ class ImpossibleCheckTypeHelper
 		$sureNotTypes = $specifiedTypes->getSureNotTypes();
 
 		$isSpecified = static function (Expr $expr) use ($scope, $node): bool {
+			if ($expr === $node) {
+				return true;
+			}
+
 			return (
 				$node instanceof FuncCall
 				|| $node instanceof MethodCall
@@ -176,10 +180,6 @@ class ImpossibleCheckTypeHelper
 		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {
 			$sureType = reset($sureTypes);
 			if ($isSpecified($sureType[0])) {
-				return null;
-			}
-
-			if ($sureType[0] === $node) {
 				return null;
 			}
 
@@ -203,10 +203,6 @@ class ImpossibleCheckTypeHelper
 		} elseif (count($sureNotTypes) === 1 && count($sureTypes) === 0) {
 			$sureNotType = reset($sureNotTypes);
 			if ($isSpecified($sureNotType[0])) {
-				return null;
-			}
-
-			if ($sureNotType[0] === $node) {
 				return null;
 			}
 

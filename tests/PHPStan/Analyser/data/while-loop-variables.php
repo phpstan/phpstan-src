@@ -7,7 +7,7 @@ function () {
 	$i = 0;
 	$nullableVal = null;
 	$falseOrObject = false;
-	while ($val = fetch() && $i++ < 10) {
+	while (($val = fetch()) && $i++ < 10) {
 		'begin';
 		$foo = new Foo();
 		'afterAssign';

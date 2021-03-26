@@ -7845,17 +7845,17 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	{
 		return [
 			[
-				'int',
+				'int<min, 10>',
 				'$i',
 				"'begin'",
 			],
 			[
-				'int',
+				'int<min, 10>',
 				'$i',
 				"'end'",
 			],
 			[
-				'int',
+				'int<min, 10>',
 				'$i',
 				"'afterLoop'",
 			],

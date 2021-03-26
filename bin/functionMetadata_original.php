@@ -63,8 +63,12 @@ return [
 	// continue functionMap.php, line 424
 	'count' => ['hasSideEffects' => false],
 	'sprintf' => ['hasSideEffects' => false],
+
+	// random functions, do not have side effects but are not deterministic
 	'mt_rand' => ['hasSideEffects' => true],
 	'rand' => ['hasSideEffects' => true],
+	'random_bytes' => ['hasSideEffects' => true],
+	'random_int' => ['hasSideEffects' => true],
 
 	// methods
 	'DateTime::createFromFormat' => ['hasSideEffects' => false],

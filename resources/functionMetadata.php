@@ -1358,6 +1358,8 @@ return [
 	'quotemeta' => ['hasSideEffects' => false],
 	'rad2deg' => ['hasSideEffects' => false],
 	'rand' => ['hasSideEffects' => true],
+	'random_bytes' => ['hasSideEffects' => true],
+	'random_int' => ['hasSideEffects' => true],
 	'range' => ['hasSideEffects' => false],
 	'rawurldecode' => ['hasSideEffects' => false],
 	'rawurlencode' => ['hasSideEffects' => false],

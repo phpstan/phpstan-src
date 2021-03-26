@@ -732,6 +732,16 @@ class TypeSpecifier
 
 			return $types;
 		} elseif (
+			$expr instanceof Expr\BinaryOp\Coalesce
+			&& $context->true()
+			&& ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right))->yes())
+		) {
+			return $this->create(
+				$expr->left,
+				new NullType(),
+				TypeSpecifierContext::createFalse()
+			);
+		} elseif (
 			$expr instanceof Expr\Empty_ && $context->truthy()
 			&& (new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($scope->getType($expr->expr))->yes()
 		) {

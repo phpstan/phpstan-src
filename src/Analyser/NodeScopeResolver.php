@@ -1700,6 +1700,10 @@ class NodeScopeResolver
 			if (isset($functionReflection) && $functionReflection->getName() === 'extract') {
 				$scope = $scope->afterExtractCall();
 			}
+
+			if (isset($functionReflection) && $functionReflection->getName() === 'clearstatcache') {
+				$scope = $scope->afterClearstatcacheCall();
+			}
 		} elseif ($expr instanceof MethodCall) {
 			$originalScope = $scope;
 			if (

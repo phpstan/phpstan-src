@@ -5770,6 +5770,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4190.php');
 	}
 
+	public function dataClearStatCache(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/clear-stat-cache.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11407,6 +11412,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug560
 	 * @dataProvider dataDoNotRememberImpureFunctions
 	 * @dataProvider dataBug4190
+	 * @dataProvider dataClearStatCache
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

@@ -394,6 +394,61 @@ class MutatingScope implements Scope
 		);
 	}
 
+	public function afterClearstatcacheCall(): self
+	{
+		$moreSpecificTypes = $this->moreSpecificTypes;
+		foreach (array_keys($moreSpecificTypes) as $exprString) {
+			// list from https://www.php.net/manual/en/function.clearstatcache.php
+
+			// stat(), lstat(), file_exists(), is_writable(), is_readable(), is_executable(), is_file(), is_dir(), is_link(), filectime(), fileatime(), filemtime(), fileinode(), filegroup(), fileowner(), filesize(), filetype(), and fileperms().
+			foreach ([
+				'stat',
+				'lstat',
+				'file_exists',
+				'is_writable',
+				'is_readable',
+				'is_executable',
+				'is_file',
+				'is_dir',
+				'is_link',
+				'filectime',
+				'fileatime',
+				'filemtime',
+				'fileinode',
+				'filegroup',
+				'fileowner',
+				'filesize',
+				'filetype',
+				'fileperms',
+			] as $functionName) {
+				if (!Strings::startsWith($exprString, $functionName . '(') && !Strings::startsWith($exprString, '\\' . $functionName . '(')) {
+					continue;
+				}
+
+				unset($moreSpecificTypes[$exprString]);
+				continue 2;
+			}
+		}
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->getVariableTypes(),
+			$moreSpecificTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->nativeExpressionTypes,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope
+		);
+	}
+
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
 		if ($this->isGlobalVariable($variableName)) {

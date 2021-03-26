@@ -562,8 +562,8 @@ class TypeSpecifier
 				$calleeType = $scope->getType($expr->class);
 			}
 
-			if ($calleeType->hasMethod($expr->name->name)->yes()) {
-				$staticMethodReflection = $calleeType->getMethod($expr->name->name, $scope);
+			$staticMethodReflection = $scope->getMethodReflection($calleeType, $expr->name->name);
+			if ($staticMethodReflection !== null) {
 				$referencedClasses = TypeUtils::getDirectClassNames($calleeType);
 				if (
 					count($referencedClasses) === 1

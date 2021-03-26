@@ -1728,8 +1728,8 @@ class NodeScopeResolver
 			} else {
 				$calledOnType = $scope->getType($expr->var);
 				$methodName = $expr->name->name;
-				if ($calledOnType->hasMethod($methodName)->yes()) {
-					$methodReflection = $calledOnType->getMethod($methodName, $scope);
+				$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
+				if ($methodReflection !== null) {
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 						$scope,
 						$expr->args,
@@ -2849,9 +2849,9 @@ class NodeScopeResolver
 			if ($var->name instanceof Node\Identifier) {
 				$propertyName = $var->name->name;
 			}
-			if ($propertyName !== null && $propertyHolderType->hasProperty($propertyName)->yes()) {
-				$propertyReflection = $propertyHolderType->getProperty($propertyName, $scope);
-				if ($propertyReflection->canChangeTypeAfterAssignment()) {
+			if ($propertyName !== null) {
+				$propertyReflection = $scope->getPropertyReflection($propertyHolderType, $propertyName);
+				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					$scope = $scope->assignExpression($var, $scope->getType($assignedExpr));
 				}
 			} else {

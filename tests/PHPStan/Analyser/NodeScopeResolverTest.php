@@ -5750,6 +5750,11 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3190.php');
 	}
 
+	public function dataTernarySpecifiedTypes(): array
+	{
+		return $this->gatherAssertTypes(__DIR__ . '/data/ternary-specified-types.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11383,6 +11388,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataBug4695
 	 * @dataProvider dataBug2977
 	 * @dataProvider dataBug3190
+	 * @dataProvider dataTernarySpecifiedTypes
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

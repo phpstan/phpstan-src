@@ -738,6 +738,18 @@ class TypeSpecifier
 			return $this->create($expr->expr, new NonEmptyArrayType(), $context->negate());
 		} elseif ($expr instanceof Expr\ErrorSuppress) {
 			return $this->specifyTypesInCondition($scope, $expr->expr, $context, $defaultHandleFunctions);
+		} elseif (
+			$expr instanceof Expr\Ternary
+			&& !$context->null()
+			&& ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->else))->yes())
+		) {
+			$conditionExpr = $expr->cond;
+			if ($expr->if !== null) {
+				$conditionExpr = new BooleanAnd($conditionExpr, $expr->if);
+			}
+
+			return $this->specifyTypesInCondition($scope, $conditionExpr, $context);
+
 		} elseif ($expr instanceof Expr\NullsafePropertyFetch && !$context->null()) {
 			$types = $this->specifyTypesInCondition(
 				$scope,

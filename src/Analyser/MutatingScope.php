@@ -80,6 +80,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -1849,7 +1850,7 @@ class MutatingScope implements Scope
 					return $this->filterByFalseyValue($node->cond, true)->getType($node->else);
 				}
 				return TypeCombinator::union(
-					$this->filterByTruthyValue($node->cond, true)->getType($node->cond),
+					TypeCombinator::remove($this->filterByTruthyValue($node->cond, true)->getType($node->cond), StaticTypeFactory::falsey()),
 					$this->filterByFalseyValue($node->cond, true)->getType($node->else)
 				);
 			}

@@ -34,12 +34,14 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return strtolower($functionReflection->getName()) === 'is_subclass_of'
-			&& count($node->args) >= 2
 			&& !$context->null();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
+		if (count($node->args) < 2) {
+			return new SpecifiedTypes();
+		}
 		$objectType = $scope->getType($node->args[0]->value);
 		$classType = $scope->getType($node->args[1]->value);
 		$allowStringType = isset($node->args[2]) ? $scope->getType($node->args[2]->value) : new ConstantBooleanType(true);

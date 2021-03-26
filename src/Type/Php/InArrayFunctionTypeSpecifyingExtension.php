@@ -26,12 +26,14 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return strtolower($functionReflection->getName()) === 'in_array'
-			&& count($node->args) >= 3
 			&& !$context->null();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
+		if (count($node->args) < 3) {
+			return new SpecifiedTypes();
+		}
 		$strictNodeType = $scope->getType($node->args[2]->value);
 		if (!(new ConstantBooleanType(true))->isSuperTypeOf($strictNodeType)->yes()) {
 			return new SpecifiedTypes([], []);

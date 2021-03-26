@@ -24,7 +24,6 @@ class IsScalarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return $functionReflection->getName() === 'is_scalar'
-			&& isset($node->args[0])
 			&& !$context->null();
 	}
 
@@ -32,6 +31,10 @@ class IsScalarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 	{
 		if ($context->null()) {
 			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		if (!isset($node->args[0])) {
+			return new SpecifiedTypes();
 		}
 
 		return $this->typeSpecifier->create($node->args[0]->value, new UnionType([

@@ -32,7 +32,6 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 	): bool
 	{
 		return $functionReflection->getName() === 'array_key_exists'
-			&& count($node->args) >= 2
 			&& !$context->null();
 	}
 
@@ -43,6 +42,9 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
+		if (count($node->args) < 2) {
+			return new SpecifiedTypes();
+		}
 		$keyType = $scope->getType($node->args[0]->value);
 
 		if ($context->truthy()) {

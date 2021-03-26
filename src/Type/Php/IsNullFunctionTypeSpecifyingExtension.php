@@ -20,7 +20,6 @@ class IsNullFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return strtolower($functionReflection->getName()) === 'is_null'
-			&& isset($node->args[0])
 			&& !$context->null();
 	}
 
@@ -28,6 +27,10 @@ class IsNullFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 	{
 		if ($context->null()) {
 			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		if (!isset($node->args[0])) {
+			return new SpecifiedTypes();
 		}
 
 		return $this->typeSpecifier->create($node->args[0]->value, new NullType(), $context, false, $scope);

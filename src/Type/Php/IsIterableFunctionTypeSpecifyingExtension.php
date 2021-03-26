@@ -21,7 +21,6 @@ class IsIterableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return strtolower($functionReflection->getName()) === 'is_iterable'
-			&& isset($node->args[0])
 			&& !$context->null();
 	}
 
@@ -29,6 +28,10 @@ class IsIterableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 	{
 		if ($context->null()) {
 			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		if (!isset($node->args[0])) {
+			return new SpecifiedTypes();
 		}
 
 		return $this->typeSpecifier->create($node->args[0]->value, new IterableType(new MixedType(), new MixedType()), $context, false, $scope);

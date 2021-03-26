@@ -24,12 +24,14 @@ class IsIntFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 			'is_integer',
 			'is_long',
 		], true)
-			&& isset($node->args[0])
 			&& !$context->null();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
+		if (!isset($node->args[0])) {
+			return new SpecifiedTypes();
+		}
 		if ($context->null()) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}

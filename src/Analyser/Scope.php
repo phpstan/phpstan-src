@@ -96,9 +96,9 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function isInExpressionAssign(Expr $expr): bool;
 
-	public function filterByTruthyValue(Expr $expr, bool $defaultHandleFunctions = false): self;
+	public function filterByTruthyValue(Expr $expr): self;
 
-	public function filterByFalseyValue(Expr $expr, bool $defaultHandleFunctions = false): self;
+	public function filterByFalseyValue(Expr $expr): self;
 
 	public function isInFirstLevelStatement(): bool;
 

@@ -105,8 +105,7 @@ class TypeSpecifier
 	public function specifyTypesInCondition(
 		Scope $scope,
 		Expr $expr,
-		TypeSpecifierContext $context,
-		bool $defaultHandleFunctions = false
+		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
 		if ($expr instanceof Instanceof_) {
@@ -517,10 +516,10 @@ class TypeSpecifier
 			return $result;
 
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Greater) {
-			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Smaller($expr->right, $expr->left), $context, $defaultHandleFunctions);
+			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Smaller($expr->right, $expr->left), $context);
 
 		} elseif ($expr instanceof Node\Expr\BinaryOp\GreaterOrEqual) {
-			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\SmallerOrEqual($expr->right, $expr->left), $context, $defaultHandleFunctions);
+			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\SmallerOrEqual($expr->right, $expr->left), $context);
 
 		} elseif ($expr instanceof FuncCall && $expr->name instanceof Name) {
 			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
@@ -534,9 +533,7 @@ class TypeSpecifier
 				}
 			}
 
-			if ($defaultHandleFunctions) {
-				return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-			}
+			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		} elseif ($expr instanceof MethodCall && $expr->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($expr->var);
 			$referencedClasses = TypeUtils::getDirectClassNames($methodCalledOnType);
@@ -557,9 +554,7 @@ class TypeSpecifier
 				}
 			}
 
-			if ($defaultHandleFunctions) {
-				return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-			}
+			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		} elseif ($expr instanceof StaticCall && $expr->name instanceof Node\Identifier) {
 			if ($expr->class instanceof Name) {
 				$calleeType = $scope->resolveTypeByName($expr->class);
@@ -585,9 +580,7 @@ class TypeSpecifier
 				}
 			}
 
-			if ($defaultHandleFunctions) {
-				return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-			}
+			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		} elseif ($expr instanceof BooleanAnd || $expr instanceof LogicalAnd) {
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
 			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);
@@ -765,7 +758,7 @@ class TypeSpecifier
 		) {
 			return $this->create($expr->expr, new NonEmptyArrayType(), $context->negate(), false, $scope);
 		} elseif ($expr instanceof Expr\ErrorSuppress) {
-			return $this->specifyTypesInCondition($scope, $expr->expr, $context, $defaultHandleFunctions);
+			return $this->specifyTypesInCondition($scope, $expr->expr, $context);
 		} elseif (
 			$expr instanceof Expr\Ternary
 			&& !$context->null()
@@ -785,8 +778,7 @@ class TypeSpecifier
 					new Expr\BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
 					new PropertyFetch($expr->var, $expr->name)
 				),
-				$context,
-				$defaultHandleFunctions
+				$context
 			);
 
 			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
@@ -800,6 +792,9 @@ class TypeSpecifier
 
 	private function handleDefaultTruthyOrFalseyContext(TypeSpecifierContext $context, Expr $expr, Scope $scope): SpecifiedTypes
 	{
+		if ($context->null()) {
+			return new SpecifiedTypes();
+		}
 		if (!$context->truthy()) {
 			$type = StaticTypeFactory::truthy();
 			return $this->create($expr, $type, TypeSpecifierContext::createFalse(), false, $scope);
@@ -898,8 +893,13 @@ class TypeSpecifier
 		if (
 			$expr instanceof FuncCall
 			&& $expr->name instanceof Name
-			&& $this->reflectionProvider->hasFunction($expr->name, $scope)
 		) {
+			$has = $this->reflectionProvider->hasFunction($expr->name, $scope);
+			if (!$has) {
+				// backwards compatibility with previous behaviour
+				return new SpecifiedTypes();
+			}
+
 			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 			if ($functionReflection->hasSideEffects()->yes()) {
 				return new SpecifiedTypes();
@@ -913,11 +913,15 @@ class TypeSpecifier
 		) {
 			$methodName = $expr->name->toString();
 			$calledOnType = $scope->getType($expr->var);
-			if ($calledOnType->hasMethod($methodName)->yes()) {
-				$methodReflection = $calledOnType->getMethod($methodName, $scope);
-				if ($methodReflection->hasSideEffects()->yes()) {
-					return new SpecifiedTypes();
-				}
+			$has = $calledOnType->hasMethod($methodName)->yes();
+			if (!$has) {
+				// backwards compatibility with previous behaviour
+				return new SpecifiedTypes();
+			}
+
+			$methodReflection = $calledOnType->getMethod($methodName, $scope);
+			if ($methodReflection->hasSideEffects()->yes()) {
+				return new SpecifiedTypes();
 			}
 		}
 

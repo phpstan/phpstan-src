@@ -20,6 +20,10 @@ class Foo
 				assertType('int', rand(0, 1));
 			}
 		};
+		function (): void {
+			assertType('\'foo\'|int<min, -1>|int<1, max>', rand(0, 1) ?: 'foo');
+			assertType('\'foo\'|int', rand(0, 1) ? rand(0, 1) : 'foo');
+		};
 	}
 
 	public function doBar(): bool

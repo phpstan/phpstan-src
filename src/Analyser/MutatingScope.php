@@ -1844,14 +1844,14 @@ class MutatingScope implements Scope
 				$booleanConditionType = $conditionType->toBoolean();
 				if ($booleanConditionType instanceof ConstantBooleanType) {
 					if ($booleanConditionType->getValue()) {
-						return $this->filterByTruthyValue($node->cond, true)->getType($node->cond);
+						return $this->filterByTruthyValue($node->cond)->getType($node->cond);
 					}
 
-					return $this->filterByFalseyValue($node->cond, true)->getType($node->else);
+					return $this->filterByFalseyValue($node->cond)->getType($node->else);
 				}
 				return TypeCombinator::union(
-					TypeCombinator::remove($this->filterByTruthyValue($node->cond, true)->getType($node->cond), StaticTypeFactory::falsey()),
-					$this->filterByFalseyValue($node->cond, true)->getType($node->else)
+					TypeCombinator::remove($this->filterByTruthyValue($node->cond)->getType($node->cond), StaticTypeFactory::falsey()),
+					$this->filterByFalseyValue($node->cond)->getType($node->else)
 				);
 			}
 
@@ -3471,23 +3471,21 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param \PhpParser\Node\Expr $expr
-	 * @param bool $defaultHandleFunctions
 	 * @return \PHPStan\Analyser\MutatingScope
 	 */
-	public function filterByTruthyValue(Expr $expr, bool $defaultHandleFunctions = false): Scope
+	public function filterByTruthyValue(Expr $expr): Scope
 	{
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy(), $defaultHandleFunctions);
+		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
 		return $this->filterBySpecifiedTypes($specifiedTypes);
 	}
 
 	/**
 	 * @param \PhpParser\Node\Expr $expr
-	 * @param bool $defaultHandleFunctions
 	 * @return \PHPStan\Analyser\MutatingScope
 	 */
-	public function filterByFalseyValue(Expr $expr, bool $defaultHandleFunctions = false): Scope
+	public function filterByFalseyValue(Expr $expr): Scope
 	{
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey(), $defaultHandleFunctions);
+		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
 		return $this->filterBySpecifiedTypes($specifiedTypes);
 	}
 

@@ -63,6 +63,8 @@ return [
 	// continue functionMap.php, line 424
 	'count' => ['hasSideEffects' => false],
 	'sprintf' => ['hasSideEffects' => false],
+	'mt_rand' => ['hasSideEffects' => true],
+	'rand' => ['hasSideEffects' => true],
 
 	// methods
 	'DateTime::createFromFormat' => ['hasSideEffects' => false],

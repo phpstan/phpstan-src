@@ -913,13 +913,12 @@ class TypeSpecifier
 		) {
 			$methodName = $expr->name->toString();
 			$calledOnType = $scope->getType($expr->var);
-			$has = $calledOnType->hasMethod($methodName)->yes();
-			if (!$has) {
+			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
+			if ($methodReflection === null) {
 				// backwards compatibility with previous behaviour
 				return new SpecifiedTypes();
 			}
 
-			$methodReflection = $calledOnType->getMethod($methodName, $scope);
 			if ($methodReflection->hasSideEffects()->yes()) {
 				return new SpecifiedTypes();
 			}

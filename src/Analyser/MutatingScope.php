@@ -4694,13 +4694,7 @@ class MutatingScope implements Scope
 		return $decidedType;
 	}
 
-	/**
-	 * @param \PHPStan\Type\Type $typeWithMethod
-	 * @param string $methodName
-	 * @param MethodCall|\PhpParser\Node\Expr\StaticCall $methodCall
-	 * @return \PHPStan\Type\Type|null
-	 */
-	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
+	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?MethodReflection
 	{
 		if ($typeWithMethod instanceof UnionType) {
 			$newTypes = [];
@@ -4721,7 +4715,21 @@ class MutatingScope implements Scope
 			return null;
 		}
 
-		$methodReflection = $typeWithMethod->getMethod($methodName, $this);
+		return $typeWithMethod->getMethod($methodName, $this);
+	}
+
+	/**
+	 * @param \PHPStan\Type\Type $typeWithMethod
+	 * @param string $methodName
+	 * @param MethodCall|\PhpParser\Node\Expr\StaticCall $methodCall
+	 * @return \PHPStan\Type\Type|null
+	 */
+	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
+	{
+		$methodReflection = $this->getMethodReflection($typeWithMethod, $methodName);
+		if ($methodReflection === null) {
+			return null;
+		}
 
 		$resolvedTypes = [];
 		foreach (TypeUtils::getDirectClassNames($typeWithMethod) as $className) {
@@ -4755,17 +4763,11 @@ class MutatingScope implements Scope
 		)->getReturnType();
 	}
 
-	/**
-	 * @param \PHPStan\Type\Type $fetchedOnType
-	 * @param string $propertyName
-	 * @param PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
-	 * @return \PHPStan\Type\Type|null
-	 */
-	private function propertyFetchType(Type $fetchedOnType, string $propertyName, Expr $propertyFetch): ?Type
+	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?PropertyReflection
 	{
-		if ($fetchedOnType instanceof UnionType) {
+		if ($typeWithProperty instanceof UnionType) {
 			$newTypes = [];
-			foreach ($fetchedOnType->getTypes() as $innerType) {
+			foreach ($typeWithProperty->getTypes() as $innerType) {
 				if (!$innerType->hasProperty($propertyName)->yes()) {
 					continue;
 				}
@@ -4775,13 +4777,27 @@ class MutatingScope implements Scope
 			if (count($newTypes) === 0) {
 				return null;
 			}
-			$fetchedOnType = TypeCombinator::union(...$newTypes);
+			$typeWithProperty = TypeCombinator::union(...$newTypes);
 		}
-		if (!$fetchedOnType->hasProperty($propertyName)->yes()) {
+		if (!$typeWithProperty->hasProperty($propertyName)->yes()) {
 			return null;
 		}
 
-		$propertyReflection = $fetchedOnType->getProperty($propertyName, $this);
+		return $typeWithProperty->getProperty($propertyName, $this);
+	}
+
+	/**
+	 * @param \PHPStan\Type\Type $fetchedOnType
+	 * @param string $propertyName
+	 * @param PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+	 * @return \PHPStan\Type\Type|null
+	 */
+	private function propertyFetchType(Type $fetchedOnType, string $propertyName, Expr $propertyFetch): ?Type
+	{
+		$propertyReflection = $this->getPropertyReflection($fetchedOnType, $propertyName);
+		if ($propertyReflection === null) {
+			return null;
+		}
 
 		if ($this->isInExpressionAssign($propertyFetch)) {
 			return $propertyReflection->getWritableType();

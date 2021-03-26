@@ -7,7 +7,9 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
@@ -48,6 +50,10 @@ interface Scope extends ClassMemberAccessAnswerer
 	public function getDefinedVariables(): array;
 
 	public function hasConstant(Name $name): bool;
+
+	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?PropertyReflection;
+
+	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?MethodReflection;
 
 	public function isInAnonymousFunction(): bool;
 

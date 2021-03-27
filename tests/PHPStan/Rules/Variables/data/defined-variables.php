@@ -252,7 +252,7 @@ function () {
 
 	try {
 		$variableDefinedInTry = 1;
-		$variableDefinedInTryAndAllCatches = 1;
+		$variableDefinedInTryAndAllCatches = 1; maybeThrow();
 	} catch (\FooException $e) {
 		$variableDefinedInTryAndAllCatches = 1;
 		$variableAvailableInAllCatches = 1;

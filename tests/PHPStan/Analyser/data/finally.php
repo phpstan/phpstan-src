@@ -16,6 +16,7 @@ function () {
 	try {
 		$integerOrString = 1;
 		$fooOrBarException = null;
+		maybeThrows();
 	} catch (FooException $e) {
 		$integerOrString = 1;
 		$fooOrBarException = $e;

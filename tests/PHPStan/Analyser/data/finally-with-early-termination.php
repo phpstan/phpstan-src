@@ -5,6 +5,7 @@ namespace FinallyNamespace;
 try {
 	$integerOrString = 1;
 	$fooOrBarException = null;
+	maybeThrows();
 	return 1;
 } catch (FooException $e) {
 	$integerOrString = 1;

@@ -689,7 +689,7 @@ class NodeScopeResolver
 
 			if (!$conditionType instanceof ConstantBooleanType || $conditionType->getValue()) {
 				$exitPoints = $branchScopeStatementResult->getExitPoints();
-				$throwPoints = $branchScopeStatementResult->getThrowPoints();
+				$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
 				$branchScope = $branchScopeStatementResult->getScope();
 				$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? null : $branchScope;
 				$alwaysTerminating = $branchScopeStatementResult->isAlwaysTerminating();
@@ -1126,23 +1126,8 @@ class NodeScopeResolver
 			$branchScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback);
 			$branchScope = $branchScopeResult->getScope();
 			$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
-			if (count($branchScopeResult->getThrowPoints()) > 0) {
-				$allCaught = false;
-				foreach ($stmt->catches as $catch) {
-					foreach ($catch->types as $type) {
-						if ($type->toString() === \Throwable::class) {
-							continue;
-						}
-						$allCaught = true;
-					}
-				}
-				if (!$allCaught) {
-					$branchScope = $branchScope->mergeWith($branchScopeResult->getThrowPoints()[0]->getScope());
-				}
-			}
-			$tryScope = $branchScope;
+
 			$exitPoints = [];
-			$throwPoints = [];
 			$alwaysTerminating = $branchScopeResult->isAlwaysTerminating();
 			$hasYield = $branchScopeResult->hasYield();
 
@@ -1158,26 +1143,64 @@ class NodeScopeResolver
 				$exitPoints[] = $exitPoint;
 			}
 
-			// todo filter caught
-			$throwPoints = array_merge($throwPoints, $branchScopeResult->getThrowPoints());
+			$throwPoints = $branchScopeResult->getThrowPoints();
+			foreach ($throwPoints as $throwPoint) {
+				if ($finallyScope === null) {
+					continue;
+				}
+				$finallyScope = $finallyScope->mergeWith($throwPoint->getScope());
+			}
+
+			$throwPointsForLater = [];
 
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
-				if (!$this->polluteCatchScopeWithTryAssignments) {
-					$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($tryScope), $nodeCallback);
-					$catchScopeForFinally = $catchScopeResult->getScope();
+				$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
+					return new ObjectType($name->toString());
+				}, $catchNode->types));
+				$matchingThrowPoints = [];
+				$newThrowPoints = [];
+				foreach ($throwPoints as $throwPoint) {
+					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
+					if (!$isSuperType->no()) {
+						$matchingThrowPoints[] = $throwPoint;
+					}
+					if ($isSuperType->yes()) {
+						continue;
+					}
+					$newThrowPoints[] = $throwPoint;
+				}
+				$throwPoints = $newThrowPoints;
+				if (count($matchingThrowPoints) === 0) {
+					if (!$this->polluteCatchScopeWithTryAssignments) {
+						$catchScope = $scope->mergeWith($finalScope);
+					} else {
+						$catchScope = $branchScope;
+					}
 				} else {
-					$catchScopeForFinally = $this->processCatchNode($catchNode, $tryScope, $nodeCallback)->getScope();
-					$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($tryScope), static function (): void {
-					});
+					$catchScope = null;
+					foreach ($matchingThrowPoints as $matchingThrowPoint) {
+						if ($catchScope === null) {
+							$catchScope = $matchingThrowPoint->getScope();
+						} else {
+							$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
+						}
+					}
+				}
+
+				$catchScopeResult = $this->processCatchNode($catchNode, $catchScope, $nodeCallback);
+				if (count($matchingThrowPoints) === 0) {
+					continue;
 				}
 
 				$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
 				$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();
 				$hasYield = $hasYield || $catchScopeResult->hasYield();
+				$catchThrowPoints = $catchScopeResult->getThrowPoints();
+				$throwPointsForLater = array_merge($throwPointsForLater, $catchThrowPoints);
 
 				if ($finallyScope !== null) {
-					$finallyScope = $finallyScope->mergeWith($catchScopeForFinally);
+					$finallyScope = $finallyScope->mergeWith($catchScopeResult->getScope());
 				}
 				foreach ($catchScopeResult->getExitPoints() as $exitPoint) {
 					if ($finallyScope !== null) {
@@ -1185,7 +1208,13 @@ class NodeScopeResolver
 					}
 					$exitPoints[] = $exitPoint;
 				}
-				$throwPoints = array_merge($throwPoints, $catchScopeResult->getThrowPoints());
+
+				foreach ($catchThrowPoints as $catchThrowPoint) {
+					if ($finallyScope === null) {
+						continue;
+					}
+					$finallyScope = $finallyScope->mergeWith($catchThrowPoint->getScope());
+				}
 			}
 
 			if ($finalScope === null) {
@@ -1197,13 +1226,13 @@ class NodeScopeResolver
 				$finallyResult = $this->processStmtNodes($stmt->finally, $stmt->finally->stmts, $finallyScope, $nodeCallback);
 				$alwaysTerminating = $alwaysTerminating || $finallyResult->isAlwaysTerminating();
 				$hasYield = $hasYield || $finallyResult->hasYield();
+				$throwPointsForLater = array_merge($throwPointsForLater, $finallyResult->getThrowPoints());
 				$finallyScope = $finallyResult->getScope();
 				$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
 				$exitPoints = array_merge($exitPoints, $finallyResult->getExitPoints());
-				$throwPoints = array_merge($throwPoints, $finallyResult->getThrowPoints());
 			}
 
-			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints);
+			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, array_merge($throwPoints, $throwPointsForLater));
 		} elseif ($stmt instanceof Unset_) {
 			$hasYield = false;
 			$throwPoints = [];

@@ -5618,200 +5618,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		];
 	}
 
-	public function dataPseudoTypeOverrides(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-override.php');
-	}
-
-	public function dataPseudoTypeNamespace(): array
-	{
-		require_once __DIR__ . '/data/phpdoc-pseudotype-namespace.php';
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-namespace.php');
-	}
-
-	public function dataPseudoTypeGlobal(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-global.php');
-	}
-
-	public function dataGenericTraits(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/generic-traits.php');
-	}
-
-	public function dataBug4423(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4423.php');
-	}
-
-	public function dataGenericUnions(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/generic-unions.php');
-	}
-
-	public function dataGenericParent(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/generic-parent.php');
-	}
-
-	public function dataBug4247(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4247.php');
-	}
-
-	public function dataBug4267(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4267.php');
-	}
-
-	public function dataBug2231(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2231.php');
-	}
-
-	public function dataBug3558(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3558.php');
-	}
-
-	public function dataBug3351(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3351.php');
-	}
-
-	public function dataBug4213(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4213.php');
-	}
-
-	public function dataBug4657(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4657.php');
-	}
-
-	public function dataBug4707(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4707.php');
-	}
-
-	public function dataBug4545(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4545.php');
-	}
-
-	public function dataBug4714(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4714.php');
-	}
-
-	public function dataBug4725(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4725.php');
-	}
-
-	public function dataBug4733(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4733.php');
-	}
-
-	public function dataBug4326(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4326.php');
-	}
-
-	public function dataBug987(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-987.php');
-	}
-
-	public function dataBug3677(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3677.php');
-	}
-
-	public function dataBug4215(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4215.php');
-	}
-
-	public function dataBug4695(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4695.php');
-	}
-
-	public function dataBug2977(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2977.php');
-	}
-
-	public function dataBug3190(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3190.php');
-	}
-
-	public function dataTernarySpecifiedTypes(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/ternary-specified-types.php');
-	}
-
-	public function dataBug560(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-560.php');
-	}
-
-	public function dataDoNotRememberImpureFunctions(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/do-not-remember-impure-functions.php');
-	}
-
-	public function dataBug4190(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4190.php');
-	}
-
-	public function dataClearStatCache(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/clear-stat-cache.php');
-	}
-
-	public function dataInvalidateObjectStateAfterPassingToImpureFunction(): iterable
-	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-static.php');
-
-		require_once __DIR__ . '/data/invalidate-object-argument-function.php';
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-function.php');
-	}
-
-	public function dataThrowPoints(): iterable
-	{
-		require_once __DIR__ . '/data/throw-points/helpers.php';
-		if (PHP_VERSION_ID >= 80000) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/php8/null-safe-method-call.php');
-		}
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/and.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/array.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/array-dim-fetch.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/assign.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/assign-op.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/do-while.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/for.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/foreach.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/func-call.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/if.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/method-call.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/or.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/property-fetch.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/static-call.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/switch.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/throw.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch-finally.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/variable.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/while.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch.php');
-	}
-
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -10167,1001 +9973,379 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		);
 	}
 
-	public function dataBug2574(): array
+	public function dataFileAsserts(): iterable
 	{
 		require_once __DIR__ . '/data/bug2574.php';
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug2574.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug2574.php');
 
-	public function dataBug2577(): array
-	{
 		require_once __DIR__ . '/data/bug2577.php';
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug2577.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug2577.php');
 
-	public function dataGenerics(): array
-	{
 		require_once __DIR__ . '/data/generics.php';
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/generics.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/generics.php');
 
-	public function dataGenericClassStringType(): array
-	{
 		require_once __DIR__ . '/data/generic-class-string.php';
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/generic-class-string.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-class-string.php');
 
-	public function dataInstanceOf(): array
-	{
 		require_once __DIR__ . '/data/instanceof.php';
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/instanceof.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/instanceof.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/integer-range-types.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/random-int.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type-extensions.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/intersection-static.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/static-properties.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/static-methods.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2612.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2677.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2676.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/psalm-prefix-unresolvable.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/complex-generics-example.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2648.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2740.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2822.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/inheritdoc-parameter-remapping.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/inheritdoc-constructors.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/list-type.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2835.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2443.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2750.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2850.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2863.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/native-types.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-change-after-array-access-assignment.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/iterator_to_array.php');
 
-	public function dataIntegerRangeTypes(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/integer-range-types.php');
-	}
+		if (self::$useStaticReflectionProvider || extension_loaded('ds')) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');
+		}
+		if (self::$useStaticReflectionProvider || PHP_VERSION_ID >= 70400) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/arrow-function-return-type.php');
+		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/is-numeric.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/is-a.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3142.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-shapes-keys-strings.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1216.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/const-expr-phpdoc-type.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3226.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2001.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2232.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3009.php');
 
-	public function dataRandomInt(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/random-int.php');
-	}
-
-	public function dataClosureReturnTypes(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type-extensions.php');
-	}
-
-	public function dataArrayKey(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
-	}
-
-	public function dataIntersectionStatic(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/intersection-static.php');
-	}
-
-	public function dataStaticProperties(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/static-properties.php');
-	}
-
-	public function dataStaticMethods(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/static-methods.php');
-	}
-
-	public function dataBug2612(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2612.php');
-	}
-
-	public function dataBug2677(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2677.php');
-	}
-
-	public function dataBug2676(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2676.php');
-	}
-
-	public function dataPsalmPrefixedTagsWithUnresolvableTypes(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/psalm-prefix-unresolvable.php');
-	}
-
-	public function dataComplexGenericsExample(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/complex-generics-example.php');
-	}
-
-	public function dataBug2648(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2648.php');
-	}
-
-	public function dataBug2740(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2740.php');
-	}
-
-	public function dataBug2822(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2822.php');
-	}
-
-	public function dataPhpDocInheritanceParameterRemapping(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/inheritdoc-parameter-remapping.php');
-	}
-
-	public function dataPhpDocInheritanceConstructors(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/inheritdoc-constructors.php');
-	}
-
-	public function dataListType(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/list-type.php');
-	}
-
-	public function dataBug2835(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2835.php');
-	}
-
-	public function dataBug2443(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2443.php');
-	}
-
-	public function dataBug2750(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2750.php');
-	}
-
-	public function dataBug2850(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2850.php');
-	}
-
-	public function dataBug2863(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2863.php');
-	}
-
-	public function dataNativeTypes(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/native-types.php');
-	}
-
-	public function dataTypeChangeAfterArrayAccessAssignment(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/type-change-after-array-access-assignment.php');
-	}
-
-	public function dataIteratorToArray(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/iterator_to_array.php');
-	}
-
-	public function dataExtDs(): array
-	{
-		if (!self::$useStaticReflectionProvider && !extension_loaded('ds')) {
-			return [];
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-var.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-param.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-return.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-template.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3266.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3269.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/assign-nested-arrays.php');
+		if (self::$useStaticReflectionProvider || PHP_VERSION_ID >= 70400) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3276.php');
+		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/shadowed-trait-methods.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/const-in-functions.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/const-in-functions-namespaced.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/root-scope-maybe-defined.php');
+		if (PHP_VERSION_ID < 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3336.php');
+		}
+		if (self::$useStaticReflectionProvider || PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/catch-without-variable.php');
+		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/mixed-typehint.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2600.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-typehint-without-null-in-phpdoc.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/override-root-scope-variable.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bitwise-not.php');
+		if (extension_loaded('gd')) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/graphics-draw-return-types.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');
-	}
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			require_once __DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php';
 
-	public function dataArrowFunctionReturnTypeInference(): array
-	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			return [];
+			yield from $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/unionTypes.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/arrow-function-return-type.php');
-	}
-
-	public function dataIsNumeric(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/is-numeric.php');
-	}
-
-	public function dataIsA(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/is-a.php');
-	}
-
-	public function dataBug3142(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3142.php');
-	}
-
-	public function dataArrayShapeKeysStrings(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/array-shapes-keys-strings.php');
-	}
-
-	public function dataBug1216(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1216.php');
-	}
-
-	public function dataConstExprPhpDocType(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/const-expr-phpdoc-type.php');
-	}
-
-	public function dataBug3226(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3226.php');
-	}
-
-	public function dataBug2001(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2001.php');
-	}
-
-	public function dataBug2232(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2232.php');
-	}
-
-	public function dataBug3009(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3009.php');
-	}
-
-	public function dataInheritPhpDocMerging(): array
-	{
-		return array_merge(
-			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-var.php'),
-			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-param.php'),
-			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-return.php'),
-			$this->gatherAssertTypes(__DIR__ . '/data/inherit-phpdoc-merging-template.php')
-		);
-	}
-
-	public function dataBug3266(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3266.php');
-	}
-
-	public function dataBug3269(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3269.php');
-	}
-
-	public function dataAssignNestedArray(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/assign-nested-arrays.php');
-	}
-
-	public function dataBug3276(): array
-	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			return [];
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/mixedType.php');
 		}
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3276.php');
-	}
 
-	public function dataShadowedTraitMethods(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/shadowed-trait-methods.php');
-	}
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/staticReturnType.php');
+		}
 
-	public function dataConstInFunctions(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/const-in-functions.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array-key-type.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3133.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Comparison/data/bug-2550.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2899.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/preg_split.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bcmath-dynamic-return.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3875.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2611.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3548.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3866.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1014.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-pr-339.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/pow.php');
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-expr.php');
+		}
 
-	public function dataConstInFunctionsNamespaced(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/const-in-functions-namespaced.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array.php');
 
-	public function dataRootScopeMaybeDefined(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/root-scope-maybe-defined.php');
-	}
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/class-constant-on-expr.php');
+		}
 
-	public function dataBug3336(): array
-	{
 		if (PHP_VERSION_ID >= 80000) {
-			return [];
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3961-php8.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3961.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3336.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1924.php');
 
-	public function dataCatchWithoutVariable(): array
-	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			return [];
-		}
-		return $this->gatherAssertTypes(__DIR__ . '/data/catch-without-variable.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/extra-int-types.php');
 
-	public function dataMixedTypehint(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/mixed-typehint.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/count-type.php');
 
-	public function dataVariadics(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2600.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2816.php');
 
-	public function dataArrayTypehintWithoutNullInPhpDoc(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/array-typehint-without-null-in-phpdoc.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2816-2.php');
 
-	public function dataOverrideVariableCertaintyInRootScope(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/override-root-scope-variable.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3985.php');
 
-	public function dataBitwiseNot(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bitwise-not.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-slice.php');
 
-	public function dataGraphicsDrawReturnTypes(): array
-	{
-		if (!extension_loaded('gd')) {
-			return [];
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3990.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3991.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3993.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3997.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4016.php');
+
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/promoted-properties-types.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/graphics-draw-return-types.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/early-termination-phpdoc.php');
 
-	public function dataNativeUnionTypes(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3915.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2378.php');
+
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/match-expr.php');
 		}
 
-		require_once __DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php';
-
-		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/unionTypes.php');
-	}
-
-	public function dataNativeMixedType(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
+		if (PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/nullsafe.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/mixedType.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/specified-types-closure-use.php');
 
-	public function dataNativeStaticReturnType(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/cast-to-numeric-string.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2539.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2733.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3132.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1233.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/comparison-operators.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3880.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/inc-dec-in-conditions.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4099.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3760.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2997.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1657.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2945.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4207.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4206.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-empty-array.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4205.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/dependent-variable-certainty.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1865.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/conditional-non-empty-array.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/foreach-dependent-key-value.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-type-guard-same-as-type.php');
+
+		if (PHP_VERSION_ID >= 70400 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-arrow-function.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/staticReturnType.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-801.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1209.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2980.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3986.php');
 
-	public function dataMinMaxReturnTypeWithArrays(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
-	}
-
-	public function dataClassPhpDocs(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
-	}
-
-	public function dataNonEmptyArrayKeyType(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array-key-type.php');
-	}
-
-	public function dataBug3133(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3133.php');
-	}
-
-	public function dataBug2550(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Comparison/data/bug-2550.php');
-	}
-
-	public function dataBug2899(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2899.php');
-	}
-
-	public function dataPregSplitReturnType(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/preg_split.php');
-	}
-
-	public function dataBcMathDynamicReturn(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bcmath-dynamic-return.php');
-	}
-
-	public function dataBug3875(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3875.php');
-	}
-
-	public function dataBug2611(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2611.php');
-	}
-
-	public function dataBug3548(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3548.php');
-	}
-
-	public function dataBug3866(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3866.php');
-	}
-
-	public function dataBug1014(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1014.php');
-	}
-
-	public function dataBugFromPr339(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-pr-339.php');
-	}
-
-	public function dataPow(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/pow.php');
-	}
-
-	public function dataThrowExpression(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
+		if (PHP_VERSION_ID >= 70400) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4188.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/throw-expr.php');
-	}
-
-	public function dataNotEmptyArray(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array.php');
-	}
-
-	public function dataClassConstantOnExpression(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
+		if (PHP_VERSION_ID >= 70400) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4339.php');
 		}
 
-		return $this->gatherAssertTypes(__DIR__ . '/data/class-constant-on-expr.php');
-	}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4343.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/impure-method.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4351.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/var-above-use.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/var-above-declare.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4398.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4415.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/compact.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4500.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4504.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4436.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Properties/data/bug-3777.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2549.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1945.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2003.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-651.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1283.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4538.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/proc_get_status.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-4552.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1897.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1801.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2927.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4558.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4557.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4209.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4209-2.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2869.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3024.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3134.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/infer-array-key.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/offset-value-after-assign.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2112.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-map-closure.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4573.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4577.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4579.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3321.php');
 
-	public function dataBug3961(): array
-	{
-		if (PHP_VERSION_ID >= 80000) {
-			return $this->gatherAssertTypes(__DIR__ . '/data/bug-3961-php8.php');
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3961.php');
-	}
-
-	public function dataBug1924(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1924.php');
-	}
-
-	public function dataExtraIntTypes(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/extra-int-types.php');
-	}
-
-	public function dataCount(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/count-type.php');
-	}
-
-	public function dataBug2816(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2816.php');
-	}
-
-	public function dataBug2816Two(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2816-2.php');
-	}
-
-	public function dataBug3985(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3985.php');
-	}
-
-	public function dataArraySlice(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/array-slice.php');
-	}
-
-	public function dataBug3990(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3990.php');
-	}
-
-	public function dataBug3991(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3991.php');
-	}
-
-	public function dataBug3993(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3993.php');
-	}
-
-	public function dataBug3997(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3997.php');
-	}
-
-	public function dataBug4016(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4016.php');
-	}
-
-	public function dataPromotedProperties(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/promoted-properties-types.php');
-	}
-
-	/** @return array<string, mixed[]> */
-	public function dataNeverEarlyTerminates(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/early-termination-phpdoc.php');
-	}
-
-	public function dataBug3915(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3915.php');
-	}
-
-	public function dataBug2378(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2378.php');
-	}
-
-	public function dataMatchExpression(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/match-expr.php');
-	}
-
-	public function dataNullSafe(): array
-	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/nullsafe.php');
-	}
-
-	public function dataRememberSpecifiedTypesAfterClosureUse(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/specified-types-closure-use.php');
-	}
-
-	public function dataCastToNumericString(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/cast-to-numeric-string.php');
-	}
-
-	public function dataBug2539(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2539.php');
-	}
-
-	public function dataBug2733(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2733.php');
-	}
-
-	public function dataBug3132(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3132.php');
-	}
-
-	public function dataBug1233(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1233.php');
-	}
-
-	public function dataComparisonOperators(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/comparison-operators.php');
-	}
-
-	public function dataBug3880(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3880.php');
-	}
-
-	public function dataIncDecInConditions(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/inc-dec-in-conditions.php');
-	}
-
-	public function dataBug4099(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4099.php');
-	}
-
-	public function dataBug3760(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3760.php');
-	}
-
-	public function dataBug2997(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2997.php');
-	}
-
-	public function dataBug1657(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1657.php');
-	}
-
-	public function dataBug2945(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2945.php');
-	}
-
-	public function dataBug4207(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4207.php');
-	}
-
-	public function dataBug4206(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4206.php');
-	}
-
-	public function dataBugEmptyArray(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-empty-array.php');
-	}
-
-	public function dataBug4205(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4205.php');
-	}
-
-	public function dataDependentVariableCertainty(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/dependent-variable-certainty.php');
-	}
-
-	public function dataBug1865(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1865.php');
-	}
-
-	public function dataConditionalTypeWithNonEmptyArray(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/conditional-non-empty-array.php');
-	}
-
-	public function dataForeachDependentKeyValue(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/foreach-dependent-key-value.php');
-	}
-
-	public function dataDependentVariablesTypeGuardIsTheSameAsType(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-type-guard-same-as-type.php');
-	}
-
-	public function dataDependentVariablesArrowFunction(): array
-	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/dependent-variables-arrow-function.php');
-	}
-
-	public function dataBug801(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-801.php');
-	}
-
-	public function dataBug1209(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1209.php');
-	}
-
-	public function dataBug2980(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2980.php');
-	}
-
-	public function dataBug3986(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3986.php');
-	}
-
-	public function dataBug4188(): array
-	{
-		if (PHP_VERSION_ID < 70400) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4188.php');
-	}
-
-	public function dataBug4339(): array
-	{
-		if (PHP_VERSION_ID < 70400) {
-			return [];
-		}
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4339.php');
-	}
-
-	public function dataBug4343(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4343.php');
-	}
-
-	public function dataImpureMethod(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/impure-method.php');
-	}
-
-	public function dataBug4351(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4351.php');
-	}
-
-	public function dataVarAboveUse(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/var-above-use.php');
-	}
-
-	public function dataVarAboveDeclare(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/var-above-declare.php');
-	}
-
-	public function dataClosureReturnType(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type.php');
-	}
-
-	public function dataBug4398(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4398.php');
-	}
-
-	public function dataBug4415(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4415.php');
-	}
-
-	public function dataCompact(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/compact.php');
-	}
-
-	public function dataBug4500(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4500.php');
-	}
-
-	public function dataBug4504(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4504.php');
-	}
-
-	public function dataBug4436(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4436.php');
-	}
-
-	public function dataBug3777(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Properties/data/bug-3777.php');
-	}
-
-	public function dataBug2549(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2549.php');
-	}
-
-	public function dataBug1945(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1945.php');
-	}
-
-	public function dataBug2003(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2003.php');
-	}
-
-	public function dataBug651(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-651.php');
-	}
-
-	public function dataBug1283(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1283.php');
-	}
-
-	public function dataBug4538(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4538.php');
-	}
-
-	public function dataProcGetStatus(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/proc_get_status.php');
-	}
-
-	public function dataBug4552(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-4552.php');
-	}
-
-	public function dataBug1897(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1897.php');
-	}
-
-	public function dataBug1801(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-1801.php');
-	}
-
-	public function dataBug2927(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2927.php');
-	}
-
-	public function dataBug4558(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4558.php');
-	}
-
-	public function dataBug4557(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4557.php');
-	}
-
-	public function dataBug4209(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4209.php');
-	}
-
-	public function dataBug4209Two(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4209-2.php');
-	}
-
-	public function dataBug2869(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2869.php');
-	}
-
-	public function dataBug3024(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3024.php');
-	}
-
-	public function dataBug3134(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3134.php');
-	}
-
-	public function dataInferArrayKey(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/infer-array-key.php');
-	}
-
-	public function dataOffsetValueTypeAfterAssign(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/offset-value-after-assign.php');
-	}
-
-	public function dataBug2112(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-2112.php');
-	}
-
-	public function dataArrayMapClosure(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/array-map-closure.php');
-	}
-
-	public function dataBug4573(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4573.php');
-	}
-
-	public function dataBug4577(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4577.php');
-	}
-
-	public function dataBug4579(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4579.php');
-	}
-
-	public function dataBug3321(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3321.php');
-	}
-
-	public function dataBug3769(): array
-	{
 		require_once __DIR__ . '/../Rules/Generics/data/bug-3769.php';
-		return $this->gatherAssertTypes(__DIR__ . '/../Rules/Generics/data/bug-3769.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Generics/data/bug-3769.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/instanceof-class-string.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4498.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4587.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4606.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/nested-generic-types.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3922.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/nested-generic-types-unwrapping.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/nested-generic-types-unwrapping-covariant.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/nested-generic-incomplete-constructor.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/iterator-iterator.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4642.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/PhpDoc/data/bug-4643.php');
+		require_once __DIR__ . '/data/throw-points/helpers.php';
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/php8/null-safe-method-call.php');
+		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/and.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/array.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/array-dim-fetch.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/assign.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/assign-op.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/do-while.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/for.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/foreach.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/func-call.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/if.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/method-call.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/or.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/property-fetch.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/static-call.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/switch.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/throw.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch-finally.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/variable.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/while.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-override.php');
+		require_once __DIR__ . '/data/phpdoc-pseudotype-namespace.php';
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-namespace.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-global.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-traits.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4423.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-unions.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-parent.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4247.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4267.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2231.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3558.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3351.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4213.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4657.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4707.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4545.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4714.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4725.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4733.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4326.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-987.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3677.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4215.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4695.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2977.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3190.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/ternary-specified-types.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-560.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/do-not-remember-impure-functions.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4190.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/clear-stat-cache.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-static.php');
+
+		require_once __DIR__ . '/data/invalidate-object-argument-function.php';
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-function.php');
 	}
 
-	public function dataBugInstanceOfClassString(): array
+	/**
+	 * @dataProvider dataFileAsserts
+	 * @param string $assertType
+	 * @param string $file
+	 * @param mixed ...$args
+	 */
+	public function testFileAsserts(
+		string $assertType,
+		string $file,
+		...$args
+	): void
 	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/instanceof-class-string.php');
-	}
-
-	public function dataBug4498(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4498.php');
-	}
-
-	public function dataBug4587(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4587.php');
-	}
-
-	public function dataBug4606(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4606.php');
-	}
-
-	public function dataNestedGenericTypes(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/nested-generic-types.php');
-	}
-
-	public function dataBug3922(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-3922.php');
-	}
-
-	public function dataNestedGenericTypesUnwrapping(): array
-	{
-		return array_merge(
-			$this->gatherAssertTypes(__DIR__ . '/data/nested-generic-types-unwrapping.php'),
-			$this->gatherAssertTypes(__DIR__ . '/data/nested-generic-types-unwrapping-covariant.php')
-		);
-	}
-
-	public function dataNestedGenericIncompleteConstructor(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/nested-generic-incomplete-constructor.php');
-	}
-
-	public function dataIteratorIterator(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/iterator-iterator.php');
-	}
-
-	public function dataBug4642(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/data/bug-4642.php');
-	}
-
-	public function dataBug4643(): array
-	{
-		return $this->gatherAssertTypes(__DIR__ . '/../Rules/PhpDoc/data/bug-4643.php');
+		if ($assertType === 'type') {
+			$expectedType = $args[0];
+			$expected = $expectedType->getValue();
+			$actualType = $args[1];
+			$actual = $actualType->describe(VerbosityLevel::precise());
+			$this->assertSame(
+				$expected,
+				$actual,
+				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2])
+			);
+		} elseif ($assertType === 'variableCertainty') {
+			$expectedCertainty = $args[0];
+			$actualCertainty = $args[1];
+			$variableName = $args[2];
+			$this->assertTrue(
+				$expectedCertainty->equals($actualCertainty),
+				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
+			);
+		}
 	}
 
 	/**
@@ -11235,252 +10419,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		});
 
 		return $asserts;
-	}
-
-	/**
-	 * @dataProvider dataBug2574
-	 * @dataProvider dataBug2577
-	 * @dataProvider dataGenerics
-	 * @dataProvider dataGenericClassStringType
-	 * @dataProvider dataInstanceOf
-	 * @dataProvider dataIntegerRangeTypes
-	 * @dataProvider dataRandomInt
-	 * @dataProvider dataClosureReturnTypes
-	 * @dataProvider dataArrayKey
-	 * @dataProvider dataIntersectionStatic
-	 * @dataProvider dataStaticProperties
-	 * @dataProvider dataStaticMethods
-	 * @dataProvider dataBug2612
-	 * @dataProvider dataBug2677
-	 * @dataProvider dataBug2676
-	 * @dataProvider dataPsalmPrefixedTagsWithUnresolvableTypes
-	 * @dataProvider dataComplexGenericsExample
-	 * @dataProvider dataBug2648
-	 * @dataProvider dataBug2740
-	 * @dataProvider dataPhpDocInheritanceParameterRemapping
-	 * @dataProvider dataPhpDocInheritanceConstructors
-	 * @dataProvider dataListType
-	 * @dataProvider dataBug2822
-	 * @dataProvider dataBug2835
-	 * @dataProvider dataBug2443
-	 * @dataProvider dataBug2750
-	 * @dataProvider dataBug2850
-	 * @dataProvider dataBug2863
-	 * @dataProvider dataNativeTypes
-	 * @dataProvider dataTypeChangeAfterArrayAccessAssignment
-	 * @dataProvider dataIteratorToArray
-	 * @dataProvider dataExtDs
-	 * @dataProvider dataArrowFunctionReturnTypeInference
-	 * @dataProvider dataIsNumeric
-	 * @dataProvider dataIsA
-	 * @dataProvider dataBug3142
-	 * @dataProvider dataArrayShapeKeysStrings
-	 * @dataProvider dataBug1216
-	 * @dataProvider dataConstExprPhpDocType
-	 * @dataProvider dataBug3226
-	 * @dataProvider dataBug2001
-	 * @dataProvider dataBug2232
-	 * @dataProvider dataBug3009
-	 * @dataProvider dataInheritPhpDocMerging
-	 * @dataProvider dataBug3266
-	 * @dataProvider dataBug3269
-	 * @dataProvider dataAssignNestedArray
-	 * @dataProvider dataBug3276
-	 * @dataProvider dataShadowedTraitMethods
-	 * @dataProvider dataConstInFunctions
-	 * @dataProvider dataConstInFunctionsNamespaced
-	 * @dataProvider dataRootScopeMaybeDefined
-	 * @dataProvider dataBug3336
-	 * @dataProvider dataCatchWithoutVariable
-	 * @dataProvider dataMixedTypehint
-	 * @dataProvider dataVariadics
-	 * @dataProvider dataArrayTypehintWithoutNullInPhpDoc
-	 * @dataProvider dataOverrideVariableCertaintyInRootScope
-	 * @dataProvider dataBitwiseNot
-	 * @dataProvider dataGraphicsDrawReturnTypes
-	 * @dataProvider dataNativeUnionTypes
-	 * @dataProvider dataNativeMixedType
-	 * @dataProvider dataMinMaxReturnTypeWithArrays
-	 * @dataProvider dataNativeStaticReturnType
-	 * @dataProvider dataClassPhpDocs
-	 * @dataProvider dataNonEmptyArrayKeyType
-	 * @dataProvider dataBcMathDynamicReturn
-	 * @dataProvider dataBug3133
-	 * @dataProvider dataBug2550
-	 * @dataProvider dataBug2899
-	 * @dataProvider dataPregSplitReturnType
-	 * @dataProvider dataBug3875
-	 * @dataProvider dataBug2611
-	 * @dataProvider dataBug3548
-	 * @dataProvider dataBug3866
-	 * @dataProvider dataBug1014
-	 * @dataProvider dataBugFromPr339
-	 * @dataProvider dataPow
-	 * @dataProvider dataThrowExpression
-	 * @dataProvider dataNotEmptyArray
-	 * @dataProvider dataClassConstantOnExpression
-	 * @dataProvider dataBug3961
-	 * @dataProvider dataBug1924
-	 * @dataProvider dataExtraIntTypes
-	 * @dataProvider dataCount
-	 * @dataProvider dataBug2816
-	 * @dataProvider dataBug2816Two
-	 * @dataProvider dataBug3985
-	 * @dataProvider dataArraySlice
-	 * @dataProvider dataBug3990
-	 * @dataProvider dataBug3991
-	 * @dataProvider dataBug3993
-	 * @dataProvider dataBug3997
-	 * @dataProvider dataBug4016
-	 * @dataProvider dataPromotedProperties
-	 * @dataProvider dataNeverEarlyTerminates
-	 * @dataProvider dataBug3915
-	 * @dataProvider dataBug2378
-	 * @dataProvider dataMatchExpression
-	 * @dataProvider dataNullSafe
-	 * @dataProvider dataRememberSpecifiedTypesAfterClosureUse
-	 * @dataProvider dataCastToNumericString
-	 * @dataProvider dataBug2539
-	 * @dataProvider dataBug2733
-	 * @dataProvider dataBug3132
-	 * @dataProvider dataBug1233
-	 * @dataProvider dataComparisonOperators
-	 * @dataProvider dataBug3880
-	 * @dataProvider dataIncDecInConditions
-	 * @dataProvider dataBug4099
-	 * @dataProvider dataBug3760
-	 * @dataProvider dataBug2997
-	 * @dataProvider dataBug1657
-	 * @dataProvider dataBug2945
-	 * @dataProvider dataBug4207
-	 * @dataProvider dataBug4206
-	 * @dataProvider dataBugEmptyArray
-	 * @dataProvider dataBug4205
-	 * @dataProvider dataDependentVariableCertainty
-	 * @dataProvider dataBug1865
-	 * @dataProvider dataConditionalTypeWithNonEmptyArray
-	 * @dataProvider dataForeachDependentKeyValue
-	 * @dataProvider dataDependentVariablesTypeGuardIsTheSameAsType
-	 * @dataProvider dataDependentVariablesArrowFunction
-	 * @dataProvider dataBug801
-	 * @dataProvider dataBug1209
-	 * @dataProvider dataBug2980
-	 * @dataProvider dataBug3986
-	 * @dataProvider dataBug4188
-	 * @dataProvider dataBug4339
-	 * @dataProvider dataBug4343
-	 * @dataProvider dataImpureMethod
-	 * @dataProvider dataBug4351
-	 * @dataProvider dataVarAboveUse
-	 * @dataProvider dataVarAboveDeclare
-	 * @dataProvider dataClosureReturnType
-	 * @dataProvider dataBug4398
-	 * @dataProvider dataBug4415
-	 * @dataProvider dataCompact
-	 * @dataProvider dataBug4500
-	 * @dataProvider dataBug4504
-	 * @dataProvider dataBug4436
-	 * @dataProvider dataBug3777
-	 * @dataProvider dataBug2549
-	 * @dataProvider dataBug1945
-	 * @dataProvider dataBug2003
-	 * @dataProvider dataBug651
-	 * @dataProvider dataBug1283
-	 * @dataProvider dataBug4538
-	 * @dataProvider dataProcGetStatus
-	 * @dataProvider dataBug4552
-	 * @dataProvider dataBug1897
-	 * @dataProvider dataBug1801
-	 * @dataProvider dataBug2927
-	 * @dataProvider dataBug4558
-	 * @dataProvider dataBug4557
-	 * @dataProvider dataBug4209
-	 * @dataProvider dataBug4209Two
-	 * @dataProvider dataBug2869
-	 * @dataProvider dataBug3024
-	 * @dataProvider dataBug3134
-	 * @dataProvider dataInferArrayKey
-	 * @dataProvider dataOffsetValueTypeAfterAssign
-	 * @dataProvider dataBug2112
-	 * @dataProvider dataArrayMapClosure
-	 * @dataProvider dataBug4573
-	 * @dataProvider dataBug4577
-	 * @dataProvider dataBug4579
-	 * @dataProvider dataBug3321
-	 * @dataProvider dataBug3769
-	 * @dataProvider dataBugInstanceOfClassString
-	 * @dataProvider dataBug4498
-	 * @dataProvider dataBug4587
-	 * @dataProvider dataBug4606
-	 * @dataProvider dataNestedGenericTypes
-	 * @dataProvider dataBug3922
-	 * @dataProvider dataNestedGenericTypesUnwrapping
-	 * @dataProvider dataNestedGenericIncompleteConstructor
-	 * @dataProvider dataIteratorIterator
-	 * @dataProvider dataBug4642
-	 * @dataProvider dataBug4643
-	 * @dataProvider dataPseudoTypeGlobal
-	 * @dataProvider dataPseudoTypeNamespace
-	 * @dataProvider dataPseudoTypeOverrides
-	 * @dataProvider dataGenericTraits
-	 * @dataProvider dataBug4423
-	 * @dataProvider dataGenericUnions
-	 * @dataProvider dataGenericParent
-	 * @dataProvider dataBug4247
-	 * @dataProvider dataBug4267
-	 * @dataProvider dataBug2231
-	 * @dataProvider dataBug3558
-	 * @dataProvider dataBug3351
-	 * @dataProvider dataBug4213
-	 * @dataProvider dataBug4657
-	 * @dataProvider dataBug4707
-	 * @dataProvider dataBug4545
-	 * @dataProvider dataBug4714
-	 * @dataProvider dataBug4725
-	 * @dataProvider dataBug4733
-	 * @dataProvider dataBug4326
-	 * @dataProvider dataBug987
-	 * @dataProvider dataBug3677
-	 * @dataProvider dataBug4215
-	 * @dataProvider dataBug4695
-	 * @dataProvider dataBug2977
-	 * @dataProvider dataBug3190
-	 * @dataProvider dataTernarySpecifiedTypes
-	 * @dataProvider dataBug560
-	 * @dataProvider dataDoNotRememberImpureFunctions
-	 * @dataProvider dataBug4190
-	 * @dataProvider dataClearStatCache
-	 * @dataProvider dataInvalidateObjectStateAfterPassingToImpureFunction
-	 * @dataProvider dataThrowPoints
-	 * @param string $assertType
-	 * @param string $file
-	 * @param mixed ...$args
-	 */
-	public function testFileAsserts(
-		string $assertType,
-		string $file,
-		...$args
-	): void
-	{
-		if ($assertType === 'type') {
-			$expectedType = $args[0];
-			$expected = $expectedType->getValue();
-			$actualType = $args[1];
-			$actual = $actualType->describe(VerbosityLevel::precise());
-			$this->assertSame(
-				$expected,
-				$actual,
-				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2])
-			);
-		} elseif ($assertType === 'variableCertainty') {
-			$expectedCertainty = $args[0];
-			$actualCertainty = $args[1];
-			$variableName = $args[2];
-			$this->assertTrue(
-				$expectedCertainty->equals($actualCertainty),
-				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
-			);
-		}
 	}
 
 	public function dataInferPrivatePropertyTypeFromConstructor(): array

@@ -9,6 +9,14 @@ use function PHPStan\Analyser\assertVariableCertainty;
 use function ThrowPoints\Helpers\doesntThrow;
 use function ThrowPoints\Helpers\maybeThrows;
 
+class Foo
+{
+
+	/** @var bool */
+	public static $bar = true;
+
+}
+
 function () {
 	try {
 		$foo = doesntThrow();

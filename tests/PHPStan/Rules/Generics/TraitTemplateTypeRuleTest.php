@@ -26,6 +26,8 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		require_once __DIR__ . '/data/trait-template.php';
+
 		$this->analyse([__DIR__ . '/data/trait-template.php'], [
 			[
 				'PHPDoc tag @template for trait TraitTemplateType\Foo cannot have existing class stdClass as its name.',
@@ -41,7 +43,15 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 			],
 			[
 				'PHPDoc tag @template for trait TraitTemplateType\Lorem cannot have existing type alias TypeAlias as its name.',
-				32,
+				33,
+			],
+			[
+				'PHPDoc tag @template for trait TraitTemplateType\Ipsum cannot have existing type alias LocalAlias as its name.',
+				45,
+			],
+			[
+				'PHPDoc tag @template for trait TraitTemplateType\Ipsum cannot have existing type alias ImportedAlias as its name.',
+				45,
 			],
 		]);
 	}

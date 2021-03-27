@@ -54,11 +54,33 @@ class Baz
 
 }
 
+/**
+ * @phpstan-type ExportedAlias string
+ */
 class Lorem
 {
 
 	/**
 	 * @template TypeAlias
+	 */
+	public function doFoo()
+	{
+
+	}
+
+}
+
+/**
+ * @phpstan-type LocalAlias string
+ * @phpstan-import-type ExportedAlias from Lorem as ImportedAlias
+ */
+class Ipsum
+{
+
+	/**
+	 * @template LocalAlias
+	 * @template ExportedAlias
+	 * @template ImportedAlias
 	 */
 	public function doFoo()
 	{

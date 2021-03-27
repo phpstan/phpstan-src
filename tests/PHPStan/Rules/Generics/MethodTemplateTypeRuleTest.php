@@ -26,6 +26,8 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		require_once __DIR__ . '/data/method-template.php';
+
 		$this->analyse([__DIR__ . '/data/method-template.php'], [
 			[
 				'PHPDoc tag @template for method MethodTemplateType\Foo::doFoo() cannot have existing class stdClass as its name.',
@@ -45,7 +47,15 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 			],
 			[
 				'PHPDoc tag @template for method MethodTemplateType\Lorem::doFoo() cannot have existing type alias TypeAlias as its name.',
-				63,
+				66,
+			],
+			[
+				'PHPDoc tag @template for method MethodTemplateType\Ipsum::doFoo() cannot have existing type alias LocalAlias as its name.',
+				85,
+			],
+			[
+				'PHPDoc tag @template for method MethodTemplateType\Ipsum::doFoo() cannot have existing type alias ImportedAlias as its name.',
+				85,
 			],
 		]);
 	}

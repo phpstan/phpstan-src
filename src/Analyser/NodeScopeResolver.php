@@ -290,7 +290,7 @@ class NodeScopeResolver
 						$hasYield,
 						$statementResult->isAlwaysTerminating(),
 						$statementResult->getExitPoints(),
-						[]
+						$statementResult->getThrowPoints()
 					),
 					$parentNode->returnType !== null
 				), $scope);
@@ -535,15 +535,17 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Return_) {
 			if ($stmt->expr !== null) {
 				$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
+				$throwPoints = $result->getThrowPoints();
 				$scope = $result->getScope();
 				$hasYield = $result->hasYield();
 			} else {
 				$hasYield = false;
+				$throwPoints = [];
 			}
 
 			return new StatementResult($scope, $hasYield, true, [
 				new StatementExitPoint($stmt, $scope),
-			], []);
+			], $throwPoints);
 		} elseif ($stmt instanceof Continue_ || $stmt instanceof Break_) {
 			if ($stmt->num !== null) {
 				$result = $this->processExprNode($stmt->num, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -1966,7 +1968,7 @@ class NodeScopeResolver
 			return new ExpressionResult(
 				$scope,
 				$exprResult->hasYield(),
-				[],
+				$exprResult->getThrowPoints(),
 				static function () use ($scope, $expr): MutatingScope {
 					return $scope->filterByTruthyValue($expr);
 				},
@@ -1976,14 +1978,17 @@ class NodeScopeResolver
 			);
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			$hasYield = false;
+			$throwPoints = [];
 			if ($expr->class instanceof Expr) {
 				$result = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $result->hasYield();
+				$throwPoints = $result->getThrowPoints();
 				$scope = $result->getScope();
 			}
 			if ($expr->name instanceof Expr) {
 				$result = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof Expr\Closure) {
@@ -1991,6 +1996,7 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Expr\ClosureUse) {
 			$this->processExprNode($expr->var, $scope, $nodeCallback, $context);
 			$hasYield = false;
+			$throwPoints = [];
 		} elseif ($expr instanceof Expr\ArrowFunction) {
 			foreach ($expr->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -2003,23 +2009,29 @@ class NodeScopeResolver
 			$nodeCallback(new InArrowFunctionNode($expr), $arrowFunctionScope);
 			$this->processExprNode($expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 			$hasYield = false;
+			$throwPoints = [];
 
 		} elseif ($expr instanceof ErrorSuppress) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context);
 			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
 			$scope = $result->getScope();
 		} elseif ($expr instanceof Exit_) {
 			$hasYield = false;
+			$throwPoints = [];
 			if ($expr->expr !== null) {
 				$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $result->hasYield();
+				$throwPoints = $result->getThrowPoints();
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof Node\Scalar\Encapsed) {
 			$hasYield = false;
+			$throwPoints = [];
 			foreach ($expr->parts as $part) {
 				$result = $this->processExprNode($part, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof ArrayDimFetch) {
@@ -2110,6 +2122,7 @@ class NodeScopeResolver
 			}
 			$result = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
 			$scope = $result->getScope();
 			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 
@@ -2119,13 +2132,16 @@ class NodeScopeResolver
 			$result = $this->processExprNode($expr->right, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope()->mergeWith($scope);
 			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 		} elseif ($expr instanceof BinaryOp) {
 			$result = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
 			$result = $this->processExprNode($expr->right, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 		} elseif (
 			$expr instanceof Expr\BitwiseNot
 			|| $expr instanceof Cast
@@ -2138,6 +2154,7 @@ class NodeScopeResolver
 			|| $expr instanceof Expr\YieldFrom
 		) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
+			$throwPoints = $result->getThrowPoints();
 			if ($expr instanceof Expr\YieldFrom) {
 				$hasYield = true;
 			} else {
@@ -2149,12 +2166,15 @@ class NodeScopeResolver
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
 		} elseif ($expr instanceof Expr\ClassConstFetch) {
 			$hasYield = false;
+			$throwPoints = [];
 			if ($expr->class instanceof Expr) {
 				$result = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $result->hasYield();
+				$throwPoints = $result->getThrowPoints();
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr, true);
@@ -2162,10 +2182,12 @@ class NodeScopeResolver
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
 			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForExitVariableAssign($scope, $expr->expr);
 		} elseif ($expr instanceof Expr\Isset_) {
 			$hasYield = false;
+			$throwPoints = [];
 			$nonNullabilityResults = [];
 			foreach ($expr->vars as $var) {
 				$nonNullabilityResult = $this->ensureNonNullability($scope, $var, true);
@@ -2173,6 +2195,7 @@ class NodeScopeResolver
 				$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$nonNullabilityResults[] = $nonNullabilityResult;
 				$scope = $this->lookForExitVariableAssign($scope, $var);
 			}
@@ -2183,10 +2206,12 @@ class NodeScopeResolver
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
 			if ($expr->class instanceof Expr) {
 				$result = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			}
 		} elseif ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
@@ -2195,10 +2220,12 @@ class NodeScopeResolver
 			$parametersAcceptor = null;
 			$constructorReflection = null;
 			$hasYield = false;
+			$throwPoints = [];
 			if ($expr->class instanceof Expr) {
 				$result = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $result->hasYield();
+				$throwPoints = $result->getThrowPoints();
 			} elseif ($expr->class instanceof Class_) {
 				$this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
 				$this->processStmtNode($expr->class, $scope, $nodeCallback);
@@ -2213,12 +2240,22 @@ class NodeScopeResolver
 							$expr->args,
 							$constructorReflection->getVariants()
 						);
+						if ($constructorReflection->getThrowType() !== null) {
+							$throwType = $constructorReflection->getThrowType();
+							if (!$throwType instanceof VoidType) {
+								$throwPoints[] = new ThrowPoint($scope, $throwType);
+							}
+						} else {
+							// todo setting
+							$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
+						}
 					}
 				}
 			}
 			$result = $this->processArgs($constructorReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 		} elseif (
 			$expr instanceof Expr\PreInc
 			|| $expr instanceof Expr\PostInc
@@ -2228,6 +2265,7 @@ class NodeScopeResolver
 			$result = $this->processExprNode($expr->var, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
+			$throwPoints = [];
 			if (
 				$expr->var instanceof Variable
 				|| $expr->var instanceof ArrayDimFetch
@@ -2260,22 +2298,26 @@ class NodeScopeResolver
 			}
 		} elseif ($expr instanceof Ternary) {
 			$ternaryCondResult = $this->processExprNode($expr->cond, $scope, $nodeCallback, $context->enterDeep());
+			$throwPoints = $ternaryCondResult->getThrowPoints();
 			$ifTrueScope = $ternaryCondResult->getTruthyScope();
 			$ifFalseScope = $ternaryCondResult->getFalseyScope();
 
 			if ($expr->if !== null) {
-				$ifTrueScope = $this->processExprNode($expr->if, $ifTrueScope, $nodeCallback, $context)->getScope();
-				$ifFalseScope = $this->processExprNode($expr->else, $ifFalseScope, $nodeCallback, $context)->getScope();
-			} else {
-				$ifFalseScope = $this->processExprNode($expr->else, $ifFalseScope, $nodeCallback, $context)->getScope();
+				$ifResult = $this->processExprNode($expr->if, $ifTrueScope, $nodeCallback, $context);
+				$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
+				$ifTrueScope = $ifResult->getScope();
 			}
+
+			$elseResult = $this->processExprNode($expr->else, $ifFalseScope, $nodeCallback, $context);
+			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
+			$ifFalseScope = $elseResult->getScope();
 
 			$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
 
 			return new ExpressionResult(
 				$finalScope,
 				$ternaryCondResult->hasYield(),
-				[],
+				$throwPoints,
 				static function () use ($finalScope, $expr): MutatingScope {
 					return $finalScope->filterByTruthyValue($expr);
 				},
@@ -2285,11 +2327,16 @@ class NodeScopeResolver
 			);
 
 		} elseif ($expr instanceof Expr\Yield_) {
+			$throwPoints = [];
 			if ($expr->key !== null) {
-				$scope = $this->processExprNode($expr->key, $scope, $nodeCallback, $context->enterDeep())->getScope();
+				$keyResult = $this->processExprNode($expr->key, $scope, $nodeCallback, $context->enterDeep());
+				$scope = $keyResult->getScope();
+				$throwPoints = $keyResult->getThrowPoints();
 			}
 			if ($expr->value !== null) {
-				$scope = $this->processExprNode($expr->value, $scope, $nodeCallback, $context->enterDeep())->getScope();
+				$valueResult = $this->processExprNode($expr->value, $scope, $nodeCallback, $context->enterDeep());
+				$scope = $valueResult->getScope();
+				$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 			}
 			$hasYield = true;
 		} elseif ($expr instanceof Expr\Match_) {
@@ -2297,6 +2344,7 @@ class NodeScopeResolver
 			$condResult = $this->processExprNode($expr->cond, $scope, $nodeCallback, $deepContext);
 			$scope = $condResult->getScope();
 			$hasYield = $condResult->hasYield();
+			$throwPoints = $condResult->getThrowPoints();
 			$matchScope = $scope;
 			$armNodes = [];
 			foreach ($expr->arms as $arm) {
@@ -2304,6 +2352,7 @@ class NodeScopeResolver
 					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, $deepContext);
 					$matchScope = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
+					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$scope = $scope->mergeWith($matchScope);
 					$armNodes[] = new MatchExpressionArm([], $arm->getLine());
 					continue;
@@ -2320,6 +2369,7 @@ class NodeScopeResolver
 					$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getLine());
 					$armCondResult = $this->processExprNode($armCond, $armCondScope, $nodeCallback, $deepContext);
 					$hasYield = $hasYield || $armCondResult->hasYield();
+					$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
 					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
 					$armCondScope = $armCondResult->getScope()->filterByFalseyValue($armCondExpr);
 					if ($filteringExpr === null) {
@@ -2341,18 +2391,20 @@ class NodeScopeResolver
 				$armScope = $armResult->getScope();
 				$scope = $scope->mergeWith($armScope);
 				$hasYield = $hasYield || $armResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
 
 			$nodeCallback(new MatchExpressionNode($expr->cond, $armNodes, $expr, $matchScope), $scope);
 		} else {
 			$hasYield = false;
+			$throwPoints = [];
 		}
 
 		return new ExpressionResult(
 			$scope,
 			$hasYield,
-			$throwPoints ?? [], // TODO define throwpoints for all exprs
+			$throwPoints,
 			static function () use ($scope, $expr): MutatingScope {
 				return $scope->filterByTruthyValue($expr);
 			},
@@ -2509,7 +2561,7 @@ class NodeScopeResolver
 				$statementResult
 			), $closureScope);
 
-			return new ExpressionResult($scope, false, []);
+			return new ExpressionResult($scope, false, $statementResult->getThrowPoints());
 		}
 
 		$count = 0;
@@ -2538,7 +2590,7 @@ class NodeScopeResolver
 			$statementResult
 		), $closureScope);
 
-		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, []);
+		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, $statementResult->getThrowPoints());
 	}
 
 	private function lookForArrayDestructuringArray(MutatingScope $scope, Expr $expr, Type $valueType): MutatingScope

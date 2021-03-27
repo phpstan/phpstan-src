@@ -7,10 +7,12 @@ use PHPStan\TrinaryLogic;
 /**
  * Asserts the static type of a value.
  *
+ * @phpstan-pure
  * @param string $type
  * @param mixed $value
+ * @return mixed
  */
-function assertType(string $type, $value): void // phpcs:ignore
+function assertType(string $type, $value) // phpcs:ignore
 {
 }
 
@@ -20,17 +22,21 @@ function assertType(string $type, $value): void // phpcs:ignore
  * The difference from assertType() is that it doesn't resolve
  * method/function parameter phpDocs.
  *
+ * @phpstan-pure
  * @param string $type
  * @param mixed $value
+ * @return mixed
  */
-function assertNativeType(string $type, $value): void // phpcs:ignore
+function assertNativeType(string $type, $value) // phpcs:ignore
 {
 }
 
 /**
+ * @phpstan-pure
  * @param TrinaryLogic $certainty
  * @param mixed $variable
+ * @return mixed
  */
-function assertVariableCertainty(TrinaryLogic $certainty, $variable): void // phpcs:ignore
+function assertVariableCertainty(TrinaryLogic $certainty, $variable) // phpcs:ignore
 {
 }

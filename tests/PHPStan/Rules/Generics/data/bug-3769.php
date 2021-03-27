@@ -10,7 +10,7 @@ use function PHPStan\Analyser\assertType;
  * @return array<K, string>
  */
 function stringValues(array $in): array {
-	assertType('array<K of (int|string) (function Bug3769\stringValues(), argument), int>', $in);
+	$a = assertType('array<K of (int|string) (function Bug3769\stringValues(), argument), int>', $in);
 	return array_map(function (int $int): string {
 		return (string) $int;
 	}, $in);
@@ -26,9 +26,9 @@ function foo(
 	array $bar,
 	array $baz
 ): void {
-	assertType('array<int, string>', stringValues($foo));
-	assertType('array<string, string>', stringValues($bar));
-	assertType('array<string>', stringValues($baz));
+	$a = assertType('array<int, string>', stringValues($foo));
+	$a = assertType('array<string, string>', stringValues($bar));
+	$a = assertType('array<string>', stringValues($baz));
 };
 
 /**
@@ -36,7 +36,7 @@ function foo(
  * @param T $foo
  */
 function fooUnion($foo): void {
-	assertType('T of Exception|stdClass (function Bug3769\fooUnion(), argument)', $foo);
+	$a = assertType('T of Exception|stdClass (function Bug3769\fooUnion(), argument)', $foo);
 }
 
 /**
@@ -70,10 +70,10 @@ function stringBound(string $a)
 }
 
 function (): void {
-	assertType('int', mixedBound(1));
-	assertType('string', mixedBound('str'));
-	assertType('1', intBound(1));
-	assertType('\'str\'', stringBound('str'));
+	$a = assertType('int', mixedBound(1));
+	$a = assertType('string', mixedBound('str'));
+	$a = assertType('1', intBound(1));
+	$a = assertType('\'str\'', stringBound('str'));
 };
 
 /** @template T of string */
@@ -103,8 +103,8 @@ class Foo
 
 /** @param Foo<'bar'> $foo */
 function testTofString(Foo $foo): void {
-	assertType('\'bar\'', $foo->getValue());
+	$a = assertType('\'bar\'', $foo->getValue());
 
 	$baz = new Foo('baz');
-	assertType('\'baz\'', $baz->getValue());
+	$a = assertType('\'baz\'', $baz->getValue());
 };

@@ -275,7 +275,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$isDeprecated = false;
 		$isInternal = false;
 		$isFinal = false;
-		$isPure = false;
+		$isPure = null;
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName());
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
 			$fileName = $reflectionFunction->getFileName();

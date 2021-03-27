@@ -33,7 +33,7 @@ class Bar
 		assertType(Foo::class, $foo);
 
 		$this->doBaz($foo);
-		assertType('string', $foo->getName());
+		assertType('\'foo\'', $foo->getName());
 		assertType(Foo::class, $foo);
 
 		assert($foo->getName() === 'foo');

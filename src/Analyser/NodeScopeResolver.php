@@ -2759,7 +2759,7 @@ class NodeScopeResolver
 		$nodeCallback($var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope);
 		$hasYield = false;
 		$throwPoints = [];
-		if ($var instanceof Variable) {
+		if ($var instanceof Variable && is_string($var->name)) {
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();

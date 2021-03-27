@@ -71,14 +71,14 @@ class StatementResult
 
 			$num = $statement->num;
 			if (!$num instanceof LNumber) {
-				return new self($this->scope, $this->hasYield, false, $this->exitPoints, []);
+				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
 			}
 
 			if ($num->value !== 1) {
 				continue;
 			}
 
-			return new self($this->scope, $this->hasYield, false, $this->exitPoints, []);
+			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
 		}
 
 		return $this;

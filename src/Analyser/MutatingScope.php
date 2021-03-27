@@ -3453,6 +3453,7 @@ class MutatingScope implements Scope
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$invalidated = false;
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;
 			if (Strings::startsWith($exprString, $exprStringToInvalidate)) {
@@ -3463,6 +3464,7 @@ class MutatingScope implements Scope
 				if (Strings::match($nextLetter, '#[a-zA-Z_0-9\x7f-\xff]#') === null) {
 					unset($moreSpecificTypeHolders[$exprString]);
 					unset($nativeExpressionTypes[$exprString]);
+					$invalidated = true;
 					continue;
 				}
 			}
@@ -3479,6 +3481,11 @@ class MutatingScope implements Scope
 
 			unset($moreSpecificTypeHolders[$exprString]);
 			unset($nativeExpressionTypes[$exprString]);
+			$invalidated = true;
+		}
+
+		if (!$invalidated) {
+			return $this;
 		}
 
 		return $this->scopeFactory->create(

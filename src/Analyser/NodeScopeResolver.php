@@ -1704,6 +1704,13 @@ class NodeScopeResolver
 			if (isset($functionReflection) && $functionReflection->getName() === 'clearstatcache') {
 				$scope = $scope->afterClearstatcacheCall();
 			}
+
+			if (isset($functionReflection) && $functionReflection->hasSideEffects()->yes()) {
+				foreach ($expr->args as $arg) {
+					$scope = $scope->invalidateExpression($arg->value, true);
+				}
+			}
+
 		} elseif ($expr instanceof MethodCall) {
 			$originalScope = $scope;
 			if (
@@ -1739,8 +1746,14 @@ class NodeScopeResolver
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
-			if ($methodReflection !== null && $methodReflection->hasSideEffects()->yes()) {
-				$scope = $scope->invalidateExpression($expr->var, true);
+			if ($methodReflection !== null) {
+				$hasSideEffects = $methodReflection->hasSideEffects();
+				if ($hasSideEffects->yes()) {
+					$scope = $scope->invalidateExpression($expr->var, true);
+					foreach ($expr->args as $arg) {
+						$scope = $scope->invalidateExpression($arg->value, true);
+					}
+				}
 			}
 			$hasYield = $hasYield || $result->hasYield();
 		} elseif ($expr instanceof Expr\NullsafeMethodCall) {
@@ -1831,6 +1844,15 @@ class NodeScopeResolver
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true);
 			}
+
+			if ($methodReflection !== null) {
+				if ($methodReflection->hasSideEffects()->yes()) {
+					foreach ($expr->args as $arg) {
+						$scope = $scope->invalidateExpression($arg->value, true);
+					}
+				}
+			}
+
 			$hasYield = $hasYield || $result->hasYield();
 		} elseif ($expr instanceof PropertyFetch) {
 			$result = $this->processExprNode($expr->var, $scope, $nodeCallback, $context->enterDeep());

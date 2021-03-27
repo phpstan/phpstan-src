@@ -5775,6 +5775,15 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		return $this->gatherAssertTypes(__DIR__ . '/data/clear-stat-cache.php');
 	}
 
+	public function dataInvalidateObjectStateAfterPassingToImpureFunction(): iterable
+	{
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-static.php');
+
+		require_once __DIR__ . '/data/invalidate-object-argument-function.php';
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-function.php');
+	}
+
 	/**
 	 * @dataProvider dataArrayFunctions
 	 * @param string $description
@@ -11413,6 +11422,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 	 * @dataProvider dataDoNotRememberImpureFunctions
 	 * @dataProvider dataBug4190
 	 * @dataProvider dataClearStatCache
+	 * @dataProvider dataInvalidateObjectStateAfterPassingToImpureFunction
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args

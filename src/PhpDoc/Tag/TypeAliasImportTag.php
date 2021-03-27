@@ -33,17 +33,4 @@ final class TypeAliasImportTag
 		return $this->importedAs;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return self
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['importedAlias'],
-			$properties['importedFrom'],
-			$properties['importedAs']
-		);
-	}
-
 }

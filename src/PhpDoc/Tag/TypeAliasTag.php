@@ -37,16 +37,4 @@ class TypeAliasTag
 		);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 * @return TypeAliasTag
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['alias'],
-			$properties['type']
-		);
-	}
-
 }

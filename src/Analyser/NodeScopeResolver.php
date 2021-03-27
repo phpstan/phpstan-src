@@ -1713,12 +1713,16 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 
-			if (isset($functionReflection) && $functionReflection->getThrowType() !== null) {
-				$throwType = $functionReflection->getThrowType();
-				if (!$throwType instanceof VoidType) {
-					$throwPoints[] = new ThrowPoint($scope, $throwType);
+			if (isset($functionReflection)) {
+				if ($functionReflection->getThrowType() !== null) {
+					$throwType = $functionReflection->getThrowType();
+					if (!$throwType instanceof VoidType) {
+						$throwPoints[] = new ThrowPoint($scope, $throwType);
+					}
+				} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
+					$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 				}
-			} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
+			} else {
 				$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 			}
 
@@ -1892,6 +1896,8 @@ class NodeScopeResolver
 					} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
 						$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 					}
+				} else {
+					$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 				}
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
@@ -1988,7 +1994,11 @@ class NodeScopeResolver
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $scopeClass);
 						}
+					} else {
+						$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 					}
+				} else {
+					$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 				}
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context, $closureBindScope ?? null);

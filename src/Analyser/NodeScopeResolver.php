@@ -655,7 +655,7 @@ class NodeScopeResolver
 			return new StatementResult($result->getScope(), $result->hasYield(), true, [
 				new StatementExitPoint($stmt, $scope),
 			], [
-				new ThrowPoint($stmt, $result->getScope(), $scope->getType($stmt->expr)),
+				new ThrowPoint($result->getScope(), $scope->getType($stmt->expr)),
 			]);
 		} elseif ($stmt instanceof If_) {
 			$conditionType = $scope->getType($stmt->cond)->toBoolean();
@@ -1645,10 +1645,10 @@ class NodeScopeResolver
 			if (isset($functionReflection) && $functionReflection->getThrowType() !== null) {
 				$throwType = $functionReflection->getThrowType();
 				if (!$throwType instanceof VoidType) {
-					$throwPoints[] = new ThrowPoint($expr, $scope, $throwType);
+					$throwPoints[] = new ThrowPoint($scope, $throwType);
 				}
 			} else {
-				$throwPoints[] = new ThrowPoint($expr, $scope, new ObjectType(\Throwable::class));
+				$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 			}
 
 			if (
@@ -1816,10 +1816,10 @@ class NodeScopeResolver
 					if ($methodReflection->getThrowType() !== null) {
 						$throwType = $methodReflection->getThrowType();
 						if (!$throwType instanceof VoidType) {
-							$throwPoints[] = new ThrowPoint($expr, $scope, $methodReflection->getThrowType());
+							$throwPoints[] = new ThrowPoint($scope, $methodReflection->getThrowType());
 						}
 					} else {
-						$throwPoints[] = new ThrowPoint($expr, $scope, new ObjectType(\Throwable::class));
+						$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 					}
 				}
 			}
@@ -1878,10 +1878,10 @@ class NodeScopeResolver
 						if ($methodReflection->getThrowType() !== null) {
 							$throwType = $methodReflection->getThrowType();
 							if (!$throwType instanceof VoidType) {
-								$throwPoints[] = new ThrowPoint($expr, $scope, $throwType);
+								$throwPoints[] = new ThrowPoint($scope, $throwType);
 							}
 						} else {
-							$throwPoints[] = new ThrowPoint($expr, $scope, new ObjectType(\Throwable::class));
+							$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 						}
 						if (
 							$classReflection->getName() === 'Closure'

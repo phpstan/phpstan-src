@@ -2289,6 +2289,8 @@ class NodeScopeResolver
 							$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 						}
 					}
+				} else {
+					$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 				}
 			}
 			$result = $this->processArgs($constructorReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);

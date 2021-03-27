@@ -58,6 +58,7 @@ parameters:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
 	inferPrivatePropertyTypeFromConstructor: false
+	functionsHaveCompleteThrowsAnnotations: false
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
 	reportStaticMethodSignatures: false
@@ -214,6 +215,7 @@ parametersSchema:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
+	functionsHaveCompleteThrowsAnnotations: bool()
 	tipsOfTheDay: bool()
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()
@@ -412,6 +414,7 @@ services:
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
+			functionsHaveCompleteThrowsAnnotations: %functionsHaveCompleteThrowsAnnotations%
 
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory

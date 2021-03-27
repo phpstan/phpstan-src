@@ -155,6 +155,8 @@ class NodeScopeResolver
 	/** @var array<int, string> */
 	private array $earlyTerminatingFunctionCalls;
 
+	private bool $functionsHaveCompleteThrowsAnnotations;
+
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
@@ -171,6 +173,7 @@ class NodeScopeResolver
 	 * @param bool $polluteScopeWithAlwaysIterableForeach
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
+	 * @param bool $functionsHaveCompleteThrowsAnnotations
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -186,7 +189,8 @@ class NodeScopeResolver
 		bool $polluteCatchScopeWithTryAssignments,
 		bool $polluteScopeWithAlwaysIterableForeach,
 		array $earlyTerminatingMethodCalls,
-		array $earlyTerminatingFunctionCalls
+		array $earlyTerminatingFunctionCalls,
+		bool $functionsHaveCompleteThrowsAnnotations
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -203,6 +207,7 @@ class NodeScopeResolver
 		$this->polluteScopeWithAlwaysIterableForeach = $polluteScopeWithAlwaysIterableForeach;
 		$this->earlyTerminatingMethodCalls = $earlyTerminatingMethodCalls;
 		$this->earlyTerminatingFunctionCalls = $earlyTerminatingFunctionCalls;
+		$this->functionsHaveCompleteThrowsAnnotations = $functionsHaveCompleteThrowsAnnotations;
 	}
 
 	/**
@@ -1649,7 +1654,7 @@ class NodeScopeResolver
 				if (!$throwType instanceof VoidType) {
 					$throwPoints[] = new ThrowPoint($scope, $throwType);
 				}
-			} else {
+			} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
 				$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 			}
 
@@ -1820,7 +1825,7 @@ class NodeScopeResolver
 						if (!$throwType instanceof VoidType) {
 							$throwPoints[] = new ThrowPoint($scope, $methodReflection->getThrowType());
 						}
-					} else {
+					} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
 						$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 					}
 				}
@@ -1882,7 +1887,7 @@ class NodeScopeResolver
 							if (!$throwType instanceof VoidType) {
 								$throwPoints[] = new ThrowPoint($scope, $throwType);
 							}
-						} else {
+						} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
 							$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 						}
 						if (
@@ -2245,8 +2250,7 @@ class NodeScopeResolver
 							if (!$throwType instanceof VoidType) {
 								$throwPoints[] = new ThrowPoint($scope, $throwType);
 							}
-						} else {
-							// todo setting
+						} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
 							$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
 						}
 					}

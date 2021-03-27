@@ -12001,7 +12001,8 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 					'doBar',
 				],
 			],
-			['baz']
+			['baz'],
+			false
 		);
 		$resolver->setAnalysedFiles(array_map(static function (string $file) use ($fileHelper): string {
 			return $fileHelper->normalizePath($file);

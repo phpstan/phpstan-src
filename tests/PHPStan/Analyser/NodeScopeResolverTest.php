@@ -5809,6 +5809,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch-finally.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/variable.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/while.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch.php');
 	}
 
 	/**

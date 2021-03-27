@@ -144,7 +144,7 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 				true,
 			],
 			[
-				'try { return; } catch (Exception $e) { }',
+				'try { maybeThrow(); return; } catch (Exception $e) { }',
 				false,
 			],
 			[
@@ -156,7 +156,7 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 				true,
 			],
 			[
-				'try { break; } catch (Exception $e) { break; } catch (OtherException $e) { }',
+				'try { maybeThrow(); break; } catch (Exception $e) { break; } catch (OtherException $e) { }',
 				false,
 			],
 			[
@@ -324,15 +324,15 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 				true,
 			],
 			[
-				'while ($string !== null) { $string = null; try { return true; } catch (\Exception $e) { doFoo(); } }',
+				'while ($string !== null) { $string = null; try { maybeThrow(); return true; } catch (\Exception $e) { doFoo(); } }',
 				false,
 			],
 			[
-				'while ($string !== null) { $string = null; try { return true; } catch (\Exception $e) { doFoo(); } }',
+				'while ($string !== null) { $string = null; try { maybeThrow(); return true; } catch (\Exception $e) { doFoo(); } }',
 				false,
 			],
 			[
-				'try { return true; } catch (\Exception $e) { doFoo(); }',
+				'try { maybeThrow(); return true; } catch (\Exception $e) { doFoo(); }',
 				false,
 			],
 			[

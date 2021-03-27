@@ -31,6 +31,7 @@ parameters:
 		- ../tests/e2e/magic-setter/*
 		- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
 		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
+		- ../src/Command/IgnoredRegexValidator.php
 	featureToggles:
 		readComposerPhpVersion: false
 	ignoreErrors:

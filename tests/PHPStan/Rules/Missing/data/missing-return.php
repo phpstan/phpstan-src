@@ -232,7 +232,7 @@ class TryCatchFinally
 	public function doBaz(): int
 	{
 		try {
-			return 1;
+			maybeThrow(); return 1;
 		} catch (\Exception $e) {
 			return 1;
 		} catch (\Throwable $e) {

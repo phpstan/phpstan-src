@@ -38,8 +38,8 @@ function () {
 	$exceptionFromTry = null;
 	try {
 		$inTry = 1;
-		$inTryNotInCatch = 1;
 		$fooObjectFromTryCatch = new InTryCatchFoo();
+		$inTryNotInCatch = 1;
 		$mixedVarFromTryCatch = 1;
 		$nullableIntegerFromTryCatch = 1;
 		$anotherNullableIntegerFromTryCatch = null;
@@ -59,7 +59,7 @@ function () {
 
 	$exceptionFromTryCatch = null;
 	try {
-
+		maybeThrows();
 	} catch (\SomeConcreteException $exceptionFromTryCatch) {
 		return;
 	} catch (\AnotherException $exceptionFromTryCatch) {

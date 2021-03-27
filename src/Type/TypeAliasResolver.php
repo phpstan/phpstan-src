@@ -112,13 +112,13 @@ class TypeAliasResolver
 
 		$this->inProcess[$aliasNameInClassScope] = true;
 
-		$aliasTypeString = $localTypeAliases[$aliasName];
-		$aliasType = $this->typeStringResolver->resolve($aliasTypeString, $nameScope);
-		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $aliasType;
+		$unresolvedAlias = $localTypeAliases[$aliasName];
+		$resolvedAliasType = $unresolvedAlias->resolve($this->typeStringResolver);
+		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
 
 		unset($this->inProcess[$aliasNameInClassScope]);
 
-		return $aliasType;
+		return $resolvedAliasType;
 	}
 
 	private function resolveGlobalTypeAlias(string $aliasName, NameScope $nameScope): ?Type

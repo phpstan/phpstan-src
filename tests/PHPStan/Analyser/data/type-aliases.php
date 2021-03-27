@@ -1,63 +1,103 @@
 <?php
 
-namespace TypeAliasesDataset;
+namespace TypeAliasesDataset\SubScope {
+	class Foo
+	{
+	}
 
-use function PHPStan\Analyser\assertType;
-
-/**
- * @phpstan-type ExportedTypeAlias \Countable&\Traversable
- */
-class Bar
-{
+	/**
+	 * @phpstan-type ScopedAlias Foo
+	 */
+	class Bar
+	{
+	}
 }
 
-/**
- * @phpstan-type LocalTypeAlias callable(string $value): (string|false)
- * @phpstan-type NestedLocalTypeAlias LocalTypeAlias[]
- * @phpstan-import-type ExportedTypeAlias from Bar as ImportedTypeAlias
- * @phpstan-type NestedImportedTypeAlias iterable<ImportedTypeAlias>
- */
-class Foo
-{
+namespace TypeAliasesDataset {
+
+	use function PHPStan\Analyser\assertType;
 
 	/**
-	 * @param GlobalTypeAlias $parameter
+	 * @phpstan-type ExportedTypeAlias \Countable&\Traversable
 	 */
-	public function globalAlias($parameter)
+	class Bar
 	{
-		assertType('int|string', $parameter);
 	}
 
 	/**
-	 * @param LocalTypeAlias $parameter
+	 * @phpstan-import-type ExportedTypeAlias from Bar as ReexportedTypeAlias
 	 */
-	public function localAlias($parameter)
+	class Baz
 	{
-		assertType('callable(string): string|false', $parameter);
 	}
 
 	/**
-	 * @param NestedLocalTypeAlias $parameter
+	 * @phpstan-type LocalTypeAlias callable(string $value): (string|false)
+	 * @phpstan-type NestedLocalTypeAlias LocalTypeAlias[]
+	 * @phpstan-import-type ExportedTypeAlias from Bar as ImportedTypeAlias
+	 * @phpstan-import-type ReexportedTypeAlias from Baz
+	 * @phpstan-type NestedImportedTypeAlias iterable<ImportedTypeAlias>
+	 * @phpstan-import-type ScopedAlias from SubScope\Bar
+	 * @property GlobalTypeAlias $globalAliasProperty
+	 * @property LocalTypeAlias $localAliasProperty
+	 * @property ImportedTypeAlias $importedAliasProperty
+	 * @property ReexportedTypeAlias $reexportedAliasProperty
+	 * @property ScopedAlias $scopedAliasProperty
 	 */
-	public function nestedLocalAlias($parameter)
+	class Foo
 	{
-		assertType('array<callable(string): string|false>', $parameter);
+
+		/**
+		 * @param GlobalTypeAlias $parameter
+		 */
+		public function globalAlias($parameter)
+		{
+			assertType('int|string', $parameter);
+		}
+
+		/**
+		 * @param LocalTypeAlias $parameter
+		 */
+		public function localAlias($parameter)
+		{
+			assertType('callable(string): string|false', $parameter);
+		}
+
+		/**
+		 * @param NestedLocalTypeAlias $parameter
+		 */
+		public function nestedLocalAlias($parameter)
+		{
+			assertType('array<callable(string): string|false>', $parameter);
+		}
+
+		/**
+		 * @param ImportedTypeAlias $parameter
+		 */
+		public function importedAlias($parameter)
+		{
+			assertType('Countable&Traversable', $parameter);
+		}
+
+		/**
+		 * @param NestedImportedTypeAlias $parameter
+		 */
+		public function nestedImportedAlias($parameter)
+		{
+			assertType('iterable<Countable&Traversable>', $parameter);
+		}
+
+		public function __get(string $name)
+		{
+			return null;
+		}
+
 	}
 
-	/**
-	 * @param ImportedTypeAlias $parameter
-	 */
-	public function importedAlias($parameter)
-	{
-		assertType('Countable&Traversable', $parameter);
-	}
-
-	/**
-	 * @param NestedImportedTypeAlias $parameter
-	 */
-	public function nestedImportedAlias($parameter)
-	{
-		assertType('iterable<Countable&Traversable>', $parameter);
-	}
+	assertType('int|string', (new Foo)->globalAliasProperty);
+	assertType('callable(string): string|false', (new Foo)->localAliasProperty);
+	assertType('Countable&Traversable', (new Foo)->importedAliasProperty);
+	assertType('Countable&Traversable', (new Foo)->reexportedAliasProperty);
+	assertType('TypeAliasesDataset\SubScope\Foo', (new Foo)->scopedAliasProperty);
 
 }

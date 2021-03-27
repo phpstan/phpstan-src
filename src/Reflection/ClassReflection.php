@@ -25,6 +25,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeAlias;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionMethod;
 
@@ -101,7 +102,7 @@ class ClassReflection implements ReflectionWithFilename
 	/** @var \PHPStan\Reflection\ClassReflection|false|null */
 	private $cachedParentClass = null;
 
-	/** @var array<string, string>|null */
+	/** @var array<string, TypeAlias>|null */
 	private ?array $typeAliases = null;
 
 	/**
@@ -759,7 +760,7 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/**
-	 * @return array<string, string>
+	 * @return array<string, TypeAlias>
 	 */
 	public function getTypeAliases(): array
 	{
@@ -768,7 +769,7 @@ class ClassReflection implements ReflectionWithFilename
 			$typeAliasImportTags = $resolvedPhpDoc !== null ? $resolvedPhpDoc->getTypeAliasImportTags() : [];
 			$typeAliasTags = $resolvedPhpDoc !== null ? $resolvedPhpDoc->getTypeAliasTags() : [];
 
-			$importedAliases = array_map(function (TypeAliasImportTag $typeAliasImportTag): string {
+			$importedAliases = array_map(function (TypeAliasImportTag $typeAliasImportTag): TypeAlias {
 				$importedAlias = $typeAliasImportTag->getImportedAlias();
 				$importedFrom = $typeAliasImportTag->getImportedFrom();
 
@@ -788,12 +789,12 @@ class ClassReflection implements ReflectionWithFilename
 				return $typeAliases[$importedAlias];
 			}, $typeAliasImportTags);
 
-			$localAliases = array_map(function (TypeAliasTag $typeAliasTag) use ($importedAliases): string {
+			$localAliases = array_map(function (TypeAliasTag $typeAliasTag) use ($importedAliases): TypeAlias {
 				if (array_key_exists($typeAliasTag->getAlias(), $importedAliases)) {
 					throw new \PHPStan\ShouldNotHappenException(sprintf('Type alias %s overwrites imported type alias of the same name in scope of %s.', $typeAliasTag->getAlias(), $this->getName()));
 				}
 
-				return $typeAliasTag->getType();
+				return $typeAliasTag->getTypeAlias();
 			}, $typeAliasTags);
 
 			$this->typeAliases = array_merge($importedAliases, $localAliases);

@@ -421,7 +421,8 @@ class ResolvedPhpDocBlock
 	{
 		if ($this->typeAliasTags === false) {
 			$this->typeAliasTags = $this->phpDocNodeResolver->resolveTypeAliasTags(
-				$this->phpDocNode
+				$this->phpDocNode,
+				$this->getNameScope()
 			);
 		}
 

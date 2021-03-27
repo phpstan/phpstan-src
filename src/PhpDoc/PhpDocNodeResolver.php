@@ -370,15 +370,15 @@ class PhpDocNodeResolver
 	/**
 	 * @return array<string, TypeAliasTag>
 	 */
-	public function resolveTypeAliasTags(PhpDocNode $phpDocNode): array
+	public function resolveTypeAliasTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
 		$resolved = [];
 
 		foreach (['@psalm-type', '@phpstan-type'] as $tagName) {
 			foreach ($phpDocNode->getTypeAliasTagValues($tagName) as $typeAliasTagValue) {
 				$alias = $typeAliasTagValue->alias;
-				$type = (string) $typeAliasTagValue->type;
-				$resolved[$alias] = new TypeAliasTag($alias, $type);
+				$typeString = (string) $typeAliasTagValue->type;
+				$resolved[$alias] = new TypeAliasTag($alias, $typeString, $nameScope);
 			}
 		}
 

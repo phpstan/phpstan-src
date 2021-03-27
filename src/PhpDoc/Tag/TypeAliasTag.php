@@ -2,17 +2,26 @@
 
 namespace PHPStan\PhpDoc\Tag;
 
+use PHPStan\Analyser\NameScope;
+
 class TypeAliasTag
 {
 
 	private string $alias;
 
-	private string $type;
+	private string $typeString;
 
-	public function __construct(string $alias, string $type)
+	private NameScope $nameScope;
+
+	public function __construct(
+		string $alias,
+		string $typeString,
+		NameScope $nameScope
+	)
 	{
 		$this->alias = $alias;
-		$this->type = $type;
+		$this->typeString = $typeString;
+		$this->nameScope = $nameScope;
 	}
 
 	public function getAlias(): string
@@ -20,9 +29,12 @@ class TypeAliasTag
 		return $this->alias;
 	}
 
-	public function getType(): string
+	public function getTypeAlias(): \PHPStan\Type\TypeAlias
 	{
-		return $this->type;
+		return new \PHPStan\Type\TypeAlias(
+			$this->typeString,
+			$this->nameScope
+		);
 	}
 
 	/**

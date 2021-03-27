@@ -2602,7 +2602,7 @@ class NodeScopeResolver
 				$statementResult
 			), $closureScope);
 
-			return new ExpressionResult($scope, false, $statementResult->getThrowPoints());
+			return new ExpressionResult($scope, false, []);
 		}
 
 		$count = 0;
@@ -2631,7 +2631,7 @@ class NodeScopeResolver
 			$statementResult
 		), $closureScope);
 
-		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, $statementResult->getThrowPoints());
+		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, []);
 	}
 
 	private function lookForArrayDestructuringArray(MutatingScope $scope, Expr $expr, Type $valueType): MutatingScope

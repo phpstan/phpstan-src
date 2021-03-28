@@ -6,7 +6,8 @@ use function PHPStan\Analyser\assertType;
 
 class Dto
 {
-	private int $unixtimestamp = 12345678;
+	/** @var int */
+	private $unixtimestamp = 12345678;
 
 	public function getPeriodFrom(): ?int
 	{

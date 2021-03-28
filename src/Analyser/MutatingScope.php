@@ -3145,17 +3145,22 @@ class MutatingScope implements Scope
 	 */
 	public function enterCatch(array $classes, ?string $variableName): self
 	{
-		if ($variableName === null) {
-			return $this;
-		}
-
 		$type = TypeCombinator::union(...array_map(static function (string $class): ObjectType {
 			return new ObjectType($class);
 		}, $classes));
 
+		return $this->enterCatchType($type, $variableName);
+	}
+
+	public function enterCatchType(Type $catchType, ?string $variableName): self
+	{
+		if ($variableName === null) {
+			return $this;
+		}
+
 		return $this->assignVariable(
 			$variableName,
-			TypeCombinator::intersect($type, new ObjectType(\Throwable::class))
+			TypeCombinator::intersect($catchType, new ObjectType(\Throwable::class))
 		);
 	}
 

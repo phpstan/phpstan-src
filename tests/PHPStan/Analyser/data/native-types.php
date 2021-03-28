@@ -108,8 +108,8 @@ class Foo
 			assertType(\InvalidArgumentException::class, $foo);
 			assertNativeType(\InvalidArgumentException::class, $foo);
 		} catch (\Exception $e) {
-			assertType(\Exception::class, $e);
-			assertNativeType(\Exception::class, $e);
+			assertType('Exception~InvalidArgumentException', $e);
+			assertNativeType('Exception~InvalidArgumentException', $e);
 
 			assertType(Foo::class, $foo);
 			assertNativeType('mixed', $foo);

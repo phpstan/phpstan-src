@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use Throwable;
 use function PHPStan\Analyser\assertType;
 use function PHPStan\Analyser\assertVariableCertainty;
+use function ThrowPoints\Helpers\maybeThrows;
 
 class MyInvalidArgumentException extends \InvalidArgumentException
 {
@@ -49,6 +50,7 @@ function (): void {
 		}
 
 		$bar = 1;
+		maybeThrows();
 	} catch (\InvalidArgumentException $e) {
 		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 		assertType('1|2', $foo);
@@ -61,6 +63,7 @@ function (): void {
 		assertVariableCertainty(TrinaryLogic::createYes(), $baz);
 		assertType('1|2', $baz);
 	} catch (\Throwable $e) {
+		assertType('Throwable~InvalidArgumentException|RuntimeException', $e);
 		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
 		assertVariableCertainty(TrinaryLogic::createNo(), $baz);

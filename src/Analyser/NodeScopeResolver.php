@@ -1161,6 +1161,7 @@ class NodeScopeResolver
 			}
 
 			$throwPointsForLater = [];
+			$pastCatchTypes = new NeverType();
 
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
@@ -1169,6 +1170,9 @@ class NodeScopeResolver
 					$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
 						return new ObjectType($name->toString());
 					}, $catchNode->types));
+					$originalCatchType = $catchType;
+					$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
+					$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
 					$matchingThrowPoints = [];
 					$newThrowPoints = [];
 					foreach ($throwPoints as $throwPoint) {
@@ -1208,7 +1212,16 @@ class NodeScopeResolver
 						}
 					}
 
-					$catchScopeResult = $this->processCatchNode($catchNode, $catchScope, $nodeCallback);
+					$variableName = null;
+					if ($catchNode->var !== null) {
+						if (!is_string($catchNode->var->name)) {
+							throw new \PHPStan\ShouldNotHappenException();
+						}
+
+						$variableName = $catchNode->var->name;
+					}
+
+					$catchScopeResult = $this->processStmtNodes($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $nodeCallback);
 					$catchScopeForFinally = $catchScopeResult->getScope();
 				} else {
 					$initialScope = $scope;

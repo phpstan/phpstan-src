@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 
 class ThrowPoint
@@ -11,10 +12,23 @@ class ThrowPoint
 
 	private Type $type;
 
-	public function __construct(MutatingScope $scope, Type $type)
+	private bool $explicit;
+
+	private function __construct(MutatingScope $scope, Type $type, bool $explicit)
 	{
 		$this->scope = $scope;
 		$this->type = $type;
+		$this->explicit = $explicit;
+	}
+
+	public static function createExplicit(MutatingScope $scope, Type $type): self
+	{
+		return new self($scope, $type, true);
+	}
+
+	public static function createImplicit(MutatingScope $scope): self
+	{
+		return new self($scope, new ObjectType(\Throwable::class), false);
 	}
 
 	public function getScope(): MutatingScope
@@ -25,6 +39,11 @@ class ThrowPoint
 	public function getType(): Type
 	{
 		return $this->type;
+	}
+
+	public function isExplicit(): bool
+	{
+		return $this->explicit;
 	}
 
 }

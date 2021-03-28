@@ -98,3 +98,14 @@ function (): void {
 		assertType('1|2', $baz);
 	}
 };
+
+function (): void {
+	try {
+		maybeThrows();
+		$foo = 1;
+		throw Foo::createInvalidArgumentException();
+	} catch (\InvalidArgumentException $e) {
+		assertType('1', $foo);
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	}
+};

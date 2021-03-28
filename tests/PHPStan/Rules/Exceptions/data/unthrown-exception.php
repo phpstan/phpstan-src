@@ -71,4 +71,17 @@ class Foo
 		}
 	}
 
+	public function doSit(): void
+	{
+		try {
+			try {
+				\ThrowPoints\Helpers\maybeThrows();
+			} catch (\InvalidArgumentException $e) {
+
+			}
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
 }

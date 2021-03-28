@@ -1190,7 +1190,7 @@ class NodeScopeResolver
 						if ($isSuperType->yes()) {
 							continue;
 						}
-						$newThrowPoints[] = $throwPoint;
+						$newThrowPoints[] = $throwPoint->subtractCatchType($catchType);
 					}
 					$throwPoints = $newThrowPoints;
 

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class ThrowPoint
 {
@@ -44,6 +45,11 @@ class ThrowPoint
 	public function isExplicit(): bool
 	{
 		return $this->explicit;
+	}
+
+	public function subtractCatchType(Type $catchType): self
+	{
+		return new self($this->scope, TypeCombinator::remove($this->type, $catchType), $this->explicit);
 	}
 
 }

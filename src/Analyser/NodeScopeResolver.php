@@ -1179,11 +1179,7 @@ class NodeScopeResolver
 					}
 					$throwPoints = $newThrowPoints;
 					if (count($matchingThrowPoints) === 0) {
-						if (!$this->polluteCatchScopeWithTryAssignments) {
-							$catchScope = $scope->mergeWith($finalScope);
-						} else {
-							$catchScope = $branchScope;
-						}
+						continue;
 					} else {
 						$catchScope = null;
 						foreach ($matchingThrowPoints as $matchingThrowPoint) {
@@ -1197,9 +1193,6 @@ class NodeScopeResolver
 
 					$catchScopeResult = $this->processCatchNode($catchNode, $catchScope, $nodeCallback);
 					$catchScopeForFinally = $catchScopeResult->getScope();
-					if (count($matchingThrowPoints) === 0) {
-						continue;
-					}
 				} else {
 					if (!$this->polluteCatchScopeWithTryAssignments) {
 						$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($branchScope), $nodeCallback);

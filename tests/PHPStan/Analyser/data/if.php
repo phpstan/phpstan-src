@@ -351,6 +351,7 @@ function () {
 
 	try {
 		$inTryTwo = 1;
+		maybeThrows();
 	} catch (\Exception $e) {
 		$exception = $e;
 		if (something()) {

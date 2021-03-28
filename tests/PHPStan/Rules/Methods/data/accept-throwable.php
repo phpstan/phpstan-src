@@ -35,7 +35,7 @@ class Foo
 function () {
 	$foo = new Foo();
 	try {
-
+		maybeThrows();
 	} catch (SomeInterface $e) {
 		$foo->doFoo($e);
 		$foo->doBar($e);

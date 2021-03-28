@@ -381,57 +381,6 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/loop-initial-assignments.php'], $expectedErrors);
 	}
 
-	public function dataCatchScopePollutedWithTryAssignments(): array
-	{
-		return [
-			[
-				false,
-				false,
-				[],
-			],
-			[
-				false,
-				true,
-				[
-					[
-						'Variable $variableInTry might not be defined.',
-						6,
-					],
-				],
-			],
-			[
-				true,
-				false,
-				[],
-			],
-			[
-				true,
-				true,
-				[],
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider dataCatchScopePollutedWithTryAssignments
-	 * @param bool $polluteCatchScopeWithTryAssignments
-	 * @param bool $checkMaybeUndefinedVariables
-	 * @param mixed[][] $expectedErrors
-	 */
-	public function testCatchScopePollutedWithTryAssignments(
-		bool $polluteCatchScopeWithTryAssignments,
-		bool $checkMaybeUndefinedVariables,
-		array $expectedErrors
-	): void
-	{
-		$this->cliArgumentsVariablesRegistered = false;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->polluteCatchScopeWithTryAssignments = $polluteCatchScopeWithTryAssignments;
-		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/catch-scope-polluted-with-try-assignments.php'], $expectedErrors);
-	}
-
 	public function testDefineVariablesInClass(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

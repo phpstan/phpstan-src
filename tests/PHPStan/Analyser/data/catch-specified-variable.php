@@ -15,7 +15,7 @@ function () {
 	}
 
 	try {
-
+		maybeThrows();
 	} catch (FooException $foo) {
 		die;
 	}

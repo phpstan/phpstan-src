@@ -7,6 +7,8 @@ use Nette\Neon\Neon;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use const SORT_STRING;
+use function ksort;
 use function preg_quote;
 
 class BaselineNeonErrorFormatter implements ErrorFormatter
@@ -40,6 +42,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 			}
 			$fileErrors[$fileSpecificError->getFilePath()][] = $fileSpecificError->getMessage();
 		}
+		ksort($fileErrors, SORT_STRING);
 
 		$errorsToOutput = [];
 		foreach ($fileErrors as $file => $errorMessages) {
@@ -52,6 +55,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 
 				$fileErrorsCounts[$errorMessage]++;
 			}
+			ksort($fileErrorsCounts, SORT_STRING);
 
 			foreach ($fileErrorsCounts as $message => $count) {
 				$errorsToOutput[] = [

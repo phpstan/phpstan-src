@@ -157,6 +157,8 @@ class NodeScopeResolver
 
 	private bool $functionsHaveCompleteThrowsAnnotations;
 
+	private bool $preciseExceptionTracking;
+
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
@@ -174,6 +176,7 @@ class NodeScopeResolver
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
 	 * @param bool $functionsHaveCompleteThrowsAnnotations
+	 * @param bool $preciseExceptionTracking
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -190,7 +193,8 @@ class NodeScopeResolver
 		bool $polluteScopeWithAlwaysIterableForeach,
 		array $earlyTerminatingMethodCalls,
 		array $earlyTerminatingFunctionCalls,
-		bool $functionsHaveCompleteThrowsAnnotations
+		bool $functionsHaveCompleteThrowsAnnotations,
+		bool $preciseExceptionTracking
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -208,6 +212,7 @@ class NodeScopeResolver
 		$this->earlyTerminatingMethodCalls = $earlyTerminatingMethodCalls;
 		$this->earlyTerminatingFunctionCalls = $earlyTerminatingFunctionCalls;
 		$this->functionsHaveCompleteThrowsAnnotations = $functionsHaveCompleteThrowsAnnotations;
+		$this->preciseExceptionTracking = $preciseExceptionTracking;
 	}
 
 	/**
@@ -1155,42 +1160,55 @@ class NodeScopeResolver
 
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
-				$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
-					return new ObjectType($name->toString());
-				}, $catchNode->types));
-				$matchingThrowPoints = [];
-				$newThrowPoints = [];
-				foreach ($throwPoints as $throwPoint) {
-					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
-					if (!$isSuperType->no()) {
-						$matchingThrowPoints[] = $throwPoint;
+
+				if ($this->preciseExceptionTracking) {
+					$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
+						return new ObjectType($name->toString());
+					}, $catchNode->types));
+					$matchingThrowPoints = [];
+					$newThrowPoints = [];
+					foreach ($throwPoints as $throwPoint) {
+						$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
+						if (!$isSuperType->no()) {
+							$matchingThrowPoints[] = $throwPoint;
+						}
+						if ($isSuperType->yes()) {
+							continue;
+						}
+						$newThrowPoints[] = $throwPoint;
 					}
-					if ($isSuperType->yes()) {
-						continue;
-					}
-					$newThrowPoints[] = $throwPoint;
-				}
-				$throwPoints = $newThrowPoints;
-				if (count($matchingThrowPoints) === 0) {
-					if (!$this->polluteCatchScopeWithTryAssignments) {
-						$catchScope = $scope->mergeWith($finalScope);
-					} else {
-						$catchScope = $branchScope;
-					}
-				} else {
-					$catchScope = null;
-					foreach ($matchingThrowPoints as $matchingThrowPoint) {
-						if ($catchScope === null) {
-							$catchScope = $matchingThrowPoint->getScope();
+					$throwPoints = $newThrowPoints;
+					if (count($matchingThrowPoints) === 0) {
+						if (!$this->polluteCatchScopeWithTryAssignments) {
+							$catchScope = $scope->mergeWith($finalScope);
 						} else {
-							$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
+							$catchScope = $branchScope;
+						}
+					} else {
+						$catchScope = null;
+						foreach ($matchingThrowPoints as $matchingThrowPoint) {
+							if ($catchScope === null) {
+								$catchScope = $matchingThrowPoint->getScope();
+							} else {
+								$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
+							}
 						}
 					}
-				}
 
-				$catchScopeResult = $this->processCatchNode($catchNode, $catchScope, $nodeCallback);
-				if (count($matchingThrowPoints) === 0) {
-					continue;
+					$catchScopeResult = $this->processCatchNode($catchNode, $catchScope, $nodeCallback);
+					$catchScopeForFinally = $catchScopeResult->getScope();
+					if (count($matchingThrowPoints) === 0) {
+						continue;
+					}
+				} else {
+					if (!$this->polluteCatchScopeWithTryAssignments) {
+						$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($branchScope), $nodeCallback);
+						$catchScopeForFinally = $catchScopeResult->getScope();
+					} else {
+						$catchScopeForFinally = $this->processCatchNode($catchNode, $branchScope, $nodeCallback)->getScope();
+						$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($branchScope), static function (): void {
+						});
+					}
 				}
 
 				$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
@@ -1200,7 +1218,7 @@ class NodeScopeResolver
 				$throwPointsForLater = array_merge($throwPointsForLater, $catchThrowPoints);
 
 				if ($finallyScope !== null) {
-					$finallyScope = $finallyScope->mergeWith($catchScopeResult->getScope());
+					$finallyScope = $finallyScope->mergeWith($catchScopeForFinally);
 				}
 				foreach ($catchScopeResult->getExitPoints() as $exitPoint) {
 					if ($finallyScope !== null) {

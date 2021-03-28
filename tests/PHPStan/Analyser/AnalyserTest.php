@@ -515,7 +515,8 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			true,
 			[],
 			[],
-			false
+			false,
+			true
 		);
 		$lexer = new \PhpParser\Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(

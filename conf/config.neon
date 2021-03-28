@@ -31,6 +31,7 @@ parameters:
 		skipCheckGenericClasses:
 			- RecursiveIterator
 		rememberFunctionValues: false
+		preciseExceptionTracking: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -188,7 +189,8 @@ parametersSchema:
 		arrayDestructuring: bool(),
 		objectFromNewClass: bool(),
 		skipCheckGenericClasses: listOf(string()),
-		rememberFunctionValues: bool()
+		rememberFunctionValues: bool(),
+		preciseExceptionTracking: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -417,6 +419,7 @@ services:
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			functionsHaveCompleteThrowsAnnotations: %functionsHaveCompleteThrowsAnnotations%
+			preciseExceptionTracking: %featureToggles.preciseExceptionTracking%
 
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory

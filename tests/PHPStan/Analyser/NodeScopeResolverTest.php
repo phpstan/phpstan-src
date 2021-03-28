@@ -10958,7 +10958,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				],
 			],
 			['baz'],
-			false,
+			true,
 			true
 		);
 		$resolver->setAnalysedFiles(array_map(static function (string $file) use ($fileHelper): string {

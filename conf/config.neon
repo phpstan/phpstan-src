@@ -60,7 +60,7 @@ parameters:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
 	inferPrivatePropertyTypeFromConstructor: false
-	functionsHaveCompleteThrowsAnnotations: false
+	implicitThrows: true
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
 	reportStaticMethodSignatures: false
@@ -219,7 +219,7 @@ parametersSchema:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
-	functionsHaveCompleteThrowsAnnotations: bool()
+	implicitThrows: bool()
 	tipsOfTheDay: bool()
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()
@@ -418,7 +418,7 @@ services:
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
-			functionsHaveCompleteThrowsAnnotations: %functionsHaveCompleteThrowsAnnotations%
+			implicitThrows: %implicitThrows%
 			preciseExceptionTracking: %featureToggles.preciseExceptionTracking%
 
 	-

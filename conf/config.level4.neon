@@ -18,6 +18,8 @@ rules:
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
 
 conditionalTags:
+	PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule:
+		phpstan.rules.rule: %featureToggles.preciseExceptionTracking%
 	PHPStan\Rules\DeadCode\UnusedPrivateConstantRule:
 		phpstan.rules.rule: %featureToggles.unusedClassElements%
 	PHPStan\Rules\DeadCode\UnusedPrivateMethodRule:
@@ -146,6 +148,9 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
 
 	-
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule

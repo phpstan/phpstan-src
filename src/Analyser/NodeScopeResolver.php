@@ -55,6 +55,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Node\BooleanOrNode;
+use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
@@ -1183,6 +1184,7 @@ class NodeScopeResolver
 					$throwPoints = $newThrowPoints;
 
 					if (count($matchingThrowPoints) === 0) {
+						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType), $scope);
 						continue;
 					}
 

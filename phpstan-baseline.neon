@@ -111,6 +111,16 @@ parameters:
 			path: src/PhpDoc/Tag/VarTag.php
 
 		-
+			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Identifier\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
+			count: 2
+			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
+			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\UnableToCompileNode\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAClassReflection\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAnInterfaceReflection is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, int\\|false given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php

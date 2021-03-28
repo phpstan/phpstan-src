@@ -1150,7 +1150,7 @@ class NodeScopeResolver
 
 			$throwPoints = $branchScopeResult->getThrowPoints();
 
-			if ($this->preciseExceptionTracking) {
+			if ($this->preciseExceptionTracking || !$this->polluteCatchScopeWithTryAssignments) {
 				foreach ($throwPoints as $throwPoint) {
 					if ($finallyScope === null) {
 						continue;
@@ -1164,7 +1164,7 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
-				if ($this->preciseExceptionTracking) {
+				if ($this->preciseExceptionTracking || !$this->polluteCatchScopeWithTryAssignments) {
 					$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
 						return new ObjectType($name->toString());
 					}, $catchNode->types));
@@ -1181,16 +1181,17 @@ class NodeScopeResolver
 						$newThrowPoints[] = $throwPoint;
 					}
 					$throwPoints = $newThrowPoints;
+
 					if (count($matchingThrowPoints) === 0) {
 						continue;
-					} else {
-						$catchScope = null;
-						foreach ($matchingThrowPoints as $matchingThrowPoint) {
-							if ($catchScope === null) {
-								$catchScope = $matchingThrowPoint->getScope();
-							} else {
-								$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
-							}
+					}
+
+					$catchScope = null;
+					foreach ($matchingThrowPoints as $matchingThrowPoint) {
+						if ($catchScope === null) {
+							$catchScope = $matchingThrowPoint->getScope();
+						} else {
+							$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
 						}
 					}
 
@@ -1201,14 +1202,10 @@ class NodeScopeResolver
 					if (count($throwPoints) > 0) {
 						$initialScope = $throwPoints[0]->getScope();
 					}
-					if (!$this->polluteCatchScopeWithTryAssignments) {
-						$catchScopeResult = $this->processCatchNode($catchNode, $initialScope->mergeWith($branchScope), $nodeCallback);
-						$catchScopeForFinally = $catchScopeResult->getScope();
-					} else {
-						$catchScopeForFinally = $this->processCatchNode($catchNode, $branchScope, $nodeCallback)->getScope();
-						$catchScopeResult = $this->processCatchNode($catchNode, $initialScope->mergeWith($branchScope), static function (): void {
-						});
-					}
+
+					$catchScopeForFinally = $this->processCatchNode($catchNode, $branchScope, $nodeCallback)->getScope();
+					$catchScopeResult = $this->processCatchNode($catchNode, $initialScope->mergeWith($branchScope), static function (): void {
+					});
 				}
 
 				$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);

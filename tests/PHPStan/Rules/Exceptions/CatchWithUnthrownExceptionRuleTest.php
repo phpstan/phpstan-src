@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
+/**
+ * @extends RuleTestCase<CatchWithUnthrownExceptionRule>
+ */
 class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 {
 

@@ -3,6 +3,7 @@
 namespace ThrowPoints\TryCatch;
 
 use PHPStan\TrinaryLogic;
+use Throwable;
 use function PHPStan\Analyser\assertType;
 use function PHPStan\Analyser\assertVariableCertainty;
 
@@ -20,30 +21,6 @@ class Foo
 {
 
 	/** @throws void */
-	public static function createInvalidArgumentException(): \InvalidArgumentException
-	{
-
-	}
-
-	/** @throws void */
-	public static function createMyInvalidArgumentException(): MyInvalidArgumentException
-	{
-
-	}
-
-	/** @throws void */
-	public static function createRuntimeException(): \RuntimeException
-	{
-
-	}
-
-	/** @throws void */
-	public static function createMyRuntimeException(): MyRuntimeException
-	{
-
-	}
-
-	/** @throws void */
 	public static function myRand(): int
 	{
 
@@ -55,20 +32,20 @@ function (): void {
 	try {
 		if (Foo::myRand() === 0) {
 			$foo = 1;
-			throw Foo::createInvalidArgumentException();
+			throw new \InvalidArgumentException();
 		}
 		if (Foo::myRand() === 1) {
 			$foo = 2;
-			throw Foo::createMyInvalidArgumentException();
+			throw new MyInvalidArgumentException();
 		}
 
 		if (Foo::myRand() === 2) {
 			$baz = 1;
-			throw Foo::createRuntimeException();
+			throw new \RuntimeException();
 		}
 		if (Foo::myRand() === 3) {
 			$baz = 2;
-			throw Foo::createMyRuntimeException();
+			throw new MyRuntimeException();
 		}
 
 		$bar = 1;
@@ -103,9 +80,25 @@ function (): void {
 	try {
 		maybeThrows();
 		$foo = 1;
-		throw Foo::createInvalidArgumentException();
+		throw new \InvalidArgumentException();
 	} catch (\InvalidArgumentException $e) {
 		assertType('1', $foo);
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	}
+};
+
+function (): void {
+	try {
+		$foo = new Foo();
+	} catch (Throwable $e) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	}
+};
+
+function (): void {
+	try {
+		$foo = new \InvalidArgumentException();
+	} catch (Throwable $e) {
 		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 	}
 };

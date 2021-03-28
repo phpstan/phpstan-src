@@ -2358,7 +2358,9 @@ class NodeScopeResolver
 								$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType);
 							}
 						} elseif (!$this->functionsHaveCompleteThrowsAnnotations) {
-							$throwPoints[] = ThrowPoint::createImplicit($scope);
+							if ($classReflection->getName() !== \Throwable::class && !$classReflection->isSubclassOf(\Throwable::class)) {
+								$throwPoints[] = ThrowPoint::createImplicit($scope);
+							}
 						}
 					}
 				} else {

@@ -6,8 +6,11 @@ use PHPStan\TrinaryLogic;
 use function PHPStan\Analyser\assertVariableCertainty;
 
 class Response {
-	private int $status;
-	private string $body;
+	/** @var int */
+	private $status;
+
+	/** @var string */
+	private $body;
 
 	public function __construct(int $status, string $body) {
 		$this->status = $status;

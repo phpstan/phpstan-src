@@ -1194,12 +1194,16 @@ class NodeScopeResolver
 					$catchScopeResult = $this->processCatchNode($catchNode, $catchScope, $nodeCallback);
 					$catchScopeForFinally = $catchScopeResult->getScope();
 				} else {
+					$initialScope = $scope;
+					if (count($throwPoints) > 0) {
+						$initialScope = $throwPoints[0]->getScope();
+					}
 					if (!$this->polluteCatchScopeWithTryAssignments) {
-						$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($branchScope), $nodeCallback);
+						$catchScopeResult = $this->processCatchNode($catchNode, $initialScope->mergeWith($branchScope), $nodeCallback);
 						$catchScopeForFinally = $catchScopeResult->getScope();
 					} else {
 						$catchScopeForFinally = $this->processCatchNode($catchNode, $branchScope, $nodeCallback)->getScope();
-						$catchScopeResult = $this->processCatchNode($catchNode, $scope->mergeWith($branchScope), static function (): void {
+						$catchScopeResult = $this->processCatchNode($catchNode, $initialScope->mergeWith($branchScope), static function (): void {
 						});
 					}
 				}

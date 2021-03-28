@@ -1149,18 +1149,22 @@ class NodeScopeResolver
 			}
 
 			$throwPoints = $branchScopeResult->getThrowPoints();
+
+			if ($this->preciseExceptionTracking) {
+				foreach ($throwPoints as $throwPoint) {
+					if ($finallyScope === null) {
+						continue;
+					}
+					$finallyScope = $finallyScope->mergeWith($throwPoint->getScope());
+				}
+			}
+
 			$throwPointsForLater = [];
 
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
 				if ($this->preciseExceptionTracking) {
-					foreach ($throwPoints as $throwPoint) {
-						if ($finallyScope === null) {
-							continue;
-						}
-						$finallyScope = $finallyScope->mergeWith($throwPoint->getScope());
-					}
 					$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
 						return new ObjectType($name->toString());
 					}, $catchNode->types));

@@ -60,4 +60,15 @@ class Foo
 		}
 	}
 
+	public function doDolor(): void
+	{
+		try {
+			throw new \InvalidArgumentException();
+		} catch (\InvalidArgumentException $e) {
+
+		} catch (\Throwable $e) {
+
+		}
+	}
+
 }

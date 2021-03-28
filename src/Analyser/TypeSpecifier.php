@@ -56,6 +56,8 @@ class TypeSpecifier
 
 	private ReflectionProvider $reflectionProvider;
 
+	private bool $rememberFunctionValues;
+
 	/** @var \PHPStan\Type\FunctionTypeSpecifyingExtension[] */
 	private array $functionTypeSpecifyingExtensions;
 
@@ -81,6 +83,7 @@ class TypeSpecifier
 	public function __construct(
 		\PhpParser\PrettyPrinter\Standard $printer,
 		ReflectionProvider $reflectionProvider,
+		bool $rememberFunctionValues,
 		array $functionTypeSpecifyingExtensions,
 		array $methodTypeSpecifyingExtensions,
 		array $staticMethodTypeSpecifyingExtensions
@@ -88,6 +91,7 @@ class TypeSpecifier
 	{
 		$this->printer = $printer;
 		$this->reflectionProvider = $reflectionProvider;
+		$this->rememberFunctionValues = $rememberFunctionValues;
 
 		foreach (array_merge($functionTypeSpecifyingExtensions, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions) as $extension) {
 			if (!($extension instanceof TypeSpecifierAwareExtension)) {
@@ -533,7 +537,9 @@ class TypeSpecifier
 				}
 			}
 
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			if ($this->rememberFunctionValues) {
+				return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			}
 		} elseif ($expr instanceof MethodCall && $expr->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($expr->var);
 			$referencedClasses = TypeUtils::getDirectClassNames($methodCalledOnType);
@@ -554,7 +560,9 @@ class TypeSpecifier
 				}
 			}
 
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			if ($this->rememberFunctionValues) {
+				return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			}
 		} elseif ($expr instanceof StaticCall && $expr->name instanceof Node\Identifier) {
 			if ($expr->class instanceof Name) {
 				$calleeType = $scope->resolveTypeByName($expr->class);
@@ -580,7 +588,9 @@ class TypeSpecifier
 				}
 			}
 
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			if ($this->rememberFunctionValues) {
+				return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			}
 		} elseif ($expr instanceof BooleanAnd || $expr instanceof LogicalAnd) {
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
 			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);

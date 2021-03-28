@@ -30,6 +30,7 @@ parameters:
 		objectFromNewClass: false
 		skipCheckGenericClasses:
 			- RecursiveIterator
+		rememberFunctionValues: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -186,7 +187,8 @@ parametersSchema:
 		wrongVarUsage: bool(),
 		arrayDestructuring: bool(),
 		objectFromNewClass: bool(),
-		skipCheckGenericClasses: listOf(string())
+		skipCheckGenericClasses: listOf(string()),
+		rememberFunctionValues: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

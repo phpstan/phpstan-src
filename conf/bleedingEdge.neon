@@ -16,3 +16,4 @@ parameters:
 		arrayDestructuring: true
 		objectFromNewClass: true
 		skipCheckGenericClasses: []
+		rememberFunctionValues: true

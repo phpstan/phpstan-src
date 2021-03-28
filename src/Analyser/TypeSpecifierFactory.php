@@ -26,6 +26,7 @@ class TypeSpecifierFactory
 		$typeSpecifier = new TypeSpecifier(
 			$this->container->getByType(Standard::class),
 			$this->container->getByType(ReflectionProvider::class),
+			$this->container->getParameter('featureToggles')['rememberFunctionValues'],
 			$this->container->getServicesByTag(self::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG)

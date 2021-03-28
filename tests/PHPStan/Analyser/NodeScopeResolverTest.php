@@ -10313,6 +10313,13 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 
 		require_once __DIR__ . '/data/invalidate-object-argument-function.php';
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalidate-object-argument-function.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4588.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4091.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3382.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4177.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2288.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1157.php');
 	}
 
 	/**

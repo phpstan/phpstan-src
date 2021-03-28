@@ -7,6 +7,9 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function mt_srand;
+use function shuffle;
+use function trim;
 
 class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -190,6 +193,78 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 				], Neon::BLOCK)
 			),
 			trim($this->getOutputContent())
+		);
+	}
+
+	/**
+	 * @return \Generator<int, list<Error>, void, void>
+	 */
+	public function outputOrderingProvider(): \Generator
+	{
+		$errors = [
+			new Error('Error #2', 'TestfileA', 1),
+			new Error('A different error #1', 'TestfileA', 3),
+			new Error('Second error in a different file', 'TestfileB', 4),
+			new Error('Error #1 in a different file', 'TestfileB', 5),
+			new Error('Second error in a different file', 'TestfileB', 6),
+		];
+		yield [$errors];
+		mt_srand(0);
+		for ($i = 0; $i < 3; ++$i) {
+			shuffle($errors);
+			yield [$errors];
+		}
+	}
+
+	/**
+	 * @dataProvider outputOrderingProvider
+	 * @param list<Error> $errors
+	 */
+	public function testOutputOrdering(array $errors): void
+	{
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$result = new AnalysisResult(
+			$errors,
+			[],
+			[],
+			[],
+			false,
+			null,
+			true
+		);
+
+		$formatter->formatErrors(
+			$result,
+			$this->getOutput()
+		);
+		self::assertSame(
+			trim(Neon::encode([
+				'parameters' => [
+					'ignoreErrors' => [
+						[
+							'message' => '#^A different error \\#1$#',
+							'count' => 1,
+							'path' => 'TestfileA',
+						],
+						[
+							'message' => '#^Error \\#2$#',
+							'count' => 1,
+							'path' => 'TestfileA',
+						],
+						[
+							'message' => '#^Error \\#1 in a different file$#',
+							'count' => 1,
+							'path' => 'TestfileB',
+						],
+						[
+							'message' => '#^Second error in a different file$#',
+							'count' => 2,
+							'path' => 'TestfileB',
+						],
+					],
+				],
+			], Neon::BLOCK)),
+			$f = trim($this->getOutputContent())
 		);
 	}
 

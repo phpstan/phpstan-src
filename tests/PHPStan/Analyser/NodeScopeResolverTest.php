@@ -10024,7 +10024,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		if (self::$useStaticReflectionProvider || extension_loaded('ds')) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');
 		}
-		if (self::$useStaticReflectionProvider || PHP_VERSION_ID >= 70400) {
+		if (self::$useStaticReflectionProvider || PHP_VERSION_ID >= 70401) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/arrow-function-return-type.php');
 		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/is-numeric.php');
@@ -10320,6 +10320,16 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4177.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2288.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1157.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1597.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3617.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-778.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2969.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3004.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3710.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3822.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-505.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1670.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1219.php');
 	}
 
 	/**

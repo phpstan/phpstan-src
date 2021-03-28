@@ -197,7 +197,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @return \Generator<int, list<Error>, void, void>
+	 * @return \Generator<int, array{list<Error>}, void, void>
 	 */
 	public function outputOrderingProvider(): \Generator
 	{

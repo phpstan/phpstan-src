@@ -2236,12 +2236,17 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+		} elseif ($expr instanceof Expr\Include_) {
+			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
+			$throwPoints = $result->getThrowPoints();
+			$throwPoints[] = new ThrowPoint($scope, new ObjectType(\Throwable::class));
+			$hasYield = $result->hasYield();
+			$scope = $result->getScope();
 		} elseif (
 			$expr instanceof Expr\BitwiseNot
 			|| $expr instanceof Cast
 			|| $expr instanceof Expr\Clone_
 			|| $expr instanceof Expr\Eval_
-			|| $expr instanceof Expr\Include_
 			|| $expr instanceof Expr\Print_
 			|| $expr instanceof Expr\UnaryMinus
 			|| $expr instanceof Expr\UnaryPlus

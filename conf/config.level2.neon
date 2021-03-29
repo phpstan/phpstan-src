@@ -11,6 +11,7 @@ rules:
 	- PHPStan\Rules\Cast\InvalidCastRule
 	- PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
 	- PHPStan\Rules\Cast\PrintRule
+	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
 	- PHPStan\Rules\Generics\ClassAncestorsRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule

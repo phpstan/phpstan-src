@@ -1143,6 +1143,9 @@ class NodeScopeResolver
 				$finallyScope = null;
 			}
 			foreach ($branchScopeResult->getExitPoints() as $exitPoint) {
+				if ($exitPoint->getStatement() instanceof Throw_) {
+					continue;
+				}
 				if ($finallyScope !== null) {
 					$finallyScope = $finallyScope->mergeWith($exitPoint->getScope());
 				}
@@ -1150,16 +1153,6 @@ class NodeScopeResolver
 			}
 
 			$throwPoints = $branchScopeResult->getThrowPoints();
-
-			if ($this->preciseExceptionTracking || !$this->polluteCatchScopeWithTryAssignments) {
-				foreach ($throwPoints as $throwPoint) {
-					if ($finallyScope === null) {
-						continue;
-					}
-					$finallyScope = $finallyScope->mergeWith($throwPoint->getScope());
-				}
-			}
-
 			$throwPointsForLater = [];
 			$pastCatchTypes = new NeverType();
 
@@ -1259,6 +1252,9 @@ class NodeScopeResolver
 					$finallyScope = $finallyScope->mergeWith($catchScopeForFinally);
 				}
 				foreach ($catchScopeResult->getExitPoints() as $exitPoint) {
+					if ($exitPoint->getStatement() instanceof Throw_) {
+						continue;
+					}
 					if ($finallyScope !== null) {
 						$finallyScope = $finallyScope->mergeWith($exitPoint->getScope());
 					}
@@ -1275,6 +1271,13 @@ class NodeScopeResolver
 
 			if ($finalScope === null) {
 				$finalScope = $scope;
+			}
+
+			foreach ($throwPoints as $throwPoint) {
+				if ($finallyScope === null) {
+					continue;
+				}
+				$finallyScope = $finallyScope->mergeWith($throwPoint->getScope());
 			}
 
 			if ($finallyScope !== null && $stmt->finally !== null) {

@@ -9,6 +9,7 @@ class Foo
 	{
 		match ($this->doLorem()) {
 			$this->doBar() => $this->doBaz(),
+			default => $this->doBaz(),
 		};
 	}
 

@@ -1564,10 +1564,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Result of method MatchExprVoidUsed\Foo::doBar() (void) is used.',
 				11,
 			],
-			[
-				'Result of method MatchExprVoidUsed\Foo::doBaz() (void) is used.',
-				11,
-			],
 		]);
 	}
 

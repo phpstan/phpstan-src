@@ -2492,7 +2492,7 @@ class NodeScopeResolver
 			$armNodes = [];
 			foreach ($expr->arms as $arm) {
 				if ($arm->conds === null) {
-					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, $deepContext);
+					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, ExpressionContext::createTopLevel());
 					$matchScope = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
@@ -2529,7 +2529,7 @@ class NodeScopeResolver
 					$arm->body,
 					$matchScope->filterByTruthyValue($filteringExpr),
 					$nodeCallback,
-					$deepContext
+					ExpressionContext::createTopLevel()
 				);
 				$armScope = $armResult->getScope();
 				$scope = $scope->mergeWith($armScope);

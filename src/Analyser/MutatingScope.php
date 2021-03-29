@@ -4016,15 +4016,18 @@ class MutatingScope implements Scope
 		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
 			return new VariableTypeHolder($type, TrinaryLogic::createYes());
 		};
+		$filterVariableHolders = static function (VariableTypeHolder $holder): bool {
+			return $holder->getCertainty()->yes();
+		};
 
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
-			array_map($variableHolderToType, $this->processFinallyScopeVariableTypeHolders(
+			array_map($variableHolderToType, array_filter($this->processFinallyScopeVariableTypeHolders(
 				array_map($typeToVariableHolder, $this->constantTypes),
 				array_map($typeToVariableHolder, $finallyScope->constantTypes),
 				array_map($typeToVariableHolder, $originalFinallyScope->constantTypes)
-			)),
+			), $filterVariableHolders)),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->processFinallyScopeVariableTypeHolders(
@@ -4042,11 +4045,11 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
-			array_map($variableHolderToType, $this->processFinallyScopeVariableTypeHolders(
+			array_map($variableHolderToType, array_filter($this->processFinallyScopeVariableTypeHolders(
 				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 				array_map($typeToVariableHolder, $finallyScope->nativeExpressionTypes),
 				array_map($typeToVariableHolder, $originalFinallyScope->nativeExpressionTypes)
-			)),
+			), $filterVariableHolders)),
 			[],
 			$this->afterExtractCall,
 			$this->parentScope
@@ -4217,18 +4220,21 @@ class MutatingScope implements Scope
 		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
 			return new VariableTypeHolder($type, TrinaryLogic::createYes());
 		};
-		$nativeTypes = array_map($variableHolderToType, $this->generalizeVariableTypeHolders(
+		$filterVariableHolders = static function (VariableTypeHolder $holder): bool {
+			return $holder->getCertainty()->yes();
+		};
+		$nativeTypes = array_map($variableHolderToType, array_filter($this->generalizeVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
-		));
+		), $filterVariableHolders));
 
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
-			array_map($variableHolderToType, $this->generalizeVariableTypeHolders(
+			array_map($variableHolderToType, array_filter($this->generalizeVariableTypeHolders(
 				array_map($typeToVariableHolder, $this->constantTypes),
 				array_map($typeToVariableHolder, $otherScope->constantTypes)
-			)),
+			), $filterVariableHolders)),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypeHolders,

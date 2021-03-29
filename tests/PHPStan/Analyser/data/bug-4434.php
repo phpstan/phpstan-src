@@ -1,0 +1,42 @@
+<?php
+
+namespace Bug4434;
+
+use function PHPStan\Analyser\assertType;
+use const PHP_MAJOR_VERSION;
+
+class HelloWorld
+{
+	public function testSendEmailToLog(): void
+	{
+		foreach ([1] as $emailFile) {
+			assertType('int', PHP_MAJOR_VERSION);
+			assertType('int', \PHP_MAJOR_VERSION);
+			if (PHP_MAJOR_VERSION === 7) {
+				assertType('int', PHP_MAJOR_VERSION);
+				assertType('int', \PHP_MAJOR_VERSION);
+			} else {
+				assertType('int<min, 6>|int<8, max>', PHP_MAJOR_VERSION);
+				assertType('int<min, 6>|int<8, max>', \PHP_MAJOR_VERSION);
+			}
+		}
+	}
+}
+
+class HelloWorld2
+{
+	public function testSendEmailToLog(): void
+	{
+		foreach ([1] as $emailFile) {
+			assertType('int', PHP_MAJOR_VERSION);
+			assertType('int', \PHP_MAJOR_VERSION);
+			if (PHP_MAJOR_VERSION === 100) {
+				assertType('int', PHP_MAJOR_VERSION);
+				assertType('int', \PHP_MAJOR_VERSION);
+			} else {
+				assertType('int<min, 99>|int<101, max>', PHP_MAJOR_VERSION);
+				assertType('int<min, 99>|int<101, max>', \PHP_MAJOR_VERSION);
+			}
+		}
+	}
+}

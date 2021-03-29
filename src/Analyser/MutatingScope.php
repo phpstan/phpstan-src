@@ -3814,6 +3814,10 @@ class MutatingScope implements Scope
 			return new VariableTypeHolder($type, TrinaryLogic::createYes());
 		};
 
+		$filterVariableHolders = static function (VariableTypeHolder $holder): bool {
+			return $holder->getCertainty()->yes();
+		};
+
 		$ourVariableTypes = $this->getVariableTypes();
 		$theirVariableTypes = $otherScope->getVariableTypes();
 		if ($this->canAnyVariableExist()) {
@@ -3851,10 +3855,10 @@ class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
-			array_map($variableHolderToType, $this->generalizeVariableTypeHolders(
+			array_map($variableHolderToType, array_filter($this->mergeVariableHolders(
 				array_map($typeToVariableHolder, $this->constantTypes),
 				array_map($typeToVariableHolder, $otherScope->constantTypes)
-			)),
+			), $filterVariableHolders)),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$mergedVariableHolders,
@@ -3867,9 +3871,7 @@ class MutatingScope implements Scope
 			array_map($variableHolderToType, array_filter($this->mergeVariableHolders(
 				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 				array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
-			), static function (VariableTypeHolder $holder): bool {
-				return $holder->getCertainty()->yes();
-			})),
+			), $filterVariableHolders)),
 			[],
 			$this->afterExtractCall && $otherScope->afterExtractCall,
 			$this->parentScope

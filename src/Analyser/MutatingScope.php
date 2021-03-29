@@ -4463,6 +4463,9 @@ class MutatingScope implements Scope
 	 */
 	private function compareVariableTypeHolders(array $variableTypeHolders, array $otherVariableTypeHolders): bool
 	{
+		if (count($variableTypeHolders) !== count($otherVariableTypeHolders)) {
+			return false;
+		}
 		foreach ($variableTypeHolders as $name => $variableTypeHolder) {
 			if (!isset($otherVariableTypeHolders[$name])) {
 				return false;
@@ -4479,7 +4482,7 @@ class MutatingScope implements Scope
 			unset($otherVariableTypeHolders[$name]);
 		}
 
-		return count($otherVariableTypeHolders) === 0;
+		return true;
 	}
 
 	public function canAccessProperty(PropertyReflection $propertyReflection): bool

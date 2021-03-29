@@ -35,8 +35,10 @@ class Foo
 			$this->throwIae();
 		} catch (\InvalidArgumentException $e) {
 
-		} catch (\Throwable $e) {
+		} catch (\Exception $e) {
 			// dead
+		} catch (\Throwable $e) {
+			// not dead
 		}
 	}
 
@@ -81,6 +83,41 @@ class Foo
 			}
 		} catch (\InvalidArgumentException $e) {
 
+		}
+	}
+
+	/**
+	 * @throws \InvalidArgumentException
+	 * @throws \DomainException
+	 */
+	public function doAmet()
+	{
+
+	}
+
+	public function doAmet1()
+	{
+		try {
+			$this->doAmet();
+		} catch (\InvalidArgumentException $e) {
+
+		} catch (\DomainException $e) {
+
+		} catch (\Throwable $e) {
+			// not dead
+		}
+	}
+
+	public function doAmet2()
+	{
+		try {
+			throw new \InvalidArgumentException();
+		} catch (\InvalidArgumentException $e) {
+
+		} catch (\DomainException $e) {
+			// dead
+		} catch (\Throwable $e) {
+			// dead
 		}
 	}
 

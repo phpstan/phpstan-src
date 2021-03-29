@@ -28,20 +28,28 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				21,
 			],
 			[
-				'Dead catch - Throwable is never thrown in the try block.',
+				'Dead catch - Exception is never thrown in the try block.',
 				38,
 			],
 			[
 				'Dead catch - RuntimeException is never thrown in the try block.',
-				47,
+				49,
 			],
 			[
 				'Dead catch - Throwable is never thrown in the try block.',
-				69,
+				71,
 			],
 			[
 				'Dead catch - InvalidArgumentException is never thrown in the try block.',
-				82,
+				84,
+			],
+			[
+				'Dead catch - DomainException is never thrown in the try block.',
+				117,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				119,
 			],
 		]);
 	}

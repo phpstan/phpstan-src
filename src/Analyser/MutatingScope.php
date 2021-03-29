@@ -2392,7 +2392,7 @@ class MutatingScope implements Scope
 				'self',
 				'static',
 			], true)) {
-				return $this->getClassReflection()->getName();
+				return $this->inClosureBindScopeClass ?? $this->getClassReflection()->getName();
 			} elseif ($originalClass === 'parent') {
 				$currentClassReflection = $this->getClassReflection();
 				if ($currentClassReflection->getParentClass() !== false) {
@@ -2407,13 +2407,13 @@ class MutatingScope implements Scope
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
 		if ($name->toLowerString() === 'static' && $this->isInClass()) {
-			$classReflection = $this->getClassReflection();
+			$classReflection = $this->inClosureBindScopeClass ?? $this->getClassReflection();
 
 			return new StaticType($classReflection);
 		}
 		$originalClass = $this->resolveName($name);
 		if ($this->isInClass()) {
-			$thisType = new ThisType($this->getClassReflection());
+			$thisType = new ThisType($this->inClosureBindScopeClass ?? $this->getClassReflection());
 			$ancestor = $thisType->getAncestorWithClassName($originalClass);
 			if ($ancestor !== null) {
 				return $ancestor;

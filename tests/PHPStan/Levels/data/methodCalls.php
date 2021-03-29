@@ -212,7 +212,7 @@ class TestExceptions
 	public function doFoo()
 	{
 		try {
-
+			\ThrowPoints\Helpers\maybeThrows();
 		} catch (FooException | BarException $e) {
 			$e->commonMethod();
 			$e->doFoo();

@@ -94,14 +94,4 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 		$this->assertSame(\RuntimeException::class, $throwType->describe(VerbosityLevel::typeOnly()));
 	}
 
-	public function testThrowsOnNativeFunctions(): void
-	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
-
-		$this->assertNull($broker->getFunction(new Name('str_replace'), null)->getThrowType());
-		$this->assertNull($broker->getFunction(new Name('get_class'), null)->getThrowType());
-		$this->assertNull($broker->getFunction(new Name('function_exists'), null)->getThrowType());
-	}
-
 }

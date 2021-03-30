@@ -21,30 +21,24 @@ class MyRuntimeException extends \RuntimeException
 class Foo
 {
 
-	/** @throws void */
-	public static function myRand(): int
-	{
-
-	}
-
 }
 
 function (): void {
 	try {
-		if (Foo::myRand() === 0) {
+		if (rand(0, 10) === 0) {
 			$foo = 1;
 			throw new \InvalidArgumentException();
 		}
-		if (Foo::myRand() === 1) {
+		if (rand(0, 10) === 1) {
 			$foo = 2;
 			throw new MyInvalidArgumentException();
 		}
 
-		if (Foo::myRand() === 2) {
+		if (rand(0, 10) === 2) {
 			$baz = 1;
 			throw new \RuntimeException();
 		}
-		if (Foo::myRand() === 3) {
+		if (rand(0, 10) === 3) {
 			$baz = 2;
 			throw new MyRuntimeException();
 		}

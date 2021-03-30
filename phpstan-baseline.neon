@@ -216,6 +216,16 @@ parameters:
 			path: src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
+			message: "#^Dead catch \\- PHPStan\\\\Broker\\\\ClassAutoloadingException is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Reflection/Runtime/RuntimeReflectionProvider.php
+
+		-
+			message: "#^Dead catch \\- Throwable is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Reflection/Runtime/RuntimeReflectionProvider.php
+
+		-
 			message: "#^Binary operation \"\\+\" between array\\(class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\) and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
 			count: 1
 			path: src/Rules/Registry.php
@@ -239,6 +249,11 @@ parameters:
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
 			path: src/Testing/TestCase.php
+
+		-
+			message: "#^Dead catch \\- Throwable is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Type/Php/SprintfFunctionDynamicReturnTypeExtension.php
 
 		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"

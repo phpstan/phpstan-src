@@ -669,6 +669,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider
+		arguments:
+			functionReflector: @betterReflectionFunctionReflector
 
 	-
 		class: PHPStan\Reflection\SignatureMap\SignatureMapParser

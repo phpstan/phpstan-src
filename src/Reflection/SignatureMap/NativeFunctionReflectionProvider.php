@@ -2,12 +2,15 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
+use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
@@ -15,6 +18,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VoidType;
 
 class NativeFunctionReflectionProvider
 {
@@ -24,9 +28,15 @@ class NativeFunctionReflectionProvider
 
 	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
 
-	public function __construct(SignatureMapProvider $signatureMapProvider)
+	private \PHPStan\BetterReflection\Reflector\FunctionReflector $functionReflector;
+
+	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+
+	public function __construct(SignatureMapProvider $signatureMapProvider, FunctionReflector $functionReflector, FileTypeMapper $fileTypeMapper)
 	{
 		$this->signatureMapProvider = $signatureMapProvider;
+		$this->functionReflector = $functionReflector;
+		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function findFunctionReflection(string $functionName): ?NativeFunctionReflection
@@ -106,10 +116,29 @@ class NativeFunctionReflectionProvider
 		} else {
 			$hasSideEffects = TrinaryLogic::createMaybe();
 		}
+
+		$throwType = null;
+		try {
+			$reflectionFunction = $this->functionReflector->reflect($functionName);
+			if ($reflectionFunction->getFileName() !== null) {
+				$fileName = $reflectionFunction->getFileName();
+				$docComment = $reflectionFunction->getDocComment();
+				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, $reflectionFunction->getName(), $docComment);
+				$throwsTag = $resolvedPhpDoc->getThrowsTag();
+				if ($throwsTag !== null) {
+					$throwType = $throwsTag->getType();
+				}
+			}
+		} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+			// pass
+		} catch (InvalidIdentifierName $e) {
+			// pass
+		}
+
 		$functionReflection = new NativeFunctionReflection(
 			$lowerCasedFunctionName,
 			$variants,
-			null,
+			$throwType ?? new VoidType(),
 			$hasSideEffects
 		);
 		self::$functionMap[$lowerCasedFunctionName] = $functionReflection;

@@ -221,7 +221,7 @@ class TestExceptions
 		}
 	}
 
-	public function doBar()
+	public function doBar(): void
 	{
 
 	}

@@ -1,23 +1,23 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Only numeric types are allowed in pre\\-increment, bool\\|float\\|int\\|string\\|null given\\.$#"
-			count: 1
-			path: src/Analyser/MutatingScope.php
-
-		-
 			message: "#^Only numeric types are allowed in pre\\-decrement, bool\\|float\\|int\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
+			message: "#^Only numeric types are allowed in pre\\-increment, bool\\|float\\|int\\|string\\|null given\\.$#"
 			count: 1
-			path: src/Command/CommandHelper.php
+			path: src/Analyser/MutatingScope.php
 
 		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 2
+			path: src/Command/CommandHelper.php
+
+		-
+			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
+			count: 1
 			path: src/Command/CommandHelper.php
 
 		-
@@ -46,12 +46,12 @@ parameters:
 			path: src/Command/FixerApplication.php
 
 		-
-			message: "#^Parameter \\#1 \\$arg of function escapeshellarg expects string, string\\|false given\\.$#"
+			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface, React\\\\Http\\\\Exception\\>\\:\\:done\\(\\)\\.$#"
 			count: 1
 			path: src/Command/FixerApplication.php
 
 		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface, React\\\\Http\\\\Exception\\>\\:\\:done\\(\\)\\.$#"
+			message: "#^Parameter \\#1 \\$arg of function escapeshellarg expects string, string\\|false given\\.$#"
 			count: 1
 			path: src/Command/FixerApplication.php
 
@@ -66,12 +66,12 @@ parameters:
 			path: src/DependencyInjection/NeonAdapter.php
 
 		-
-			message: "#^Variable static method call on Nette\\\\Schema\\\\Expect\\.$#"
+			message: "#^Variable method call on Nette\\\\Schema\\\\Elements\\\\AnyOf\\|Nette\\\\Schema\\\\Elements\\\\Structure\\|Nette\\\\Schema\\\\Elements\\\\Type\\.$#"
 			count: 1
 			path: src/DependencyInjection/ParametersSchemaExtension.php
 
 		-
-			message: "#^Variable method call on Nette\\\\Schema\\\\Elements\\\\AnyOf\\|Nette\\\\Schema\\\\Elements\\\\Structure\\|Nette\\\\Schema\\\\Elements\\\\Type\\.$#"
+			message: "#^Variable static method call on Nette\\\\Schema\\\\Expect\\.$#"
 			count: 1
 			path: src/DependencyInjection/ParametersSchemaExtension.php
 
@@ -121,18 +121,18 @@ parameters:
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
+			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, int\\|false given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
-			count: 4
-			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|null given\\.$#"
-			count: 3
+			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
+			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
@@ -141,8 +141,8 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
-			count: 1
+			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|null given\\.$#"
+			count: 3
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
@@ -156,22 +156,12 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 1
+			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|null given\\.$#"
+			count: 4
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Property PHPStan\\\\Reflection\\\\ClassReflection\\:\\:\\$reflection with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/ClassReflection.php
-
-		-
 			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:__construct\\(\\) has parameter \\$reflection with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getNativeReflection\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
 			path: src/Reflection/ClassReflection.php
 
@@ -181,14 +171,19 @@ parameters:
 			path: src/Reflection/ClassReflection.php
 
 		-
+			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getNativeReflection\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Property PHPStan\\\\Reflection\\\\ClassReflection\\:\\:\\$reflection with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
 			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\BuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
 			path: src/Reflection/Php/BuiltinMethodReflection.php
-
-		-
-			message: "#^Property PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:\\$declaringClass with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
 
 		-
 			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:__construct\\(\\) has parameter \\$declaringClass with generic class ReflectionClass but does not specify its types\\: T$#"
@@ -197,6 +192,11 @@ parameters:
 
 		-
 			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
+			count: 1
+			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
+
+		-
+			message: "#^Property PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:\\$declaringClass with generic class ReflectionClass does not specify its types\\: T$#"
 			count: 1
 			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
 
@@ -216,12 +216,7 @@ parameters:
 			path: src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
-			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$rules with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
-			count: 1
-			path: src/Rules/Registry.php
-
-		-
-			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			message: "#^Binary operation \"\\+\" between array\\(class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\) and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
 			count: 1
 			path: src/Rules/Registry.php
 
@@ -231,7 +226,12 @@ parameters:
 			path: src/Rules/Registry.php
 
 		-
-			message: "#^Binary operation \"\\+\" between array\\(class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\) and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
+			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/Registry.php
+
+		-
+			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$rules with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: src/Rules/Registry.php
 

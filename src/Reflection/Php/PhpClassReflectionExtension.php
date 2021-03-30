@@ -42,6 +42,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\VoidType;
 
 class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
@@ -553,7 +554,7 @@ class PhpClassReflectionExtension
 				$variants,
 				$hasSideEffects,
 				$stubPhpDocString,
-				$throwType
+				$throwType ?? new VoidType()
 			);
 		}
 

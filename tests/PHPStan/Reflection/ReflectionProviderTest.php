@@ -55,4 +55,39 @@ class ReflectionProviderTest extends TestCase
 		);
 	}
 
+	public function dataMethodThrowType(): array
+	{
+		return [
+			[
+				\DateTime::class,
+				'__construct',
+				new ObjectType('Exception'),
+			],
+			[
+				\DateTime::class,
+				'format',
+				new VoidType(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataMethodThrowType
+	 * @param string $className
+	 * @param string $methodName
+	 * @param Type $expectedThrowType
+	 */
+	public function testMethodThrowType(string $className, string $methodName, Type $expectedThrowType): void
+	{
+		$reflectionProvider = $this->createBroker();
+		$class = $reflectionProvider->getClass($className);
+		$method = $class->getNativeMethod($methodName);
+		$throwType = $method->getThrowType();
+		$this->assertNotNull($throwType);
+		$this->assertSame(
+			$expectedThrowType->describe(VerbosityLevel::precise()),
+			$throwType->describe(VerbosityLevel::precise())
+		);
+	}
+
 }

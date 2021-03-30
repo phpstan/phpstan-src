@@ -18,7 +18,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\VoidType;
 
 class NativeFunctionReflectionProvider
 {
@@ -138,7 +137,7 @@ class NativeFunctionReflectionProvider
 		$functionReflection = new NativeFunctionReflection(
 			$lowerCasedFunctionName,
 			$variants,
-			$throwType ?? new VoidType(),
+			$throwType,
 			$hasSideEffects
 		);
 		self::$functionMap[$lowerCasedFunctionName] = $functionReflection;

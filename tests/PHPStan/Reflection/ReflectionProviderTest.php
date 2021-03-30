@@ -17,7 +17,7 @@ class ReflectionProviderTest extends TestCase
 		return [
 			[
 				'rand',
-				new VoidType(),
+				null,
 			],
 			[
 				'sodium_crypto_kx_keypair',
@@ -41,13 +41,17 @@ class ReflectionProviderTest extends TestCase
 	/**
 	 * @dataProvider dataFunctionThrowType
 	 * @param string $functionName
-	 * @param Type $expectedThrowType
+	 * @param ?Type $expectedThrowType
 	 */
-	public function testFunctionThrowType(string $functionName, Type $expectedThrowType): void
+	public function testFunctionThrowType(string $functionName, ?Type $expectedThrowType): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
 		$throwType = $function->getThrowType();
+		if ($expectedThrowType === null) {
+			$this->assertNull($throwType);
+			return;
+		}
 		$this->assertNotNull($throwType);
 		$this->assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),
@@ -66,7 +70,7 @@ class ReflectionProviderTest extends TestCase
 			[
 				\DateTime::class,
 				'format',
-				new VoidType(),
+				null,
 			],
 		];
 	}
@@ -75,14 +79,18 @@ class ReflectionProviderTest extends TestCase
 	 * @dataProvider dataMethodThrowType
 	 * @param string $className
 	 * @param string $methodName
-	 * @param Type $expectedThrowType
+	 * @param ?Type $expectedThrowType
 	 */
-	public function testMethodThrowType(string $className, string $methodName, Type $expectedThrowType): void
+	public function testMethodThrowType(string $className, string $methodName, ?Type $expectedThrowType): void
 	{
 		$reflectionProvider = $this->createBroker();
 		$class = $reflectionProvider->getClass($className);
 		$method = $class->getNativeMethod($methodName);
 		$throwType = $method->getThrowType();
+		if ($expectedThrowType === null) {
+			$this->assertNull($throwType);
+			return;
+		}
 		$this->assertNotNull($throwType);
 		$this->assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),

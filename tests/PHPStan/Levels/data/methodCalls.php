@@ -234,3 +234,34 @@ class ExtraArguments
 	}
 
 }
+
+interface FooInterface
+{
+    public function doFoo(): void;
+}
+
+interface BarInterface
+{
+    public function doBar(): void;
+}
+
+interface BazInterface
+{
+    public function doBaz(): void;
+}
+
+interface QuxInterface extends FooInterface, BarInterface, BazInterface
+{
+    public function doFooBarBazQux(): void;
+}
+
+class QuxDecorator
+{
+    public function __construct(string $quxClass)
+    {
+        /** @var QuxInterface $qux */
+        $qux = new $quxClass();
+
+        $qux->doFoo();
+    }
+}

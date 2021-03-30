@@ -11,7 +11,7 @@
     },
     {
         "message": "Method Levels\\MethodCalls\\ExtraArguments::doFoo() invoked with 2 parameters, 1 required.",
-        "line": 233,
+        "line": 238,
         "ignorable": true
     }
 ]

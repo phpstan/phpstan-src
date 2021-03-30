@@ -212,13 +212,18 @@ class TestExceptions
 	public function doFoo()
 	{
 		try {
-			\ThrowPoints\Helpers\maybeThrows();
+			$this->doBar();
 		} catch (FooException | BarException $e) {
 			$e->commonMethod();
 			$e->doFoo();
 			$e->doBar();
 			$e->doBaz();
 		}
+	}
+
+	public function doBar()
+	{
+
 	}
 
 }

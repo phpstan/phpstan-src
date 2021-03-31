@@ -7,7 +7,6 @@ use PHPStan\Testing\TestCase;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 
 class ReflectionProviderTest extends TestCase
 {

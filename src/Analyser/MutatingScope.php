@@ -318,17 +318,17 @@ class MutatingScope implements Scope
 
 	public function isInClass(): bool
 	{
-		return $this->isInClosureBind() || $this->context->getClassReflection() !== null;
+		return $this->getClassReflection() !== null;
 	}
 
 	public function isInTrait(): bool
 	{
-		return !$this->isInClosureBind() && $this->context->getTraitReflection() !== null;
+		return $this->getTraitReflection() !== null;
 	}
 
 	public function getClassReflection(): ?ClassReflection
 	{
-		if ($this->isInClosureBind()) {
+		if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
 			return $this->reflectionProvider->getClass($this->inClosureBindScopeClass);
 		}
 
@@ -337,7 +337,7 @@ class MutatingScope implements Scope
 
 	public function getTraitReflection(): ?ClassReflection
 	{
-		if ($this->isInClosureBind()) {
+		if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
 			return null;
 		}
 

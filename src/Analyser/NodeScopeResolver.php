@@ -63,6 +63,7 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClassMethodNode;
@@ -1288,6 +1289,12 @@ class NodeScopeResolver
 				$throwPointsForLater = array_merge($throwPointsForLater, $finallyResult->getThrowPoints());
 				$finallyScope = $finallyResult->getScope();
 				$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
+				if (count($finallyResult->getExitPoints()) > 0) {
+					$nodeCallback(new FinallyExitPointsNode(
+						$finallyResult->getExitPoints(),
+						$exitPoints
+					), $scope);
+				}
 				$exitPoints = array_merge($exitPoints, $finallyResult->getExitPoints());
 			}
 

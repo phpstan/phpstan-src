@@ -20,6 +20,8 @@ rules:
 conditionalTags:
 	PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule:
 		phpstan.rules.rule: %featureToggles.preciseExceptionTracking%
+	PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule:
+		phpstan.rules.rule: %featureToggles.preciseExceptionTracking%
 	PHPStan\Rules\DeadCode\UnusedPrivateConstantRule:
 		phpstan.rules.rule: %featureToggles.unusedClassElements%
 	PHPStan\Rules\DeadCode\UnusedPrivateMethodRule:
@@ -151,6 +153,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
+
+	-
+		class: PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
 
 	-
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule

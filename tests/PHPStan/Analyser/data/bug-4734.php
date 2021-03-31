@@ -6,9 +6,15 @@ use function PHPStan\Analyser\assertType;
 
 class Foo
 {
-	private static bool $httpMethodParameterOverride = true;
+	/**
+	 * @var bool
+	 */
+	private static $httpMethodParameterOverride = true;
 
-	private bool $httpMethodParameterOverride2 = true;
+	/**
+	 * @var bool
+	 */
+	private $httpMethodParameterOverride2 = true;
 }
 
 class Bar

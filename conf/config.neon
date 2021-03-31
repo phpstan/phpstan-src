@@ -231,7 +231,7 @@ parametersSchema:
 		minimumNumberOfJobsPerProcess: int(),
 		buffer: int()
 	])
-	phpVersion: schema(anyOf(schema(int(), min(70100), max(80000))), nullable())
+	phpVersion: schema(anyOf(schema(int(), min(70100), max(80099))), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
 	polluteCatchScopeWithTryAssignments: bool()

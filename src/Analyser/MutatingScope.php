@@ -318,21 +318,29 @@ class MutatingScope implements Scope
 
 	public function isInClass(): bool
 	{
-		return $this->context->getClassReflection() !== null;
+		return $this->getClassReflection() !== null;
 	}
 
 	public function isInTrait(): bool
 	{
-		return $this->context->getTraitReflection() !== null;
+		return $this->getTraitReflection() !== null;
 	}
 
 	public function getClassReflection(): ?ClassReflection
 	{
+		if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
+			return $this->reflectionProvider->getClass($this->inClosureBindScopeClass);
+		}
+
 		return $this->context->getClassReflection();
 	}
 
 	public function getTraitReflection(): ?ClassReflection
 	{
+		if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
+			return null;
+		}
+
 		return $this->context->getTraitReflection();
 	}
 
@@ -2407,10 +2415,9 @@ class MutatingScope implements Scope
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
 		if ($name->toLowerString() === 'static' && $this->isInClass()) {
-			$classReflection = $this->getClassReflection();
-
-			return new StaticType($classReflection);
+			return new StaticType($this->getClassReflection());
 		}
+
 		$originalClass = $this->resolveName($name);
 		if ($this->isInClass()) {
 			$thisType = new ThisType($this->getClassReflection());

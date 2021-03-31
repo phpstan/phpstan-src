@@ -27,6 +27,19 @@ class Foo
 
 	}
 
+	public static function createException(): MyInvalidArgumentException
+	{
+
+	}
+
+	/**
+	 * @throws MyRuntimeException
+	 */
+	public static function createExceptionOrThrow(): MyInvalidArgumentException
+	{
+
+	}
+
 }
 
 function (): void {
@@ -103,5 +116,68 @@ function (): void {
 		$foo = new \InvalidArgumentException();
 	} catch (Throwable $e) {
 		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	}
+};
+
+function (): void {
+	try {
+		if (Foo::myRand() === 0) {
+			$foo = 1;
+			throw Foo::createException();
+		}
+
+		if (Foo::myRand() === 1) {
+			$bar = 1;
+			throw Foo::createExceptionOrThrow();
+		}
+	} catch (MyInvalidArgumentException $e) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $bar);
+	} catch (\Throwable $e) {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
+	}
+};
+
+function (): void {
+	try {
+		if (Foo::myRand() === 0) {
+			$foo = 1;
+			throw Foo::createException();
+		}
+
+		if (Foo::myRand() === 1) {
+			$bar = 1;
+			throw Foo::createExceptionOrThrow();
+		}
+	} catch (MyInvalidArgumentException $e) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $bar);
+	} catch (\Exception $e) {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
+	}
+};
+
+function (): void {
+	try {
+		if (Foo::myRand() === 0) {
+			$foo = 1;
+			throw Foo::createException();
+		}
+
+		if (Foo::myRand() === 1) {
+			$bar = 1;
+			throw Foo::createExceptionOrThrow();
+		}
+	} catch (MyInvalidArgumentException $e) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $bar);
+	} catch (\Exception $e) {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
+	} catch (\Throwable $e) {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
 	}
 };

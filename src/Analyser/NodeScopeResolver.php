@@ -1779,7 +1779,10 @@ class NodeScopeResolver
 						$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, true);
 					}
 				} elseif ($this->implicitThrows) {
-					$throwPoints[] = ThrowPoint::createImplicit($scope);
+					$functionReturnedType = $scope->getType($expr);
+					if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
+						$throwPoints[] = ThrowPoint::createImplicit($scope);
+					}
 				}
 			} else {
 				$throwPoints[] = ThrowPoint::createImplicit($scope);
@@ -1953,7 +1956,10 @@ class NodeScopeResolver
 							$throwPoints[] = ThrowPoint::createExplicit($scope, $methodReflection->getThrowType(), true);
 						}
 					} elseif ($this->implicitThrows) {
-						$throwPoints[] = ThrowPoint::createImplicit($scope);
+						$methodReturnedType = $scope->getType($expr);
+						if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+							$throwPoints[] = ThrowPoint::createImplicit($scope);
+						}
 					}
 				} else {
 					$throwPoints[] = ThrowPoint::createImplicit($scope);
@@ -2017,7 +2023,10 @@ class NodeScopeResolver
 								$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, true);
 							}
 						} elseif ($this->implicitThrows) {
-							$throwPoints[] = ThrowPoint::createImplicit($scope);
+							$methodReturnedType = $scope->getType($expr);
+							if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+								$throwPoints[] = ThrowPoint::createImplicit($scope);
+							}
 						}
 						if (
 							$classReflection->getName() === 'Closure'

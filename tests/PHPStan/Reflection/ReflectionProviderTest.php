@@ -12,29 +12,33 @@ use PHPStan\Type\VoidType;
 class ReflectionProviderTest extends TestCase
 {
 
-	public function dataFunctionThrowType(): array
+	public function dataFunctionThrowType(): iterable
 	{
-		return [
-			[
-				'rand',
-				null,
-			],
-			[
+		yield [
+			'rand',
+			null,
+		];
+
+		if (PHP_VERSION_ID >= 70200) {
+			yield [
 				'sodium_crypto_kx_keypair',
 				new ObjectType('SodiumException'),
-			],
-			[
-				'bcdiv',
-				new ObjectType('DivisionByZeroError'),
-			],
-			[
-				'GEOSRelateMatch',
-				new ObjectType('Exception'),
-			],
-			[
-				'random_int',
-				new ObjectType('Exception'),
-			],
+			];
+		}
+
+		yield [
+			'bcdiv',
+			new ObjectType('DivisionByZeroError'),
+		];
+
+		yield [
+			'GEOSRelateMatch',
+			new ObjectType('Exception'),
+		];
+
+		yield [
+			'random_int',
+			new ObjectType('Exception'),
 		];
 	}
 

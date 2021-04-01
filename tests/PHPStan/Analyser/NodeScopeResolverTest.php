@@ -5615,6 +5615,22 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'array<int, int|string>|int|string',
 				'array_rand([1 => 1, 2 => "b", $mixed => $mixed], $mixed)',
 			],
+			[
+				'int',
+				'$sumInts',
+			],
+			[
+				'float|int',
+				'$sumFloats',
+			],
+			[
+				'float|int',
+				'$notEmptySumFloats',
+			],
+			[
+				'float|int',
+				'$sumMixed',
+			]
 		];
 	}
 

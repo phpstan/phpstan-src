@@ -178,4 +178,16 @@ foreach ($array as $val) {
 $fooArray = ['foo'];
 $poppedFoo = array_pop($fooArray);
 
+/** @var int[] $integers */
+$sumInts = array_sum($integers);
+
+/** @var float[] $floats */
+$sumFloats = array_sum($floats);
+
+/** @var non-empty-array<float> $notEmptyFloats */
+$notEmptySumFloats = array_sum($floats);
+
+/** @var mixed[] $integers */
+$sumMixed = array_sum($integers);
+
 die;

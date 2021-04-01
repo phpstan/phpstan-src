@@ -6,13 +6,13 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 
 final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -30,14 +30,19 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 		$arrayType = $scope->getType($functionCall->args[0]->value);
 		$itemType = $arrayType->getIterableValueType();
-		if (
-			$itemType instanceof IntegerType
-			|| $arrayType instanceof NonEmptyArrayType && $itemType instanceof FloatType
-		) {
-			return $itemType;
+
+		if ($arrayType->isIterableAtLeastOnce()->no()) {
+			return new ConstantIntegerType(0);
 		}
 
-		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		if ($arrayType->isIterableAtLeastOnce()->yes()) {
+			return TypeCombinator::intersect($itemType, new UnionType([new IntegerType(), new FloatType()]));
+		}
+
+		return TypeCombinator::union(
+			new ConstantIntegerType(0),
+			TypeCombinator::intersect($itemType, new UnionType([new IntegerType(), new FloatType()]))
+		);
 	}
 
 }

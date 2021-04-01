@@ -5620,17 +5620,17 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$sumInts',
 			],
 			[
-				'float|int',
+				'0|float',
 				'$sumFloats',
 			],
 			[
-				'float|int',
+				'float',
 				'$notEmptySumFloats',
 			],
 			[
 				'float|int',
 				'$sumMixed',
-			]
+			],
 		];
 	}
 

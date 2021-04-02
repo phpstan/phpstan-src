@@ -1887,4 +1887,20 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4642.php'], []);
 	}
 
+	public function testBug4008(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-4008.php'], []);
+	}
+
+	public function testBug3546(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3546.php'], []);
+	}
+
 }

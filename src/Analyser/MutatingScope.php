@@ -318,29 +318,21 @@ class MutatingScope implements Scope
 
 	public function isInClass(): bool
 	{
-		return $this->getClassReflection() !== null;
+		return $this->context->getClassReflection() !== null;
 	}
 
 	public function isInTrait(): bool
 	{
-		return $this->getTraitReflection() !== null;
+		return $this->context->getTraitReflection() !== null;
 	}
 
 	public function getClassReflection(): ?ClassReflection
 	{
-		if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
-			return $this->reflectionProvider->getClass($this->inClosureBindScopeClass);
-		}
-
 		return $this->context->getClassReflection();
 	}
 
 	public function getTraitReflection(): ?ClassReflection
 	{
-		if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
-			return null;
-		}
-
 		return $this->context->getTraitReflection();
 	}
 
@@ -2400,6 +2392,9 @@ class MutatingScope implements Scope
 				'self',
 				'static',
 			], true)) {
+				if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
+					return $this->inClosureBindScopeClass;
+				}
 				return $this->getClassReflection()->getName();
 			} elseif ($originalClass === 'parent') {
 				$currentClassReflection = $this->getClassReflection();
@@ -2415,12 +2410,20 @@ class MutatingScope implements Scope
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
 		if ($name->toLowerString() === 'static' && $this->isInClass()) {
+			if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
+				return new StaticType($this->inClosureBindScopeClass);
+			}
+
 			return new StaticType($this->getClassReflection());
 		}
 
 		$originalClass = $this->resolveName($name);
 		if ($this->isInClass()) {
-			$thisType = new ThisType($this->getClassReflection());
+			if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
+				$thisType = new ThisType($this->inClosureBindScopeClass);
+			} else {
+				$thisType = new ThisType($this->getClassReflection());
+			}
 			$ancestor = $thisType->getAncestorWithClassName($originalClass);
 			if ($ancestor !== null) {
 				return $ancestor;
@@ -4525,11 +4528,13 @@ class MutatingScope implements Scope
 			return true;
 		}
 
-		if (!$this->isInClass()) {
+		if ($this->inClosureBindScopeClass !== null && $this->reflectionProvider->hasClass($this->inClosureBindScopeClass)) {
+			$currentClassReflection = $this->reflectionProvider->getClass($this->inClosureBindScopeClass);
+		} elseif ($this->isInClass()) {
+			$currentClassReflection = $this->getClassReflection();
+		} else {
 			return false;
 		}
-
-		$currentClassReflection = $this->getClassReflection();
 
 		$classReflectionName = $classMemberReflection->getDeclaringClass()->getName();
 		if ($classMemberReflection->isPrivate()) {

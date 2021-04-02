@@ -14,7 +14,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -90,7 +89,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 						))->build(),
 					];
 				}
-				$classReflection = $scope->getClassReflection();
+				$classType = $scope->resolveTypeByName($node->class);
 			} elseif ($lowercasedClass === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
@@ -123,7 +122,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 					return [];
 				}
 
-				$classReflection = $scope->getClassReflection()->getParentClass();
+				$classType = $scope->resolveTypeByName($node->class);
 			} else {
 				if (!$this->reflectionProvider->hasClass($class)) {
 					if ($scope->isInClassExists($class)) {
@@ -141,23 +140,16 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
 				}
 
-				$classReflection = $this->reflectionProvider->getClass($class);
+				$classType = $scope->resolveTypeByName($node->class);
 			}
 
-			$className = $classReflection->getName();
-			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
-				$classType = new ThisType($scope->getClassReflection());
-				$classReflection = $scope->getClassReflection();
-			} else {
-				$classType = new ObjectType($className);
-			}
-
-			if ($classReflection->isTrait()) {
+			$classReflection = $classType->getClassReflection();
+			if ($classReflection !== null && $classReflection->isTrait()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Access to static property $%s on trait %s.',
 						$name,
-						$className
+						$classReflection->getName()
 					))->build(),
 				];
 			}

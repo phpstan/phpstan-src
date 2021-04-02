@@ -18,7 +18,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
@@ -91,7 +90,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 						))->build(),
 					];
 				}
-				$classReflection = $scope->getClassReflection();
+				$classType = $scope->resolveTypeByName($class);
 			} elseif ($lowercasedClassName === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
@@ -119,7 +118,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 
-				$classReflection = $currentClassReflection->getParentClass();
+				$classType = $scope->resolveTypeByName($class);
 			} else {
 				if (!$this->reflectionProvider->hasClass($className)) {
 					if ($scope->isInClassExists($className)) {
@@ -137,18 +136,11 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 					$errors = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 				}
 
-				$classReflection = $this->reflectionProvider->getClass($className);
+				$classType = $scope->resolveTypeByName($class);
 			}
 
-			$className = $classReflection->getName();
-			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
-				$classType = new ThisType($scope->getClassReflection());
-				$classReflection = $scope->getClassReflection();
-			} else {
-				$classType = new ObjectType($className);
-			}
-
-			if ($classReflection->hasNativeMethod($methodName) && $lowercasedClassName !== 'static') {
+			$classReflection = $classType->getClassReflection();
+			if ($classReflection !== null && $classReflection->hasNativeMethod($methodName) && $lowercasedClassName !== 'static') {
 				$nativeMethodReflection = $classReflection->getNativeMethod($methodName);
 				if ($nativeMethodReflection instanceof PhpMethodReflection || $nativeMethodReflection instanceof NativeMethodReflection) {
 					$isAbstract = $nativeMethodReflection->isAbstract();

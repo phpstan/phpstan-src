@@ -12,7 +12,6 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -70,7 +69,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					];
 				}
 
-				$classReflection = $scope->getClassReflection();
+				$classType = $scope->resolveTypeByName($class);
 			} elseif ($lowercasedClassName === 'parent') {
 				if (!$scope->isInClass()) {
 					return [
@@ -87,7 +86,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 						))->build(),
 					];
 				}
-				$classReflection = $currentClassReflection->getParentClass();
+				$classType = $scope->resolveTypeByName($class);
 			} else {
 				if (!$this->reflectionProvider->hasClass($className)) {
 					if ($scope->isInClassExists($className)) {
@@ -109,19 +108,11 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 				}
 
-				$classReflection = $this->reflectionProvider->getClass($className);
+				$classType = $scope->resolveTypeByName($class);
 			}
 
 			if (strtolower($constantName) === 'class') {
 				return $messages;
-			}
-
-			$className = $classReflection->getName();
-
-			if ($scope->isInClass() && $scope->getClassReflection()->getName() === $className) {
-				$classType = new ThisType($scope->getClassReflection());
-			} else {
-				$classType = new ObjectType($className);
 			}
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(

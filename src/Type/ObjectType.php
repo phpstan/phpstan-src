@@ -55,6 +55,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, array<string, self>> */
 	private static array $ancestors = [];
 
+	/** @var array<string, self> */
+	private array $currentAncestors = [];
+
 	public function __construct(
 		string $className,
 		?Type $subtractedType = null,
@@ -984,10 +987,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	 */
 	public function getAncestorWithClassName(string $className): ?TypeWithClassName
 	{
+		if (isset($this->currentAncestors[$className])) {
+			return $this->currentAncestors[$className];
+		}
+
 		$thisReflection = $this->getClassReflection();
 		if ($thisReflection === null) {
 			return null;
 		}
+
 		$description = $this->describeCache() . '-' . $thisReflection->getCacheKey();
 		if (isset(self::$ancestors[$description][$className])) {
 			return self::$ancestors[$description][$className];
@@ -1000,13 +1008,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$theirReflection = $broker->getClass($className);
 
 		if ($theirReflection->getName() === $thisReflection->getName()) {
-			return self::$ancestors[$description][$className] = $this;
+			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $this;
 		}
 
 		foreach ($this->getInterfaces() as $interface) {
 			$ancestor = $interface->getAncestorWithClassName($className);
 			if ($ancestor !== null) {
-				return self::$ancestors[$description][$className] = $ancestor;
+				return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $ancestor;
 			}
 		}
 
@@ -1014,7 +1022,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($parent !== null) {
 			$ancestor = $parent->getAncestorWithClassName($className);
 			if ($ancestor !== null) {
-				return self::$ancestors[$description][$className] = $ancestor;
+				return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $ancestor;
 			}
 		}
 

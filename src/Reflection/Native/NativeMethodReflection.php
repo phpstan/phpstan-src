@@ -10,6 +10,7 @@ use PHPStan\Reflection\Php\BuiltinMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use PHPStan\Type\VoidType;
 
 class NativeMethodReflection implements MethodReflection
 {
@@ -48,6 +49,9 @@ class NativeMethodReflection implements MethodReflection
 		?Type $throwType
 	)
 	{
+		if ($reflection->getName() === 'setValue') {
+			var_dump('here');
+		}
 		$this->reflectionProvider = $reflectionProvider;
 		$this->declaringClass = $declaringClass;
 		$this->reflection = $reflection;
@@ -143,7 +147,27 @@ class NativeMethodReflection implements MethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
+		$name = strtolower($this->getName());
+		$isVoid = $this->isVoid();
+		if (
+			$name !== '__construct'
+			&& $isVoid
+		) {
+			return TrinaryLogic::createYes();
+		}
+
 		return $this->hasSideEffects;
+	}
+
+	private function isVoid(): bool
+	{
+		foreach ($this->variants as $variant) {
+			if (!$variant->getReturnType() instanceof VoidType) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public function getDocComment(): ?string

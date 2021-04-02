@@ -175,7 +175,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		return false;
 	}
 
-	protected function getReturnType(): Type
+	private function getReturnType(): Type
 	{
 		return TypehintHelper::decideType($this->realReturnType, $this->phpDocReturnType);
 	}

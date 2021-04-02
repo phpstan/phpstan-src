@@ -85,7 +85,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 	 * @param string $string
 	 * @return string
 	 */
-	protected function escape(string $string): string
+	private function escape(string $string): string
 	{
 		return htmlspecialchars($string, ENT_XML1 | ENT_COMPAT, 'UTF-8');
 	}

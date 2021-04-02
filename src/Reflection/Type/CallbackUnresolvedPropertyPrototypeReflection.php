@@ -74,7 +74,7 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 		);
 	}
 
-	protected function transformPropertyWithStaticType(ClassReflection $declaringClass, PropertyReflection $property): PropertyReflection
+	private function transformPropertyWithStaticType(ClassReflection $declaringClass, PropertyReflection $property): PropertyReflection
 	{
 		$readableType = $this->transformStaticType($property->getReadableType());
 		$writableType = $this->transformStaticType($property->getWritableType());

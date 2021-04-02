@@ -57,35 +57,35 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$baz.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$baz.',
 				53,
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$nonexistent.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$nonexistent.',
 				55,
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$emptyBaz.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$emptyBaz.',
 				63,
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$emptyNonexistent.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$emptyNonexistent.',
 				65,
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$anotherNonexistent.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherNonexistent.',
 				71,
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$anotherNonexistent.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherNonexistent.',
 				72,
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$anotherEmptyNonexistent.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherEmptyNonexistent.',
 				75,
 			],
 			[
-				'Access to an undefined static property IpsumAccessStaticProperties::$anotherEmptyNonexistent.',
+				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherEmptyNonexistent.',
 				78,
 			],
 			[

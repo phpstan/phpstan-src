@@ -14,7 +14,7 @@ interface SomeInterface{}
 abstract class MyAbstractService
 {
 	/** @phpstan-var SomeInterface<T> */
-	private SomeInterface $someInterface;
+	private $someInterface;
 
 	/**
 	 * @phpstan-param SomeInterface<T> $someInterface

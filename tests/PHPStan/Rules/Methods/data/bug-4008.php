@@ -6,7 +6,7 @@ namespace Bug4008;
 abstract class GenericClass
 {
 	/** @var OtherGenericClass<TModlel> */
-	private OtherGenericClass $otherGenericClass;
+	private $otherGenericClass;
 
 	/** @param OtherGenericClass<TModlel> $otherGenericClass */
 	public function __construct(OtherGenericClass $otherGenericClass){

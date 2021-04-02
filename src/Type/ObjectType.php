@@ -380,10 +380,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$preciseNameCallback,
 			$preciseNameCallback,
 			$preciseWithSubtracted,
-			static function () use ($preciseWithSubtracted): string {
-				return $preciseWithSubtracted() . '-' . static::class;
+			function () use ($preciseWithSubtracted): string {
+				return $preciseWithSubtracted() . '-' . static::class . '-' . $this->describeAdditionalCacheKey();
 			}
 		);
+	}
+
+	protected function describeAdditionalCacheKey(): string
+	{
+		return '';
 	}
 
 	private function describeCache(): string

@@ -984,14 +984,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	 */
 	public function getAncestorWithClassName(string $className): ?TypeWithClassName
 	{
-		$broker = Broker::getInstance();
-		if (!$broker->hasClass($className)) {
-			return null;
-		}
-		$theirReflection = $broker->getClass($className);
 		$description = $this->describeCache();
-		if (isset(self::$ancestors[$description][$theirReflection->getName()])) {
-			return self::$ancestors[$description][$theirReflection->getName()];
+		if (isset(self::$ancestors[$description][$className])) {
+			return self::$ancestors[$description][$className];
 		}
 
 		$thisReflection = $this->getClassReflection();
@@ -999,14 +994,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return null;
 		}
 
+		$broker = Broker::getInstance();
+		if (!$broker->hasClass($className)) {
+			return null;
+		}
+		$theirReflection = $broker->getClass($className);
+
 		if ($theirReflection->getName() === $thisReflection->getName()) {
-			return self::$ancestors[$description][$theirReflection->getName()] = $this;
+			return self::$ancestors[$description][$className] = $this;
 		}
 
 		foreach ($this->getInterfaces() as $interface) {
 			$ancestor = $interface->getAncestorWithClassName($className);
 			if ($ancestor !== null) {
-				return self::$ancestors[$description][$theirReflection->getName()] = $ancestor;
+				return self::$ancestors[$description][$className] = $ancestor;
 			}
 		}
 
@@ -1014,7 +1015,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($parent !== null) {
 			$ancestor = $parent->getAncestorWithClassName($className);
 			if ($ancestor !== null) {
-				return self::$ancestors[$description][$theirReflection->getName()] = $ancestor;
+				return self::$ancestors[$description][$className] = $ancestor;
 			}
 		}
 

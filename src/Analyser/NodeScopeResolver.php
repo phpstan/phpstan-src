@@ -2983,80 +2983,13 @@ class NodeScopeResolver
 
 			$conditionalExpressions = [];
 
-			// todo DRY
-			foreach ($truthySpecifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
-				if (!$expr instanceof Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
-					continue;
-				}
+			$truthyType = TypeCombinator::remove($type, StaticTypeFactory::falsey());
+			$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
 
-				if (!isset($conditionalExpressions[$exprString])) {
-					$conditionalExpressions[$exprString] = [];
-				}
-
-				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
-					'$' . $var->name => TypeCombinator::remove($type, StaticTypeFactory::falsey()),
-				], VariableTypeHolder::createYes(
-					TypeCombinator::intersect($scope->getType($expr), $exprType)
-				)); // todo why createYes?
-			}
-			foreach ($truthySpecifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
-				if (!$expr instanceof Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
-					continue;
-				}
-
-				if (!isset($conditionalExpressions[$exprString])) {
-					$conditionalExpressions[$exprString] = [];
-				}
-
-				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
-					'$' . $var->name => TypeCombinator::remove($type, StaticTypeFactory::falsey()),
-				], VariableTypeHolder::createYes(
-					TypeCombinator::remove($scope->getType($expr), $exprType)
-				)); // todo why createYes?
-			}
-
-			foreach ($falseySpecifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
-				if (!$expr instanceof Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
-					continue;
-				}
-
-				if (!isset($conditionalExpressions[$exprString])) {
-					$conditionalExpressions[$exprString] = [];
-				}
-
-				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
-					'$' . $var->name => TypeCombinator::intersect($type, StaticTypeFactory::falsey()),
-				], VariableTypeHolder::createYes(
-					TypeCombinator::intersect($scope->getType($expr), $exprType)
-				)); // todo why createYes?
-			}
-			foreach ($falseySpecifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
-				if (!$expr instanceof Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
-					continue;
-				}
-
-				if (!isset($conditionalExpressions[$exprString])) {
-					$conditionalExpressions[$exprString] = [];
-				}
-
-				$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
-					'$' . $var->name => TypeCombinator::intersect($type, StaticTypeFactory::falsey()),
-				], VariableTypeHolder::createYes(
-					TypeCombinator::remove($scope->getType($expr), $exprType)
-				)); // todo why createYes?
-			}
+			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
 			$scope = $result->getScope()->assignVariable($var->name, $type);
 			foreach ($conditionalExpressions as $exprString => $holders) {
@@ -3232,6 +3165,70 @@ class NodeScopeResolver
 		}
 
 		return new ExpressionResult($scope, $hasYield, $throwPoints);
+	}
+
+	/**
+	 * @param Scope $scope
+	 * @param string $variableName
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param SpecifiedTypes $specifiedTypes
+	 * @param Type $variableType
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	{
+		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
+			if (!$expr instanceof Variable) {
+				continue;
+			}
+			if (!is_string($expr->name)) {
+				continue;
+			}
+
+			if (!isset($conditionalExpressions[$exprString])) {
+				$conditionalExpressions[$exprString] = [];
+			}
+
+			$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+				'$' . $variableName => $variableType,
+			], VariableTypeHolder::createYes(
+				TypeCombinator::intersect($scope->getType($expr), $exprType)
+			));
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * @param Scope $scope
+	 * @param string $variableName
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param SpecifiedTypes $specifiedTypes
+	 * @param Type $variableType
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	{
+		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
+			if (!$expr instanceof Variable) {
+				continue;
+			}
+			if (!is_string($expr->name)) {
+				continue;
+			}
+
+			if (!isset($conditionalExpressions[$exprString])) {
+				$conditionalExpressions[$exprString] = [];
+			}
+
+			$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+				'$' . $variableName => $variableType,
+			], VariableTypeHolder::createYes(
+				TypeCombinator::remove($scope->getType($expr), $exprType)
+			));
+		}
+
+		return $conditionalExpressions;
 	}
 
 	private function processStmtVarAnnotation(MutatingScope $scope, Node\Stmt $stmt, ?Expr $defaultExpr): MutatingScope

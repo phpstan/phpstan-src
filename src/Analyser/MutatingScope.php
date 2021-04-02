@@ -4525,13 +4525,11 @@ class MutatingScope implements Scope
 			return true;
 		}
 
-		if ($this->inClosureBindScopeClass !== null && $this->reflectionProvider->hasClass($this->inClosureBindScopeClass)) {
-			$currentClassReflection = $this->reflectionProvider->getClass($this->inClosureBindScopeClass);
-		} elseif ($this->isInClass()) {
-			$currentClassReflection = $this->getClassReflection();
-		} else {
+		if (!$this->isInClass()) {
 			return false;
 		}
+
+		$currentClassReflection = $this->getClassReflection();
 
 		$classReflectionName = $classMemberReflection->getDeclaringClass()->getName();
 		if ($classMemberReflection->isPrivate()) {

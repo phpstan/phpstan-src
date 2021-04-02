@@ -49,9 +49,6 @@ class NativeMethodReflection implements MethodReflection
 		?Type $throwType
 	)
 	{
-		if ($reflection->getName() === 'setValue') {
-			var_dump('here');
-		}
 		$this->reflectionProvider = $reflectionProvider;
 		$this->declaringClass = $declaringClass;
 		$this->reflection = $reflection;

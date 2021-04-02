@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Native;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use PHPStan\Type\VoidType;
 
 class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 {
@@ -76,7 +77,22 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
+		if ($this->isVoid()) {
+			return TrinaryLogic::createYes();
+		}
+
 		return $this->hasSideEffects;
+	}
+
+	private function isVoid(): bool
+	{
+		foreach ($this->variants as $variant) {
+			if (!$variant->getReturnType() instanceof VoidType) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public function isBuiltin(): bool

@@ -24,6 +24,10 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 	/** @var callable(Type): Type */
 	private $transformStaticTypeCallback;
 
+	private ?MethodReflection $transformedMethod = null;
+
+	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
+
 	/**
 	 * @param MethodReflection $methodReflection
 	 * @param ClassReflection $resolvedDeclaringClass
@@ -45,7 +49,11 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection
 	{
-		return new self(
+		if ($this->cachedDoNotResolveTemplateTypeMapToBounds !== null) {
+			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
+		}
+
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self(
 			$this->methodReflection,
 			$this->resolvedDeclaringClass,
 			false,
@@ -60,9 +68,12 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 
 	public function getTransformedMethod(): MethodReflection
 	{
+		if ($this->transformedMethod !== null) {
+			return $this->transformedMethod;
+		}
 		$templateTypeMap = $this->resolvedDeclaringClass->getActiveTemplateTypeMap();
 
-		return new ResolvedMethodReflection(
+		return $this->transformedMethod = new ResolvedMethodReflection(
 			$this->transformMethodWithStaticType($this->resolvedDeclaringClass, $this->methodReflection),
 			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
 		);

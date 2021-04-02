@@ -13,6 +13,10 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 	/** @var UnresolvedPropertyPrototypeReflection[] */
 	private array $propertyPrototypes;
 
+	private ?PropertyReflection $transformedProperty = null;
+
+	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
+
 	/**
 	 * @param UnresolvedPropertyPrototypeReflection[] $propertyPrototypes
 	 */
@@ -27,7 +31,10 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection
 	{
-		return new self($this->propertyName, array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection {
+		if ($this->cachedDoNotResolveTemplateTypeMapToBounds !== null) {
+			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
+		}
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->propertyName, array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection {
 			return $prototype->doNotResolveTemplateTypeMapToBounds();
 		}, $this->propertyPrototypes));
 	}
@@ -39,11 +46,15 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 
 	public function getTransformedProperty(): PropertyReflection
 	{
+		if ($this->transformedProperty !== null) {
+			return $this->transformedProperty;
+		}
+
 		$methods = array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): PropertyReflection {
 			return $prototype->getTransformedProperty();
 		}, $this->propertyPrototypes);
 
-		return new UnionTypePropertyReflection($methods);
+		return $this->transformedProperty = new UnionTypePropertyReflection($methods);
 	}
 
 	public function withFechedOnType(Type $type): UnresolvedPropertyPrototypeReflection

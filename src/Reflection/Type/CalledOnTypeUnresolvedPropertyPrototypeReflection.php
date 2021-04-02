@@ -21,6 +21,10 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 
 	private Type $fetchedOnType;
 
+	private ?PropertyReflection $transformedProperty = null;
+
+	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
+
 	public function __construct(
 		PropertyReflection $propertyReflection,
 		ClassReflection $resolvedDeclaringClass,
@@ -36,7 +40,11 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection
 	{
-		return new self(
+		if ($this->cachedDoNotResolveTemplateTypeMapToBounds !== null) {
+			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
+		}
+
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self(
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			false,
@@ -51,9 +59,12 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 
 	public function getTransformedProperty(): PropertyReflection
 	{
+		if ($this->transformedProperty !== null) {
+			return $this->transformedProperty;
+		}
 		$templateTypeMap = $this->resolvedDeclaringClass->getActiveTemplateTypeMap();
 
-		return new ResolvedPropertyReflection(
+		return $this->transformedProperty = new ResolvedPropertyReflection(
 			$this->transformPropertyWithStaticType($this->resolvedDeclaringClass, $this->propertyReflection),
 			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
 		);

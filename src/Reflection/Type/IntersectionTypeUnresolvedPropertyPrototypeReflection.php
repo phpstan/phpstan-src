@@ -13,6 +13,10 @@ class IntersectionTypeUnresolvedPropertyPrototypeReflection implements Unresolve
 	/** @var UnresolvedPropertyPrototypeReflection[] */
 	private array $propertyPrototypes;
 
+	private ?PropertyReflection $transformedProperty = null;
+
+	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
+
 	/**
 	 * @param UnresolvedPropertyPrototypeReflection[] $propertyPrototypes
 	 */
@@ -27,7 +31,11 @@ class IntersectionTypeUnresolvedPropertyPrototypeReflection implements Unresolve
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection
 	{
-		return new self($this->propertyName, array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection {
+		if ($this->cachedDoNotResolveTemplateTypeMapToBounds !== null) {
+			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
+		}
+
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->propertyName, array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection {
 			return $prototype->doNotResolveTemplateTypeMapToBounds();
 		}, $this->propertyPrototypes));
 	}
@@ -39,11 +47,14 @@ class IntersectionTypeUnresolvedPropertyPrototypeReflection implements Unresolve
 
 	public function getTransformedProperty(): PropertyReflection
 	{
+		if ($this->transformedProperty !== null) {
+			return $this->transformedProperty;
+		}
 		$properties = array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): PropertyReflection {
 			return $prototype->getTransformedProperty();
 		}, $this->propertyPrototypes);
 
-		return new IntersectionTypePropertyReflection($properties);
+		return $this->transformedProperty = new IntersectionTypePropertyReflection($properties);
 	}
 
 	public function withFechedOnType(Type $type): UnresolvedPropertyPrototypeReflection

@@ -41,6 +41,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, array<string, \PHPStan\TrinaryLogic>> */
 	private static array $superTypes = [];
 
+	private ?self $cachedParent = null;
+
+	/** @var self[]|null */
+	private ?array $cachedInterfaces = null;
+
+	/** @var array<string, array<string, array<string, UnresolvedMethodPrototypeReflection>>> */
+	private static array $methods = [];
+
+	/** @var array<string, array<string, array<string, UnresolvedPropertyPrototypeReflection>>> */
+	private static array $properties = [];
+
 	public function __construct(
 		string $className,
 		?Type $subtractedType = null,
@@ -98,6 +109,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
+		if (!$scope->isInClass()) {
+			$canAccessProperty = 'no';
+		} else {
+			$canAccessProperty = $scope->getClassReflection()->getName();
+		}
+		$description = $this->describeCache();
+
+		if (isset(self::$properties[$description][$propertyName][$canAccessProperty])) {
+			return self::$properties[$description][$propertyName][$canAccessProperty];
+		}
+
 		$nakedClassReflection = $this->getNakedClassReflection();
 		if ($nakedClassReflection === null) {
 			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
@@ -112,6 +134,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$property = $nakedClassReflection->getProperty($propertyName, $scope);
+
 		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
 		$resolvedClassReflection = null;
 		if ($ancestor !== null) {
@@ -124,7 +147,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$resolvedClassReflection = $property->getDeclaringClass();
 		}
 
-		return new CalledOnTypeUnresolvedPropertyPrototypeReflection(
+		return self::$properties[$description][$propertyName][$canAccessProperty] = new CalledOnTypeUnresolvedPropertyPrototypeReflection(
 			$property,
 			$resolvedClassReflection,
 			true,
@@ -185,14 +208,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if (static::class === self::class) {
-			$thisDescription = $this->describeCache();
-		} else {
-			$thisDescription = $this->describe(VerbosityLevel::cache());
-		}
+		$thisDescription = $this->describeCache();
 
-		if (get_class($type) === self::class) {
-			/** @var self $type */
+		if ($type instanceof self) {
 			$description = $type->describeCache();
 		} else {
 			$description = $type->describe(VerbosityLevel::cache());
@@ -301,7 +319,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->subtractedType->equals($type->subtractedType);
 	}
 
-	protected function checkSubclassAcceptability(string $thatClass): TrinaryLogic
+	private function checkSubclassAcceptability(string $thatClass): TrinaryLogic
 	{
 		if ($this->className === $thatClass) {
 			return TrinaryLogic::createYes();
@@ -358,6 +376,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private function describeCache(): string
 	{
+		if (static::class !== self::class) {
+			return $this->describe(VerbosityLevel::cache());
+		}
+
 		$description = $this->className;
 		if ($this->subtractedType !== null) {
 			$description .= sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
@@ -516,6 +538,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
 	{
+		if (!$scope->isInClass()) {
+			$canCallMethod = 'no';
+		} else {
+			$canCallMethod = $scope->getClassReflection()->getName();
+		}
+		$description = $this->describeCache();
+		if (isset(self::$methods[$description][$methodName][$canCallMethod])) {
+			return self::$methods[$description][$methodName][$canCallMethod];
+		}
+
 		$nakedClassReflection = $this->getNakedClassReflection();
 		if ($nakedClassReflection === null) {
 			throw new \PHPStan\Broker\ClassNotFoundException($this->className);
@@ -530,6 +562,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$method = $nakedClassReflection->getMethod($methodName, $scope);
+
 		$ancestor = $this->getAncestorWithClassName($method->getDeclaringClass()->getName());
 		$resolvedClassReflection = null;
 		if ($ancestor !== null) {
@@ -542,7 +575,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$resolvedClassReflection = $method->getDeclaringClass();
 		}
 
-		return new CalledOnTypeUnresolvedMethodPrototypeReflection(
+		return self::$methods[$description][$methodName][$canCallMethod] = new CalledOnTypeUnresolvedMethodPrototypeReflection(
 			$method,
 			$resolvedClassReflection,
 			true,
@@ -982,6 +1015,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private function getParent(): ?ObjectType
 	{
+		if ($this->cachedParent !== null) {
+			return $this->cachedParent;
+		}
 		$thisReflection = $this->getClassReflection();
 		if ($thisReflection === null) {
 			return null;
@@ -992,18 +1028,21 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return null;
 		}
 
-		return self::createFromReflection($parentReflection);
+		return $this->cachedParent = self::createFromReflection($parentReflection);
 	}
 
 	/** @return ObjectType[] */
 	private function getInterfaces(): array
 	{
+		if ($this->cachedInterfaces !== null) {
+			return $this->cachedInterfaces;
+		}
 		$thisReflection = $this->getClassReflection();
 		if ($thisReflection === null) {
-			return [];
+			return $this->cachedInterfaces = [];
 		}
 
-		return array_map(static function (ClassReflection $interfaceReflection): self {
+		return $this->cachedInterfaces = array_map(static function (ClassReflection $interfaceReflection): self {
 			return self::createFromReflection($interfaceReflection);
 		}, $thisReflection->getInterfaces());
 	}

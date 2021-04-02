@@ -92,6 +92,12 @@ class ClassReflection implements ReflectionWithFilename
 	/** @var string|false|null */
 	private $reflectionDocComment;
 
+	/** @var \PHPStan\Reflection\ClassReflection[]|null */
+	private ?array $cachedInterfaces = null;
+
+	/** @var \PHPStan\Reflection\ClassReflection|false|null */
+	private $cachedParentClass = null;
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
@@ -178,10 +184,14 @@ class ClassReflection implements ReflectionWithFilename
 	 */
 	public function getParentClass()
 	{
+		if ($this->cachedParentClass !== null) {
+			return $this->cachedParentClass;
+		}
+
 		$parentClass = $this->reflection->getParentClass();
 
 		if ($parentClass === false) {
-			return false;
+			return $this->cachedParentClass = false;
 		}
 
 		$extendsTag = $this->getFirstExtendsTag();
@@ -209,6 +219,8 @@ class ClassReflection implements ReflectionWithFilename
 				array_values($parentReflection->getTemplateTypeMap()->resolveToBounds()->getTypes())
 			);
 		}
+
+		$this->cachedParentClass = $parentReflection;
 
 		return $parentReflection;
 	}
@@ -570,6 +582,10 @@ class ClassReflection implements ReflectionWithFilename
 	 */
 	public function getInterfaces(): array
 	{
+		if ($this->cachedInterfaces !== null) {
+			return $this->cachedInterfaces;
+		}
+
 		$interfaces = [];
 
 		$parent = $this->getParentClass();
@@ -637,6 +653,8 @@ class ClassReflection implements ReflectionWithFilename
 				array_values($interfaceReflection->getTemplateTypeMap()->resolveToBounds()->getTypes())
 			);
 		}
+
+		$this->cachedInterfaces = $interfaces;
 
 		return $interfaces;
 	}

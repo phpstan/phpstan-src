@@ -20,6 +20,10 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 	/** @var callable(Type): Type */
 	private $transformStaticTypeCallback;
 
+	private ?PropertyReflection $transformedProperty = null;
+
+	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
+
 	/**
 	 * @param PropertyReflection $propertyReflection
 	 * @param ClassReflection $resolvedDeclaringClass
@@ -41,7 +45,11 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection
 	{
-		return new self(
+		if ($this->cachedDoNotResolveTemplateTypeMapToBounds !== null) {
+			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
+		}
+
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self(
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			false,
@@ -56,9 +64,12 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 
 	public function getTransformedProperty(): PropertyReflection
 	{
+		if ($this->transformedProperty !== null) {
+			return $this->transformedProperty;
+		}
 		$templateTypeMap = $this->resolvedDeclaringClass->getActiveTemplateTypeMap();
 
-		return new ResolvedPropertyReflection(
+		return $this->transformedProperty = new ResolvedPropertyReflection(
 			$this->transformPropertyWithStaticType($this->resolvedDeclaringClass, $this->propertyReflection),
 			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
 		);

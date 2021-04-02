@@ -366,16 +366,22 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 			return $broker->getClassName($this->className);
 		};
+
+		$preciseWithSubtracted = function () use ($level): string {
+			$description = $this->className;
+			if ($this->subtractedType !== null) {
+				$description .= sprintf('~%s', $this->subtractedType->describe($level));
+			}
+
+			return $description;
+		};
+
 		return $level->handle(
 			$preciseNameCallback,
 			$preciseNameCallback,
-			function () use ($level): string {
-				$description = $this->className;
-				if ($this->subtractedType !== null) {
-					$description .= sprintf('~%s', $this->subtractedType->describe($level));
-				}
-
-				return $description;
+			$preciseWithSubtracted,
+			static function () use ($preciseWithSubtracted): string {
+				return $preciseWithSubtracted() . '-' . static::class;
 			}
 		);
 	}

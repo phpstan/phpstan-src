@@ -984,14 +984,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	 */
 	public function getAncestorWithClassName(string $className): ?TypeWithClassName
 	{
-		$description = $this->describeCache();
-		if (isset(self::$ancestors[$description][$className])) {
-			return self::$ancestors[$description][$className];
-		}
-
 		$thisReflection = $this->getClassReflection();
 		if ($thisReflection === null) {
 			return null;
+		}
+		$description = $this->describeCache() . '-' . $thisReflection->getCacheKey();
+		if (isset(self::$ancestors[$description][$className])) {
+			return self::$ancestors[$description][$className];
 		}
 
 		$broker = Broker::getInstance();

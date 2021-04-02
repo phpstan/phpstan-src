@@ -219,7 +219,7 @@ class TypeSpecifier
 							$newContext = $newContext->negate();
 						}
 						$argType = $scope->getType($exprNode->args[0]->value);
-						if ((new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($argType)->yes()) {
+						if ($argType->isArray()->yes()) {
 							return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
 						}
 					}
@@ -389,7 +389,6 @@ class TypeSpecifier
 				&& count($expr->left->args) === 1
 				&& $expr->left->name instanceof Name
 				&& strtolower((string) $expr->left->name) === 'count'
-				&& $rightType instanceof ConstantIntegerType
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
@@ -415,11 +414,14 @@ class TypeSpecifier
 				&& count($expr->right->args) === 1
 				&& $expr->right->name instanceof Name
 				&& strtolower((string) $expr->right->name) === 'count'
-				&& $leftType instanceof ConstantIntegerType
+				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
 			) {
-				if ($context->truthy() || $leftType->getValue() + $offset === 1) {
+				if (
+					$context->truthy() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
+					|| ($context->falsey() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
+				) {
 					$argType = $scope->getType($expr->right->args[0]->value);
-					if ((new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($argType)->yes()) {
+					if ($argType->isArray()->yes()) {
 						$result = $result->unionWith($this->create($expr->right->args[0]->value, new NonEmptyArrayType(), $context, false, $scope));
 					}
 				}

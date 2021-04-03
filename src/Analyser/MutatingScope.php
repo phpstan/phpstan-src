@@ -421,7 +421,7 @@ class MutatingScope implements Scope
 				'filetype',
 				'fileperms',
 			] as $functionName) {
-				if (!Strings::startsWith($exprString, $functionName . '(') && !Strings::startsWith($exprString, '\\' . $functionName . '(')) {
+				if (!Strings::startsWith((string) $exprString, $functionName . '(') && !Strings::startsWith((string) $exprString, '\\' . $functionName . '(')) {
 					continue;
 				}
 

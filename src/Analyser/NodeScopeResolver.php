@@ -2977,6 +2977,7 @@ class NodeScopeResolver
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
+			$assignedExpr = $this->unwrapAssign($assignedExpr);
 			$type = $scope->getType($assignedExpr);
 			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
 			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
@@ -3165,6 +3166,15 @@ class NodeScopeResolver
 		}
 
 		return new ExpressionResult($scope, $hasYield, $throwPoints);
+	}
+
+	private function unwrapAssign(Expr $expr): Expr
+	{
+		if ($expr instanceof Assign) {
+			return $this->unwrapAssign($expr->expr);
+		}
+
+		return $expr;
 	}
 
 	/**

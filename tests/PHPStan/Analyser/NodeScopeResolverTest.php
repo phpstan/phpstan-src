@@ -10338,6 +10338,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4287.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4700.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-in-closure-bind.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/multi-assign.php');
 	}
 
 	/**

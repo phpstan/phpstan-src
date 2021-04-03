@@ -2595,7 +2595,7 @@ class MutatingScope implements Scope
 					return TemplateTypeHelper::toArgument($type);
 				}, $phpDocParameterTypes),
 				$this->getRealParameterDefaultValues($classMethod),
-				$this->getFunctionType($classMethod->returnType, $classMethod->returnType === null, false),
+				$this->transformStaticType($this->getFunctionType($classMethod->returnType, $classMethod->returnType === null, false)),
 				$phpDocReturnType !== null ? TemplateTypeHelper::toArgument($phpDocReturnType) : null,
 				$throwType,
 				$deprecatedDescription,
@@ -2606,6 +2606,25 @@ class MutatingScope implements Scope
 			),
 			!$classMethod->isStatic()
 		);
+	}
+
+	private function transformStaticType(Type $type): Type
+	{
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if (!$this->isInClass()) {
+				return $type;
+			}
+			if ($type instanceof StaticType) {
+				$classReflection = $this->getClassReflection();
+				$changedType = $type->changeBaseClass($classReflection);
+				if ($classReflection->isFinal()) {
+					$changedType = $changedType->getStaticObjectType();
+				}
+				return $traverse($changedType);
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	/**

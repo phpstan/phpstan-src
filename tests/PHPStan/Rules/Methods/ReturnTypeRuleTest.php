@@ -477,4 +477,12 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug4795(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+		$this->analyse([__DIR__ . '/data/bug-4795.php'], []);
+	}
+
 }

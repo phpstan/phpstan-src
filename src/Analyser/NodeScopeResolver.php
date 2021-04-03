@@ -1913,7 +1913,7 @@ class NodeScopeResolver
 				$scope = $scope->afterExtractCall();
 			}
 
-			if (isset($functionReflection) && $functionReflection->getName() === 'clearstatcache') {
+			if (isset($functionReflection) && ($functionReflection->getName() === 'clearstatcache' || $functionReflection->getName() === 'unlink')) {
 				$scope = $scope->afterClearstatcacheCall();
 			}
 

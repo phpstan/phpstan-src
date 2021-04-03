@@ -52,3 +52,11 @@ function (string $a, string $b, bool $c): string {
 		assertType('true', $c);
 	}
 };
+
+function (): void {
+	if (file_exists('foo')) {
+		assertType('true', file_exists('foo'));
+		unlink('foo');
+		assertType('bool', file_exists('foo'));
+	}
+};

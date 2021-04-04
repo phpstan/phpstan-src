@@ -1903,4 +1903,17 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3546.php'], []);
 	}
 
+	public function testBug4800(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->phpVersion = 80000;
+		$this->analyse([__DIR__ . '/data/bug-4800.php'], []);
+	}
+
 }

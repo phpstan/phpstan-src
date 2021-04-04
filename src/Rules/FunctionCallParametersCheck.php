@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Type\ErrorType;
@@ -409,8 +410,11 @@ class FunctionCallParametersCheck
 				$namedArgumentAlreadyOccurred = true;
 
 				$parametersCount = count($parameters);
+				$requiredParametersByName = array_filter($unusedParametersByName, static function (ParameterReflection $parameter): bool {
+					return !$parameter->isOptional();
+				});
 				if (
-					count($unusedParametersByName) !== 0
+					count($requiredParametersByName) !== 0
 					|| !$parametersAcceptor->isVariadic()
 					|| $parametersCount <= 0
 					|| $isBuiltin

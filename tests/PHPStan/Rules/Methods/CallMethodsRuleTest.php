@@ -1707,16 +1707,8 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				91,
 			],
 			[
-				'Unknown parameter $foo in call to method NamedArgumentsMethod\Foo::doIpsum().',
-				92,
-			],
-			[
 				'Missing parameter $b (int) in call to method NamedArgumentsMethod\Foo::doIpsum().',
 				92,
-			],
-			[
-				'Unknown parameter $foo in call to method NamedArgumentsMethod\Foo::doIpsum().',
-				93,
 			],
 			[
 				'Missing parameter $a (int) in call to method NamedArgumentsMethod\Foo::doIpsum().',
@@ -1913,7 +1905,12 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->phpVersion = 80000;
-		$this->analyse([__DIR__ . '/data/bug-4800.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-4800.php'], [
+			[
+				'Missing parameter $bar (string) in call to method Bug4800\HelloWorld2::a().',
+				36,
+			],
+		]);
 	}
 
 }

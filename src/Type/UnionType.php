@@ -12,6 +12,8 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
@@ -597,6 +599,23 @@ class UnionType implements CompoundType
 			$receivedType = TypeCombinator::union(...$remainingReceivedTypes);
 		} else {
 			$myTypes = $this->types;
+		}
+
+		$myTemplateTypes = [];
+		foreach ($myTypes as $type) {
+			if ($type instanceof TemplateType || ($type instanceof GenericClassStringType && $type->getGenericType() instanceof TemplateType)) {
+				$myTemplateTypes[] = $type;
+				continue;
+			}
+			$types = $types->union($type->inferTemplateTypes($receivedType));
+		}
+
+		if (!$types->isEmpty()) {
+			return $types;
+		}
+
+		if (count($myTemplateTypes) === 1) {
+			return $types->union($myTemplateTypes[0]->inferTemplateTypes($receivedType));
 		}
 
 		foreach ($myTypes as $type) {

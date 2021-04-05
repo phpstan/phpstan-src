@@ -1995,9 +1995,23 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			if ($expr->class instanceof Expr) {
+				$objectClasses = TypeUtils::getDirectClassNames($scope->getType($expr->class));
+				if (count($objectClasses) !== 1) {
+					$objectClasses = TypeUtils::getDirectClassNames($scope->getType(new New_($expr->class)));
+				}
+				if (count($objectClasses) === 1) {
+					$objectExprResult = $this->processExprNode(new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, static function (): void {
+					}, $context->enterDeep());
+					$additionalThrowPoints = $objectExprResult->getThrowPoints();
+				} else {
+					$additionalThrowPoints = [ThrowPoint::createImplicit($scope)];
+				}
 				$classResult = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $classResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $classResult->getThrowPoints());
+				foreach ($additionalThrowPoints as $throwPoint) {
+					$throwPoints[] = $throwPoint;
+				}
 				$scope = $classResult->getScope();
 			}
 

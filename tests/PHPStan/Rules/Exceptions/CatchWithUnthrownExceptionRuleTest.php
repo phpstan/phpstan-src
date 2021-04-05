@@ -68,4 +68,18 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4805(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4805.php'], [
+			[
+				'Dead catch - OutOfBoundsException is never thrown in the try block.',
+				44,
+			],
+			[
+				'Dead catch - OutOfBoundsException is never thrown in the try block.',
+				66,
+			],
+		]);
+	}
+
 }

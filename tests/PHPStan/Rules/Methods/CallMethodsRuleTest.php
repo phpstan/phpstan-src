@@ -823,6 +823,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				19,
 			],
 			[
+				'Call to an undefined method CallClosureBind\Bar::barMethod().',
+				23,
+			],
+			[
 				'Call to an undefined method CallClosureBind\Foo::nonexistentMethod().',
 				28,
 			],
@@ -849,6 +853,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to an undefined method CallArrowFunctionBind\Foo::nonexistentMethod().',
 				27,
+			],
+			[
+				'Call to an undefined method CallArrowFunctionBind\Bar::barMethod().',
+				29,
 			],
 			[
 				'Call to an undefined method CallArrowFunctionBind\Foo::nonexistentMethod().',

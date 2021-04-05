@@ -2056,6 +2056,7 @@ class NodeScopeResolver
 								$directClassNames = TypeUtils::getDirectClassNames($argValueType);
 								if (count($directClassNames) === 1) {
 									$scopeClass = $directClassNames[0];
+									$thisType = new ObjectType($scopeClass);
 								} elseif (
 									$argValue instanceof Expr\ClassConstFetch
 									&& $argValue->name instanceof Node\Identifier
@@ -2063,8 +2064,10 @@ class NodeScopeResolver
 									&& $argValue->class instanceof Name
 								) {
 									$scopeClass = $scope->resolveName($argValue->class);
+									$thisType = new ObjectType($scopeClass);
 								} elseif ($argValueType instanceof ConstantStringType) {
 									$scopeClass = $argValueType->getValue();
+									$thisType = new ObjectType($scopeClass);
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $scopeClass);

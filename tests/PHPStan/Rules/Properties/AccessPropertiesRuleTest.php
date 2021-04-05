@@ -484,4 +484,11 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4527.php'], []);
 	}
 
+	public function testBug4808(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
+	}
+
 }

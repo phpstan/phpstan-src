@@ -2384,10 +2384,22 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			if ($expr->class instanceof Expr) {
+				$objectClasses = TypeUtils::getDirectClassNames($scope->getType($expr));
+				if (count($objectClasses) === 1) {
+					$objectExprResult = $this->processExprNode(new New_(new Name($objectClasses[0])), $scope, static function (): void {
+					}, $context->enterDeep());
+					$additionalThrowPoints = $objectExprResult->getThrowPoints();
+				} else {
+					$additionalThrowPoints = [ThrowPoint::createImplicit($scope)];
+				}
+
 				$result = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $result->hasYield();
 				$throwPoints = $result->getThrowPoints();
+				foreach ($additionalThrowPoints as $throwPoint) {
+					$throwPoints[] = $throwPoint;
+				}
 			} elseif ($expr->class instanceof Class_) {
 				$this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
 				$this->processStmtNode($expr->class, $scope, $nodeCallback);

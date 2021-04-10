@@ -86,7 +86,51 @@ final class FileReadTrapStreamWrapper
 	{
 		self::$autoloadLocatedFile = $path;
 
-		return false;
+		return true;
+	}
+
+	/**
+	 * Since we allow our wrapper's stream_open() to succeed, we need to
+	 * simulate a successful read so autoloaders with require() don't explode.
+	 *
+	 * @param int $count
+	 *
+	 * @return string
+	 */
+	public function stream_read($count): string
+	{
+		// Dummy return value that is also valid PHP for require(). We'll read
+		// and process the file elsewhere, so it's OK to provide dummy data for
+		// this read.
+		return '';
+	}
+
+	/**
+	 * Since we allowed the open to succeed, we should allow the close to occur
+	 * as well.
+	 *
+	 * @return void
+	 */
+	public function stream_close(): void
+	{
+		// no op
+	}
+
+	/**
+	 * Required for `require_once` and `include_once` to work per PHP.net
+	 * comment referenced below. We delegate to url_stat().
+	 *
+	 * @see https://www.php.net/manual/en/function.stream-wrapper-register.php#51855
+	 *
+	 * @return mixed[]|bool
+	 */
+	public function stream_stat()
+	{
+		if (self::$autoloadLocatedFile === null) {
+			return false;
+		}
+
+		return $this->url_stat(self::$autoloadLocatedFile, STREAM_URL_STAT_QUIET);
 	}
 
 	/**

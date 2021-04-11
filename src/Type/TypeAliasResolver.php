@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
@@ -14,6 +15,8 @@ class TypeAliasResolver
 	private array $globalTypeAliases;
 
 	private TypeStringResolver $typeStringResolver;
+
+	private TypeNodeResolver $typeNodeResolver;
 
 	private ReflectionProvider $reflectionProvider;
 
@@ -35,11 +38,13 @@ class TypeAliasResolver
 	public function __construct(
 		array $globalTypeAliases,
 		TypeStringResolver $typeStringResolver,
+		TypeNodeResolver $typeNodeResolver,
 		ReflectionProvider $reflectionProvider
 	)
 	{
 		$this->globalTypeAliases = $globalTypeAliases;
 		$this->typeStringResolver = $typeStringResolver;
+		$this->typeNodeResolver = $typeNodeResolver;
 		$this->reflectionProvider = $reflectionProvider;
 	}
 
@@ -113,7 +118,7 @@ class TypeAliasResolver
 		$this->inProcess[$aliasNameInClassScope] = true;
 
 		$unresolvedAlias = $localTypeAliases[$aliasName];
-		$resolvedAliasType = $unresolvedAlias->resolve($this->typeStringResolver);
+		$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
 		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
 
 		unset($this->inProcess[$aliasNameInClassScope]);

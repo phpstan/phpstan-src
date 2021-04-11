@@ -41,6 +41,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
@@ -582,6 +583,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return new TypeAliasResolver(
 			$globalTypeAliases,
 			$container->getByType(TypeStringResolver::class),
+			$container->getByType(TypeNodeResolver::class),
 			$reflectionProvider
 		);
 	}

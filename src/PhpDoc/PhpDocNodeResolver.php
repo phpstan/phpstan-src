@@ -377,8 +377,8 @@ class PhpDocNodeResolver
 		foreach (['@psalm-type', '@phpstan-type'] as $tagName) {
 			foreach ($phpDocNode->getTypeAliasTagValues($tagName) as $typeAliasTagValue) {
 				$alias = $typeAliasTagValue->alias;
-				$typeString = (string) $typeAliasTagValue->type;
-				$resolved[$alias] = new TypeAliasTag($alias, $typeString, $nameScope);
+				$typeNode = $typeAliasTagValue->type;
+				$resolved[$alias] = new TypeAliasTag($alias, $typeNode, $nameScope);
 			}
 		}
 

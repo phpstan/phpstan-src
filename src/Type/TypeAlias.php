@@ -3,31 +3,32 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\NameScope;
-use PHPStan\PhpDoc\TypeStringResolver;
+use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 
 class TypeAlias
 {
 
-	private string $aliasString;
+	private TypeNode $typeNode;
 
 	private NameScope $nameScope;
 
 	private ?Type $resolvedType = null;
 
 	public function __construct(
-		string $typeString,
+		TypeNode $typeNode,
 		NameScope $nameScope
 	)
 	{
-		$this->aliasString = $typeString;
+		$this->typeNode = $typeNode;
 		$this->nameScope = $nameScope;
 	}
 
-	public function resolve(TypeStringResolver $typeStringResolver): Type
+	public function resolve(TypeNodeResolver $typeNodeResolver): Type
 	{
 		if ($this->resolvedType === null) {
-			$this->resolvedType = $typeStringResolver->resolve(
-				$this->aliasString,
+			$this->resolvedType = $typeNodeResolver->resolve(
+				$this->typeNode,
 				$this->nameScope
 			);
 		}

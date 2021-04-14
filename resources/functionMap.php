@@ -13231,7 +13231,7 @@ return [
 'XsltProcessor::setSecurityPrefs' => ['int', 'securityPrefs'=>'int'],
 'XSLTProcessor::transformToDoc' => ['DOMDocument', 'doc'=>'DOMNode'],
 'XSLTProcessor::transformToURI' => ['int', 'doc'=>'DOMDocument', 'uri'=>'string'],
-'XSLTProcessor::transformToXML' => ['string|false', 'doc'=>'DOMDocument'],
+'XSLTProcessor::transformToXML' => ['string|false', 'doc'=>'DOMDocument|SimpleXMLElement'],
 'Yaconf::get' => ['mixed', 'name'=>'string', 'default_value='=>'mixed'],
 'Yaconf::has' => ['bool', 'name'=>'string'],
 'Yaf_Action_Abstract::__construct' => ['void', 'request'=>'Yaf_Request_Abstract', 'response'=>'Yaf_Response_Abstract', 'view'=>'Yaf_View_Interface', 'invokeArgs='=>'?array'],

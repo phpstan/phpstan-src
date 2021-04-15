@@ -2,8 +2,12 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtension;
+use PHPStan\Rules\Constants\DirectAlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use UnusedPrivateConstant\TestExtension;
 
 /**
  * @extends RuleTestCase<UnusedPrivateConstantRule>
@@ -13,7 +17,19 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnusedPrivateConstantRule();
+		return new UnusedPrivateConstantRule(
+			new DirectAlwaysUsedClassConstantsExtensionProvider([
+				new class() implements AlwaysUsedClassConstantsExtension {
+
+					public function isAlwaysUsed(ConstantReflection $constant): bool
+					{
+						return $constant->getDeclaringClass()->getName() === TestExtension::class
+							&& $constant->getName() === 'USED';
+					}
+
+				},
+			])
+		);
 	}
 
 	public function testRule(): void
@@ -22,6 +38,10 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 			[
 				'Constant UnusedPrivateConstant\Foo::BAR_CONST is unused.',
 				10,
+			],
+			[
+				'Constant UnusedPrivateConstant\TestExtension::UNUSED is unused.',
+				23,
 			],
 		]);
 	}

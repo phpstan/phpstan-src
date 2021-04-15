@@ -15,3 +15,10 @@ class Foo
 	}
 
 }
+
+class TestExtension
+{
+	private const USED = 1;
+
+	private const UNUSED = 2;
+}

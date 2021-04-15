@@ -39,3 +39,12 @@ function foo4($list)
 	$sum = array_sum($list);
 	assertType('float|int', $sum);
 }
+
+/**
+ * @param string[] $list
+ */
+function foo5($list)
+{
+	$sum = array_sum($list);
+	assertType('float|int', $sum);
+}

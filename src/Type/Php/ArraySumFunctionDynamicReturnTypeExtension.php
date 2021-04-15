@@ -35,14 +35,21 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			return new ConstantIntegerType(0);
 		}
 
+		$intUnionFloat = new UnionType([new IntegerType(), new FloatType()]);
+
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
-			return TypeCombinator::intersect($itemType, new UnionType([new IntegerType(), new FloatType()]));
+			if ($intUnionFloat->isSuperTypeOf($itemType)->yes()) {
+				return $itemType;
+			}
+
+			return $intUnionFloat;
 		}
 
-		return TypeCombinator::union(
-			new ConstantIntegerType(0),
-			TypeCombinator::intersect($itemType, new UnionType([new IntegerType(), new FloatType()]))
-		);
+		if ($intUnionFloat->isSuperTypeOf($itemType)->yes()) {
+			return TypeCombinator::union(new ConstantIntegerType(0), $itemType);
+		}
+
+		return TypeCombinator::union(new ConstantIntegerType(0), $intUnionFloat);
 	}
 
 }

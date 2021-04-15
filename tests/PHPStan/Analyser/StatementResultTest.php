@@ -385,7 +385,7 @@ class StatementResultTest extends \PHPStan\Testing\TestCase
 	): void
 	{
 		/** @var Parser $parser */
-		$parser = self::getContainer()->getByType(Parser::class);
+		$parser = self::getContainer()->getService('currentPhpVersionRichParser');
 
 		/** @var Stmt[] $stmts */
 		$stmts = $parser->parseString(sprintf('<?php %s', $code));

@@ -26,8 +26,27 @@ namespace TypeAliasesDataset {
 
 	/**
 	 * @phpstan-import-type ExportedTypeAlias from Bar as ReexportedTypeAlias
+	 * @phpstan-import-type CircularTypeAliasImport2 from Qux
+	 * @phpstan-type CircularTypeAliasImport1 CircularTypeAliasImport2
+	 * @property CircularTypeAliasImport1 $baz
+	 * @property CircularTypeAliasImport2 $qux
 	 */
 	class Baz
+	{
+
+		public function circularAlias()
+		{
+			assertType('*ERROR*', $this->baz);
+			assertType('*ERROR*', $this->qux);
+		}
+
+	}
+
+	/**
+	 * @phpstan-import-type CircularTypeAliasImport1 from Baz
+	 * @phpstan-type CircularTypeAliasImport2 CircularTypeAliasImport1
+	 */
+	class Qux
 	{
 	}
 
@@ -38,11 +57,21 @@ namespace TypeAliasesDataset {
 	 * @phpstan-import-type ReexportedTypeAlias from Baz
 	 * @phpstan-type NestedImportedTypeAlias iterable<ImportedTypeAlias>
 	 * @phpstan-import-type ScopedAlias from SubScope\Bar
+	 * @phpstan-import-type ImportedAliasFromNonClass from int
+	 * @phpstan-import-type ImportedAliasFromUnknownClass from UnknownClass
+	 * @phpstan-import-type ImportedUknownAlias from SubScope\Bar
+	 * @phpstan-type Baz never
+	 * @phpstan-type GlobalTypeAlias never
+	 * @phpstan-type RecursiveTypeAlias RecursiveTypeAlias[]
+	 * @phpstan-type CircularTypeAlias1 CircularTypeAlias2
+	 * @phpstan-type CircularTypeAlias2 CircularTypeAlias1
 	 * @property GlobalTypeAlias $globalAliasProperty
 	 * @property LocalTypeAlias $localAliasProperty
 	 * @property ImportedTypeAlias $importedAliasProperty
 	 * @property ReexportedTypeAlias $reexportedAliasProperty
 	 * @property ScopedAlias $scopedAliasProperty
+	 * @property RecursiveTypeAlias $recursiveAliasProperty
+	 * @property CircularTypeAlias1 $circularAliasProperty
 	 */
 	class Foo
 	{
@@ -87,6 +116,26 @@ namespace TypeAliasesDataset {
 			assertType('iterable<Countable&Traversable>', $parameter);
 		}
 
+		/**
+		 * @param ImportedAliasFromNonClass $parameter1
+		 * @param ImportedAliasFromUnknownClass $parameter2
+		 * @param ImportedUknownAlias $parameter3
+		 */
+		public function invalidImports($parameter1, $parameter2, $parameter3)
+		{
+			assertType('TypeAliasesDataset\ImportedAliasFromNonClass', $parameter1);
+			assertType('TypeAliasesDataset\ImportedAliasFromUnknownClass', $parameter2);
+			assertType('TypeAliasesDataset\ImportedUknownAlias', $parameter3);
+		}
+
+		/**
+		 * @param Baz $parameter
+		 */
+		public function conflictingAlias($parameter)
+		{
+			assertType('TypeAliasesDataset\Baz', $parameter);
+		}
+
 		public function __get(string $name)
 		{
 			return null;
@@ -99,5 +148,7 @@ namespace TypeAliasesDataset {
 	assertType('Countable&Traversable', (new Foo)->importedAliasProperty);
 	assertType('Countable&Traversable', (new Foo)->reexportedAliasProperty);
 	assertType('TypeAliasesDataset\SubScope\Foo', (new Foo)->scopedAliasProperty);
+	assertType('*ERROR*', (new Foo)->recursiveAliasProperty);
+	assertType('*ERROR*', (new Foo)->circularAliasProperty);
 
 }

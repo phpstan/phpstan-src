@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 
 class TypeAlias
@@ -22,6 +23,13 @@ class TypeAlias
 	{
 		$this->typeNode = $typeNode;
 		$this->nameScope = $nameScope;
+	}
+
+	public static function invalid(): self
+	{
+		$self = new self(new IdentifierTypeNode('*ERROR*'), new NameScope(null, []));
+		$self->resolvedType = new ErrorType();
+		return $self;
 	}
 
 	public function resolve(TypeNodeResolver $typeNodeResolver): Type

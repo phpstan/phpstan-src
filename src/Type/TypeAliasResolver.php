@@ -104,23 +104,28 @@ class TypeAliasResolver
 		}
 
 		if ($this->reflectionProvider->hasClass($nameScope->resolveStringName($aliasName))) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Type alias %s already exists as a class in scope of %s.', $aliasName, $className));
+			return null;
 		}
 
 		if (array_key_exists($aliasName, $this->globalTypeAliases)) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Type alias %s used in scope of %s already exists as a global type alias.', $aliasName, $className));
+			return null;
 		}
 
 		if (array_key_exists($aliasNameInClassScope, $this->inProcess)) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Circular definition for type alias %s in scope of %s.', $aliasName, $className));
+			// resolve circular reference as ErrorType to make it easier to detect
+			throw new \PHPStan\Type\CircularTypeAliasDefinitionException();
 		}
 
 		$this->inProcess[$aliasNameInClassScope] = true;
 
-		$unresolvedAlias = $localTypeAliases[$aliasName];
-		$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
-		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
+		try {
+			$unresolvedAlias = $localTypeAliases[$aliasName];
+			$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
+		} catch (\PHPStan\Type\CircularTypeAliasDefinitionException $e) {
+			$resolvedAliasType = new ErrorType();
+		}
 
+		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
 		unset($this->inProcess[$aliasNameInClassScope]);
 
 		return $resolvedAliasType;

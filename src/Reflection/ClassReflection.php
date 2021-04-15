@@ -105,6 +105,9 @@ class ClassReflection implements ReflectionWithFilename
 	/** @var array<string, TypeAlias>|null */
 	private ?array $typeAliases = null;
 
+	/** @var array<string, true> */
+	private static array $resolvingTypeAliasImports = [];
+
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
@@ -769,35 +772,53 @@ class ClassReflection implements ReflectionWithFilename
 			$typeAliasImportTags = $resolvedPhpDoc !== null ? $resolvedPhpDoc->getTypeAliasImportTags() : [];
 			$typeAliasTags = $resolvedPhpDoc !== null ? $resolvedPhpDoc->getTypeAliasTags() : [];
 
-			$importedAliases = array_map(function (TypeAliasImportTag $typeAliasImportTag): TypeAlias {
+			// prevent circular imports
+			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {
+				throw new \PHPStan\Type\CircularTypeAliasDefinitionException();
+			}
+
+			self::$resolvingTypeAliasImports[$this->getName()] = true;
+
+			$importedAliases = array_map(function (TypeAliasImportTag $typeAliasImportTag): ?TypeAlias {
 				$importedAlias = $typeAliasImportTag->getImportedAlias();
 				$importedFrom = $typeAliasImportTag->getImportedFrom();
 
 				if (!($importedFrom instanceof ObjectType)) {
-					throw new \PHPStan\ShouldNotHappenException(sprintf('Cannot import type alias %s in scope of %s from non-class type %s.', $typeAliasImportTag->getImportedAlias(), $this->getName(), $typeAliasImportTag->getImportedFrom()->describe(VerbosityLevel::typeOnly())));
+					return null;
 				}
 
 				$importedFromClassName = $importedFrom->getClassName();
+				if (!$this->reflectionProvider->hasClass($importedFromClassName)) {
+					return null;
+				}
+
 				$importedFromReflection = $this->reflectionProvider->getClass($importedFromClassName);
 
-				$typeAliases = $importedFromReflection->getTypeAliases();
+				try {
+					$typeAliases = $importedFromReflection->getTypeAliases();
+				} catch (\PHPStan\Type\CircularTypeAliasDefinitionException $e) {
+					return TypeAlias::invalid();
+				}
 
 				if (!array_key_exists($importedAlias, $typeAliases)) {
-					throw new \PHPStan\ShouldNotHappenException(sprintf('Type alias %s imported in %s does not exist on %s.', $importedAlias, $this->getName(), $importedFromClassName));
+					return null;
 				}
 
 				return $typeAliases[$importedAlias];
 			}, $typeAliasImportTags);
 
-			$localAliases = array_map(function (TypeAliasTag $typeAliasTag) use ($importedAliases): TypeAlias {
-				if (array_key_exists($typeAliasTag->getAlias(), $importedAliases)) {
-					throw new \PHPStan\ShouldNotHappenException(sprintf('Type alias %s overwrites imported type alias of the same name in scope of %s.', $typeAliasTag->getAlias(), $this->getName()));
-				}
+			unset(self::$resolvingTypeAliasImports[$this->getName()]);
 
+			$localAliases = array_map(static function (TypeAliasTag $typeAliasTag): TypeAlias {
 				return $typeAliasTag->getTypeAlias();
 			}, $typeAliasTags);
 
-			$this->typeAliases = array_merge($importedAliases, $localAliases);
+			$this->typeAliases = array_filter(
+				array_merge($importedAliases, $localAliases),
+				static function (?TypeAlias $typeAlias): bool {
+					return $typeAlias !== null;
+				}
+			);
 		}
 
 		return $this->typeAliases;

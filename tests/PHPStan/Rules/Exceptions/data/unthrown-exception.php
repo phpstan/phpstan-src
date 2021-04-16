@@ -121,4 +121,17 @@ class Foo
 		}
 	}
 
+	public function doConsecteur()
+	{
+		try {
+			if (false) {
+
+			} elseif ($this->doAmet()) {
+
+			}
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
 }

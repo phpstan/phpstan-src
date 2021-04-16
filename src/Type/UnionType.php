@@ -614,10 +614,6 @@ class UnionType implements CompoundType
 			return $types;
 		}
 
-		if (count($myTemplateTypes) === 1) {
-			return $types->union($myTemplateTypes[0]->inferTemplateTypes($receivedType));
-		}
-
 		foreach ($myTypes as $type) {
 			$types = $types->union($type->inferTemplateTypes($receivedType));
 		}

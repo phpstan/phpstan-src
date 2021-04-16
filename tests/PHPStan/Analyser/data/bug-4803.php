@@ -54,7 +54,8 @@ interface ProxyClassResolver
 
 final class Client
 {
-	private ProxyClassResolver $proxyClassResolver;
+	/** @var ProxyClassResolver */
+	private $proxyClassResolver;
 
 	public function __construct(ProxyClassResolver $proxyClassResolver)
 	{

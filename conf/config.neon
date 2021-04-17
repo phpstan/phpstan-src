@@ -774,6 +774,9 @@ services:
 		class: PHPStan\Rules\NullsafeCheck
 
 	-
+		class: PHPStan\Rules\Constants\LazyAlwaysUsedClassConstantsExtensionProvider
+
+	-
 		class: PHPStan\Rules\Properties\LazyReadWritePropertiesExtensionProvider
 
 	-

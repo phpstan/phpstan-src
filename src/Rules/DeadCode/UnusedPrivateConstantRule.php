@@ -5,6 +5,7 @@ namespace PHPStan\Rules\DeadCode;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassConstantsNode;
+use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -13,6 +14,13 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class UnusedPrivateConstantRule implements Rule
 {
+
+	private AlwaysUsedClassConstantsExtensionProvider $extensionProvider;
+
+	public function __construct(AlwaysUsedClassConstantsExtensionProvider $extensionProvider)
+	{
+		$this->extensionProvider = $extensionProvider;
+	}
 
 	public function getNodeType(): string
 	{
@@ -35,8 +43,18 @@ class UnusedPrivateConstantRule implements Rule
 			if (!$constant->isPrivate()) {
 				continue;
 			}
+
 			foreach ($constant->consts as $const) {
-				$constants[$const->name->toString()] = $const;
+				$constantName = $const->name->toString();
+
+				$constantReflection = $classReflection->getConstant($constantName);
+				foreach ($this->extensionProvider->getExtensions() as $extension) {
+					if ($extension->isAlwaysUsed($constantReflection)) {
+						continue 2;
+					}
+				}
+
+				$constants[$constantName] = $const;
 			}
 		}
 

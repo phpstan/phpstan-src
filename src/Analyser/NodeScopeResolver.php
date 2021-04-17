@@ -261,7 +261,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt|\PhpParser\Node\Expr $parentNode
+	 * @param \PhpParser\Node $parentNode
 	 * @param \PhpParser\Node\Stmt[] $stmts
 	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
@@ -298,7 +298,6 @@ class NodeScopeResolver
 				$nodeCallback(new ExecutionEndNode(
 					$stmt,
 					new StatementResult(
-						$stmt,
 						$scope,
 						$hasYield,
 						$statementResult->isAlwaysTerminating(),
@@ -324,7 +323,7 @@ class NodeScopeResolver
 			break;
 		}
 
-		$statementResult = new StatementResult($parentNode instanceof Node\Stmt ? $parentNode : new Node\Stmt\Expression($parentNode), $scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints);
+		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints);
 		if ($stmtCount === 0 && $shouldCheckLastStatement) {
 			/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|Expr\Closure $parentNode */
 			$parentNode = $parentNode;
@@ -373,12 +372,12 @@ class NodeScopeResolver
 			) {
 				$methodReflection = $scope->getClassReflection()->getNativeMethod($stmt->name->toString());
 				if ($methodReflection instanceof NativeMethodReflection) {
-					return new StatementResult($stmt, $scope, false, false, [], []);
+					return new StatementResult($scope, false, false, [], []);
 				}
 				if ($methodReflection instanceof PhpMethodReflection) {
 					$declaringTrait = $methodReflection->getDeclaringTrait();
 					if ($declaringTrait === null || $declaringTrait->getName() !== $scope->getTraitReflection()->getName()) {
-						return new StatementResult($stmt, $scope, false, false, [], []);
+						return new StatementResult($scope, false, false, [], []);
 					}
 				}
 			}
@@ -561,7 +560,7 @@ class NodeScopeResolver
 				$throwPoints = [];
 			}
 
-			return new StatementResult($stmt, $scope, $hasYield, true, [
+			return new StatementResult($scope, $hasYield, true, [
 				new StatementExitPoint($stmt, $scope),
 			], $throwPoints);
 		} elseif ($stmt instanceof Continue_ || $stmt instanceof Break_) {
@@ -575,7 +574,7 @@ class NodeScopeResolver
 				$throwPoints = [];
 			}
 
-			return new StatementResult($stmt, $scope, $hasYield, true, [
+			return new StatementResult($scope, $hasYield, true, [
 				new StatementExitPoint($stmt, $scope),
 			], $throwPoints);
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
@@ -590,11 +589,11 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			if ($earlyTerminationExpr !== null) {
-				return new StatementResult($stmt, $scope, $hasYield, true, [
+				return new StatementResult($scope, $hasYield, true, [
 					new StatementExitPoint($stmt, $scope),
 				], $throwPoints);
 			}
-			return new StatementResult($stmt, $scope, $hasYield, false, [], $throwPoints);
+			return new StatementResult($scope, $hasYield, false, [], $throwPoints);
 		} elseif ($stmt instanceof Node\Stmt\Namespace_) {
 			if ($stmt->name !== null) {
 				$scope = $scope->enterNamespace($stmt->name->toString());
@@ -604,7 +603,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 		} elseif ($stmt instanceof Node\Stmt\Trait_) {
-			return new StatementResult($stmt, $scope, false, false, [], []);
+			return new StatementResult($scope, false, false, [], []);
 		} elseif ($stmt instanceof Node\Stmt\ClassLike) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -680,7 +679,7 @@ class NodeScopeResolver
 			$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$throwPoints = $result->getThrowPoints();
 			$throwPoints[] = ThrowPoint::createExplicit($result->getScope(), $scope->getType($stmt->expr), false);
-			return new StatementResult($stmt, $result->getScope(), $result->hasYield(), true, [
+			return new StatementResult($result->getScope(), $result->hasYield(), true, [
 				new StatementExitPoint($stmt, $scope),
 			], $throwPoints);
 		} elseif ($stmt instanceof If_) {
@@ -768,7 +767,7 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			}
 
-			return new StatementResult($stmt, $finalScope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints);
+			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints);
 		} elseif ($stmt instanceof Node\Stmt\TraitUse) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -834,7 +833,6 @@ class NodeScopeResolver
 			}
 
 			return new StatementResult(
-				$stmt,
 				$finalScope,
 				$finalScopeResult->hasYield() || $condResult->hasYield(),
 				$isIterableAtLeastOnce->yes() && $finalScopeResult->isAlwaysTerminating(),
@@ -908,7 +906,6 @@ class NodeScopeResolver
 			}
 
 			return new StatementResult(
-				$stmt,
 				$finalScope,
 				$finalScopeResult->hasYield() || $condResult->hasYield(),
 				$isAlwaysTerminating,
@@ -977,7 +974,6 @@ class NodeScopeResolver
 			}
 
 			return new StatementResult(
-				$stmt,
 				$finalScope,
 				$bodyScopeResult->hasYield() || $hasYield,
 				$alwaysTerminating,
@@ -1061,7 +1057,6 @@ class NodeScopeResolver
 			$finalScope = $finalScope->mergeWith($scope);
 
 			return new StatementResult(
-				$stmt,
 				$finalScope,
 				$finalScopeResult->hasYield() || $hasYield,
 				false/* $finalScopeResult->isAlwaysTerminating() && $isAlwaysIterable*/,
@@ -1133,7 +1128,7 @@ class NodeScopeResolver
 				$finalScope = $scope->mergeWith($finalScope);
 			}
 
-			return new StatementResult($stmt, $finalScope, $hasYield, $alwaysTerminating, $exitPointsForOuterLoop, $throwPoints);
+			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPointsForOuterLoop, $throwPoints);
 		} elseif ($stmt instanceof TryCatch) {
 			$branchScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback);
 			$branchScope = $branchScopeResult->getScope();
@@ -1303,7 +1298,7 @@ class NodeScopeResolver
 				$exitPoints = array_merge($exitPoints, $finallyResult->getExitPoints());
 			}
 
-			return new StatementResult($stmt, $finalScope, $hasYield, $alwaysTerminating, $exitPoints, array_merge($throwPoints, $throwPointsForLater));
+			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, array_merge($throwPoints, $throwPointsForLater));
 		} elseif ($stmt instanceof Unset_) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -1398,7 +1393,7 @@ class NodeScopeResolver
 			$throwPoints = [];
 		}
 
-		return new StatementResult($stmt, $scope, $hasYield, false, [], $throwPoints);
+		return new StatementResult($scope, $hasYield, false, [], $throwPoints);
 	}
 
 	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, Scope $scope): ClassReflection

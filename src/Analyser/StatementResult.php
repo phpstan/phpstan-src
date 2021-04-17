@@ -2,14 +2,11 @@
 
 namespace PHPStan\Analyser;
 
-use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt;
 
 class StatementResult
 {
-
-	private Stmt $statement;
 
 	private MutatingScope $scope;
 
@@ -24,7 +21,6 @@ class StatementResult
 	private array $throwPoints;
 
 	/**
-	 * @param Stmt $statement
 	 * @param MutatingScope $scope
 	 * @param bool $hasYield
 	 * @param bool $isAlwaysTerminating
@@ -32,7 +28,6 @@ class StatementResult
 	 * @param ThrowPoint[] $throwPoints
 	 */
 	public function __construct(
-		Stmt $statement,
 		MutatingScope $scope,
 		bool $hasYield,
 		bool $isAlwaysTerminating,
@@ -40,62 +35,11 @@ class StatementResult
 		array $throwPoints
 	)
 	{
-		$this->statement = $statement;
 		$this->scope = $scope;
 		$this->hasYield = $hasYield;
 		$this->isAlwaysTerminating = $isAlwaysTerminating;
 		$this->exitPoints = $exitPoints;
-		$this->throwPoints = $this->filterThrowPoints($statement, $throwPoints);
-	}
-
-	/**
-	 * @param Stmt $statement
-	 * @param ThrowPoint[] $throwPoints
-	 * @return ThrowPoint[]
-	 */
-	private function filterThrowPoints(Stmt $statement, array $throwPoints): array
-	{
-		if ($this->isInTry($statement)) {
-			return $throwPoints;
-		}
-
-		return array_values(array_filter($throwPoints, static function (ThrowPoint $throwPoint): bool {
-			return $throwPoint->isExplicit();
-		}));
-	}
-
-	private function isInTry(\PhpParser\Node $node): bool
-	{
-		if ($node instanceof Stmt\TryCatch) {
-			return true;
-		}
-
-		if ($node instanceof Stmt\Catch_ || $node instanceof Stmt\Finally_) {
-			$parent = $node->getAttribute('parent');
-			if ($parent === null) {
-				return false;
-			}
-			$parent2 = $parent->getAttribute('parent');
-			if (!$parent2 instanceof Stmt) {
-				return false;
-			}
-			return $this->isInTry($parent2);
-		}
-
-		if (
-			$node instanceof Stmt\ClassMethod
-			|| $node instanceof Stmt\Function_
-			|| $node instanceof Closure
-		) {
-			return false;
-		}
-
-		$parent = $node->getAttribute('parent');
-		if ($parent === null) {
-			return false;
-		}
-
-		return $this->isInTry($parent);
+		$this->throwPoints = $throwPoints;
 	}
 
 	public function getScope(): MutatingScope
@@ -127,14 +71,14 @@ class StatementResult
 
 			$num = $statement->num;
 			if (!$num instanceof LNumber) {
-				return new self($this->statement, $this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
+				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
 			}
 
 			if ($num->value !== 1) {
 				continue;
 			}
 
-			return new self($this->statement, $this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
+			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
 		}
 
 		return $this;

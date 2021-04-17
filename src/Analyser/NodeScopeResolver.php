@@ -761,7 +761,6 @@ class NodeScopeResolver
 					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope);
 					$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
 					$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
 				}
 			}
 

@@ -72,6 +72,10 @@ class TypeAliasResolver
 
 	private function resolveLocalTypeAlias(string $aliasName, NameScope $nameScope): ?Type
 	{
+		if (array_key_exists($aliasName, $this->globalTypeAliases)) {
+			return null;
+		}
+
 		$className = $nameScope->getClassName();
 		if ($className === null) {
 			return null;
@@ -101,14 +105,6 @@ class TypeAliasResolver
 		unset($this->resolvingClassTypeAliases[$className]);
 
 		if (!array_key_exists($aliasName, $localTypeAliases)) {
-			return null;
-		}
-
-		if ($this->reflectionProvider->hasClass($nameScope->resolveStringName($aliasName))) {
-			return null;
-		}
-
-		if (array_key_exists($aliasName, $this->globalTypeAliases)) {
 			return null;
 		}
 

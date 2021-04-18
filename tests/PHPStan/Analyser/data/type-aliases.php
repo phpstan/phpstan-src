@@ -158,4 +158,62 @@ namespace TypeAliasesDataset {
 	assertType('*ERROR*', (new Foo)->recursiveAliasProperty);
 	assertType('*ERROR*', (new Foo)->circularAliasProperty);
 
+	trait FooTrait
+	{
+
+		/**
+		 * @param Test $a
+		 * @return Test
+		 */
+		public function doFoo($a)
+		{
+			assertType(Test::class, $a);
+		}
+
+	}
+
+	/** @phpstan-type Test array{string, int} */
+	class UsesTrait1
+	{
+
+		use FooTrait;
+
+		/** @param Test $a */
+		public function doBar($a)
+		{
+			assertType('array(string, int)', $a);
+			assertType(Test::class, $this->doFoo());
+		}
+
+	}
+
+	/** @phpstan-type Test \stdClass */
+	class UsesTrait2
+	{
+
+		use FooTrait;
+
+		/** @param Test $a */
+		public function doBar($a)
+		{
+			assertType('stdClass', $a);
+			assertType(Test::class, $this->doFoo());
+		}
+
+	}
+
+	class UsesTrait3
+	{
+
+		use FooTrait;
+
+		/** @param Test $a */
+		public function doBar($a)
+		{
+			assertType(Test::class, $a);
+			assertType(Test::class, $this->doFoo());
+		}
+
+	}
+
 }

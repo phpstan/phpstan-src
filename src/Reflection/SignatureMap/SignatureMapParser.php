@@ -49,7 +49,7 @@ class SignatureMapParser
 			return new MixedType(true);
 		}
 
-		return $this->typeStringResolver->resolve($typeString, new NameScope(null, [], $className));
+		return $this->typeStringResolver->resolve($typeString, (new NameScope(null, [], $className))->bypassTypeAliases());
 	}
 
 	/**

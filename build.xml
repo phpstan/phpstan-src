@@ -221,7 +221,7 @@
 			checkreturn="true"
 		>
 			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
+			<arg value="memory_limit=864M"/>
 			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>

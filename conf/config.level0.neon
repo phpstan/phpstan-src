@@ -200,3 +200,10 @@ services:
 
 	-
 		class: PHPStan\Rules\Whitespace\FileWhitespaceRule
+
+	-
+		class: PHPStan\Rules\Classes\LocalTypeAliasesRule
+		arguments:
+			globalTypeAliases: %typeAliases%
+		tags:
+			- phpstan.rules.rule

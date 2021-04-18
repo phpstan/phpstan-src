@@ -367,13 +367,6 @@ services:
 		class: PHPStan\PhpDoc\ConstExprNodeResolver
 
 	-
-		class: PHPStan\PhpDoc\TypeAlias\TypeAliasesTypeNodeResolverExtension
-		arguments:
-			aliases: %typeAliases%
-		tags:
-			- phpstan.phpDoc.typeNodeResolverExtension
-
-	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
 
 	-
@@ -747,7 +740,6 @@ services:
 		class: PHPStan\Rules\Generics\TemplateTypeCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			typeAliases: %typeAliases%
 
 	-
 		class: PHPStan\Rules\Generics\VarianceCheck
@@ -801,6 +793,11 @@ services:
 
 	-
 		class: PHPStan\Type\FileTypeMapper
+
+	-
+		class: PHPStan\Type\TypeAliasResolver
+		arguments:
+			globalTypeAliases: %typeAliases%
 
 	-
 		class: PHPStan\Type\Php\ArgumentBasedFunctionReturnTypeExtension

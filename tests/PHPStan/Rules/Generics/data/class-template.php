@@ -35,9 +35,22 @@ class Lorem
 }
 
 /**
+ * @phpstan-type ExportedAlias string
  * @template TypeAlias
  */
 class Ipsum
+{
+
+}
+
+/**
+ * @phpstan-type LocalAlias string
+ * @phpstan-import-type ExportedAlias from Ipsum as ImportedAlias
+ * @template LocalAlias
+ * @template ExportedAlias
+ * @template ImportedAlias
+ */
+class Dolor
 {
 
 }

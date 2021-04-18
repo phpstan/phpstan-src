@@ -12,6 +12,8 @@ use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
+use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
+use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Type\ErrorType;
@@ -22,6 +24,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeAlias;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionMethod;
 
@@ -97,6 +100,12 @@ class ClassReflection implements ReflectionWithFilename
 
 	/** @var \PHPStan\Reflection\ClassReflection|false|null */
 	private $cachedParentClass = null;
+
+	/** @var array<string, TypeAlias>|null */
+	private ?array $typeAliases = null;
+
+	/** @var array<string, true> */
+	private static array $resolvingTypeAliasImports = [];
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
@@ -750,6 +759,67 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		return $traitNames;
+	}
+
+	/**
+	 * @return array<string, TypeAlias>
+	 */
+	public function getTypeAliases(): array
+	{
+		if ($this->typeAliases === null) {
+			$resolvedPhpDoc = $this->getResolvedPhpDoc();
+			if ($resolvedPhpDoc === null) {
+				return $this->typeAliases = [];
+			}
+
+			$typeAliasImportTags = $resolvedPhpDoc->getTypeAliasImportTags();
+			$typeAliasTags = $resolvedPhpDoc->getTypeAliasTags();
+
+			// prevent circular imports
+			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {
+				throw new \PHPStan\Type\CircularTypeAliasDefinitionException();
+			}
+
+			self::$resolvingTypeAliasImports[$this->getName()] = true;
+
+			$importedAliases = array_map(function (TypeAliasImportTag $typeAliasImportTag): ?TypeAlias {
+				$importedAlias = $typeAliasImportTag->getImportedAlias();
+				$importedFromClassName = $typeAliasImportTag->getImportedFrom();
+
+				if (!$this->reflectionProvider->hasClass($importedFromClassName)) {
+					return null;
+				}
+
+				$importedFromReflection = $this->reflectionProvider->getClass($importedFromClassName);
+
+				try {
+					$typeAliases = $importedFromReflection->getTypeAliases();
+				} catch (\PHPStan\Type\CircularTypeAliasDefinitionException $e) {
+					return TypeAlias::invalid();
+				}
+
+				if (!array_key_exists($importedAlias, $typeAliases)) {
+					return null;
+				}
+
+				return $typeAliases[$importedAlias];
+			}, $typeAliasImportTags);
+
+			unset(self::$resolvingTypeAliasImports[$this->getName()]);
+
+			$localAliases = array_map(static function (TypeAliasTag $typeAliasTag): TypeAlias {
+				return $typeAliasTag->getTypeAlias();
+			}, $typeAliasTags);
+
+			$this->typeAliases = array_filter(
+				array_merge($importedAliases, $localAliases),
+				static function (?TypeAlias $typeAlias): bool {
+					return $typeAlias !== null;
+				}
+			);
+		}
+
+		return $this->typeAliases;
 	}
 
 	public function getDeprecatedDescription(): ?string

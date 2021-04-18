@@ -15,13 +15,14 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
+		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $broker);
 
 		return new ClassTemplateTypeRule(
 			new TemplateTypeCheck(
 				$broker,
 				new ClassCaseSensitivityCheck($broker),
 				new GenericObjectTypeCheck(),
-				['TypeAlias' => 'int'],
+				$typeAliasResolver,
 				true
 			)
 		);
@@ -29,6 +30,8 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		require_once __DIR__ . '/data/class-template.php';
+
 		$this->analyse([__DIR__ . '/data/class-template.php'], [
 			[
 				'PHPDoc tag @template for class ClassTemplateType\Foo cannot have existing class stdClass as its name.',
@@ -48,27 +51,35 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 			],
 			[
 				'PHPDoc tag @template for class ClassTemplateType\Ipsum cannot have existing type alias TypeAlias as its name.',
-				40,
+				41,
+			],
+			[
+				'PHPDoc tag @template for class ClassTemplateType\Dolor cannot have existing type alias LocalAlias as its name.',
+				53,
+			],
+			[
+				'PHPDoc tag @template for class ClassTemplateType\Dolor cannot have existing type alias ImportedAlias as its name.',
+				53,
 			],
 			[
 				'PHPDoc tag @template for anonymous class cannot have existing class stdClass as its name.',
-				45,
+				58,
 			],
 			[
 				'PHPDoc tag @template T for anonymous class has invalid bound type ClassTemplateType\Zazzzu.',
-				50,
+				63,
 			],
 			[
 				'PHPDoc tag @template T for anonymous class with bound type float is not supported.',
-				55,
+				68,
 			],
 			[
 				'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',
-				60,
+				73,
 			],
 			[
 				'PHPDoc tag @template for anonymous class cannot have existing type alias TypeAlias as its name.',
-				65,
+				78,
 			],
 		]);
 	}

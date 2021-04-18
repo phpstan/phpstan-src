@@ -14,6 +14,8 @@ use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
+use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
+use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
@@ -363,6 +365,43 @@ class PhpDocNodeResolver
 				$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope)
 			);
 		}, $phpDocNode->getMixinTagValues());
+	}
+
+	/**
+	 * @return array<string, TypeAliasTag>
+	 */
+	public function resolveTypeAliasTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach (['@psalm-type', '@phpstan-type'] as $tagName) {
+			foreach ($phpDocNode->getTypeAliasTagValues($tagName) as $typeAliasTagValue) {
+				$alias = $typeAliasTagValue->alias;
+				$typeNode = $typeAliasTagValue->type;
+				$resolved[$alias] = new TypeAliasTag($alias, $typeNode, $nameScope);
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @return array<string, TypeAliasImportTag>
+	 */
+	public function resolveTypeAliasImportTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach (['@psalm-import-type', '@phpstan-import-type'] as $tagName) {
+			foreach ($phpDocNode->getTypeAliasImportTagValues($tagName) as $typeAliasImportTagValue) {
+				$importedAlias = $typeAliasImportTagValue->importedAlias;
+				$importedFrom = $nameScope->resolveStringName($typeAliasImportTagValue->importedFrom->name);
+				$importedAs = $typeAliasImportTagValue->importedAs;
+				$resolved[$importedAs ?? $importedAlias] = new TypeAliasImportTag($importedAlias, $importedFrom, $importedAs);
+			}
+		}
+
+		return $resolved;
 	}
 
 	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\DeprecatedTag

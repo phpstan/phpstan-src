@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -58,6 +59,7 @@ class MethodTemplateTypeRule implements Rule
 		$methodTemplateTags = $resolvedPhpDoc->getTemplateTags();
 		$messages = $this->templateTypeCheck->check(
 			$node,
+			TemplateTypeScope::createWithMethod($className, $methodName),
 			$methodTemplateTags,
 			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing class %%s as its name.', $className, $methodName),
 			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing type alias %%s as its name.', $className, $methodName),

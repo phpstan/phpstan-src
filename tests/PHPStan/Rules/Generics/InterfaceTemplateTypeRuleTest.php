@@ -16,14 +16,18 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
+		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $broker);
+
 		return new InterfaceTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), new GenericObjectTypeCheck(), ['TypeAlias' => 'int'], true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker), new GenericObjectTypeCheck(), $typeAliasResolver, true)
 		);
 	}
 
 	public function testRule(): void
 	{
+		require_once __DIR__ . '/data/interface-template.php';
+
 		$this->analyse([__DIR__ . '/data/interface-template.php'], [
 			[
 				'PHPDoc tag @template for interface InterfaceTemplateType\Foo cannot have existing class stdClass as its name.',
@@ -39,7 +43,15 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 			],
 			[
 				'PHPDoc tag @template for interface InterfaceTemplateType\Lorem cannot have existing type alias TypeAlias as its name.',
-				32,
+				33,
+			],
+			[
+				'PHPDoc tag @template for interface InterfaceTemplateType\Ipsum cannot have existing type alias LocalAlias as its name.',
+				45,
+			],
+			[
+				'PHPDoc tag @template for interface InterfaceTemplateType\Ipsum cannot have existing type alias ImportedAlias as its name.',
+				45,
 			],
 		]);
 	}

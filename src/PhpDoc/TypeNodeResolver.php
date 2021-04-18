@@ -60,6 +60,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
@@ -290,6 +291,14 @@ class TypeNodeResolver
 					}
 
 					return new NonexistentParentClassType();
+			}
+		}
+
+		if (!$nameScope->shouldBypassTypeAliases()) {
+			$aliasName = $typeNode->name;
+			$typeAlias = $this->getTypeAliasResolver()->resolveTypeAlias($aliasName, $nameScope);
+			if ($typeAlias !== null) {
+				return $typeAlias;
 			}
 		}
 
@@ -702,6 +711,11 @@ class TypeNodeResolver
 	private function getReflectionProvider(): ReflectionProvider
 	{
 		return $this->container->getByType(ReflectionProvider::class);
+	}
+
+	private function getTypeAliasResolver(): TypeAliasResolver
+	{
+		return $this->container->getByType(TypeAliasResolver::class);
 	}
 
 }

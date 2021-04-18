@@ -9,16 +9,17 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use function array_key_exists;
 use function array_map;
 
 class TemplateTypeCheck
@@ -30,40 +31,34 @@ class TemplateTypeCheck
 
 	private GenericObjectTypeCheck $genericObjectTypeCheck;
 
-	/** @var array<string, string> */
-	private array $typeAliases;
+	private TypeAliasResolver $typeAliasResolver;
 
 	private bool $checkClassCaseSensitivity;
 
-	/**
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param ClassCaseSensitivityCheck $classCaseSensitivityCheck
-	 * @param GenericObjectTypeCheck $genericObjectTypeCheck
-	 * @param array<string, string> $typeAliases
-	 * @param bool $checkClassCaseSensitivity
-	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
-		array $typeAliases,
+		TypeAliasResolver $typeAliasResolver,
 		bool $checkClassCaseSensitivity
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->typeAliases = $typeAliases;
+		$this->typeAliasResolver = $typeAliasResolver;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
 
 	/**
 	 * @param \PhpParser\Node $node
+	 * @param TemplateTypeScope $templateTypeScope
 	 * @param array<string, \PHPStan\PhpDoc\Tag\TemplateTag> $templateTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	public function check(
 		Node $node,
+		TemplateTypeScope $templateTypeScope,
 		array $templateTags,
 		string $sameTemplateTypeNameAsClassMessage,
 		string $sameTemplateTypeNameAsTypeMessage,
@@ -80,7 +75,7 @@ class TemplateTypeCheck
 					$templateTagName
 				))->build();
 			}
-			if (array_key_exists($templateTagName, $this->typeAliases)) {
+			if ($this->typeAliasResolver->hasTypeAlias($templateTagName, $templateTypeScope->getClassName())) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsTypeMessage,
 					$templateTagName

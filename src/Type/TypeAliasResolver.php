@@ -77,6 +77,12 @@ class TypeAliasResolver
 			return null;
 		}
 
+		$aliasNameInClassScope = $className . '::' . $aliasName;
+
+		if (array_key_exists($aliasNameInClassScope, $this->resolvedLocalTypeAliases)) {
+			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
+		}
+
 		// prevent infinite recursion
 		if (array_key_exists($className, $this->resolvingClassTypeAliases)) {
 			return null;
@@ -96,12 +102,6 @@ class TypeAliasResolver
 
 		if (!array_key_exists($aliasName, $localTypeAliases)) {
 			return null;
-		}
-
-		$aliasNameInClassScope = $className . '::' . $aliasName;
-
-		if (array_key_exists($aliasNameInClassScope, $this->resolvedLocalTypeAliases)) {
-			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
 		}
 
 		if ($this->reflectionProvider->hasClass($nameScope->resolveStringName($aliasName))) {

@@ -20,21 +20,18 @@ class NameScope
 
 	private TemplateTypeMap $templateTypeMap;
 
-	private bool $bypassTypeAliases;
-
 	/**
 	 * @param string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param string|null $className
 	 */
-	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, bool $bypassTypeAliases = false)
+	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null)
 	{
 		$this->namespace = $namespace;
 		$this->uses = $uses;
 		$this->className = $className;
 		$this->functionName = $functionName;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
-		$this->bypassTypeAliases = $bypassTypeAliases;
 	}
 
 	public function getNamespace(): ?string
@@ -138,16 +135,6 @@ class NameScope
 			$this->functionName,
 			$this->templateTypeMap->unsetType($name)
 		);
-	}
-
-	public function bypassTypeAliases(): self
-	{
-		return new self($this->namespace, $this->uses, $this->className, $this->functionName, $this->templateTypeMap, true);
-	}
-
-	public function shouldBypassTypeAliases(): bool
-	{
-		return $this->bypassTypeAliases;
 	}
 
 	/**

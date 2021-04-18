@@ -294,12 +294,9 @@ class TypeNodeResolver
 			}
 		}
 
-		if (!$nameScope->shouldBypassTypeAliases()) {
-			$aliasName = $typeNode->name;
-			$typeAlias = $this->getTypeAliasResolver()->resolveTypeAlias($aliasName, $nameScope);
-			if ($typeAlias !== null) {
-				return $typeAlias;
-			}
+		$typeAlias = $this->getTypeAliasResolver()->resolveTypeAlias($typeNode->name, $nameScope);
+		if ($typeAlias !== null) {
+			return $typeAlias;
 		}
 
 		$templateType = $nameScope->resolveTemplateTypeName($typeNode->name);

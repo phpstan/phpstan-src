@@ -216,7 +216,7 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v8-alias-collision', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v9-type-alias', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -278,17 +278,21 @@ class FileTypeMapper
 		/** @var (callable(): TemplateTypeMap)[] $typeMapStack */
 		$typeMapStack = [];
 
+		/** @var array<int, array<string, true>> $typeAliasStack */
+		$typeAliasStack = [];
+
 		/** @var string[] $classStack */
 		$classStack = [];
 		if ($lookForTrait !== null && $traitUseClass !== null) {
 			$classStack[] = $traitUseClass;
+			$typeAliasStack[] = [];
 		}
 		$namespace = null;
 		$functionName = null;
 		$uses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$phpDocMap, &$classStack, &$namespace, &$functionName, &$uses, &$typeMapStack): ?int {
+			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$phpDocMap, &$classStack, &$typeAliasStack, &$namespace, &$functionName, &$uses, &$typeMapStack): ?int {
 				$resolvableTemplateTypes = false;
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($lookForTrait !== null) {
@@ -311,6 +315,7 @@ class FileTypeMapper
 							$className = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 						}
 						$classStack[] = $className;
+						$typeAliasStack[] = $this->getTypeAliasesMap($node->getDocComment());
 						$functionName = null;
 						$resolvableTemplateTypes = true;
 					}
@@ -348,9 +353,10 @@ class FileTypeMapper
 					$phpDocString = $comment->getText();
 					$className = $classStack[count($classStack) - 1] ?? null;
 					$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
+					$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
 
 					$phpDocKey = $this->getPhpDocKey($fileName, $className, $lookForTrait, $functionName, $phpDocString);
-					$phpDocMap[$phpDocKey] = static function () use ($phpDocString, $namespace, $uses, $className, $functionName, $typeMapCb, $resolvableTemplateTypes): NameScopedPhpDocString {
+					$phpDocMap[$phpDocKey] = static function () use ($phpDocString, $namespace, $uses, $className, $functionName, $typeMapCb, $typeAliasesMap, $resolvableTemplateTypes): NameScopedPhpDocString {
 						$nameScope = new NameScope(
 							$namespace,
 							$uses,
@@ -374,7 +380,8 @@ class FileTypeMapper
 
 									return $traverse($type);
 								});
-							})
+							}),
+							$typeAliasesMap
 						);
 						return new NameScopedPhpDocString($phpDocString, $nameScope);
 					};
@@ -526,12 +533,18 @@ class FileTypeMapper
 
 				return null;
 			},
-			static function (\PhpParser\Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionName, &$classStack, &$uses, &$typeMapStack): void {
+			static function (\PhpParser\Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionName, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack): void {
 				if ($node instanceof Node\Stmt\ClassLike && $lookForTrait === null) {
 					if (count($classStack) === 0) {
 						throw new \PHPStan\ShouldNotHappenException();
 					}
 					array_pop($classStack);
+
+					if (count($typeAliasStack) === 0) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+
+					array_pop($typeAliasStack);
 				} elseif ($node instanceof \PhpParser\Node\Stmt\Namespace_) {
 					$namespace = null;
 					$uses = [];
@@ -554,6 +567,31 @@ class FileTypeMapper
 		}
 
 		return $phpDocMap;
+	}
+
+	/**
+	 * @param Doc|null $docComment
+	 * @return array<string, true>
+	 */
+	private function getTypeAliasesMap(?Doc $docComment): array
+	{
+		if ($docComment === null) {
+			return [];
+		}
+
+		$phpDocNode = $this->phpDocStringResolver->resolve($docComment->getText());
+		$nameScope = new NameScope(null, []);
+
+		$aliasesMap = [];
+		foreach (array_keys($this->phpDocNodeResolver->resolveTypeAliasImportTags($phpDocNode, $nameScope)) as $key) {
+			$aliasesMap[$key] = true;
+		}
+
+		foreach (array_keys($this->phpDocNodeResolver->resolveTypeAliasTags($phpDocNode, $nameScope)) as $key) {
+			$aliasesMap[$key] = true;
+		}
+
+		return $aliasesMap;
 	}
 
 	/**

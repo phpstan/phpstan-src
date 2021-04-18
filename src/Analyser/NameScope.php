@@ -20,18 +20,23 @@ class NameScope
 
 	private TemplateTypeMap $templateTypeMap;
 
+	/** @var array<string, true> */
+	private array $typeAliasesMap;
+
 	/**
 	 * @param string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param string|null $className
+	 * @param array<string, true> $typeAliasesMap
 	 */
-	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null)
+	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, array $typeAliasesMap = [])
 	{
 		$this->namespace = $namespace;
 		$this->uses = $uses;
 		$this->className = $className;
 		$this->functionName = $functionName;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
+		$this->typeAliasesMap = $typeAliasesMap;
 	}
 
 	public function getNamespace(): ?string
@@ -117,7 +122,8 @@ class NameScope
 			new TemplateTypeMap(array_merge(
 				$this->templateTypeMap->getTypes(),
 				$map->getTypes()
-			))
+			)),
+			$this->typeAliasesMap
 		);
 	}
 
@@ -133,8 +139,14 @@ class NameScope
 			$this->uses,
 			$this->className,
 			$this->functionName,
-			$this->templateTypeMap->unsetType($name)
+			$this->templateTypeMap->unsetType($name),
+			$this->typeAliasesMap
 		);
+	}
+
+	public function hasTypeAlias(string $alias): bool
+	{
+		return array_key_exists($alias, $this->typeAliasesMap);
 	}
 
 	/**
@@ -148,7 +160,8 @@ class NameScope
 			$properties['uses'],
 			$properties['className'],
 			$properties['functionName'],
-			$properties['templateTypeMap']
+			$properties['templateTypeMap'],
+			$properties['typeAliasesMap']
 		);
 	}
 

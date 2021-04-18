@@ -85,6 +85,7 @@ class TypeAliasResolver
 		$this->resolvingClassTypeAliases[$className] = true;
 
 		if (!$this->reflectionProvider->hasClass($className)) {
+			unset($this->resolvingClassTypeAliases[$className]);
 			return null;
 		}
 

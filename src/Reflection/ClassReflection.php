@@ -769,8 +769,12 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		if ($this->typeAliases === null) {
 			$resolvedPhpDoc = $this->getResolvedPhpDoc();
-			$typeAliasImportTags = $resolvedPhpDoc !== null ? $resolvedPhpDoc->getTypeAliasImportTags() : [];
-			$typeAliasTags = $resolvedPhpDoc !== null ? $resolvedPhpDoc->getTypeAliasTags() : [];
+			if ($resolvedPhpDoc === null) {
+				return $this->typeAliases = [];
+			}
+
+			$typeAliasImportTags = $resolvedPhpDoc->getTypeAliasImportTags();
+			$typeAliasTags = $resolvedPhpDoc->getTypeAliasTags();
 
 			// prevent circular imports
 			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {

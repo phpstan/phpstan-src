@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -14,7 +15,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @implements Rule<Node\Stmt\ClassLike>
+ * @implements Rule<InClassNode>
  */
 class LocalTypeAliasesRule implements Rule
 {
@@ -42,17 +43,12 @@ class LocalTypeAliasesRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\ClassLike::class;
+		return InClassNode::class;
 	}
 
-	/** @param Node\Stmt\ClassLike $node */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->name === null) {
-			return [];
-		}
-
-		$reflection = $this->reflectionProvider->getClass((string) $node->namespacedName);
+		$reflection = $node->getClassReflection();
 		$phpDoc = $reflection->getResolvedPhpDoc();
 		if ($phpDoc === null) {
 			return [];

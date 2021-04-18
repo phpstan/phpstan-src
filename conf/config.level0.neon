@@ -30,7 +30,6 @@ rules:
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
 	- PHPStan\Rules\Classes\InstantiationRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
-	#- PHPStan\Rules\Classes\LocalTypeAliasesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
@@ -201,3 +200,10 @@ services:
 
 	-
 		class: PHPStan\Rules\Whitespace\FileWhitespaceRule
+
+	-
+		class: PHPStan\Rules\Classes\LocalTypeAliasesRule
+		arguments:
+			globalTypeAliases: %typeAliases%
+		tags:
+			- phpstan.rules.rule

@@ -69,7 +69,7 @@ class LocalTypeAliasesRule implements Rule
 		foreach ($phpDoc->getTypeAliasImportTags() as $typeAliasImportTag) {
 			$aliasName = $typeAliasImportTag->getImportedAs() ?? $typeAliasImportTag->getImportedAlias();
 			$importedAlias = $typeAliasImportTag->getImportedAlias();
-			$importedFromClassName = $resolveName($typeAliasImportTag->getImportedFrom());
+			$importedFromClassName = $typeAliasImportTag->getImportedFrom();
 
 			if (!$this->reflectionProvider->hasClass($importedFromClassName)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Cannot import type alias %s: class %s does not exist.', $importedAlias, $importedFromClassName))->build();

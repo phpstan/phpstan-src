@@ -395,7 +395,7 @@ class PhpDocNodeResolver
 		foreach (['@psalm-import-type', '@phpstan-import-type'] as $tagName) {
 			foreach ($phpDocNode->getTypeAliasImportTagValues($tagName) as $typeAliasImportTagValue) {
 				$importedAlias = $typeAliasImportTagValue->importedAlias;
-				$importedFrom = $typeAliasImportTagValue->importedFrom->name;
+				$importedFrom = $nameScope->resolveStringName($typeAliasImportTagValue->importedFrom->name);
 				$importedAs = $typeAliasImportTagValue->importedAs;
 				$resolved[$importedAs ?? $importedAlias] = new TypeAliasImportTag($importedAlias, $importedFrom, $importedAs);
 			}

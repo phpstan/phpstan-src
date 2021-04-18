@@ -6,10 +6,13 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeTraverser;
 
 /**
@@ -113,6 +116,17 @@ class LocalTypeAliasesRule implements Rule
 			if (array_key_exists($aliasName, $this->globalTypeAliases)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a global type alias.', $aliasName))->build();
 				continue;
+			}
+
+			if ($nameScope !== null) {
+				$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope);
+				if (!($aliasNameResolvedType instanceof ObjectType)
+					&& !($aliasNameResolvedType instanceof TemplateType) // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
+					|| in_array($aliasName, ['self', 'parent'], true)
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Type alias has an invalid name: %s.', $aliasName))->build();
+					continue;
+				}
 			}
 
 			$resolvedType = $typeAliasTag->getTypeAlias()->resolve($this->typeNodeResolver);

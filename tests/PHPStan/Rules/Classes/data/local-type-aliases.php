@@ -15,6 +15,7 @@ class Foo
  * @phpstan-type LocalTypeAlias int
  * @phpstan-type ExistingClassAlias \stdClass
  * @phpstan-type GlobalTypeAlias bool
+ * @phpstan-type int \stdClass
  * @phpstan-type RecursiveTypeAlias RecursiveTypeAlias[]
  * @phpstan-type CircularTypeAlias1 CircularTypeAlias2
  * @phpstan-type CircularTypeAlias2 CircularTypeAlias1
@@ -43,5 +44,13 @@ class Baz
  * @phpstan-type CircularTypeAliasImport1 CircularTypeAliasImport2
  */
 class Qux
+{
+}
+
+/**
+ * @phpstan-template T
+ * @phpstan-type T never
+ */
+class Generic
 {
 }

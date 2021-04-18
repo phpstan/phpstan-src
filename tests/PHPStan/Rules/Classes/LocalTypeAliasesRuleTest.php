@@ -26,55 +26,59 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/local-type-aliases.php'], [
 			[
 				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeAliases\Bar.',
-				22,
+				23,
 			],
 			[
 				'Type alias GlobalTypeAlias already exists as a global type alias.',
-				22,
+				23,
+			],
+			[
+				'Type alias has an invalid name: int.',
+				23,
 			],
 			[
 				'Circular definition detected in type alias RecursiveTypeAlias.',
-				22,
+				23,
 			],
 			[
 				'Circular definition detected in type alias CircularTypeAlias1.',
-				22,
+				23,
 			],
 			[
 				'Circular definition detected in type alias CircularTypeAlias2.',
-				22,
+				23,
 			],
 			[
 				'Cannot import type alias ImportedAliasFromNonClass: class LocalTypeAliases\int does not exist.',
-				37,
+				38,
 			],
 			[
 				'Cannot import type alias ImportedAliasFromUnknownClass: class LocalTypeAliases\UnknownClass does not exist.',
-				37,
+				38,
 			],
 			[
 				'Cannot import type alias ImportedUnknownAlias: type alias does not exist in LocalTypeAliases\Foo.',
-				37,
+				38,
 			],
 			[
 				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeAliases\Baz.',
-				37,
+				38,
 			],
 			[
 				'Type alias GlobalTypeAlias already exists as a global type alias.',
-				37,
+				38,
 			],
 			[
 				'Type alias OverwrittenTypeAlias overwrites an imported type alias of the same name.',
-				37,
+				38,
 			],
 			[
 				'Circular definition detected in type alias CircularTypeAliasImport2.',
-				37,
+				38,
 			],
 			[
 				'Circular definition detected in type alias CircularTypeAliasImport1.',
-				45,
+				46,
 			],
 		]);
 	}

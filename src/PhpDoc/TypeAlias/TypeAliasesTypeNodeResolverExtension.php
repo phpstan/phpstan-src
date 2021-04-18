@@ -23,6 +23,10 @@ class TypeAliasesTypeNodeResolverExtension implements TypeNodeResolverExtension
 
 	public function resolve(TypeNode $typeNode, NameScope $nameScope): ?Type
 	{
+		if ($nameScope->shouldBypassTypeAliases()) {
+			return null;
+		}
+
 		if ($typeNode instanceof IdentifierTypeNode) {
 			$aliasName = $typeNode->name;
 			return $this->typeAliasResolver->resolveTypeAlias($aliasName, $nameScope);

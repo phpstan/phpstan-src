@@ -23,10 +23,6 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			self::markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->analyse([__DIR__ . '/data/local-type-aliases.php'], [
 			[
 				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeAliases\Bar.',

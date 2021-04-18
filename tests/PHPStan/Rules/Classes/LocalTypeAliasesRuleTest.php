@@ -45,7 +45,7 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				22,
 			],
 			[
-				'Cannot import type alias ImportedAliasFromNonClass from a non-class type int.',
+				'Cannot import type alias ImportedAliasFromNonClass: class LocalTypeAliases\int does not exist.',
 				37,
 			],
 			[

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
+use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -23,7 +24,6 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
 use PHPStan\Type\VerbosityLevel;
@@ -776,6 +776,8 @@ class ClassReflection implements ReflectionWithFilename
 			$typeAliasImportTags = $resolvedPhpDoc->getTypeAliasImportTags();
 			$typeAliasTags = $resolvedPhpDoc->getTypeAliasTags();
 
+			$nameScope = $resolvedPhpDoc->getNullableNameScope() ?? new NameScope(null, []);
+
 			// prevent circular imports
 			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {
 				throw new \PHPStan\Type\CircularTypeAliasDefinitionException();
@@ -783,15 +785,10 @@ class ClassReflection implements ReflectionWithFilename
 
 			self::$resolvingTypeAliasImports[$this->getName()] = true;
 
-			$importedAliases = array_map(function (TypeAliasImportTag $typeAliasImportTag): ?TypeAlias {
+			$importedAliases = array_map(function (TypeAliasImportTag $typeAliasImportTag) use ($nameScope): ?TypeAlias {
 				$importedAlias = $typeAliasImportTag->getImportedAlias();
-				$importedFrom = $typeAliasImportTag->getImportedFrom();
+				$importedFromClassName = $nameScope->resolveStringName($typeAliasImportTag->getImportedFrom());
 
-				if (!($importedFrom instanceof ObjectType)) {
-					return null;
-				}
-
-				$importedFromClassName = $importedFrom->getClassName();
 				if (!$this->reflectionProvider->hasClass($importedFromClassName)) {
 					return null;
 				}

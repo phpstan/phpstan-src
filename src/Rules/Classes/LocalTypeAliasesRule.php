@@ -10,9 +10,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\VerbosityLevel;
 
 /**
  * @implements Rule<InClassNode>
@@ -71,14 +69,8 @@ class LocalTypeAliasesRule implements Rule
 		foreach ($phpDoc->getTypeAliasImportTags() as $typeAliasImportTag) {
 			$aliasName = $typeAliasImportTag->getImportedAs() ?? $typeAliasImportTag->getImportedAlias();
 			$importedAlias = $typeAliasImportTag->getImportedAlias();
-			$importedFrom = $typeAliasImportTag->getImportedFrom();
+			$importedFromClassName = $resolveName($typeAliasImportTag->getImportedFrom());
 
-			if (!($importedFrom instanceof ObjectType)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Cannot import type alias %s from a non-class type %s.', $importedAlias, $importedFrom->describe(VerbosityLevel::typeOnly())))->build();
-				continue;
-			}
-
-			$importedFromClassName = $importedFrom->getClassName();
 			if (!$this->reflectionProvider->hasClass($importedFromClassName)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Cannot import type alias %s: class %s does not exist.', $importedAlias, $importedFromClassName))->build();
 				continue;

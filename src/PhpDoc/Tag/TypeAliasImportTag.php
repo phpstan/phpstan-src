@@ -7,11 +7,11 @@ final class TypeAliasImportTag
 
 	private string $importedAlias;
 
-	private \PHPStan\Type\Type $importedFrom;
+	private string $importedFrom;
 
 	private ?string $importedAs;
 
-	public function __construct(string $importedAlias, \PHPStan\Type\Type $importedFrom, ?string $importedAs)
+	public function __construct(string $importedAlias, string $importedFrom, ?string $importedAs)
 	{
 		$this->importedAlias = $importedAlias;
 		$this->importedFrom = $importedFrom;
@@ -23,7 +23,7 @@ final class TypeAliasImportTag
 		return $this->importedAlias;
 	}
 
-	public function getImportedFrom(): \PHPStan\Type\Type
+	public function getImportedFrom(): string
 	{
 		return $this->importedFrom;
 	}

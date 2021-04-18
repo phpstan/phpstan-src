@@ -65,6 +65,7 @@ namespace TypeAliasesDataset {
 	 * @phpstan-type RecursiveTypeAlias RecursiveTypeAlias[]
 	 * @phpstan-type CircularTypeAlias1 CircularTypeAlias2
 	 * @phpstan-type CircularTypeAlias2 CircularTypeAlias1
+	 * @phpstan-type int ShouldNotHappen
 	 * @property GlobalTypeAlias $globalAliasProperty
 	 * @property LocalTypeAlias $localAliasProperty
 	 * @property ImportedTypeAlias $importedAliasProperty
@@ -139,6 +140,12 @@ namespace TypeAliasesDataset {
 		public function __get(string $name)
 		{
 			return null;
+		}
+
+		/** @param int $int */
+		public function testIntAlias($int)
+		{
+			assertType('int', $int);
 		}
 
 	}

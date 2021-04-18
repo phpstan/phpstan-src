@@ -5,18 +5,7 @@
 	<property name="url.composer-require-checker"
 			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.1.0/composer-require-checker.phar"/>
 	<property name="phpstan.config" value="phpstan.neon"/>
-	<if>
-		<and>
-			<not><os family="windows"/></not>
-			<available file="vendor/bin/paratest"/>
-		</and>
-		<then>
-			<property name="phpunit.executable" value="vendor/bin/paratest"/>
-		</then>
-		<else>
-			<property name="phpunit.executable" value="vendor/bin/phpunit"/>
-		</else>
-	</if>
+	<property name="phpunit.executable" value="vendor/bin/paratest"/>
 	<target name="check" depends="
 		composer-validate,
 		composer-install,

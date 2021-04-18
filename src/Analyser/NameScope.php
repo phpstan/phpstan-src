@@ -114,6 +114,10 @@ class NameScope
 
 	public function withTemplateTypeMap(TemplateTypeMap $map): self
 	{
+		if ($map->isEmpty()) {
+			return $this;
+		}
+
 		return new self(
 			$this->namespace,
 			$this->uses,

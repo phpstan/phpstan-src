@@ -76,6 +76,10 @@ class TypeAliasResolver
 			return null;
 		}
 
+		if (!$nameScope->hasTypeAlias($aliasName)) {
+			return null;
+		}
+
 		$className = $nameScope->getClassName();
 		if ($className === null) {
 			return null;

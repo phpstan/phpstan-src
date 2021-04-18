@@ -10380,13 +10380,6 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 		}
 	}
 
-	public function dataTypeAliases(): array
-	{
-		require_once __DIR__ . '/data/type-aliases.php';
-
-		return $this->gatherAssertTypes(__DIR__ . '/data/type-aliases.php');
-	}
-
 	/**
 	 * @param string $file
 	 * @return array<string, mixed[]>

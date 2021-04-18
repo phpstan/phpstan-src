@@ -191,6 +191,7 @@
 			<arg path="${phpunit.executable}"/>
 			<arg value="-c"/>
 			<arg value="tests/phpunit.xml"/>
+			<arg value="--no-coverage"/>
 			<arg path="tests/PHPStan"/>
 		</exec>
 	</target>
@@ -209,6 +210,7 @@
 			<arg value="tests/phpunit.xml"/>
 			<arg value="--exclude-group"/>
 			<arg value="exec"/>
+			<arg value="--no-coverage"/>
 			<arg path="tests/PHPStan"/>
 		</exec>
 	</target>
@@ -229,6 +231,7 @@
 			<arg value="exec"/>
 			<arg value="--bootstrap"/>
 			<arg path="tests/bootstrap-static-reflection.php"/>
+			<arg value="--no-coverage"/>
 			<arg path="tests/PHPStan"/>
 		</exec>
 	</target>

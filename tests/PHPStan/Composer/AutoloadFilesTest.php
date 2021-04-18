@@ -7,16 +7,12 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
-use const PHP_VERSION_ID;
 
 class AutoloadFilesTest extends TestCase
 {
 
 	public function testExpectedFiles(): void
 	{
-		if (PHP_VERSION_ID >= 70400) {
-			$this->markTestSkipped();
-		}
 		$finder = new Finder();
 		$finder->followLinks();
 		$autoloadFiles = [];
@@ -61,6 +57,13 @@ class AutoloadFilesTest extends TestCase
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php80/bootstrap.php', // afaik polyfills aren't necessary
 		];
+
+		$phpunitFunctions = 'phpunit/phpunit/src/Framework/Assert/Functions.php';
+		if (is_file(__DIR__ . '/../../../vendor/' . $phpunitFunctions)) {
+			array_splice($expectedFiles, 6, 0, [
+				$phpunitFunctions,
+			]);
+		}
 
 		$expectedFiles = array_map(static function (string $path) use ($fileHelper): string {
 			return $fileHelper->normalizePath($path);

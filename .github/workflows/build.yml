@@ -46,7 +46,7 @@ jobs:
         run: php bin/transform-source.php
 
       - name: "Lint"
-        run: "vendor/bin/phing lint"
+        run: "make lint"
 
   coding-standards:
     name: "Coding Standard"
@@ -75,10 +75,10 @@ jobs:
         run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Lint"
-        run: "vendor/bin/phing lint"
+        run: "make lint"
 
       - name: "Coding Standard"
-        run: "vendor/bin/phing cs"
+        run: "make cs"
 
   dependency-analysis:
     name: "Dependency Analysis"
@@ -88,7 +88,7 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "7.4"
+          - "8.0"
 
     steps:
       - name: "Checkout"
@@ -104,7 +104,7 @@ jobs:
         run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Composer Require Checker"
-        run: "vendor/bin/phing composer-require-checker"
+        run: "make composer-require-checker"
 
   tests:
     name: "Tests"
@@ -114,15 +114,14 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.1"
-          - "7.2"
           - "7.3"
           - "7.4"
           - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
-          - "vendor/bin/phing tests"
-          - "vendor/bin/phing tests-fast-static-reflection"
+          - "make tests"
+          - "make tests-static-reflection"
+          - "make tests-integration"
 
     steps:
       - name: "Checkout"
@@ -140,12 +139,49 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress --no-suggest"
 
-      - name: "Update PHPUnit"
-        if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
-        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/reflection-docblock:'5.2.0' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
-
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
+        run: php bin/transform-source.php
+
+      - name: "Tests"
+        run: "${{ matrix.script }}"
+
+  tests-old-phpunit:
+    name: "Tests with old PHPUnit"
+    runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "7.1"
+          - "7.2"
+        operating-system: [ubuntu-latest, windows-latest]
+        script:
+          - "make tests-coverage"
+          - "make tests-static-reflection-coverage"
+          - "make tests-integration-coverage"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=640M
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Downgrade PHPUnit"
+        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies"
+
+      - name: "Transform source code"
         run: php bin/transform-source.php
 
       - name: "Tests"
@@ -173,9 +209,7 @@ jobs:
 
       - name: "Tests"
         run: |
-          composer require pcov/clobber --dev && \
-          vendor/bin/pcov clobber && \
-          php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit -c tests/phpunit.xml tests/PHPStan
+          php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit
 
       - name: "Coveralls"
         env:
@@ -199,9 +233,9 @@ jobs:
           - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
-          - "vendor/bin/phing phpstan"
-          - "vendor/bin/phing phpstan-static-reflection"
-          - "vendor/bin/phing phpstan-validate-stub-files"
+          - "make phpstan"
+          - "make phpstan-static-reflection"
+          - "make phpstan-validate-stub-files"
 
     steps:
       - name: "Checkout"
@@ -217,9 +251,9 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress --no-suggest"
 
-      - name: "Update PHPUnit"
-        if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
-        run: "composer remove --dev brianium/paratest && composer require phpdocumentor/reflection-docblock:'5.2.0' && composer require --dev phpspec/prophecy:'^1.11.1' && composer require --dev phpunit/phpunit:'^9.3' --update-with-dependencies"
+      - name: "Downgrade PHPUnit"
+        if: matrix.php-version == '7.1' || matrix.php-version == '7.2'
+        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
@@ -260,12 +294,12 @@ jobs:
 
       - name: "PHPStan with result cache"
         run: |
-          vendor/bin/phing phpstan-result-cache
+          make phpstan-result-cache
           bin/phpstan clear-result-cache -c build/phpstan.neon
-          vendor/bin/phing phpstan-result-cache
+          make phpstan-result-cache
           echo -e "\n\n" >> src/TrinaryLogic.php
-          vendor/bin/phing phpstan-result-cache
-          vendor/bin/phing phpstan-result-cache
+          make phpstan-result-cache
+          make phpstan-result-cache
 
       - name: "Upload result cache artifact"
         uses: actions/upload-artifact@v2
@@ -301,7 +335,7 @@ jobs:
 
       - name: "Tests"
         run: |
-          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit -c tests/phpunit.xml tests/e2e/ResultCacheEndToEndTest.php
+          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit tests/e2e/ResultCacheEndToEndTest.php
 
   compiler-tests:
     name: "Compiler Tests"
@@ -359,7 +393,7 @@ jobs:
       - name: "Generate baseline"
         run: |
           cp phpstan-baseline.neon phpstan-baseline-orig.neon && \
-          vendor/bin/phing phpstan-generate-baseline && \
+          make phpstan-generate-baseline && \
           diff phpstan-baseline.neon phpstan-baseline-orig.neon
 
   e2e-tests:

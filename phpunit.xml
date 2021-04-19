@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="phpunit.xsd"
-	bootstrap="bootstrap-runtime-reflection.php"
+	xsi:noNamespaceSchemaLocation="tests/phpunit.xsd"
+	bootstrap="tests/bootstrap-runtime-reflection.php"
+	cacheResult="false"
 	colors="true"
 	failOnRisky="true"
 	failOnWarning="true"
@@ -10,19 +11,27 @@
 	beStrictAboutOutputDuringTests="true"
 	beStrictAboutTodoAnnotatedTests="true"
 	verbose="false">
-	<testsuite name="PHPStan">
-		<directory suffix="Test.php">.</directory>
-	</testsuite>
+	<testsuites>
+		<testsuite name="PHPStan">
+			<directory suffix="Test.php">tests/PHPStan</directory>
+		</testsuite>
+	</testsuites>
+
+	<groups>
+		<exclude>
+			<group>exec</group>
+		</exclude>
+	</groups>
 
 	<filter>
 		<whitelist processUncoveredFilesFromWhitelist="true">
-			<directory suffix=".php">../src</directory>
+			<directory suffix=".php">src</directory>
 		</whitelist>
 	</filter>
 
 	<logging>
 		<log type="coverage-text" target="php://stdout" showUncoveredFiles="true" showOnlySummary="true"/>
-		<log type="coverage-clover" target="tmp/clover.xml"/>
+		<log type="coverage-clover" target="tests/tmp/clover.xml"/>
 	</logging>
 </phpunit>
 

@@ -40,15 +40,14 @@
 		"phpstan/phpstan": "self.version"
 	},
 	"require-dev": {
-		"brianium/paratest": "^4.0",
+		"brianium/paratest": "^6.2.0",
 		"nategood/httpful": "^0.2.20",
-		"phing/phing": "^2.16.0",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"phpstan/phpstan-deprecation-rules": "^0.12.3",
 		"phpstan/phpstan-php-parser": "^0.12",
 		"phpstan/phpstan-phpunit": "^0.12",
 		"phpstan/phpstan-strict-rules": "^0.12",
-		"phpunit/phpunit": "^7.5.18"
+		"phpunit/phpunit": "^9.5.4"
 	},
 	"config": {
 		"platform": {

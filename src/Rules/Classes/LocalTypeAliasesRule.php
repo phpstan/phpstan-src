@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
+use PHPStan\Analyser\NameScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -97,6 +98,12 @@ class LocalTypeAliasesRule implements Rule
 				continue;
 			}
 
+			$importedAs = $typeAliasImportTag->getImportedAs();
+			if ($importedAs !== null && !$this->isAliasNameValid($importedAs, $nameScope)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Imported type alias %s has an invalid name: %s.', $importedAlias, $importedAs))->build();
+				continue;
+			}
+
 			$importedAliases[] = $aliasName;
 		}
 
@@ -118,15 +125,9 @@ class LocalTypeAliasesRule implements Rule
 				continue;
 			}
 
-			if ($nameScope !== null) {
-				$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope);
-				if (!($aliasNameResolvedType instanceof ObjectType)
-					&& !($aliasNameResolvedType instanceof TemplateType) // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
-					|| in_array($aliasName, ['self', 'parent'], true)
-				) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Type alias has an invalid name: %s.', $aliasName))->build();
-					continue;
-				}
+			if (!$this->isAliasNameValid($aliasName, $nameScope)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias has an invalid name: %s.', $aliasName))->build();
+				continue;
 			}
 
 			$resolvedType = $typeAliasTag->getTypeAlias()->resolve($this->typeNodeResolver);
@@ -147,6 +148,17 @@ class LocalTypeAliasesRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	private function isAliasNameValid(string $aliasName, ?NameScope $nameScope): bool
+	{
+		if ($nameScope === null) {
+			return true;
+		}
+
+		$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope);
+		return ($aliasNameResolvedType instanceof ObjectType && !in_array($aliasName, ['self', 'parent'], true))
+			|| $aliasNameResolvedType instanceof TemplateType; // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
 	}
 
 }

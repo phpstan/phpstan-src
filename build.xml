@@ -1,51 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project name="PHPStan" default="check">
-	<property name="path.composer-require-checker"
-			  value="tmp/composer-require-checker-2.1.0.phar"/>
-	<property name="url.composer-require-checker"
-			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.1.0/composer-require-checker.phar"/>
-	<property name="phpstan.config" value="phpstan.neon"/>
-
-	<target name="composer-require-checker">
-		<if>
-			<and>
-				<not>
-					<available file="${path.composer-require-checker}"/>
-				</not>
-				<not><os family="windows"/></not>
-			</and>
-			<then>
-				<exec
-					executable="wget"
-					logoutput="true"
-					passthru="true"
-					checkreturn="true"
-				>
-					<arg value="-O"/>
-					<arg path="${path.composer-require-checker}"/>
-					<arg value="${url.composer-require-checker}"/>
-				</exec>
-			</then>
-		</if>
-		<if>
-			<available file="${path.composer-require-checker}"/>
-			<then>
-				<exec
-						executable="php"
-						logoutput="true"
-						passthru="true"
-						checkreturn="true"
-				>
-					<arg path="${path.composer-require-checker}"/>
-					<arg value="check"/>
-					<arg value="--config-file"/>
-					<arg path="${project.basedir}/build/composer-require-checker.json"/>
-					<arg path="composer.json"/>
-				</exec>
-			</then>
-		</if>
-	</target>
-
+<project name="PHPStan">
 	<target name="lint">
 		<exec
 				executable="vendor/bin/parallel-lint"
@@ -95,72 +49,6 @@
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />
-		</exec>
-	</target>
-
-	<target name="phpstan-result-cache">
-		<delete file="${phpstan.config}"/>
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="bin/phpstan"/>
-		</exec>
-	</target>
-
-	<target name="phpstan-validate-stub-files">
-		<touch file="empty.php"/>
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="bin/phpstan"/>
-			<arg value="analyse"/>
-			<arg value="-c"/>
-			<arg path="conf/config.stubFiles.neon"/>
-			<arg value="-l"/>
-			<arg value="8"/>
-			<arg path="empty.php"/>
-		</exec>
-		<delete file="empty.php"/>
-	</target>
-
-	<target name="phpstan-pro">
-		<delete file="${phpstan.config}"/>
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=1024M"/>
-			<arg path="bin/phpstan"/>
-			<arg value="--pro"/>
-		</exec>
-	</target>
-
-	<target name="phpstan-generate-baseline">
-		<delete file="${phpstan.config}"/>
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="bin/phpstan"/>
-			<arg value="--generate-baseline"/>
-			<arg value="-vvv"/>
 		</exec>
 	</target>
 

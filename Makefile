@@ -20,6 +20,29 @@ tests-integration-coverage:
 tests-static-reflection-coverage:
 	php vendor/bin/paratest --bootstrap tests/bootstrap-static-reflection.php
 
+lint:
+	php vendor/bin/parallel-lint --colors \
+		--exclude tests/PHPStan/Analyser/data \
+		--exclude tests/PHPStan/Rules/Methods/data \
+		--exclude tests/PHPStan/Rules/Functions/data \
+		--exclude tests/PHPStan/Rules/Operators/data/invalid-inc-dec.php \
+		--exclude tests/PHPStan/Rules/Arrays/data/offset-access-without-dim-for-reading.php \
+		--exclude tests/PHPStan/Rules/Classes/data/duplicate-declarations.php \
+		--exclude tests/PHPStan/Rules/Classes/data/extends-error.php \
+		--exclude tests/PHPStan/Rules/Classes/data/implements-error.php \
+		--exclude tests/PHPStan/Rules/Classes/data/interface-extends-error.php \
+		--exclude tests/PHPStan/Rules/Classes/data/trait-use-error.php \
+		--exclude tests/PHPStan/Rules/Properties/data/default-value-for-native-property-type.php \
+		--exclude tests/PHPStan/Rules/Arrays/data/empty-array-item.php \
+		--exclude tests/PHPStan/Rules/Classes/data/invalid-promoted-properties.php \
+		--exclude tests/PHPStan/Rules/Classes/data/duplicate-promoted-property.php \
+		--exclude tests/PHPStan/Rules/Properties/data/default-value-for-promoted-property.php \
+		--exclude tests/PHPStan/Rules/Operators/data/invalid-assign-var.php \
+		--exclude tests/PHPStan/Rules/Functions/data/arrow-function-nullsafe-by-ref.php \
+		--exclude tests/PHPStan/Levels/data/namedArguments.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/continue-break.php \
+		src tests compiler/src
+
 cs:
 	composer install --working-dir build-cs && php build-cs/vendor/bin/phpcs
 
@@ -31,3 +54,18 @@ phpstan:
 
 phpstan-static-reflection:
 	php bin/phpstan clear-result-cache -q && php -d memory_limit=768M bin/phpstan analyse -c phpstan-static-reflection.neon
+
+phpstan-result-cache:
+	php -d memory_limit=768M bin/phpstan analyse -c phpstan-static-reflection.neon
+
+phpstan-generate-baseline:
+	php -d memory_limit=768M bin/phpstan --generate-baseline
+
+phpstan-validate-stub-files:
+	php bin/phpstan analyse -c conf/config.stubFiles.neon -l 8 tests/notAutoloaded/empty.php
+
+phpstan-pro:
+	php -d memory_limit=768M bin/phpstan --pro
+
+composer-require-checker:
+	php build/composer-require-checker.phar check --config-file $(CURDIR)/build/composer-require-checker.json

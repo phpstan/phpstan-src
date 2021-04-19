@@ -46,7 +46,7 @@ jobs:
         run: php bin/transform-source.php
 
       - name: "Lint"
-        run: "vendor/bin/phing lint"
+        run: "make lint"
 
   coding-standards:
     name: "Coding Standard"
@@ -75,7 +75,7 @@ jobs:
         run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Lint"
-        run: "vendor/bin/phing lint"
+        run: "make lint"
 
       - name: "Coding Standard"
         run: "make cs"
@@ -88,7 +88,7 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "7.4"
+          - "8.0"
 
     steps:
       - name: "Checkout"
@@ -104,7 +104,7 @@ jobs:
         run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Composer Require Checker"
-        run: "vendor/bin/phing composer-require-checker"
+        run: "make composer-require-checker"
 
   tests:
     name: "Tests"
@@ -235,7 +235,7 @@ jobs:
         script:
           - "make phpstan"
           - "make phpstan-static-reflection"
-          - "vendor/bin/phing phpstan-validate-stub-files"
+          - "make phpstan-validate-stub-files"
 
     steps:
       - name: "Checkout"
@@ -294,12 +294,12 @@ jobs:
 
       - name: "PHPStan with result cache"
         run: |
-          vendor/bin/phing phpstan-result-cache
+          make phpstan-result-cache
           bin/phpstan clear-result-cache -c build/phpstan.neon
-          vendor/bin/phing phpstan-result-cache
+          make phpstan-result-cache
           echo -e "\n\n" >> src/TrinaryLogic.php
-          vendor/bin/phing phpstan-result-cache
-          vendor/bin/phing phpstan-result-cache
+          make phpstan-result-cache
+          make phpstan-result-cache
 
       - name: "Upload result cache artifact"
         uses: actions/upload-artifact@v2
@@ -393,7 +393,7 @@ jobs:
       - name: "Generate baseline"
         run: |
           cp phpstan-baseline.neon phpstan-baseline-orig.neon && \
-          vendor/bin/phing phpstan-generate-baseline && \
+          make phpstan-generate-baseline && \
           diff phpstan-baseline.neon phpstan-baseline-orig.neon
 
   e2e-tests:

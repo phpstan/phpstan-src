@@ -6,30 +6,6 @@
 			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.1.0/composer-require-checker.phar"/>
 	<property name="phpstan.config" value="phpstan.neon"/>
 
-	<target name="composer-validate">
-		<exec
-				executable="composer"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
-		>
-			<arg value="validate"/>
-			<arg value="--ansi"/>
-		</exec>
-	</target>
-
-	<target name="composer-install">
-		<exec
-				executable="composer"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
-		>
-			<arg value="install"/>
-			<arg value="--ansi"/>
-		</exec>
-	</target>
-
 	<target name="composer-require-checker">
 		<if>
 			<and>
@@ -119,37 +95,6 @@
 			<arg path="src" />
 			<arg path="tests" />
 			<arg path="compiler/src" />
-		</exec>
-	</target>
-
-	<target name="cs">
-		<exec
-			executable="composer"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="install"/>
-			<arg value="--working-dir"/>
-			<arg path="build-cs"/>
-			<arg value="--ansi"/>
-		</exec>
-		<exec
-			executable="build-cs/vendor/bin/phpcs"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-		</exec>
-	</target>
-
-	<target name="cs-fix">
-		<exec
-				executable="build-cs/vendor/bin/phpcbf"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
-		>
 		</exec>
 	</target>
 

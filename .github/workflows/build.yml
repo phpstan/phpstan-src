@@ -78,7 +78,7 @@ jobs:
         run: "vendor/bin/phing lint"
 
       - name: "Coding Standard"
-        run: "vendor/bin/phing cs"
+        run: "make cs"
 
   dependency-analysis:
     name: "Dependency Analysis"

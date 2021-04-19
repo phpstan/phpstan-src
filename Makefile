@@ -17,3 +17,9 @@ tests-integration-coverage:
 
 tests-static-reflection-coverage:
 	vendor/bin/paratest --bootstrap tests/bootstrap-static-reflection.php
+
+cs:
+	composer install --working-dir build-cs && build-cs/vendor/bin/phpcs
+
+cs-fix:
+	build-cs/vendor/bin/phpcbf

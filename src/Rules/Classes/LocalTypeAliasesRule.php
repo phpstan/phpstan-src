@@ -156,7 +156,7 @@ class LocalTypeAliasesRule implements Rule
 			return true;
 		}
 
-		$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope);
+		$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope->bypassTypeAliases());
 		return ($aliasNameResolvedType instanceof ObjectType && !in_array($aliasName, ['self', 'parent'], true))
 			|| $aliasNameResolvedType instanceof TemplateType; // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
 	}

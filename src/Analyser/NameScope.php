@@ -23,13 +23,15 @@ class NameScope
 	/** @var array<string, true> */
 	private array $typeAliasesMap;
 
+	private bool $bypassTypeAliases;
+
 	/**
 	 * @param string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param string|null $className
 	 * @param array<string, true> $typeAliasesMap
 	 */
-	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, array $typeAliasesMap = [])
+	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, array $typeAliasesMap = [], bool $bypassTypeAliases = false)
 	{
 		$this->namespace = $namespace;
 		$this->uses = $uses;
@@ -37,6 +39,7 @@ class NameScope
 		$this->functionName = $functionName;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->typeAliasesMap = $typeAliasesMap;
+		$this->bypassTypeAliases = $bypassTypeAliases;
 	}
 
 	public function getNamespace(): ?string
@@ -146,6 +149,16 @@ class NameScope
 			$this->templateTypeMap->unsetType($name),
 			$this->typeAliasesMap
 		);
+	}
+
+	public function bypassTypeAliases(): self
+	{
+		return new self($this->namespace, $this->uses, $this->className, $this->functionName, $this->templateTypeMap, $this->typeAliasesMap, true);
+	}
+
+	public function shouldBypassTypeAliases(): bool
+	{
+		return $this->bypassTypeAliases;
 	}
 
 	public function hasTypeAlias(string $alias): bool

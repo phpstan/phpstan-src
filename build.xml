@@ -98,69 +98,6 @@
 		</exec>
 	</target>
 
-	<target name="phpstan">
-		<delete file="${phpstan.config}"/>
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg path="bin/phpstan"/>
-			<arg value="clear-result-cache"/>
-			<arg value="-q"/>
-		</exec>
-		<exec
-				executable="php"
-				logoutput="true"
-				passthru="true"
-				checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="bin/phpstan"/>
-		</exec>
-	</target>
-
-	<target name="phpstan-static-reflection">
-		<touch file="${phpstan.config}"/>
-		<append
-			destFile="${phpstan.config}"
-			text="includes: [ build/phpstan.neon"
-			append="false"
-		></append>
-		<append
-			destFile="${phpstan.config}"
-			text=", conf/staticReflection.neon"
-		></append>
-		<append
-			destFile="${phpstan.config}"
-			text=" ]"
-		></append>
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg path="bin/phpstan"/>
-			<arg value="clear-result-cache"/>
-			<arg value="-c"/>
-			<arg path="${phpstan.config}"/>
-			<arg value="-q"/>
-		</exec>
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="bin/phpstan"/>
-		</exec>
-	</target>
-
 	<target name="phpstan-result-cache">
 		<delete file="${phpstan.config}"/>
 		<exec

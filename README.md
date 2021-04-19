@@ -21,7 +21,7 @@ Initially you need to run `composer install`, or `composer update` in case you a
 Afterwards you can either run the whole build including linting and coding standards using
 
 ```bash
-vendor/bin/phing
+make
 ```
 
 ### Running development version
@@ -29,7 +29,7 @@ vendor/bin/phing
 You can also choose to run only part of the build. To analyse PHPStan by PHPStan itself, run:
 
 ```bash
-vendor/bin/phing phpstan
+make phpstan
 ```
 
 ### Fixing code style
@@ -37,7 +37,7 @@ vendor/bin/phing phpstan
 To detect code style issues, run:
 
 ```bash
-vendor/bin/phing cs
+make cs
 ```
 
 This requires PHP 7.4. On older versions the build target will be skipped and succeed silently.
@@ -45,20 +45,14 @@ This requires PHP 7.4. On older versions the build target will be skipped and su
 And then to fix code style, run:
 
 ```bash
-vendor/bin/phing cs-fix
+make cs-fix
 ```
 
 ### Running tests
 
 Run:
 ```bash
-vendor/bin/phing tests
-```
-
-You can find most issues by running `tests-fast` only which is recommended during development:
-
-```bash
-vendor/bin/phing tests-fast
+make tests
 ```
 
 ### Debugging

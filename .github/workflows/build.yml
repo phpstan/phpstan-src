@@ -233,8 +233,8 @@ jobs:
           - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
         script:
-          - "vendor/bin/phing phpstan"
-          - "vendor/bin/phing phpstan-static-reflection"
+          - "make phpstan"
+          - "make phpstan-static-reflection"
           - "vendor/bin/phing phpstan-validate-stub-files"
 
     steps:

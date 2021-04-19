@@ -1,0 +1,3 @@
+includes:
+	- build/phpstan.neon
+	- conf/staticReflection.neon

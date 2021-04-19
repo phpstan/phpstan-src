@@ -3,7 +3,7 @@
 class FooWithoutNamespace
 {
 
-	public function misleadingBoolReturnType(): boolean
+	public function misleadingBoolReturnType(): \boolean
 	{
 		if (rand(0, 1)) {
 			return true;
@@ -18,7 +18,7 @@ class FooWithoutNamespace
 		}
 	}
 
-	public function misleadingIntReturnType(): integer
+	public function misleadingIntReturnType(): \integer
 	{
 		if (rand(0, 1)) {
 			return 1;

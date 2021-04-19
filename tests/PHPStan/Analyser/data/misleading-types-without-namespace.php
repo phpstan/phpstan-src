@@ -3,12 +3,12 @@
 class FooClassForNodeScopeResolverTestingWithoutNamespace
 {
 
-	public function misleadingBoolReturnType(): boolean
+	public function misleadingBoolReturnType(): \boolean
 	{
 
 	}
 
-	public function misleadingIntReturnType(): integer
+	public function misleadingIntReturnType(): \integer
 	{
 
 	}

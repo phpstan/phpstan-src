@@ -5,12 +5,12 @@ namespace MisleadingTypes;
 class Foo
 {
 
-	public function misleadingBoolReturnType(): boolean
+	public function misleadingBoolReturnType(): \MisleadingTypes\boolean
 	{
 
 	}
 
-	public function misleadingIntReturnType(): integer
+	public function misleadingIntReturnType(): \MisleadingTypes\integer
 	{
 
 	}

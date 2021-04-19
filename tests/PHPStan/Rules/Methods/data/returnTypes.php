@@ -349,7 +349,7 @@ class Foo extends FooParent implements FooInterface
 		}
 	}
 
-	public function misleadingBoolReturnType(): boolean
+	public function misleadingBoolReturnType(): \ReturnTypes\boolean
 	{
 		if (rand(0, 1)) {
 			return true;
@@ -362,7 +362,7 @@ class Foo extends FooParent implements FooInterface
 		}
 	}
 
-	public function misleadingIntReturnType(): integer
+	public function misleadingIntReturnType(): \ReturnTypes\integer
 	{
 		if (rand(0, 1)) {
 			return 1;

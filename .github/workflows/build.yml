@@ -335,7 +335,7 @@ jobs:
 
       - name: "Tests"
         run: |
-          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit tests/e2e/ResultCacheEndToEndTest.php --group exec
+          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit tests/e2e/ResultCacheEndToEndTest.php
 
   compiler-tests:
     name: "Compiler Tests"

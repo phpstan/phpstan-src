@@ -31,6 +31,7 @@ class Bar
  * @phpstan-import-type ExportedTypeAlias from Foo as ExistingClassAlias
  * @phpstan-import-type ExportedTypeAlias from Foo as GlobalTypeAlias
  * @phpstan-import-type ExportedTypeAlias from Foo as OverwrittenTypeAlias
+ * @phpstan-import-type ExportedTypeAlias from Foo as int
  * @phpstan-type OverwrittenTypeAlias string
  * @phpstan-import-type CircularTypeAliasImport1 from Qux
  * @phpstan-type CircularTypeAliasImport2 CircularTypeAliasImport1

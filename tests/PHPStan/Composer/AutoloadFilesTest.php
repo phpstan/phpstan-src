@@ -59,7 +59,7 @@ class AutoloadFilesTest extends TestCase
 		];
 
 		$phpunitFunctions = 'phpunit/phpunit/src/Framework/Assert/Functions.php';
-		if (is_file(__DIR__ . '/../../../vendor/' . $phpunitFunctions)) {
+		if (PHP_VERSION_ID >= 70300) {
 			array_splice($expectedFiles, 6, 0, [
 				$phpunitFunctions,
 			]);

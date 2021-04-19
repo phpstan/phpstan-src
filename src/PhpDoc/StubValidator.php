@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Broker\Broker;
@@ -60,7 +61,7 @@ class StubValidator
 	 * @param string[] $stubFiles
 	 * @return \PHPStan\Analyser\Error[]
 	 */
-	public function validate(array $stubFiles): array
+	public function validate(array $stubFiles, bool $debug): array
 	{
 		if (count($stubFiles) === 0) {
 			return [];
@@ -84,15 +85,24 @@ class StubValidator
 
 		$errors = [];
 		foreach ($stubFiles as $stubFile) {
-			$tmpErrors = $fileAnalyser->analyseFile(
-				$stubFile,
-				$analysedFiles,
-				$ruleRegistry,
-				static function (): void {
+			try {
+				$tmpErrors = $fileAnalyser->analyseFile(
+					$stubFile,
+					$analysedFiles,
+					$ruleRegistry,
+					static function (): void {
+					}
+				)->getErrors();
+				foreach ($tmpErrors as $tmpError) {
+					$errors[] = $tmpError->withoutTip();
 				}
-			)->getErrors();
-			foreach ($tmpErrors as $tmpError) {
-				$errors[] = $tmpError->withoutTip();
+			} catch (\Throwable $e) {
+				if ($debug) {
+					throw $e;
+				}
+
+				$internalErrorMessage = sprintf('Internal error: %s', $e->getMessage());
+				$errors[] = new Error($internalErrorMessage, $stubFile, null, $e);
 			}
 		}
 

@@ -69,7 +69,7 @@ class AnalyseApplication
 		if ($projectConfigArray !== null) {
 			$projectStubFiles = $projectConfigArray['parameters']['stubFiles'] ?? [];
 		}
-		$stubErrors = $this->stubValidator->validate($projectStubFiles);
+		$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 
 		register_shutdown_function(function (): void {
 			$error = error_get_last();

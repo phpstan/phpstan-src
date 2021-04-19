@@ -2,8 +2,6 @@ includes:
 	- baseline-7.4.neon
 
 parameters:
-	excludes_analyse:
-		- ../src/Testing/LevelsTestCase.php
 	ignoreErrors:
 		-
 			message: "#^Call to function method_exists\\(\\) with ReflectionProperty and '(?:hasType|getType)' will always evaluate to true\\.$#"

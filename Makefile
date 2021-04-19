@@ -1,5 +1,7 @@
 .PHONY: tests
 
+build: cs tests phpstan
+
 tests:
 	php vendor/bin/paratest --no-coverage
 
@@ -23,3 +25,9 @@ cs:
 
 cs-fix:
 	php build-cs/vendor/bin/phpcbf
+
+phpstan:
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=768M bin/phpstan
+
+phpstan-static-reflection:
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=768M bin/phpstan analyse -c phpstan-static-reflection.neon

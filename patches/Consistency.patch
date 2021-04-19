@@ -1,9 +1,11 @@
---- ../vendor/hoa/consistency/Consistency.php	2017-05-02 14:18:12.000000000 +0200
-+++ ../vendor/hoa/consistency/Consistency2.php	2020-05-05 08:28:35.000000000 +0200
+@package hoa/consistency
+
+--- Consistency.php	2017-05-02 14:18:12.000000000 +0200
++++ Consistency.php	2020-05-05 08:28:35.000000000 +0200
 @@ -319,42 +319,6 @@
      $define('STREAM_CRYPTO_METHOD_ANY_CLIENT', 63);
  }
- 
+
 -if (!function_exists('curry')) {
 -    /**
 -     * Curry.

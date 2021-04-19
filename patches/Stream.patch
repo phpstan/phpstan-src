@@ -1,0 +1,25 @@
+@package hoa/stream
+
+--- Stream.php	2017-02-21 17:01:06.000000000 +0100
++++ Stream.php	2021-04-19 17:10:20.000000000 +0200
+@@ -192,7 +192,7 @@
+      * @return  array
+      * @throws  \Hoa\Stream\Exception
+      */
+-    final private static function &_getStream(
++    private static function &_getStream(
+         $streamName,
+         Stream $handler,
+         $context = null
+@@ -687,11 +687,6 @@
+ Consistency::flexEntity('Hoa\Stream\Stream');
+
+ /**
+- * Shutdown method.
+- */
+-Consistency::registerShutdownFunction(xcallable('Hoa\Stream\Stream::_Hoa_Stream'));
+-
+-/**
+  * Add the `hoa://Library/Stream` node. Should be use to reach/get an entry
+  * in the stream register.
+  */

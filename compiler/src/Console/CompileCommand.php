@@ -50,16 +50,6 @@ final class CompileCommand extends Command
 
 		$this->buildPreloadScript();
 		$this->deleteUnnecessaryVendorCode();
-		$this->patchFile(
-			$output,
-			'vendor/hoa/consistency/Consistency.php',
-			'compiler/patches/Consistency.diff'
-		);
-		$this->patchFile(
-			$output,
-			'vendor/hoa/protocol/Wrapper.php',
-			'compiler/patches/Wrapper.diff'
-		);
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
 		$this->patchPhpStormStubs($output);

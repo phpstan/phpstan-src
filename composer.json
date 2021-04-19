@@ -47,7 +47,8 @@
 		"phpstan/phpstan-php-parser": "^0.12",
 		"phpstan/phpstan-phpunit": "^0.12",
 		"phpstan/phpstan-strict-rules": "^0.12",
-		"phpunit/phpunit": "^9.5.4"
+		"phpunit/phpunit": "^9.5.4",
+		"vaimo/composer-patches": "^4.22"
 	},
 	"config": {
 		"platform": {
@@ -59,6 +60,9 @@
 	"extra": {
 		"branch-alias": {
 			"dev-master": "0.12-dev"
+		},
+		"patcher": {
+			"search": "patches"
 		}
 	},
 	"autoload": {

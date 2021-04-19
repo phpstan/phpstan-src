@@ -11,9 +11,11 @@
 	beStrictAboutOutputDuringTests="true"
 	beStrictAboutTodoAnnotatedTests="true"
 	verbose="false">
-	<testsuite name="PHPStan">
-		<directory suffix="Test.php">tests/PHPStan</directory>
-	</testsuite>
+	<testsuites>
+		<testsuite name="PHPStan">
+			<directory suffix="Test.php">tests/PHPStan</directory>
+		</testsuite>
+	</testsuites>
 
 	<groups>
 		<exclude>

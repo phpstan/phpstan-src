@@ -1,25 +1,25 @@
 .PHONY: tests
 
 tests:
-	vendor/bin/paratest --no-coverage
+	php vendor/bin/paratest --no-coverage
 
 tests-integration:
-	vendor/bin/paratest --no-coverage --group exec
+	php vendor/bin/paratest --no-coverage --group exec
 
 tests-static-reflection:
-	vendor/bin/paratest --no-coverage --bootstrap tests/bootstrap-static-reflection.php
+	php vendor/bin/paratest --no-coverage --bootstrap tests/bootstrap-static-reflection.php
 
 tests-coverage:
-	vendor/bin/paratest
+	php vendor/bin/paratest
 
 tests-integration-coverage:
-	vendor/bin/paratest --group exec
+	php vendor/bin/paratest --group exec
 
 tests-static-reflection-coverage:
-	vendor/bin/paratest --bootstrap tests/bootstrap-static-reflection.php
+	php vendor/bin/paratest --bootstrap tests/bootstrap-static-reflection.php
 
 cs:
-	composer install --working-dir build-cs && build-cs/vendor/bin/phpcs
+	composer install --working-dir build-cs && php build-cs/vendor/bin/phpcs
 
 cs-fix:
-	build-cs/vendor/bin/phpcbf
+	php build-cs/vendor/bin/phpcbf

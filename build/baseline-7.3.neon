@@ -12,4 +12,3 @@ parameters:
 				message: "#^Call to function method_exists\\(\\) with 'PHPUnit\\\\\\\\Framework\\\\\\\\TestCase' and 'assertFileDoesNotEx…' will always evaluate to true\\.$#"
 				count: 1
 				path: ../src/Testing/LevelsTestCase.php
-			-

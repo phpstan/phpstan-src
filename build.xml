@@ -5,17 +5,6 @@
 	<property name="url.composer-require-checker"
 			  value="https://github.com/maglnet/ComposerRequireChecker/releases/download/2.1.0/composer-require-checker.phar"/>
 	<property name="phpstan.config" value="phpstan.neon"/>
-	<property name="phpunit.executable" value="vendor/bin/paratest"/>
-	<target name="check" depends="
-		composer-validate,
-		composer-install,
-		lint,
-		cs,
-		composer-require-checker,
-		test-configuration-validate,
-		tests,
-		phpstan
-	"/>
 
 	<target name="composer-validate">
 		<exec
@@ -161,67 +150,6 @@
 				passthru="true"
 				checkreturn="true"
 		>
-		</exec>
-	</target>
-
-	<target name="test-configuration-validate" depends="composer-install">
-		<xmllint schema="tests/phpunit.xsd" file="tests/phpunit.xml"/>
-	</target>
-
-	<target name="tests">
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="${phpunit.executable}"/>
-			<arg value="-c"/>
-			<arg value="tests/phpunit.xml"/>
-			<arg value="--no-coverage"/>
-			<arg path="tests/PHPStan"/>
-		</exec>
-	</target>
-
-	<target name="tests-fast">
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="${phpunit.executable}"/>
-			<arg value="-c"/>
-			<arg value="tests/phpunit.xml"/>
-			<arg value="--exclude-group"/>
-			<arg value="exec"/>
-			<arg value="--no-coverage"/>
-			<arg path="tests/PHPStan"/>
-		</exec>
-	</target>
-
-	<target name="tests-fast-static-reflection">
-		<exec
-			executable="php"
-			logoutput="true"
-			passthru="true"
-			checkreturn="true"
-		>
-			<arg value="-d"/>
-			<arg value="memory_limit=768M"/>
-			<arg path="${phpunit.executable}"/>
-			<arg value="-c"/>
-			<arg value="tests/phpunit.xml"/>
-			<arg value="--exclude-group"/>
-			<arg value="exec"/>
-			<arg value="--bootstrap"/>
-			<arg path="tests/bootstrap-static-reflection.php"/>
-			<arg value="--no-coverage"/>
-			<arg path="tests/PHPStan"/>
 		</exec>
 	</target>
 

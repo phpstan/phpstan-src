@@ -12,7 +12,7 @@
 	beStrictAboutTodoAnnotatedTests="true"
 	verbose="false">
 	<testsuite name="PHPStan">
-		<directory suffix="Test.php">tests</directory>
+		<directory suffix="Test.php">tests/PHPStan</directory>
 	</testsuite>
 
 	<groups>

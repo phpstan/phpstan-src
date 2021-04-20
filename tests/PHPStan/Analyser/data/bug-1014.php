@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function bug1014(): void {
 	$s = rand(0, 1) ? 0 : 1;

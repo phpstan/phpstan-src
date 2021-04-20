@@ -3,7 +3,7 @@
 namespace Bug1157;
 
 use DateTimeInterface;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {

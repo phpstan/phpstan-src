@@ -3,7 +3,7 @@
 namespace ClearStatCache;
 
 use function clearstatcache;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (string $a, string $b, bool $c): string {
 	if (is_file($a) && $c) {

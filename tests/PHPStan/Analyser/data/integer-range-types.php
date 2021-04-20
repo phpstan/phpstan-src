@@ -2,7 +2,7 @@
 
 namespace PHPStan\Generics\GenericClassStringType;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (int $i) {
 	if ($i < 3) {

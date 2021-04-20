@@ -3,7 +3,7 @@
 namespace DependentVariablesArrowFunction;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 function (bool $b): void
 {

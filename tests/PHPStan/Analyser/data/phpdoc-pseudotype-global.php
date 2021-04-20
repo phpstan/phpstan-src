@@ -1,6 +1,6 @@
 <?php
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function () {
 	/** @var Number $number */

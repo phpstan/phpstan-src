@@ -2,7 +2,7 @@
 
 namespace Bug4579;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (string $class): void {
 	$foo = new $class();

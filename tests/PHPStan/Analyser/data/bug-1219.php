@@ -3,7 +3,7 @@
 namespace Bug1219;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 class Foo
 {

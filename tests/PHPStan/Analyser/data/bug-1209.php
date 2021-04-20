@@ -2,7 +2,7 @@
 
 namespace Bug1209;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {

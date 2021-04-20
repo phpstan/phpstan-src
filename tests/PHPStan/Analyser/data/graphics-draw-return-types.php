@@ -1,6 +1,6 @@
 <?php
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 $image = imagecreatetruecolor(1, 1);
 $memoryHandle = fopen('php://memory', 'w');

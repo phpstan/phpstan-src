@@ -2,7 +2,7 @@
 
 namespace Bug3190;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface Server
 {

@@ -4,8 +4,8 @@ namespace ThrowPoints\TryCatch;
 
 use PHPStan\TrinaryLogic;
 use Throwable;
-use function PHPStan\Analyser\assertType;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertVariableCertainty;
 use function ThrowPoints\Helpers\maybeThrows;
 
 class MyInvalidArgumentException extends \InvalidArgumentException

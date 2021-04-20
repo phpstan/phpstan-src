@@ -2,8 +2,8 @@
 
 namespace NativeTypes;
 
-use function PHPStan\Analyser\assertType;
-use function PHPStan\Analyser\assertNativeType;
+use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertNativeType;
 
 class Foo
 {

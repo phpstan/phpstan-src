@@ -2,7 +2,7 @@
 
 namespace Bug4231;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (): void {
 	$property = new \ReflectionProperty($this, 'data');

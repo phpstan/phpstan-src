@@ -4,7 +4,7 @@ namespace ExtDs;
 
 use Ds\Map;
 use Ds\Set;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class A
 {

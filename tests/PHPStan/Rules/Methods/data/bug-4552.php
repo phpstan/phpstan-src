@@ -2,7 +2,7 @@
 
 namespace Bug4552;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface OptionPresenter {}
 

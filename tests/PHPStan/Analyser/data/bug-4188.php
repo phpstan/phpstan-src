@@ -5,7 +5,7 @@ namespace Bug4188;
 interface A {}
 interface B {}
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Test
 {

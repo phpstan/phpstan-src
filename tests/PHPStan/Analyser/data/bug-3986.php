@@ -2,7 +2,7 @@
 
 namespace Bug3986;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface Boo {
 	public function nullable(): ?int;

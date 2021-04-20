@@ -4,7 +4,7 @@ namespace ThrowPoints\StaticCall;
 
 use PHPStan\TrinaryLogic;
 use ThrowPoints\Helpers\ThrowPointTestObject;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 use function ThrowPoints\Helpers\doesntThrow;
 use function ThrowPoints\Helpers\maybeThrows;
 

@@ -2,7 +2,7 @@
 
 namespace Analyser\Bug2822;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 $getter = function (string $key) use ($store): int
 {

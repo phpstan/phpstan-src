@@ -2,7 +2,7 @@
 
 namespace Bug3880;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function ($value): void {
 	$num = (float) $value;

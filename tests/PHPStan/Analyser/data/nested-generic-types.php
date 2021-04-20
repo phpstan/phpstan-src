@@ -2,7 +2,7 @@
 
 namespace NestedGenericTypes;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 /** @template T */
 interface SomeInterface

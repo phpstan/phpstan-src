@@ -4,7 +4,7 @@ namespace IteratorToArray;
 
 use Traversable;
 use function iterator_to_array;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Foo
 {

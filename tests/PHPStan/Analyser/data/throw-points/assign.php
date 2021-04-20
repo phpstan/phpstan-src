@@ -4,8 +4,8 @@ namespace ThrowPoints\Assign;
 
 use PHPStan\TrinaryLogic;
 use stdClass;
-use function PHPStan\Analyser\assertType;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertVariableCertainty;
 use function ThrowPoints\Helpers\doesntThrow;
 use function ThrowPoints\Helpers\maybeThrows;
 

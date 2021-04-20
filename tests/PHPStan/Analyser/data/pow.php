@@ -2,7 +2,7 @@
 
 namespace PowFunction;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function ($a, $b): void {
 	assertType('(float|int)', pow($a, $b));

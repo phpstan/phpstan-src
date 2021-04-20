@@ -2,7 +2,7 @@
 
 namespace Analyser\Bug3142;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class ParentClass
 {

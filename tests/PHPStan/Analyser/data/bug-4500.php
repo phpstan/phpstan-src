@@ -2,7 +2,7 @@
 
 namespace Bug4500TypeInference;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Foo
 {

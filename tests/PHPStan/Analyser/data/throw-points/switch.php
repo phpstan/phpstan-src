@@ -4,7 +4,7 @@ namespace ThrowPoints\Switch_;
 
 use Exception;
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 use function ThrowPoints\Helpers\maybeThrows;
 
 function () {

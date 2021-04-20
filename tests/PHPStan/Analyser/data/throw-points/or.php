@@ -3,7 +3,7 @@
 namespace ThrowPoints\And_;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 use function ThrowPoints\Helpers\doesntThrow;
 use function ThrowPoints\Helpers\maybeThrows;
 

@@ -2,7 +2,7 @@
 
 namespace ClosureReturnTypeExtensionsNamespace;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 $predicate = function (object $thing): bool { return true; };
 

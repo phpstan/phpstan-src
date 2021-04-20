@@ -2,7 +2,7 @@
 
 namespace Analyser\Bug2577;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class A {}
 class A1 extends A {}

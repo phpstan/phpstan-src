@@ -2,7 +2,7 @@
 
 namespace Bug2977;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface MyInterface
 {

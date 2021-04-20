@@ -4,7 +4,7 @@ namespace InstanceOfNamespace;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface BarInterface
 {

@@ -3,7 +3,7 @@
 namespace Bug4343;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 function (array $a) {
 	if (count($a) > 0) {

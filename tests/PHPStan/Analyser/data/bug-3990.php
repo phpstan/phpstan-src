@@ -3,7 +3,7 @@
 namespace Bug3990;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 function doFoo(array $config): void
 {

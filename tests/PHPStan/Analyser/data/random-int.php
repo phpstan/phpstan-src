@@ -1,6 +1,6 @@
 <?php
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (int $min) {
 	\assert($min === 10 || $min === 15);

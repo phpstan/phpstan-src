@@ -4,7 +4,7 @@ namespace SpecifiedTypesClosureUse;
 
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Foo
 {

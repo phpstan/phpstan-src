@@ -2,7 +2,7 @@
 
 namespace Bug3617;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (): void {
 	$var = 'TEST';

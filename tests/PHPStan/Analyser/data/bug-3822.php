@@ -3,7 +3,7 @@
 namespace Bug3822;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 class Response {
 	/** @var int */

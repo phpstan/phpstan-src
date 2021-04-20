@@ -2,7 +2,7 @@
 
 namespace NestedGenericTypesUnwrapping;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface BasePackage {}
 

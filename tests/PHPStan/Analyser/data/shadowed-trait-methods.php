@@ -2,7 +2,7 @@
 
 namespace ShadowedTraitMethods;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 trait FooTrait
 {

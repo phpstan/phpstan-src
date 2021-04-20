@@ -5,7 +5,7 @@ namespace Bug3866;
 use DateTimeImmutable;
 use Ds\Set;
 use Iterator;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 abstract class PHPStanBug
 {

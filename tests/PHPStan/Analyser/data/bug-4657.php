@@ -3,8 +3,8 @@
 namespace Bug4657;
 
 use DateTime;
-use function PHPStan\Analyser\assertType;
-use function PHPStan\Analyser\assertNativeType;
+use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertNativeType;
 
 function (): void {
 	$value = null;

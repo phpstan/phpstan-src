@@ -4,7 +4,7 @@ namespace PhpDocInClosureBind;
 
 use Closure;
 use PHPStan\Analyser\Analyser;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function ($mixed): void {
 	$foo = new Analyser();

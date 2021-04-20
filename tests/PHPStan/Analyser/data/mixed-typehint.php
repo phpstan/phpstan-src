@@ -2,7 +2,7 @@
 
 namespace MixedTypehint;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Foo
 {

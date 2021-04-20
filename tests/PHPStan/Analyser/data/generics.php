@@ -7,7 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Generics\FunctionsAssertType\GenericRule;
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 /**
  * @template T

@@ -7,7 +7,7 @@ use Foo\Resource;
 use Foo\Never;
 use Foo\Double;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function () {
 	/** @var Number $number */

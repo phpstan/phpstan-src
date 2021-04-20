@@ -2,7 +2,7 @@
 
 namespace Bug4707TypeInference;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface Foo
 {

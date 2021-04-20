@@ -1,6 +1,6 @@
 <?php
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 const TABLE_NAME = 'resized_images';
 define('ANOTHER_NAME', 'foo');

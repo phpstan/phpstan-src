@@ -2,7 +2,7 @@
 
 namespace Bug4642;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 interface IEntity {}
 /** @template E of IEntity */

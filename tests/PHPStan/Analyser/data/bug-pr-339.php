@@ -3,8 +3,8 @@
 namespace BugPr339;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertType;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertVariableCertainty;
 
 assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 assertVariableCertainty(TrinaryLogic::createMaybe(), $c);

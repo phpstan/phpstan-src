@@ -2,7 +2,7 @@
 
 namespace MultiAssign;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (): void {
 	$foo = $bar = $baz = null;

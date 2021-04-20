@@ -2,22 +2,22 @@
 
 use PHPStan\TrinaryLogic;
 
-\PHPStan\Analyser\assertType('mixed', $foo);
-\PHPStan\Analyser\assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+\PHPStan\Testing\assertType('mixed', $foo);
+\PHPStan\Testing\assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 
 $bar = 'str';
-\PHPStan\Analyser\assertVariableCertainty(TrinaryLogic::createYes(), $bar);
-\PHPStan\Analyser\assertVariableCertainty(TrinaryLogic::createMaybe(), $baz);
+\PHPStan\Testing\assertVariableCertainty(TrinaryLogic::createYes(), $bar);
+\PHPStan\Testing\assertVariableCertainty(TrinaryLogic::createMaybe(), $baz);
 
-\PHPStan\Analyser\assertType('\'str\'', $bar);
+\PHPStan\Testing\assertType('\'str\'', $bar);
 
 if (!isset($baz)) {
 	$baz = 1;
-	\PHPStan\Analyser\assertType('1', $baz);
+	\PHPStan\Testing\assertType('1', $baz);
 }
 
-\PHPStan\Analyser\assertType('mixed', $baz);
+\PHPStan\Testing\assertType('mixed', $baz);
 
 function () {
-	\PHPStan\Analyser\assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	\PHPStan\Testing\assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 };

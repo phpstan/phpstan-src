@@ -2,7 +2,7 @@
 
 namespace Bug2863;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 $result = json_decode('{"a":5}');
 assertType('int', json_last_error());

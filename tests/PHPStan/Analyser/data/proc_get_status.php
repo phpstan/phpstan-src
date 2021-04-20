@@ -2,7 +2,7 @@
 
 namespace ProcGetStatusBug;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 use function proc_get_status;
 
 function ($r): void {

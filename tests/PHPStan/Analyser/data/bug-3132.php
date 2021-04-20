@@ -2,7 +2,7 @@
 
 namespace Bug3132;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 use const ARRAY_FILTER_USE_BOTH;
 
 class Foo

@@ -2,7 +2,7 @@
 
 namespace BitwiseNot;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 /**
  * @param string|int $stringOrInt

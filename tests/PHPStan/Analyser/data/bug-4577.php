@@ -2,7 +2,7 @@
 
 namespace Bug4577;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Test
 {

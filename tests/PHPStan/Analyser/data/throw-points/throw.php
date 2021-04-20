@@ -4,7 +4,7 @@ namespace ThrowPoints\Throw_;
 
 use Exception;
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 function () {
 	try {

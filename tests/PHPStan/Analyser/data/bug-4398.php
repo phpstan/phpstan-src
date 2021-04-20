@@ -2,7 +2,7 @@
 
 namespace Bug4398;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (array $meters): void {
 	assertType('array', $meters);

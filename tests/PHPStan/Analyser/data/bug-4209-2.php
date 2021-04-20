@@ -2,7 +2,7 @@
 
 namespace Bug4209Two;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Customer
 {

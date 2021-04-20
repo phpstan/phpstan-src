@@ -3,7 +3,7 @@
 namespace EarlyTermination;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 function(): void {
 	if (rand(0, 1)) {

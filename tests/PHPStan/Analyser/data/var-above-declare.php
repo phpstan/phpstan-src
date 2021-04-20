@@ -6,5 +6,5 @@
 
 declare(strict_types = 1);
 
-\PHPStan\Analyser\assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $foo);
-\PHPStan\Analyser\assertType('string', $foo);
+\PHPStan\Testing\assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $foo);
+\PHPStan\Testing\assertType('string', $foo);

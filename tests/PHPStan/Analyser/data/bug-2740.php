@@ -2,7 +2,7 @@
 
 namespace Bug2740;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (Member $member): void
 {

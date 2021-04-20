@@ -2,7 +2,7 @@
 
 namespace IncDecInConditions;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function incLeft(int $a, int $b, int $c, int $d): void
 {

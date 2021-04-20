@@ -2,7 +2,7 @@
 
 namespace Bug4700;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function(array $array, int $count): void {
 	if ($count < 1) {

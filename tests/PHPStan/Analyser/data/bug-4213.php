@@ -2,7 +2,7 @@
 
 namespace Bug4213;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 abstract class BaseEnum
 {

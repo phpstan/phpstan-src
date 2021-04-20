@@ -3,8 +3,8 @@
 namespace Bug2816;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertType;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertVariableCertainty;
 
 if (isset($_GET['x'])) {
 	$a = 1;

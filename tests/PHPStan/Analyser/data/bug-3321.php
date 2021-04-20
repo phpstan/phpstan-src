@@ -2,7 +2,7 @@
 
 namespace Bug3321;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 /** @template T */
 interface Container {

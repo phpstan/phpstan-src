@@ -2,7 +2,7 @@
 
 namespace Bug1670;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 /** @var \stdClass|null */
 $object = null;

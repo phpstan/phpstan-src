@@ -2,7 +2,7 @@
 
 namespace Bug3961Php8;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Foo
 {

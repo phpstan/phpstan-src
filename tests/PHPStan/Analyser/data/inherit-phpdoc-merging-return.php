@@ -2,7 +2,7 @@
 
 namespace InheritDocMergingReturn;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class A {}
 class B extends A {}

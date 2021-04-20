@@ -3,7 +3,7 @@
 namespace Bug1865;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 function someFunction() {
 	$a = (bool) random_int(0, 1);

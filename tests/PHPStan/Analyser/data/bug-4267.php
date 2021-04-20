@@ -2,7 +2,7 @@
 
 namespace Bug4267;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 /**
  * @implements \IteratorAggregate<int, static>

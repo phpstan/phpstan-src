@@ -2,7 +2,7 @@
 
 namespace Bug4606;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 /**
  * @var Foo $this

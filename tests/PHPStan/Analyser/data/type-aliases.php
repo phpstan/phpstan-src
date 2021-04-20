@@ -15,7 +15,7 @@ namespace TypeAliasesDataset\SubScope {
 
 namespace TypeAliasesDataset {
 
-	use function PHPStan\Analyser\assertType;
+	use function PHPStan\Testing\assertType;
 
 	/**
 	 * @phpstan-type ExportedTypeAlias \Countable&\Traversable

@@ -2,7 +2,7 @@
 
 namespace Bug4434;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 use const PHP_MAJOR_VERSION;
 
 class HelloWorld

@@ -2,7 +2,7 @@
 
 namespace CompactExtension;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 assertType('array(?\'bar\' => mixed)', compact(['foo' => 'bar']));
 

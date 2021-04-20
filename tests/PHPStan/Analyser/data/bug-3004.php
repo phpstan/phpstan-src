@@ -3,7 +3,7 @@
 namespace Bug3004;
 
 use PHPStan\TrinaryLogic;
-use function PHPStan\Analyser\assertVariableCertainty;
+use function PHPStan\Testing\assertVariableCertainty;
 
 class HelloWorld
 {

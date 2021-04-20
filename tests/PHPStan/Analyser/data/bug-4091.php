@@ -2,7 +2,7 @@
 
 namespace Bug4091;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 if (mt_rand(0,10) > 3) {
 	echo 'Fizz';

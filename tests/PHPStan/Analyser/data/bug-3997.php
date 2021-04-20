@@ -2,7 +2,7 @@
 
 namespace Bug3997Type;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (\Countable $c): void {
 	assertType('int<0, max>', $c->count());

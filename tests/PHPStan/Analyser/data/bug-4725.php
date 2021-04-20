@@ -2,7 +2,7 @@
 
 namespace Bug4725;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 class Application_Model_Ada extends Clx_Model_Abstract {}
 

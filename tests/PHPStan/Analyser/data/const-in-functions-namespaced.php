@@ -2,7 +2,7 @@
 
 namespace ConstInFunctions;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 use const CONDITIONAL;
 
 const TABLE_NAME = 'resized_images';

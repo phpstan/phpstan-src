@@ -2,7 +2,7 @@
 
 namespace Analyser\Bug2574;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 abstract class Model {
 	/** @return static */

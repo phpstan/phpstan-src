@@ -2,7 +2,7 @@
 
 namespace Bug3558;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (): void {
 	$idGroups = [];

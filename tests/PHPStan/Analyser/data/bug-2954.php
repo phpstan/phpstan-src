@@ -2,7 +2,7 @@
 
 namespace Analyser\Bug2954;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (int $x) {
 	if ($x === 0) return;

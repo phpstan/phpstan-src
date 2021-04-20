@@ -2,7 +2,7 @@
 
 namespace Analyser\Bug2750;
 
-use function PHPStan\Analyser\assertType;
+use function PHPStan\Testing\assertType;
 
 function (array $input) {
 	\assert(count($input) > 0);

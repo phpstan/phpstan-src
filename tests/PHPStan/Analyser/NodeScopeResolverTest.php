@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Testing\TypeInferenceTest;
+use PHPStan\Testing\TypeInferenceTestCase;
 
-class NodeScopeResolverTest extends TypeInferenceTest
+class NodeScopeResolverTest extends TypeInferenceTestCase
 {
 
 	public function dataFileAsserts(): iterable

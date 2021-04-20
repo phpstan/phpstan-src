@@ -25,7 +25,7 @@ use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 
-abstract class TypeInferenceTest extends \PHPStan\Testing\TestCase
+abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 {
 
 	/** @var bool */

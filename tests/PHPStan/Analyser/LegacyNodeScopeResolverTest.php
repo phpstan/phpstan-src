@@ -9,7 +9,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Testing\TypeInferenceTest;
+use PHPStan\Testing\TypeInferenceTestCase;
 use PHPStan\Tests\AssertionClassMethodTypeSpecifyingExtension;
 use PHPStan\Tests\AssertionClassStaticMethodTypeSpecifyingExtension;
 use PHPStan\TrinaryLogic;
@@ -26,7 +26,7 @@ use PHPStan\Type\VerbosityLevel;
 use SomeNodeScopeResolverNamespace\Foo;
 use const PHP_VERSION_ID;
 
-class LegacyNodeScopeResolverTest extends TypeInferenceTest
+class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 {
 
 	/** @var Scope[][] */

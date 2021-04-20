@@ -305,6 +305,7 @@ parametersSchema:
 
 rules:
 	- PHPStan\Rules\Debug\DumpTypeRule
+	- PHPStan\Rules\Debug\FileAssertRule
 
 services:
 	-

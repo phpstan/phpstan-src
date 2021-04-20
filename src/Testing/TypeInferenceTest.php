@@ -148,15 +148,15 @@ abstract class TypeInferenceTest extends \PHPStan\Testing\TestCase
 			}
 
 			$functionName = $nameNode->toString();
-			if ($functionName === 'PHPStan\\Analyser\\assertType') {
+			if ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->args[0]->value);
 				$actualType = $scope->getType($node->args[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
-			} elseif ($functionName === 'PHPStan\\Analyser\\assertNativeType') {
+			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$expectedType = $scope->getNativeType($node->args[0]->value);
 				$actualType = $scope->getNativeType($node->args[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
-			} elseif ($functionName === 'PHPStan\\Analyser\\assertVariableCertainty') {
+			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
 				$certainty = $node->args[0]->value;
 				if (!$certainty instanceof StaticCall) {
 					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));

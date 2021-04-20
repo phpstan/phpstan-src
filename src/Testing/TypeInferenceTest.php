@@ -74,13 +74,8 @@ abstract class TypeInferenceTest extends \PHPStan\Testing\TestCase
 			true,
 			$this->polluteCatchScopeWithTryAssignments,
 			true,
-			[
-				\EarlyTermination\Foo::class => [
-					'doFoo',
-					'doBar',
-				],
-			],
-			['baz'],
+			$this->getEarlyTerminatingMethodCalls(),
+			$this->getEarlyTerminatingFunctionCalls(),
 			true,
 			true
 		);
@@ -210,6 +205,18 @@ abstract class TypeInferenceTest extends \PHPStan\Testing\TestCase
 
 	/** @return string[] */
 	protected function getAdditionalAnalysedFiles(): array
+	{
+		return [];
+	}
+
+	/** @return string[][] */
+	protected function getEarlyTerminatingMethodCalls(): array
+	{
+		return [];
+	}
+
+	/** @return string[] */
+	protected function getEarlyTerminatingFunctionCalls(): array
 	{
 		return [];
 	}

@@ -10480,6 +10480,21 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTest
 		});
 	}
 
+	protected function getEarlyTerminatingMethodCalls(): array
+	{
+		return [
+			\EarlyTermination\Foo::class => [
+				'doFoo',
+				'doBar',
+			],
+		];
+	}
+
+	protected function getEarlyTerminatingFunctionCalls(): array
+	{
+		return ['baz'];
+	}
+
 	private function assertTypeDescribe(
 		string $expectedDescription,
 		Type $actualType,

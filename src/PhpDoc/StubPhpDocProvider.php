@@ -223,15 +223,17 @@ class StubPhpDocProvider
 
 		$this->initializing = true;
 
-		foreach ($this->stubFiles as $stubFile) {
-			$nodes = $this->parser->parseFile($stubFile);
-			foreach ($nodes as $node) {
-				$this->initializeKnownElementNode($stubFile, $node);
+		try {
+			foreach ($this->stubFiles as $stubFile) {
+				$nodes = $this->parser->parseFile($stubFile);
+				foreach ($nodes as $node) {
+					$this->initializeKnownElementNode($stubFile, $node);
+				}
 			}
+		} finally {
+			$this->initializing = false;
+			$this->initialized = true;
 		}
-
-		$this->initializing = false;
-		$this->initialized = true;
 	}
 
 	private function initializeKnownElementNode(string $stubFile, Node $node): void

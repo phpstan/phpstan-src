@@ -31,6 +31,10 @@ final class FileReadTrapStreamWrapper
 
 	public static ?string $autoloadLocatedFile = null;
 
+	private bool $readFromFile = false;
+
+	private int $seekPosition = 0;
+
 	/**
 	 * @param string[] $streamWrapperProtocols
 	 *
@@ -85,6 +89,8 @@ final class FileReadTrapStreamWrapper
 	public function stream_open($path, $mode, $options, &$openedPath): bool
 	{
 		self::$autoloadLocatedFile = $path;
+		$this->readFromFile = false;
+		$this->seekPosition = 0;
 
 		return true;
 	}
@@ -99,6 +105,8 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_read($count): string
 	{
+		$this->readFromFile = true;
+
 		// Dummy return value that is also valid PHP for require(). We'll read
 		// and process the file elsewhere, so it's OK to provide dummy data for
 		// this read.
@@ -171,6 +179,66 @@ final class FileReadTrapStreamWrapper
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Simulates behavior of reading from an empty file.
+	 *
+	 * @return bool
+	 */
+	public function stream_eof(): bool
+	{
+		return $this->readFromFile;
+	}
+
+	public function stream_flush(): bool
+	{
+		return true;
+	}
+
+	public function stream_tell(): int
+	{
+		return $this->seekPosition;
+	}
+
+	/**
+	 * @param   int  $offset
+	 * @param   int  $whence
+	 * @return  bool
+	 */
+	public function stream_seek($offset, $whence): bool
+	{
+		switch ($whence) {
+			// Behavior is the same for a zero-length file
+			case SEEK_SET:
+			case SEEK_END:
+				if ($offset < 0) {
+					return false;
+				}
+				$this->seekPosition = $offset;
+				return true;
+
+			case SEEK_CUR:
+				if ($offset < 0) {
+					return false;
+				}
+				$this->seekPosition += $offset;
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * @param int  $option
+	 * @param int  $arg1
+	 * @param int  $arg2
+	 * @return bool
+	 */
+	public function stream_set_option($option, $arg1, $arg2): bool
+	{
+		return false;
 	}
 
 }

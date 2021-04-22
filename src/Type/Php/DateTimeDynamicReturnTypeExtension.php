@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Type\Php;
 
@@ -17,6 +17,7 @@ use PHPStan\Type\TypeUtils;
 
 class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), ['date_create_from_format', 'date_create_immutable_from_format'], true);
@@ -40,4 +41,5 @@ class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		$className = $functionReflection->getName() === 'date_create_from_format' ? DateTime::class : DateTimeImmutable::class;
 		return $isValid ? new ObjectType($className) : new ConstantBooleanType(false);
 	}
+
 }

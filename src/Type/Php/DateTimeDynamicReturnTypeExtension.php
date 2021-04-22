@@ -13,7 +13,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 
 class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -27,6 +26,10 @@ class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
+		if (count($functionCall->args) < 2) {
+			return $defaultReturnType;
+		}
+
 		$format = $scope->getType($functionCall->args[0]->value);
 		$datetime = $scope->getType($functionCall->args[1]->value);
 
@@ -34,9 +37,7 @@ class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 			return $defaultReturnType;
 		}
 
-		$formatValue = TypeUtils::getConstantStrings($format)[0]->getValue();
-		$datetimeValue = TypeUtils::getConstantStrings($datetime)[0]->getValue();
-		$isValid = (DateTime::createFromFormat($formatValue, $datetimeValue) !== false);
+		$isValid = (DateTime::createFromFormat($format->getValue(), $datetime->getValue()) !== false);
 
 		$className = $functionReflection->getName() === 'date_create_from_format' ? DateTime::class : DateTimeImmutable::class;
 		return $isValid ? new ObjectType($className) : new ConstantBooleanType(false);

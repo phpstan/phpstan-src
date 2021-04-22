@@ -30,4 +30,12 @@ class Foo
 		assertType('DateTimeImmutable', date_create_immutable_from_format('Y-m-d', '2020-10-12'));
 	}
 
+	public function localVariables(): void {
+		$format = 'Y-m-d';
+		$datetime = '2020-10-12';
+
+		assertType('DateTime', date_create_from_format($format, $datetime));
+		assertType('DateTimeImmutable', date_create_immutable_from_format($format, $datetime));
+	}
+
 }

@@ -1786,9 +1786,27 @@ class NodeScopeResolver
 						$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, true);
 					}
 				} elseif ($this->implicitThrows) {
-					$functionReturnedType = $scope->getType($expr);
-					if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
-						$throwPoints[] = ThrowPoint::createImplicit($scope);
+					$requiredParameters = null;
+					if ($parametersAcceptor !== null) {
+						$requiredParameters = 0;
+						foreach ($parametersAcceptor->getParameters() as $parameter) {
+							if ($parameter->isOptional()) {
+								continue;
+							}
+
+							$requiredParameters++;
+						}
+					}
+					if (
+						!$functionReflection->isBuiltin()
+						|| $requiredParameters === null
+						|| $requiredParameters > 0
+						|| count($expr->args) > 0
+					) {
+						$functionReturnedType = $scope->getType($expr);
+						if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
+							$throwPoints[] = ThrowPoint::createImplicit($scope);
+						}
 					}
 				}
 			} else {

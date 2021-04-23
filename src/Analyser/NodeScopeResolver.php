@@ -2327,10 +2327,20 @@ class NodeScopeResolver
 			|| $expr instanceof Expr\Print_
 			|| $expr instanceof Expr\UnaryMinus
 			|| $expr instanceof Expr\UnaryPlus
-			|| $expr instanceof Expr\YieldFrom
 		) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
+			if ($expr instanceof Expr\YieldFrom) {
+				$hasYield = true;
+			} else {
+				$hasYield = $result->hasYield();
+			}
+
+			$scope = $result->getScope();
+		} elseif ($expr instanceof Expr\YieldFrom) {
+			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
+			$throwPoints = $result->getThrowPoints();
+			$throwPoints[] = ThrowPoint::createImplicit($scope);
 			if ($expr instanceof Expr\YieldFrom) {
 				$hasYield = true;
 			} else {
@@ -2518,7 +2528,9 @@ class NodeScopeResolver
 			);
 
 		} elseif ($expr instanceof Expr\Yield_) {
-			$throwPoints = [];
+			$throwPoints = [
+				ThrowPoint::createImplicit($scope),
+			];
 			if ($expr->key !== null) {
 				$keyResult = $this->processExprNode($expr->key, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $keyResult->getScope();

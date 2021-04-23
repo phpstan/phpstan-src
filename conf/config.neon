@@ -651,6 +651,11 @@ services:
 		implement: PHPStan\Reflection\Php\PhpMethodReflectionFactory
 
 	-
+		class: PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension
+
+	-
 		class: PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension
 		tags:
 			- phpstan.broker.propertiesClassReflectionExtension

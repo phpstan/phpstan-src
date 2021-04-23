@@ -60,6 +60,7 @@ use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflectionFactory;
+use PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider;
@@ -356,6 +357,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension(new MixinMethodsClassReflectionExtension([]));
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
+		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension(new SoapClientMethodsClassReflectionExtension());
 
 		$setterReflectionProviderProvider->setReflectionProvider($actualReflectionProvider);
 	}

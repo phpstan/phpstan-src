@@ -2348,22 +2348,14 @@ class NodeScopeResolver
 		) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
-			if ($expr instanceof Expr\YieldFrom) {
-				$hasYield = true;
-			} else {
-				$hasYield = $result->hasYield();
-			}
+			$hasYield = $result->hasYield();
 
 			$scope = $result->getScope();
 		} elseif ($expr instanceof Expr\YieldFrom) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
 			$throwPoints[] = ThrowPoint::createImplicit($scope);
-			if ($expr instanceof Expr\YieldFrom) {
-				$hasYield = true;
-			} else {
-				$hasYield = $result->hasYield();
-			}
+			$hasYield = true;
 
 			$scope = $result->getScope();
 		} elseif ($expr instanceof BooleanNot) {

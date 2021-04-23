@@ -37,6 +37,7 @@ class GitlabErrorFormatter implements ErrorFormatter
 						]
 					)
 				),
+				'severity' => $fileSpecificError->canBeIgnored() ? 'major' : 'blocker',
 				'location' => [
 					'path' => $this->relativePathHelper->getRelativePath($fileSpecificError->getFile()),
 					'lines' => [
@@ -45,10 +46,6 @@ class GitlabErrorFormatter implements ErrorFormatter
 				],
 			];
 
-			if (!$fileSpecificError->canBeIgnored()) {
-				$error['severity'] = 'blocker';
-			}
-
 			$errorsArray[] = $error;
 		}
 
@@ -56,6 +53,7 @@ class GitlabErrorFormatter implements ErrorFormatter
 			$errorsArray[] = [
 				'description' => $notFileSpecificError,
 				'fingerprint' => hash('sha256', $notFileSpecificError),
+				'severity' => 'major',
 				'location' => [
 					'path' => '',
 					'lines' => [

@@ -8,7 +8,8 @@ use function PHPStan\Testing\assertVariableCertainty;
 
 class Param {
 
-	public bool $foo;
+	/** @var bool */
+	public $foo;
 }
 
 class HelloWorld

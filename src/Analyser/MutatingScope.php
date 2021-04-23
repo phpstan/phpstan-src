@@ -3477,6 +3477,17 @@ class MutatingScope implements Scope
 			}
 		}
 
+		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type instanceof ConstantBooleanType && !$type->getValue()) {
+			$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this);
+			if ($functionName !== null && in_array(strtolower($functionName), [
+				'is_dir',
+				'is_file',
+				'file_exists',
+			], true)) {
+				return $this;
+			}
+		}
+
 		return $scope->addMoreSpecificTypes([
 			$exprString => $type,
 		]);

@@ -1170,7 +1170,7 @@ class NodeScopeResolver
 					$matchingThrowPoints = [];
 					$newThrowPoints = [];
 					foreach ($throwPoints as $throwPoint) {
-						if (!$throwPoint->isExplicit()) {
+						if (!$throwPoint->isExplicit() && !$catchType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
 							continue;
 						}
 						$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());

@@ -482,6 +482,7 @@ class PhpClassReflectionExtension
 				$stubPhpDocParameterVariadicity = [];
 				$phpDocParameterTypes = [];
 				$phpDocReturnType = null;
+				$stubPhpDocPair = null;
 				if (count($variantNumbers) === 1) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
 						return $parameterSignature->getName();
@@ -505,36 +506,37 @@ class PhpClassReflectionExtension
 							);
 							$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
 						}
-					} elseif ($reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {
-						$filename = $reflectionMethod->getFileName();
-						if ($filename !== false) {
-							$phpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc(
-								$filename,
-								$declaringClassName,
-								null,
-								$reflectionMethod->getName(),
-								$reflectionMethod->getDocComment()
-							);
-							$throwsTag = $phpDocBlock->getThrowsTag();
-							if ($throwsTag !== null) {
-								$throwType = $throwsTag->getType();
-							}
-							$returnTag = $phpDocBlock->getReturnTag();
-							if ($returnTag !== null) {
-								$phpDocReturnType = $returnTag->getType();
-							}
-							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
-								$phpDocParameterTypes[$name] = $paramTag->getType();
+					}
+				}
+				if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {
+					$filename = $reflectionMethod->getFileName();
+					if ($filename !== false) {
+						$phpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc(
+							$filename,
+							$declaringClassName,
+							null,
+							$reflectionMethod->getName(),
+							$reflectionMethod->getDocComment()
+						);
+						$throwsTag = $phpDocBlock->getThrowsTag();
+						if ($throwsTag !== null) {
+							$throwType = $throwsTag->getType();
+						}
+						$returnTag = $phpDocBlock->getReturnTag();
+						if ($returnTag !== null) {
+							$phpDocReturnType = $returnTag->getType();
+						}
+						foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
+							$phpDocParameterTypes[$name] = $paramTag->getType();
+						}
+
+						$signatureParameters = $methodSignature->getParameters();
+						foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
+							if (!array_key_exists($paramI, $signatureParameters)) {
+								continue;
 							}
 
-							$signatureParameters = $methodSignature->getParameters();
-							foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
-								if (!array_key_exists($paramI, $signatureParameters)) {
-									continue;
-								}
-
-								$phpDocParameterNameMapping[$signatureParameters[$paramI]->getName()] = $reflectionParameter->getName();
-							}
+							$phpDocParameterNameMapping[$signatureParameters[$paramI]->getName()] = $reflectionParameter->getName();
 						}
 					}
 				}

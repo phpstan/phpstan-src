@@ -1981,7 +1981,17 @@ class NodeScopeResolver
 			$exprResult = $this->processExprNode(new MethodCall($expr->var, $expr->name, $expr->args, $expr->getAttributes()), $nonNullabilityResult->getScope(), $nodeCallback, $context);
 			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
-			return new ExpressionResult($scope, $exprResult->hasYield(), $exprResult->getThrowPoints());
+			return new ExpressionResult(
+				$scope,
+				$exprResult->hasYield(),
+				$exprResult->getThrowPoints(),
+				static function () use ($scope, $expr): MutatingScope {
+					return $scope->filterByTruthyValue($expr);
+				},
+				static function () use ($scope, $expr): MutatingScope {
+					return $scope->filterByFalseyValue($expr);
+				}
+			);
 		} elseif ($expr instanceof StaticCall) {
 			$hasYield = false;
 			$throwPoints = [];

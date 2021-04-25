@@ -56,7 +56,7 @@ class Foo
 			assertType('Nullsafe\Foo', $self?->nullableSelf);
 		} else {
 			assertType('Nullsafe\Foo|null', $self);
-			assertType('null', $self->nullableSelf);
+			assertType('Nullsafe\Foo|null', $self->nullableSelf);
 			assertType('null', $self?->nullableSelf);
 		}
 
@@ -69,7 +69,7 @@ class Foo
 	{
 		if ($self?->nullableSelf === null) {
 			assertType('Nullsafe\Foo|null', $self);
-			assertType('null', $self->nullableSelf);
+			assertType('Nullsafe\Foo|null', $self);
 			assertType('null', $self?->nullableSelf);
 		} else {
 			assertType('Nullsafe\Foo', $self);

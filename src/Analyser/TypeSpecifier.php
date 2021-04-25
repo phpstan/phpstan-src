@@ -795,6 +795,18 @@ class TypeSpecifier
 
 			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->intersectWith($nullSafeTypes);
+		} elseif ($expr instanceof Expr\NullsafeMethodCall && !$context->null()) {
+			$types = $this->specifyTypesInCondition(
+				$scope,
+				new BooleanAnd(
+					new Expr\BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
+					new MethodCall($expr->var, $expr->name, $expr->args)
+				),
+				$context
+			);
+
+			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->intersectWith($nullSafeTypes);
 		} elseif (!$context->null()) {
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		}
@@ -955,12 +967,38 @@ class TypeSpecifier
 				$propertyFetchTypes = $propertyFetchTypes->unionWith(
 					$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
 				);
+				return $types->unionWith($propertyFetchTypes);
 			} elseif ($context->false() && TypeCombinator::containsNull($type)) {
 				$propertyFetchTypes = $propertyFetchTypes->unionWith(
 					$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
 				);
+				return $types->unionWith($propertyFetchTypes);
 			}
-			return $types->unionWith($propertyFetchTypes);
+		}
+
+		if ($expr instanceof Expr\NullsafeMethodCall && !$context->null()) {
+			$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), $type, $context, false, $scope);
+			if ($context->true() && $scope !== null) {
+				$resultType = TypeCombinator::intersect($scope->getType($expr), $type);
+				if (!TypeCombinator::containsNull($resultType)) {
+					$methodCallTypes = $methodCallTypes->unionWith(
+						$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
+					);
+					return $types->unionWith($methodCallTypes);
+				}
+
+				return new SpecifiedTypes();
+			} elseif ($context->false() && $scope !== null) {
+				$resultType = TypeCombinator::remove($scope->getType($expr), $type);
+				if (!TypeCombinator::containsNull($resultType)) {
+					$methodCallTypes = $methodCallTypes->unionWith(
+						$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
+					);
+					return $types->unionWith($methodCallTypes);
+				}
+
+				return new SpecifiedTypes();
+			}
 		}
 
 		return $types;

@@ -51,6 +51,7 @@ use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
@@ -145,6 +146,8 @@ class NodeScopeResolver
 
 	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
+	private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider;
+
 	private bool $polluteScopeWithLoopInitialAssignments;
 
 	private bool $polluteCatchScopeWithTryAssignments;
@@ -190,6 +193,7 @@ class NodeScopeResolver
 		PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		FileHelper $fileHelper,
 		TypeSpecifier $typeSpecifier,
+		DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		bool $polluteScopeWithLoopInitialAssignments,
 		bool $polluteCatchScopeWithTryAssignments,
 		bool $polluteScopeWithAlwaysIterableForeach,
@@ -208,6 +212,7 @@ class NodeScopeResolver
 		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
 		$this->fileHelper = $fileHelper;
 		$this->typeSpecifier = $typeSpecifier;
+		$this->dynamicThrowTypeExtensionProvider = $dynamicThrowTypeExtensionProvider;
 		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
 		$this->polluteCatchScopeWithTryAssignments = $polluteCatchScopeWithTryAssignments;
 		$this->polluteScopeWithAlwaysIterableForeach = $polluteScopeWithAlwaysIterableForeach;
@@ -1780,34 +1785,9 @@ class NodeScopeResolver
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 
 			if (isset($functionReflection)) {
-				if ($functionReflection->getThrowType() !== null) {
-					$throwType = $functionReflection->getThrowType();
-					if (!$throwType instanceof VoidType) {
-						$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, true);
-					}
-				} elseif ($this->implicitThrows) {
-					$requiredParameters = null;
-					if ($parametersAcceptor !== null) {
-						$requiredParameters = 0;
-						foreach ($parametersAcceptor->getParameters() as $parameter) {
-							if ($parameter->isOptional()) {
-								continue;
-							}
-
-							$requiredParameters++;
-						}
-					}
-					if (
-						!$functionReflection->isBuiltin()
-						|| $requiredParameters === null
-						|| $requiredParameters > 0
-						|| count($expr->args) > 0
-					) {
-						$functionReturnedType = $scope->getType($expr);
-						if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
-							$throwPoints[] = ThrowPoint::createImplicit($scope);
-						}
-					}
+				$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $expr, $scope);
+				if ($functionThrowPoint !== null) {
+					$throwPoints[] = $functionThrowPoint;
 				}
 			} else {
 				$throwPoints[] = ThrowPoint::createImplicit($scope);
@@ -1975,16 +1955,9 @@ class NodeScopeResolver
 						$expr->args,
 						$methodReflection->getVariants()
 					);
-					if ($methodReflection->getThrowType() !== null) {
-						$throwType = $methodReflection->getThrowType();
-						if (!$throwType instanceof VoidType) {
-							$throwPoints[] = ThrowPoint::createExplicit($scope, $methodReflection->getThrowType(), true);
-						}
-					} elseif ($this->implicitThrows) {
-						$methodReturnedType = $scope->getType($expr);
-						if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-							$throwPoints[] = ThrowPoint::createImplicit($scope);
-						}
+					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $expr, $scope);
+					if ($methodThrowPoint !== null) {
+						$throwPoints[] = $methodThrowPoint;
 					}
 				} else {
 					$throwPoints[] = ThrowPoint::createImplicit($scope);
@@ -2056,16 +2029,9 @@ class NodeScopeResolver
 							$expr->args,
 							$methodReflection->getVariants()
 						);
-						if ($methodReflection->getThrowType() !== null) {
-							$throwType = $methodReflection->getThrowType();
-							if (!$throwType instanceof VoidType) {
-								$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, true);
-							}
-						} elseif ($this->implicitThrows) {
-							$methodReturnedType = $scope->getType($expr);
-							if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-								$throwPoints[] = ThrowPoint::createImplicit($scope);
-							}
+						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $expr, $scope);
+						if ($methodThrowPoint !== null) {
+							$throwPoints[] = $methodThrowPoint;
 						}
 						if (
 							$classReflection->getName() === 'Closure'
@@ -2625,6 +2591,119 @@ class NodeScopeResolver
 				return $scope->filterByFalseyValue($expr);
 			}
 		);
+	}
+
+	private function getFunctionThrowPoint(
+		FunctionReflection $functionReflection,
+		?ParametersAcceptor $parametersAcceptor,
+		FuncCall $funcCall,
+		MutatingScope $scope
+	): ?ThrowPoint
+	{
+		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
+			if (!$extension->isFunctionSupported($functionReflection)) {
+				continue;
+			}
+
+			$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $funcCall, $scope);
+			if ($throwType === null) {
+				return null;
+			}
+
+			return ThrowPoint::createExplicit($scope, $throwType, false);
+		}
+
+		if ($functionReflection->getThrowType() !== null) {
+			$throwType = $functionReflection->getThrowType();
+			if (!$throwType instanceof VoidType) {
+				return ThrowPoint::createExplicit($scope, $throwType, true);
+			}
+		} elseif ($this->implicitThrows) {
+			$requiredParameters = null;
+			if ($parametersAcceptor !== null) {
+				$requiredParameters = 0;
+				foreach ($parametersAcceptor->getParameters() as $parameter) {
+					if ($parameter->isOptional()) {
+						continue;
+					}
+
+					$requiredParameters++;
+				}
+			}
+			if (
+				!$functionReflection->isBuiltin()
+				|| $requiredParameters === null
+				|| $requiredParameters > 0
+				|| count($funcCall->args) > 0
+			) {
+				$functionReturnedType = $scope->getType($funcCall);
+				if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
+					return ThrowPoint::createImplicit($scope);
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private function getMethodThrowPoint(MethodReflection $methodReflection, MethodCall $methodCall, MutatingScope $scope): ?ThrowPoint
+	{
+		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
+			if (!$extension->isMethodSupported($methodReflection)) {
+				continue;
+			}
+
+			$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $methodCall, $scope);
+			if ($throwType === null) {
+				return null;
+			}
+
+			return ThrowPoint::createExplicit($scope, $throwType, false);
+		}
+
+		if ($methodReflection->getThrowType() !== null) {
+			$throwType = $methodReflection->getThrowType();
+			if (!$throwType instanceof VoidType) {
+				return ThrowPoint::createExplicit($scope, $throwType, true);
+			}
+		} elseif ($this->implicitThrows) {
+			$methodReturnedType = $scope->getType($methodCall);
+			if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+				return ThrowPoint::createImplicit($scope);
+			}
+		}
+
+		return null;
+	}
+
+	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, StaticCall $methodCall, MutatingScope $scope): ?ThrowPoint
+	{
+		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
+			if (!$extension->isStaticMethodSupported($methodReflection)) {
+				continue;
+			}
+
+			$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $methodCall, $scope);
+			if ($throwType === null) {
+				return null;
+			}
+
+			return ThrowPoint::createExplicit($scope, $throwType, false);
+		}
+
+		if ($methodReflection->getThrowType() !== null) {
+			$throwType = $methodReflection->getThrowType();
+			if (!$throwType instanceof VoidType) {
+				return ThrowPoint::createExplicit($scope, $throwType, true);
+			}
+		} elseif ($this->implicitThrows) {
+			$methodReturnedType = $scope->getType($methodCall);
+			if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+				return ThrowPoint::createImplicit($scope);
+			}
+		}
+
+		return null;
 	}
 
 	/**

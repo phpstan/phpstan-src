@@ -87,4 +87,14 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4863.php'], []);
 	}
 
+	public function testBug4814(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4814.php'], [
+			[
+				'Dead catch - JsonException is never thrown in the try block.',
+				16,
+			],
+		]);
+	}
+
 }

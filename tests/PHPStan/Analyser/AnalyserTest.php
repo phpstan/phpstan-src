@@ -8,6 +8,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
+use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\Parser\RichParser;
@@ -510,6 +511,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,
+			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			false,
 			false,
 			true,

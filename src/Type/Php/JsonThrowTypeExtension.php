@@ -6,17 +6,16 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 
-class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
 	/** @var array<string, int> */
@@ -36,7 +35,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 		FunctionReflection $functionReflection
 	): bool
 	{
-		return $this->reflectionProvider->hasConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
+		return $this->reflectionProvider->hasConstant(new Name\FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
 			$functionReflection->getName(),
 			[
 				'json_encode',
@@ -46,41 +45,39 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 		);
 	}
 
-	public function getTypeFromFunctionCall(
+	public function getThrowTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope
-	): Type
+	): ?Type
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		if (!isset($functionCall->args[$argumentPosition])) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$optionsExpr = $functionCall->args[$argumentPosition]->value;
-		$constrictedReturnType = TypeCombinator::remove($defaultReturnType, new ConstantBooleanType(false));
 		if ($this->isBitwiseOrWithJsonThrowOnError($optionsExpr, $scope)) {
-			return $constrictedReturnType;
+			return new ObjectType('JsonException');
 		}
 
 		$valueType = $scope->getType($optionsExpr);
 		if (!$valueType instanceof ConstantIntegerType) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$value = $valueType->getValue();
-		$throwOnErrorType = $this->reflectionProvider->getConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null)->getValueType();
+		$throwOnErrorType = $this->reflectionProvider->getConstant(new Name\FullyQualified('JSON_THROW_ON_ERROR'), null)->getValueType();
 		if (!$throwOnErrorType instanceof ConstantIntegerType) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$throwOnErrorValue = $throwOnErrorType->getValue();
 		if (($value & $throwOnErrorValue) !== $throwOnErrorValue) {
-			return $defaultReturnType;
+			return null;
 		}
 
-		return $constrictedReturnType;
+		return new ObjectType('JsonException');
 	}
 
 	private function isBitwiseOrWithJsonThrowOnError(Expr $expr, Scope $scope): bool

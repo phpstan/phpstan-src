@@ -1,0 +1,10 @@
+services:
+	-
+		class: DynamicMethodThrowTypeExtension\MethodThrowTypeExtension
+		tags:
+			- phpstan.dynamicMethodThrowTypeExtension
+
+	-
+		class: DynamicMethodThrowTypeExtension\StaticMethodThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension

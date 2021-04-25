@@ -11,6 +11,7 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
+use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
@@ -79,6 +80,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$phpDocInheritanceResolver,
 				$fileHelper,
 				$typeSpecifier,
+				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
 				$this->shouldPolluteCatchScopeWithTryAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),

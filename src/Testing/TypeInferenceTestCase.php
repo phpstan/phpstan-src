@@ -12,6 +12,7 @@ use PHPStan\Analyser\ScopeContext;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\Broker;
 use PHPStan\Cache\Cache;
+use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
@@ -71,6 +72,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,
+			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			true,
 			$this->polluteCatchScopeWithTryAssignments,
 			true,

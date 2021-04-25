@@ -89,6 +89,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testBug4814(): void
 	{
+		if (PHP_VERSION_ID < 70300) {
+			$this->markTestSkipped('Test requires PHP 7.3.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-4814.php'], [
 			[
 				'Dead catch - JsonException is never thrown in the try block.',

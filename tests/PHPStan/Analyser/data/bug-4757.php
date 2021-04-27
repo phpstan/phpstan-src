@@ -241,3 +241,95 @@ class Foo
 	}
 
 }
+
+class Chain
+{
+
+	/** @var int */
+	private $baz;
+
+	/** @var self|null */
+	private $selfOrNull;
+
+	/** @var self */
+	private $self;
+
+	public function find(): ?self
+	{
+
+	}
+
+	public function get(): self
+	{
+
+	}
+
+	/** @phpstan-impure */
+	public function findImpure(): ?self
+	{
+
+	}
+
+	public function doFoo(): void
+	{
+		assertType('int', $this->baz);
+		assertType('int|null', $this->find()?->baz);
+		assertType('int|null', $this->findImpure()?->baz);
+	}
+
+	public function doBar(): void
+	{
+		if ($this->selfOrNull?->find()?->baz !== null) {
+			assertType(self::class, $this->selfOrNull);
+			assertType(self::class, $this->selfOrNull->find());
+		}
+	}
+
+	public function doBar2(): void
+	{
+		if ($this->selfOrNull?->find()?->get()->baz !== null) {
+			assertType(self::class, $this->selfOrNull);
+			assertType(self::class, $this->selfOrNull->find());
+		}
+	}
+
+	public function doBar3(): void
+	{
+		if ($this->selfOrNull?->find()?->get()->find() !== null) {
+			assertType(self::class, $this->selfOrNull);
+			assertType(self::class, $this->selfOrNull->find());
+		}
+	}
+
+	public function doBaz(): void
+	{
+		if ($this->selfOrNull?->findImpure()->baz !== null) {
+			assertType(self::class, $this->selfOrNull);
+			assertType(self::class . '|null', $this->selfOrNull->findImpure());
+		}
+	}
+
+	public function doBaz2(): void
+	{
+		if ($this->selfOrNull?->self->baz !== null) {
+			assertType(self::class, $this->selfOrNull);
+		}
+	}
+
+	public function doBaz3(): void
+	{
+		if ($this->selfOrNull?->findImpure()->baz === 1) {
+			assertType(self::class, $this->selfOrNull);
+			assertType(self::class . '|null', $this->selfOrNull->findImpure());
+		}
+	}
+
+	public function doBaz4(): void
+	{
+		if ($this->selfOrNull?->find()?->get()->baz === 1) {
+			assertType(self::class, $this->selfOrNull);
+			assertType(self::class, $this->selfOrNull->find());
+		}
+	}
+
+}

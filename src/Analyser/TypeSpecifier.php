@@ -938,12 +938,19 @@ class TypeSpecifier
 			$methodName = $expr->name->toString();
 			$calledOnType = $scope->getType($expr->var);
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-			if ($methodReflection === null) {
-				// backwards compatibility with previous behaviour
-				return new SpecifiedTypes();
-			}
+			if ($methodReflection === null || $methodReflection->hasSideEffects()->yes()) {
+				if ($context->true()) {
+					$resultType = TypeCombinator::intersect($scope->getType($expr), $type);
+					if (!TypeCombinator::containsNull($resultType)) {
+						return $this->createNullsafeTypes($expr, $scope, $context, $type);
+					}
+				} elseif ($context->false()) {
+					$resultType = TypeCombinator::remove($scope->getType($expr), $type);
+					if (!TypeCombinator::containsNull($resultType)) {
+						return $this->createNullsafeTypes($expr, $scope, $context, $type);
+					}
+				}
 
-			if ($methodReflection->hasSideEffects()->yes()) {
 				return new SpecifiedTypes();
 			}
 		}
@@ -959,49 +966,70 @@ class TypeSpecifier
 		}
 
 		$types = new SpecifiedTypes($sureTypes, $sureNotTypes, $overwrite);
-		if ($expr instanceof Expr\NullsafePropertyFetch && !$context->null()) {
-			$propertyFetchTypes = $this->create(new PropertyFetch($expr->var, $expr->name), $type, $context, false, $scope);
-			if (
-				$context->true() && !TypeCombinator::containsNull($type)
-			) {
-				$propertyFetchTypes = $propertyFetchTypes->unionWith(
-					$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
-				);
-				return $types->unionWith($propertyFetchTypes);
-			} elseif ($context->false() && TypeCombinator::containsNull($type)) {
-				$propertyFetchTypes = $propertyFetchTypes->unionWith(
-					$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
-				);
-				return $types->unionWith($propertyFetchTypes);
-			}
-		}
-
-		if ($expr instanceof Expr\NullsafeMethodCall && !$context->null()) {
-			$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), $type, $context, false, $scope);
-			if ($context->true() && $scope !== null) {
+		if ($scope !== null) {
+			if ($context->true()) {
 				$resultType = TypeCombinator::intersect($scope->getType($expr), $type);
 				if (!TypeCombinator::containsNull($resultType)) {
-					$methodCallTypes = $methodCallTypes->unionWith(
-						$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
-					);
-					return $types->unionWith($methodCallTypes);
+					return $this->createNullsafeTypes($expr, $scope, $context, $type)->unionWith($types);
 				}
-
-				return new SpecifiedTypes();
-			} elseif ($context->false() && $scope !== null) {
+			} elseif ($context->false()) {
 				$resultType = TypeCombinator::remove($scope->getType($expr), $type);
 				if (!TypeCombinator::containsNull($resultType)) {
-					$methodCallTypes = $methodCallTypes->unionWith(
-						$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
-					);
-					return $types->unionWith($methodCallTypes);
+					return $this->createNullsafeTypes($expr, $scope, $context, $type)->unionWith($types);
 				}
-
-				return new SpecifiedTypes();
 			}
 		}
 
 		return $types;
+	}
+
+	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes
+	{
+		if ($expr instanceof Expr\NullsafePropertyFetch) {
+			if ($type !== null) {
+				$propertyFetchTypes = $this->create(new PropertyFetch($expr->var, $expr->name), $type, $context, false, $scope);
+			} else {
+				$propertyFetchTypes = $this->create(new PropertyFetch($expr->var, $expr->name), new NullType(), TypeSpecifierContext::createFalse(), false, $scope);
+			}
+
+			return $propertyFetchTypes->unionWith(
+				$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
+			);
+		}
+
+		if ($expr instanceof Expr\NullsafeMethodCall) {
+			if ($type !== null) {
+				$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), $type, $context, false, $scope);
+			} else {
+				$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), new NullType(), TypeSpecifierContext::createFalse(), false, $scope);
+			}
+
+			return $methodCallTypes->unionWith(
+				$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
+			);
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return $this->createNullsafeTypes($expr->var, $scope, $context, null);
+		}
+
+		if ($expr instanceof Expr\MethodCall) {
+			return $this->createNullsafeTypes($expr->var, $scope, $context, null);
+		}
+
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return $this->createNullsafeTypes($expr->var, $scope, $context, null);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
+			return $this->createNullsafeTypes($expr->class, $scope, $context, null);
+		}
+
+		if ($expr instanceof Expr\StaticCall && $expr->class instanceof Expr) {
+			return $this->createNullsafeTypes($expr->class, $scope, $context, null);
+		}
+
+		return new SpecifiedTypes();
 	}
 
 	private function createRangeTypes(Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes

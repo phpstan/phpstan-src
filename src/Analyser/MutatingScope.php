@@ -1971,6 +1971,11 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\NullsafeMethodCall) {
+			$varType = $this->getType($node->var);
+			if (!TypeCombinator::containsNull($varType)) {
+				return $this->getType(new MethodCall($node->var, $node->name, $node->args));
+			}
+
 			return TypeCombinator::union(
 				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
 					->getType(new MethodCall($node->var, $node->name, $node->args)),
@@ -2025,6 +2030,11 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\NullsafePropertyFetch) {
+			$varType = $this->getType($node->var);
+			if (!TypeCombinator::containsNull($varType)) {
+				return $this->getType(new PropertyFetch($node->var, $node->name));
+			}
+
 			return TypeCombinator::union(
 				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
 					->getType(new PropertyFetch($node->var, $node->name)),
@@ -2102,30 +2112,35 @@ class MutatingScope implements Scope
 		return new MixedType();
 	}
 
-	private function getNullsafeShortCircuitingType(Expr $var, Type $type): Type
+	private function getNullsafeShortCircuitingType(Expr $expr, Type $type): Type
 	{
-		if ($var instanceof Expr\NullsafePropertyFetch || $var instanceof Expr\NullsafeMethodCall) {
-			return TypeCombinator::addNull($type);
+		if ($expr instanceof Expr\NullsafePropertyFetch || $expr instanceof Expr\NullsafeMethodCall) {
+			$varType = $this->getType($expr->var);
+			if (TypeCombinator::containsNull($varType)) {
+				return TypeCombinator::addNull($type);
+			}
+
+			return $type;
 		}
 
-		if ($var instanceof Expr\ArrayDimFetch) {
-			return $this->getNullsafeShortCircuitingType($var->var, $type);
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return $this->getNullsafeShortCircuitingType($expr->var, $type);
 		}
 
-		if ($var instanceof PropertyFetch) {
-			return $this->getNullsafeShortCircuitingType($var->var, $type);
+		if ($expr instanceof PropertyFetch) {
+			return $this->getNullsafeShortCircuitingType($expr->var, $type);
 		}
 
-		if ($var instanceof Expr\StaticPropertyFetch && $var->class instanceof Expr) {
-			return $this->getNullsafeShortCircuitingType($var->class, $type);
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
+			return $this->getNullsafeShortCircuitingType($expr->class, $type);
 		}
 
-		if ($var instanceof MethodCall) {
-			return $this->getNullsafeShortCircuitingType($var->var, $type);
+		if ($expr instanceof MethodCall) {
+			return $this->getNullsafeShortCircuitingType($expr->var, $type);
 		}
 
-		if ($var instanceof Expr\StaticCall && $var->class instanceof Expr) {
-			return $this->getNullsafeShortCircuitingType($var->class, $type);
+		if ($expr instanceof Expr\StaticCall && $expr->class instanceof Expr) {
+			return $this->getNullsafeShortCircuitingType($expr->class, $type);
 		}
 
 		return $type;

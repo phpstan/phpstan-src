@@ -75,6 +75,17 @@ class HelloWorld
 		assertType('bool', $oldReservation->isFoo());
 	}
 
+	public function sayHelloPure(?Reservation $oldReservation): void
+	{
+		if ($oldReservation?->isFoo()) {
+			assertType(Reservation::class, $oldReservation);
+			assertType('true', $oldReservation->isFoo());
+			return;
+		}
+
+		assertType(Reservation::class . '|null', $oldReservation);
+	}
+
 	public function sayHelloImpure(?Reservation $oldReservation): void
 	{
 		if ($oldReservation?->isFooImpure()) {
@@ -172,6 +183,7 @@ class Foo
 
 		assertType(Bar::class, $barOrNull);
 		assertType('int', $barOrNull->get());
+		assertType('int', $barOrNull?->get());
 	}
 
 	public function doFooImpire(Bar $b): void
@@ -186,6 +198,7 @@ class Foo
 
 		assertType(Bar::class, $barOrNull);
 		assertType('int|null', $barOrNull->getImpure());
+		assertType('int|null', $barOrNull?->getImpure());
 	}
 
 	public function doFoo2(Bar $b): void
@@ -194,6 +207,7 @@ class Foo
 		if ($barOrNull?->get() !== null) {
 			assertType(Bar::class, $barOrNull);
 			assertType('int', $barOrNull->get());
+			assertType('int', $barOrNull?->get());
 			return;
 		}
 
@@ -207,11 +221,13 @@ class Foo
 		if ($barOrNull?->getImpure() !== null) {
 			assertType(Bar::class, $barOrNull);
 			assertType('int|null', $barOrNull->getImpure());
+			assertType('int|null', $barOrNull?->getImpure());
 			return;
 		}
 
 		assertType(Bar::class . '|null', $barOrNull);
 		assertType('int|null', $barOrNull->getImpure());
+		assertType('int|null', $barOrNull?->getImpure());
 	}
 
 	public function doFoo3(Bar $b): void
@@ -329,6 +345,24 @@ class Chain
 		if ($this->selfOrNull?->find()?->get()->baz === 1) {
 			assertType(self::class, $this->selfOrNull);
 			assertType(self::class, $this->selfOrNull->find());
+		}
+	}
+
+	public function doVariable(): void
+	{
+		$foo = $this->selfOrNull;
+		if ($foo?->get()->selfOrNull !== null) {
+			assertType(self::class, $foo);
+			assertType(self::class, $foo->get()->selfOrNull);
+		}
+	}
+
+	public function doLorem(): void
+	{
+		if ($this->find()?->find()?->find() !== null) {
+			assertType(self::class, $this->find());
+			assertType(self::class, $this->find()->find());
+			assertType(self::class, $this->find()->find()->find());
 		}
 	}
 

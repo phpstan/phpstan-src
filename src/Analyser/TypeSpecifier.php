@@ -914,6 +914,19 @@ class TypeSpecifier
 			return new SpecifiedTypes();
 		}
 
+		if ($scope !== null) {
+			if ($context->true()) {
+				$resultType = TypeCombinator::intersect($scope->getType($expr), $type);
+			} elseif ($context->false()) {
+				$resultType = TypeCombinator::remove($scope->getType($expr), $type);
+			}
+		}
+
+		$originalExpr = $expr;
+		if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+			$expr = NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr);
+		}
+
 		if (
 			$expr instanceof FuncCall
 			&& $expr->name instanceof Name
@@ -939,16 +952,8 @@ class TypeSpecifier
 			$calledOnType = $scope->getType($expr->var);
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
 			if ($methodReflection === null || $methodReflection->hasSideEffects()->yes()) {
-				if ($context->true()) {
-					$resultType = TypeCombinator::intersect($scope->getType($expr), $type);
-					if (!TypeCombinator::containsNull($resultType)) {
-						return $this->createNullsafeTypes($expr, $scope, $context, $type);
-					}
-				} elseif ($context->false()) {
-					$resultType = TypeCombinator::remove($scope->getType($expr), $type);
-					if (!TypeCombinator::containsNull($resultType)) {
-						return $this->createNullsafeTypes($expr, $scope, $context, $type);
-					}
+				if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
 				}
 
 				return new SpecifiedTypes();
@@ -957,7 +962,6 @@ class TypeSpecifier
 
 		$sureTypes = [];
 		$sureNotTypes = [];
-
 		$exprString = $this->printer->prettyPrintExpr($expr);
 		if ($context->false()) {
 			$sureNotTypes[$exprString] = [$expr, $type];
@@ -966,18 +970,8 @@ class TypeSpecifier
 		}
 
 		$types = new SpecifiedTypes($sureTypes, $sureNotTypes, $overwrite);
-		if ($scope !== null) {
-			if ($context->true()) {
-				$resultType = TypeCombinator::intersect($scope->getType($expr), $type);
-				if (!TypeCombinator::containsNull($resultType)) {
-					return $this->createNullsafeTypes($expr, $scope, $context, $type)->unionWith($types);
-				}
-			} elseif ($context->false()) {
-				$resultType = TypeCombinator::remove($scope->getType($expr), $type);
-				if (!TypeCombinator::containsNull($resultType)) {
-					return $this->createNullsafeTypes($expr, $scope, $context, $type)->unionWith($types);
-				}
-			}
+		if ($scope !== null && isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+			return $this->createNullsafeTypes($originalExpr, $scope, $context, $type)->unionWith($types);
 		}
 
 		return $types;

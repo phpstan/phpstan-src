@@ -683,7 +683,7 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Throw_) {
 			$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$throwPoints = $result->getThrowPoints();
-			$throwPoints[] = ThrowPoint::createExplicit($result->getScope(), $scope->getType($stmt->expr), false);
+			$throwPoints[] = ThrowPoint::createExplicit($result->getScope(), $scope->getType($stmt->expr), $stmt, false);
 			return new StatementResult($result->getScope(), $result->hasYield(), true, [
 				new StatementExitPoint($stmt, $scope),
 			], $throwPoints);
@@ -1790,7 +1790,7 @@ class NodeScopeResolver
 					$throwPoints[] = $functionThrowPoint;
 				}
 			} else {
-				$throwPoints[] = ThrowPoint::createImplicit($scope);
+				$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			}
 
 			if (
@@ -1960,7 +1960,7 @@ class NodeScopeResolver
 						$throwPoints[] = $methodThrowPoint;
 					}
 				} else {
-					$throwPoints[] = ThrowPoint::createImplicit($scope);
+					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
@@ -2005,7 +2005,7 @@ class NodeScopeResolver
 					}, $context->enterDeep());
 					$additionalThrowPoints = $objectExprResult->getThrowPoints();
 				} else {
-					$additionalThrowPoints = [ThrowPoint::createImplicit($scope)];
+					$additionalThrowPoints = [ThrowPoint::createImplicit($scope, $expr)];
 				}
 				$classResult = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $classResult->hasYield();
@@ -2081,10 +2081,10 @@ class NodeScopeResolver
 							$closureBindScope = $scope->enterClosureBind($thisType, $scopeClass);
 						}
 					} else {
-						$throwPoints[] = ThrowPoint::createImplicit($scope);
+						$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 					}
 				} else {
-					$throwPoints[] = ThrowPoint::createImplicit($scope);
+					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context, $closureBindScope ?? null);
@@ -2310,7 +2310,7 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Expr\Include_) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
-			$throwPoints[] = ThrowPoint::createImplicit($scope);
+			$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			$hasYield = $result->hasYield();
 			$scope = $result->getScope();
 		} elseif (
@@ -2330,7 +2330,7 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Expr\YieldFrom) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
-			$throwPoints[] = ThrowPoint::createImplicit($scope);
+			$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			$hasYield = true;
 
 			$scope = $result->getScope();
@@ -2400,7 +2400,7 @@ class NodeScopeResolver
 					}, $context->enterDeep());
 					$additionalThrowPoints = $objectExprResult->getThrowPoints();
 				} else {
-					$additionalThrowPoints = [ThrowPoint::createImplicit($scope)];
+					$additionalThrowPoints = [ThrowPoint::createImplicit($scope, $expr)];
 				}
 
 				$result = $this->processExprNode($expr->class, $scope, $nodeCallback, $context->enterDeep());
@@ -2427,16 +2427,16 @@ class NodeScopeResolver
 						if ($constructorReflection->getThrowType() !== null) {
 							$throwType = $constructorReflection->getThrowType();
 							if (!$throwType instanceof VoidType) {
-								$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, true);
+								$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, $expr, true);
 							}
 						} elseif ($this->implicitThrows) {
 							if ($classReflection->getName() !== \Throwable::class && !$classReflection->isSubclassOf(\Throwable::class)) {
-								$throwPoints[] = ThrowPoint::createImplicit($scope);
+								$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 							}
 						}
 					}
 				} else {
-					$throwPoints[] = ThrowPoint::createImplicit($scope);
+					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
 			$result = $this->processArgs($constructorReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
@@ -2515,7 +2515,7 @@ class NodeScopeResolver
 
 		} elseif ($expr instanceof Expr\Yield_) {
 			$throwPoints = [
-				ThrowPoint::createImplicit($scope),
+				ThrowPoint::createImplicit($scope, $expr),
 			];
 			if ($expr->key !== null) {
 				$keyResult = $this->processExprNode($expr->key, $scope, $nodeCallback, $context->enterDeep());
@@ -2620,13 +2620,13 @@ class NodeScopeResolver
 				return null;
 			}
 
-			return ThrowPoint::createExplicit($scope, $throwType, false);
+			return ThrowPoint::createExplicit($scope, $throwType, $funcCall, false);
 		}
 
 		if ($functionReflection->getThrowType() !== null) {
 			$throwType = $functionReflection->getThrowType();
 			if (!$throwType instanceof VoidType) {
-				return ThrowPoint::createExplicit($scope, $throwType, true);
+				return ThrowPoint::createExplicit($scope, $throwType, $funcCall, true);
 			}
 		} elseif ($this->implicitThrows) {
 			$requiredParameters = null;
@@ -2648,7 +2648,7 @@ class NodeScopeResolver
 			) {
 				$functionReturnedType = $scope->getType($funcCall);
 				if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
-					return ThrowPoint::createImplicit($scope);
+					return ThrowPoint::createImplicit($scope, $funcCall);
 				}
 			}
 		}
@@ -2668,18 +2668,18 @@ class NodeScopeResolver
 				return null;
 			}
 
-			return ThrowPoint::createExplicit($scope, $throwType, false);
+			return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
 		}
 
 		if ($methodReflection->getThrowType() !== null) {
 			$throwType = $methodReflection->getThrowType();
 			if (!$throwType instanceof VoidType) {
-				return ThrowPoint::createExplicit($scope, $throwType, true);
+				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
 			$methodReturnedType = $scope->getType($methodCall);
 			if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return ThrowPoint::createImplicit($scope);
+				return ThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}
 
@@ -2698,18 +2698,18 @@ class NodeScopeResolver
 				return null;
 			}
 
-			return ThrowPoint::createExplicit($scope, $throwType, false);
+			return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
 		}
 
 		if ($methodReflection->getThrowType() !== null) {
 			$throwType = $methodReflection->getThrowType();
 			if (!$throwType instanceof VoidType) {
-				return ThrowPoint::createExplicit($scope, $throwType, true);
+				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
 			$methodReturnedType = $scope->getType($methodCall);
 			if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return ThrowPoint::createImplicit($scope);
+				return ThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -13,26 +14,55 @@ class ThrowPoint
 
 	private Type $type;
 
+	/** @var Node\Expr|Node\Stmt */
+	private Node $node;
+
 	private bool $explicit;
 
 	private bool $canContainAnyThrowable;
 
-	private function __construct(MutatingScope $scope, Type $type, bool $explicit, bool $canContainAnyThrowable)
+	/**
+	 * @param MutatingScope $scope
+	 * @param Type $type
+	 * @param Node\Expr|Node\Stmt $node
+	 * @param bool $explicit
+	 * @param bool $canContainAnyThrowable
+	 */
+	private function __construct(
+		MutatingScope $scope,
+		Type $type,
+		Node $node,
+		bool $explicit,
+		bool $canContainAnyThrowable
+	)
 	{
 		$this->scope = $scope;
 		$this->type = $type;
+		$this->node = $node;
 		$this->explicit = $explicit;
 		$this->canContainAnyThrowable = $canContainAnyThrowable;
 	}
 
-	public static function createExplicit(MutatingScope $scope, Type $type, bool $canContainAnyThrowable): self
+	/**
+	 * @param MutatingScope $scope
+	 * @param Type $type
+	 * @param Node\Expr|Node\Stmt $node
+	 * @param bool $canContainAnyThrowable
+	 * @return self
+	 */
+	public static function createExplicit(MutatingScope $scope, Type $type, Node $node, bool $canContainAnyThrowable): self
 	{
-		return new self($scope, $type, true, $canContainAnyThrowable);
+		return new self($scope, $type, $node, true, $canContainAnyThrowable);
 	}
 
-	public static function createImplicit(MutatingScope $scope): self
+	/**
+	 * @param MutatingScope $scope
+	 * @param Node\Expr|Node\Stmt $node
+	 * @return self
+	 */
+	public static function createImplicit(MutatingScope $scope, Node $node): self
 	{
-		return new self($scope, new ObjectType(\Throwable::class), false, true);
+		return new self($scope, new ObjectType(\Throwable::class), $node, false, true);
 	}
 
 	public function getScope(): MutatingScope
@@ -43,6 +73,14 @@ class ThrowPoint
 	public function getType(): Type
 	{
 		return $this->type;
+	}
+
+	/**
+	 * @return Node\Expr|Node\Stmt
+	 */
+	public function getNode()
+	{
+		return $this->node;
 	}
 
 	public function isExplicit(): bool
@@ -57,7 +95,7 @@ class ThrowPoint
 
 	public function subtractCatchType(Type $catchType): self
 	{
-		return new self($this->scope, TypeCombinator::remove($this->type, $catchType), $this->explicit, $this->canContainAnyThrowable);
+		return new self($this->scope, TypeCombinator::remove($this->type, $catchType), $this->node, $this->explicit, $this->canContainAnyThrowable);
 	}
 
 }

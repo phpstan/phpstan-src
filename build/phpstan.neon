@@ -42,6 +42,8 @@ parameters:
 			- 'InvalidArgumentException'
 			- 'Nette\InvalidArgumentException'
 			- 'PHPStan\DependencyInjection\ParameterNotFoundException'
+			- 'PHPStan\Analyser\UndefinedVariableException'
+			- 'RuntimeException'
 		uncheckedExceptionRegexes:
 			- '#^PHPUnit\\Framework\\#'
 			- '#^SebastianBergmann\\#'

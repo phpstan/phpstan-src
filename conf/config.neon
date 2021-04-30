@@ -11,6 +11,9 @@ parameters:
 	autoload_files: []
 	level: null
 	paths: []
+	exceptions:
+		uncheckedExceptionRegexes: []
+		uncheckedExceptionClasses: []
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
@@ -171,6 +174,10 @@ parametersSchema:
 	autoload_files: listOf(string())
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
+	exceptions: structure([
+		uncheckedExceptionRegexes: listOf(string()),
+		uncheckedExceptionClasses: listOf(string())
+	])
 	featureToggles: structure([
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
@@ -718,6 +725,12 @@ services:
 		arguments:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
+		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
+		arguments:
+			uncheckedExceptionRegexes: %exceptions.uncheckedExceptionRegexes%
+			uncheckedExceptionClasses: %exceptions.uncheckedExceptionClasses%
 
 	-
 		class: PHPStan\Rules\FunctionCallParametersCheck

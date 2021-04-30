@@ -116,7 +116,13 @@ class DumpDependenciesCommand extends \Symfony\Component\Console\Command\Command
 			count($analysedPaths) > 0 ? $analysedPaths : null
 		);
 		$stdOutputStyole->progressFinish();
-		$stdOutput->writeLineFormatted(Json::encode($dependencies, Json::PRETTY));
+
+		try {
+			$stdOutput->writeLineFormatted(Json::encode($dependencies, Json::PRETTY));
+		} catch (\Nette\Utils\JsonException $e) {
+			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
+			return 1;
+		}
 
 		return $inceptionResult->handleReturn(0);
 	}

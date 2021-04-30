@@ -30,6 +30,8 @@ class CommandHelper
 	/**
 	 * @param string[] $paths
 	 * @param string[] $composerAutoloaderProjectPaths
+	 *
+	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
 	 */
 	public static function begin(
 		InputInterface $input,
@@ -444,6 +446,9 @@ class CommandHelper
 		);
 	}
 
+	/**
+	 * @throws InceptionNotSuccessfulException
+	 */
 	private static function executeBootstrapFile(
 		string $file,
 		Container $container,

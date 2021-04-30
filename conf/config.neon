@@ -14,6 +14,8 @@ parameters:
 	exceptions:
 		uncheckedExceptionRegexes: []
 		uncheckedExceptionClasses: []
+		check:
+			missingCheckedExceptionInThrows: false
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
@@ -176,7 +178,10 @@ parametersSchema:
 	paths: listOf(string())
 	exceptions: structure([
 		uncheckedExceptionRegexes: listOf(string()),
-		uncheckedExceptionClasses: listOf(string())
+		uncheckedExceptionClasses: listOf(string()),
+		check: structure([
+			missingCheckedExceptionInThrows: bool()
+		])
 	])
 	featureToggles: structure([
 		bleedingEdge: bool(),
@@ -313,6 +318,12 @@ parametersSchema:
 rules:
 	- PHPStan\Rules\Debug\DumpTypeRule
 	- PHPStan\Rules\Debug\FileAssertRule
+
+conditionalTags:
+	PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule:
+		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
+	PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule:
+		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
 
 services:
 	-
@@ -731,6 +742,15 @@ services:
 		arguments:
 			uncheckedExceptionRegexes: %exceptions.uncheckedExceptionRegexes%
 			uncheckedExceptionClasses: %exceptions.uncheckedExceptionClasses%
+
+	-
+		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule
+
+	-
+		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule
+
+	-
+		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck
 
 	-
 		class: PHPStan\Rules\FunctionCallParametersCheck

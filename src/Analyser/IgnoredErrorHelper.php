@@ -122,6 +122,8 @@ class IgnoredErrorHelper
 				}
 			} catch (\Nette\Utils\RegexpException $e) {
 				$errors[] = $e->getMessage();
+			} catch (\Nette\Utils\JsonException $e) {
+				$errors[] = $e->getMessage();
 			}
 		}
 

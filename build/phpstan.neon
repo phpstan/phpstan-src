@@ -32,6 +32,21 @@ parameters:
 		- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
 		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
 		- ../src/Command/IgnoredRegexValidator.php
+	exceptions:
+		uncheckedExceptionClasses:
+			- 'PHPStan\ShouldNotHappenException'
+			- 'Symfony\Component\Console\Exception\InvalidArgumentException'
+			- 'PHPStan\BetterReflection\SourceLocator\Exception\InvalidFileLocation'
+			- 'PHPStan\BetterReflection\SourceLocator\Exception\InvalidArgumentException'
+			- 'Symfony\Component\Finder\Exception\DirectoryNotFoundException'
+			- 'InvalidArgumentException'
+			- 'Nette\InvalidArgumentException'
+			- 'PHPStan\DependencyInjection\ParameterNotFoundException'
+		uncheckedExceptionRegexes:
+			- '#^PHPUnit\\Framework\\#'
+			- '#^SebastianBergmann\\#'
+		check:
+			missingCheckedExceptionInThrows: false
 	featureToggles:
 		readComposerPhpVersion: false
 	ignoreErrors:

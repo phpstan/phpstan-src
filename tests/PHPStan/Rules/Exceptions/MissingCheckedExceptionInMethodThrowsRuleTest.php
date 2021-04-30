@@ -27,15 +27,15 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/missing-exception-method-throws.php'], [
 			[
 				'Method MissingExceptionMethodThrows\Foo::doBaz() throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',
-				21,
+				23,
 			],
 			[
 				'Method MissingExceptionMethodThrows\Foo::doLorem() throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',
-				27,
+				29,
 			],
 			[
 				'Method MissingExceptionMethodThrows\Foo::doLorem2() throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',
-				32,
+				34,
 			],
 		]);
 	}

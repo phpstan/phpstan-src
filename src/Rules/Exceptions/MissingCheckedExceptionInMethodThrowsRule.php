@@ -36,13 +36,13 @@ class MissingCheckedExceptionInMethodThrowsRule implements Rule
 		}
 
 		$errors = [];
-		foreach ($this->check->check($methodReflection->getThrowType(), $statementResult->getThrowPoints()) as $className) {
+		foreach ($this->check->check($methodReflection->getThrowType(), $statementResult->getThrowPoints()) as [$className, $line]) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() throws checked exception %s but it\'s missing from the PHPDoc @throws tag.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$className
-			))->build();
+			))->line($line)->build();
 		}
 
 		return $errors;

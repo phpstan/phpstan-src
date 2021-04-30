@@ -22,7 +22,7 @@ class MissingCheckedExceptionInThrowsCheck
 	/**
 	 * @param Type|null $throwType
 	 * @param ThrowPoint[] $throwPoints
-	 * @return string[]
+	 * @return array<int, array{string, int}>
 	 */
 	public function check(?Type $throwType, array $throwPoints): array
 	{
@@ -48,7 +48,7 @@ class MissingCheckedExceptionInThrowsCheck
 					continue;
 				}
 
-				$classes[] = $throwPointType->describe(VerbosityLevel::typeOnly());
+				$classes[] = [$throwPointType->describe(VerbosityLevel::typeOnly()), $throwPoint->getNode()->getLine()];
 			}
 		}
 

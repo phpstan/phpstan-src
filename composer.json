@@ -44,8 +44,9 @@
 		"nategood/httpful": "^0.2.20",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"phpstan/phpstan-deprecation-rules": "^0.12.3",
+		"phpstan/phpstan-nette": "^0.12.18",
 		"phpstan/phpstan-php-parser": "^0.12",
-		"phpstan/phpstan-phpunit": "^0.12",
+		"phpstan/phpstan-phpunit": "^0.12.19",
 		"phpstan/phpstan-strict-rules": "^0.12",
 		"phpunit/phpunit": "^9.5.4",
 		"vaimo/composer-patches": "^4.22"

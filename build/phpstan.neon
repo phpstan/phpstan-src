@@ -1,5 +1,6 @@
 includes:
 	- ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
+	- ../vendor/phpstan/phpstan-nette/rules.neon
 	- ../vendor/phpstan/phpstan-php-parser/extension.neon
 	- ../vendor/phpstan/phpstan-phpunit/extension.neon
 	- ../vendor/phpstan/phpstan-phpunit/rules.neon
@@ -40,13 +41,9 @@ parameters:
 			- 'PHPStan\BetterReflection\SourceLocator\Exception\InvalidArgumentException'
 			- 'Symfony\Component\Finder\Exception\DirectoryNotFoundException'
 			- 'InvalidArgumentException'
-			- 'Nette\InvalidArgumentException'
 			- 'PHPStan\DependencyInjection\ParameterNotFoundException'
 			- 'PHPStan\Analyser\UndefinedVariableException'
 			- 'RuntimeException'
-		uncheckedExceptionRegexes:
-			- '#^PHPUnit\\Framework\\#'
-			- '#^SebastianBergmann\\#'
 		check:
 			missingCheckedExceptionInThrows: false
 	featureToggles:

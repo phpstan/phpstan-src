@@ -38,6 +38,10 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 				'Function MissingExceptionFunctionThrows\doLorem2() throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',
 				31,
 			],
+			[
+				'Function MissingExceptionFunctionThrows\doBar2() throws checked exception LogicException but it\'s missing from the PHPDoc @throws tag.',
+				51,
+			],
 		]);
 	}
 

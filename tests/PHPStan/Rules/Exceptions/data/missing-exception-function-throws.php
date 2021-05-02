@@ -44,3 +44,9 @@ function doIpsum(): void
 {
 	throw new \PHPStan\ShouldNotHappenException(); // ok
 }
+
+/** @throws \InvalidArgumentException */
+function doBar2(): void
+{
+	throw new \LogicException(); // error
+}

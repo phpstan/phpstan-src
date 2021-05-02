@@ -46,6 +46,7 @@ parameters:
 			- 'RuntimeException'
 		check:
 			missingCheckedExceptionInThrows: false
+			tooWideThrowType: true
 	featureToggles:
 		readComposerPhpVersion: false
 	ignoreErrors:

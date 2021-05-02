@@ -11,7 +11,6 @@ use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflector\Reflector;
-use PHPStan\BetterReflection\SourceLocator\Ast\Exception\ParseToAstFailure;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
@@ -55,11 +54,6 @@ class AutoloadSourceLocator implements SourceLocator
 		$this->fileNodesFetcher = $fileNodesFetcher;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws ParseToAstFailure
-	 */
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($identifier->isFunction()) {

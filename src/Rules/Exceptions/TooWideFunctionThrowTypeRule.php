@@ -1,0 +1,55 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Rules\Exceptions;
+
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Node\FunctionReturnStatementsNode;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+
+/**
+ * @implements Rule<FunctionReturnStatementsNode>
+ */
+class TooWideFunctionThrowTypeRule implements Rule
+{
+
+	private TooWideThrowTypeCheck $check;
+
+	public function __construct(TooWideThrowTypeCheck $check)
+	{
+		$this->check = $check;
+	}
+
+	public function getNodeType(): string
+	{
+		return FunctionReturnStatementsNode::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		$statementResult = $node->getStatementResult();
+		$functionReflection = $scope->getFunction();
+		if (!$functionReflection instanceof FunctionReflection) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$throwType = $functionReflection->getThrowType();
+		if ($throwType === null) {
+			return [];
+		}
+
+		$errors = [];
+		foreach ($this->check->check($throwType, $statementResult->getThrowPoints()) as $throwClass) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Function %s() has %s in PHPDoc @throws tag but it\'s not thrown.',
+				$functionReflection->getName(),
+				$throwClass
+			))->build();
+		}
+
+		return $errors;
+	}
+
+}

@@ -50,3 +50,9 @@ function doBar2(): void
 {
 	throw new \LogicException(); // error
 }
+
+/** @throws void */
+function doBar3(): void
+{
+	throw new \LogicException(); // error
+}

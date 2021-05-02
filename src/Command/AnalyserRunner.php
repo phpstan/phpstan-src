@@ -45,7 +45,6 @@ class AnalyserRunner
 	 * @param string|null $insteadOfFile
 	 * @param InputInterface $input
 	 * @return AnalyserResult
-	 * @throws \Throwable
 	 */
 	public function runAnalyser(
 		array $files,

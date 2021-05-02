@@ -328,7 +328,6 @@ class ResultCacheManager
 	 * @param ResultCache $resultCache
 	 * @param bool|string $save
 	 * @return ResultCacheProcessResult
-	 * @throws \PHPStan\ShouldNotHappenException
 	 */
 	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
 	{

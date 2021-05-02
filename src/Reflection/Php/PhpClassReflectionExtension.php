@@ -506,6 +506,11 @@ class PhpClassReflectionExtension
 							);
 							$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
 						}
+
+						$throwsTag = $stubPhpDoc->getThrowsTag();
+						if ($throwsTag !== null) {
+							$throwType = $throwsTag->getType();
+						}
 					}
 				}
 				if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {

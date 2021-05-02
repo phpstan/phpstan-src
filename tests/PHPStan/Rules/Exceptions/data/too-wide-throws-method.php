@@ -90,3 +90,14 @@ class ChildClass extends ParentClass
 	}
 
 }
+
+class ThrowsReflectionException
+{
+
+	/** @throws \ReflectionException */
+	public function doFoo(string $s): void
+	{
+		new \ReflectionClass($s);
+	}
+
+}

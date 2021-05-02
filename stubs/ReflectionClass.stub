@@ -14,6 +14,7 @@ class ReflectionClass
 
 	/**
 	 * @param T|class-string<T> $argument
+	 * @throws ReflectionException
 	 */
 	public function __construct($argument) {}
 

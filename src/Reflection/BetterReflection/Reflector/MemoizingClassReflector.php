@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\BetterReflection\Reflector;
 
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 
 final class MemoizingClassReflector extends ClassReflector
 {
@@ -16,7 +17,7 @@ final class MemoizingClassReflector extends ClassReflector
 	 *
 	 * @return \PHPStan\BetterReflection\Reflection\ReflectionClass
 	 *
-	 * @throws \PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound
+	 * @throws IdentifierNotFound
 	 */
 	public function reflect(string $className): Reflection
 	{
@@ -30,6 +31,9 @@ final class MemoizingClassReflector extends ClassReflector
 
 		try {
 			return $this->reflections[$lowerClassName] = parent::reflect($className);
+		} catch (IdentifierNotFound $e) {
+			$this->reflections[$lowerClassName] = $e;
+			throw $e;
 		} catch (\Throwable $e) {
 			$this->reflections[$lowerClassName] = $e;
 			throw $e;

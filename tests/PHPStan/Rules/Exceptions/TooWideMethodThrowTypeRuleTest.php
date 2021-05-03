@@ -40,6 +40,10 @@ class TooWideMethodThrowTypeRuleTest extends RuleTestCase
 				'Method TooWideThrowsMethod\ParentClass::doFoo() has LogicException in PHPDoc @throws tag but it\'s not thrown.',
 				77,
 			],
+			[
+				'Method TooWideThrowsMethod\SkipThrowable::doFoo() has DomainException in PHPDoc @throws tag but it\'s not thrown.',
+				112,
+			],
 		]);
 	}
 

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -29,7 +30,12 @@ class TooWideThrowTypeCheck
 				return new NeverType();
 			}
 
-			return $throwPoint->getType();
+			$type = $throwPoint->getType();
+			if ($type->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+				return new NeverType();
+			}
+
+			return $type;
 		}, $throwPoints));
 
 		$throwClasses = [];

@@ -101,3 +101,21 @@ class ThrowsReflectionException
 	}
 
 }
+
+class SkipThrowable
+{
+
+	/**
+	 * @throws \InvalidArgumentException
+	 * @throws \DomainException
+	 */
+	public function doFoo(\Throwable $t)
+	{
+		if (rand(0, 1)) {
+			throw new \InvalidArgumentException();
+		}
+
+		throw $t;
+	}
+
+}

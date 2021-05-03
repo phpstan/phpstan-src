@@ -46,7 +46,14 @@ class TooWideFunctionThrowTypeRule implements Rule
 				'Function %s() has %s in PHPDoc @throws tag but it\'s not thrown.',
 				$functionReflection->getName(),
 				$throwClass
-			))->build();
+			))
+				->identifier('exceptions.tooWideThrowType')
+				->metadata([
+					'exceptionName' => $throwClass,
+					'statementDepth' => $node->getAttribute('statementDepth'),
+					'statementOrder' => $node->getAttribute('statementOrder'),
+				])
+				->build();
 		}
 
 		return $errors;

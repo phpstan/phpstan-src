@@ -69,7 +69,14 @@ class TooWideMethodThrowTypeRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$throwClass
-			))->build();
+			))
+				->identifier('exceptions.tooWideThrowType')
+				->metadata([
+					'exceptionName' => $throwClass,
+					'statementDepth' => $node->getAttribute('statementDepth'),
+					'statementOrder' => $node->getAttribute('statementOrder'),
+				])
+				->build();
 		}
 
 		return $errors;

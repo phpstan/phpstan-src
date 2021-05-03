@@ -11,7 +11,7 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\FunctionLike>
+ * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt>
  */
 class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 {
@@ -25,7 +25,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\FunctionLike::class;
+		return \PhpParser\Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -35,11 +35,13 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
+		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+			return []; // is handled by virtual nodes
+		}
+
 		$functionName = null;
-		if ($node instanceof Node\Stmt\ClassMethod) {
-			$functionName = $node->name->name;
-		} elseif ($node instanceof Node\Stmt\Function_) {
-			$functionName = trim($scope->getNamespace() . '\\' . $node->name->name, '\\');
+		if ($scope->getFunction() !== null) {
+			$functionName = $scope->getFunction()->getName();
 		}
 
 		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(

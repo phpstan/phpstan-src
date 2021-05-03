@@ -135,3 +135,28 @@ class Foo
 	}
 
 }
+
+class InlineThrows
+{
+
+	public function doFoo()
+	{
+		try {
+			/** @throws \InvalidArgumentException */
+			echo 1;
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+	public function doBar()
+	{
+		try {
+			/** @throws \InvalidArgumentException */
+			$i = 1;
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+}

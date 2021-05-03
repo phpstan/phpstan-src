@@ -111,3 +111,9 @@ function voidUnionWithNotThrowableThrows()
 function exceptionTemplateThrows()
 {
 }
+
+function inlineThrows()
+{
+	/** @throws \stdClass */
+	$i = 1;
+}

@@ -62,3 +62,14 @@ class Baz
 	private $barProperty;
 
 }
+
+class InlineThrows
+{
+
+	public function doFoo()
+	{
+		/** @throws (\Exception */
+		$i = 1;
+	}
+
+}

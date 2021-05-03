@@ -390,6 +390,8 @@ class NodeScopeResolver
 
 		$nodeCallback($stmt, $scope);
 
+		$overridingThrowPoints = $this->getOverridingThrowPoints($stmt, $scope);
+
 		if ($stmt instanceof Node\Stmt\Declare_) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -554,6 +556,8 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 			}
+
+			$throwPoints = $overridingThrowPoints ?? $throwPoints;
 		} elseif ($stmt instanceof Return_) {
 			if ($stmt->expr !== null) {
 				$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -567,7 +571,7 @@ class NodeScopeResolver
 
 			return new StatementResult($scope, $hasYield, true, [
 				new StatementExitPoint($stmt, $scope),
-			], $throwPoints);
+			], $overridingThrowPoints ?? $throwPoints);
 		} elseif ($stmt instanceof Continue_ || $stmt instanceof Break_) {
 			if ($stmt->num !== null) {
 				$result = $this->processExprNode($stmt->num, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -581,7 +585,7 @@ class NodeScopeResolver
 
 			return new StatementResult($scope, $hasYield, true, [
 				new StatementExitPoint($stmt, $scope),
-			], $throwPoints);
+			], $overridingThrowPoints ?? $throwPoints);
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
 			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$result = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createTopLevel());
@@ -596,9 +600,9 @@ class NodeScopeResolver
 			if ($earlyTerminationExpr !== null) {
 				return new StatementResult($scope, $hasYield, true, [
 					new StatementExitPoint($stmt, $scope),
-				], $throwPoints);
+				], $overridingThrowPoints ?? $throwPoints);
 			}
-			return new StatementResult($scope, $hasYield, false, [], $throwPoints);
+			return new StatementResult($scope, $hasYield, false, [], $overridingThrowPoints ?? $throwPoints);
 		} elseif ($stmt instanceof Node\Stmt\Namespace_) {
 			if ($stmt->name !== null) {
 				$scope = $scope->enterNamespace($stmt->name->toString());
@@ -692,7 +696,7 @@ class NodeScopeResolver
 			$ifAlwaysTrue = $conditionType instanceof ConstantBooleanType && $conditionType->getValue();
 			$condResult = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$exitPoints = [];
-			$throwPoints = $condResult->getThrowPoints();
+			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$finalScope = null;
 			$alwaysTerminating = true;
 			$hasYield = $condResult->hasYield();
@@ -779,7 +783,7 @@ class NodeScopeResolver
 			$this->processTraitUse($stmt, $scope, $nodeCallback);
 		} elseif ($stmt instanceof Foreach_) {
 			$condResult = $this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
-			$throwPoints = $condResult->getThrowPoints();
+			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$scope = $condResult->getScope();
 			$arrayComparisonExpr = new BinaryOp\NotIdentical(
 				$stmt->expr,
@@ -905,7 +909,7 @@ class NodeScopeResolver
 				$finalScope = $finalScope->mergeWith($condScope);
 			}
 
-			$throwPoints = $condResult->getThrowPoints();
+			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			if (!$neverIterates) {
 				$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 			}
@@ -1392,13 +1396,43 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 			$hasYield = false;
-			$throwPoints = [];
+			$throwPoints = $overridingThrowPoints ?? [];
 		} else {
 			$hasYield = false;
-			$throwPoints = [];
+			$throwPoints = $overridingThrowPoints ?? [];
 		}
 
 		return new StatementResult($scope, $hasYield, false, [], $throwPoints);
+	}
+
+	/**
+	 * @param Node\Stmt $statement
+	 * @param MutatingScope $scope
+	 * @return ThrowPoint[]|null
+	 */
+	private function getOverridingThrowPoints(Node\Stmt $statement, MutatingScope $scope): ?array
+	{
+		foreach ($statement->getComments() as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+
+			$function = $scope->getFunction();
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText()
+			);
+
+			$throwsTag = $resolvedPhpDoc->getThrowsTag();
+			if ($throwsTag !== null) {
+				return [ThrowPoint::createExplicit($scope, $throwsTag->getType(), $statement, false)];
+			}
+		}
+
+		return null;
 	}
 
 	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, Scope $scope): ClassReflection

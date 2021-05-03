@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use PhpParser\Node;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -23,7 +24,7 @@ class MissingCheckedExceptionInThrowsCheck
 	/**
 	 * @param Type|null $throwType
 	 * @param ThrowPoint[] $throwPoints
-	 * @return array<int, array{string, int}>
+	 * @return array<int, array{string, Node\Expr|Node\Stmt}>
 	 */
 	public function check(?Type $throwType, array $throwPoints): array
 	{
@@ -52,7 +53,7 @@ class MissingCheckedExceptionInThrowsCheck
 					continue;
 				}
 
-				$classes[] = [$throwPointType->describe(VerbosityLevel::typeOnly()), $throwPoint->getNode()->getLine()];
+				$classes[] = [$throwPointType->describe(VerbosityLevel::typeOnly()), $throwPoint->getNode()];
 			}
 		}
 

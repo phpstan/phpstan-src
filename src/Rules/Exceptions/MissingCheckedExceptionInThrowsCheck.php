@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -37,6 +38,9 @@ class MissingCheckedExceptionInThrowsCheck
 			}
 
 			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
+				if ($throwPointType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+					continue;
+				}
 				if ($throwType->isSuperTypeOf($throwPointType)->yes()) {
 					continue;
 				}

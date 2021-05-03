@@ -48,4 +48,13 @@ class Foo
 		throw new \PHPStan\ShouldNotHappenException(); // ok
 	}
 
+	public function doDolor(): void
+	{
+		try {
+			doFoo();
+		} catch (\Throwable $e) {
+			throw $e;
+		}
+	}
+
 }

@@ -9369,7 +9369,7 @@ return [
 'Redis::sAdd' => ['int|false', 'key'=>'string', 'value1'=>'string', 'value2='=>'string', 'valueN='=>'string'],
 'Redis::sAddArray' => ['bool', 'key'=>'string', 'values'=>'array'],
 'Redis::save' => ['bool'],
-'Redis::scan' => ['array<int,string>|false', '&rw_iterator'=>'?int', 'pattern='=>'?string', 'count='=>'?int'],
+'Redis::scan' => ['array<int,string>|false', '&w_iterator'=>'?int', 'pattern='=>'?string', 'count='=>'?int'],
 'Redis::sCard' => ['int', 'key'=>'string'],
 'Redis::sContains' => ['', 'key'=>'string', 'value'=>'string'],
 'Redis::script' => ['mixed', 'command'=>'string', '...args='=>'mixed'],

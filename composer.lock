@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3013e9c281cca1cf1f6a987183b2e601",
+    "content-hash": "3ec3d9726806181d0ba54a663e00cc22",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1945,16 +1945,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.10.4",
+            "version": "v4.10.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "c6d052fc58cb876152f89f532b95a8d7907e7f0e"
+                "reference": "4432ba399e47c66624bc73c8c0f811e5c109576f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/c6d052fc58cb876152f89f532b95a8d7907e7f0e",
-                "reference": "c6d052fc58cb876152f89f532b95a8d7907e7f0e",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/4432ba399e47c66624bc73c8c0f811e5c109576f",
+                "reference": "4432ba399e47c66624bc73c8c0f811e5c109576f",
                 "shasum": ""
             },
             "require": {
@@ -1995,9 +1995,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v4.10.4"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v4.10.5"
             },
-            "time": "2020-12-20T10:01:03+00:00"
+            "time": "2021-05-03T19:11:20+00:00"
         },
         {
             "name": "ondram/ci-detector",
@@ -2073,22 +2073,22 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.56",
+            "version": "4.3.57",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "4fe089c4138f6d61149d79402798e7900742e717"
+                "reference": "37beae8f792c0bc1c1bf616f19a52a966d29e001"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/4fe089c4138f6d61149d79402798e7900742e717",
-                "reference": "4fe089c4138f6d61149d79402798e7900742e717",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/37beae8f792c0bc1c1bf616f19a52a966d29e001",
+                "reference": "37beae8f792c0bc1c1bf616f19a52a966d29e001",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "dev-master#0a73df114cdea7f30c8b5f6fbfbf8e6839a89e88",
-                "nikic/php-parser": "4.10.4",
+                "nikic/php-parser": "4.10.5",
                 "php": ">=7.1.0",
                 "roave/signature": "1.1.0"
             },
@@ -2138,9 +2138,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.56"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.57"
             },
-            "time": "2021-04-12T16:36:46+00:00"
+            "time": "2021-05-04T11:07:19+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

@@ -36,7 +36,7 @@ class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 		}
 
 		$errors = [];
-		foreach ($this->check->check($functionReflection->getThrowType(), $statementResult->getThrowPoints()) as [$className, $throwPointNode]) {
+		foreach ($this->check->check($functionReflection->getThrowType(), $statementResult->getThrowPoints()) as [$className, $throwPointNode, $newCatchPosition]) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() throws checked exception %s but it\'s missing from the PHPDoc @throws tag.',
 				$functionReflection->getName(),
@@ -46,6 +46,7 @@ class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 				->identifier('exceptions.missingThrowsTag')
 				->metadata([
 					'exceptionName' => $className,
+					'newCatchPosition' => $newCatchPosition,
 					'statementDepth' => $throwPointNode->getAttribute('statementDepth'),
 					'statementOrder' => $throwPointNode->getAttribute('statementOrder'),
 				])

@@ -7,6 +7,7 @@ use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
@@ -24,7 +25,7 @@ class MissingCheckedExceptionInThrowsCheck
 	/**
 	 * @param Type|null $throwType
 	 * @param ThrowPoint[] $throwPoints
-	 * @return array<int, array{string, Node\Expr|Node\Stmt}>
+	 * @return array<int, array{string, Node\Expr|Node\Stmt, int|null}>
 	 */
 	public function check(?Type $throwType, array $throwPoints): array
 	{
@@ -53,11 +54,55 @@ class MissingCheckedExceptionInThrowsCheck
 					continue;
 				}
 
-				$classes[] = [$throwPointType->describe(VerbosityLevel::typeOnly()), $throwPoint->getNode()];
+				$classes[] = [$throwPointType->describe(VerbosityLevel::typeOnly()), $throwPoint->getNode(), $this->getNewCatchPosition($throwPointType, $throwPoint->getNode())];
 			}
 		}
 
 		return $classes;
+	}
+
+	private function getNewCatchPosition(Type $throwPointType, Node $throwPointNode): ?int
+	{
+		if ($throwPointType instanceof TypeWithClassName) {
+			// to get rid of type subtraction
+			$throwPointType = new ObjectType($throwPointType->getClassName());
+		}
+		$tryCatch = $this->findTryCatch($throwPointNode);
+		if ($tryCatch === null) {
+			return null;
+		}
+
+		$position = 0;
+		foreach ($tryCatch->catches as $catch) {
+			$type = TypeCombinator::union(...array_map(static function (Node\Name $class): ObjectType {
+				return new ObjectType($class->toString());
+			}, $catch->types));
+			if (!$throwPointType->isSuperTypeOf($type)->yes()) {
+				continue;
+			}
+
+			$position++;
+		}
+
+		return $position;
+	}
+
+	private function findTryCatch(Node $node): ?Node\Stmt\TryCatch
+	{
+		if ($node instanceof Node\FunctionLike) {
+			return null;
+		}
+
+		if ($node instanceof Node\Stmt\TryCatch) {
+			return $node;
+		}
+
+		$parent = $node->getAttribute('parent');
+		if ($parent === null) {
+			return null;
+		}
+
+		return $this->findTryCatch($parent);
 	}
 
 }

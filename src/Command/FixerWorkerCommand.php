@@ -117,7 +117,8 @@ class FixerWorkerCommand extends Command
 				$allowXdebug,
 				false,
 				false,
-				$singleReflectionFile
+				$singleReflectionFile,
+				$insteadOfFile
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

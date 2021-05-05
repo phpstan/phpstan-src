@@ -21,7 +21,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	/** @var string[] */
 	private array $patterns;
 
-	private ?string $singleReflectionFile;
+	private ?string $singleReflectionInsteadOfFile;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
@@ -31,13 +31,13 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		ReflectionProvider $reflectionProvider,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		array $patterns,
-		?string $singleReflectionFile
+		?string $singleReflectionInsteadOfFile
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->patterns = $patterns;
-		$this->singleReflectionFile = $singleReflectionFile;
+		$this->singleReflectionInsteadOfFile = $singleReflectionInsteadOfFile;
 	}
 
 	public function hasClass(string $className): bool
@@ -52,8 +52,8 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		}
 
 		$classReflection = $this->reflectionProvider->getClass($className);
-		if ($this->singleReflectionFile !== null) {
-			if ($classReflection->getFileName() === $this->singleReflectionFile) {
+		if ($this->singleReflectionInsteadOfFile !== null) {
+			if ($classReflection->getFileName() === $this->singleReflectionInsteadOfFile) {
 				return false;
 			}
 		}
@@ -133,7 +133,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			return false;
 		}
 
-		if ($this->singleReflectionFile === null) {
+		if ($this->singleReflectionInsteadOfFile === null) {
 			return true;
 		}
 
@@ -142,7 +142,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			return true;
 		}
 
-		return $functionReflection->getFileName() !== $this->singleReflectionFile;
+		return $functionReflection->getFileName() !== $this->singleReflectionInsteadOfFile;
 	}
 
 	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection

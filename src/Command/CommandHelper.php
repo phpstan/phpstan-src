@@ -47,7 +47,8 @@ class CommandHelper
 		bool $allowXdebug,
 		bool $manageMemoryLimitFile = true,
 		bool $debugEnabled = false,
-		?string $singleReflectionFile = null
+		?string $singleReflectionFile = null,
+		?string $singleReflectionInsteadOfFile = null
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
@@ -249,7 +250,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile, $singleReflectionInsteadOfFile);
 		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

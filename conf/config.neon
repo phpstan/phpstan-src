@@ -316,6 +316,7 @@ parametersSchema:
 
 	# internal - static reflection
 	singleReflectionFile: schema(string(), nullable())
+	singleReflectionInsteadOfFile: schema(string(), nullable())
 
 rules:
 	- PHPStan\Rules\Debug\DumpTypeRule
@@ -1474,6 +1475,7 @@ services:
 		arguments:
 			reflectionProvider: @innerRuntimeReflectionProvider
 			patterns: %staticReflectionClassNamePatterns%
+			singleReflectionInsteadOfFile: %singleReflectionInsteadOfFile%
 		autowired: false
 
 	innerRuntimeReflectionProvider:

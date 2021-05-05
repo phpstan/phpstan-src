@@ -118,4 +118,32 @@ class SkipThrowable
 		throw $t;
 	}
 
+	/**
+	 * @throws \InvalidArgumentException
+	 */
+	public function doBar(): void
+	{
+		try {
+			throw new \InvalidArgumentException();
+		} catch (\Throwable $e) {
+			throw $e;
+		}
+	}
+
+	/**
+	 * @throws \InvalidArgumentException
+	 */
+	public function doBaz(): void
+	{
+		try {
+			if (rand(0, 1)) {
+				throw new \InvalidArgumentException();
+			}
+
+			doFoo();
+		} catch (\Throwable $e) {
+			throw $e;
+		}
+	}
+
 }

@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\BetterReflection\Reflector;
 
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\ConstantReflector;
-use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 
 final class MemoizingConstantReflector extends ConstantReflector
 {
@@ -17,7 +16,7 @@ final class MemoizingConstantReflector extends ConstantReflector
 	 *
 	 * @return \PHPStan\BetterReflection\Reflection\ReflectionConstant
 	 *
-	 * @throws IdentifierNotFound
+	 * @throws \PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound
 	 */
 	public function reflect(string $constantName): Reflection
 	{
@@ -30,9 +29,6 @@ final class MemoizingConstantReflector extends ConstantReflector
 
 		try {
 			return $this->reflections[$constantName] = parent::reflect($constantName);
-		} catch (IdentifierNotFound $e) {
-			$this->reflections[$constantName] = $e;
-			throw $e;
 		} catch (\Throwable $e) {
 			$this->reflections[$constantName] = $e;
 			throw $e;

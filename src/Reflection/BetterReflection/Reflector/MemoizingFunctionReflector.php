@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection\BetterReflection\Reflector;
 
 use PHPStan\BetterReflection\Reflection\Reflection;
-use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
 
 final class MemoizingFunctionReflector extends FunctionReflector
@@ -17,7 +16,7 @@ final class MemoizingFunctionReflector extends FunctionReflector
 	 *
 	 * @return \PHPStan\BetterReflection\Reflection\ReflectionFunction
 	 *
-	 * @throws IdentifierNotFound
+	 * @throws \PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound
 	 */
 	public function reflect(string $functionName): Reflection
 	{
@@ -31,9 +30,6 @@ final class MemoizingFunctionReflector extends FunctionReflector
 
 		try {
 			return $this->reflections[$lowerFunctionName] = parent::reflect($functionName);
-		} catch (IdentifierNotFound $e) {
-			$this->reflections[$lowerFunctionName] = $e;
-			throw $e;
 		} catch (\Throwable $e) {
 			$this->reflections[$lowerFunctionName] = $e;
 			throw $e;

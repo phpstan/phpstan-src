@@ -2458,15 +2458,9 @@ class NodeScopeResolver
 							$expr->args,
 							$constructorReflection->getVariants()
 						);
-						if ($constructorReflection->getThrowType() !== null) {
-							$throwType = $constructorReflection->getThrowType();
-							if (!$throwType instanceof VoidType) {
-								$throwPoints[] = ThrowPoint::createExplicit($scope, $throwType, $expr, true);
-							}
-						} elseif ($this->implicitThrows) {
-							if ($classReflection->getName() !== \Throwable::class && !$classReflection->isSubclassOf(\Throwable::class)) {
-								$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
-							}
+						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $classReflection, $expr, $expr->class, $expr->args, $scope);
+						if ($constructorThrowPoint !== null) {
+							$throwPoints[] = $constructorThrowPoint;
 						}
 					}
 				} else {
@@ -2713,6 +2707,39 @@ class NodeScopeResolver
 		} elseif ($this->implicitThrows) {
 			$methodReturnedType = $scope->getType($methodCall);
 			if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+				return ThrowPoint::createImplicit($scope, $methodCall);
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param Node\Arg[] $args
+	 */
+	private function getConstructorThrowPoint(MethodReflection $constructorReflection, ClassReflection $classReflection, New_ $new, Name $className, array $args, MutatingScope $scope): ?ThrowPoint
+	{
+		$methodCall = new StaticCall($className, $constructorReflection->getName(), $args);
+		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
+			if (!$extension->isStaticMethodSupported($constructorReflection)) {
+				continue;
+			}
+
+			$throwType = $extension->getThrowTypeFromStaticMethodCall($constructorReflection, $methodCall, $scope);
+			if ($throwType === null) {
+				return null;
+			}
+
+			return ThrowPoint::createExplicit($scope, $throwType, $new, false);
+		}
+
+		if ($constructorReflection->getThrowType() !== null) {
+			$throwType = $constructorReflection->getThrowType();
+			if (!$throwType instanceof VoidType) {
+				return ThrowPoint::createExplicit($scope, $throwType, $new, true);
+			}
+		} elseif ($this->implicitThrows) {
+			if ($classReflection->getName() !== \Throwable::class && !$classReflection->isSubclassOf(\Throwable::class)) {
 				return ThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}

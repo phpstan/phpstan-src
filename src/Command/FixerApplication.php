@@ -387,7 +387,7 @@ class FixerApplication
 		);
 
 		/** @var array{url: string, version: string} $latestInfo */
-		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
+		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY); // @phpstan-ignore-line
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version']);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');

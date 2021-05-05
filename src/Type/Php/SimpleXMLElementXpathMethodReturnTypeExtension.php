@@ -34,7 +34,7 @@ class SimpleXMLElementXpathMethodReturnTypeExtension implements \PHPStan\Type\Dy
 
 		$argType = $scope->getType($methodCall->args[0]->value);
 
-		$xmlElement = new \SimpleXMLElement('<foo />');
+		$xmlElement = new \SimpleXMLElement('<foo />'); // @phpstan-ignore-line
 
 		foreach (TypeUtils::getConstantStrings($argType) as $constantString) {
 			$result = @$xmlElement->xpath($constantString->getValue());

@@ -160,3 +160,35 @@ class InlineThrows
 	}
 
 }
+
+class TestDateTime
+{
+
+	public function doFoo(): void
+	{
+		try {
+			new \DateTime();
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \DateTime('now');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $s): void
+	{
+		try {
+			new \DateTime($s);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}

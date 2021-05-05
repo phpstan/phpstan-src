@@ -1026,6 +1026,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\DateTimeConstructorThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\DsMapDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension

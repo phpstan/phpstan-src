@@ -34,8 +34,6 @@ parameters:
 		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
 		- ../src/Command/IgnoredRegexValidator.php
 	exceptions:
-		uncheckedExceptionRegexes:
-			- '~^Exception$~'
 		uncheckedExceptionClasses:
 			- 'PHPStan\ShouldNotHappenException'
 			- 'Symfony\Component\Console\Exception\InvalidArgumentException'

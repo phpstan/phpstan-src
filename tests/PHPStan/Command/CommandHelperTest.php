@@ -233,6 +233,7 @@ class CommandHelperTest extends TestCase
 	 * @dataProvider dataResolveRelativePaths
 	 * @param string $configFile
 	 * @param array<string, string> $expectedParameters
+	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
 	 */
 	public function testResolveRelativePaths(
 		string $configFile,

@@ -34,6 +34,8 @@ parameters:
 		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
 		- ../src/Command/IgnoredRegexValidator.php
 	exceptions:
+		uncheckedExceptionRegexes:
+			- '~^Exception$~'
 		uncheckedExceptionClasses:
 			- 'PHPStan\ShouldNotHappenException'
 			- 'Symfony\Component\Console\Exception\InvalidArgumentException'
@@ -44,8 +46,26 @@ parameters:
 			- 'PHPStan\DependencyInjection\ParameterNotFoundException'
 			- 'PHPStan\Analyser\UndefinedVariableException'
 			- 'RuntimeException'
+			- 'Nette\Neon\Exception'
+			- 'Nette\Utils\JsonException'
+			- 'PHPStan\File\CouldNotReadFileException'
+			- 'PHPStan\File\CouldNotWriteFileException'
+			- 'PHPStan\Parser\ParserErrorsException'
+			- 'ReflectionException'
+			- 'Nette\Utils\AssertionException'
+			- 'PHPStan\File\PathNotFoundException'
+			- 'PHPStan\Broker\ClassNotFoundException'
+			- 'PHPStan\Broker\FunctionNotFoundException'
+			- 'PHPStan\Broker\ConstantNotFoundException'
+			- 'PHPStan\Reflection\MissingMethodFromReflectionException'
+			- 'PHPStan\Reflection\MissingPropertyFromReflectionException'
+			- 'PHPStan\Reflection\MissingConstantFromReflectionException'
+			- 'PHPStan\Type\CircularTypeAliasDefinitionException'
+			- 'PHPStan\Broker\ClassAutoloadingException'
+			- 'LogicException'
+			- 'TypeError'
 		check:
-			missingCheckedExceptionInThrows: false
+			missingCheckedExceptionInThrows: true
 			tooWideThrowType: true
 	featureToggles:
 		readComposerPhpVersion: false

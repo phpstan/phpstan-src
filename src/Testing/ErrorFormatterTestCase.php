@@ -61,7 +61,7 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\TestCase
 	protected function getAnalysisResult(int $numFileErrors, int $numGenericErrors): AnalysisResult
 	{
 		if ($numFileErrors > 4 || $numFileErrors < 0 || $numGenericErrors > 2 || $numGenericErrors < 0) {
-			throw new \Exception();
+			throw new \PHPStan\ShouldNotHappenException();
 		}
 
 		$fileErrors = array_slice([

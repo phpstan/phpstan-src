@@ -268,6 +268,9 @@ class FixerApplication
 		return 0;
 	}
 
+	/**
+	 * @throws FixerProcessException
+	 */
 	private function getFixerProcess(OutputInterface $output, int $serverPort): Process
 	{
 		if (!@mkdir($this->fixerTmpDir, 0777) && !is_dir($this->fixerTmpDir)) {

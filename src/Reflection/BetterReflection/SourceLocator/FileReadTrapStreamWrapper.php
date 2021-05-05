@@ -160,7 +160,7 @@ final class FileReadTrapStreamWrapper
 	public function url_stat($path, $flags)
 	{
 		if (self::$registeredStreamWrapperProtocols === null) {
-			throw new \LogicException(self::class . ' not registered: cannot operate. Do not call this method directly.');
+			throw new \PHPStan\ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
 		}
 
 		foreach (self::$registeredStreamWrapperProtocols as $protocol) {

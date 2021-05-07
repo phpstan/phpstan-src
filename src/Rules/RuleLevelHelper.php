@@ -59,6 +59,7 @@ class RuleLevelHelper
 		if (
 			$this->checkExplicitMixed
 			&& $acceptedType instanceof MixedType
+			&& !$acceptedType instanceof TemplateMixedType
 			&& $acceptedType->isExplicitMixed()
 		) {
 			$acceptedType = new StrictMixedType();

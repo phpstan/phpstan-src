@@ -5529,7 +5529,7 @@ return [
 'IntlDateFormatter::getTimeZoneId' => ['string'],
 'IntlDateFormatter::isLenient' => ['bool'],
 'IntlDateFormatter::localtime' => ['array', 'text_to_parse'=>'string', '&w_parse_pos='=>'int'],
-'IntlDateFormatter::parse' => ['int|false', 'text_to_parse'=>'string', '&rw_parse_pos='=>'int'],
+'IntlDateFormatter::parse' => ['int|false', 'text_to_parse'=>'string', '&w_parse_pos='=>'int'],
 'IntlDateFormatter::setCalendar' => ['bool', 'calendar'=>''],
 'IntlDateFormatter::setLenient' => ['bool', 'lenient'=>'bool'],
 'IntlDateFormatter::setPattern' => ['bool', 'pattern'=>'string'],

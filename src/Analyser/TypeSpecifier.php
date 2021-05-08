@@ -114,9 +114,6 @@ class TypeSpecifier
 	{
 		if ($expr instanceof Instanceof_) {
 			$exprNode = $expr->expr;
-			if ($exprNode instanceof Expr\Assign) {
-				$exprNode = $exprNode->var;
-			}
 			if ($expr->class instanceof Name) {
 				$className = (string) $expr->class;
 				$lowercasedClassName = strtolower($className);
@@ -178,9 +175,6 @@ class TypeSpecifier
 			if ($expressions !== null) {
 				/** @var Expr $exprNode */
 				$exprNode = $expressions[0];
-				if ($exprNode instanceof Expr\Assign) {
-					$exprNode = $exprNode->var;
-				}
 				/** @var \PHPStan\Type\ConstantScalarType $constantType */
 				$constantType = $expressions[1];
 				if ($constantType->getValue() === false) {
@@ -912,6 +906,10 @@ class TypeSpecifier
 	{
 		if ($expr instanceof New_ || $expr instanceof Instanceof_) {
 			return new SpecifiedTypes();
+		}
+
+		while ($expr instanceof Expr\Assign) {
+			$expr = $expr->var;
 		}
 
 		if ($scope !== null) {

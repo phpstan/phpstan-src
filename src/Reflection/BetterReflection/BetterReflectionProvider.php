@@ -23,6 +23,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
+use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -117,6 +118,10 @@ class BetterReflectionProvider implements ReflectionProvider
 	{
 		if (isset(self::$anonymousClasses[$className])) {
 			return true;
+		}
+
+		if (!ClassNameHelper::isValidClassName($className)) {
+			return false;
 		}
 
 		try {

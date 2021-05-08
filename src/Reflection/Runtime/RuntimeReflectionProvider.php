@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
+use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
@@ -173,6 +174,10 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$className = trim($className, '\\');
 		if (isset($this->hasClassCache[$className])) {
 			return $this->hasClassCache[$className];
+		}
+
+		if (!ClassNameHelper::isValidClassName($className)) {
+			return $this->hasClassCache[$className] = false;
 		}
 
 		spl_autoload_register($autoloader = function (string $autoloadedClassName) use ($className): void {

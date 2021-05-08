@@ -1,0 +1,125 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Tests"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+env:
+  COMPOSER_ROOT_VERSION: "0.12.x-dev"
+
+jobs:
+  tests:
+    name: "Tests"
+    runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "7.3"
+          - "7.4"
+          - "8.0"
+        operating-system: [ ubuntu-latest, windows-latest ]
+        script:
+          - "make tests"
+          - "make tests-static-reflection"
+          - "make tests-integration"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=640M
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
+        run: php bin/transform-source.php
+
+      - name: "Tests"
+        run: "${{ matrix.script }}"
+
+  tests-old-phpunit:
+    name: "Tests with old PHPUnit"
+    runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "7.1"
+          - "7.2"
+        operating-system: [ ubuntu-latest, windows-latest ]
+        script:
+          - "make tests-coverage"
+          - "make tests-static-reflection-coverage"
+          - "make tests-integration-coverage"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=640M
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Downgrade PHPUnit"
+        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies"
+
+      - name: "Transform source code"
+        run: php bin/transform-source.php
+
+      - name: "Tests"
+        run: "${{ matrix.script }}"
+
+  tests-code-coverage:
+    name: "Tests with code coverage"
+
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "pcov"
+          php-version: "7.4"
+          tools: pecl
+          extensions: ds
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Tests"
+        run: |
+          php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit
+
+      - name: "Coveralls"
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          composer require twinh/php-coveralls --dev && \
+          vendor/bin/php-coveralls --verbose --coverage_clover=tests/tmp/clover.xml --json_path=tests/tmp/coveralls-upload.json

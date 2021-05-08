@@ -1,0 +1,78 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "E2E Tests"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+env:
+  COMPOSER_ROOT_VERSION: "0.12.x-dev"
+
+jobs:
+  result-cache-e2e-tests:
+    name: "Result cache E2E tests"
+
+    runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      matrix:
+        php-version:
+          - "7.4"
+        operating-system: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
+          ini-values: memory_limit=256M
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Tests"
+        run: |
+          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit tests/e2e/ResultCacheEndToEndTest.php
+
+  e2e-tests:
+    name: "E2E tests"
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        include:
+          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/timecop.php tests/e2e/data/timecop.php"
+            tools: "pecl"
+            extensions: "timecop-beta"
+          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php tests/e2e/data/soap.php"
+            extensions: "soap"
+          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php tests/e2e/data/soap.php"
+            extensions: ""
+          - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
+            extensions: ""
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "7.4"
+          tools: ${{ matrix.tools }}
+          extensions: ${{ matrix.extensions }}
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Test"
+        run: ${{ matrix.script }}

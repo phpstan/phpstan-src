@@ -1,0 +1,131 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Static Analysis"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+env:
+  COMPOSER_ROOT_VERSION: "0.12.x-dev"
+
+jobs:
+  static-analysis:
+    name: "PHPStan"
+    runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+        operating-system: [ubuntu-latest, windows-latest]
+        script:
+          - "make phpstan"
+          - "make phpstan-static-reflection"
+          - "make phpstan-validate-stub-files"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Downgrade PHPUnit"
+        if: matrix.php-version == '7.1' || matrix.php-version == '7.2'
+        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies"
+
+      - name: "Transform source code"
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
+        run: php bin/transform-source.php
+
+      - name: "PHPStan"
+        run: ${{ matrix.script }}
+
+  static-analysis-with-result-cache:
+    name: "PHPStan with result cache"
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version:
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Cache Result cache"
+        uses: actions/cache@v2
+        with:
+          path: ./tmp
+          key: "result-cache-v4"
+
+      - name: "PHPStan with result cache"
+        run: |
+          make phpstan-result-cache
+          bin/phpstan clear-result-cache -c build/phpstan.neon
+          make phpstan-result-cache
+          echo -e "\n\n" >> src/TrinaryLogic.php
+          make phpstan-result-cache
+          make phpstan-result-cache
+
+      - name: "Upload result cache artifact"
+        uses: actions/upload-artifact@v2
+        with:
+          name: resultCache-ubuntu-latest.php
+          path: tmp/resultCache.php
+
+  generate-baseline:
+    name: "Generate baseline"
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        php-version:
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress --no-suggest"
+
+      - name: "Generate baseline"
+        run: |
+          cp phpstan-baseline.neon phpstan-baseline-orig.neon && \
+          make phpstan-generate-baseline && \
+          diff phpstan-baseline.neon phpstan-baseline-orig.neon

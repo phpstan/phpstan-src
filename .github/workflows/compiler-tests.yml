@@ -1,0 +1,43 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Compiler tests"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
+
+env:
+  COMPOSER_ROOT_VERSION: "0.12.x-dev"
+
+jobs:
+  compiler-tests:
+    name: "Compiler Tests"
+
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "7.3"
+
+      - name: "Install dependencies"
+        run: "composer install --no-dev --no-interaction --no-progress --no-suggest"
+
+      - name: "Transform source code"
+        run: php bin/transform-source.php
+
+      - name: "Tests"
+        run: |
+          cd compiler && \
+          composer install --no-interaction && \
+          vendor/bin/phpunit -c tests/phpunit.xml tests && \
+          ../bin/phpstan analyse -l 8 src tests && \
+          php bin/compile && \
+          ../tmp/phpstan.phar list

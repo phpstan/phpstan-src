@@ -193,4 +193,5 @@ class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/explicit-mixed-assign-template.php'], []);
 	}
+
 }

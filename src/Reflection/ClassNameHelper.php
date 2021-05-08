@@ -9,7 +9,8 @@ class ClassNameHelper
 
 	public static function isValidClassName(string $name): bool
 	{
-		return Strings::match($name, '/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/') !== null;
+		// from https://stackoverflow.com/questions/3195614/validate-class-method-names-with-regex#comment104531582_12011255
+		return Strings::match($name, '/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*(\\\\[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)*$/') !== null;
 	}
 
 }

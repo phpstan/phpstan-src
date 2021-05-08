@@ -1239,3 +1239,15 @@ class NeverReturn
 	}
 
 }
+
+class ExplicitMixedTemplateReturn
+{
+	/**
+	 * @phpstan-template TClosureReturn
+	 * @phpstan-param \Closure() : TClosureReturn $closure
+	 * @phpstan-return TClosureReturn
+	 */
+	public function time(\Closure $closure){
+		return $closure();
+	}
+}

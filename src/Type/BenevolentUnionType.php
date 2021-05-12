@@ -32,6 +32,11 @@ class BenevolentUnionType extends UnionType
 		return TypeCombinator::union(...$resultTypes);
 	}
 
+	protected function unionResults(callable $getResult): TrinaryLogic
+	{
+		return TrinaryLogic::createNo()->or(...array_map($getResult, $this->getTypes()));
+	}
+
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
 		$results = [];

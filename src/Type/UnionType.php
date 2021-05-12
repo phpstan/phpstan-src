@@ -678,7 +678,7 @@ class UnionType implements CompoundType
 	 * @param callable(Type $type): TrinaryLogic $getResult
 	 * @return TrinaryLogic
 	 */
-	private function unionResults(callable $getResult): TrinaryLogic
+	protected function unionResults(callable $getResult): TrinaryLogic
 	{
 		return TrinaryLogic::extremeIdentity(...array_map($getResult, $this->types));
 	}

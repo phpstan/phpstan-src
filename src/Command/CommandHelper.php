@@ -52,7 +52,7 @@ class CommandHelper
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
-			$xdebug = new XdebugHandler('phpstan', '--ansi');
+			$xdebug = new XdebugHandler('phpstan');
 			$xdebug->check();
 			unset($xdebug);
 		}

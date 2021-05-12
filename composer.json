@@ -9,7 +9,7 @@
 		"clue/block-react": "^1.4",
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",
-		"composer/xdebug-handler": "^1.3.0",
+		"composer/xdebug-handler": "^2.0.1",
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/regex": "1.17.01.13",

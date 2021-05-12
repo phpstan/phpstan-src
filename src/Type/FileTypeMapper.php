@@ -216,7 +216,7 @@ class FileTypeMapper
 	private function getResolvedPhpDocMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v9-type-alias', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v10-function-name-stack', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -288,11 +288,13 @@ class FileTypeMapper
 			$typeAliasStack[] = [];
 		}
 		$namespace = null;
-		$functionName = null;
+
+		/** @var array<string|null> $functionStack */
+		$functionStack = [];
 		$uses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$phpDocMap, &$classStack, &$typeAliasStack, &$namespace, &$functionName, &$uses, &$typeMapStack): ?int {
+			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$phpDocMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				$resolvableTemplateTypes = false;
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($lookForTrait !== null) {
@@ -316,15 +318,16 @@ class FileTypeMapper
 						}
 						$classStack[] = $className;
 						$typeAliasStack[] = $this->getTypeAliasesMap($node->getDocComment());
-						$functionName = null;
+						$functionStack[] = null;
 						$resolvableTemplateTypes = true;
 					}
 				} elseif ($node instanceof Node\Stmt\TraitUse) {
 					$resolvableTemplateTypes = true;
 				} elseif ($node instanceof Node\Stmt\ClassMethod) {
-					$functionName = $node->name->name;
-					if (array_key_exists($functionName, $traitMethodAliases)) {
-						$functionName = $traitMethodAliases[$functionName];
+					if (array_key_exists($node->name->name, $traitMethodAliases)) {
+						$functionStack[] = $traitMethodAliases[$node->name->name];
+					} else {
+						$functionStack[] = $node->name->name;
 					}
 					$resolvableTemplateTypes = true;
 				} elseif (
@@ -333,7 +336,7 @@ class FileTypeMapper
 				) {
 					$resolvableTemplateTypes = true;
 				} elseif ($node instanceof Node\Stmt\Function_) {
-					$functionName = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
+					$functionStack[] = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 					$resolvableTemplateTypes = true;
 				} elseif ($node instanceof Node\Stmt\Property) {
 					$resolvableTemplateTypes = true;
@@ -352,6 +355,7 @@ class FileTypeMapper
 
 					$phpDocString = $comment->getText();
 					$className = $classStack[count($classStack) - 1] ?? null;
+					$functionName = $functionStack[count($functionStack) - 1] ?? null;
 					$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 					$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
 
@@ -533,7 +537,7 @@ class FileTypeMapper
 
 				return null;
 			},
-			static function (\PhpParser\Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionName, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack): void {
+			static function (\PhpParser\Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack): void {
 				if ($node instanceof Node\Stmt\ClassLike && $lookForTrait === null) {
 					if (count($classStack) === 0) {
 						throw new \PHPStan\ShouldNotHappenException();
@@ -545,11 +549,21 @@ class FileTypeMapper
 					}
 
 					array_pop($typeAliasStack);
+
+					if (count($functionStack) === 0) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+
+					array_pop($functionStack);
 				} elseif ($node instanceof \PhpParser\Node\Stmt\Namespace_) {
 					$namespace = null;
 					$uses = [];
 				} elseif ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
-					$functionName = null;
+					if (count($functionStack) === 0) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+
+					array_pop($functionStack);
 				}
 				if ($callbackResult !== self::POP_TYPE_MAP_STACK) {
 					return;

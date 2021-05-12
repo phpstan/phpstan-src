@@ -108,6 +108,7 @@ class NeonAdapter implements Adapter
 				'[parameters][symfony][console_application_loader]',
 				'[parameters][symfony][container_xml_path]',
 				'[parameters][doctrine][objectManagerLoader]',
+				'[parameters][editorUrl]',
 			], true) && is_string($val) && strpos($val, '%') === false && strpos($val, '*') !== 0) {
 				$fileHelper = $this->createFileHelperByFile($file);
 				$val = $fileHelper->normalizePath($fileHelper->absolutizePath($val));

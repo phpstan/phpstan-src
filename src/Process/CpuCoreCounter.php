@@ -34,9 +34,9 @@ class CpuCoreCounter
 				fgets($process);
 				$cores = (int) fgets($process);
 				pclose($process);
-			}
 
-			return $this->count = $cores;
+				return $this->count = $cores;
+			}
 		}
 
 		$process = @\popen('sysctl -n hw.ncpu', 'rb');
@@ -44,6 +44,8 @@ class CpuCoreCounter
 			// *nix (Linux, BSD and Mac)
 			$cores = (int) fgets($process);
 			pclose($process);
+
+			return $this->count = $cores;
 		}
 
 		return $this->count = 2;

@@ -40,4 +40,9 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4011.php'], []);
 	}
 
+	public function testBug2573(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2573.php'], []);
+	}
+
 }

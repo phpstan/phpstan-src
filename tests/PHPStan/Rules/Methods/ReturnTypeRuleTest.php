@@ -490,4 +490,17 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4803.php'], []);
 	}
 
+	public function testBug2573(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2573-return.php'], []);
+	}
+
+	public function testBug4603(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+		$this->analyse([__DIR__ . '/data/bug-4603.php'], []);
+	}
+
 }

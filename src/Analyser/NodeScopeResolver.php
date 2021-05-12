@@ -2613,6 +2613,11 @@ class NodeScopeResolver
 			}
 
 			$nodeCallback(new MatchExpressionNode($expr->cond, $armNodes, $expr, $matchScope), $scope);
+		} elseif ($expr instanceof Expr\Throw_) {
+			$hasYield = false;
+			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
+			$throwPoints = $result->getThrowPoints();
+			$throwPoints[] = ThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false);
 		} else {
 			$hasYield = false;
 			$throwPoints = [];

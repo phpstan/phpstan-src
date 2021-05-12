@@ -109,4 +109,18 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testThrowExpression(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/dead-catch-throw-expr.php'], [
+			[
+				'Dead catch - InvalidArgumentException is never thrown in the try block.',
+				17,
+			],
+		]);
+	}
+
 }

@@ -299,6 +299,7 @@ parametersSchema:
 	scanFiles: listOf(string())
 	scanDirectories: listOf(string())
 	fixerTmpDir: string()
+	editorUrl: string()
 
 	# irrelevant Nette parameters
 	debugMode: bool()

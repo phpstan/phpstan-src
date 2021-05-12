@@ -77,7 +77,7 @@ class TableErrorFormatter implements ErrorFormatter
 				if (is_string($editorUrl) {
 					$rows[] = [
 						(string) $error->getLine(),
-						message . "\n    str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $editorUrl),
+						$message . "\n    str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $editorUrl),
 					];
 				}	
 				else {

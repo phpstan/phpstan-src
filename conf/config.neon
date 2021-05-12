@@ -1561,6 +1561,7 @@ services:
 		class: PHPStan\Command\ErrorFormatter\TableErrorFormatter
 		arguments:
 			showTipsOfTheDay: %tipsOfTheDay%
+			editorUrl: %editorUrl%
 
 	errorFormatter.checkstyle:
 		class: PHPStan\Command\ErrorFormatter\CheckstyleErrorFormatter

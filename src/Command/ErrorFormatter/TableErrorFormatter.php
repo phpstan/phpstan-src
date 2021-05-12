@@ -13,14 +13,17 @@ class TableErrorFormatter implements ErrorFormatter
 	private RelativePathHelper $relativePathHelper;
 
 	private bool $showTipsOfTheDay;
+	private string $editorUrl;
 
 	public function __construct(
 		RelativePathHelper $relativePathHelper,
-		bool $showTipsOfTheDay
+		bool $showTipsOfTheDay,
+		string $editorUrl
 	)
 	{
 		$this->relativePathHelper = $relativePathHelper;
 		$this->showTipsOfTheDay = $showTipsOfTheDay;
+		$this->editorUrl = $editorUrl;
 	}
 
 	public function formatErrors(
@@ -71,10 +74,17 @@ class TableErrorFormatter implements ErrorFormatter
 					$tip = str_replace('%configurationFile%', $projectConfigFile, $tip);
 					$message .= "\n💡 " . $tip;
 				}
-				$rows[] = [
-					(string) $error->getLine(),
-					$message,
-				];
+				if (is_string($editorUrl) {
+					$rows[] = [
+						(string) $error->getLine(),
+						message . "\n    str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $editorUrl),
+				}	
+				else {
+					$rows[] = [
+						(string) $error->getLine(),
+						$message,
+					];
+				}
 			}
 
 			$relativeFilePath = $this->relativePathHelper->getRelativePath($file);

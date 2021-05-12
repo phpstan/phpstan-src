@@ -13,8 +13,11 @@ class CpuCoreCounter
 			return $this->count;
 		}
 
+		if (!function_exists('proc_open')) {
+			return $this->count = 1;
+		}
+
 		// from brianium/paratest
-		$cores = 2;
 		if (@is_file('/proc/cpuinfo')) {
 			// Linux (and potentially Windows with linux sub systems)
 			$cpuinfo = @file_get_contents('/proc/cpuinfo');
@@ -43,7 +46,7 @@ class CpuCoreCounter
 			pclose($process);
 		}
 
-		return $this->count = $cores;
+		return $this->count = 2;
 	}
 
 }

@@ -150,6 +150,7 @@ parameters:
 		- PHP_SHLIB_SUFFIX
 		- PHP_FD_SETSIZE
 		- OPENSSL_VERSION_NUMBER
+	editorUrl: null
 
 extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension
@@ -299,6 +300,7 @@ parametersSchema:
 	scanFiles: listOf(string())
 	scanDirectories: listOf(string())
 	fixerTmpDir: string()
+	editorUrl: schema(string(), nullable())
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -1560,6 +1562,7 @@ services:
 		class: PHPStan\Command\ErrorFormatter\TableErrorFormatter
 		arguments:
 			showTipsOfTheDay: %tipsOfTheDay%
+			editorUrl: %editorUrl%
 
 	errorFormatter.checkstyle:
 		class: PHPStan\Command\ErrorFormatter\CheckstyleErrorFormatter

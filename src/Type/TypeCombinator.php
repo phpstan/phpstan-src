@@ -13,6 +13,9 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateUnionType;
 
 class TypeCombinator
 {
@@ -603,23 +606,37 @@ class TypeCombinator
 		});
 		// transform A & (B | C) to (A & B) | (A & C)
 		foreach ($types as $i => $type) {
-			if ($type instanceof UnionType) {
-				$topLevelUnionSubTypes = [];
-				foreach ($type->getTypes() as $innerUnionSubType) {
-					$topLevelUnionSubTypes[] = self::intersect(
-						$innerUnionSubType,
-						...array_slice($types, 0, $i),
-						...array_slice($types, $i + 1)
-					);
-				}
-
-				$union = self::union(...$topLevelUnionSubTypes);
-				if ($type instanceof BenevolentUnionType) {
-					return TypeUtils::toBenevolentUnion($union);
-				}
-
-				return $union;
+			if (!$type instanceof UnionType) {
+				continue;
 			}
+
+			$topLevelUnionSubTypes = [];
+			foreach ($type->getTypes() as $innerUnionSubType) {
+				$topLevelUnionSubTypes[] = self::intersect(
+					$innerUnionSubType,
+					...array_slice($types, 0, $i),
+					...array_slice($types, $i + 1)
+				);
+			}
+
+			$union = self::union(...$topLevelUnionSubTypes);
+			if ($type instanceof BenevolentUnionType) {
+				$union = TypeUtils::toBenevolentUnion($union);
+			}
+
+			if ($type instanceof TemplateUnionType) {
+				$union = TemplateTypeFactory::create(
+					$type->getScope(),
+					$type->getName(),
+					$union,
+					$type->getVariance()
+				);
+				if ($type->isArgument()) {
+					return TemplateTypeHelper::toArgument($union);
+				}
+			}
+
+			return $union;
 		}
 
 		// transform A & (B & C) to A & B & C

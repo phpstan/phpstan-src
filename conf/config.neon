@@ -161,7 +161,6 @@ parametersSchema:
 	bootstrapFiles: listOf(string())
 	excludes_analyse: listOf(string())
 	excludePaths: schema(anyOf(
-		listOf(string()),
 		structure([
 			analyse: listOf(string()),
 		]),

@@ -1,0 +1,4 @@
+parameters:
+	excludePaths:
+		analyse:
+			- test

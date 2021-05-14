@@ -1,0 +1,6 @@
+includes:
+	- included-mixed-vice-versa.neon
+
+parameters:
+	excludePaths:
+		- test

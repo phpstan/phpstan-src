@@ -1,0 +1,6 @@
+parameters:
+	excludePaths:
+		analyse:
+			- test
+		analyseAndScan:
+			- test2

@@ -1,0 +1,9 @@
+includes:
+	- included.neon
+
+parameters:
+	excludePaths:
+		analyse:
+			- test2
+		analyseAndScan:
+			- test3

@@ -1,0 +1,9 @@
+includes:
+	- included-mixed.neon
+
+parameters:
+	excludePaths:
+		analyse:
+			- test
+		analyseAndScan:
+			- test2

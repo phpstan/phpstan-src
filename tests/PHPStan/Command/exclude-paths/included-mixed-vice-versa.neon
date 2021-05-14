@@ -1,0 +1,4 @@
+parameters:
+	excludePaths:
+		analyseAndScan:
+			- *.blade.php

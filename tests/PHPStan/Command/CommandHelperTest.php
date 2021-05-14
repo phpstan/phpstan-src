@@ -160,7 +160,7 @@ class CommandHelperTest extends TestCase
 		}
 	}
 
-	public function dataResolveRelativePaths(): array
+	public function dataParameters(): array
 	{
 		return [
 			[
@@ -226,16 +226,81 @@ class CommandHelperTest extends TestCase
 					],
 				],
 			],
+			[
+				__DIR__ . '/exclude-paths/straightforward.neon',
+				[
+					'excludePaths' => [
+						'analyseAndScan' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test2',
+						],
+						'analyse' => [],
+					],
+				],
+			],
+			[
+				__DIR__ . '/exclude-paths/full.neon',
+				[
+					'excludePaths' => [
+						'analyse' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
+						],
+						'analyseAndScan' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test2',
+						],
+					],
+				],
+			],
+			[
+				__DIR__ . '/exclude-paths/including.neon',
+				[
+					'excludePaths' => [
+						'analyse' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test2',
+						],
+						'analyseAndScan' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test3',
+						],
+					],
+				],
+			],
+			[
+				__DIR__ . '/exclude-paths/including-mixed.neon',
+				[
+					'excludePaths' => [
+						'analyseAndScan' => [
+							'*.blade.php',
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test2',
+						],
+						'analyse' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
+						],
+					],
+				],
+			],
+			[
+				__DIR__ . '/exclude-paths/including-mixed-vice-versa.neon',
+				[
+					'excludePaths' => [
+						'analyseAndScan' => [
+							'*.blade.php',
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
+						],
+						'analyse' => [],
+					],
+				],
+			],
 		];
 	}
 
 	/**
-	 * @dataProvider dataResolveRelativePaths
+	 * @dataProvider dataParameters
 	 * @param string $configFile
 	 * @param array<string, string> $expectedParameters
 	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
 	 */
-	public function testResolveRelativePaths(
+	public function testResolveParameters(
 		string $configFile,
 		array $expectedParameters
 	): void

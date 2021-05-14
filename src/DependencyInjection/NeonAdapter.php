@@ -14,7 +14,7 @@ use PHPStan\File\FileReader;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v11-excludePaths';
+	public const CACHE_KEY = 'v12-excludePaths-merge';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -111,6 +111,14 @@ class NeonAdapter implements Adapter
 			], true) && is_string($val) && strpos($val, '%') === false && strpos($val, '*') !== 0) {
 				$fileHelper = $this->createFileHelperByFile($file);
 				$val = $fileHelper->normalizePath($fileHelper->absolutizePath($val));
+			}
+
+			if (
+				$keyToResolve === '[parameters][excludePaths]'
+				&& $val !== null
+				&& array_values($val) === $val
+			) {
+				$val = ['analyseAndScan' => $val, 'analyse' => []];
 			}
 
 			$res[$key] = $val;

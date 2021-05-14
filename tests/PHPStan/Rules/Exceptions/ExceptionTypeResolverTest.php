@@ -13,6 +13,8 @@ class ExceptionTypeResolverTest extends TestCase
 			[
 				[],
 				[],
+				[],
+				[],
 				\InvalidArgumentException::class,
 				true,
 			],
@@ -20,6 +22,8 @@ class ExceptionTypeResolverTest extends TestCase
 				[
 					'#^InvalidArgumentException$#',
 				],
+				[],
+				[],
 				[],
 				\InvalidArgumentException::class,
 				false,
@@ -29,6 +33,8 @@ class ExceptionTypeResolverTest extends TestCase
 				[
 					\InvalidArgumentException::class,
 				],
+				[],
+				[],
 				\InvalidArgumentException::class,
 				false,
 			],
@@ -37,6 +43,8 @@ class ExceptionTypeResolverTest extends TestCase
 				[
 					\LogicException::class,
 				],
+				[],
+				[],
 				\LogicException::class,
 				false,
 			],
@@ -45,6 +53,8 @@ class ExceptionTypeResolverTest extends TestCase
 				[
 					\LogicException::class,
 				],
+				[],
+				[],
 				\DomainException::class,
 				false,
 			],
@@ -53,7 +63,59 @@ class ExceptionTypeResolverTest extends TestCase
 				[
 					\DomainException::class,
 				],
+				[],
+				[],
 				\LogicException::class,
+				true,
+			],
+			[
+				[],
+				[],
+				[
+					'#^Exception$#',
+				],
+				[],
+				\InvalidArgumentException::class,
+				false,
+			],
+			[
+				[],
+				[],
+				[
+					'#^InvalidArgumentException#',
+				],
+				[],
+				\InvalidArgumentException::class,
+				true,
+			],
+			[
+				[],
+				[],
+				[],
+				[
+					\DomainException::class,
+				],
+				\InvalidArgumentException::class,
+				false,
+			],
+			[
+				[],
+				[],
+				[],
+				[
+					\InvalidArgumentException::class,
+				],
+				\InvalidArgumentException::class,
+				true,
+			],
+			[
+				[],
+				[],
+				[],
+				[
+					\LogicException::class,
+				],
+				\InvalidArgumentException::class,
 				true,
 			],
 		];
@@ -63,17 +125,21 @@ class ExceptionTypeResolverTest extends TestCase
 	 * @dataProvider dataIsCheckedException
 	 * @param string[] $uncheckedExceptionRegexes
 	 * @param string[] $uncheckedExceptionClasses
+	 * @param string[] $checkedExceptionRegexes
+	 * @param string[] $checkedExceptionClasses
 	 * @param string $className
 	 * @param bool $expectedResult
 	 */
 	public function testIsCheckedException(
 		array $uncheckedExceptionRegexes,
 		array $uncheckedExceptionClasses,
+		array $checkedExceptionRegexes,
+		array $checkedExceptionClasses,
 		string $className,
 		bool $expectedResult
 	): void
 	{
-		$resolver = new ExceptionTypeResolver($this->createBroker(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses);
+		$resolver = new ExceptionTypeResolver($this->createBroker(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
 		$this->assertSame($expectedResult, $resolver->isCheckedException($className));
 	}
 

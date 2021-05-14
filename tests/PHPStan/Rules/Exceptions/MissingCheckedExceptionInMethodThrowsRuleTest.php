@@ -17,7 +17,9 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 			new MissingCheckedExceptionInThrowsCheck(new ExceptionTypeResolver(
 				$this->createReflectionProvider(),
 				[],
-				[\PHPStan\ShouldNotHappenException::class]
+				[\PHPStan\ShouldNotHappenException::class],
+				[],
+				[]
 			))
 		);
 	}

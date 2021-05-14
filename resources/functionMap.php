@@ -2937,7 +2937,7 @@ return [
 'ffmpeg_movie::hasAudio' => ['bool'],
 'ffmpeg_movie::hasVideo' => ['bool'],
 'fgetc' => ['string|false', 'fp'=>'resource'],
-'fgetcsv' => ['(?array)|(?false)', 'fp'=>'resource', 'length='=>'int', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
+'fgetcsv' => ['non-empty-array<int,string>|array{null}|false|null', 'fp'=>'resource', 'length='=>'int', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
 'fgets' => ['string|false', 'fp'=>'resource', 'length='=>'int'],
 'fgetss' => ['string|false', 'fp'=>'resource', 'length='=>'int', 'allowable_tags='=>'string'],
 'file' => ['array<int,string>|false', 'filename'=>'string', 'flags='=>'int', 'context='=>'resource'],

@@ -342,4 +342,9 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug5002(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5002.php'], []);
+	}
+
 }

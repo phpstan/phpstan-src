@@ -274,7 +274,7 @@ return [
 'array_fill' => ['array', 'start_key'=>'int', 'num'=>'int', 'val'=>'mixed'],
 'array_fill_keys' => ['array', 'keys'=>'array', 'val'=>'mixed'],
 'array_filter' => ['array', 'input'=>'array', 'callback='=>'callable(mixed,mixed):bool|callable(mixed):bool', 'flag='=>'int'],
-'array_flip' => ['array', 'input'=>'array'],
+'array_flip' => ['array', 'input'=>'array<int|string>'],
 'array_intersect' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...args='=>'array'],
 'array_intersect_assoc' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...args='=>'array'],
 'array_intersect_key' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...args='=>'array'],

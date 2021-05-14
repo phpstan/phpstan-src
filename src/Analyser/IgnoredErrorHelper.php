@@ -65,7 +65,7 @@ class IgnoredErrorHelper
 							'index' => $i,
 							'ignoreError' => $ignoreError,
 						];
-					} elseif (is_file($ignoreError['path'])) {
+					} elseif (@is_file($ignoreError['path'])) {
 						$normalizedPath = $this->fileHelper->normalizePath($ignoreError['path']);
 						$ignoreError['path'] = $normalizedPath;
 						$ignoreErrorsByFile[$normalizedPath][] = [

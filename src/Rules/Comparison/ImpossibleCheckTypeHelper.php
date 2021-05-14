@@ -170,6 +170,10 @@ class ImpossibleCheckTypeHelper
 				return true;
 			}
 
+			if ($expr instanceof Expr\Variable && is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes()) {
+				return true;
+			}
+
 			return (
 				$node instanceof FuncCall
 				|| $node instanceof MethodCall

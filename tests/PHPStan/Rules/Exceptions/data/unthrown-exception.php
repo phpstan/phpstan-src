@@ -192,3 +192,35 @@ class TestDateTime
 	}
 
 }
+
+class TestDateInterval
+{
+
+	public function doFoo(): void
+	{
+		try {
+			new \DateInterval('invalid format');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \DateInterval('P10D');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $s): void
+	{
+		try {
+			new \DateInterval($s);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}

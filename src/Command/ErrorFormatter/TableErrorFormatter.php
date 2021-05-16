@@ -18,7 +18,7 @@ class TableErrorFormatter implements ErrorFormatter
 	public function __construct(
 		RelativePathHelper $relativePathHelper,
 		bool $showTipsOfTheDay,
-		?string $editorUrl
+		?string $editorUrl = null
 	)
 	{
 		$this->relativePathHelper = $relativePathHelper;

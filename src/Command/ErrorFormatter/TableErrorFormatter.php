@@ -13,6 +13,7 @@ class TableErrorFormatter implements ErrorFormatter
 	private RelativePathHelper $relativePathHelper;
 
 	private bool $showTipsOfTheDay;
+
 	private ?string $editorUrl;
 
 	public function __construct(

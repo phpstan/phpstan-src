@@ -14,13 +14,17 @@ class TableErrorFormatter implements ErrorFormatter
 
 	private bool $showTipsOfTheDay;
 
+	private ?string $editorUrl;
+
 	public function __construct(
 		RelativePathHelper $relativePathHelper,
-		bool $showTipsOfTheDay
+		bool $showTipsOfTheDay,
+		?string $editorUrl = null
 	)
 	{
 		$this->relativePathHelper = $relativePathHelper;
 		$this->showTipsOfTheDay = $showTipsOfTheDay;
+		$this->editorUrl = $editorUrl;
 	}
 
 	public function formatErrors(
@@ -70,6 +74,9 @@ class TableErrorFormatter implements ErrorFormatter
 					$tip = $error->getTip();
 					$tip = str_replace('%configurationFile%', $projectConfigFile, $tip);
 					$message .= "\n💡 " . $tip;
+				}
+				if (is_string($this->editorUrl)) {
+					$message .= "\n    " . str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $this->editorUrl);
 				}
 				$rows[] = [
 					(string) $error->getLine(),

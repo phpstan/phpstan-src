@@ -313,6 +313,14 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		if (PHP_VERSION_ID < 70400) {
 			$errors = [];
 		}
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = [
+				[
+					'Parameter #2 $array of function implode expects array, string given.',
+					8,
+				],
+			];
+		}
 
 		$this->analyse([__DIR__ . '/data/implode-74.php'], $errors);
 	}

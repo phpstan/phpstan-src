@@ -76,10 +76,13 @@ class TableErrorFormatter implements ErrorFormatter
 					$message .= "\n💡 " . $tip;
 				}
 				if (is_string($this->editorUrl)) {
-					$message .= "\n✏️  " . str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $this->editorUrl);
+					$link = str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $this->editorUrl);
+					$line = "<href=" . $link . ">" . $error->getLine() . "</>";
+				} else {
+					$line = (string) $error->getLine();
 				}
 				$rows[] = [
-					(string) $error->getLine(),
+					$line,
 					$message,
 				];
 			}

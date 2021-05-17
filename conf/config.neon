@@ -1097,6 +1097,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\IntdivThrowTypeExtension
+		tags:
+			- phpstan.dynamicFunctionThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\JsonThrowTypeExtension
 		tags:
 			- phpstan.dynamicFunctionThrowTypeExtension

@@ -224,3 +224,56 @@ class TestDateInterval
 	}
 
 }
+
+class TestIntdiv
+{
+
+	public function doFoo(): void
+	{
+		try {
+			intdiv(1, 1);
+			intdiv(1, -1);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv(PHP_INT_MIN, -1);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv(1, 0);
+		} catch (\ArithmeticError $e) {
+
+		}
+	}
+
+	public function doBar(int $int): void
+	{
+		try {
+			intdiv($int, 1);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv($int, -1);
+		} catch (\ArithmeticError $e) {
+
+		}
+	}
+
+	public function doBaz(int $int): void
+	{
+		try {
+			intdiv(1, $int);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv(PHP_INT_MIN, $int);
+		} catch (\ArithmeticError $e) {
+
+		}
+	}
+
+}

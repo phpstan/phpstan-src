@@ -35,44 +35,6 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 	}
 
 	/**
-	 * @param string[] $headers
-	 * @param string[][] $rows
-	 */
-	public function table(array $headers, array $rows): void
-	{
-		/** @var int $terminalWidth */
-		$terminalWidth = (new \Symfony\Component\Console\Terminal())->getWidth() - 2;
-		$maxHeaderWidth = strlen($headers[0]);
-		foreach ($rows as $row) {
-			$length = strlen($row[0]);
-			if ($maxHeaderWidth !== 0 && $length <= $maxHeaderWidth) {
-				continue;
-			}
-
-			$maxHeaderWidth = $length;
-		}
-
-		$wrap = static function ($rows) use ($terminalWidth, $maxHeaderWidth): array {
-			return array_map(static function ($row) use ($terminalWidth, $maxHeaderWidth): array {
-				return array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
-					if ($terminalWidth > $maxHeaderWidth + 5) {
-						return wordwrap(
-							$s,
-							$terminalWidth - $maxHeaderWidth - 5,
-							"\n",
-							true
-						);
-					}
-
-					return $s;
-				}, $row);
-			}, $rows);
-		};
-
-		parent::table($headers, $wrap($rows));
-	}
-
-	/**
 	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
 	 * @param int $max
 	 */

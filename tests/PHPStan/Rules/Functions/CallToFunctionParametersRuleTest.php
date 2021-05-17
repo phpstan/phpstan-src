@@ -529,4 +529,13 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3920.php'], []);
 	}
 
+	public function testBugNumberFormatNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/number-format-named-arguments.php'], []);
+	}
+
 }

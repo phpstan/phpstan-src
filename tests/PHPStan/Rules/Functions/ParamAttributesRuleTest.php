@@ -54,7 +54,7 @@ class ParamAttributesRuleTest extends RuleTestCase
 			],
 			[
 				'Attribute class ParamAttributes\Qux does not have the parameter target.',
-				78,
+				82,
 			],
 		]);
 	}

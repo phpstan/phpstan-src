@@ -76,7 +76,11 @@ class Sit
 		#[Qux]
 		public $qux,
 		#[Qux]
-		$qux2
+		protected $qux2,
+		#[Qux]
+		private $qux3,
+		#[Qux]
+		$qux4
 	)
 	{
 

@@ -76,7 +76,7 @@ class TableErrorFormatter implements ErrorFormatter
 					$message .= "\n💡 " . $tip;
 				}
 				if (is_string($this->editorUrl)) {
-					$message .= "\n✏️  " . str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $this->editorUrl);
+					$message .= "\n✏️  " . str_replace(['%file%', '%line%'], [$error->getTraitFilePath() ?? $error->getFilePath(), (string) $error->getLine()], $this->editorUrl);
 				}
 				$rows[] = [
 					(string) $error->getLine(),

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\Analyser\Error;
+use PHPStan\Command\AnalysisResult;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
@@ -156,6 +158,15 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
+	}
+
+	public function testEditorUrlWithTrait(): void
+	{
+		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, 'editor://%file%/%line%');
+		$error = new Error('Test', 'Foo.php (in context of trait)', 12, true, 'Foo.php', 'Bar.php');
+		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput());
+
+		$this->assertStringContainsString('editor://Bar.php/12', $this->getOutputContent());
 	}
 
 }

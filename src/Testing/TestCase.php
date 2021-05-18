@@ -457,8 +457,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$astLocator = new Locator($phpParser, static function () use (&$functionReflector): FunctionReflector {
 			return $functionReflector;
 		});
+		$astPhp8Locator = new Locator(self::getContainer()->getService('php8PhpParser'), static function () use (&$functionReflector): FunctionReflector {
+			return $functionReflector;
+		});
 		$reflectionSourceStubber = new ReflectionSourceStubber();
-		$locators[] = new PhpInternalSourceLocator($astLocator, self::getPhpStormStubsSourceStubber());
+		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, self::getPhpStormStubsSourceStubber());
 		$locators[] = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
 		$locators[] = new PhpInternalSourceLocator($astLocator, $reflectionSourceStubber);
 		$locators[] = new EvaledCodeSourceLocator($astLocator, $reflectionSourceStubber);

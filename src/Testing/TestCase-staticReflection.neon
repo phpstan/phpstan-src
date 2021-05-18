@@ -3,6 +3,7 @@ services:
 		class: PHPStan\Testing\TestCaseSourceLocatorFactory
 		arguments:
 			phpParser: @phpParserDecorator
+			php8Parser: @php8PhpParser
 
 	currentPhpVersionLexer:
 		class: PhpParser\Lexer

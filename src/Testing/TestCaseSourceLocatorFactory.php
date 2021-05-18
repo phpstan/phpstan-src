@@ -28,6 +28,8 @@ class TestCaseSourceLocatorFactory
 
 	private \PhpParser\Parser $phpParser;
 
+	private \PhpParser\Parser $php8Parser;
+
 	private PhpStormStubsSourceStubber $phpstormStubsSourceStubber;
 
 	private ReflectionSourceStubber $reflectionSourceStubber;
@@ -37,6 +39,7 @@ class TestCaseSourceLocatorFactory
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
 		\PhpParser\Parser $phpParser,
+		\PhpParser\Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber
 	)
@@ -45,6 +48,7 @@ class TestCaseSourceLocatorFactory
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->autoloadSourceLocator = $autoloadSourceLocator;
 		$this->phpParser = $phpParser;
+		$this->php8Parser = $php8Parser;
 		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 		$this->reflectionSourceStubber = $reflectionSourceStubber;
 	}
@@ -72,8 +76,11 @@ class TestCaseSourceLocatorFactory
 		$astLocator = new Locator($this->phpParser, function (): FunctionReflector {
 			return $this->container->getService('testCaseFunctionReflector');
 		});
+		$astPhp8Locator = new Locator($this->php8Parser, function (): FunctionReflector {
+			return $this->container->getService('betterReflectionFunctionReflector');
+		});
 
-		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpstormStubsSourceStubber);
+		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber);
 		$locators[] = $this->autoloadSourceLocator;
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);

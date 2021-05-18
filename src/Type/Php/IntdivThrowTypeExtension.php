@@ -2,8 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use ArithmeticError;
-use DivisionByZeroError;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -46,7 +44,7 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		$divisorType = $scope->getType($funcCall->args[1]->value);
 		foreach (TypeUtils::getConstantScalars($divisorType) as $constantScalarType) {
 			if ($containsMin && $constantScalarType->getValue() === -1) {
-				return new ObjectType(ArithmeticError::class);
+				return new ObjectType(\ArithmeticError::class);
 			}
 
 			if ($constantScalarType->getValue() === 0) {
@@ -57,11 +55,11 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		}
 
 		if (!$divisorType instanceof NeverType) {
-			return new ObjectType($containsMin ? ArithmeticError::class : DivisionByZeroError::class);
+			return new ObjectType($containsMin ? \ArithmeticError::class : \DivisionByZeroError::class);
 		}
 
 		if ($divisionByZero) {
-			return new ObjectType(DivisionByZeroError::class);
+			return new ObjectType(\DivisionByZeroError::class);
 		}
 
 		return null;

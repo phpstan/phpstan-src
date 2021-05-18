@@ -20,6 +20,12 @@ class Baz
 
 }
 
+#[\Attribute(\Attribute::TARGET_PROPERTY)]
+class Qux
+{
+
+}
+
 class Lorem
 {
 
@@ -52,6 +58,25 @@ class Dolor
 	public function doFoo(
 		#[Baz]
 		$foo
+	)
+	{
+
+	}
+
+}
+
+class Sit
+{
+
+	public function __construct(
+		#[Foo]
+		public $foo,
+		#[Bar]
+		public $bar,
+		#[Qux]
+		public $qux,
+		#[Qux]
+		$qux2
 	)
 	{
 

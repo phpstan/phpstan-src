@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
@@ -27,11 +28,27 @@ class ParamAttributesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$targetName = 'parameter';
+		if (($node->flags & Class_::MODIFIER_PUBLIC) !== 0) {
+			$targetName = 'parameter or property';
+
+			$propertyTargetErrors = $this->attributesCheck->check(
+				$scope,
+				$node->attrGroups,
+				\Attribute::TARGET_PROPERTY,
+				$targetName
+			);
+
+			if (count($propertyTargetErrors) === 0) {
+				return $propertyTargetErrors;
+			}
+		}
+
 		return $this->attributesCheck->check(
 			$scope,
 			$node->attrGroups,
 			\Attribute::TARGET_PARAMETER,
-			'parameter'
+			$targetName
 		);
 	}
 

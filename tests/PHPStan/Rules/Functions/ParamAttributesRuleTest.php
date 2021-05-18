@@ -46,7 +46,15 @@ class ParamAttributesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/param-attributes.php'], [
 			[
 				'Attribute class ParamAttributes\Foo does not have the parameter target.',
-				27,
+				33,
+			],
+			[
+				'Attribute class ParamAttributes\Foo does not have the parameter or property target.',
+				72,
+			],
+			[
+				'Attribute class ParamAttributes\Qux does not have the parameter target.',
+				78,
 			],
 		]);
 	}

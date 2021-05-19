@@ -1112,6 +1112,11 @@ services:
 			- phpstan.broker.propertiesClassReflectionExtension
 
 	-
+		class: PHPStan\Type\Php\SimpleXMLElementConstructorThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\StatDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

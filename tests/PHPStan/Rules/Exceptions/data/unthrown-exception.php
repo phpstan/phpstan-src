@@ -277,3 +277,35 @@ class TestIntdiv
 	}
 
 }
+
+class TestSimpleXMLElement
+{
+
+	public function doFoo(): void
+	{
+		try {
+			new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><root></root>');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \SimpleXMLElement('foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \SimpleXMLElement($string);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}

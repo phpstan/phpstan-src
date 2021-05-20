@@ -42,6 +42,10 @@ class ApiRuleHelperTest extends TestCase
 				'PHPStanWorkshop\\',
 				false,
 			],
+			[
+				'PHPStan\\PhpDocParser\\',
+				false,
+			],
 		];
 	}
 

@@ -15,6 +15,10 @@ class ApiRuleHelper
 			return true;
 		}
 
+		if (strpos($namespace, 'PHPStan\\PhpDocParser\\') === 0) {
+			return false;
+		}
+
 		return stripos($namespace, 'PHPStan\\') === 0;
 	}
 

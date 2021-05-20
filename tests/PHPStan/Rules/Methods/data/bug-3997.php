@@ -62,3 +62,14 @@ class Ipsum implements Countable
 	}
 
 }
+
+class Dolor implements  Countable
+{
+
+	/** @return positive-int|0 */
+	public function count(): int
+	{
+		return -1;
+	}
+
+}

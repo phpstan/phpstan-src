@@ -381,6 +381,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Method Bug3997\Lorem::count() should return int but returns string.',
 				48,
 			],
+			[
+				'Method Bug3997\Dolor::count() should return int<0, max> but returns -1.',
+				72,
+			],
 		]);
 	}
 

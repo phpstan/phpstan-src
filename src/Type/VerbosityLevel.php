@@ -70,6 +70,10 @@ class VerbosityLevel
 				$moreVerbose = true;
 				return $type;
 			}
+			if ($type instanceof IntegerRangeType) {
+				$moreVerbose = true;
+				return $type;
+			}
 			return $traverse($type);
 		};
 

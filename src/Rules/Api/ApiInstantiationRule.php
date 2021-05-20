@@ -74,6 +74,10 @@ class ApiInstantiationRule implements Rule
 			return [$ruleError];
 		}
 
+		if ($constructor->getDeclaringClass()->getName() !== $classReflection->getName()) {
+			return [$ruleError];
+		}
+
 		return [];
 	}
 

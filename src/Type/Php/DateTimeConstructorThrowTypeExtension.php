@@ -8,7 +8,9 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 
 class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
@@ -25,11 +27,8 @@ class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowT
 			return null;
 		}
 
-		$arg = $methodCall->args[0]->value;
-		$constantStrings = TypeUtils::getConstantStrings($scope->getType($arg));
-		if (count($constantStrings) === 0) {
-			return $methodReflection->getThrowType();
-		}
+		$valueType = $scope->getType($methodCall->args[0]->value);
+		$constantStrings = TypeUtils::getConstantStrings($valueType);
 
 		foreach ($constantStrings as $constantString) {
 			try {
@@ -37,6 +36,12 @@ class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowT
 			} catch (\Exception $e) { // phpcs:ignore
 				return $methodReflection->getThrowType();
 			}
+
+			$valueType = TypeCombinator::remove($valueType, $constantString);
+		}
+
+		if (!$valueType instanceof NeverType) {
+			return $methodReflection->getThrowType();
 		}
 
 		return null;

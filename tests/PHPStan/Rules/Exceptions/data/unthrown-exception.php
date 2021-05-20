@@ -191,6 +191,18 @@ class TestDateTime
 		}
 	}
 
+	/**
+	 * @phpstan-param 'now'|class-string $s
+	 */
+	public function doSuperBaz(string $s): void
+	{
+		try {
+			new \DateTime($s);
+		} catch (\Exception $e) {
+
+		}
+	}
+
 }
 
 class TestDateInterval
@@ -215,6 +227,18 @@ class TestDateInterval
 	}
 
 	public function doBaz(string $s): void
+	{
+		try {
+			new \DateInterval($s);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	/**
+	 * @phpstan-param 'P10D'|class-string $s
+	 */
+	public function doSuperBaz(string $s): void
 	{
 		try {
 			new \DateInterval($s);

@@ -187,4 +187,11 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 		return true;
 	}
 
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [
+			__DIR__ . '/../../conf/bleedingEdge.neon',
+		];
+	}
+
 }

@@ -31,6 +31,7 @@ class StaticType implements TypeWithClassName
 	private string $baseClass;
 
 	/**
+	 * @api
 	 * @param string|ClassReflection $classReflection
 	 */
 	public function __construct($classReflection)

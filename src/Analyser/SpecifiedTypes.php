@@ -19,6 +19,7 @@ class SpecifiedTypes
 	private array $newConditionalExpressionHolders;
 
 	/**
+	 * @api
 	 * @param mixed[] $sureTypes
 	 * @param mixed[] $sureNotTypes
 	 * @param bool $overwrite

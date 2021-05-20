@@ -5,6 +5,7 @@ namespace App;
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 
 class Foo
 {
@@ -16,6 +17,7 @@ class Foo
 		new IntegerType();
 		new FileTypeMapper(); // error - has constructor
 		new NeonAdapter(); // error - does not have a constructor
+		new StringAlwaysAcceptingObjectWithToStringType(); // error - constructor is inherited
 	}
 
 }

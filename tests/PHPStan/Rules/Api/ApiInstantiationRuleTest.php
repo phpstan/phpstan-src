@@ -40,6 +40,11 @@ class ApiInstantiationRuleTest extends RuleTestCase
 				18,
 				$tip,
 			],
+			[
+				'aaa',
+				20,
+				$tip,
+			],
 		]);
 	}
 

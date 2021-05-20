@@ -23,6 +23,11 @@ class FloatType implements Type
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	/**
 	 * @return string[]
 	 */

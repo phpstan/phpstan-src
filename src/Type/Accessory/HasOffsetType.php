@@ -30,6 +30,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	private \PHPStan\Type\Type $offsetType;
 
+	/** @api */
 	public function __construct(Type $offsetType)
 	{
 		$this->offsetType = $offsetType;

@@ -35,6 +35,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	private ?\PHPStan\Type\Type $subtractedType;
 
+	/** @api */
 	public function __construct(
 		bool $isExplicitMixed = false,
 		?Type $subtractedType = null

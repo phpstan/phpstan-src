@@ -22,6 +22,7 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	private string $propertyName;
 
+	/** @api */
 	public function __construct(string $propertyName)
 	{
 		$this->propertyName = $propertyName;

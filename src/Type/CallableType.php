@@ -35,6 +35,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	private bool $isCommonCallable;
 
 	/**
+	 * @api
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
 	 * @param Type $returnType
 	 * @param bool $variadic

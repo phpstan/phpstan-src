@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 class ErrorType extends MixedType
 {
 
+	/** @api */
 	public function __construct()
 	{
 		parent::__construct();

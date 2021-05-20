@@ -38,6 +38,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	private bool $variadic;
 
 	/**
+	 * @api
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
 	 * @param Type $returnType
 	 * @param bool $variadic

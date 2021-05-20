@@ -20,8 +20,10 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	private float $value;
 
+	/** @api */
 	public function __construct(float $value)
 	{
+		parent::__construct();
 		$this->value = $value;
 	}
 

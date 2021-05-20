@@ -58,6 +58,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, self> */
 	private array $currentAncestors = [];
 
+	/** @api */
 	public function __construct(
 		string $className,
 		?Type $subtractedType = null,

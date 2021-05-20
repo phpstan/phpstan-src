@@ -31,6 +31,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	public function getReferencedClasses(): array
 	{
 		return [];

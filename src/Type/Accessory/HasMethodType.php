@@ -26,6 +26,7 @@ class HasMethodType implements AccessoryType, CompoundType
 
 	private string $methodName;
 
+	/** @api */
 	public function __construct(string $methodName)
 	{
 		$this->methodName = $methodName;

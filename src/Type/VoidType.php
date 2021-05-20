@@ -22,6 +22,11 @@ class VoidType implements Type
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	/**
 	 * @return string[]
 	 */

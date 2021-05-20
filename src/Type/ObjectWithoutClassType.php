@@ -16,6 +16,7 @@ class ObjectWithoutClassType implements SubtractableType
 
 	private ?\PHPStan\Type\Type $subtractedType;
 
+	/** @api */
 	public function __construct(
 		?Type $subtractedType = null
 	)

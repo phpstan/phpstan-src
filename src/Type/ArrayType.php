@@ -30,6 +30,7 @@ class ArrayType implements Type
 
 	private \PHPStan\Type\Type $itemType;
 
+	/** @api */
 	public function __construct(Type $keyType, Type $itemType)
 	{
 		if ($keyType->describe(VerbosityLevel::value()) === '(int|string)') {

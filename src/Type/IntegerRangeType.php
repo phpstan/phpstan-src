@@ -13,8 +13,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	private ?int $max;
 
-	private function __construct(?int $min, ?int $max)
+	public function __construct(?int $min, ?int $max)
 	{
+		// this constructor can be made private when PHP 7.2 is the minimum
 		parent::__construct();
 		assert($min === null || $max === null || $min <= $max);
 		assert($min !== null || $max !== null);

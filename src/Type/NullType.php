@@ -23,6 +23,11 @@ class NullType implements ConstantScalarType
 	use FalseyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	/**
 	 * @return string[]
 	 */

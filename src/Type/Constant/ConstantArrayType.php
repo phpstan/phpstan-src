@@ -50,6 +50,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	private ?array $allArrays = null;
 
 	/**
+	 * @api
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param int $nextAutoIndex

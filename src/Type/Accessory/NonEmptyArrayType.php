@@ -25,6 +25,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	public function getReferencedClasses(): array
 	{
 		return [];

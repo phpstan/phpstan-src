@@ -18,8 +18,10 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 
 	private bool $value;
 
+	/** @api */
 	public function __construct(bool $value)
 	{
+		parent::__construct();
 		$this->value = $value;
 	}
 

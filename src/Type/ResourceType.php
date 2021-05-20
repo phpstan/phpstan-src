@@ -23,6 +23,11 @@ class ResourceType implements Type
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return 'resource';

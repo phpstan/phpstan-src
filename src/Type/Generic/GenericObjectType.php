@@ -28,6 +28,7 @@ class GenericObjectType extends ObjectType
 	private ?ClassReflection $classReflection;
 
 	/**
+	 * @api
 	 * @param array<int, Type> $types
 	 */
 	public function __construct(

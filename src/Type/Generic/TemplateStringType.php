@@ -21,6 +21,7 @@ final class TemplateStringType extends StringType implements TemplateType
 		StringType $bound
 	)
 	{
+		parent::__construct();
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;

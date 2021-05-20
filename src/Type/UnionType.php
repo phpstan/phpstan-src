@@ -24,6 +24,7 @@ class UnionType implements CompoundType
 	private array $types;
 
 	/**
+	 * @api
 	 * @param Type[] $types
 	 */
 	public function __construct(array $types)

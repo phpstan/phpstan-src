@@ -23,8 +23,10 @@ class GenericClassStringType extends ClassStringType
 
 	private Type $type;
 
+	/** @api */
 	public function __construct(Type $type)
 	{
+		parent::__construct();
 		$this->type = $type;
 	}
 

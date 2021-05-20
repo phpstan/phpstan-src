@@ -27,6 +27,7 @@ class IterableType implements CompoundType
 
 	private \PHPStan\Type\Type $itemType;
 
+	/** @api */
 	public function __construct(
 		Type $keyType,
 		Type $itemType

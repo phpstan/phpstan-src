@@ -25,6 +25,11 @@ class BooleanType implements Type
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return 'bool';

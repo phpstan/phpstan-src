@@ -23,6 +23,7 @@ class NeverType implements CompoundType
 
 	private bool $isExplicit;
 
+	/** @api */
 	public function __construct(bool $isExplicit = false)
 	{
 		$this->isExplicit = $isExplicit;

@@ -8,6 +8,15 @@ class ThisType extends StaticType
 {
 
 	/**
+	 * @api
+	 * @param string|ClassReflection $classReflection
+	 */
+	public function __construct($classReflection)
+	{
+		parent::__construct($classReflection);
+	}
+
+	/**
 	 * @param ClassReflection|string $classReflection
 	 * @return self
 	 */

@@ -750,12 +750,14 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
-		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
+		class: PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver
 		arguments:
 			uncheckedExceptionRegexes: %exceptions.uncheckedExceptionRegexes%
 			uncheckedExceptionClasses: %exceptions.uncheckedExceptionClasses%
 			checkedExceptionRegexes: %exceptions.checkedExceptionRegexes%
 			checkedExceptionClasses: %exceptions.checkedExceptionClasses%
+		autowired:
+			- PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver
 
 	-
 		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule
@@ -765,6 +767,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck
+		arguments:
+			exceptionTypeResolver: @exceptionTypeResolver
 
 	-
 		class: PHPStan\Rules\Exceptions\TooWideFunctionThrowTypeRule
@@ -1354,6 +1358,10 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+
+	exceptionTypeResolver:
+		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
+		factory: @PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver
 
 	typeSpecifier:
 		class: PHPStan\Analyser\TypeSpecifier

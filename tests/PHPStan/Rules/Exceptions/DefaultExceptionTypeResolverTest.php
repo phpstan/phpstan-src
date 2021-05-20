@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Testing\TestCase;
 
-class ExceptionTypeResolverTest extends TestCase
+class DefaultExceptionTypeResolverTest extends TestCase
 {
 
 	public function dataIsCheckedException(): array
@@ -139,7 +139,7 @@ class ExceptionTypeResolverTest extends TestCase
 		bool $expectedResult
 	): void
 	{
-		$resolver = new ExceptionTypeResolver($this->createBroker(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
+		$resolver = new DefaultExceptionTypeResolver($this->createBroker(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
 		$this->assertSame($expectedResult, $resolver->isCheckedException($className));
 	}
 

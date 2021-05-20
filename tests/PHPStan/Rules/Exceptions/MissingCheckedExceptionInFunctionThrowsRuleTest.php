@@ -14,7 +14,7 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new MissingCheckedExceptionInFunctionThrowsRule(
-			new MissingCheckedExceptionInThrowsCheck(new ExceptionTypeResolver(
+			new MissingCheckedExceptionInThrowsCheck(new DefaultExceptionTypeResolver(
 				$this->createReflectionProvider(),
 				[],
 				[\PHPStan\ShouldNotHappenException::class],

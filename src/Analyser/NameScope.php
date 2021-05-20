@@ -26,6 +26,7 @@ class NameScope
 	private bool $bypassTypeAliases;
 
 	/**
+	 * @api
 	 * @param string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param string|null $className

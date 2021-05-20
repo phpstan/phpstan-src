@@ -24,6 +24,7 @@ class ContainerFactory
 
 	private string $configDirectory;
 
+	/** @api */
 	public function __construct(string $currentWorkingDirectory)
 	{
 		$this->currentWorkingDirectory = $currentWorkingDirectory;

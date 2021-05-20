@@ -9,6 +9,12 @@ use PHPStan\Type\Constant\ConstantStringType;
 class ClassStringType extends StringType
 {
 
+	/** @api */
+	public function __construct()
+	{
+		parent::__construct();
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return 'class-string';

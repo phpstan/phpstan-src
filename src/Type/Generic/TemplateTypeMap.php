@@ -15,7 +15,10 @@ class TemplateTypeMap
 	/** @var array<string,\PHPStan\Type\Type> */
 	private array $types;
 
-	/** @param array<string,\PHPStan\Type\Type> $types */
+	/**
+	 * @api
+	 * @param array<string,\PHPStan\Type\Type> $types
+	 */
 	public function __construct(array $types)
 	{
 		$this->types = $types;

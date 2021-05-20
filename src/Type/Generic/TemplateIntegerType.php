@@ -21,6 +21,7 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 		IntegerType $bound
 	)
 	{
+		parent::__construct();
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;

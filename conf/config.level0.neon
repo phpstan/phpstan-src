@@ -3,6 +3,8 @@ parameters:
 	missingClosureNativeReturnCheckObjectTypehint: false
 
 conditionalTags:
+	PHPStan\Rules\Api\ApiInstantiationRule:
+		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Functions\ClosureUsesThisRule:
 		phpstan.rules.rule: %featureToggles.closureUsesThis%
 	PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule:
@@ -58,6 +60,9 @@ rules:
 	- PHPStan\Rules\Variables\UnsetRule
 
 services:
+	-
+		class: PHPStan\Rules\Api\ApiInstantiationRule
+
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
 		tags:

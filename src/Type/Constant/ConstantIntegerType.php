@@ -21,8 +21,10 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 
 	private int $value;
 
+	/** @api */
 	public function __construct(int $value)
 	{
+		parent::__construct();
 		$this->value = $value;
 	}
 

@@ -18,3 +18,4 @@ parameters:
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true
 		preciseExceptionTracking: true
+		apiRules: true

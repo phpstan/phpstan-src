@@ -40,6 +40,7 @@ parameters:
 			- RecursiveIterator
 		rememberFunctionValues: false
 		preciseExceptionTracking: false
+		apiRules: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -208,7 +209,8 @@ parametersSchema:
 		objectFromNewClass: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
-		preciseExceptionTracking: bool()
+		preciseExceptionTracking: bool(),
+		apiRules: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -724,6 +726,9 @@ services:
 	-
 		class: PHPStan\Reflection\SignatureMap\SignatureMapProvider
 		factory: @PHPStan\Reflection\SignatureMap\SignatureMapProviderFactory::create()
+
+	-
+		class: PHPStan\Rules\Api\ApiRuleHelper
 
 	-
 		class: PHPStan\Rules\AttributesCheck

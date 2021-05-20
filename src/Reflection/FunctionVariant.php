@@ -20,6 +20,7 @@ class FunctionVariant implements ParametersAcceptor
 	private Type $returnType;
 
 	/**
+	 * @api
 	 * @param array<int, ParameterReflection> $parameters
 	 * @param bool $isVariadic
 	 * @param Type $returnType

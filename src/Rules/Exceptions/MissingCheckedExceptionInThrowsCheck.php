@@ -49,7 +49,7 @@ class MissingCheckedExceptionInThrowsCheck
 
 				if (
 					$throwPointType instanceof TypeWithClassName
-					&& !$this->exceptionTypeResolver->isCheckedException($throwPointType->getClassName())
+					&& !$this->exceptionTypeResolver->isCheckedException($throwPointType->getClassName(), $throwPoint->getScope())
 				) {
 					continue;
 				}

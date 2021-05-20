@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use PHPStan\Analyser\ScopeContext;
+use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\TestCase;
 
 class DefaultExceptionTypeResolverTest extends TestCase
@@ -140,7 +142,7 @@ class DefaultExceptionTypeResolverTest extends TestCase
 	): void
 	{
 		$resolver = new DefaultExceptionTypeResolver($this->createBroker(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
-		$this->assertSame($expectedResult, $resolver->isCheckedException($className));
+		$this->assertSame($expectedResult, $resolver->isCheckedException($className, self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create(__DIR__))));
 	}
 
 }

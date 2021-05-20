@@ -2,9 +2,11 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use PHPStan\Analyser\Scope;
+
 interface ExceptionTypeResolver
 {
 
-	public function isCheckedException(string $className): bool;
+	public function isCheckedException(string $className, Scope $scope): bool;
 
 }

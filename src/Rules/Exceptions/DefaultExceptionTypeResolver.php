@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Exceptions;
 
 use Nette\Utils\Strings;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 
 class DefaultExceptionTypeResolver implements ExceptionTypeResolver
@@ -44,7 +45,7 @@ class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 		$this->checkedExceptionClasses = $checkedExceptionClasses;
 	}
 
-	public function isCheckedException(string $className): bool
+	public function isCheckedException(string $className, Scope $scope): bool
 	{
 		foreach ($this->uncheckedExceptionRegexes as $regex) {
 			if (Strings::match($className, $regex) !== null) {

@@ -24,6 +24,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
+/** @api */
 class ObjectType implements TypeWithClassName, SubtractableType
 {
 

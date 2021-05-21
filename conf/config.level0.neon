@@ -5,6 +5,8 @@ parameters:
 conditionalTags:
 	PHPStan\Rules\Api\ApiInstantiationRule:
 		phpstan.rules.rule: %featureToggles.apiRules%
+	PHPStan\Rules\Api\ApiClassExtendsRule:
+		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Functions\ClosureUsesThisRule:
 		phpstan.rules.rule: %featureToggles.closureUsesThis%
 	PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule:
@@ -62,6 +64,9 @@ rules:
 services:
 	-
 		class: PHPStan\Rules\Api\ApiInstantiationRule
+
+	-
+		class: PHPStan\Rules\Api\ApiClassExtendsRule
 
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInInstanceOfRule

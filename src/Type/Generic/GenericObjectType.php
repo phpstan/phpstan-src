@@ -19,6 +19,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/** @api */
 class GenericObjectType extends ObjectType
 {
 

@@ -11,6 +11,11 @@ use PHPStan\Reflection\PropertyReflection;
 class OutOfClassScope implements ClassMemberAccessAnswerer
 {
 
+	/** @api */
+	public function __construct()
+	{
+	}
+
 	public function isInClass(): bool
 	{
 		return false;

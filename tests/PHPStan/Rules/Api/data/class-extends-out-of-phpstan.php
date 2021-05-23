@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace AppClassExtends;
 
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Type\FileTypeMapper;

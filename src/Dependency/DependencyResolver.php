@@ -17,6 +17,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionWithFilename;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Type;
 
 class DependencyResolver
 {
@@ -57,6 +58,7 @@ class DependencyResolver
 			$nativeMethod = $scope->getFunction();
 			if ($nativeMethod !== null) {
 				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($nativeMethod->getVariants());
+				$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
 				if ($parametersAcceptor instanceof \PHPStan\Reflection\ParametersAcceptorWithPhpDocs) {
 					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
 				}
@@ -64,6 +66,7 @@ class DependencyResolver
 		} elseif ($node instanceof InFunctionNode) {
 			$functionReflection = $scope->getFunction();
 			if ($functionReflection !== null) {
+				$this->extractThrowType($functionReflection->getThrowType(), $dependenciesReflections);
 				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
 				if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
@@ -265,6 +268,24 @@ class DependencyResolver
 			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses()
 		);
 		foreach ($returnTypeReferencedClasses as $referencedClass) {
+			$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+		}
+	}
+
+	/**
+	 * @param Type|null $throwType
+	 * @param ReflectionWithFilename[] $dependenciesReflections
+	 */
+	private function extractThrowType(
+		?Type $throwType,
+		array &$dependenciesReflections
+	): void
+	{
+		if ($throwType === null) {
+			return;
+		}
+
+		foreach ($throwType->getReferencedClasses() as $referencedClass) {
 			$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 		}
 	}

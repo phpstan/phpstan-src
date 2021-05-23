@@ -24,6 +24,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 
 /**
+ * @api
  * @template TRule of \PHPStan\Rules\Rule
  */
 abstract class RuleTestCase extends \PHPStan\Testing\TestCase

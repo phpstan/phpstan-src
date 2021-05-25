@@ -100,7 +100,9 @@ class ExportedNodeResolver
 		}
 
 		if ($node instanceof \PhpParser\Node\Stmt\Interface_ && isset($node->namespacedName)) {
-			$extendsNames = [];
+			$extendsNames = array_map(static function (Name $name): string {
+				return (string) $name;
+			}, $node->extends);
 			$docComment = $node->getDocComment();
 
 			$interfaceName = $node->namespacedName->toString();

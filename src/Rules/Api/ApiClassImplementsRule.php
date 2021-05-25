@@ -7,6 +7,8 @@ use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
+use PHPStan\PhpDoc\TypeNodeResolverAwareExtension;
+use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
@@ -108,6 +110,8 @@ class ApiClassImplementsRule implements Rule
 			AlwaysUsedClassConstantsExtension::class,
 			ReadWritePropertiesExtension::class,
 			ExceptionTypeResolver::class,
+			TypeNodeResolverExtension::class,
+			TypeNodeResolverAwareExtension::class,
 		], true)) {
 			return [];
 		}

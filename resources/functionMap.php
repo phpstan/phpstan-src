@@ -8012,7 +8012,7 @@ return [
 'odbc_do' => ['resource', 'connection_id'=>'resource', 'query'=>'string', 'flags='=>'int'],
 'odbc_error' => ['string', 'connection_id='=>'resource'],
 'odbc_errormsg' => ['string', 'connection_id='=>'resource'],
-'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string', 'flags='=>'int'], // Note: 'flags' was removed in PHP 8.0
+'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string', 'flags='=>'int'],
 'odbc_execute' => ['bool', 'result_id'=>'resource', 'parameters_array='=>'array'],
 'odbc_fetch_array' => ['array|false', 'result'=>'resource', 'rownumber='=>'int'],
 'odbc_fetch_into' => ['int|false', 'result_id'=>'resource', '&w_result_array'=>'array', 'rownumber='=>'int'],
@@ -12639,7 +12639,7 @@ return [
 'unixtojd' => ['int|false', 'timestamp='=>'int'],
 'unlink' => ['bool', 'filename'=>'string', 'context='=>'resource'],
 'unpack' => ['array|false', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],
-'unregister_tick_function' => ['void', 'callback'=>'callable'],
+'unregister_tick_function' => ['void', 'function_name'=>'callable'],
 'unserialize' => ['mixed', 'variable_representation'=>'string', 'allowed_classes='=>'array{allowed_classes?:string[]|bool}'],
 'unset' => ['void', 'var='=>'mixed', '...args='=>'mixed'],
 'untaint' => ['bool', '&rw_string'=>'string', '&...rw_strings='=>'string'],

@@ -10,8 +10,10 @@ use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\PhpDoc\TypeNodeResolverAwareExtension;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Reflection\BrokerAwareExtension;
+use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
@@ -93,6 +95,8 @@ class ApiClassImplementsRule implements Rule
 			MethodsClassReflectionExtension::class,
 			MethodReflection::class,
 			ParametersAcceptor::class,
+			ParameterReflection::class,
+			ClassMemberReflection::class,
 			DynamicMethodReturnTypeExtension::class,
 			DynamicFunctionReturnTypeExtension::class,
 			DynamicStaticMethodReturnTypeExtension::class,

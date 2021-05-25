@@ -131,7 +131,12 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	public function analyse(array $files, array $expectedErrors): void
 	{
 		$files = array_map([$this->getFileHelper(), 'normalizePath'], $files);
-		$analyserResult = $this->getAnalyser()->analyse($files);
+		$analyserResult = $this->getAnalyser()->analyse(
+			$files,
+			null,
+			null,
+			true
+		);
 		if (count($analyserResult->getInternalErrors()) > 0) {
 			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
 		}

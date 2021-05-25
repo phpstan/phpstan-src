@@ -1,6 +1,6 @@
 <?php
 
-namespace PHPStan\Foo;
+namespace PHPStan\ClassExtends;
 
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;

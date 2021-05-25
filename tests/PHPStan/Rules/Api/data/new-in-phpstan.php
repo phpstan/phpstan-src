@@ -1,6 +1,6 @@
 <?php
 
-namespace PHPStan\Foo;
+namespace PHPStan\NewIn;
 
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\Type\FileTypeMapper;

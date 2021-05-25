@@ -182,13 +182,13 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			return $this->hasClassCache[$className] = false;
 		}
 
-		$className = trim($className, '\\');
+		$className = ltrim($className, '\\');
 		if (isset($this->hasClassCache[$className])) {
 			return $this->hasClassCache[$className];
 		}
 
 		spl_autoload_register($autoloader = function (string $autoloadedClassName) use ($className): void {
-			$autoloadedClassName = trim($autoloadedClassName, '\\');
+			$autoloadedClassName = ltrim($autoloadedClassName, '\\');
 			if ($autoloadedClassName !== $className && !$this->isExistsCheckCall()) {
 				throw new ClassAutoloadingException($autoloadedClassName);
 			}

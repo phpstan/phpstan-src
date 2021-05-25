@@ -340,7 +340,24 @@ class InstantiationRuleTest extends RuleTestCase
 
 	public function testBug5002(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-5002.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-5002.php'], [
+			[
+				'Instantiated class \\\\Test\Foo not found.',
+				22,
+			],
+			[
+				'Instantiated class Test\\\\Foo not found.',
+				27,
+			],
+			[
+				'Instantiated class 0Test\Foo not found.',
+				32,
+			],
+			[
+				'Instantiated class Test\0Foo not found.',
+				37,
+			],
+		]);
 	}
 
 	public function testBug4681(): void

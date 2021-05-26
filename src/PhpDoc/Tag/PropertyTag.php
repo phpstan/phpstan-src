@@ -4,6 +4,7 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Type\Type;
 
+/** @api */
 class PropertyTag
 {
 

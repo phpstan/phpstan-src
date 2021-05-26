@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 
+/** @api */
 interface CompoundType extends Type
 {
 

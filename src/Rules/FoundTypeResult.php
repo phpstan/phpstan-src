@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PHPStan\Type\Type;
 
+/** @api */
 class FoundTypeResult
 {
 

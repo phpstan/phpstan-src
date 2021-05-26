@@ -5,6 +5,7 @@ namespace PHPStan\PhpDoc\Tag;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 
+/** @api */
 class TypeAliasTag
 {
 

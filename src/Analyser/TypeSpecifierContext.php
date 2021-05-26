@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+/** @api */
 class TypeSpecifierContext
 {
 

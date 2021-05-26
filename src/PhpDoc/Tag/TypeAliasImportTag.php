@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc\Tag;
 
+/** @api */
 final class TypeAliasImportTag
 {
 

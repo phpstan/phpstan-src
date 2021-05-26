@@ -29,6 +29,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 
+/** @api */
 class PhpMethodReflection implements MethodReflection
 {
 

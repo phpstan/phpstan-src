@@ -49,11 +49,13 @@ class RuleLevelHelper
 		$this->checkExplicitMixed = $checkExplicitMixed;
 	}
 
+	/** @api */
 	public function isThis(Expr $expression): bool
 	{
 		return $expression instanceof Expr\Variable && $expression->name === 'this';
 	}
 
+	/** @api */
 	public function accepts(Type $acceptingType, Type $acceptedType, bool $strictTypes): bool
 	{
 		if (
@@ -107,6 +109,7 @@ class RuleLevelHelper
 	}
 
 	/**
+	 * @api
 	 * @param Scope $scope
 	 * @param Expr $var
 	 * @param string $unknownClassErrorPattern

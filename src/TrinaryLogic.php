@@ -6,6 +6,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
 /**
+ * @api
  * @see https://en.wikipedia.org/wiki/Three-valued_logic
  */
 class TrinaryLogic

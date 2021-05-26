@@ -106,6 +106,7 @@ class TypeSpecifier
 		$this->staticMethodTypeSpecifyingExtensions = $staticMethodTypeSpecifyingExtensions;
 	}
 
+	/** @api */
 	public function specifyTypesInCondition(
 		Scope $scope,
 		Expr $expr,
@@ -896,6 +897,7 @@ class TypeSpecifier
 		return null;
 	}
 
+	/** @api */
 	public function create(
 		Expr $expr,
 		Type $type,

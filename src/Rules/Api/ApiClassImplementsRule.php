@@ -41,6 +41,35 @@ use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 class ApiClassImplementsRule implements Rule
 {
 
+	public const INTERFACES = [
+		PropertiesClassReflectionExtension::class,
+		PropertyReflection::class,
+		MethodsClassReflectionExtension::class,
+		MethodReflection::class,
+		ParametersAcceptor::class,
+		ParameterReflection::class,
+		ClassMemberReflection::class,
+		DynamicMethodReturnTypeExtension::class,
+		DynamicFunctionReturnTypeExtension::class,
+		DynamicStaticMethodReturnTypeExtension::class,
+		DynamicMethodThrowTypeExtension::class,
+		DynamicFunctionThrowTypeExtension::class,
+		DynamicStaticMethodThrowTypeExtension::class,
+		OperatorTypeSpecifyingExtension::class,
+		MethodTypeSpecifyingExtension::class,
+		FunctionTypeSpecifyingExtension::class,
+		StaticMethodTypeSpecifyingExtension::class,
+		ErrorFormatter::class,
+		Rule::class,
+		TypeSpecifierAwareExtension::class,
+		BrokerAwareExtension::class,
+		AlwaysUsedClassConstantsExtension::class,
+		ReadWritePropertiesExtension::class,
+		ExceptionTypeResolver::class,
+		TypeNodeResolverExtension::class,
+		TypeNodeResolverAwareExtension::class,
+	];
+
 	private ApiRuleHelper $apiRuleHelper;
 
 	private ReflectionProvider $reflectionProvider;
@@ -89,34 +118,7 @@ class ApiClassImplementsRule implements Rule
 			return [];
 		}
 
-		if (in_array($implementedClassReflection->getName(), [
-			PropertiesClassReflectionExtension::class,
-			PropertyReflection::class,
-			MethodsClassReflectionExtension::class,
-			MethodReflection::class,
-			ParametersAcceptor::class,
-			ParameterReflection::class,
-			ClassMemberReflection::class,
-			DynamicMethodReturnTypeExtension::class,
-			DynamicFunctionReturnTypeExtension::class,
-			DynamicStaticMethodReturnTypeExtension::class,
-			DynamicMethodThrowTypeExtension::class,
-			DynamicFunctionThrowTypeExtension::class,
-			DynamicStaticMethodThrowTypeExtension::class,
-			OperatorTypeSpecifyingExtension::class,
-			MethodTypeSpecifyingExtension::class,
-			FunctionTypeSpecifyingExtension::class,
-			StaticMethodTypeSpecifyingExtension::class,
-			ErrorFormatter::class,
-			Rule::class,
-			TypeSpecifierAwareExtension::class,
-			BrokerAwareExtension::class,
-			AlwaysUsedClassConstantsExtension::class,
-			ReadWritePropertiesExtension::class,
-			ExceptionTypeResolver::class,
-			TypeNodeResolverExtension::class,
-			TypeNodeResolverAwareExtension::class,
-		], true)) {
+		if (in_array($implementedClassReflection->getName(), self::INTERFACES, true)) {
 			return [];
 		}
 

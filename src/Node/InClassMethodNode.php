@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+/** @api */
 class InClassMethodNode extends \PhpParser\Node\Stmt implements VirtualNode
 {
 

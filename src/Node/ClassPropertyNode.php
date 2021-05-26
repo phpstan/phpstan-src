@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\UnionType;
 use PhpParser\NodeAbstract;
 
+/** @api */
 class ClassPropertyNode extends NodeAbstract implements VirtualNode
 {
 

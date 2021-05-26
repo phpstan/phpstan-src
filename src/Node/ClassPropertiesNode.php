@@ -18,6 +18,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 
+/** @api */
 class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 {
 

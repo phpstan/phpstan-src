@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Reflection\ClassReflection;
 
+/** @api */
 class InClassNode extends \PhpParser\Node\Stmt implements VirtualNode
 {
 

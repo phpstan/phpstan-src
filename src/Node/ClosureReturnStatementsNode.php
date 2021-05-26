@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
 
+/** @api */
 class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

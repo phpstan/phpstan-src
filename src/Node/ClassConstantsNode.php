@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Constant\ClassConstantFetch;
 
+/** @api */
 class ClassConstantsNode extends NodeAbstract implements VirtualNode
 {
 

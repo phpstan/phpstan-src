@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Stmt;
 
+/** @api */
 class UnreachableStatementNode extends Stmt implements VirtualNode
 {
 

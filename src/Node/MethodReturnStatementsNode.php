@@ -6,6 +6,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
 
+/** @api */
 class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

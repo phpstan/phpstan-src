@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PHPStan\Analyser\StatementResult;
 
+/** @api */
 interface ReturnStatementsNode extends VirtualNode
 {
 

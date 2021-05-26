@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\NodeAbstract;
 
+/** @api */
 class FileNode extends NodeAbstract implements VirtualNode
 {
 

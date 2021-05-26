@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
 
+/** @api */
 class ExecutionEndNode extends NodeAbstract implements VirtualNode
 {
 

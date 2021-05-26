@@ -140,6 +140,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	}
 
 	/**
+	 * @api
 	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
 	 * @param \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
 	 * @return \PHPStan\Broker\Broker
@@ -172,6 +173,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return $broker;
 	}
 
+	/** @api */
 	public function createReflectionProvider(): ReflectionProvider
 	{
 		$staticReflectionProvider = $this->createStaticReflectionProvider();

@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\NodeAbstract;
 
+/** @api */
 class LiteralArrayNode extends NodeAbstract implements VirtualNode
 {
 

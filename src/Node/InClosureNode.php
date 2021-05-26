@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\NodeAbstract;
 
+/** @api */
 class InClosureNode extends NodeAbstract implements VirtualNode
 {
 

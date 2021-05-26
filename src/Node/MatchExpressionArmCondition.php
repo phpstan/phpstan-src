@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 
+/** @api */
 class MatchExpressionArmCondition
 {
 

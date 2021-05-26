@@ -101,6 +101,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 	}
 
 	/**
+	 * @api
 	 * @param string $assertType
 	 * @param string $file
 	 * @param mixed ...$args
@@ -133,6 +134,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 	}
 
 	/**
+	 * @api
 	 * @param string $file
 	 * @return array<string, mixed[]>
 	 */

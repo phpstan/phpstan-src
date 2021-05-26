@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 
+/** @api */
 class ReturnStatement
 {
 

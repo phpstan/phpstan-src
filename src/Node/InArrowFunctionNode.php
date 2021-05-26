@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\NodeAbstract;
 
+/** @api */
 class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 {
 

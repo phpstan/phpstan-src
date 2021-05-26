@@ -9,6 +9,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Api\ApiClassImplementsRule:
 		phpstan.rules.rule: %featureToggles.apiRules%
+	PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule:
+		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Functions\ClosureUsesThisRule:
 		phpstan.rules.rule: %featureToggles.closureUsesThis%
 	PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule:
@@ -72,6 +74,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Api\ApiClassImplementsRule
+
+	-
+		class: PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
 
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInInstanceOfRule

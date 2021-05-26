@@ -83,7 +83,7 @@ class UnionType implements CompoundType
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
 	{
-		if ($otherType instanceof self || $otherType instanceof IterableType) {
+		if ($otherType instanceof self || $otherType instanceof ImplementsSubTypeOfUnion) {
 			return $otherType->isSubTypeOf($this);
 		}
 

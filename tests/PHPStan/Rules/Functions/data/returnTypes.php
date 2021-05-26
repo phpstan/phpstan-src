@@ -180,3 +180,25 @@ function returnNever()
 {
 	return;
 }
+
+/**
+ * @return 1|2|3|4|5|6|7|8
+ */
+function returnRange(int $x) : int {
+	if ($x < 1 || $x > 8) {
+		throw new InvalidArgumentException;
+	}
+
+	return $x;
+}
+
+/**
+ * @return 1|2|3|4|5|6|7
+ */
+function returnRangeBad(int $x) : int {
+	if ($x < 1 || $x > 8) {
+		throw new InvalidArgumentException;
+	}
+
+	return $x;
+}

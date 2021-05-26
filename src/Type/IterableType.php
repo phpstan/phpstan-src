@@ -14,7 +14,7 @@ use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
-class IterableType implements CompoundType
+class IterableType implements CompoundType, ImplementsSubTypeOfUnion
 {
 
 	use MaybeCallableTypeTrait;

@@ -268,11 +268,13 @@ class MutatingScope implements Scope
 		$this->parentScope = $parentScope;
 	}
 
+	/** @api */
 	public function getFile(): string
 	{
 		return $this->context->getFile();
 	}
 
+	/** @api */
 	public function getFileDescription(): string
 	{
 		if ($this->context->getTraitReflection() === null) {
@@ -299,6 +301,7 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function isDeclareStrictTypes(): bool
 	{
 		return $this->declareStrictTypes;
@@ -316,27 +319,32 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function isInClass(): bool
 	{
 		return $this->context->getClassReflection() !== null;
 	}
 
+	/** @api */
 	public function isInTrait(): bool
 	{
 		return $this->context->getTraitReflection() !== null;
 	}
 
+	/** @api */
 	public function getClassReflection(): ?ClassReflection
 	{
 		return $this->context->getClassReflection();
 	}
 
+	/** @api */
 	public function getTraitReflection(): ?ClassReflection
 	{
 		return $this->context->getTraitReflection();
 	}
 
 	/**
+	 * @api
 	 * @return \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null
 	 */
 	public function getFunction()
@@ -344,16 +352,19 @@ class MutatingScope implements Scope
 		return $this->function;
 	}
 
+	/** @api */
 	public function getFunctionName(): ?string
 	{
 		return $this->function !== null ? $this->function->getName() : null;
 	}
 
+	/** @api */
 	public function getNamespace(): ?string
 	{
 		return $this->namespace;
 	}
 
+	/** @api */
 	public function getParentScope(): ?Scope
 	{
 		return $this->parentScope;
@@ -367,6 +378,7 @@ class MutatingScope implements Scope
 		return $this->variableTypes;
 	}
 
+	/** @api */
 	public function canAnyVariableExist(): bool
 	{
 		return ($this->function === null && !$this->isInAnonymousFunction()) || $this->afterExtractCall;
@@ -449,6 +461,7 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
 		if ($this->isGlobalVariable($variableName)) {
@@ -466,6 +479,7 @@ class MutatingScope implements Scope
 		return $this->variableTypes[$variableName]->getCertainty();
 	}
 
+	/** @api */
 	public function getVariableType(string $variableName): Type
 	{
 		if ($this->isGlobalVariable($variableName)) {
@@ -484,6 +498,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @api
 	 * @return array<int, string>
 	 */
 	public function getDefinedVariables(): array
@@ -515,6 +530,7 @@ class MutatingScope implements Scope
 		], true);
 	}
 
+	/** @api */
 	public function hasConstant(Name $name): bool
 	{
 		$isCompilerHaltOffset = $name->toString() === '__COMPILER_HALT_OFFSET__';
@@ -560,16 +576,19 @@ class MutatingScope implements Scope
 		return false;
 	}
 
+	/** @api */
 	public function isInAnonymousFunction(): bool
 	{
 		return $this->anonymousFunctionReflection !== null;
 	}
 
+	/** @api */
 	public function getAnonymousFunctionReflection(): ?ParametersAcceptor
 	{
 		return $this->anonymousFunctionReflection;
 	}
 
+	/** @api */
 	public function getAnonymousFunctionReturnType(): ?\PHPStan\Type\Type
 	{
 		if ($this->anonymousFunctionReflection === null) {
@@ -579,6 +598,7 @@ class MutatingScope implements Scope
 		return $this->anonymousFunctionReflection->getReturnType();
 	}
 
+	/** @api */
 	public function getType(Expr $node): Type
 	{
 		$key = $this->getNodeKey($node);
@@ -2155,6 +2175,7 @@ class MutatingScope implements Scope
 		return $constantType;
 	}
 
+	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
 		$key = $this->getNodeKey($expr);
@@ -2177,6 +2198,7 @@ class MutatingScope implements Scope
 		return $this->getType($expr);
 	}
 
+	/** @api */
 	public function doNotTreatPhpDocTypesAsCertain(): Scope
 	{
 		if (!$this->treatPhpDocTypesAsCertain) {
@@ -2409,6 +2431,7 @@ class MutatingScope implements Scope
 		return $originalClass;
 	}
 
+	/** @api */
 	public function resolveName(Name $name): string
 	{
 		$originalClass = (string) $name;
@@ -2432,6 +2455,7 @@ class MutatingScope implements Scope
 		return $originalClass;
 	}
 
+	/** @api */
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
 		if ($name->toLowerString() === 'static' && $this->isInClass()) {
@@ -2459,6 +2483,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @api
 	 * @param mixed $value
 	 */
 	public function getTypeFromValue($value): Type
@@ -2466,6 +2491,7 @@ class MutatingScope implements Scope
 		return ConstantTypeHelper::getTypeFromValue($value);
 	}
 
+	/** @api */
 	public function isSpecified(Expr $node): bool
 	{
 		$exprString = $this->getNodeKey($node);
@@ -2528,6 +2554,7 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function isInClassExists(string $className): bool
 	{
 		foreach ($this->inFunctionCallsStack as $inFunctionCall) {
@@ -2550,6 +2577,7 @@ class MutatingScope implements Scope
 		return (new ConstantBooleanType(true))->isSuperTypeOf($this->getType($expr))->yes();
 	}
 
+	/** @api */
 	public function enterClass(ClassReflection $classReflection): self
 	{
 		return $this->scopeFactory->create(
@@ -2581,6 +2609,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @api
 	 * @param Node\Stmt\ClassMethod $classMethod
 	 * @param TemplateTypeMap $templateTypeMap
 	 * @param Type[] $phpDocParameterTypes
@@ -2694,6 +2723,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @api
 	 * @param Node\Stmt\Function_ $function
 	 * @param TemplateTypeMap $templateTypeMap
 	 * @param Type[] $phpDocParameterTypes
@@ -2859,12 +2889,14 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function isInClosureBind(): bool
 	{
 		return $this->inClosureBindScopeClass !== null;
 	}
 
 	/**
+	 * @api
 	 * @param \PhpParser\Node\Expr\Closure $closure
 	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
 	 * @return self
@@ -2994,6 +3026,7 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction): self
 	{
 		$anonymousFunctionReflection = $this->getType($arrowFunction);
@@ -3133,6 +3166,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @api
 	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $type
 	 * @param bool $isNullable
 	 * @param bool $isVariadic
@@ -3270,6 +3304,7 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function isInExpressionAssign(Expr $expr): bool
 	{
 		$exprString = $this->getNodeKey($expr);
@@ -3602,6 +3637,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @api
 	 * @param \PhpParser\Node\Expr $expr
 	 * @return \PHPStan\Analyser\MutatingScope
 	 */
@@ -3612,6 +3648,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @api
 	 * @param \PhpParser\Node\Expr $expr
 	 * @return \PHPStan\Analyser\MutatingScope
 	 */
@@ -3829,6 +3866,7 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function isInFirstLevelStatement(): bool
 	{
 		return $this->inFirstLevelStatement;
@@ -4558,11 +4596,13 @@ class MutatingScope implements Scope
 		return true;
 	}
 
+	/** @api */
 	public function canAccessProperty(PropertyReflection $propertyReflection): bool
 	{
 		return $this->canAccessClassMember($propertyReflection);
 	}
 
+	/** @api */
 	public function canCallMethod(MethodReflection $methodReflection): bool
 	{
 		if ($this->canAccessClassMember($methodReflection)) {
@@ -4572,6 +4612,7 @@ class MutatingScope implements Scope
 		return $this->canAccessClassMember($methodReflection->getPrototype());
 	}
 
+	/** @api */
 	public function canAccessConstant(ConstantReflection $constantReflection): bool
 	{
 		return $this->canAccessClassMember($constantReflection);
@@ -4782,6 +4823,7 @@ class MutatingScope implements Scope
 		return $decidedType;
 	}
 
+	/** @api */
 	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?MethodReflection
 	{
 		if ($typeWithMethod instanceof UnionType) {
@@ -4851,6 +4893,7 @@ class MutatingScope implements Scope
 		)->getReturnType();
 	}
 
+	/** @api */
 	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?PropertyReflection
 	{
 		if ($typeWithProperty instanceof UnionType) {

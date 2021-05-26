@@ -8,6 +8,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 
+/** @api */
 class ConstantTypeHelper
 {
 

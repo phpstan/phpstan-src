@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
+/** @api */
 class ConstantArrayTypeAndMethod
 {
 

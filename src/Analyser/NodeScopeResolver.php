@@ -223,6 +223,7 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * @api
 	 * @param string[] $files
 	 */
 	public function setAnalysedFiles(array $files): void

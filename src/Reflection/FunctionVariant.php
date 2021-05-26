@@ -5,6 +5,7 @@ namespace PHPStan\Reflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
+/** @api */
 class FunctionVariant implements ParametersAcceptor
 {
 

@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassReflection;
 
+/** @api */
 class ThisType extends StaticType
 {
 

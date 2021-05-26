@@ -6,6 +6,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 
+/** @api */
 class ClassStringType extends StringType
 {
 

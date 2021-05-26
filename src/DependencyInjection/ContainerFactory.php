@@ -43,6 +43,7 @@ class ContainerFactory
 	}
 
 	/**
+	 * @api
 	 * @param string $tempDirectory
 	 * @param string[] $additionalConfigFiles
 	 * @param string[] $analysedPaths

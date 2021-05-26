@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Type;
 
+/** @api */
 interface TemplateType extends CompoundType
 {
 

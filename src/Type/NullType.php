@@ -14,6 +14,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 
+/** @api */
 class NullType implements ConstantScalarType
 {
 

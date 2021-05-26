@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+/** @api */
 interface ConstantReflection extends ClassMemberReflection, GlobalConstantReflection
 {
 

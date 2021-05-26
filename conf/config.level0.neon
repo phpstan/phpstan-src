@@ -11,6 +11,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Api\ApiInterfaceExtendsRule:
 		phpstan.rules.rule: %featureToggles.apiRules%
+	PHPStan\Rules\Api\ApiMethodCallRule:
+		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule:
 		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Functions\ClosureUsesThisRule:
@@ -79,6 +81,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Api\ApiInterfaceExtendsRule
+
+	-
+		class: PHPStan\Rules\Api\ApiMethodCallRule
 
 	-
 		class: PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule

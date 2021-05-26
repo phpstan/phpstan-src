@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
+/** @api */
 interface Type
 {
 

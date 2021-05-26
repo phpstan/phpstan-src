@@ -6,6 +6,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 
+/** @api */
 class NameScope
 {
 

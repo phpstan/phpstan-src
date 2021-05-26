@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Analyser\Scope;
 
+/** @api */
 interface ReflectionProvider
 {
 

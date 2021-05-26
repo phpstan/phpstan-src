@@ -12,6 +12,7 @@ use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/** @api */
 class ConstantIntegerType extends IntegerType implements ConstantScalarType
 {
 

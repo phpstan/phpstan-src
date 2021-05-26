@@ -7,6 +7,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
+/** @api */
 class ObjectWithoutClassType implements SubtractableType
 {
 

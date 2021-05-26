@@ -12,6 +12,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
+/** @api */
 class ResourceType implements Type
 {
 

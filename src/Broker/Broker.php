@@ -12,6 +12,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
 use PHPStan\Type\Type;
 
+/** @api */
 class Broker implements ReflectionProvider
 {
 

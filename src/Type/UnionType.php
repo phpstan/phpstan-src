@@ -17,6 +17,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
+/** @api */
 class UnionType implements CompoundType
 {
 

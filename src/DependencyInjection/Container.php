@@ -2,6 +2,7 @@
 
 namespace PHPStan\DependencyInjection;
 
+/** @api */
 interface Container
 {
 

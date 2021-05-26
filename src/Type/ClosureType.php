@@ -22,6 +22,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
+/** @api */
 class ClosureType implements TypeWithClassName, ParametersAcceptor
 {
 

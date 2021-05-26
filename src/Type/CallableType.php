@@ -16,6 +16,7 @@ use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
+/** @api */
 class CallableType implements CompoundType, ParametersAcceptor
 {
 

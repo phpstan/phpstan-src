@@ -11,6 +11,7 @@ use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
+/** @api */
 class ConstantFloatType extends FloatType implements ConstantScalarType
 {
 

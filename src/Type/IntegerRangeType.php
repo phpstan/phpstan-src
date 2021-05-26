@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
+/** @api */
 class IntegerRangeType extends IntegerType implements CompoundType
 {
 

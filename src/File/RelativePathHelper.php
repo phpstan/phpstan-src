@@ -2,6 +2,7 @@
 
 namespace PHPStan\File;
 
+/** @api */
 interface RelativePathHelper
 {
 

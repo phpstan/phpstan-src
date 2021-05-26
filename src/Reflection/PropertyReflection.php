@@ -5,6 +5,7 @@ namespace PHPStan\Reflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
+/** @api */
 interface PropertyReflection extends ClassMemberReflection
 {
 

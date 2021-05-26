@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parser;
 
+/** @api */
 interface Parser
 {
 

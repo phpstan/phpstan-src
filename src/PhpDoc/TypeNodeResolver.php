@@ -82,6 +82,7 @@ class TypeNodeResolver
 		$this->container = $container;
 	}
 
+	/** @api */
 	public function resolve(TypeNode $typeNode, NameScope $nameScope): Type
 	{
 		foreach ($this->extensionRegistryProvider->getRegistry()->getExtensions() as $extension) {

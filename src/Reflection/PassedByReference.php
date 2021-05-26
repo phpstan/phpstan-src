@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+/** @api */
 class PassedByReference
 {
 

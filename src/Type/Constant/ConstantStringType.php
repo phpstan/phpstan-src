@@ -25,6 +25,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
+/** @api */
 class ConstantStringType extends StringType implements ConstantScalarType
 {
 

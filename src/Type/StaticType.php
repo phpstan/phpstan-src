@@ -18,6 +18,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
+/** @api */
 class StaticType implements TypeWithClassName
 {
 

@@ -11,6 +11,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
+/** @api */
 class VoidType implements Type
 {
 

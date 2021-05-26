@@ -18,6 +18,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
+/** @api */
 class IntersectionType implements CompoundType
 {
 

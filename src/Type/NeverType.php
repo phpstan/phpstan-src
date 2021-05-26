@@ -14,6 +14,7 @@ use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
+/** @api */
 class NeverType implements CompoundType
 {
 

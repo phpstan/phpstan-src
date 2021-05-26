@@ -27,6 +27,7 @@ class TableErrorFormatter implements ErrorFormatter
 		$this->editorUrl = $editorUrl;
 	}
 
+	/** @api */
 	public function formatErrors(
 		AnalysisResult $analysisResult,
 		Output $output

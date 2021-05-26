@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+/** @api */
 interface ConstantType extends Type
 {
 

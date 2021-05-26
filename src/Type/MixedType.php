@@ -23,6 +23,7 @@ use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
+/** @api */
 class MixedType implements CompoundType, SubtractableType
 {
 

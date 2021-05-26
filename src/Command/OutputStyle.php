@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+/** @api */
 interface OutputStyle
 {
 

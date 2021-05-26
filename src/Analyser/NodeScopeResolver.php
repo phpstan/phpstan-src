@@ -231,6 +231,7 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * @api
 	 * @param \PhpParser\Node[] $nodes
 	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback

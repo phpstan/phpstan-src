@@ -2,6 +2,7 @@
 
 namespace PHPStan\Php;
 
+/** @api */
 class PhpVersion
 {
 

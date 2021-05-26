@@ -9,6 +9,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 
+/** @api */
 class PhpPropertyReflection implements PropertyReflection
 {
 

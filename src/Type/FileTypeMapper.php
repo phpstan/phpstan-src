@@ -75,6 +75,7 @@ class FileTypeMapper
 		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 	}
 
+	/** @api */
 	public function getResolvedPhpDoc(
 		string $fileName,
 		?string $className,

@@ -30,6 +30,9 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_unique;
 
+/**
+ * @api
+ */
 class ConstantArrayType extends ArrayType implements ConstantType
 {
 

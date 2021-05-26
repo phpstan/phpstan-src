@@ -28,6 +28,7 @@ use PHPStan\Type\TypeAlias;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionMethod;
 
+/** @api */
 class ClassReflection implements ReflectionWithFilename
 {
 

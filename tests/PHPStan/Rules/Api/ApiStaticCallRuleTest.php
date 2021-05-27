@@ -30,7 +30,12 @@ class ApiStaticCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/static-call-out-of-phpstan.php'], [
 			[
 				'Calling PHPStan\Command\CommandHelper::begin() is not covered by backward compatibility promise. The method might change in a minor PHPStan version.',
-				15,
+				17,
+				$tip,
+			],
+			[
+				'Calling PHPStan\Node\InClassNode::__construct() is not covered by backward compatibility promise. The method might change in a minor PHPStan version.',
+				33,
 				$tip,
 			],
 		]);

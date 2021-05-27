@@ -84,7 +84,7 @@ class ApiStaticCallRule implements Rule
 	{
 		$declaringClass = $methodReflection->getDeclaringClass();
 		$classDocBlock = $declaringClass->getResolvedPhpDoc();
-		if ($classDocBlock !== null) {
+		if ($methodReflection->getName() !== '__construct' && $classDocBlock !== null) {
 			foreach ($classDocBlock->getPhpDocNodes() as $phpDocNode) {
 				$apiTags = $phpDocNode->getTagsByName('@api');
 				if (count($apiTags) > 0) {

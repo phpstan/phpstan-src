@@ -212,6 +212,10 @@ class AnalyseApplication
 
 	private function updateMemoryLimitFile(): void
 	{
+		if (in_array(strtolower((string) ini_get('display_errors')), ['1', 'on'], true) && (error_reporting() & \E_ERROR) !== 0) { // log only if fatal error can be displayed
+			return;
+		}
+
 		$bytes = memory_get_peak_usage(true);
 		$megabytes = ceil($bytes / 1024 / 1024);
 		file_put_contents($this->memoryLimitFile, sprintf('%d MB', $megabytes));

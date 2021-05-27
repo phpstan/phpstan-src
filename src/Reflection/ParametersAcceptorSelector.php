@@ -9,6 +9,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 
+/** @api */
 class ParametersAcceptorSelector
 {
 

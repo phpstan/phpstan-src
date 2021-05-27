@@ -92,6 +92,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	/** @var PhpStormStubsSourceStubber|null */
 	private static $phpStormStubsSourceStubber;
 
+	/** @api */
 	public static function getContainer(): Container
 	{
 		$additionalConfigFiles = static::getAdditionalConfigFiles();

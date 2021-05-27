@@ -7,6 +7,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 
+/** @api */
 class TypeUtils
 {
 

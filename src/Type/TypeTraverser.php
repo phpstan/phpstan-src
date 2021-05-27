@@ -30,6 +30,7 @@ class TypeTraverser
 	 *     return new MixedType();
 	 * });
 	 *
+	 * @api
 	 * @param callable(Type $type, callable(Type): Type $traverse): Type $cb
 	 */
 	public static function map(Type $type, callable $cb): Type

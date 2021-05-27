@@ -10,9 +10,8 @@ class GenericParametersAcceptorResolver
 {
 
 	/**
-	 * Resolve template types
-	 *
-	 * @param \PHPStan\Type\Type[] $argTypes Unpacked arguments
+	 * @api
+	 * @param \PHPStan\Type\Type[] $argTypes
 	 */
 	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
 	{

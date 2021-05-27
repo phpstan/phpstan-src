@@ -24,6 +24,7 @@ class ScopeContext
 		$this->traitReflection = $traitReflection;
 	}
 
+	/** @api */
 	public static function create(string $file): self
 	{
 		return new self($file, null, null);

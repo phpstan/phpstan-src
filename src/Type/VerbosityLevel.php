@@ -31,26 +31,31 @@ class VerbosityLevel
 		return self::$registry[$value];
 	}
 
+	/** @api */
 	public static function typeOnly(): self
 	{
 		return self::create(self::TYPE_ONLY);
 	}
 
+	/** @api */
 	public static function value(): self
 	{
 		return self::create(self::VALUE);
 	}
 
+	/** @api */
 	public static function precise(): self
 	{
 		return self::create(self::PRECISE);
 	}
 
+	/** @api */
 	public static function cache(): self
 	{
 		return self::create(self::CACHE);
 	}
 
+	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
 		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose): Type {

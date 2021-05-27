@@ -15,6 +15,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Api\ApiStaticCallRule:
 		phpstan.rules.rule: %featureToggles.apiRules%
+	PHPStan\Rules\Api\ApiTraitUseRule:
+		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule:
 		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Functions\ClosureUsesThisRule:
@@ -89,6 +91,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Api\ApiStaticCallRule
+
+	-
+		class: PHPStan\Rules\Api\ApiTraitUseRule
 
 	-
 		class: PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule

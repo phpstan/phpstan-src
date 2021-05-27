@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "01c0e6a72cabeb5130f0df5f587bcaed",
+    "content-hash": "97402e073114107aff7d70fbff3d7d69",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2074,24 +2074,23 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.57",
+            "version": "4.3.58",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "37beae8f792c0bc1c1bf616f19a52a966d29e001"
+                "reference": "32de560c55ec930dd6e1688dfd9e18daefc2e619"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/37beae8f792c0bc1c1bf616f19a52a966d29e001",
-                "reference": "37beae8f792c0bc1c1bf616f19a52a966d29e001",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/32de560c55ec930dd6e1688dfd9e18daefc2e619",
+                "reference": "32de560c55ec930dd6e1688dfd9e18daefc2e619",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "dev-master#0a73df114cdea7f30c8b5f6fbfbf8e6839a89e88",
                 "nikic/php-parser": "4.10.5",
-                "php": ">=7.1.0",
-                "roave/signature": "1.1.0"
+                "php": ">=7.1.0"
             },
             "require-dev": {
                 "phpstan/phpstan": "^0.12.49",
@@ -2139,9 +2138,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.57"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.58"
             },
-            "time": "2021-05-04T11:07:19+00:00"
+            "time": "2021-05-27T14:31:39+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
@@ -3080,45 +3079,6 @@
                 "source": "https://github.com/ringcentral/psr7/tree/master"
             },
             "time": "2018-05-29T20:21:04+00:00"
-        },
-        {
-            "name": "roave/signature",
-            "version": "1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Roave/Signature.git",
-                "reference": "c4e8a59946bad694ab5682a76e7884a9157a8a2c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Roave/Signature/zipball/c4e8a59946bad694ab5682a76e7884a9157a8a2c",
-                "reference": "c4e8a59946bad694ab5682a76e7884a9157a8a2c",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1 || ^7.2"
-            },
-            "require-dev": {
-                "infection/infection": "^0.7.1",
-                "phpunit/phpunit": "^7.0",
-                "squizlabs/php_codesniffer": "^3.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Roave\\Signature\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Sign and verify stuff",
-            "support": {
-                "issues": "https://github.com/Roave/Signature/issues",
-                "source": "https://github.com/Roave/Signature/tree/1.1.0"
-            },
-            "time": "2020-10-01T07:27:11+00:00"
         },
         {
             "name": "symfony/console",

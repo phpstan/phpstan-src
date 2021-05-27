@@ -2289,6 +2289,7 @@ class MutatingScope implements Scope
 		return !$propertyReflection->getNativeType() instanceof MixedType;
 	}
 
+	/** @api */
 	protected function getTypeFromArrayDimFetch(
 		Expr\ArrayDimFetch $arrayDimFetch,
 		Type $offsetType,

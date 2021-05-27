@@ -17,6 +17,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateUnionType;
 
+/** @api */
 class TypeCombinator
 {
 

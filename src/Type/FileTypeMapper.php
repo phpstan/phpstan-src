@@ -64,7 +64,8 @@ class FileTypeMapper
 		PhpDocStringResolver $phpDocStringResolver,
 		PhpDocNodeResolver $phpDocNodeResolver,
 		Cache $cache,
-		AnonymousClassNameHelper $anonymousClassNameHelper
+		AnonymousClassNameHelper $anonymousClassNameHelper,
+		bool $thisIsFine
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;
@@ -81,7 +82,8 @@ class FileTypeMapper
 		?string $className,
 		?string $traitName,
 		?string $functionName,
-		string $docComment
+		string $docComment,
+		int $thisIsNotFine
 	): ResolvedPhpDocBlock
 	{
 		if ($className === null && $traitName !== null) {

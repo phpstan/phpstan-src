@@ -142,6 +142,8 @@ interface Type
 	 */
 	public function traverse(callable $cb): Type;
 
+	public function thisIsFine(): void;
+
 	/**
 	 * @param mixed[] $properties
 	 * @return self

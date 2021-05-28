@@ -14,4 +14,6 @@ interface DynamicFunctionReturnTypeExtension
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type;
 
+	public function thisIsNotFine(): void;
+
 }

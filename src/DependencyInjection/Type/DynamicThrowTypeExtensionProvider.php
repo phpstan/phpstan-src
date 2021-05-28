@@ -10,12 +10,14 @@ interface DynamicThrowTypeExtensionProvider
 {
 
 	/** @return DynamicFunctionThrowTypeExtension[] */
-	public function getDynamicFunctionThrowTypeExtensions(): array;
+	public function getDynamicFunctionThrowTypeExtensions(string $thisIsFine): array;
 
 	/** @return DynamicMethodThrowTypeExtension[] */
 	public function getDynamicMethodThrowTypeExtensions(): array;
 
 	/** @return DynamicStaticMethodThrowTypeExtension[] */
 	public function getDynamicStaticMethodThrowTypeExtensions(): array;
+
+	public function thisIsFine(): void;
 
 }

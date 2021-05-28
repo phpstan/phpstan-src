@@ -62,6 +62,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @api */
 	public function __construct(
 		string $className,
+		int $thisIsNotFine,
 		?Type $subtractedType = null,
 		?ClassReflection $classReflection = null
 	)

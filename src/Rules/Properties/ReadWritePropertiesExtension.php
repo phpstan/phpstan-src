@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Reflection\PropertyReflection;
 
+/** @api */
 interface ReadWritePropertiesExtension
 {
 

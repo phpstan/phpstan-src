@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 
+/** @api */
 interface DynamicFunctionReturnTypeExtension
 {
 

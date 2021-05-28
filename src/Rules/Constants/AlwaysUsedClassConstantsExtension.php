@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PHPStan\Reflection\ConstantReflection;
 
+/** @api */
 interface AlwaysUsedClassConstantsExtension
 {
 

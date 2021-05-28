@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Analyser\Scope;
 
+/** @api */
 interface ExceptionTypeResolver
 {
 

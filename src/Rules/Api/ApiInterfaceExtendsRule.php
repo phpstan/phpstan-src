@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Type;
 
 /**
  * @implements Rule<Interface_>
@@ -64,10 +65,6 @@ class ApiInterfaceExtendsRule implements Rule
 			return [];
 		}
 
-		if (in_array($extendedInterfaceReflection->getName(), ApiClassImplementsRule::INTERFACES, true)) {
-			return [];
-		}
-
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Extending %s is not covered by backward compatibility promise. The interface might change in a minor PHPStan version.',
 			$extendedInterfaceReflection->getDisplayName()
@@ -75,6 +72,22 @@ class ApiInterfaceExtendsRule implements Rule
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
 			'https://github.com/phpstan/phpstan/discussions'
 		))->build();
+
+		if ($extendedInterfaceReflection->getName() === Type::class) {
+			return [$ruleError];
+		}
+
+		$docBlock = $extendedInterfaceReflection->getResolvedPhpDoc();
+		if ($docBlock === null) {
+			return [$ruleError];
+		}
+
+		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
+			$apiTags = $phpDocNode->getTagsByName('@api');
+			if (count($apiTags) > 0) {
+				return [];
+			}
+		}
 
 		return [$ruleError];
 	}

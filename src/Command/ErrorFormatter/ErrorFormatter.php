@@ -5,6 +5,7 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 
+/** @api */
 interface ErrorFormatter
 {
 

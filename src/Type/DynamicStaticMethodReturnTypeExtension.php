@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 
+/** @api */
 interface DynamicStaticMethodReturnTypeExtension
 {
 

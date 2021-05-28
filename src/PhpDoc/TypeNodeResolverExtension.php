@@ -6,6 +6,7 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\Type;
 
+/** @api */
 interface TypeNodeResolverExtension
 {
 

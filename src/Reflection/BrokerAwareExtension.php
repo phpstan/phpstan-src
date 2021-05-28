@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Broker\Broker;
 
+/** @api */
 interface BrokerAwareExtension
 {
 

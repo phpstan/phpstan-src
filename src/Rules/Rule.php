@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
+ * @api
  * @phpstan-template TNodeType of \PhpParser\Node
  */
 interface Rule

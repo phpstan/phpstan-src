@@ -47,6 +47,11 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		return $this->statementResult;
 	}
 
+	public function getClassMethod(): ClassMethod
+	{
+		return $this->classMethod;
+	}
+
 	public function returnsByRef(): bool
 	{
 		return $this->classMethod->byRef;

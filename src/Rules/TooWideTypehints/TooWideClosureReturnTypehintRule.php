@@ -72,7 +72,7 @@ class TooWideClosureReturnTypehintRule implements Rule
 
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Anonymous function never returns %s so it can be removed from the return typehint.',
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::getRecommendedLevelByType($type))
 			))->build();
 		}
 

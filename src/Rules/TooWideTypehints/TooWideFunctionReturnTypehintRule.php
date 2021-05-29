@@ -70,7 +70,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() never returns %s so it can be removed from the return typehint.',
 				$function->getName(),
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::getRecommendedLevelByType($type))
 			))->build();
 		}
 

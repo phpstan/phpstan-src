@@ -66,4 +66,14 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5095(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5095.php'], [
+			[
+				'Method Bug5095\Parser::unaryOperatorFor() never returns \'not\' so it can be removed from the return typehint.',
+				21,
+			],
+		]);
+	}
+
 }

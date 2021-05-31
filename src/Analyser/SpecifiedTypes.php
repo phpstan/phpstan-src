@@ -39,6 +39,7 @@ class SpecifiedTypes
 	}
 
 	/**
+	 * @api
 	 * @return mixed[]
 	 */
 	public function getSureTypes(): array
@@ -47,6 +48,7 @@ class SpecifiedTypes
 	}
 
 	/**
+	 * @api
 	 * @return mixed[]
 	 */
 	public function getSureNotTypes(): array

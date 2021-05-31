@@ -6,8 +6,14 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
+/** @api */
 class TrivialParametersAcceptor implements ParametersAcceptor
 {
+
+	/** @api */
+	public function __construct()
+	{
+	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{

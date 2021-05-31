@@ -694,6 +694,7 @@ class TypeNodeResolver
 	}
 
 	/**
+	 * @api
 	 * @param TypeNode[] $typeNodes
 	 * @param NameScope $nameScope
 	 * @return Type[]

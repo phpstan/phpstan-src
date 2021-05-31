@@ -75,6 +75,7 @@ use PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 
+/** @api */
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
 

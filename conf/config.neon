@@ -1121,6 +1121,26 @@ services:
 			- phpstan.dynamicFunctionThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ReflectionClassConstructorThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionFunctionConstructorThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionMethodConstructorThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionPropertyConstructorThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension
 		tags:
 			- phpstan.broker.propertiesClassReflectionExtension

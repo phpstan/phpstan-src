@@ -333,3 +333,162 @@ class TestSimpleXMLElement
 	}
 
 }
+
+class TestReflectionClass
+{
+
+	public function doFoo(): void
+	{
+		try {
+			new \ReflectionClass(\DateTime::class);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \ReflectionClass('ThisIsNotARealClass');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \ReflectionClass($string);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}
+
+class TestReflectionFunction
+{
+
+	public function doFoo(): void
+	{
+		try {
+			new \ReflectionFunction('is_string');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \ReflectionFunction('foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \ReflectionFunction($string);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}
+
+class TestReflectionMethod
+{
+
+	public function doFoo(): void
+	{
+		try {
+			new \ReflectionMethod(\DateTime::class, 'format');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \ReflectionMethod('foo', 'format');
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionMethod(\DateTime::class, 'foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \ReflectionMethod($string, $string);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionMethod(\DateTime::class, $string);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionMethod($string, 'foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}
+
+class TestReflectionProperty
+{
+	public $foo;
+
+	public function doFoo(): void
+	{
+		try {
+			new \ReflectionProperty(self::class, 'foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \ReflectionProperty(self::class, 'bar');
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionProperty(\DateTime::class, 'bar');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \ReflectionProperty($string, $string);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionProperty(self::class, $string);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionProperty($string, 'foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}

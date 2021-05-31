@@ -7,11 +7,7 @@ class ApiRuleHelper
 
 	public function isCalledFromPhpStan(?string $namespace): bool
 	{
-		if ($namespace === null) {
-			return false;
-		}
-
-		return $this->isPhpStanCode($namespace);
+		return false;
 	}
 
 	public function isPhpStanCode(string $namespace): bool

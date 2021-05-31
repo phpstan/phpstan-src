@@ -34,7 +34,7 @@ class ApiTraitUseRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->apiRuleHelper->isInPhpStanNamespace($scope->getNamespace())) {
+		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
 			return [];
 		}
 
@@ -50,7 +50,7 @@ class ApiTraitUseRule implements Rule
 			}
 
 			$traitReflection = $this->reflectionProvider->getClass($traitName);
-			if (!$this->apiRuleHelper->isInPhpStanNamespace($traitReflection->getName())) {
+			if (!$this->apiRuleHelper->isPhpStanCode($traitReflection->getName())) {
 				continue;
 			}
 

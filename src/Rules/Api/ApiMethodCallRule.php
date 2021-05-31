@@ -28,7 +28,7 @@ class ApiMethodCallRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->apiRuleHelper->isInPhpStanNamespace($scope->getNamespace())) {
+		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
 			return [];
 		}
 
@@ -42,7 +42,7 @@ class ApiMethodCallRule implements Rule
 		}
 
 		$declaringClass = $methodReflection->getDeclaringClass();
-		if (!$this->apiRuleHelper->isInPhpStanNamespace($declaringClass->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($declaringClass->getName())) {
 			return [];
 		}
 

@@ -33,7 +33,7 @@ class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 		if ($node->name !== null) {
 			$namespace = $node->name->toString();
 		}
-		if (!$this->apiRuleHelper->isInPhpStanNamespace($namespace)) {
+		if (!$this->apiRuleHelper->isCalledFromPhpStan($namespace)) {
 			return [];
 		}
 

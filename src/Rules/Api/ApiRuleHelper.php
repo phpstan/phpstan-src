@@ -5,12 +5,17 @@ namespace PHPStan\Rules\Api;
 class ApiRuleHelper
 {
 
-	public function isInPhpStanNamespace(?string $namespace): bool
+	public function isCalledFromPhpStan(?string $namespace): bool
 	{
 		if ($namespace === null) {
 			return false;
 		}
 
+		return $this->isPhpStanCode($namespace);
+	}
+
+	public function isPhpStanCode(string $namespace): bool
+	{
 		if (strtolower($namespace) === 'phpstan') {
 			return true;
 		}

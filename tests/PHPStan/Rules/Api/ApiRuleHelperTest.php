@@ -57,7 +57,7 @@ class ApiRuleHelperTest extends TestCase
 	public function testIsInPhpStanNamespace(?string $namespace, bool $expected): void
 	{
 		$rule = new ApiRuleHelper();
-		$this->assertSame($expected, $rule->isInPhpStanNamespace($namespace));
+		$this->assertSame($expected, $rule->isCalledFromPhpStan($namespace));
 	}
 
 }

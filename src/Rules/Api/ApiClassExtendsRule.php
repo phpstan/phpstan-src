@@ -40,7 +40,7 @@ class ApiClassExtendsRule implements Rule
 			return [];
 		}
 
-		if ($this->apiRuleHelper->isInPhpStanNamespace($scope->getNamespace())) {
+		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
 			return [];
 		}
 
@@ -50,7 +50,7 @@ class ApiClassExtendsRule implements Rule
 		}
 
 		$extendedClassReflection = $this->reflectionProvider->getClass($extendedClassName);
-		if (!$this->apiRuleHelper->isInPhpStanNamespace($extendedClassReflection->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($extendedClassReflection->getName())) {
 			return [];
 		}
 

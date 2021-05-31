@@ -37,7 +37,7 @@ class ApiClassImplementsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->apiRuleHelper->isInPhpStanNamespace($scope->getNamespace())) {
+		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
 			return [];
 		}
 
@@ -61,7 +61,7 @@ class ApiClassImplementsRule implements Rule
 		}
 
 		$implementedClassReflection = $this->reflectionProvider->getClass($implementedClassName);
-		if (!$this->apiRuleHelper->isInPhpStanNamespace($implementedClassReflection->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($implementedClassReflection->getName())) {
 			return [];
 		}
 

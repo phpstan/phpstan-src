@@ -41,3 +41,8 @@ jobs:
           ../bin/phpstan analyse -l 8 src tests && \
           php bin/compile && \
           ../tmp/phpstan.phar list
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: phpstan.phar
+          path: tmp/phpstan.phar

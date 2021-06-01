@@ -6727,7 +6727,7 @@ return [
 'MongoDB\BSON\Timestamp::__construct' => ['void', 'increment'=>'int', 'timestamp'=>'int'],
 'MongoDB\BSON\Timestamp::__toString' => ['string'],
 'MongoDB\BSON\toJSON' => ['string', 'bson'=>'string'],
-'MongoDB\BSON\toPHP' => ['object', 'bson'=>'string', 'typeMap'=>'array'],
+'MongoDB\BSON\toPHP' => ['object', 'bson'=>'string', 'typeMap='=>'array'],
 'MongoDB\BSON\Unserializable::bsonUnserialize' => ['', 'data'=>'array'],
 'MongoDB\BSON\UTCDateTime::__construct' => ['void', 'milliseconds='=>'int|DateTimeInterface'],
 'MongoDB\BSON\UTCDateTime::__toString' => ['string'],

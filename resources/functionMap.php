@@ -11290,7 +11290,8 @@ return [
 'SplFileObject::eof' => ['bool'],
 'SplFileObject::fflush' => ['bool'],
 'SplFileObject::fgetc' => ['string|false'],
-'SplFileObject::fgetcsv' => ['array|false', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
+// Do not believe https://www.php.net/manual/en/splfileobject.fgetcsv#refsect1-splfileobject.fgetcsv-returnvalues
+'SplFileObject::fgetcsv' => ['array|false|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
 'SplFileObject::fgets' => ['string|false'],
 'SplFileObject::fgetss' => ['string|false', 'allowable_tags='=>'string'],
 'SplFileObject::flock' => ['bool', 'operation'=>'int', '&w_wouldblock='=>'int'],

@@ -7786,7 +7786,7 @@ return [
 'nsapi_response_headers' => ['array'],
 'nsapi_virtual' => ['bool', 'uri'=>'string'],
 'nthmac' => ['string', 'clent'=>'string', 'data'=>'string'],
-'number_format' => ['string', 'number'=>'float', 'num_decimal_places='=>'int', 'dec_separator='=>'string|null', 'thousands_separator='=>'string|null'],
+'number_format' => ['numeric-string', 'number'=>'float', 'num_decimal_places='=>'int', 'dec_separator='=>'string|null', 'thousands_separator='=>'string|null'],
 'NumberFormatter::__construct' => ['void', 'locale'=>'string', 'style'=>'int', 'pattern='=>'string'],
 'NumberFormatter::create' => ['NumberFormatter', 'locale'=>'string', 'style'=>'int', 'pattern='=>'string'],
 'NumberFormatter::format' => ['string', 'num'=>'', 'type='=>'int'],

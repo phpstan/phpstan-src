@@ -7252,7 +7252,7 @@ return [
 'mysqli_get_charset' => ['object', 'link'=>'mysqli'],
 'mysqli_get_client_info' => ['string', 'link='=>'mysqli'],
 'mysqli_get_client_stats' => ['array|false'],
-'mysqli_get_client_version' => ['int', 'link'=>'mysqli'],
+'mysqli_get_client_version' => ['int'],
 'mysqli_get_connection_stats' => ['array|false', 'link'=>'mysqli'],
 'mysqli_get_host_info' => ['string', 'link'=>'mysqli'],
 'mysqli_get_links_stats' => ['array'],

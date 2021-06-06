@@ -55,6 +55,14 @@ class CallToFunctionStamentWithoutSideEffectsRule implements Rule
 				return [];
 			}
 
+			if (in_array($function->getName(), [
+				'PHPStan\\Testing\\assertType',
+				'PHPStan\\Testing\\assertNativeType',
+				'PHPStan\\Testing\\assertVariableCertainty',
+			], true)) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Call to function %s() on a separate line has no effect.',

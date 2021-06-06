@@ -21,7 +21,7 @@ class CallToFunctionStamentWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects.php'], [
 			[
 				'Call to function sprintf() on a separate line has no effect.',
-				11,
+				13,
 			],
 		]);
 	}

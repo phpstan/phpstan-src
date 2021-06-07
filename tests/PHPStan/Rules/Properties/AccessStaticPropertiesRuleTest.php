@@ -186,4 +186,9 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/static-properties-class-exists.php'], []);
 	}
 
+	public function testBug5143(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5143.php'], []);
+	}
+
 }

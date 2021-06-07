@@ -170,10 +170,6 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				185,
 			],
 			[
-				'Access to static property $foo on trait TraitWithStaticProperty.',
-				204,
-			],
-			[
 				'Access to static property $foo on an unknown class TraitWithStaticProperty.',
 				209,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',

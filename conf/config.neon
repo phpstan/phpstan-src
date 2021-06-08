@@ -394,6 +394,8 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\PhpDocNodeResolver
+		arguments:
+			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\PhpDoc\PhpDocStringResolver

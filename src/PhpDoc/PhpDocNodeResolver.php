@@ -29,6 +29,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 
 class PhpDocNodeResolver
 {
@@ -37,10 +38,17 @@ class PhpDocNodeResolver
 
 	private ConstExprNodeResolver $constExprNodeResolver;
 
-	public function __construct(TypeNodeResolver $typeNodeResolver, ConstExprNodeResolver $constExprNodeResolver)
+	private bool $deepInspectTypes;
+
+	public function __construct(
+		TypeNodeResolver $typeNodeResolver,
+		ConstExprNodeResolver $constExprNodeResolver,
+		bool $deepInspectTypes = false
+	)
 	{
 		$this->typeNodeResolver = $typeNodeResolver;
 		$this->constExprNodeResolver = $constExprNodeResolver;
+		$this->deepInspectTypes = $deepInspectTypes;
 	}
 
 	/**
@@ -461,6 +469,24 @@ class PhpDocNodeResolver
 	{
 		if (strpos($tagName, '@psalm-') !== 0) {
 			return false;
+		}
+
+		if ($this->deepInspectTypes) {
+			$shouldSkip = false;
+			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$shouldSkip): Type {
+				if ($type instanceof ErrorType) {
+					$shouldSkip = true;
+					return $type;
+				}
+				if ($type instanceof NeverType && !$type->isExplicit()) {
+					$shouldSkip = true;
+					return $type;
+				}
+
+				return $traverse($type);
+			});
+
+			return $shouldSkip;
 		}
 
 		if ($type instanceof ErrorType) {

@@ -123,4 +123,10 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 		]);
 	}
 
+	public function testBug3723(): void
+	{
+		$this->deepInspectTypes = false;
+		$this->analyse([__DIR__ . '/data/bug-3723.php'], []);
+	}
+
 }

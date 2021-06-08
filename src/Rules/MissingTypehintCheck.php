@@ -3,6 +3,7 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
@@ -73,6 +74,9 @@ class MissingTypehintCheck
 		$iterablesWithMissingValueTypehint = [];
 		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$iterablesWithMissingValueTypehint): Type {
 			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			if ($type instanceof AccessoryType) {
 				return $type;
 			}
 			if ($type->isIterable()->yes()) {

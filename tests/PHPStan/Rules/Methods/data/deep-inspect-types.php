@@ -19,6 +19,14 @@ class Foo
 
 	}
 
+	/**
+	 * @param non-empty-array<mixed> $a
+	 */
+	public function doBaz(array $a): void
+	{
+
+	}
+
 }
 
 /** @template T */

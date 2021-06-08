@@ -192,3 +192,33 @@ class IteratorIterator implements OuterIterator {
      */
     public function __construct(Traversable $iterator) {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ *
+ * @template-implements RecursiveIterator<TKey, TValue>
+ * @template-extends ArrayIterator<TKey, TValue>
+ */
+class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator {
+
+    /**
+     * @return RecursiveArrayIterator<TKey, TValue>
+     */
+    public function getChildren() {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return TValue
+     */
+    public function current() {}
+
+    /**
+     * @return TKey
+     */
+    public function key() {}
+}

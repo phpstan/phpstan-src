@@ -38,6 +38,7 @@ parameters:
 		objectFromNewClass: false
 		skipCheckGenericClasses:
 			- RecursiveIterator
+			- RecursiveArrayIterator
 		rememberFunctionValues: false
 		preciseExceptionTracking: false
 		apiRules: false

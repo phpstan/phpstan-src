@@ -45,6 +45,7 @@ use PHPStan\Rules\Properties\ExistingClassesInPropertiesRule;
 use PHPStan\Rules\Properties\MissingPropertyTypehintRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\ObjectType;
 
 class StubValidator
 {
@@ -108,6 +109,7 @@ class StubValidator
 		}
 
 		Broker::registerInstance($originalBroker);
+		ObjectType::resetCaches();
 
 		return $errors;
 	}

@@ -75,6 +75,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$this->classReflection = $classReflection;
 	}
 
+	public static function resetCaches(): void
+	{
+		self::$superTypes = [];
+		self::$methods = [];
+		self::$properties = [];
+		self::$ancestors = [];
+	}
+
 	private static function createFromReflection(ClassReflection $reflection): self
 	{
 		if (!$reflection->isGeneric()) {

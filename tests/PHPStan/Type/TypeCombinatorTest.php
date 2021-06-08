@@ -15,12 +15,14 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\Generic\TemplateObjectWithoutClassType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateUnionType;
 
 class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 {
@@ -2944,6 +2946,45 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				NeverType::class,
 				'*NEVER*',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('my_array_keys'),
+						'T',
+						new BenevolentUnionType([new IntegerType(), new StringType()]),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new UnionType([new IntegerType(), new StringType()]),
+				],
+				TemplateBenevolentUnionType::class,
+				'T of (int|string) (function my_array_keys(), parameter)',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('my_array_keys'),
+						'T',
+						new BenevolentUnionType([new IntegerType(), new StringType()]),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new BenevolentUnionType([new IntegerType(), new StringType()]),
+				],
+				TemplateBenevolentUnionType::class,
+				'T of (int|string) (function my_array_keys(), parameter)',
+			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('my_array_keys'),
+						'T',
+						new UnionType([new IntegerType(), new StringType()]),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new UnionType([new IntegerType(), new StringType()]),
+				],
+				UnionType::class,
+				'T of int|string (function my_array_keys(), parameter)',
 			],
 		];
 	}

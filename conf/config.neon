@@ -404,6 +404,8 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
+		arguments:
+			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolverExtensionRegistryProvider

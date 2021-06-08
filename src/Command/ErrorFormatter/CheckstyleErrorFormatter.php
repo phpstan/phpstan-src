@@ -37,7 +37,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 				$output->writeRaw(sprintf(
 					'  <error line="%d" column="1" severity="error" message="%s" />',
 					$this->escape((string) $error->getLine()),
-					$this->escape((string) $error->getMessage())
+					$this->escape($error->getMessage())
 				));
 				$output->writeLineFormatted('');
 			}
@@ -94,7 +94,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 	 * Group errors by file
 	 *
 	 * @param AnalysisResult $analysisResult
-	 * @return array<string, array> Array that have as key the relative path of file
+	 * @return array<string, array<\PHPStan\Analyser\Error>> Array that have as key the relative path of file
 	 *                              and as value an array with occurred errors.
 	 */
 	private function groupByFile(AnalysisResult $analysisResult): array

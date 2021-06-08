@@ -41,6 +41,7 @@ parameters:
 		rememberFunctionValues: false
 		preciseExceptionTracking: false
 		apiRules: false
+		deepInspectTypes: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -210,7 +211,8 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		preciseExceptionTracking: bool(),
-		apiRules: bool()
+		apiRules: bool(),
+		deepInspectTypes: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -836,6 +838,7 @@ services:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			checkMissingCallableSignature: %checkMissingCallableSignature%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
+			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\Rules\NullsafeCheck

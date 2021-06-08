@@ -10,10 +10,13 @@ use PHPStan\Rules\MissingTypehintCheck;
 class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $deepInspectTypes = false;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true));
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true, [], $this->deepInspectTypes));
 	}
 
 	public function testRule(): void
@@ -88,6 +91,34 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 				'Method MissingTypehintPromotedProperties\Bar::__construct() has parameter $foo with no value type specified in iterable type array.',
 				21,
 				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+		]);
+	}
+
+	public function testDoNotDeepInspectTypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/deep-inspect-types.php'], [
+			[
+				'Method DeepInspectTypes\Foo::doBar() has parameter $bars with generic class DeepInspectTypes\Bar but does not specify its types: T',
+				17,
+				MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP,
+			],
+		]);
+	}
+
+	public function testDeepInspectTypes(): void
+	{
+		$this->deepInspectTypes = true;
+		$this->analyse([__DIR__ . '/data/deep-inspect-types.php'], [
+			[
+				'Method DeepInspectTypes\Foo::doFoo() has parameter $foo with no value type specified in iterable type iterable.',
+				11,
+				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method DeepInspectTypes\Foo::doBar() has parameter $bars with generic class DeepInspectTypes\Bar but does not specify its types: T',
+				17,
+				MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP,
 			],
 		]);
 	}

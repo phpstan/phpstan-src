@@ -38,6 +38,8 @@ class MissingTypehintCheck
 	/** @var string[] */
 	private array $skipCheckGenericClasses;
 
+	private bool $deepInspectTypes;
+
 	/**
 	 * @param string[] $skipCheckGenericClasses
 	 */
@@ -46,7 +48,8 @@ class MissingTypehintCheck
 		bool $checkMissingIterableValueType,
 		bool $checkGenericClassInNonGenericObjectType,
 		bool $checkMissingCallableSignature,
-		array $skipCheckGenericClasses = []
+		array $skipCheckGenericClasses = [],
+		bool $deepInspectTypes = false
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -54,6 +57,7 @@ class MissingTypehintCheck
 		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
 		$this->checkMissingCallableSignature = $checkMissingCallableSignature;
 		$this->skipCheckGenericClasses = $skipCheckGenericClasses;
+		$this->deepInspectTypes = $deepInspectTypes;
 	}
 
 	/**
@@ -86,6 +90,10 @@ class MissingTypehintCheck
 					}
 					$iterablesWithMissingValueTypehint[] = $type;
 				}
+				if ($this->deepInspectTypes) {
+					return $traverse($type);
+				}
+
 				return $type;
 			}
 			return $traverse($type);
@@ -142,8 +150,8 @@ class MissingTypehintCheck
 				];
 				return $type;
 			}
-			$traverse($type);
-			return $type;
+
+			return $traverse($type);
 		});
 
 		return $objectTypes;

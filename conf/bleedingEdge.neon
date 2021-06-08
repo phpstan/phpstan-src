@@ -19,3 +19,4 @@ parameters:
 		rememberFunctionValues: true
 		preciseExceptionTracking: true
 		apiRules: true
+		deepInspectTypes: true

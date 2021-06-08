@@ -11,9 +11,7 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -33,6 +31,8 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 
 	private MissingTypehintCheck $missingTypehintCheck;
 
+	private UnresolvableTypeHelper $unresolvableTypeHelper;
+
 	private bool $checkClassCaseSensitivity;
 
 	private bool $checkMissingVarTagTypehint;
@@ -43,6 +43,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		MissingTypehintCheck $missingTypehintCheck,
+		UnresolvableTypeHelper $unresolvableTypeHelper,
 		bool $checkClassCaseSensitivity,
 		bool $checkMissingVarTagTypehint
 	)
@@ -52,6 +53,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
 		$this->missingTypehintCheck = $missingTypehintCheck;
+		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkMissingVarTagTypehint = $checkMissingVarTagTypehint;
 	}
@@ -92,8 +94,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				$identifier .= sprintf(' for variable $%s', $name);
 			}
 			if (
-				$varTagType instanceof ErrorType
-				|| ($varTagType instanceof NeverType && !$varTagType->isExplicit())
+				$this->unresolvableTypeHelper->containsUnresolvableType($varTagType)
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getStartLine())->build();
 				continue;

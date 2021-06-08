@@ -23,13 +23,11 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Type\ErrorType;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
 
 class PhpDocNodeResolver
 {
@@ -38,17 +36,17 @@ class PhpDocNodeResolver
 
 	private ConstExprNodeResolver $constExprNodeResolver;
 
-	private bool $deepInspectTypes;
+	private UnresolvableTypeHelper $unresolvableTypeHelper;
 
 	public function __construct(
 		TypeNodeResolver $typeNodeResolver,
 		ConstExprNodeResolver $constExprNodeResolver,
-		bool $deepInspectTypes = false
+		UnresolvableTypeHelper $unresolvableTypeHelper
 	)
 	{
 		$this->typeNodeResolver = $typeNodeResolver;
 		$this->constExprNodeResolver = $constExprNodeResolver;
-		$this->deepInspectTypes = $deepInspectTypes;
+		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	/**
@@ -471,29 +469,7 @@ class PhpDocNodeResolver
 			return false;
 		}
 
-		if ($this->deepInspectTypes) {
-			$shouldSkip = false;
-			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$shouldSkip): Type {
-				if ($type instanceof ErrorType) {
-					$shouldSkip = true;
-					return $type;
-				}
-				if ($type instanceof NeverType && !$type->isExplicit()) {
-					$shouldSkip = true;
-					return $type;
-				}
-
-				return $traverse($type);
-			});
-
-			return $shouldSkip;
-		}
-
-		if ($type instanceof ErrorType) {
-			return true;
-		}
-
-		return $type instanceof NeverType && !$type->isExplicit();
+		return $this->unresolvableTypeHelper->containsUnresolvableType($type);
 	}
 
 }

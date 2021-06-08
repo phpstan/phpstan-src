@@ -9,11 +9,10 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -32,6 +31,8 @@ class MixinRule implements Rule
 
 	private MissingTypehintCheck $missingTypehintCheck;
 
+	private UnresolvableTypeHelper $unresolvableTypeHelper;
+
 	private bool $checkClassCaseSensitivity;
 
 	public function __construct(
@@ -40,6 +41,7 @@ class MixinRule implements Rule
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		MissingTypehintCheck $missingTypehintCheck,
+		UnresolvableTypeHelper $unresolvableTypeHelper,
 		bool $checkClassCaseSensitivity
 	)
 	{
@@ -48,6 +50,7 @@ class MixinRule implements Rule
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
 		$this->missingTypehintCheck = $missingTypehintCheck;
+		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
 
@@ -85,8 +88,7 @@ class MixinRule implements Rule
 			}
 
 			if (
-				$type instanceof ErrorType
-				|| ($type instanceof NeverType && !$type->isExplicit())
+				$this->unresolvableTypeHelper->containsUnresolvableType($type)
 			) {
 				$errors[] = RuleErrorBuilder::message('PHPDoc tag @mixin contains unresolvable type.')->build();
 				continue;

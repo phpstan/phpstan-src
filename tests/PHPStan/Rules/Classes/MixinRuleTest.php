@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -25,6 +26,7 @@ class MixinRuleTest extends RuleTestCase
 			new ClassCaseSensitivityCheck($reflectionProvider),
 			new GenericObjectTypeCheck(),
 			new MissingTypehintCheck($reflectionProvider, true, true, true),
+			new UnresolvableTypeHelper(true),
 			true
 		);
 	}

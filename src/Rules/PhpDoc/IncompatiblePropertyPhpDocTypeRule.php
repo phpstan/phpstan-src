@@ -8,8 +8,6 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ErrorType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -20,9 +18,15 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 
 	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
 
-	public function __construct(GenericObjectTypeCheck $genericObjectTypeCheck)
+	private UnresolvableTypeHelper $unresolvableTypeHelper;
+
+	public function __construct(
+		GenericObjectTypeCheck $genericObjectTypeCheck,
+		UnresolvableTypeHelper $unresolvableTypeHelper
+	)
 	{
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
+		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	public function getNodeType(): string
@@ -51,8 +55,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 
 		$messages = [];
 		if (
-			$phpDocType instanceof ErrorType
-			|| ($phpDocType instanceof NeverType && !$phpDocType->isExplicit())
+			$this->unresolvableTypeHelper->containsUnresolvableType($phpDocType)
 		) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'%s for property %s::$%s contains unresolvable type.',

@@ -40,6 +40,7 @@ use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule;
 use PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\ExistingClassesInPropertiesRule;
 use PHPStan\Rules\Properties\MissingPropertyTypehintRule;
 use PHPStan\Rules\Registry;
@@ -122,6 +123,7 @@ class StubValidator
 		$classCaseSensitivityCheck = $container->getByType(ClassCaseSensitivityCheck::class);
 		$functionDefinitionCheck = $container->getByType(FunctionDefinitionCheck::class);
 		$missingTypehintCheck = $container->getByType(MissingTypehintCheck::class);
+		$unresolvableTypeHelper = $container->getByType(UnresolvableTypeHelper::class);
 
 		return new Registry([
 			// level 0
@@ -145,9 +147,10 @@ class StubValidator
 			new TraitTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new IncompatiblePhpDocTypeRule(
 				$fileTypeMapper,
-				$genericObjectTypeCheck
+				$genericObjectTypeCheck,
+				$unresolvableTypeHelper
 			),
-			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck),
+			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidPhpDocTagValueRule(
 				$container->getByType(Lexer::class),
 				$container->getByType(PhpDocParser::class)

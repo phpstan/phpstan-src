@@ -8,10 +8,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -25,13 +23,17 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 
 	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
 
+	private UnresolvableTypeHelper $unresolvableTypeHelper;
+
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
-		GenericObjectTypeCheck $genericObjectTypeCheck
+		GenericObjectTypeCheck $genericObjectTypeCheck,
+		UnresolvableTypeHelper $unresolvableTypeHelper
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
+		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	public function getNodeType(): string
@@ -74,8 +76,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 				))->identifier('phpDoc.unknownParameter')->metadata(['parameterName' => $parameterName])->build();
 
 			} elseif (
-				$phpDocParamType instanceof ErrorType
-				|| ($phpDocParamType instanceof NeverType && !$phpDocParamType->isExplicit())
+				$this->unresolvableTypeHelper->containsUnresolvableType($phpDocParamType)
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param for parameter $%s contains unresolvable type.',
@@ -136,8 +137,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 			$phpDocReturnType = TemplateTypeHelper::resolveToBounds($resolvedPhpDoc->getReturnTag()->getType());
 
 			if (
-				$phpDocReturnType instanceof ErrorType
-				|| ($phpDocReturnType instanceof NeverType && !$phpDocReturnType->isExplicit())
+				$this->unresolvableTypeHelper->containsUnresolvableType($phpDocReturnType)
 			) {
 				$errors[] = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->build();
 

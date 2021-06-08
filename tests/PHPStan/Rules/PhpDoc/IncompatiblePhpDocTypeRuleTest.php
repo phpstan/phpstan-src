@@ -11,11 +11,15 @@ use PHPStan\Type\FileTypeMapper;
 class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $deepInspectTypes = false;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new GenericObjectTypeCheck()
+			new GenericObjectTypeCheck(),
+			new UnresolvableTypeHelper($this->deepInspectTypes)
 		);
 	}
 
@@ -148,6 +152,22 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testBug4643(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4643.php'], []);
+	}
+
+	public function testBug3753(): void
+	{
+		$this->deepInspectTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3753.php'], [
+			[
+				'PHPDoc tag @param for parameter $foo contains unresolvable type.',
+				20,
+			],
+		]);
+	}
+
+	public function testBug3753NotDeepInspectTypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3753.php'], []);
 	}
 
 }

@@ -67,6 +67,7 @@ parameters:
 			tooWideThrowType: true
 	featureToggles:
 		readComposerPhpVersion: false
+		apiRules: false
 	ignoreErrors:
 		- '#^Dynamic call to static method PHPUnit\\Framework\\\S+\(\)\.$#'
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'

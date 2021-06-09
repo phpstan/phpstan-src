@@ -67,7 +67,6 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousAbstractClassNaming"/>
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
-	<rule ref="SlevomatCodingStandard.ControlStructures.DisallowShortTernaryOperator"/>
 	<rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
 		<properties>
 			<property name="rootNamespaces" type="array" value="compiler/src =>PHPStan\Compiler,src=>PHPStan,tests/PHPStan=>PHPStan, tests/e2e => PHPStan\Tests"/>

@@ -46,7 +46,7 @@ class ApiClassExtendsRule implements Rule
 		}
 
 		$extendedClassReflection = $this->reflectionProvider->getClass($extendedClassName);
-		if (!$this->apiRuleHelper->isPhpStanCode($scope, $extendedClassReflection->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $extendedClassReflection->getName(), $extendedClassReflection->getFileName() ?: null)) {
 			return [];
 		}
 

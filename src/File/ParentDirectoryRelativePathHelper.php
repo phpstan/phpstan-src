@@ -17,6 +17,19 @@ class ParentDirectoryRelativePathHelper implements RelativePathHelper
 
 	public function getRelativePath(string $filename): string
 	{
+		return implode('/', $this->getFilenameParts($filename));
+	}
+
+	/**
+	 * @param string $filename
+	 * @return string[]
+	 */
+	public function getFilenameParts(string $filename): array
+	{
+		$schemePosition = strpos($filename, '://');
+		if ($schemePosition !== false) {
+			$filename = substr($filename, $schemePosition + 3);
+		}
 		$parentParts = explode('/', trim(str_replace('\\', '/', $this->parentDirectory), '/'));
 		$parentPartsCount = count($parentParts);
 		$filenameParts = explode('/', trim(str_replace('\\', '/', $filename), '/'));
@@ -37,12 +50,12 @@ class ParentDirectoryRelativePathHelper implements RelativePathHelper
 		}
 
 		if ($i === 0) {
-			return $filename;
+			return [$filename];
 		}
 
 		$dotsCount = $parentPartsCount - $i;
 
-		return str_repeat('../', $dotsCount) . implode('/', array_slice($filenameParts, $i));
+		return array_merge(array_fill(0, $dotsCount, '..'), array_slice($filenameParts, $i));
 	}
 
 }

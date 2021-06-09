@@ -2099,7 +2099,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
 				UnionType::class,
-				'int|string',
+				'(int|string)',
 			],
 			[
 				[

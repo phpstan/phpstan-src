@@ -208,7 +208,7 @@ class DependencyResolver
 
 	/**
 	 * @param string $className
-	 * @param ReflectionWithFilename[] $dependenciesReflections
+	 * @param array<int, ReflectionWithFilename> $dependenciesReflections
 	 */
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
 	{

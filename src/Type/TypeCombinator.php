@@ -12,6 +12,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -591,20 +592,28 @@ class TypeCombinator
 
 	public static function intersect(Type ...$types): Type
 	{
-		usort($types, static function (Type $a, Type $b): int {
+		$sortTypes = static function (Type $a, Type $b): int {
 			if (!$a instanceof UnionType || !$b instanceof UnionType) {
 				return 0;
 			}
 
-			if ($a instanceof BenevolentUnionType) {
+			if ($a instanceof TemplateType) {
+				return -1;
+			}
+			if ($b instanceof TemplateType) {
 				return 1;
 			}
-			if ($b instanceof BenevolentUnionType) {
+
+			if ($a instanceof BenevolentUnionType) {
 				return -1;
+			}
+			if ($b instanceof BenevolentUnionType) {
+				return 1;
 			}
 
 			return 0;
-		});
+		};
+		usort($types, $sortTypes);
 		// transform A & (B | C) to (A & B) | (A & C)
 		foreach ($types as $i => $type) {
 			if (!$type instanceof UnionType) {
@@ -612,7 +621,9 @@ class TypeCombinator
 			}
 
 			$topLevelUnionSubTypes = [];
-			foreach ($type->getTypes() as $innerUnionSubType) {
+			$innerTypes = $type->getTypes();
+			usort($innerTypes, $sortTypes);
+			foreach ($innerTypes as $innerUnionSubType) {
 				$topLevelUnionSubTypes[] = self::intersect(
 					$innerUnionSubType,
 					...array_slice($types, 0, $i),
@@ -625,7 +636,7 @@ class TypeCombinator
 				$union = TypeUtils::toBenevolentUnion($union);
 			}
 
-			if ($type instanceof TemplateUnionType) {
+			if ($type instanceof TemplateUnionType || $type instanceof TemplateBenevolentUnionType) {
 				$union = TemplateTypeFactory::create(
 					$type->getScope(),
 					$type->getName(),

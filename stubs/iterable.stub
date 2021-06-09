@@ -102,7 +102,7 @@ interface SeekableIterator extends Iterator
 }
 
 /**
- * @template TKey
+ * @template TKey of array-key
  * @template TValue
  * @implements SeekableIterator<TKey, TValue>
  * @implements ArrayAccess<TKey, TValue>
@@ -194,7 +194,7 @@ class IteratorIterator implements OuterIterator {
 }
 
 /**
- * @template TKey
+ * @template TKey of array-key
  * @template TValue
  *
  * @template-implements RecursiveIterator<TKey, TValue>

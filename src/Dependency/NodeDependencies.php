@@ -14,14 +14,14 @@ class NodeDependencies implements IteratorAggregate
 
 	private FileHelper $fileHelper;
 
-	/** @var ReflectionWithFilename[] */
+	/** @var array<int, ReflectionWithFilename> */
 	private array $reflections;
 
 	private ?ExportedNode $exportedNode;
 
 	/**
 	 * @param FileHelper $fileHelper
-	 * @param ReflectionWithFilename[] $reflections
+	 * @param array<int, ReflectionWithFilename> $reflections
 	 */
 	public function __construct(
 		FileHelper $fileHelper,

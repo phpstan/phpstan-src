@@ -7,7 +7,8 @@
     "KevinGH\\Box\\Compactor\\PhpScoper"
   ],
   "files": [
-	"preload.php"
+	"preload.php",
+	"vendor/composer/installed.php"
   ],
   "directories": [
     "conf",

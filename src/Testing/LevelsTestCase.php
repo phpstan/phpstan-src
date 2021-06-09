@@ -5,6 +5,7 @@ namespace PHPStan\Testing;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
 
+/** @api */
 abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 {
 

@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
+/** @api */
 final class TemplateMixedType extends MixedType implements TemplateType
 {
 

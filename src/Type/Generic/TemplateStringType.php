@@ -6,6 +6,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+/** @api */
 final class TemplateStringType extends StringType implements TemplateType
 {
 

@@ -6,6 +6,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+/** @api */
 class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements TemplateType
 {
 

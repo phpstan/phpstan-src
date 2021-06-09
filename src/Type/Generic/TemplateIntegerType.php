@@ -6,6 +6,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+/** @api */
 final class TemplateIntegerType extends IntegerType implements TemplateType
 {
 

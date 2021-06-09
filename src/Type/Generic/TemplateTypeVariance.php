@@ -7,6 +7,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
+/** @api */
 class TemplateTypeVariance
 {
 

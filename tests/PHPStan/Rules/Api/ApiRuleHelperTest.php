@@ -26,6 +26,13 @@ class ApiRuleHelperTest extends TestCase
 				true,
 			],
 			[
+				null,
+				'/usr/var/foo.php',
+				'PHPStan\\BetterReflection\\Foo',
+				null,
+				false,
+			],
+			[
 				'App\\Foo',
 				'/usr/var/foo.php',
 				'PHPStan',

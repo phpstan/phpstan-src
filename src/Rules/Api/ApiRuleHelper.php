@@ -72,6 +72,10 @@ class ApiRuleHelper
 			return false;
 		}
 
+		if (strpos($namespace, 'PHPStan\\BetterReflection\\') === 0) {
+			return false;
+		}
+
 		return stripos($namespace, 'PHPStan\\') === 0;
 	}
 

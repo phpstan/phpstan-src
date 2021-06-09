@@ -2953,7 +2953,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new BenevolentUnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant(),
+						TemplateTypeVariance::createInvariant()
 					),
 					new UnionType([new IntegerType(), new StringType()]),
 				],
@@ -2966,7 +2966,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new BenevolentUnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant(),
+						TemplateTypeVariance::createInvariant()
 					),
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
@@ -2979,7 +2979,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new UnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant(),
+						TemplateTypeVariance::createInvariant()
 					),
 					new UnionType([new IntegerType(), new StringType()]),
 				],

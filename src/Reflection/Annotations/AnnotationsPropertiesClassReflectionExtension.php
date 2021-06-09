@@ -10,13 +10,17 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
-	/** @var \PHPStan\Reflection\PropertyReflection[][] */
+	/** @var PropertyReflection[][] */
 	private array $properties = [];
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
-		if (!isset($this->properties[$classReflection->getCacheKey()])) {
-			$this->properties[$classReflection->getCacheKey()] = $this->createProperties($classReflection, $classReflection);
+		if (!isset($this->properties[$classReflection->getCacheKey()][$propertyName])) {
+			$property = $this->findClassReflectionWithProperty($classReflection, $classReflection, $propertyName);
+			if ($property === null) {
+				return false;
+			}
+			$this->properties[$classReflection->getCacheKey()][$propertyName] = $property;
 		}
 
 		return isset($this->properties[$classReflection->getCacheKey()][$propertyName]);
@@ -27,50 +31,61 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 		return $this->properties[$classReflection->getCacheKey()][$propertyName];
 	}
 
-	/**
-	 * @param \PHPStan\Reflection\ClassReflection $classReflection
-	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
-	 * @return \PHPStan\Reflection\PropertyReflection[]
-	 */
-	private function createProperties(
+	private function findClassReflectionWithProperty(
 		ClassReflection $classReflection,
-		ClassReflection $declaringClass
-	): array
+		ClassReflection $declaringClass,
+		string $propertyName
+	): ?PropertyReflection
 	{
-		$properties = [];
-		foreach ($classReflection->getTraits() as $traitClass) {
-			$properties += $this->createProperties($traitClass, $classReflection);
-		}
-		foreach ($classReflection->getParents() as $parentClass) {
-			$properties += $this->createProperties($parentClass, $parentClass);
-			foreach ($parentClass->getTraits() as $traitClass) {
-				$properties += $this->createProperties($traitClass, $parentClass);
-			}
-		}
-
-		foreach ($classReflection->getInterfaces() as $interfaceClass) {
-			$properties += $this->createProperties($interfaceClass, $interfaceClass);
-		}
-
-		$fileName = $classReflection->getFileName();
-		if ($fileName === false) {
-			return $properties;
-		}
-
 		$propertyTags = $classReflection->getPropertyTags();
-		foreach ($propertyTags as $propertyName => $propertyTag) {
-			$properties[$propertyName] = new AnnotationPropertyReflection(
+		if (isset($propertyTags[$propertyName])) {
+			return new AnnotationPropertyReflection(
 				$declaringClass,
 				TemplateTypeHelper::resolveTemplateTypes(
-					$propertyTag->getType(),
+					$propertyTags[$propertyName]->getType(),
 					$classReflection->getActiveTemplateTypeMap()
 				),
-				$propertyTag->isReadable(),
-				$propertyTag->isWritable()
+				$propertyTags[$propertyName]->isReadable(),
+				$propertyTags[$propertyName]->isWritable()
 			);
 		}
 
-		return $properties;
+		foreach ($classReflection->getTraits() as $traitClass) {
+			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($traitClass, $classReflection, $propertyName);
+			if ($methodWithDeclaringClass === null) {
+				continue;
+			}
+
+			return $methodWithDeclaringClass;
+		}
+
+		foreach ($classReflection->getParents() as $parentClass) {
+			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($parentClass, $parentClass, $propertyName);
+			if ($methodWithDeclaringClass === null) {
+				foreach ($parentClass->getTraits() as $traitClass) {
+					$parentTraitMethodWithDeclaringClass = $this->findClassReflectionWithProperty($traitClass, $parentClass, $propertyName);
+					if ($parentTraitMethodWithDeclaringClass === null) {
+						continue;
+					}
+
+					return $parentTraitMethodWithDeclaringClass;
+				}
+				continue;
+			}
+
+			return $methodWithDeclaringClass;
+		}
+
+		foreach ($classReflection->getInterfaces() as $interfaceClass) {
+			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($interfaceClass, $interfaceClass, $propertyName);
+			if ($methodWithDeclaringClass === null) {
+				continue;
+			}
+
+			return $methodWithDeclaringClass;
+		}
+
+		return null;
 	}
 
 }

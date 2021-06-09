@@ -8,6 +8,7 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -94,7 +95,7 @@ class MissingTypehintCheck
 					}
 					$iterablesWithMissingValueTypehint[] = $type;
 				}
-				if ($this->deepInspectTypes) {
+				if ($this->deepInspectTypes && !$type instanceof IntersectionType) {
 					return $traverse($type);
 				}
 

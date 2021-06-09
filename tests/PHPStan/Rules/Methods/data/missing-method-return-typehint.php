@@ -102,3 +102,14 @@ class CallableSignature
 	}
 
 }
+
+class IterableIntersection
+{
+
+	/** @return FooInterface[]|\Traversable */
+	public function doFoo(): \Traversable
+	{
+
+	}
+
+}

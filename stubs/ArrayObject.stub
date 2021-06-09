@@ -35,7 +35,7 @@ interface ArrayAccess
 }
 
 /**
- * @template TKey
+ * @template TKey of array-key
  * @template TValue
  * @implements IteratorAggregate<TKey, TValue>
  * @implements ArrayAccess<TKey, TValue>

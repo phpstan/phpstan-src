@@ -13,6 +13,7 @@ use PHPStan\Php\PhpVersion;
 use Symfony\Component\Finder\Finder;
 use function sys_get_temp_dir;
 
+/** @api */
 class ContainerFactory
 {
 
@@ -43,7 +44,6 @@ class ContainerFactory
 	}
 
 	/**
-	 * @api
 	 * @param string $tempDirectory
 	 * @param string[] $additionalConfigFiles
 	 * @param string[] $analysedPaths

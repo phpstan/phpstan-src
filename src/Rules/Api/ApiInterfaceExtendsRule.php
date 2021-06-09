@@ -37,23 +37,20 @@ class ApiInterfaceExtendsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
-			return [];
-		}
-
 		$errors = [];
 		foreach ($node->extends as $extends) {
-			$errors = array_merge($errors, $this->checkName($extends));
+			$errors = array_merge($errors, $this->checkName($scope, $extends));
 		}
 
 		return $errors;
 	}
 
 	/**
+	 * @param Scope $scope
 	 * @param Node\Name $name
 	 * @return RuleError[]
 	 */
-	private function checkName(Node\Name $name): array
+	private function checkName(Scope $scope, Node\Name $name): array
 	{
 		$extendedInterface = (string) $name;
 		if (!$this->reflectionProvider->hasClass($extendedInterface)) {
@@ -61,7 +58,7 @@ class ApiInterfaceExtendsRule implements Rule
 		}
 
 		$extendedInterfaceReflection = $this->reflectionProvider->getClass($extendedInterface);
-		if (!$this->apiRuleHelper->isPhpStanCode($extendedInterfaceReflection->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $extendedInterfaceReflection->getName())) {
 			return [];
 		}
 

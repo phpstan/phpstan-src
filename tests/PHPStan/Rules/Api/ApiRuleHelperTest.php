@@ -2,47 +2,72 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Analyser\Scope;
 use PHPUnit\Framework\TestCase;
 
 class ApiRuleHelperTest extends TestCase
 {
 
-	public function dataIsInPhpStanNamespace(): array
+	public function dataIsPhpStanCode(): array
 	{
 		return [
 			[
 				null,
+				'App\\Foo',
 				false,
 			],
 			[
-				'PHPStan',
-				true,
-			],
-			[
-				'PhpStan',
-				true,
-			],
-			[
+				null,
 				'PHPStan\\Foo',
 				true,
 			],
 			[
+				'App\\Foo',
+				'PHPStan',
+				true,
+			],
+			[
+				'PHPStan\\Foo',
+				'App\\Foo',
+				false,
+			],
+			[
+				'PHPStan\\Foo',
+				'PHPStan\\Foo',
+				false,
+			],
+			[
+				'App\\Foo',
+				'PhpStan',
+				true,
+			],
+			[
+				'App\\Foo',
+				'PHPStan\\Foo',
+				true,
+			],
+			[
+				'App\\Foo',
 				'PhpStan\\Foo',
 				true,
 			],
 			[
 				'App\\Foo',
+				'App\\Foo',
 				false,
 			],
 			[
+				'App\\Foo',
 				'PHPStanWorkshop',
 				false,
 			],
 			[
+				'App\\Foo',
 				'PHPStanWorkshop\\',
 				false,
 			],
 			[
+				'App\\Foo',
 				'PHPStan\\PhpDocParser\\',
 				false,
 			],
@@ -50,14 +75,17 @@ class ApiRuleHelperTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider dataIsInPhpStanNamespace
-	 * @param string|null $namespace
+	 * @dataProvider dataIsPhpStanCode
+	 * @param string|null $scopeNamespace
+	 * @param string $nameToCheck
 	 * @param bool $expected
 	 */
-	public function testIsInPhpStanNamespace(?string $namespace, bool $expected): void
+	public function testIsPhpStanCode(?string $scopeNamespace, string $nameToCheck, bool $expected): void
 	{
 		$rule = new ApiRuleHelper();
-		$this->assertSame($expected, $rule->isCalledFromPhpStan($namespace));
+		$scope = $this->createMock(Scope::class);
+		$scope->method('getNamespace')->willReturn($scopeNamespace);
+		$this->assertSame($expected, $rule->isPhpStanCode($scope, $nameToCheck));
 	}
 
 }

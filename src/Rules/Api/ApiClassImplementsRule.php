@@ -37,13 +37,9 @@ class ApiClassImplementsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
-			return [];
-		}
-
 		$errors = [];
 		foreach ($node->implements as $implements) {
-			$errors = array_merge($errors, $this->checkName($implements));
+			$errors = array_merge($errors, $this->checkName($scope, $implements));
 		}
 
 		return $errors;
@@ -53,7 +49,7 @@ class ApiClassImplementsRule implements Rule
 	 * @param Node\Name $name
 	 * @return RuleError[]
 	 */
-	private function checkName(Node\Name $name): array
+	private function checkName(Scope $scope, Node\Name $name): array
 	{
 		$implementedClassName = (string) $name;
 		if (!$this->reflectionProvider->hasClass($implementedClassName)) {
@@ -61,7 +57,7 @@ class ApiClassImplementsRule implements Rule
 		}
 
 		$implementedClassReflection = $this->reflectionProvider->getClass($implementedClassName);
-		if (!$this->apiRuleHelper->isPhpStanCode($implementedClassReflection->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $implementedClassReflection->getName())) {
 			return [];
 		}
 

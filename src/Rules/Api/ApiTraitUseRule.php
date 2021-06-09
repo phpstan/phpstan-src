@@ -34,10 +34,6 @@ class ApiTraitUseRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
-			return [];
-		}
-
 		$errors = [];
 		$tip = sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
@@ -50,7 +46,7 @@ class ApiTraitUseRule implements Rule
 			}
 
 			$traitReflection = $this->reflectionProvider->getClass($traitName);
-			if (!$this->apiRuleHelper->isPhpStanCode($traitReflection->getName())) {
+			if (!$this->apiRuleHelper->isPhpStanCode($scope, $traitReflection->getName())) {
 				continue;
 			}
 

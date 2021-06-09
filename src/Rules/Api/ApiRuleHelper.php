@@ -2,19 +2,26 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Analyser\Scope;
+
 class ApiRuleHelper
 {
 
-	public function isCalledFromPhpStan(?string $namespace): bool
+	public function isPhpStanCode(Scope $scope, string $namespace): bool
 	{
-		if ($namespace === null) {
+		$scopeNamespace = $scope->getNamespace();
+		if ($scopeNamespace === null) {
+			return $this->isPhpStanName($namespace);
+		}
+
+		if ($this->isPhpStanName($scopeNamespace)) {
 			return false;
 		}
 
-		return $this->isPhpStanCode($namespace);
+		return $this->isPhpStanName($namespace);
 	}
 
-	public function isPhpStanCode(string $namespace): bool
+	public function isPhpStanName(string $namespace): bool
 	{
 		if (strtolower($namespace) === 'phpstan') {
 			return true;

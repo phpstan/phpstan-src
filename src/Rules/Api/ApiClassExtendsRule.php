@@ -40,17 +40,13 @@ class ApiClassExtendsRule implements Rule
 			return [];
 		}
 
-		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
-			return [];
-		}
-
 		$extendedClassName = (string) $node->extends;
 		if (!$this->reflectionProvider->hasClass($extendedClassName)) {
 			return [];
 		}
 
 		$extendedClassReflection = $this->reflectionProvider->getClass($extendedClassName);
-		if (!$this->apiRuleHelper->isPhpStanCode($extendedClassReflection->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $extendedClassReflection->getName())) {
 			return [];
 		}
 

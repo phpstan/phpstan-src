@@ -35,10 +35,6 @@ class ApiStaticCallRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->apiRuleHelper->isCalledFromPhpStan($scope->getNamespace())) {
-			return [];
-		}
-
 		if (!$node->name instanceof Node\Identifier) {
 			return [];
 		}
@@ -60,7 +56,7 @@ class ApiStaticCallRule implements Rule
 
 		$methodReflection = $classReflection->getNativeMethod($methodName);
 		$declaringClass = $methodReflection->getDeclaringClass();
-		if (!$this->apiRuleHelper->isPhpStanCode($declaringClass->getName())) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $declaringClass->getName())) {
 			return [];
 		}
 

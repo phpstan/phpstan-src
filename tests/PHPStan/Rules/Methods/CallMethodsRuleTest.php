@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use const PHP_VERSION_ID;
@@ -30,13 +31,16 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var int */
 	private $phpVersion = PHP_VERSION_ID;
 
+	/** @var bool */
+	private $checkNeverInGenericReturnType = false;
+
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(true), true, true, true, true, $this->checkNeverInGenericReturnType),
 			$ruleLevelHelper,
 			true,
 			true
@@ -1919,6 +1923,32 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				36,
 			],
 		]);
+	}
+
+	public function testGenericReturnTypeResolvedToNever(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkNeverInGenericReturnType = true;
+		$this->analyse([__DIR__ . '/data/generic-return-type-never.php'], [
+			[
+				'Return type of call to method GenericReturnTypeNever\Foo::doBar() contains unresolvable type.',
+				70,
+			],
+			[
+				'Return type of call to method GenericReturnTypeNever\Foo::doBazBaz() contains unresolvable type.',
+				73,
+			],
+		]);
+	}
+
+	public function testDoNotReportGenericReturnTypeResolvedToNever(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/generic-return-type-never.php'], []);
 	}
 
 }

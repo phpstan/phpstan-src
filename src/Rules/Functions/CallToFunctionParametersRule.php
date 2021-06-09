@@ -64,6 +64,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 				'Unable to resolve the template type %s in call to function ' . $function->getName(),
 				'Missing parameter $%s in call to function ' . $function->getName() . '.',
 				'Unknown parameter $%s in call to function ' . $function->getName() . '.',
+				'Return type of call to function ' . $function->getName() . ' contains unresolvable type.',
 			]
 		);
 	}

@@ -7,6 +7,7 @@ use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -27,6 +28,8 @@ class FunctionAttributesRuleTest extends RuleTestCase
 					new RuleLevelHelper($reflectionProvider, true, false, true),
 					new NullsafeCheck(),
 					new PhpVersion(80000),
+					new UnresolvableTypeHelper(true),
+					true,
 					true,
 					true,
 					true,

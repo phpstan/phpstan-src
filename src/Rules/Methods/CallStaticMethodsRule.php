@@ -289,6 +289,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 				'Unable to resolve the template type %s in call to method ' . $lowercasedMethodName,
 				'Missing parameter $%s in call to ' . $lowercasedMethodName . '.',
 				'Unknown parameter $%s in call to ' . $lowercasedMethodName . '.',
+				'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
 			]
 		));
 

@@ -157,6 +157,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 				'Unable to resolve the template type %s in call to method ' . $messagesMethodName,
 				'Missing parameter $%s in call to method ' . $messagesMethodName . '.',
 				'Unknown parameter $%s in call to method ' . $messagesMethodName . '.',
+				'Return type of call to method ' . $messagesMethodName . ' contains unresolvable type.',
 			]
 		));
 

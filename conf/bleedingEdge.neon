@@ -20,3 +20,4 @@ parameters:
 		preciseExceptionTracking: true
 		apiRules: true
 		deepInspectTypes: true
+		neverInGenericReturnType: true

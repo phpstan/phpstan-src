@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleLevelHelper;
 
 /**
@@ -21,6 +22,8 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				$ruleLevelHelper,
 				new NullsafeCheck(),
 				new PhpVersion(80000),
+				new UnresolvableTypeHelper(true),
+				true,
 				true,
 				true,
 				true,

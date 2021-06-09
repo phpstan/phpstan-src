@@ -127,6 +127,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 					'Unable to resolve the template type %s in call to ' . $callableDescription,
 					'Missing parameter $%s in call to ' . $callableDescription . '.',
 					'Unknown parameter $%s in call to ' . $callableDescription . '.',
+					'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
 				]
 			)
 		);

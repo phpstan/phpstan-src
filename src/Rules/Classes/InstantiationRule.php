@@ -197,6 +197,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				'Unable to resolve the template type %s in instantiation of class ' . $classReflection->getDisplayName(),
 				'Missing parameter $%s in call to ' . $classReflection->getDisplayName() . ' constructor.',
 				'Unknown parameter $%s in call to ' . $classReflection->getDisplayName() . ' constructor.',
+				'Return type of call to ' . $classReflection->getDisplayName() . ' constructor contains unresolvable type.',
 			]
 		));
 	}

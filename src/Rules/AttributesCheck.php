@@ -108,6 +108,7 @@ class AttributesCheck
 						'Unable to resolve the template type %s in instantiation of attribute class ' . $attributeClass->getDisplayName(),
 						'Missing parameter $%s in call to ' . $attributeClass->getDisplayName() . ' constructor.',
 						'Unknown parameter $%s in call to ' . $attributeClass->getDisplayName() . ' constructor.',
+						'Return type of call to ' . $attributeClass->getDisplayName() . ' constructor contains unresolvable type.',
 					]
 				);
 

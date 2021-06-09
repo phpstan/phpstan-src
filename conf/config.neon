@@ -43,6 +43,7 @@ parameters:
 		preciseExceptionTracking: false
 		apiRules: false
 		deepInspectTypes: false
+		neverInGenericReturnType: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -213,7 +214,8 @@ parametersSchema:
 		rememberFunctionValues: bool(),
 		preciseExceptionTracking: bool(),
 		apiRules: bool(),
-		deepInspectTypes: bool()
+		deepInspectTypes: bool(),
+		neverInGenericReturnType: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -796,6 +798,7 @@ services:
 			checkArgumentsPassedByReference: %checkArgumentsPassedByReference%
 			checkExtraArguments: %checkExtraArguments%
 			checkMissingTypehints: %checkMissingTypehints%
+			checkNeverInGenericReturnType: %featureToggles.neverInGenericReturnType%
 
 	-
 		class: PHPStan\Rules\FunctionDefinitionCheck

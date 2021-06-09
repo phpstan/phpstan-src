@@ -69,6 +69,7 @@ class SpecifiedTypes
 		return $this->newConditionalExpressionHolders;
 	}
 
+	/** @api */
 	public function intersectWith(SpecifiedTypes $other): self
 	{
 		$sureTypeUnion = [];
@@ -99,6 +100,7 @@ class SpecifiedTypes
 		return new self($sureTypeUnion, $sureNotTypeUnion);
 	}
 
+	/** @api */
 	public function unionWith(SpecifiedTypes $other): self
 	{
 		$sureTypeUnion = $this->sureTypes + $other->sureTypes;

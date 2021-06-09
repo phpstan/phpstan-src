@@ -26,6 +26,7 @@ use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 
+/** @api */
 abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 {
 

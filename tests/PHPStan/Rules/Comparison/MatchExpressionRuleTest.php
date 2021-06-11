@@ -106,4 +106,21 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5161.php'], []);
 	}
 
+	public function testBug4857(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-4857.php'], [
+			[
+				'Match expression does not handle remaining value: true',
+				13,
+			],
+			[
+				'Match expression does not handle remaining value: true',
+				23,
+			],
+		]);
+	}
+
 }

@@ -44,4 +44,12 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2648-namespace-rule.php'], []);
 	}
 
+	public function testBug5161(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-5161.php'], []);
+	}
+
 }

@@ -466,7 +466,7 @@ class TypeSpecifier
 				}
 			}
 
-			if ($context->truthy()) {
+			if ($context->true()) {
 				if (!$expr->left instanceof Node\Scalar) {
 					$result = $result->unionWith(
 						$this->create(
@@ -489,7 +489,7 @@ class TypeSpecifier
 						)
 					);
 				}
-			} elseif ($context->falsey()) {
+			} elseif ($context->false()) {
 				if (!$expr->left instanceof Node\Scalar) {
 					$result = $result->unionWith(
 						$this->create(

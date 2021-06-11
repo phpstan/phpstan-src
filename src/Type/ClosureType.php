@@ -145,7 +145,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 					}, $this->parameters)),
 					$this->returnType->describe($level)
 				);
-			},
+			}
 		);
 	}
 

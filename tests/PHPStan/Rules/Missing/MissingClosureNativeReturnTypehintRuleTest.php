@@ -64,4 +64,14 @@ class MissingClosureNativeReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5164(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5164.php'], [
+			[
+				'Anonymous function should have native return typehint "Closure".',
+				9,
+			],
+		]);
+	}
+
 }

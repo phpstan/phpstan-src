@@ -475,6 +475,14 @@ class NeverReturn
 
 	}
 
+	/**
+	 * @return never
+	 */
+	public function doBaz2(): array
+	{
+
+	}
+
 }
 
 class ClosureWithMissingReturnWithoutTypehint

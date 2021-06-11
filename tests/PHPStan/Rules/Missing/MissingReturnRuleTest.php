@@ -100,6 +100,10 @@ class MissingReturnRuleTest extends RuleTestCase
 				'Method MissingReturn\NeverReturn::doBaz() should always throw an exception or terminate script execution but doesn\'t do that.',
 				473,
 			],
+			[
+				'Method MissingReturn\NeverReturn::doBaz2() should always throw an exception or terminate script execution but doesn\'t do that.',
+				481,
+			],
 		]);
 	}
 

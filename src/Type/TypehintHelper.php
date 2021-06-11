@@ -113,11 +113,10 @@ class TypehintHelper
 	): Type
 	{
 		if ($phpDocType !== null && !$phpDocType instanceof ErrorType) {
+			if ($phpDocType instanceof NeverType && $phpDocType->isExplicit()) {
+				return $phpDocType;
+			}
 			if ($type instanceof VoidType) {
-				if ($phpDocType instanceof NeverType && $phpDocType->isExplicit()) {
-					return $phpDocType;
-				}
-
 				return new VoidType();
 			}
 			if (

@@ -153,7 +153,7 @@ class Foo
 		$f = function (): \stdClass {
 			throw new \Exception();
 		};
-		assertType('stdClass', $f());
+		assertType('*NEVER*', $f());
 	}
 
 }

@@ -1,0 +1,55 @@
+<?php
+
+// array_filter, needs to deal with mode, extension ?
+
+/**
+ * @template TIn of mixed
+ * @template TReturn of mixed
+ *
+ * @param array<TIn> $input
+ * @param callable(TReturn, TIn): TReturn $callback
+ * @param TReturn $initial
+ *
+ * @return TReturn
+ */
+function array_reduce(
+	array $input,
+	callable $callback,
+	$initial = null
+) {}
+
+/**
+ * @template TKey of array-key
+ * @template TIn of mixed
+ * @template TReturn of mixed
+ *
+ * @param null|callable(TIn): TReturn $callback
+ * @param array<TKey, TIn> $input1
+ * @param array<TKey, TIn> ...$args
+ *
+ * @return array<TKey, TReturn>
+ */
+function array_map(
+    ?callable $callback = null,
+    array $input1,
+    array ...$args
+) {}
+
+
+/**
+ * @template TKey of array-key
+ * @template TValue of mixed
+ * @template TUser of mixed
+ *
+ * @param array<TKey, TValue> $array
+ * @param callable(int, TKey, TUser=): mixed $callback
+ * @param TUser $userdata
+ *
+ * @return true
+ */
+function array_walk(
+    array &$array,
+    callable $callback,
+    $userdata = null
+): bool {}
+

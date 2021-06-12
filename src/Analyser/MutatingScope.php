@@ -3234,8 +3234,8 @@ class MutatingScope implements Scope
 	 */
 	public function enterCatch(array $classes, ?string $variableName): self
 	{
-		$type = TypeCombinator::union(...array_map(static function (string $class): ObjectType {
-			return new ObjectType($class);
+		$type = TypeCombinator::union(...array_map(static function (\PhpParser\Node\Name $class): ObjectType {
+			return new ObjectType((string) $class);
 		}, $classes));
 
 		return $this->enterCatchType($type, $variableName);

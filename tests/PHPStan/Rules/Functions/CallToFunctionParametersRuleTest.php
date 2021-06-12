@@ -561,6 +561,14 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #2 $callback of function array_reduce expects callable(string, int|string): string, Closure(string, string): string given.',
 				5,
 			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				11
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				18
+			]
 		]);
 
 		$this->analyse([__DIR__ . '/data/array_map.php'], [

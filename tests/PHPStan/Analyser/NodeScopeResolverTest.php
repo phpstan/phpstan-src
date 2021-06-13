@@ -311,9 +311,11 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/while.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/throw-points/try-catch.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-override.php');
-		require_once __DIR__ . '/data/phpdoc-pseudotype-namespace.php';
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-namespace.php');
+		if (PHP_VERSION_ID < 80100) {
+			require_once __DIR__ . '/data/phpdoc-pseudotype-namespace.php';
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-namespace.php');
+		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/phpdoc-pseudotype-global.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-traits.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4423.php');

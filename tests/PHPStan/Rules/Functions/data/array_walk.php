@@ -3,12 +3,16 @@
 $array = ['foo' => 1, 'bar' => 2];
 array_walk(
 	$array,
-	fn(stdClass $in, float $key) => ''
+	function(stdClass $in, float $key): string {
+		return '';
+	}
 );
 
 $array = ['foo' => 1, 'bar' => 2];
 array_walk(
 	$array,
-	fn(int $in, string $key, int $extra) => '',
+	function(int $in, string $key, int $extra): string {
+		return '';
+	},
 	'extra'
 );

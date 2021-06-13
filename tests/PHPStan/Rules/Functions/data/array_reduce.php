@@ -2,18 +2,24 @@
 
 array_reduce(
 	[1,2,3],
-	fn(string $foo, string $current): string => $foo . $current,
+	function(string $foo, string $current): string {
+		return $foo . $current;
+	},
 	''
 );
 
 array_reduce(
 	[1,2,3],
-	fn(string $foo, int $current): string => $foo . $current,
+	function(string $foo, int $current): string {
+		return $foo . $current;
+	},
 	null
 );
 
 
 array_reduce(
 	[1,2,3],
-	fn(string $foo, int $current): string => $foo . $current,
+	function(string $foo, int $current): string {
+		return $foo . $current;
+	},
 );

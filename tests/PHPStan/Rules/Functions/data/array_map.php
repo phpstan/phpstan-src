@@ -1,6 +1,8 @@
 <?php declare(strict_types = 1);
 
 array_map(
-	fn(stdClass $in): string => '',
+	function(stdClass $in): string {
+		return '';
+	},
 	[1, 2, 3]
 );

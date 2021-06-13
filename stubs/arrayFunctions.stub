@@ -1,7 +1,5 @@
 <?php
 
-// array_filter, needs to deal with mode, extension ?
-
 /**
  * @template TIn of mixed
  * @template TReturn of mixed
@@ -20,24 +18,6 @@ function array_reduce(
 
 /**
  * @template TKey of array-key
- * @template TIn of mixed
- * @template TReturn of mixed
- *
- * @param null|callable(TIn): TReturn $callback
- * @param array<TKey, TIn> $input1
- * @param array<TKey, TIn> ...$args
- *
- * @return array<TKey, TReturn>
- */
-function array_map(
-    ?callable $callback = null,
-    array $input1,
-    array ...$args
-) {}
-
-
-/**
- * @template TKey of array-key
  * @template TValue of mixed
  * @template TUser of mixed
  *
@@ -53,3 +33,35 @@ function array_walk(
     $userdata = null
 ): bool {}
 
+/**
+ * @template T of mixed
+ *
+ * @param array<T> $array_arg
+ * @param callable(T, T): int $cmp_function
+ */
+function uasort(
+    array &$array_arg,
+    callable $cmp_function
+): bool {}
+
+/**
+ * @template T of mixed
+ *
+ * @param array<T> $array_arg
+ * @param callable(T, T): int $cmp_function
+ */
+function usort(
+    array &$array_arg,
+    callable $cmp_function
+): bool {}
+
+/**
+ * @template T
+ *
+ * @param array<T, mixed> $array_arg
+ * @param callable(T, T): int $cmp_function
+ */
+function uksort(
+    array &$array_arg,
+    callable $cmp_function
+): bool {}

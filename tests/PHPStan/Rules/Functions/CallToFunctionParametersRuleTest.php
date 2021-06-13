@@ -563,21 +563,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
-				11,
+				13,
 			],
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
-				18,
-			],
-		]);
-	}
-
-	public function testArrayMapCallback(): void
-	{
-		$this->analyse([__DIR__ . '/data/array_map.php'], [
-			[
-				'Parameter #1 $callback of function array_map expects (callable(int|stdClass): string)|null, Closure(stdClass): \'\' given.',
-				4,
+				22,
 			],
 		]);
 	}
@@ -591,8 +581,38 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Parameter #2 $callback of function array_walk expects callable(int, string, int|string): mixed, Closure(int, string, int): \'\' given.',
-				12,
+				14,
 			],
+		]);
+	}
+
+	public function testUasortCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/uasort.php'], [
+			[
+				'Parameter #2 $cmp_function of function uasort expects callable(int|string, int|string): int, Closure(string, string): 1 given.',
+				7
+			]
+		]);
+	}
+
+	public function testUsortCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/usort.php'], [
+			[
+				'Parameter #2 $cmp_function of function usort expects callable(int|string, int|string): int, Closure(string, string): 1 given.',
+				7
+			]
+		]);
+	}
+
+	public function testUksortCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/uksort.php'], [
+			[
+				'Parameter #2 $cmp_function of function uksort expects callable(stdClass|string, stdClass|string): int, Closure(stdClass, stdClass): 1 given.',
+				7
+			]
 		]);
 	}
 

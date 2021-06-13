@@ -150,7 +150,7 @@ class ParallelAnalyser
 
 				/**
 				 * @var string $file
-				 * @var array<ExportedNode> $fileExportedNodes
+				 * @var array<mixed[]> $fileExportedNodes
 				 */
 				foreach ($json['exportedNodes'] as $file => $fileExportedNodes) {
 					if (count($fileExportedNodes) === 0) {

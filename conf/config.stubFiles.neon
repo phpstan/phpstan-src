@@ -12,4 +12,3 @@ parameters:
 		- ../stubs/dom.stub
 		- ../stubs/spl.stub
 		- ../stubs/SplObjectStorage.stub
-		- ../stubs/array.stub

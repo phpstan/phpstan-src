@@ -54,7 +54,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 		} elseif ($node instanceof Node\Stmt\Function_) {
 			$functionName = trim($scope->getNamespace() . '\\' . $node->name->name, '\\');
 		} else {
-			[];
+			return [];
 		}
 
 		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(

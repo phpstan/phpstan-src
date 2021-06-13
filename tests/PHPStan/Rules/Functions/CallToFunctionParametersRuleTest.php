@@ -554,7 +554,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/number-format-named-arguments.php'], []);
 	}
 
-	public function testArrayFunctionCallbackIsValidated(): void
+	public function testArrayReduceCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_reduce.php'], [
 			[
@@ -570,14 +570,20 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				18,
 			],
 		]);
+	}
 
+	public function testArrayMapCallback(): void
+	{
 		$this->analyse([__DIR__ . '/data/array_map.php'], [
 			[
 				'Parameter #1 $callback of function array_map expects (callable(int|stdClass): string)|null, Closure(stdClass): \'\' given.',
 				4,
 			],
 		]);
+	}
 
+	public function testArrayWalkCallback(): void
+	{
 		$this->analyse([__DIR__ . '/data/array_walk.php'], [
 			[
 				'Parameter #2 $callback of function array_walk expects callable(int, TKey of (int|string), *NEVER*): mixed, Closure(stdClass, float): \'\' given.',

@@ -47,7 +47,7 @@ jobs:
         run: "composer install --no-interaction --no-progress --no-suggest"
 
       - name: "Transform source code"
-        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
         run: php bin/transform-source.php
 
       - name: "Tests"

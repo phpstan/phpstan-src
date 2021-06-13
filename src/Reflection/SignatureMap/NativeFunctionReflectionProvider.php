@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
@@ -118,7 +119,7 @@ class NativeFunctionReflectionProvider
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				TypehintHelper::decideType($functionSignature->getReturnType(), $this->getReturnTypeFromPhpDoc($lowerCasedFunctionName))
+				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null)
 			);
 
 			$i++;
@@ -159,12 +160,8 @@ class NativeFunctionReflectionProvider
 		return $functionReflection;
 	}
 
-	private function getReturnTypeFromPhpDoc(string $lowerCasedFunctionName): ?Type
+	private function getReturnTypeFromPhpDoc(ResolvedPhpDocBlock $phpDoc): ?Type
 	{
-		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName);
-		if ($phpDoc === null) {
-			return null;
-		}
 		$returnTag = $phpDoc->getReturnTag();
 		if ($returnTag === null) {
 			return null;

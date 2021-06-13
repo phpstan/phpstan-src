@@ -5,9 +5,9 @@ namespace PHPStan\Reflection\SignatureMap;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\PhpDoc\StubPhpDocProvider;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
-use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -15,11 +15,11 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
 
 class NativeFunctionReflectionProvider
@@ -55,29 +55,23 @@ class NativeFunctionReflectionProvider
 			return null;
 		}
 
-		$phpdoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName);
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName);
 
 		$variants = [];
 		$i = 0;
 		while ($this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName, $i)) {
 			$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $i);
-			$returnType = $functionSignature->getReturnType();
-			$variants[] = new FunctionVariantWithPhpDocs(
+			$variants[] = new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,
-				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpdoc): NativeParameterWithPhpDocsReflection {
+				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterReflection {
 					$type = $parameterSignature->getType();
-
-					if ($phpdoc !== null) {
-						$phpDocParam = $phpdoc->getParamTags()[$parameterSignature->getName()] ?? null;
+					$phpDocType = null;
+					if ($phpDoc !== null) {
+						$phpDocParam = $phpDoc->getParamTags()[$parameterSignature->getName()] ?? null;
 						if ($phpDocParam !== null) {
-							$type = $phpDocParam->getType();
-							$phpdocType = $type;
-						} else {
-							$phpdocType = new MixedType();
+							$phpDocType = $phpDocParam->getType();
 						}
-					} else {
-						$phpdocType = new MixedType();
 					}
 					if (
 						$parameterSignature->getName() === 'values'
@@ -114,21 +108,17 @@ class NativeFunctionReflectionProvider
 						);
 					}
 
-					return new NativeParameterWithPhpDocsReflection(
+					return new NativeParameterReflection(
 						$parameterSignature->getName(),
 						$parameterSignature->isOptional(),
-						$type,
-						$phpdocType,
-						$parameterSignature->getNativeType(),
+						TypehintHelper::decideType($type, $phpDocType),
 						$parameterSignature->passedByReference(),
 						$parameterSignature->isVariadic(),
 						null
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				$returnType,
-				$this->getReturnTypeFromPhpDoc($lowerCasedFunctionName),
-				$functionSignature->getNativeReturnType()
+				TypehintHelper::decideType($functionSignature->getReturnType(), $this->getReturnTypeFromPhpDoc($lowerCasedFunctionName))
 			);
 
 			$i++;
@@ -169,15 +159,15 @@ class NativeFunctionReflectionProvider
 		return $functionReflection;
 	}
 
-	private function getReturnTypeFromPhpDoc(string $lowerCasedFunctionName): Type
+	private function getReturnTypeFromPhpDoc(string $lowerCasedFunctionName): ?Type
 	{
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName);
 		if ($phpDoc === null) {
-			return new MixedType();
+			return null;
 		}
 		$returnTag = $phpDoc->getReturnTag();
 		if ($returnTag === null) {
-			return new MixedType();
+			return null;
 		}
 
 		return $returnTag->getType();

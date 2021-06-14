@@ -30,7 +30,7 @@ class BenevolentUnionType extends UnionType
 			return new ErrorType();
 		}
 
-		return TypeCombinator::union(...$resultTypes);
+		return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$resultTypes));
 	}
 
 	protected function unionResults(callable $getResult): TrinaryLogic

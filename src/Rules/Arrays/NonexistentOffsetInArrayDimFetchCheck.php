@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -68,7 +69,12 @@ class NonexistentOffsetInArrayDimFetchCheck
 		}
 
 		if (!$report && $this->reportMaybes) {
-			foreach (TypeUtils::flattenTypes($type) as $innerType) {
+			if ($type instanceof BenevolentUnionType) {
+				$flattenedTypes = [$type];
+			} else {
+				$flattenedTypes = TypeUtils::flattenTypes($type);
+			}
+			foreach ($flattenedTypes as $innerType) {
 				if ($dimType instanceof UnionType) {
 					if ($innerType->hasOffsetValueType($dimType)->no()) {
 						$report = true;

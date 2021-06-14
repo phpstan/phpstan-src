@@ -268,4 +268,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		]);
 	}
 
+	public function testBug5169(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5169.php'], [
+			[
+				'Cannot access offset mixed on (float|int).',
+				29,
+			],
+		]);
+	}
+
 }

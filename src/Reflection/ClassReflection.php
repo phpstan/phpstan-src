@@ -676,7 +676,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		return array_map(function (\ReflectionClass $trait): ClassReflection {
 			return $this->reflectionProvider->getClass($trait->getName());
-		}, $this->getNativeReflection()->getTraits());
+		}, $this->collectTraits($this->getNativeReflection()));
 	}
 
 	/**

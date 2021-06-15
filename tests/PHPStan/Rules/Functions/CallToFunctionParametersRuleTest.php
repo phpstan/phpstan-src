@@ -7,6 +7,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleLevelHelper;
+use const PHP_VERSION_ID;
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<CallToFunctionParametersRule>
@@ -552,6 +553,89 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/number-format-named-arguments.php'], []);
+	}
+
+	public function testArrayReduceCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/array_reduce.php'], [
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string, int|string): string, Closure(string, string): string given.',
+				5,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				13,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				22,
+			],
+		]);
+	}
+
+	public function testArrayWalkCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/array_walk.php'], [
+			[
+				'Parameter #2 $callback of function array_walk expects callable(int, string, *NEVER*): mixed, Closure(stdClass, float): \'\' given.',
+				6,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(int, string, int|string): mixed, Closure(int, string, int): \'\' given.',
+				14,
+			],
+		]);
+	}
+
+	public function testUasortCallback(): void
+	{
+		$paramTwoName = PHP_VERSION_ID >= 80000
+			? 'callback'
+			: 'cmp_function';
+
+		$this->analyse([__DIR__ . '/data/uasort.php'], [
+			[
+				sprintf(
+					'Parameter #2 $%s of function uasort expects callable(int|string, int|string): int, Closure(string, string): 1 given.',
+					$paramTwoName
+				),
+				7,
+			],
+		]);
+	}
+
+	public function testUsortCallback(): void
+	{
+		$paramTwoName = PHP_VERSION_ID >= 80000
+			? 'callback'
+			: 'cmp_function';
+
+		$this->analyse([__DIR__ . '/data/usort.php'], [
+			[
+				sprintf(
+					'Parameter #2 $%s of function usort expects callable(int|string, int|string): int, Closure(string, string): 1 given.',
+					$paramTwoName
+				),
+				7,
+			],
+		]);
+	}
+
+	public function testUksortCallback(): void
+	{
+		$paramTwoName = PHP_VERSION_ID >= 80000
+			? 'callback'
+			: 'cmp_function';
+
+		$this->analyse([__DIR__ . '/data/uksort.php'], [
+			[
+				sprintf(
+					'Parameter #2 $%s of function uksort expects callable(stdClass|string, stdClass|string): int, Closure(stdClass, stdClass): 1 given.',
+					$paramTwoName
+				),
+				7,
+			],
+		]);
 	}
 
 }

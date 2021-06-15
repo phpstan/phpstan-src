@@ -4,6 +4,8 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -17,6 +19,8 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
 
 class NativeFunctionReflectionProvider
@@ -31,11 +35,14 @@ class NativeFunctionReflectionProvider
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
-	public function __construct(SignatureMapProvider $signatureMapProvider, FunctionReflector $functionReflector, FileTypeMapper $fileTypeMapper)
+	private StubPhpDocProvider $stubPhpDocProvider;
+
+	public function __construct(SignatureMapProvider $signatureMapProvider, FunctionReflector $functionReflector, FileTypeMapper $fileTypeMapper, StubPhpDocProvider $stubPhpDocProvider)
 	{
 		$this->signatureMapProvider = $signatureMapProvider;
 		$this->functionReflector = $functionReflector;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->stubPhpDocProvider = $stubPhpDocProvider;
 	}
 
 	public function findFunctionReflection(string $functionName): ?NativeFunctionReflection
@@ -48,17 +55,30 @@ class NativeFunctionReflectionProvider
 		if (!$this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName)) {
 			return null;
 		}
+		$reflectionFunction = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null);
+
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static function (ParameterSignature $parameter): string {
+			return $parameter->getName();
+		}, $reflectionFunction->getParameters()));
 
 		$variants = [];
 		$i = 0;
 		while ($this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName, $i)) {
 			$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $i);
-			$returnType = $functionSignature->getReturnType();
 			$variants[] = new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,
-				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName): NativeParameterReflection {
+				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterReflection {
 					$type = $parameterSignature->getType();
+					$defaultValue = null;
+
+					$phpDocType = null;
+					if ($phpDoc !== null) {
+						$phpDocParam = $phpDoc->getParamTags()[$parameterSignature->getName()] ?? null;
+						if ($phpDocParam !== null) {
+							$phpDocType = $phpDocParam->getType();
+						}
+					}
 					if (
 						$parameterSignature->getName() === 'values'
 						&& (
@@ -94,17 +114,24 @@ class NativeFunctionReflectionProvider
 						);
 					}
 
+					if (
+						$lowerCasedFunctionName === 'array_reduce'
+						 && $parameterSignature->getName() === 'initial'
+					) {
+						$defaultValue = new NullType();
+					}
+
 					return new NativeParameterReflection(
 						$parameterSignature->getName(),
 						$parameterSignature->isOptional(),
-						$type,
+						TypehintHelper::decideType($type, $phpDocType),
 						$parameterSignature->passedByReference(),
 						$parameterSignature->isVariadic(),
-						null
+						$defaultValue
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				$returnType
+				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null)
 			);
 
 			$i++;
@@ -143,6 +170,16 @@ class NativeFunctionReflectionProvider
 		self::$functionMap[$lowerCasedFunctionName] = $functionReflection;
 
 		return $functionReflection;
+	}
+
+	private function getReturnTypeFromPhpDoc(ResolvedPhpDocBlock $phpDoc): ?Type
+	{
+		$returnTag = $phpDoc->getReturnTag();
+		if ($returnTag === null) {
+			return null;
+		}
+
+		return $returnTag->getType();
 	}
 
 }

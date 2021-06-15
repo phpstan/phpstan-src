@@ -220,4 +220,41 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		$this->assertTrue($constant->isDeprecated()->yes());
 	}
 
+	public function testGetTraits(): void
+	{
+		$reflectionProvider = $this->createBroker();
+
+		$classes = [
+			\NestedTraits\NoTrait::class => [],
+			\NestedTraits\Foo::class => [
+				\NestedTraits\FooTrait::class,
+			],
+			\NestedTraits\Bar::class => [
+				\NestedTraits\BarTrait::class,
+				\NestedTraits\FooTrait::class,
+			],
+			\NestedTraits\Baz::class => [
+				\NestedTraits\BazTrait::class,
+				\NestedTraits\BarTrait::class,
+				\NestedTraits\FooTrait::class,
+			],
+			\NestedTraits\BazChild::class => [
+				// TOOD is this expected?
+				// \NestedTraits\BazTrait::class,
+				// \NestedTraits\BarTrait::class,
+				// \NestedTraits\FooTrait::class,
+			],
+		];
+
+		foreach ($classes as $class => $expectedTraits) {
+			$this->assertSame(
+				array_map(
+					static fn(ClassReflection $classReflection) => $classReflection->getNativeReflection()->getName(),
+					$reflectionProvider->getClass($class)->getTraits()
+				),
+				$expectedTraits
+			);
+		}
+	}
+
 }

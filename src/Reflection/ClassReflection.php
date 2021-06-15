@@ -344,6 +344,11 @@ class ClassReflection implements ReflectionWithFilename
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
 
+		// TOOD is this desired?
+		// if ($parentClass = $class->getParentClass()) {
+		// 	$traits = $this->collectTraits($parentClass);
+		// }
+
 		while (count($traitsLeftToAnalyze) !== 0) {
 			$trait = reset($traitsLeftToAnalyze);
 			$traits[] = $trait;

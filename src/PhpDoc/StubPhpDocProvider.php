@@ -52,6 +52,9 @@ class StubPhpDocProvider
 	/** @var array<string, array<string, array<string>>> */
 	private array $knownMethodsParameterNames = [];
 
+	/** @var array<string, array<string>> */
+	private array $knownFunctionParameterNames = [];
+
 	/**
 	 * @param \PHPStan\Parser\Parser $parser
 	 * @param string[] $stubFiles
@@ -164,7 +167,13 @@ class StubPhpDocProvider
 		return null;
 	}
 
-	public function findFunctionPhpDoc(string $functionName): ?ResolvedPhpDocBlock
+	/**
+	 * @param string $functionName
+	 * @param array<int, string> $positionalParameterNames
+	 * @return ResolvedPhpDocBlock|null
+	 * @throws \PHPStan\ShouldNotHappenException
+	 */
+	public function findFunctionPhpDoc(string $functionName, array $positionalParameterNames): ?ResolvedPhpDocBlock
 	{
 		if (!$this->isKnownFunction($functionName)) {
 			return null;
@@ -176,13 +185,28 @@ class StubPhpDocProvider
 
 		if (array_key_exists($functionName, $this->knownFunctionsDocComments)) {
 			[$file, $docComment] = $this->knownFunctionsDocComments[$functionName];
-			$this->functionMap[$functionName] = $this->fileTypeMapper->getResolvedPhpDoc(
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$file,
 				null,
 				null,
 				$functionName,
 				$docComment
 			);
+
+			if (!isset($this->knownFunctionParameterNames[$functionName])) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$functionParameterNames = $this->knownFunctionParameterNames[$functionName];
+			$parameterNameMapping = [];
+			foreach ($positionalParameterNames as $i => $parameterName) {
+				if (!array_key_exists($i, $functionParameterNames)) {
+					continue;
+				}
+				$parameterNameMapping[$functionParameterNames[$i]] = $parameterName;
+			}
+
+			$this->functionMap[$functionName] = $resolvedPhpDoc->changeParameterNamesByMapping($parameterNameMapping);
 
 			return $this->functionMap[$functionName];
 		}
@@ -252,6 +276,14 @@ class StubPhpDocProvider
 				$this->functionMap[$functionName] = null;
 				return;
 			}
+			$this->knownFunctionParameterNames[$functionName] = array_map(static function (Node\Param $param): string {
+				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+
+				return $param->var->name;
+			}, $node->getParams());
+
 			$this->knownFunctionsDocComments[$functionName] = [$stubFile, $docComment->getText()];
 			return;
 		}

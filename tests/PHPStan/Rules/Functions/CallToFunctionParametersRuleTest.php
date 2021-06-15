@@ -576,7 +576,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_walk.php'], [
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, TKey of (int|string), *NEVER*): mixed, Closure(stdClass, float): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(int, string, *NEVER*): mixed, Closure(stdClass, float): \'\' given.',
 				6,
 			],
 			[

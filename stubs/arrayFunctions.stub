@@ -4,16 +4,16 @@
  * @template TIn of mixed
  * @template TReturn of mixed
  *
- * @param array<TIn> $input
- * @param callable(TReturn, TIn): TReturn $callback
- * @param TReturn $initial
+ * @param array<TIn> $one
+ * @param callable(TReturn, TIn): TReturn $two
+ * @param TReturn $three
  *
  * @return TReturn
  */
 function array_reduce(
-	array $input,
-	callable $callback,
-	$initial = null
+	array $one,
+	callable $two,
+	$three = null
 ) {}
 
 /**
@@ -21,47 +21,47 @@ function array_reduce(
  * @template TValue of mixed
  * @template TUser of mixed
  *
- * @param array<TKey, TValue> $array
- * @param callable(int, TKey, TUser=): mixed $callback
- * @param TUser $userdata
+ * @param array<TKey, TValue> $one
+ * @param callable(int, TKey, TUser=): mixed $two
+ * @param TUser $three
  *
  * @return true
  */
 function array_walk(
-    array &$array,
-    callable $callback,
-    $userdata = null
+    array &$one,
+    callable $two,
+    $three = null
 ): bool {}
 
 /**
  * @template T of mixed
  *
- * @param array<T> $array_arg
- * @param callable(T, T): int $cmp_function
+ * @param array<T> $one
+ * @param callable(T, T): int $two
  */
 function uasort(
-    array &$array_arg,
-    callable $cmp_function
+    array &$one,
+    callable $two
 ): bool {}
 
 /**
  * @template T of mixed
  *
- * @param array<T> $array_arg
- * @param callable(T, T): int $cmp_function
+ * @param array<T> $one
+ * @param callable(T, T): int $two
  */
 function usort(
-    array &$array_arg,
-    callable $cmp_function
+    array &$one,
+    callable $two
 ): bool {}
 
 /**
  * @template T
  *
- * @param array<T, mixed> $array_arg
- * @param callable(T, T): int $cmp_function
+ * @param array<T, mixed> $one
+ * @param callable(T, T): int $two
  */
 function uksort(
-    array &$array_arg,
-    callable $cmp_function
+    array &$one,
+    callable $two
 ): bool {}

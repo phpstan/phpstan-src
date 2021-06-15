@@ -55,7 +55,7 @@ class NativeFunctionReflectionProvider
 		if (!$this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName)) {
 			return null;
 		}
-		$reflectionFunction = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName,  null);
+		$reflectionFunction = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null);
 
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static function (ParameterSignature $parameter): string {
 			return $parameter->getName();
@@ -70,6 +70,8 @@ class NativeFunctionReflectionProvider
 				null,
 				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterReflection {
 					$type = $parameterSignature->getType();
+					$defaultValue = null;
+
 					$phpDocType = null;
 					if ($phpDoc !== null) {
 						$phpDocParam = $phpDoc->getParamTags()[$parameterSignature->getName()] ?? null;
@@ -112,13 +114,20 @@ class NativeFunctionReflectionProvider
 						);
 					}
 
+					if (
+						$lowerCasedFunctionName === 'array_reduce'
+						 && $parameterSignature->getName() === 'initial'
+					) {
+						$defaultValue = new NullType();
+					}
+
 					return new NativeParameterReflection(
 						$parameterSignature->getName(),
 						$parameterSignature->isOptional(),
 						TypehintHelper::decideType($type, $phpDocType),
 						$parameterSignature->passedByReference(),
 						$parameterSignature->isVariadic(),
-						null
+						$defaultValue
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),

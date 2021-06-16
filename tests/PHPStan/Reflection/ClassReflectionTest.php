@@ -220,41 +220,96 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		$this->assertTrue($constant->isDeprecated()->yes());
 	}
 
-	public function testGetTraits(): void
+	/**
+	 * @dataProvider dataNestedRecursiveTraits
+	 * @param class-string $className
+	 * @param class-string[] $expected
+	 * @param bool $recursive
+	 */
+	public function testGetTraits(string $className, array $expected, bool $recursive = false): void
 	{
 		$reflectionProvider = $this->createBroker();
 
-		$classes = [
-			\NestedTraits\NoTrait::class => [],
-			\NestedTraits\Foo::class => [
-				\NestedTraits\FooTrait::class,
+		$this->assertSame(
+			array_map(
+				static fn(ClassReflection $classReflection) => $classReflection->getNativeReflection()->getName(),
+				$reflectionProvider->getClass($className)->getTraits($recursive)
+			),
+			$expected
+		);
+	}
+
+	public function dataNestedRecursiveTraits(): array
+	{
+		return [
+			[
+				\NestedTraits\NoTrait::class,
+				[],
 			],
-			\NestedTraits\Bar::class => [
-				\NestedTraits\BarTrait::class,
-				\NestedTraits\FooTrait::class,
+			[
+				\NestedTraits\NoTrait::class,
+				[],
+				true,
 			],
-			\NestedTraits\Baz::class => [
-				\NestedTraits\BazTrait::class,
-				\NestedTraits\BarTrait::class,
-				\NestedTraits\FooTrait::class,
+			[
+				\NestedTraits\Foo::class,
+				[
+					\NestedTraits\FooTrait::class,
+				],
 			],
-			\NestedTraits\BazChild::class => [
-				// TOOD is this expected?
-				// \NestedTraits\BazTrait::class,
-				// \NestedTraits\BarTrait::class,
-				// \NestedTraits\FooTrait::class,
+			[
+				\NestedTraits\Foo::class,
+				[
+					\NestedTraits\FooTrait::class,
+				],
+				true,
+			],
+			[
+				\NestedTraits\Bar::class,
+				[
+					\NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class,
+				],
+			],
+			[
+				\NestedTraits\Bar::class,
+				[
+					\NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class,
+				],
+				true,
+			],
+			[
+				\NestedTraits\Baz::class,
+				[
+					\NestedTraits\BazTrait::class,
+					\NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class,
+				],
+			],
+			[
+				\NestedTraits\Baz::class,
+				[
+					\NestedTraits\BazTrait::class,
+					\NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class,
+				],
+				true,
+			],
+			[
+				\NestedTraits\BazChild::class,
+				[],
+			],
+			[
+				\NestedTraits\BazChild::class,
+				[
+					\NestedTraits\BazTrait::class,
+					\NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class,
+				],
+				true,
 			],
 		];
-
-		foreach ($classes as $class => $expectedTraits) {
-			$this->assertSame(
-				array_map(
-					static fn(ClassReflection $classReflection) => $classReflection->getNativeReflection()->getName(),
-					$reflectionProvider->getClass($class)->getTraits()
-				),
-				$expectedTraits
-			);
-		}
 	}
 
 }

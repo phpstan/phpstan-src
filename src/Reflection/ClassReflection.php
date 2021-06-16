@@ -344,11 +344,6 @@ class ClassReflection implements ReflectionWithFilename
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
 
-		// TOOD is this desired?
-		// if ($parentClass = $class->getParentClass()) {
-		// 	$traits = $this->collectTraits($parentClass);
-		// }
-
 		while (count($traitsLeftToAnalyze) !== 0) {
 			$trait = reset($traitsLeftToAnalyze);
 			$traits[] = $trait;
@@ -677,11 +672,24 @@ class ClassReflection implements ReflectionWithFilename
 	/**
 	 * @return \PHPStan\Reflection\ClassReflection[]
 	 */
-	public function getTraits(): array
+	public function getTraits(bool $recursive = false): array
 	{
-		return array_map(function (\ReflectionClass $trait): ClassReflection {
+		$traits = array_map(function (\ReflectionClass $trait): ClassReflection {
 			return $this->reflectionProvider->getClass($trait->getName());
 		}, $this->collectTraits($this->getNativeReflection()));
+
+		if ($recursive) {
+			$parentClass = $this->getNativeReflection()->getParentClass();
+
+			if ($parentClass !== false) {
+				return array_merge(
+					$traits,
+					$this->reflectionProvider->getClass($parentClass->getName())->getTraits(true)
+				);
+			}
+		}
+
+		return $traits;
 	}
 
 	/**

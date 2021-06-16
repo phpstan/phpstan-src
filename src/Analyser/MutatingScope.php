@@ -3685,7 +3685,7 @@ class MutatingScope implements Scope
 				return $length;
 			}
 
-			return $b['sure'] - $a['sure'];
+			return ((int) $b['sure']) - ((int) $a['sure']);
 		});
 
 		$scope = $this;

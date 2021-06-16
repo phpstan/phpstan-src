@@ -559,7 +559,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_reduce.php'], [
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string, int|string): string, Closure(string, string): string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
 				5,
 			],
 			[
@@ -577,11 +577,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_walk.php'], [
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, string, *NEVER*): mixed, Closure(stdClass, float): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(int, string, TUser): mixed, Closure(stdClass, float): \'\' given.',
 				6,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, string, int|string): mixed, Closure(int, string, int): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(int, string, string): mixed, Closure(int, string, int): \'\' given.',
 				14,
 			],
 		]);
@@ -596,7 +596,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/uasort.php'], [
 			[
 				sprintf(
-					'Parameter #2 $%s of function uasort expects callable(int|string, int|string): int, Closure(string, string): 1 given.',
+					'Parameter #2 $%s of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
 					$paramTwoName
 				),
 				7,
@@ -613,7 +613,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/usort.php'], [
 			[
 				sprintf(
-					'Parameter #2 $%s of function usort expects callable(int|string, int|string): int, Closure(string, string): 1 given.',
+					'Parameter #2 $%s of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
 					$paramTwoName
 				),
 				14,
@@ -630,7 +630,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/uksort.php'], [
 			[
 				sprintf(
-					'Parameter #2 $%s of function uksort expects callable(stdClass|string, stdClass|string): int, Closure(stdClass, stdClass): 1 given.',
+					'Parameter #2 $%s of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
 					$paramTwoName
 				),
 				14,

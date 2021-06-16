@@ -1,0 +1,59 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Type\Generic;
+
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\TestCase;
+
+class TemplateTypeMapTest extends TestCase
+{
+
+	public function dataUnionWithLowerBoundTypes(): iterable
+	{
+		$map = (new TemplateTypeMap([
+			'T' => new ObjectType(\Exception::class),
+		]))->convertToLowerBoundTypes();
+
+		yield [
+			$map->union(new TemplateTypeMap([
+				'T' => new ObjectType(\InvalidArgumentException::class),
+			])),
+			\InvalidArgumentException::class,
+		];
+
+		yield [
+			$map->union((new TemplateTypeMap([
+				'T' => new ObjectType(\InvalidArgumentException::class),
+			]))->convertToLowerBoundTypes()),
+			\InvalidArgumentException::class,
+		];
+
+		yield [
+			(new TemplateTypeMap([
+				'T' => new ObjectType(\Exception::class),
+			], [
+				'T' => new ObjectType(\InvalidArgumentException::class),
+			]))->convertToLowerBoundTypes(),
+			\InvalidArgumentException::class,
+		];
+
+		yield [
+			(new TemplateTypeMap([
+				'T' => new ObjectType(\InvalidArgumentException::class),
+			], [
+				'T' => new ObjectType(\Exception::class),
+			]))->convertToLowerBoundTypes(),
+			\InvalidArgumentException::class,
+		];
+	}
+
+	/** @dataProvider dataUnionWithLowerBoundTypes */
+	public function testUnionWithLowerBoundTypes(TemplateTypeMap $map, string $expectedTDescription): void
+	{
+		$t = $map->getType('T');
+		$this->assertNotNull($t);
+		$this->assertSame($expectedTDescription, $t->describe(VerbosityLevel::precise()));
+	}
+
+}

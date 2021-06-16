@@ -347,10 +347,25 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		$typeMap = TemplateTypeMap::createEmpty();
 
 		foreach ($parametersAcceptors as $parametersAcceptor) {
-			$typeMap = $typeMap->union($this->getReturnType()->inferTemplateTypes($parametersAcceptor->getReturnType()));
+			$typeMap = $typeMap->union($this->inferTemplateTypesOnParametersAcceptor($receivedType, $parametersAcceptor));
 		}
 
 		return $typeMap;
+	}
+
+	private function inferTemplateTypesOnParametersAcceptor(Type $receivedType, ParametersAcceptor $parametersAcceptor): TemplateTypeMap
+	{
+		$typeMap = TemplateTypeMap::createEmpty();
+		$args = $parametersAcceptor->getParameters();
+		$returnType = $parametersAcceptor->getReturnType();
+
+		foreach ($this->getParameters() as $i => $param) {
+			$argType = isset($args[$i]) ? $args[$i]->getType() : new NeverType();
+			$paramType = $param->getType();
+			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType)->convertToLowerBoundTypes());
+		}
+
+		return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType));
 	}
 
 	public function traverse(callable $cb): Type

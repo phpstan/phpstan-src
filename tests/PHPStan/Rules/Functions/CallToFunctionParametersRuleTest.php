@@ -638,4 +638,15 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testVaryingAcceptor(): void
+	{
+		require_once __DIR__ . '/data/varying-acceptor.php';
+		$this->analyse([__DIR__ . '/data/varying-acceptor.php'], [
+			[
+				'Parameter #1 $closure of function VaryingAcceptor\bar expects callable(callable(): string): string, callable(callable(): int): string given.',
+				17,
+			],
+		]);
+	}
+
 }

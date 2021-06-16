@@ -203,7 +203,7 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 					],
 					new IntegerType()
 				),
-				[],
+				['T' => 'string'],
 			],
 			'template return' => [
 				new CallableType(
@@ -235,7 +235,7 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 					],
 					$templateType('B')
 				),
-				['B' => 'int'],
+				['B' => 'int', 'A' => 'DateTime'],
 			],
 			'receive union' => [
 				new UnionType([
@@ -255,7 +255,7 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 					],
 					$templateType('B')
 				),
-				['B' => 'int'],
+				['B' => 'int', 'A' => 'DateTime'],
 			],
 			'receive non-accepted' => [
 				new NullType(),

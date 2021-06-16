@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -16,13 +17,36 @@ class TemplateTypeMap
 	/** @var array<string,\PHPStan\Type\Type> */
 	private array $types;
 
+	/** @var array<string,\PHPStan\Type\Type> */
+	private array $lowerBoundTypes;
+
 	/**
 	 * @api
 	 * @param array<string,\PHPStan\Type\Type> $types
+	 * @param array<string,\PHPStan\Type\Type> $lowerBoundTypes
 	 */
-	public function __construct(array $types)
+	public function __construct(array $types, array $lowerBoundTypes = [])
 	{
 		$this->types = $types;
+		$this->lowerBoundTypes = $lowerBoundTypes;
+	}
+
+	public function convertToLowerBoundTypes(): self
+	{
+		$lowerBoundTypes = $this->types;
+		foreach ($this->lowerBoundTypes as $name => $type) {
+			if (isset($lowerBoundTypes[$name])) {
+				$intersection = TypeCombinator::intersect($lowerBoundTypes[$name], $type);
+				if ($intersection instanceof NeverType) {
+					continue;
+				}
+				$lowerBoundTypes[$name] = $intersection;
+			} else {
+				$lowerBoundTypes[$name] = $type;
+			}
+		}
+
+		return new self([], $lowerBoundTypes);
 	}
 
 	public static function createEmpty(): self
@@ -33,7 +57,7 @@ class TemplateTypeMap
 			return $empty;
 		}
 
-		$empty = new self([]);
+		$empty = new self([], []);
 		self::$empty = $empty;
 
 		return $empty;
@@ -52,17 +76,26 @@ class TemplateTypeMap
 	/** @return array<string,\PHPStan\Type\Type> */
 	public function getTypes(): array
 	{
-		return $this->types;
+		$types = $this->types;
+		foreach ($this->lowerBoundTypes as $name => $type) {
+			if (array_key_exists($name, $types)) {
+				continue;
+			}
+
+			$types[$name] = $type;
+		}
+
+		return $types;
 	}
 
 	public function hasType(string $name): bool
 	{
-		return array_key_exists($name, $this->types);
+		return array_key_exists($name, $this->getTypes());
 	}
 
 	public function getType(string $name): ?Type
 	{
-		return $this->types[$name] ?? null;
+		return $this->getTypes()[$name] ?? null;
 	}
 
 	public function unsetType(string $name): self
@@ -72,14 +105,16 @@ class TemplateTypeMap
 		}
 
 		$types = $this->types;
+		$lowerBoundTypes = $this->lowerBoundTypes;
 
 		unset($types[$name]);
+		unset($lowerBoundTypes[$name]);
 
-		if (count($types) === 0) {
+		if (count($types) === 0 && count($lowerBoundTypes) === 0) {
 			return self::createEmpty();
 		}
 
-		return new self($types);
+		return new self($types, $lowerBoundTypes);
 	}
 
 	public function union(self $other): self
@@ -94,7 +129,20 @@ class TemplateTypeMap
 			}
 		}
 
-		return new self($result);
+		$resultLowerBoundTypes = $this->lowerBoundTypes;
+		foreach ($other->lowerBoundTypes as $name => $type) {
+			if (isset($resultLowerBoundTypes[$name])) {
+				$intersection = TypeCombinator::intersect($resultLowerBoundTypes[$name], $type);
+				if ($intersection instanceof NeverType) {
+					continue;
+				}
+				$resultLowerBoundTypes[$name] = $intersection;
+			} else {
+				$resultLowerBoundTypes[$name] = $type;
+			}
+		}
+
+		return new self($result, $resultLowerBoundTypes);
 	}
 
 	public function benevolentUnion(self $other): self
@@ -109,7 +157,20 @@ class TemplateTypeMap
 			}
 		}
 
-		return new self($result);
+		$resultLowerBoundTypes = $this->lowerBoundTypes;
+		foreach ($other->lowerBoundTypes as $name => $type) {
+			if (isset($resultLowerBoundTypes[$name])) {
+				$intersection = TypeCombinator::intersect($resultLowerBoundTypes[$name], $type);
+				if ($intersection instanceof NeverType) {
+					continue;
+				}
+				$resultLowerBoundTypes[$name] = $intersection;
+			} else {
+				$resultLowerBoundTypes[$name] = $type;
+			}
+		}
+
+		return new self($result, $resultLowerBoundTypes);
 	}
 
 	public function intersect(self $other): self
@@ -124,14 +185,23 @@ class TemplateTypeMap
 			}
 		}
 
-		return new self($result);
+		$resultLowerBoundTypes = $this->lowerBoundTypes;
+		foreach ($other->lowerBoundTypes as $name => $type) {
+			if (isset($resultLowerBoundTypes[$name])) {
+				$resultLowerBoundTypes[$name] = TypeCombinator::union($resultLowerBoundTypes[$name], $type);
+			} else {
+				$resultLowerBoundTypes[$name] = $type;
+			}
+		}
+
+		return new self($result, $resultLowerBoundTypes);
 	}
 
 	/** @param callable(string,Type):Type $cb */
 	public function map(callable $cb): self
 	{
 		$types = [];
-		foreach ($this->types as $name => $type) {
+		foreach ($this->getTypes() as $name => $type) {
 			$types[$name] = $cb($name, $type);
 		}
 
@@ -156,7 +226,8 @@ class TemplateTypeMap
 	public static function __set_state(array $properties): self
 	{
 		return new self(
-			$properties['types']
+			$properties['types'],
+			$properties['lowerBoundTypes'] ?? []
 		);
 	}
 

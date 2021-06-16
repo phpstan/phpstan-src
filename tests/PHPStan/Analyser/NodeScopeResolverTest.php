@@ -416,6 +416,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/empty-array-shape.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-5089.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3158.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/unable-to-resolve-callback-parameter-type.php');
+
+		require_once __DIR__ . '/../Rules/Functions/data/varying-acceptor.php';
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/varying-acceptor.php');
 	}
 
 	/**

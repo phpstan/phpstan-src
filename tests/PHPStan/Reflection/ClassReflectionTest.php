@@ -226,13 +226,15 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	 * @param class-string[] $expected
 	 * @param bool $recursive
 	 */
-	public function testGetTraits(string $className, array $expected, bool $recursive = false): void
+	public function testGetTraits(string $className, array $expected, bool $recursive): void
 	{
 		$reflectionProvider = $this->createBroker();
 
 		$this->assertSame(
 			array_map(
-				static fn(ClassReflection $classReflection) => $classReflection->getNativeReflection()->getName(),
+				static function (ClassReflection $classReflection): string {
+					return $classReflection->getNativeReflection()->getName();
+				},
 				$reflectionProvider->getClass($className)->getTraits($recursive)
 			),
 			$expected
@@ -245,6 +247,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 			[
 				\NestedTraits\NoTrait::class,
 				[],
+				false,
 			],
 			[
 				\NestedTraits\NoTrait::class,
@@ -256,6 +259,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 				[
 					\NestedTraits\FooTrait::class,
 				],
+				false,
 			],
 			[
 				\NestedTraits\Foo::class,
@@ -270,6 +274,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 					\NestedTraits\BarTrait::class,
 					\NestedTraits\FooTrait::class,
 				],
+				false,
 			],
 			[
 				\NestedTraits\Bar::class,
@@ -286,6 +291,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 					\NestedTraits\BarTrait::class,
 					\NestedTraits\FooTrait::class,
 				],
+				false,
 			],
 			[
 				\NestedTraits\Baz::class,
@@ -299,6 +305,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 			[
 				\NestedTraits\BazChild::class,
 				[],
+				false,
 			],
 			[
 				\NestedTraits\BazChild::class,

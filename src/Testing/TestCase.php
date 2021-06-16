@@ -178,12 +178,16 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	/** @api */
 	public function createReflectionProvider(): ReflectionProvider
 	{
-		$staticReflectionProvider = $this->createStaticReflectionProvider();
-		return $this->createReflectionProviderByParameters(
-			$this->createRuntimeReflectionProvider($staticReflectionProvider),
+		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
+		$staticReflectionProvider = $this->createStaticReflectionProvider($setterReflectionProviderProvider);
+		$reflectionProvider = $this->createReflectionProviderByParameters(
+			$this->createRuntimeReflectionProvider($setterReflectionProviderProvider),
 			$staticReflectionProvider,
 			self::$useStaticReflectionProvider
 		);
+		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
+
+		return $reflectionProvider;
 	}
 
 	private function createReflectionProviderByParameters(
@@ -192,16 +196,13 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		bool $disableRuntimeReflectionProvider
 	): ReflectionProvider
 	{
-		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
 		$reflectionProviderFactory = new ReflectionProviderFactory(
 			$runtimeReflectionProvider,
 			$staticReflectionProvider,
 			$disableRuntimeReflectionProvider
 		);
-		$reflectionProvider = $reflectionProviderFactory->create();
-		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 
-		return $reflectionProvider;
+		return $reflectionProviderFactory->create();
 	}
 
 	private static function getPhpStormStubsSourceStubber(): PhpStormStubsSourceStubber
@@ -213,7 +214,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		return self::$phpStormStubsSourceStubber;
 	}
 
-	private function createRuntimeReflectionProvider(ReflectionProvider $actualReflectionProvider): ReflectionProvider
+	private function createRuntimeReflectionProvider(
+		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
+	): ReflectionProvider
 	{
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
 		$parser = $this->getParser();
@@ -223,8 +226,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$fileHelper = new FileHelper($currentWorkingDirectory);
 		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
-		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
-		$fileTypeMapper = new FileTypeMapper($setterReflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
+		$fileTypeMapper = new FileTypeMapper($reflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
 		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
 		$functionReflectionFactory = $this->getFunctionReflectionFactory(
 			$functionCallStatementFinder,
@@ -232,7 +234,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		);
 		$reflectionProvider = new ClassBlacklistReflectionProvider(
 			new RuntimeReflectionProvider(
-				$setterReflectionProviderProvider,
+				$reflectionProviderProvider,
 				$classReflectionExtensionRegistryProvider,
 				$functionReflectionFactory,
 				$fileTypeMapper,
@@ -250,8 +252,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			null
 		);
 		$this->setUpReflectionProvider(
-			$actualReflectionProvider,
-			$setterReflectionProviderProvider,
+			$reflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$functionCallStatementFinder,
 			$parser,
@@ -263,8 +264,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 	}
 
 	private function setUpReflectionProvider(
-		ReflectionProvider $actualReflectionProvider,
-		ReflectionProvider\SetterReflectionProviderProvider $setterReflectionProviderProvider,
+		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		DirectClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		FunctionCallStatementFinder $functionCallStatementFinder,
 		\PHPStan\Parser\Parser $parser,
@@ -272,7 +272,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		FileTypeMapper $fileTypeMapper
 	): void
 	{
-		$methodReflectionFactory = new class($parser, $functionCallStatementFinder, $cache) implements PhpMethodReflectionFactory {
+		$methodReflectionFactory = new class($parser, $functionCallStatementFinder, $cache, $reflectionProviderProvider) implements PhpMethodReflectionFactory {
 
 			private \PHPStan\Parser\Parser $parser;
 
@@ -280,17 +280,19 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			private \PHPStan\Cache\Cache $cache;
 
-			public ReflectionProvider $reflectionProvider;
+			private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
 
 			public function __construct(
 				Parser $parser,
 				FunctionCallStatementFinder $functionCallStatementFinder,
-				Cache $cache
+				Cache $cache,
+				ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
 			)
 			{
 				$this->parser = $parser;
 				$this->functionCallStatementFinder = $functionCallStatementFinder;
 				$this->cache = $cache;
+				$this->reflectionProviderProvider = $reflectionProviderProvider;
 			}
 
 			/**
@@ -329,7 +331,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$declaringClass,
 					$declaringTrait,
 					$reflection,
-					$this->reflectionProvider,
+					$this->reflectionProviderProvider->getReflectionProvider(),
 					$this->parser,
 					$this->functionCallStatementFinder,
 					$this->cache,
@@ -351,8 +353,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension();
 		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension();
 		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
-		$methodReflectionFactory->reflectionProvider = $actualReflectionProvider;
-		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $phpDocInheritanceResolver, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $actualReflectionProvider, $fileTypeMapper, true, []);
+		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $phpDocInheritanceResolver, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $reflectionProviderProvider, $fileTypeMapper, true, []);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($phpExtension);
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new UniversalObjectCratesClassReflectionExtension([\stdClass::class]));
 		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new MixinPropertiesClassReflectionExtension([]));
@@ -362,11 +363,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension(new MixinMethodsClassReflectionExtension([]));
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
 		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension(new SoapClientMethodsClassReflectionExtension());
-
-		$setterReflectionProviderProvider->setReflectionProvider($actualReflectionProvider);
 	}
 
-	private function createStaticReflectionProvider(): ReflectionProvider
+	private function createStaticReflectionProvider(
+		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
+	): ReflectionProvider
 	{
 		$parser = $this->getParser();
 		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
@@ -376,8 +377,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$fileHelper = new FileHelper($currentWorkingDirectory);
 		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
-		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
-		$fileTypeMapper = new FileTypeMapper($setterReflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
+		$fileTypeMapper = new FileTypeMapper($reflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
 		$functionCallStatementFinder = new FunctionCallStatementFinder();
 		$functionReflectionFactory = $this->getFunctionReflectionFactory(
 			$functionCallStatementFinder,
@@ -389,7 +389,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
 
 		$reflectionProvider = new BetterReflectionProvider(
-			$setterReflectionProviderProvider,
+			$reflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$classReflector,
 			$fileTypeMapper,
@@ -407,8 +407,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 		);
 
 		$this->setUpReflectionProvider(
-			$reflectionProvider,
-			$setterReflectionProviderProvider,
+			$reflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$functionCallStatementFinder,
 			$parser,

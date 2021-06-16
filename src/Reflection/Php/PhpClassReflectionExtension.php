@@ -67,7 +67,7 @@ class PhpClassReflectionExtension
 
 	private bool $inferPrivatePropertyTypeFromConstructor;
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
 
 	private FileTypeMapper $fileTypeMapper;
 
@@ -102,7 +102,7 @@ class PhpClassReflectionExtension
 	 * @param \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider
 	 * @param \PHPStan\Parser\Parser $parser
 	 * @param \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
+	 * @param ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
 	 * @param FileTypeMapper $fileTypeMapper
 	 * @param bool $inferPrivatePropertyTypeFromConstructor
 	 * @param string[] $universalObjectCratesClasses
@@ -117,7 +117,7 @@ class PhpClassReflectionExtension
 		SignatureMapProvider $signatureMapProvider,
 		Parser $parser,
 		StubPhpDocProvider $stubPhpDocProvider,
-		ReflectionProvider $reflectionProvider,
+		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		FileTypeMapper $fileTypeMapper,
 		bool $inferPrivatePropertyTypeFromConstructor,
 		array $universalObjectCratesClasses
@@ -132,7 +132,7 @@ class PhpClassReflectionExtension
 		$this->signatureMapProvider = $signatureMapProvider;
 		$this->parser = $parser;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->reflectionProvider = $reflectionProvider;
+		$this->reflectionProviderProvider = $reflectionProviderProvider;
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->inferPrivatePropertyTypeFromConstructor = $inferPrivatePropertyTypeFromConstructor;
 		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
@@ -319,10 +319,11 @@ class PhpClassReflectionExtension
 		}
 
 		$declaringTrait = null;
+		$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
 		if (
-			$declaringTraitName !== null && $this->reflectionProvider->hasClass($declaringTraitName)
+			$declaringTraitName !== null && $reflectionProvider->hasClass($declaringTraitName)
 		) {
-			$declaringTrait = $this->reflectionProvider->getClass($declaringTraitName);
+			$declaringTrait = $reflectionProvider->getClass($declaringTraitName);
 		}
 
 		return new PhpPropertyReflection(
@@ -369,7 +370,7 @@ class PhpClassReflectionExtension
 		}
 
 		if ($methodName === '__get' && UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-			$this->reflectionProvider,
+			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->universalObjectCratesClasses,
 			$classReflection
 		)) {
@@ -393,7 +394,7 @@ class PhpClassReflectionExtension
 			if (
 				$methodName !== '__get'
 				|| !UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-					$this->reflectionProvider,
+					$this->reflectionProviderProvider->getReflectionProvider(),
 					$this->universalObjectCratesClasses,
 					$classReflection
 				)) {
@@ -554,7 +555,7 @@ class PhpClassReflectionExtension
 				$hasSideEffects = TrinaryLogic::createMaybe();
 			}
 			return new NativeMethodReflection(
-				$this->reflectionProvider,
+				$this->reflectionProviderProvider->getReflectionProvider(),
 				$declaringClass,
 				$methodReflection,
 				$variants,
@@ -597,10 +598,11 @@ class PhpClassReflectionExtension
 		}
 
 		$declaringTrait = null;
+		$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
 		if (
-			$declaringTraitName !== null && $this->reflectionProvider->hasClass($declaringTraitName)
+			$declaringTraitName !== null && $reflectionProvider->hasClass($declaringTraitName)
 		) {
-			$declaringTrait = $this->reflectionProvider->getClass($declaringTraitName);
+			$declaringTrait = $reflectionProvider->getClass($declaringTraitName);
 		}
 
 		$templateTypeMap = TemplateTypeMap::createEmpty();

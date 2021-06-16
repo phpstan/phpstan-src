@@ -616,7 +616,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Parameter #2 $%s of function usort expects callable(int|string, int|string): int, Closure(string, string): 1 given.',
 					$paramTwoName
 				),
-				7,
+				14,
 			],
 		]);
 	}
@@ -633,7 +633,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Parameter #2 $%s of function uksort expects callable(stdClass|string, stdClass|string): int, Closure(stdClass, stdClass): 1 given.',
 					$paramTwoName
 				),
-				7,
+				14,
 			],
 		]);
 	}

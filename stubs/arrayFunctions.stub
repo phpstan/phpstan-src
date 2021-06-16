@@ -56,7 +56,7 @@ function usort(
 ): bool {}
 
 /**
- * @template T
+ * @template T of array-key
  *
  * @param array<T, mixed> $one
  * @param callable(T, T): int $two

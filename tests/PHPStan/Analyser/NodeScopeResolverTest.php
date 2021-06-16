@@ -420,6 +420,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		require_once __DIR__ . '/../Rules/Functions/data/varying-acceptor.php';
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/varying-acceptor.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/uksort-bug.php');
 	}
 
 	/**

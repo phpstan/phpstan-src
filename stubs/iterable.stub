@@ -221,4 +221,10 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
      * @return TKey
      */
     public function key() {}
+
+    /**
+     * @param callable(TKey, TKey): int $cmp_function
+     * @return void
+     */
+    public function uksort($cmp_function) { }
 }

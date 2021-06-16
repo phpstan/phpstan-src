@@ -635,6 +635,10 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				),
 				14,
 			],
+			[
+				sprintf('Parameter #2 $%s of function uksort expects callable(int, int): int, Closure(string, string): 1 given.', $paramTwoName),
+				50,
+			],
 		]);
 	}
 

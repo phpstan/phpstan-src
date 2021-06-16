@@ -18,3 +18,38 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	/** @var Foo[] */
+	private $unknownKeys;
+
+	/** @var array<string, Foo> */
+	private $stringKeys;
+
+	/** @var array<int, Foo> */
+	private $intKeys;
+
+	public function doFoo(): void
+	{
+		uksort($this->unknownKeys, function (string $one, string $two) {
+			return 1;
+		});
+	}
+
+	public function doFoo2(): void
+	{
+		uksort($this->stringKeys, function (string $one, string $two) {
+			return 1;
+		});
+	}
+
+	public function doFoo3(): void
+	{
+		uksort($this->intKeys, function (string $one, string $two) {
+			return 1;
+		});
+	}
+
+}

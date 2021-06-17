@@ -22,7 +22,7 @@ function array_reduce(
  * @template TUser of mixed
  *
  * @param array<TKey, TValue> $one
- * @param callable(int, TKey, TUser=): mixed $two
+ * @param callable(TValue, TKey, TUser=): mixed $two
  * @param TUser $three
  *
  * @return true

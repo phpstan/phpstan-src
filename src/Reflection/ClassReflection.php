@@ -674,9 +674,13 @@ class ClassReflection implements ReflectionWithFilename
 	 */
 	public function getTraits(bool $recursive = false): array
 	{
+		$traits = $recursive ?
+			$this->collectTraits($this->getNativeReflection()) :
+			array_values($this->getNativeReflection()->getTraits());
+
 		$traits = array_map(function (\ReflectionClass $trait): ClassReflection {
 			return $this->reflectionProvider->getClass($trait->getName());
-		}, $this->collectTraits($this->getNativeReflection()));
+		}, $traits);
 
 		if ($recursive) {
 			$parentClass = $this->getNativeReflection()->getParentClass();

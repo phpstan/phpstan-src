@@ -272,7 +272,6 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 				\NestedTraits\Bar::class,
 				[
 					\NestedTraits\BarTrait::class,
-					\NestedTraits\FooTrait::class,
 				],
 				false,
 			],
@@ -288,8 +287,6 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 				\NestedTraits\Baz::class,
 				[
 					\NestedTraits\BazTrait::class,
-					\NestedTraits\BarTrait::class,
-					\NestedTraits\FooTrait::class,
 				],
 				false,
 			],

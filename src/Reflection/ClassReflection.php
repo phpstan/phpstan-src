@@ -670,13 +670,36 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ClassReflection[]
+	 * @return array<string, \PHPStan\Reflection\ClassReflection>
 	 */
-	public function getTraits(): array
+	public function getTraits(bool $recursive = false): array
 	{
-		return array_map(function (\ReflectionClass $trait): ClassReflection {
+		$traits = [];
+
+		if ($recursive) {
+			foreach ($this->collectTraits($this->getNativeReflection()) as $trait) {
+				$traits[$trait->getName()] = $trait;
+			}
+		} else {
+			$traits = $this->getNativeReflection()->getTraits();
+		}
+
+		$traits = array_map(function (\ReflectionClass $trait): ClassReflection {
 			return $this->reflectionProvider->getClass($trait->getName());
-		}, $this->getNativeReflection()->getTraits());
+		}, $traits);
+
+		if ($recursive) {
+			$parentClass = $this->getNativeReflection()->getParentClass();
+
+			if ($parentClass !== false) {
+				return array_merge(
+					$traits,
+					$this->reflectionProvider->getClass($parentClass->getName())->getTraits(true)
+				);
+			}
+		}
+
+		return $traits;
 	}
 
 	/**

@@ -220,4 +220,100 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		$this->assertTrue($constant->isDeprecated()->yes());
 	}
 
+	/**
+	 * @dataProvider dataNestedRecursiveTraits
+	 * @param class-string $className
+	 * @param array<class-string, class-string> $expected
+	 * @param bool $recursive
+	 */
+	public function testGetTraits(string $className, array $expected, bool $recursive): void
+	{
+		$reflectionProvider = $this->createBroker();
+
+		$this->assertSame(
+			array_map(
+				static function (ClassReflection $classReflection): string {
+					return $classReflection->getNativeReflection()->getName();
+				},
+				$reflectionProvider->getClass($className)->getTraits($recursive)
+			),
+			$expected
+		);
+	}
+
+	public function dataNestedRecursiveTraits(): array
+	{
+		return [
+			[
+				\NestedTraits\NoTrait::class,
+				[],
+				false,
+			],
+			[
+				\NestedTraits\NoTrait::class,
+				[],
+				true,
+			],
+			[
+				\NestedTraits\Foo::class,
+				[
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
+				],
+				false,
+			],
+			[
+				\NestedTraits\Foo::class,
+				[
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
+				],
+				true,
+			],
+			[
+				\NestedTraits\Bar::class,
+				[
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+				],
+				false,
+			],
+			[
+				\NestedTraits\Bar::class,
+				[
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
+				],
+				true,
+			],
+			[
+				\NestedTraits\Baz::class,
+				[
+					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
+				],
+				false,
+			],
+			[
+				\NestedTraits\Baz::class,
+				[
+					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
+				],
+				true,
+			],
+			[
+				\NestedTraits\BazChild::class,
+				[],
+				false,
+			],
+			[
+				\NestedTraits\BazChild::class,
+				[
+					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
+				],
+				true,
+			],
+		];
+	}
+
 }

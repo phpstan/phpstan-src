@@ -223,7 +223,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	/**
 	 * @dataProvider dataNestedRecursiveTraits
 	 * @param class-string $className
-	 * @param class-string[] $expected
+	 * @param array<class-string, class-string> $expected
 	 * @param bool $recursive
 	 */
 	public function testGetTraits(string $className, array $expected, bool $recursive): void

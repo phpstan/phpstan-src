@@ -16,3 +16,11 @@ array_walk(
 	},
 	'extra'
 );
+
+$array = ['foo' => 1, 'bar' => 2];
+array_walk(
+	$array,
+	function(int $value, string $key, int $extra): string {
+		return '';
+	}
+);

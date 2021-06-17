@@ -18,6 +18,8 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -347,21 +349,28 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		$typeMap = TemplateTypeMap::createEmpty();
 
 		foreach ($parametersAcceptors as $parametersAcceptor) {
-			$typeMap = $typeMap->union($this->inferTemplateTypesOnParametersAcceptor($receivedType, $parametersAcceptor));
+			$typeMap = $typeMap->union($this->inferTemplateTypesOnParametersAcceptor($parametersAcceptor));
 		}
 
 		return $typeMap;
 	}
 
-	private function inferTemplateTypesOnParametersAcceptor(Type $receivedType, ParametersAcceptor $parametersAcceptor): TemplateTypeMap
+	private function inferTemplateTypesOnParametersAcceptor(ParametersAcceptor $parametersAcceptor): TemplateTypeMap
 	{
 		$typeMap = TemplateTypeMap::createEmpty();
 		$args = $parametersAcceptor->getParameters();
 		$returnType = $parametersAcceptor->getReturnType();
 
 		foreach ($this->getParameters() as $i => $param) {
-			$argType = isset($args[$i]) ? $args[$i]->getType() : new NeverType();
 			$paramType = $param->getType();
+			if (isset($args[$i])) {
+				$argType = $args[$i]->getType();
+			} elseif ($paramType instanceof TemplateType) {
+				$argType = TemplateTypeHelper::resolveToBounds($paramType);
+			} else {
+				$argType = new NeverType();
+			}
+
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType)->convertToLowerBoundTypes());
 		}
 

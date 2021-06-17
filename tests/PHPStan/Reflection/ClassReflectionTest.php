@@ -257,45 +257,45 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 			[
 				\NestedTraits\Foo::class,
 				[
-					\NestedTraits\FooTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				false,
 			],
 			[
 				\NestedTraits\Foo::class,
 				[
-					\NestedTraits\FooTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				true,
 			],
 			[
 				\NestedTraits\Bar::class,
 				[
-					\NestedTraits\BarTrait::class,
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
 				],
 				false,
 			],
 			[
 				\NestedTraits\Bar::class,
 				[
-					\NestedTraits\BarTrait::class,
-					\NestedTraits\FooTrait::class,
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				true,
 			],
 			[
 				\NestedTraits\Baz::class,
 				[
-					\NestedTraits\BazTrait::class,
+					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
 				],
 				false,
 			],
 			[
 				\NestedTraits\Baz::class,
 				[
-					\NestedTraits\BazTrait::class,
-					\NestedTraits\BarTrait::class,
-					\NestedTraits\FooTrait::class,
+					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				true,
 			],
@@ -307,9 +307,9 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 			[
 				\NestedTraits\BazChild::class,
 				[
-					\NestedTraits\BazTrait::class,
-					\NestedTraits\BarTrait::class,
-					\NestedTraits\FooTrait::class,
+					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
+					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				true,
 			],

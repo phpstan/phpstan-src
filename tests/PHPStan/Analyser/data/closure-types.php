@@ -12,13 +12,19 @@ class Foo
 
 	public function doFoo(): void
 	{
-		$a = array_map(function (array $a) {
+		$a = array_map(function (array $a): array {
 			assertType('array(\'foo\' => string, \'bar\' => int)', $a);
+
+			return $a;
 		}, $this->arrayShapes);
+		assertType('array<int, array(\'foo\' => string, \'bar\' => int)>', $a);
 
 		$b = array_map(function ($b) {
 			assertType('array(\'foo\' => string, \'bar\' => int)', $b);
+
+			return $b['foo'];
 		}, $this->arrayShapes);
+		assertType('array<int, string>', $b);
 	}
 
 	public function doBar(): void

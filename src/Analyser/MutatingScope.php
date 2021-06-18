@@ -1370,30 +1370,31 @@ class MutatingScope implements Scope
 				);
 			}
 
+			$callableParameters = null;
+			$arg = $node->getAttribute('parent');
+			if ($arg instanceof Arg) {
+				$funcCall = $arg->getAttribute('parent');
+				$argOrder = $arg->getAttribute('expressionOrder');
+				if ($funcCall instanceof FuncCall && $funcCall->name instanceof Name) {
+					$functionName = $this->reflectionProvider->resolveFunctionName($funcCall->name, $this);
+					if (
+						$functionName === 'array_map'
+						&& $argOrder === 0
+						&& isset($funcCall->args[1])
+					) {
+						$callableParameters = [
+							new DummyParameter('item', $this->getType($funcCall->args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+						];
+					}
+				}
+			}
+
 			if ($node instanceof Expr\ArrowFunction) {
-				$returnType = $this->enterArrowFunctionWithoutReflection($node)->getType($node->expr);
+				$returnType = $this->enterArrowFunctionWithoutReflection($node, $callableParameters)->getType($node->expr);
 				if ($node->returnType !== null) {
 					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 				}
 			} else {
-				$callableParameters = null;
-				$arg = $node->getAttribute('parent');
-				if ($arg instanceof Arg) {
-					$funcCall = $arg->getAttribute('parent');
-					$argOrder = $arg->getAttribute('expressionOrder');
-					if ($funcCall instanceof FuncCall && $funcCall->name instanceof Name) {
-						$functionName = $this->reflectionProvider->resolveFunctionName($funcCall->name, $this);
-						if (
-							$functionName === 'array_map'
-							&& $argOrder === 0
-							&& isset($funcCall->args[1])
-						) {
-							$callableParameters = [
-								new DummyParameter('item', $this->getType($funcCall->args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-							];
-						}
-					}
-				}
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
@@ -3027,15 +3028,18 @@ class MutatingScope implements Scope
 		);
 	}
 
-	/** @api */
-	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction): self
+	/**
+	 * @api
+	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
+	 */
+	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
 	{
 		$anonymousFunctionReflection = $this->getType($arrowFunction);
 		if (!$anonymousFunctionReflection instanceof ClosureType) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction);
+		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters);
 
 		return $this->scopeFactory->create(
 			$scope->context,
@@ -3057,17 +3061,35 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction): self
+	/**
+	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
+	 */
+	private function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
 	{
 		$variableTypes = $this->variableTypes;
 		$mixed = new MixedType();
 		$parameterVariables = [];
-		foreach ($arrowFunction->params as $parameter) {
+		foreach ($arrowFunction->params as $i => $parameter) {
 			if ($parameter->type === null) {
 				$parameterType = $mixed;
 			} else {
 				$isNullable = $this->isParameterValueNullable($parameter);
 				$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
+			}
+
+			if ($callableParameters !== null) {
+				if (isset($callableParameters[$i])) {
+					$parameterType = TypehintHelper::decideType($parameterType, $callableParameters[$i]->getType());
+				} elseif (count($callableParameters) > 0) {
+					$lastParameter = $callableParameters[count($callableParameters) - 1];
+					if ($lastParameter->isVariadic()) {
+						$parameterType = TypehintHelper::decideType($parameterType, $lastParameter->getType());
+					} else {
+						$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
+					}
+				} else {
+					$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
+				}
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {

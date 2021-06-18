@@ -2199,19 +2199,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 		} elseif ($expr instanceof Expr\ArrowFunction) {
-			foreach ($expr->params as $param) {
-				$this->processParamNode($param, $scope, $nodeCallback);
-			}
-			if ($expr->returnType !== null) {
-				$nodeCallback($expr->returnType, $scope);
-			}
-
-			$arrowFunctionScope = $scope->enterArrowFunction($expr);
-			$nodeCallback(new InArrowFunctionNode($expr), $arrowFunctionScope);
-			$this->processExprNode($expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
-			$hasYield = false;
-			$throwPoints = [];
-
+			return $this->processArrowFunctionNode($expr, $scope, $nodeCallback, $context, null);
 		} elseif ($expr instanceof ErrorSuppress) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context);
 			$hasYield = $result->hasYield();
@@ -2963,6 +2951,46 @@ class NodeScopeResolver
 		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, []);
 	}
 
+	/**
+	 * @param \PhpParser\Node\Expr\ArrowFunction $expr
+	 * @param \PHPStan\Analyser\MutatingScope $scope
+	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param ExpressionContext $context
+	 * @param Type|null $passedToType
+	 * @return \PHPStan\Analyser\ExpressionResult
+	 */
+	private function processArrowFunctionNode(
+		Expr\ArrowFunction $expr,
+		MutatingScope $scope,
+		callable $nodeCallback,
+		ExpressionContext $context,
+		?Type $passedToType
+	): ExpressionResult
+	{
+		foreach ($expr->params as $param) {
+			$this->processParamNode($param, $scope, $nodeCallback);
+		}
+		if ($expr->returnType !== null) {
+			$nodeCallback($expr->returnType, $scope);
+		}
+
+		if ($passedToType !== null && !$passedToType->isCallable()->no()) {
+			$callableParameters = null;
+			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
+			if (count($acceptors) === 1) {
+				$callableParameters = $acceptors[0]->getParameters();
+			}
+		} else {
+			$callableParameters = null;
+		}
+
+		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters);
+		$nodeCallback(new InArrowFunctionNode($expr), $arrowFunctionScope);
+		$this->processExprNode($expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
+
+		return new ExpressionResult($scope, false, []);
+	}
+
 	private function lookForArrayDestructuringArray(MutatingScope $scope, Expr $expr, Type $valueType): MutatingScope
 	{
 		if ($expr instanceof Array_ || $expr instanceof List_) {
@@ -3138,6 +3166,9 @@ class NodeScopeResolver
 			if ($arg->value instanceof Expr\Closure) {
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
 				$result = $this->processClosureNode($arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
+			} elseif ($arg->value instanceof Expr\ArrowFunction) {
+				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
+				$result = $this->processArrowFunctionNode($arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
 			} else {
 				$result = $this->processExprNode($arg->value, $scopeToPass, $nodeCallback, $context->enterDeep());
 			}

@@ -3032,7 +3032,7 @@ class MutatingScope implements Scope
 	 * @api
 	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
 	 */
-	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
+	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters = null): self
 	{
 		$anonymousFunctionReflection = $this->getType($arrowFunction);
 		if (!$anonymousFunctionReflection instanceof ClosureType) {

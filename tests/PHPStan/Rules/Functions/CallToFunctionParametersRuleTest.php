@@ -573,6 +573,27 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testArrayReduceArrowFunctionCallback(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/array_reduce_arrow.php'], [
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
+				5,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				11,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				18,
+			],
+		]);
+	}
+
 	public function testArrayWalkCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_walk.php'], [
@@ -587,6 +608,23 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testArrayWalkArrowFunctionCallback(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/array_walk_arrow.php'], [
+			[
+				'Parameter #2 $callback of function array_walk expects callable(int, string, mixed): mixed, Closure(stdClass, float): \'\' given.',
+				6,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(int, string, string): mixed, Closure(int, string, int): \'\' given.',
+				12,
+			],
+		]);
+	}
+
 	public function testUasortCallback(): void
 	{
 		$paramTwoName = PHP_VERSION_ID >= 80000
@@ -594,6 +632,26 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			: 'cmp_function';
 
 		$this->analyse([__DIR__ . '/data/uasort.php'], [
+			[
+				sprintf(
+					'Parameter #2 $%s of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
+					$paramTwoName
+				),
+				7,
+			],
+		]);
+	}
+
+	public function testUasortArrowFunctionCallback(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$paramTwoName = PHP_VERSION_ID >= 80000
+			? 'callback'
+			: 'cmp_function';
+
+		$this->analyse([__DIR__ . '/data/uasort_arrow.php'], [
 			[
 				sprintf(
 					'Parameter #2 $%s of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
@@ -621,6 +679,27 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testUsortArrowFunctionCallback(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$paramTwoName = PHP_VERSION_ID >= 80000
+			? 'callback'
+			: 'cmp_function';
+
+		$this->analyse([__DIR__ . '/data/usort_arrow.php'], [
+			[
+				sprintf(
+					'Parameter #2 $%s of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
+					$paramTwoName
+				),
+				14,
+			],
+		]);
+	}
+
 	public function testUksortCallback(): void
 	{
 		$paramTwoName = PHP_VERSION_ID >= 80000
@@ -638,6 +717,31 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				sprintf('Parameter #2 $%s of function uksort expects callable(int, int): int, Closure(string, string): 1 given.', $paramTwoName),
 				50,
+			],
+		]);
+	}
+
+	public function testUksortArrowFunctionCallback(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$paramTwoName = PHP_VERSION_ID >= 80000
+			? 'callback'
+			: 'cmp_function';
+
+		$this->analyse([__DIR__ . '/data/uksort_arrow.php'], [
+			[
+				sprintf(
+					'Parameter #2 $%s of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
+					$paramTwoName
+				),
+				14,
+			],
+			[
+				sprintf('Parameter #2 $%s of function uksort expects callable(int, int): int, Closure(string, string): 1 given.', $paramTwoName),
+				44,
 			],
 		]);
 	}

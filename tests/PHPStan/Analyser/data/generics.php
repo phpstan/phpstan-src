@@ -887,7 +887,7 @@ function newHandling(): void {
 }
 
 /**
- * @template TKey
+ * @template TKey of array-key
  * @template TValue of \stdClass
  */
 class StdClassCollection
@@ -924,7 +924,7 @@ class StdClassCollection
 
 function () {
 	$stdEmpty = new StdClassCollection([]);
-	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<mixed, stdClass>', $stdEmpty);
+	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<(int|string), stdClass>', $stdEmpty);
 	assertType('array<stdClass>', $stdEmpty->getAll());
 
 	$std = new StdClassCollection([new \stdClass()]);

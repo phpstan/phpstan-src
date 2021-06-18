@@ -441,7 +441,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 	public static function getAdditionalConfigFiles(): array
 	{
-		return [__DIR__ . '/typeAliases.neon'];
+		return [
+			__DIR__ . '/../../../conf/bleedingEdge.neon',
+			__DIR__ . '/typeAliases.neon',
+		];
 	}
 
 }

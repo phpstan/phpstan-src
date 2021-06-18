@@ -29,6 +29,18 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		$this->bound = $bound;
 	}
 
+	/** @param Type[] $types */
+	public function withTypes(array $types): self
+	{
+		return new self(
+			$this->scope,
+			$this->strategy,
+			$this->variance,
+			$this->name,
+			new BenevolentUnionType($types)
+		);
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		$newBound = $cb($this->getBound());

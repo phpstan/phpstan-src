@@ -1761,6 +1761,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				MixedType::class,
 				'mixed=implicit',
 			],
+			[
+				[
+					TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('foo'), 'T', new BenevolentUnionType([new IntegerType(), new StringType()]), TemplateTypeVariance::createInvariant()),
+				],
+				TemplateBenevolentUnionType::class,
+				'T of (int|string) (function foo(), parameter)',
+			],
 		];
 	}
 

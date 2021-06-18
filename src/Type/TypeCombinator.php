@@ -153,9 +153,13 @@ class TypeCombinator
 	public static function union(Type ...$types): Type
 	{
 		$benevolentTypes = [];
+		$benevolentUnionObject = null;
 		// transform A | (B | C) to A | B | C
 		for ($i = 0; $i < count($types); $i++) {
 			if ($types[$i] instanceof BenevolentUnionType) {
+				if ($types[$i] instanceof TemplateBenevolentUnionType && $benevolentUnionObject === null) {
+					$benevolentUnionObject = $types[$i];
+				}
 				foreach ($types[$i]->getTypes() as $benevolentInnerType) {
 					$benevolentTypes[$benevolentInnerType->describe(VerbosityLevel::value())] = $benevolentInnerType;
 				}
@@ -366,6 +370,10 @@ class TypeCombinator
 			}
 
 			if (count($tempTypes) === 0) {
+				if ($benevolentUnionObject instanceof TemplateBenevolentUnionType) {
+					return $benevolentUnionObject->withTypes($types);
+				}
+
 				return new BenevolentUnionType($types);
 			}
 		}

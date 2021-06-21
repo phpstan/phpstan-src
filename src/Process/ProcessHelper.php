@@ -25,7 +25,7 @@ class ProcessHelper
 	): string
 	{
 		$processCommandArray = [
-			escapeshellarg(PHP_BINARY),
+            sprintf('%s -c %s', escapeshellarg(PHP_BINARY), escapeshellarg(php_ini_loaded_file())),
 		];
 
 		if ($input->getOption('memory-limit') === null) {

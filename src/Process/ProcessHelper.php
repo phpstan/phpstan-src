@@ -24,8 +24,11 @@ class ProcessHelper
 		InputInterface $input
 	): string
 	{
+		$phpIni = php_ini_loaded_file();
+		$phpCmd = ($phpIni === false) ? escapeshellarg(PHP_BINARY) : sprintf('%s -c %s', escapeshellarg(PHP_BINARY), $phpIni);
+
 		$processCommandArray = [
-            sprintf('%s -c %s', escapeshellarg(PHP_BINARY), escapeshellarg(php_ini_loaded_file())),
+			$phpCmd,
 		];
 
 		if ($input->getOption('memory-limit') === null) {

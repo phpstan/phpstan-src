@@ -422,11 +422,18 @@ class TestReflectionFunction
 
 class TestReflectionMethod
 {
-
-	public function doFoo(): void
+	/**
+	 * @param class-string<\DateTimeInterface> $foo
+	 */
+	public function doFoo($foo): void
 	{
 		try {
 			new \ReflectionMethod(\DateTime::class, 'format');
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionMethod($foo, 'format');
 		} catch (\Exception $e) {
 
 		}

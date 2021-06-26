@@ -265,7 +265,6 @@ class AutoloadSourceLocator implements SourceLocator
 	 * that it cannot find the file, so we squelch the errors by overriding the
 	 * error handler temporarily.
 	 *
-	 * @throws ReflectionException
 	 * @return array{string, string, int|null}|null
 	 */
 	private function locateClassByName(string $className): ?array

@@ -6,7 +6,10 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -36,19 +39,28 @@ class ReflectionMethodConstructorThrowTypeExtension implements DynamicStaticMeth
 
 		$valueType = $scope->getType($methodCall->args[0]->value);
 		$propertyType = $scope->getType($methodCall->args[1]->value);
-		foreach (TypeUtils::getConstantStrings($valueType) as $constantString) {
-			if (!$this->reflectionProvider->hasClass($constantString->getValue())) {
+		foreach (TypeUtils::flattenTypes($valueType) as $type) {
+			if ($type instanceof GenericClassStringType) {
+				$classes = $type->getReferencedClasses();
+			} elseif (
+				$type instanceof ConstantStringType
+				&& $this->reflectionProvider->hasClass($type->getValue())
+			) {
+				$classes = [$type->getValue()];
+			} else {
 				return $methodReflection->getThrowType();
 			}
 
-			$classReflection = $this->reflectionProvider->getClass($constantString->getValue());
-			foreach (TypeUtils::getConstantStrings($propertyType) as $constantPropertyString) {
-				if (!$classReflection->hasMethod($constantPropertyString->getValue())) {
-					return $methodReflection->getThrowType();
+			foreach ($classes as $class) {
+				$classReflection = $this->reflectionProvider->getClass($class);
+				foreach (TypeUtils::getConstantStrings($propertyType) as $constantPropertyString) {
+					if (!$classReflection->hasMethod($constantPropertyString->getValue())) {
+						return $methodReflection->getThrowType();
+					}
 				}
 			}
 
-			$valueType = TypeCombinator::remove($valueType, $constantString);
+			$valueType = TypeCombinator::remove($valueType, $type);
 		}
 
 		if (!$valueType instanceof NeverType) {

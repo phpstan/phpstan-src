@@ -25,7 +25,7 @@ class ProcessHelper
 	): string
 	{
 		$phpIni = php_ini_loaded_file();
-		$phpCmd = ($phpIni === false) ? escapeshellarg(PHP_BINARY) : sprintf('%s -c %s', escapeshellarg(PHP_BINARY), $phpIni);
+		$phpCmd = $phpIni === false ? escapeshellarg(PHP_BINARY) : sprintf('%s -c %s', escapeshellarg(PHP_BINARY), escapeshellarg($phpIni));
 
 		$processCommandArray = [
 			$phpCmd,

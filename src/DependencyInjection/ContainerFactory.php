@@ -122,6 +122,8 @@ class ContainerFactory
 		Broker::registerInstance($broker);
 		$container->getService('typeSpecifier');
 
+		BleedingEdgeToggle::setBleedingEdge($container->parameters['featureToggles']['bleedingEdge']);
+
 		return $container->getByType(Container::class);
 	}
 

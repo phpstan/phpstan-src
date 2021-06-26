@@ -9,12 +9,9 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
-use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use ReflectionClass;
 

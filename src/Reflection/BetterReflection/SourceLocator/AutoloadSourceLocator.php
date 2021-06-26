@@ -15,7 +15,6 @@ use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionFunction;
 use function array_key_exists;
 use function file_exists;

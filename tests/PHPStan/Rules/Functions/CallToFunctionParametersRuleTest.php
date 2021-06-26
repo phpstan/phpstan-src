@@ -757,4 +757,22 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3660(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-3660.php'], [
+			[
+				'Parameter #1 $string of function strlen expects string, int given.',
+				7,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, int given.',
+				8,
+			],
+		]);
+	}
+
 }

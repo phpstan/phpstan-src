@@ -6,8 +6,12 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -36,19 +40,18 @@ class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMetho
 		}
 
 		$valueType = $scope->getType($methodCall->args[0]->value);
-		foreach (TypeUtils::getConstantStrings($valueType) as $constantString) {
-			if (!$this->reflectionProvider->hasClass($constantString->getValue())) {
-				return $methodReflection->getThrowType();
+		foreach (TypeUtils::flattenTypes($valueType) as $type) {
+			if ($type instanceof ClassStringType || $type instanceof ObjectWithoutClassType || $type instanceof ObjectType) {
+				continue;
 			}
 
-			$valueType = TypeCombinator::remove($valueType, $constantString);
-		}
+			if (
+				$type instanceof ConstantStringType
+				&& $this->reflectionProvider->hasClass($type->getValue())
+			) {
+				continue;
+			}
 
-		if ((new ObjectWithoutClassType())->isSuperTypeOf($valueType)->yes()) {
-			return null;
-		}
-
-		if (!$valueType instanceof NeverType) {
 			return $methodReflection->getThrowType();
 		}
 

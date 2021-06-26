@@ -364,6 +364,23 @@ class TestReflectionClass
 		}
 	}
 
+	/**
+	 * @param \DateTime|\DateTimeImmutable|class-string<\DateTime> $rightClassOrObject
+	 * @param \DateTime|\DateTimeImmutable|string $wrongClassOrObject
+	 */
+	public function doThing($rightClassOrObject, $wrongClassOrObject): void
+	{
+		try {
+			new \ReflectionClass($rightClassOrObject);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionClass($wrongClassOrObject);
+		} catch (\Exception $e) {
+
+		}
+	}
 }
 
 class TestReflectionFunction

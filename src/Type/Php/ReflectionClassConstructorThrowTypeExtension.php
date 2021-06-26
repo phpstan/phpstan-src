@@ -8,6 +8,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -41,6 +42,10 @@ class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMetho
 			}
 
 			$valueType = TypeCombinator::remove($valueType, $constantString);
+		}
+
+		if ((new ObjectWithoutClassType())->isSuperTypeOf($valueType)->yes()) {
+			return null;
 		}
 
 		if (!$valueType instanceof NeverType) {

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -109,18 +110,29 @@ class ConstantArrayTypeBuilder
 		$this->degradeToGeneralArray = true;
 	}
 
-	public function getArray(): ArrayType
+	public function getArray(): Type
 	{
+		$keyTypesCount = count($this->keyTypes);
+		if ($keyTypesCount === 0) {
+			return new ConstantArrayType([], []);
+		}
+
 		if (!$this->degradeToGeneralArray) {
 			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndex, $this->optionalKeys);
 		}
 
-		return new ArrayType(
+		$array = new ArrayType(
 			TypeCombinator::union(...$this->keyTypes),
 			TypeCombinator::union(...$this->valueTypes)
 		);
+
+		if (count($this->optionalKeys) < $keyTypesCount) {
+			return TypeCombinator::intersect($array, new NonEmptyArrayType());
+		}
+
+		return $array;
 	}
 
 }

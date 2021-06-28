@@ -10,7 +10,6 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprTrueNode;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\MixedType;
@@ -52,7 +51,7 @@ class ConstExprNodeResolver
 		return new MixedType();
 	}
 
-	private function resolveArrayNode(ConstExprArrayNode $node): ArrayType
+	private function resolveArrayNode(ConstExprArrayNode $node): Type
 	{
 		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 		foreach ($node->items as $item) {

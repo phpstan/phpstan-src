@@ -509,10 +509,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$optionalKeysCount = count($this->optionalKeys);
-		if ($optionalKeysCount === 0) {
-			return TrinaryLogic::createYes();
-		}
-
 		if ($optionalKeysCount < $keysCount) {
 			return TrinaryLogic::createYes();
 		}
@@ -547,7 +543,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
-	public function removeFirst(): ArrayType
+	public function removeFirst(): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		foreach ($this->keyTypes as $i => $keyType) {

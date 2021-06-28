@@ -10193,11 +10193,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<int, int>',
+				'array<int, int>&nonEmpty',
 				'$integersOne',
 			],
 			[
-				'array<int, int>',
+				'array<int, int>&nonEmpty',
 				'$integersTwo',
 			],
 			[
@@ -10205,11 +10205,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integersThree',
 			],
 			[
-				'array<int, int>',
+				'array<int, int>&nonEmpty',
 				'$integersFour',
 			],
 			[
-				'array<int, int>',
+				'array<int, int>&nonEmpty',
 				'$integersFive',
 			],
 			[

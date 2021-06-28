@@ -3312,8 +3312,6 @@ class NodeScopeResolver
 				foreach (array_reverse($offsetTypes) as $i => $offsetType) {
 					/** @var Type $offsetValueType */
 					$offsetValueType = array_pop($offsetValueTypeStack);
-
-					/** @phpstan-ignore-next-line */
 					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
 				}
 

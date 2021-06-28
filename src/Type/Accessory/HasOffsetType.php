@@ -111,7 +111,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		return $this;
 	}

@@ -430,10 +430,10 @@ class UnionType implements CompoundType
 		return TypeCombinator::union(...$types);
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this->unionTypes(static function (Type $type) use ($offsetType, $valueType): Type {
-			return $type->setOffsetValueType($offsetType, $valueType);
+		return $this->unionTypes(static function (Type $type) use ($offsetType, $valueType, $unionValues): Type {
+			return $type->setOffsetValueType($offsetType, $valueType, $unionValues);
 		});
 	}
 

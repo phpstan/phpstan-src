@@ -330,10 +330,10 @@ class IntersectionType implements CompoundType
 		});
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this->intersectTypes(static function (Type $type) use ($offsetType, $valueType): Type {
-			return $type->setOffsetValueType($offsetType, $valueType);
+		return $this->intersectTypes(static function (Type $type) use ($offsetType, $valueType, $unionValues): Type {
+			return $type->setOffsetValueType($offsetType, $valueType, $unionValues);
 		});
 	}
 

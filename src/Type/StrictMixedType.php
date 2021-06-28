@@ -156,7 +156,7 @@ class StrictMixedType implements CompoundType
 		return new ErrorType();
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		return new ErrorType();
 	}

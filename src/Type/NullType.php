@@ -152,10 +152,10 @@ class NullType implements ConstantScalarType
 		return new ErrorType();
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		$array = new ConstantArrayType([], []);
-		return $array->setOffsetValueType($offsetType, $valueType);
+		return $array->setOffsetValueType($offsetType, $valueType, $unionValues);
 	}
 
 	public function traverse(callable $cb): Type

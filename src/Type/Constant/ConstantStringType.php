@@ -273,7 +273,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return parent::getOffsetValueType($offsetType);
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		$valueStringType = $valueType->toString();
 		if ($valueStringType instanceof ErrorType) {

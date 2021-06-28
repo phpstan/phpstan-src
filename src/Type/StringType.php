@@ -54,7 +54,7 @@ class StringType implements Type
 		return new StringType();
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		if ($offsetType === null) {
 			return new ErrorType();

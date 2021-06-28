@@ -169,7 +169,7 @@ class Baz implements Type
 		// TODO: Implement getOffsetValueType() method.
 	}
 
-	public function setOffsetValueType(?Type $offsetType, Type $valueType): \PHPStan\Type\Type
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): \PHPStan\Type\Type
 	{
 		// TODO: Implement setOffsetValueType() method.
 	}

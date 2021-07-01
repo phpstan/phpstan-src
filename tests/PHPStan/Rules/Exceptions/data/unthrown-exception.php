@@ -364,6 +364,28 @@ class TestReflectionClass
 		}
 	}
 
+	/**
+	 * @param \DateTime|\DateTimeImmutable|class-string<\DateTime> $rightClassOrObject
+	 * @param \DateTime|\DateTimeImmutable|string $wrongClassOrObject
+	 */
+	public function doThing(object $foo, $rightClassOrObject, $wrongClassOrObject): void
+	{
+		try {
+			new \ReflectionClass($foo);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionClass($rightClassOrObject);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionClass($wrongClassOrObject);
+		} catch (\Exception $e) {
+
+		}
+	}
 }
 
 class TestReflectionFunction
@@ -400,11 +422,18 @@ class TestReflectionFunction
 
 class TestReflectionMethod
 {
-
-	public function doFoo(): void
+	/**
+	 * @param class-string<\DateTimeInterface> $foo
+	 */
+	public function doFoo($foo): void
 	{
 		try {
 			new \ReflectionMethod(\DateTime::class, 'format');
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionMethod($foo, 'format');
 		} catch (\Exception $e) {
 
 		}

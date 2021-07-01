@@ -81,15 +81,27 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			],
 			[
 				'Dead catch - Exception is never thrown in the try block.',
-				376,
+				375,
 			],
 			[
 				'Dead catch - Exception is never thrown in the try block.',
-				408,
+				380,
 			],
 			[
 				'Dead catch - Exception is never thrown in the try block.',
-				456,
+				398,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				432,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				437,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				485,
 			],
 		]);
 	}

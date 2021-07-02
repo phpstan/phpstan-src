@@ -682,23 +682,7 @@ class TypeSpecifier
 					}
 				}
 				if ($expr instanceof Expr\Isset_) {
-					if (
-						$var instanceof ArrayDimFetch
-						&& $var->dim !== null
-						&& !$scope->getType($var->var) instanceof MixedType
-					) {
-						$type = $this->create(
-							$var->var,
-							new HasOffsetType($scope->getType($var->dim)),
-							$context,
-							false,
-							$scope
-						)->unionWith(
-							$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
-						);
-					} else {
-						$type = $this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope);
-					}
+					$type = $this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope);
 				} else {
 					$type = $this->create(
 						$var,
@@ -709,6 +693,22 @@ class TypeSpecifier
 						TypeSpecifierContext::createFalse(),
 						false,
 						$scope
+					);
+				}
+
+				if (
+					$var instanceof ArrayDimFetch
+					&& $var->dim !== null
+					&& !$scope->getType($var->var) instanceof MixedType
+				) {
+					$type = $this->create(
+						$var->var,
+						new HasOffsetType($scope->getType($var->dim)),
+						$context,
+						false,
+						$scope
+					)->unionWith(
+						$type
 					);
 				}
 

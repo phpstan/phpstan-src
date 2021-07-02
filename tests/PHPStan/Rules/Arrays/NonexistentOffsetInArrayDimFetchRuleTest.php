@@ -278,4 +278,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		]);
 	}
 
+	public function testBug3297(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3297.php'], []);
+	}
+
 }

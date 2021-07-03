@@ -1550,11 +1550,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'(float) "5"',
 			],
 			[
-				'*ERROR*',
+				'0',
 				'(int) "blabla"',
 			],
 			[
-				'*ERROR*',
+				'0.0',
 				'(float) "blabla"',
 			],
 			[

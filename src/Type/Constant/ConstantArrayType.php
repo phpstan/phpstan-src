@@ -608,6 +608,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->count()->toBoolean();
 	}
 
+	public function toInteger(): Type
+	{
+		return $this->toBoolean()->toInteger();
+	}
+
+	public function toFloat(): Type
+	{
+		return $this->toBoolean()->toFloat();
+	}
+
 	public function generalize(): Type
 	{
 		if (count($this->keyTypes) === 0) {

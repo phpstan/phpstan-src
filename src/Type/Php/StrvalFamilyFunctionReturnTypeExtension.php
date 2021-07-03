@@ -9,12 +9,20 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
-class StrvalFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const FUNCTIONS = [
+		'strval',
+		'intval',
+		'boolval',
+		'floatval',
+		'doubleval',
+	];
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'strval';
+		return in_array($functionReflection->getName(), self::FUNCTIONS, true);
 	}
 
 	public function getTypeFromFunctionCall(
@@ -26,8 +34,22 @@ class StrvalFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		if (count($functionCall->args) === 0) {
 			return new NullType();
 		}
+
 		$argType = $scope->getType($functionCall->args[0]->value);
-		return $argType->toString();
+
+		switch ($functionReflection->getName()) {
+			case 'strval':
+				return $argType->toString();
+			case 'intval':
+				return $argType->toInteger();
+			case 'boolval':
+				return $argType->toBoolean();
+			case 'floatval':
+			case 'doubleval':
+				return $argType->toFloat();
+			default:
+				throw new \PHPStan\ShouldNotHappenException();
+		}
 	}
 
 }

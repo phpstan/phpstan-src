@@ -1,5 +1,10 @@
 [
     {
+        "message": "Cannot cast array|(callable(): mixed) to int.",
+        "line": 20,
+        "ignorable": true
+    },
+    {
         "message": "Cannot cast array|float|int to string.",
         "line": 21,
         "ignorable": true

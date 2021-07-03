@@ -226,22 +226,12 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function toInteger(): Type
 	{
-		$type = $this->toNumber();
-		if ($type instanceof ErrorType) {
-			return $type;
-		}
-
-		return $type->toInteger();
+		return new ConstantIntegerType((int) $this->value);
 	}
 
 	public function toFloat(): Type
 	{
-		$type = $this->toNumber();
-		if ($type instanceof ErrorType) {
-			return $type;
-		}
-
-		return $type->toFloat();
+		return new ConstantFloatType((float) $this->value);
 	}
 
 	public function isNumericString(): TrinaryLogic

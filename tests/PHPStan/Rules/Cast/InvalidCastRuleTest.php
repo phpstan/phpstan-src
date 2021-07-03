@@ -24,14 +24,6 @@ class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
 				7,
 			],
 			[
-				'Cannot cast array() to int.',
-				16,
-			],
-			[
-				'Cannot cast \'blabla\' to int.',
-				21,
-			],
-			[
 				'Cannot cast stdClass to int.',
 				23,
 			],

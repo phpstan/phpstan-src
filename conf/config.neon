@@ -1403,7 +1403,7 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\StrvalFunctionReturnTypeExtension
+		class: PHPStan\Type\Php\StrvalFamilyFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

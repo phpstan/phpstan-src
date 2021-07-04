@@ -456,4 +456,15 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 		$this->analyse([__DIR__ . '/data/bug-3357.php'], []);
 	}
 
+	public function testBug4848(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-4848.php'], [
+			[
+				'Strict comparison using === between \'18446744073709551615\' and \'9223372036854775807\' will always evaluate to false.',
+				7,
+			],
+		]);
+	}
+
 }

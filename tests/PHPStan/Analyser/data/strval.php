@@ -76,3 +76,18 @@ function boolvalTest(string $string): void
 	assertType('true', boolval([null]));
 	assertType('true', boolval(new \stdClass()));
 }
+
+function arrayTest(array $a): void
+{
+	assertType('0|1', intval($a));
+	assertType('0.0|1.0', floatval($a));
+	assertType('bool', boolval($a));
+}
+
+/** @param non-empty-array $a */
+function nonEmptyArrayTest(array $a): void
+{
+	assertType('1', intval($a));
+	assertType('1.0', floatval($a));
+	assertType('true', boolval($a));
+}

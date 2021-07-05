@@ -8,6 +8,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Reflection\ReflectionProvider;
@@ -33,8 +34,10 @@ use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Generics\TraitTemplateTypeRule;
 use PHPStan\Rules\Generics\VarianceCheck;
 use PHPStan\Rules\Methods\ExistingClassesInTypehintsRule;
+use PHPStan\Rules\Methods\MethodSignatureRule;
 use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
+use PHPStan\Rules\Methods\OverridingMethodRule;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
@@ -52,11 +55,15 @@ class StubValidator
 
 	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
 
+	private bool $validateOverridingMethods;
+
 	public function __construct(
-		DerivativeContainerFactory $derivativeContainerFactory
+		DerivativeContainerFactory $derivativeContainerFactory,
+		bool $validateOverridingMethods
 	)
 	{
 		$this->derivativeContainerFactory = $derivativeContainerFactory;
+		$this->validateOverridingMethods = $validateOverridingMethods;
 	}
 
 	/**
@@ -127,7 +134,7 @@ class StubValidator
 		$missingTypehintCheck = $container->getByType(MissingTypehintCheck::class);
 		$unresolvableTypeHelper = $container->getByType(UnresolvableTypeHelper::class);
 
-		return new Registry([
+		$rules = [
 			// level 0
 			new ExistingClassesInClassImplementsRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassesInInterfaceExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
@@ -165,7 +172,17 @@ class StubValidator
 			new MissingMethodParameterTypehintRule($missingTypehintCheck),
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
-		]);
+		];
+
+		if ($this->validateOverridingMethods) {
+			$rules[] = new OverridingMethodRule(
+				$container->getByType(PhpVersion::class),
+				new MethodSignatureRule(true, true),
+				true
+			);
+		}
+
+		return new Registry($rules);
 	}
 
 }

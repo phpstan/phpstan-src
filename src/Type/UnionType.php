@@ -397,6 +397,13 @@ class UnionType implements CompoundType
 		});
 	}
 
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return $this->unionResults(static function (Type $type): TrinaryLogic {
+			return $type->isNonEmptyString();
+		});
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return $this->unionResults(static function (Type $type): TrinaryLogic {

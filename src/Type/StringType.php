@@ -131,6 +131,11 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

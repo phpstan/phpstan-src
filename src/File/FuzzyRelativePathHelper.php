@@ -15,7 +15,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 	 * @param RelativePathHelper $fallbackRelativePathHelper
 	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
-	 * @param string|null $directorySeparator
+	 * @param non-empty-string|null $directorySeparator
 	 */
 	public function __construct(
 		RelativePathHelper $fallbackRelativePathHelper,

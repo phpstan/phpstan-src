@@ -2316,15 +2316,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'false ? 1 : 2',
 			],
 			[
-				'12|string',
+				'12|non-empty-string',
 				'$string ?: 12',
 			],
 			[
-				'12|string',
+				'12|non-empty-string',
 				'$stringOrNull ?: 12',
 			],
 			[
-				'12|string',
+				'12|non-empty-string',
 				'@$stringOrNull ?: 12',
 			],
 			[
@@ -3204,7 +3204,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$simpleXMLReturningXML',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$xmlString',
 			],
 			[

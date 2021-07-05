@@ -12,6 +12,7 @@ use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflectio
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -138,19 +139,35 @@ class IntersectionType implements CompoundType
 			},
 			function () use ($level): string {
 				$typeNames = [];
+				$accessoryTypes = [];
 				foreach ($this->types as $type) {
-					if ($type instanceof AccessoryType && !$type instanceof AccessoryNumericStringType && !$type instanceof NonEmptyArrayType) {
+					if ($type instanceof AccessoryNonEmptyStringType) {
+						$accessoryTypes[] = $type;
+					}
+					if ($type instanceof AccessoryType && !$type instanceof AccessoryNumericStringType && !$type instanceof NonEmptyArrayType && !$type instanceof AccessoryNonEmptyStringType) {
 						continue;
 					}
 					$typeNames[] = $type->describe($level);
+				}
+
+				if (count($accessoryTypes) === 1) {
+					return $accessoryTypes[0]->describe($level);
 				}
 
 				return implode('&', $typeNames);
 			},
 			function () use ($level): string {
 				$typeNames = [];
+				$accessoryTypes = [];
 				foreach ($this->types as $type) {
+					if ($type instanceof AccessoryNonEmptyStringType) {
+						$accessoryTypes[] = $type;
+					}
 					$typeNames[] = $type->describe($level);
+				}
+
+				if (count($accessoryTypes) === 1) {
+					return $accessoryTypes[0]->describe($level);
 				}
 
 				return implode('&', $typeNames);
@@ -306,6 +323,13 @@ class IntersectionType implements CompoundType
 	{
 		return $this->intersectResults(static function (Type $type): TrinaryLogic {
 			return $type->isNumericString();
+		});
+	}
+
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return $this->intersectResults(static function (Type $type): TrinaryLogic {
+			return $type->isNonEmptyString();
 		});
 	}
 

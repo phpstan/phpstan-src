@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Broker\Broker;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -1767,6 +1768,17 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				],
 				TemplateBenevolentUnionType::class,
 				'T of (int|string) (function foo(), parameter)',
+			],
+			[
+				[
+					new ConstantStringType(''),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]),
+				],
+				StringType::class,
+				'string',
 			],
 		];
 	}

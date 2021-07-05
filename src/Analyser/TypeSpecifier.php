@@ -20,6 +20,7 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -41,6 +42,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -219,6 +221,26 @@ class TypeSpecifier
 						}
 					}
 				}
+
+				if (
+					!$context->null()
+					&& $exprNode instanceof FuncCall
+					&& count($exprNode->args) === 1
+					&& $exprNode->name instanceof Name
+					&& strtolower((string) $exprNode->name) === 'strlen'
+					&& $constantType instanceof ConstantIntegerType
+				) {
+					if ($context->truthy() || $constantType->getValue() === 0) {
+						$newContext = $context;
+						if ($constantType->getValue() === 0) {
+							$newContext = $newContext->negate();
+						}
+						$argType = $scope->getType($exprNode->args[0]->value);
+						if ($argType instanceof StringType) {
+							return $this->create($exprNode->args[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope);
+						}
+					}
+				}
 			}
 
 			if ($context->true()) {
@@ -383,11 +405,11 @@ class TypeSpecifier
 				$expr->left instanceof FuncCall
 				&& count($expr->left->args) === 1
 				&& $expr->left->name instanceof Name
-				&& strtolower((string) $expr->left->name) === 'count'
+				&& in_array(strtolower((string) $expr->left->name), ['count', 'strlen'], true)
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
-					|| strtolower((string) $expr->right->name) !== 'count'
+					|| !in_array(strtolower((string) $expr->right->name), ['count', 'strlen'], true)
 				)
 			) {
 				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
@@ -418,6 +440,25 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->args[0]->value);
 					if ($argType->isArray()->yes()) {
 						$result = $result->unionWith($this->create($expr->right->args[0]->value, new NonEmptyArrayType(), $context, false, $scope));
+					}
+				}
+			}
+
+			if (
+				!$context->null()
+				&& $expr->right instanceof FuncCall
+				&& count($expr->right->args) === 1
+				&& $expr->right->name instanceof Name
+				&& strtolower((string) $expr->right->name) === 'strlen'
+				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
+			) {
+				if (
+					$context->truthy() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
+					|| ($context->falsey() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
+				) {
+					$argType = $scope->getType($expr->right->args[0]->value);
+					if ($argType instanceof StringType) {
+						$result = $result->unionWith($this->create($expr->right->args[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope));
 					}
 				}
 			}

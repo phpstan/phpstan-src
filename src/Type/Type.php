@@ -98,6 +98,8 @@ interface Type
 
 	public function isNumericString(): TrinaryLogic;
 
+	public function isNonEmptyString(): TrinaryLogic;
+
 	public function getSmallerType(): Type;
 
 	public function getSmallerOrEqualType(): Type;

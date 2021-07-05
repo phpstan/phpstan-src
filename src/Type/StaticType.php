@@ -344,6 +344,11 @@ class StaticType implements TypeWithClassName
 		return $this->getStaticObjectType()->isNumericString();
 	}
 
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isNonEmptyString();
+	}
+
 	/**
 	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]

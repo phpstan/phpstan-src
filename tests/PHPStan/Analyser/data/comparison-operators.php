@@ -126,7 +126,7 @@ class ComparisonOperatorsInTypeSpecifier
 		}
 
 		if ($s > null) {
-			assertType('string', $s);
+			assertType('non-empty-string', $s);
 		}
 		if ($s >= null) {
 			assertType('string|null', $s);

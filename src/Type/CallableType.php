@@ -314,6 +314,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isCommonCallable(): bool
 	{
 		return $this->isCommonCallable;

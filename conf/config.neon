@@ -44,6 +44,7 @@ parameters:
 		apiRules: false
 		deepInspectTypes: false
 		neverInGenericReturnType: false
+		validateOverridingMethodsInStubs: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -215,7 +216,8 @@ parametersSchema:
 		preciseExceptionTracking: bool(),
 		apiRules: bool(),
 		deepInspectTypes: bool(),
-		neverInGenericReturnType: bool()
+		neverInGenericReturnType: bool(),
+		validateOverridingMethodsInStubs: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
@@ -418,6 +420,8 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\StubValidator
+		arguments:
+			validateOverridingMethods: %featureToggles.validateOverridingMethodsInStubs%
 
 	-
 		class: PHPStan\Analyser\Analyser
@@ -954,6 +958,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ArrayNextDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ArrayPopFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1394,6 +1403,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\SprintfFunctionDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\StrvalFamilyFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

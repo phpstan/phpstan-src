@@ -21,5 +21,6 @@ parameters:
 		apiRules: true
 		deepInspectTypes: true
 		neverInGenericReturnType: true
+		validateOverridingMethodsInStubs: true
 	stubFiles:
 		- ../stubs/arrayFunctions.stub

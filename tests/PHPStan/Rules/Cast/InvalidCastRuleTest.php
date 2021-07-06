@@ -24,14 +24,6 @@ class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
 				7,
 			],
 			[
-				'Cannot cast array() to int.',
-				16,
-			],
-			[
-				'Cannot cast \'blabla\' to int.',
-				21,
-			],
-			[
 				'Cannot cast stdClass to int.',
 				23,
 			],
@@ -48,6 +40,11 @@ class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
 				48,
 			],
 		]);
+	}
+
+	public function testBug5162(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5162.php'], []);
 	}
 
 }

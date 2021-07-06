@@ -5,6 +5,8 @@ namespace PHPStan\Type\Accessory;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\CompoundTypeHelper;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -142,12 +144,12 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function toInteger(): Type
 	{
-		return new ErrorType();
+		return new ConstantIntegerType(1);
 	}
 
 	public function toFloat(): Type
 	{
-		return new ErrorType();
+		return new ConstantFloatType(1.0);
 	}
 
 	public function toString(): Type

@@ -15,7 +15,6 @@ use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionFunction;
 use function array_key_exists;
 use function file_exists;
@@ -265,7 +264,6 @@ class AutoloadSourceLocator implements SourceLocator
 	 * that it cannot find the file, so we squelch the errors by overriding the
 	 * error handler temporarily.
 	 *
-	 * @throws ReflectionException
 	 * @return array{string, string, int|null}|null
 	 */
 	private function locateClassByName(string $className): ?array

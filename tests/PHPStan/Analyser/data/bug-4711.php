@@ -12,8 +12,8 @@ class Foo
 			return;
 		}
 
-		assertType('array<int, string>', explode($string, ''));
-		assertType('array<int, string>', explode($string[0], ''));
+		assertType('array<int, string>&nonEmpty', explode($string, ''));
+		assertType('array<int, string>&nonEmpty', explode($string[0], ''));
 	}
 
 }

@@ -2639,7 +2639,7 @@ return [
 'exp' => ['float', 'number'=>'float'],
 'expect_expectl' => ['int', 'expect'=>'resource', 'cases'=>'array', 'match='=>'array'],
 'expect_popen' => ['resource|false', 'command'=>'string'],
-'explode' => ['array<int,string>|false', 'separator'=>'string', 'str'=>'string', 'limit='=>'int'],
+'explode' => ['non-empty-array<int,string>|false', 'separator'=>'string', 'str'=>'string', 'limit='=>'int'],
 'expm1' => ['float', 'number'=>'float'],
 'extension_loaded' => ['bool', 'extension_name'=>'string'],
 'extract' => ['int', '&rw_var_array'=>'array', 'extract_type='=>'int', 'prefix='=>'string|null'],

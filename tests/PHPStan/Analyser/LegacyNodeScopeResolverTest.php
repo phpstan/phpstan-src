@@ -8003,15 +8003,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$sureFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
 				'$arrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$anotherArrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>|false)' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? '((array<int, string>&nonEmpty)|false)' : 'array<int, string>&nonEmpty',
 				'$benevolentArrayOrFalse',
 			],
 		];

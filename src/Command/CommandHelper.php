@@ -238,7 +238,7 @@ class CommandHelper
 		);
 
 		$createDir = static function (string $path) use ($errorOutput): void {
-			if (!@mkdir($path, 0777) && !is_dir($path)) {
+			if (!is_dir($path) && !@mkdir($path, 0777) && !is_dir($path)) {
 				$errorOutput->writeLineFormatted(sprintf('Cannot create a temp directory %s', $path));
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
 			}

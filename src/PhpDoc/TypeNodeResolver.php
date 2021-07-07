@@ -28,6 +28,7 @@ use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -186,6 +187,12 @@ class TypeNodeResolver
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNumericStringType(),
+				]);
+
+			case 'non-empty-string':
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
 				]);
 
 			case 'bool':

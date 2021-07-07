@@ -12,22 +12,22 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
-use PHPStan\Type\Traits\NonCallableTypeTrait;
+use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
+use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
-class AccessoryNumericStringType implements CompoundType, AccessoryType
+class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 {
 
-	use NonCallableTypeTrait;
+	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
-	use UndecidedBooleanTypeTrait;
+	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
 
@@ -47,7 +47,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
 		}
 
-		return $type->isNumericString();
+		return $type->isNonEmptyString();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -56,7 +56,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->isNumericString();
+		return $type->isNonEmptyString();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -65,7 +65,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isNumericString()
+		return $otherType->isNonEmptyString()
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
@@ -81,7 +81,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function describe(\PHPStan\Type\VerbosityLevel $level): string
 	{
-		return 'numeric';
+		return 'non-empty-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -98,6 +98,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	{
 		if ($this->hasOffsetValueType($offsetType)->no()) {
 			return new ErrorType();
+		}
+
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()) {
+			return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 		}
 
 		return new StringType();
@@ -147,7 +151,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function isNumericString(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isNonEmptyString(): TrinaryLogic

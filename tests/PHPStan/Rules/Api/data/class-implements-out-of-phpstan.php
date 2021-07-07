@@ -234,6 +234,11 @@ class Baz implements Type
 		// TODO: Implement isNumericString() method.
 	}
 
+	public function isNonEmptyString(): \PHPStan\TrinaryLogic
+	{
+		// TODO: Implement isNumericString() method.
+	}
+
 	public function getSmallerType(): \PHPStan\Type\Type
 	{
 		// TODO: Implement getSmallerType() method.

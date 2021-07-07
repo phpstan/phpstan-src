@@ -239,6 +239,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createFromBoolean(is_numeric($this->getValue()));
 	}
 
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->getValue() !== '');
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		if ($offsetType instanceof ConstantIntegerType) {

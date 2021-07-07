@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -111,6 +112,13 @@ class TypeCombinator
 
 			if ($fromType instanceof ConstantArrayType && $typeToRemove instanceof HasOffsetType) {
 				return $fromType->unsetOffset($typeToRemove->getOffsetType());
+			}
+		} elseif ($fromType instanceof StringType) {
+			if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '') {
+				return self::intersect($fromType, new AccessoryNonEmptyStringType());
+			}
+			if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
+				return new ConstantStringType('');
 			}
 		} elseif ($fromType instanceof SubtractableType) {
 			$typeToSubtractFrom = $fromType;
@@ -348,6 +356,26 @@ class TypeCombinator
 				) {
 					array_splice($types, $j--, 1);
 					continue 1;
+				}
+
+				if (
+					$types[$i] instanceof ConstantStringType
+					&& $types[$i]->getValue() === ''
+					&& $types[$j]->describe(VerbosityLevel::value()) === 'non-empty-string'
+				) {
+					$types[$i] = new StringType();
+					array_splice($types, $j--, 1);
+					continue 1;
+				}
+
+				if (
+					$types[$j] instanceof ConstantStringType
+					&& $types[$j]->getValue() === ''
+					&& $types[$i]->describe(VerbosityLevel::value()) === 'non-empty-string'
+				) {
+					$types[$j] = new StringType();
+					array_splice($types, $i--, 1);
+					continue 2;
 				}
 			}
 		}

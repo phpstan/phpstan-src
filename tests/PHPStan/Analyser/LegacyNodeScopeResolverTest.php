@@ -2316,15 +2316,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'false ? 1 : 2',
 			],
 			[
-				'12|string',
+				'12|non-empty-string',
 				'$string ?: 12',
 			],
 			[
-				'12|string',
+				'12|non-empty-string',
 				'$stringOrNull ?: 12',
 			],
 			[
-				'12|string',
+				'12|non-empty-string',
 				'@$stringOrNull ?: 12',
 			],
 			[
@@ -3204,7 +3204,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$simpleXMLReturningXML',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$xmlString',
 			],
 			[
@@ -8003,15 +8003,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$sureFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
 				'$arrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
 				'$anotherArrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>|false)' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? '((array<int, string>&nonEmpty)|false)' : 'array<int, string>&nonEmpty',
 				'$benevolentArrayOrFalse',
 			],
 		];

@@ -65,6 +65,16 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

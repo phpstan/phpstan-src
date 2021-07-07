@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -96,7 +97,11 @@ class MissingReturnRule implements Rule
 			return [];
 		}
 
-		if (!$node->hasNativeReturnTypehint() && !$this->checkPhpDocMissingReturn) {
+		if (
+			!$node->hasNativeReturnTypehint()
+			&& !$this->checkPhpDocMissingReturn
+			&& TypeCombinator::containsNull($returnType)
+		) {
 			return [];
 		}
 

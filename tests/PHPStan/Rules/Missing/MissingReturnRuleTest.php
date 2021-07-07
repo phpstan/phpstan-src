@@ -198,6 +198,18 @@ class MissingReturnRuleTest extends RuleTestCase
 				false,
 				[
 					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo() should return int|string but return statement is missing.',
+						11,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo3() should return int|string but return statement is missing.',
+						29,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo5() should return mixed but return statement is missing.',
+						49,
+					],
+					[
 						'Method CheckPhpDocMissingReturn\Bar::doFoo() should return int|string but return statement is missing.',
 						59,
 					],

@@ -949,3 +949,28 @@ class AvoidRegressionBecauseThisWasReturningAnErrorInPhpstan11_5
 		}
 	}
 }
+
+class ArrayWithNonEmptyStringValue
+{
+
+	/**
+	 * @param array<int, non-empty-string> $a
+	 */
+	public function doFoo(array $a): void
+	{
+		if ($a === []) {
+
+		}
+	}
+
+	/**
+	 * @param array<int, numeric-string> $a
+	 */
+	public function doBar(array $a): void
+	{
+		if ($a === []) {
+
+		}
+	}
+
+}

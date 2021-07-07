@@ -52,6 +52,10 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
 		if ($this->equals($type)) {
 			return TrinaryLogic::createYes();
 		}

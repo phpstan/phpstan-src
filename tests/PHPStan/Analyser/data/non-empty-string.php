@@ -110,7 +110,7 @@ class Foo
 			return;
 		}
 
-		assertType('string&numeric', $s);
+		assertType('non-empty-string', $s);
 	}
 
 }

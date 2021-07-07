@@ -949,3 +949,19 @@ class AvoidRegressionBecauseThisWasReturningAnErrorInPhpstan11_5
 		}
 	}
 }
+
+class NotNullProperty
+{
+	/** @var int */
+	private $foo;
+
+	public function doFoo()
+	{
+		if ($this->foo !== null) {
+
+		}
+		if ($this->foo === null) {
+
+		}
+	}
+}

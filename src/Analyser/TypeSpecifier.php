@@ -24,7 +24,6 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -675,20 +674,12 @@ class TypeSpecifier
 
 			return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context);
 		} elseif (
-			(
-				$expr instanceof Expr\Isset_
-				&& count($expr->vars) > 0
-				&& $context->true()
-			)
-			|| ($expr instanceof Expr\Empty_ && $context->false())
+			$expr instanceof Expr\Isset_
+			&& count($expr->vars) > 0
+			&& $context->true()
 		) {
 			$vars = [];
-			if ($expr instanceof Expr\Isset_) {
-				$varsToIterate = $expr->vars;
-			} else {
-				$varsToIterate = [$expr->expr];
-			}
-			foreach ($varsToIterate as $var) {
+			foreach ($expr->vars as $var) {
 				$tmpVars = [$var];
 
 				while (
@@ -722,21 +713,6 @@ class TypeSpecifier
 						return new SpecifiedTypes([], []);
 					}
 				}
-				if ($expr instanceof Expr\Isset_) {
-					$type = $this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope);
-				} else {
-					$type = $this->create(
-						$var,
-						new UnionType([
-							new NullType(),
-							new ConstantBooleanType(false),
-						]),
-						TypeSpecifierContext::createFalse(),
-						false,
-						$scope
-					);
-				}
-
 				if (
 					$var instanceof ArrayDimFetch
 					&& $var->dim !== null
@@ -749,8 +725,10 @@ class TypeSpecifier
 						false,
 						$scope
 					)->unionWith(
-						$type
+						$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope)
 					);
+				} else {
+					$type = $this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope);
 				}
 
 				if (
@@ -779,14 +757,6 @@ class TypeSpecifier
 				}
 			}
 
-			if (
-				$expr instanceof Expr\Empty_
-				&& (new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($scope->getType($expr->expr))->yes()) {
-				$types = $types->unionWith(
-					$this->create($expr->expr, new NonEmptyArrayType(), $context->negate(), false, $scope)
-				);
-			}
-
 			return $types;
 		} elseif (
 			$expr instanceof Expr\BinaryOp\Coalesce
@@ -801,10 +771,12 @@ class TypeSpecifier
 				$scope
 			);
 		} elseif (
-			$expr instanceof Expr\Empty_ && $context->truthy()
-			&& (new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($scope->getType($expr->expr))->yes()
+			$expr instanceof Expr\Empty_
 		) {
-			return $this->create($expr->expr, new NonEmptyArrayType(), $context->negate(), false, $scope);
+			return $this->specifyTypesInCondition($scope, new BooleanOr(
+				new Expr\BooleanNot(new Expr\Isset_([$expr->expr])),
+				new Expr\BooleanNot($expr->expr)
+			), $context);
 		} elseif ($expr instanceof Expr\ErrorSuppress) {
 			return $this->specifyTypesInCondition($scope, $expr->expr, $context);
 		} elseif (

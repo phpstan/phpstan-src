@@ -113,4 +113,20 @@ class Foo
 		assertType('non-empty-string', $s);
 	}
 
+	public function doEmpty(string $s): void
+	{
+		if (empty($s)) {
+			return;
+		}
+
+		assertType('non-empty-string', $s);
+	}
+
+	public function doEmpty2(string $s): void
+	{
+		if (!empty($s)) {
+			assertType('non-empty-string', $s);
+		}
+	}
+
 }

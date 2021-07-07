@@ -533,11 +533,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 			[
 				new Expr\BooleanNot(new Expr\Empty_(new Variable('stringOrNull'))),
 				[
-					'$stringOrNull' => '~false|null',
+					'$stringOrNull' => '~0|0.0|\'\'|\'0\'|array()|false|null',
 				],
-				[
-					'empty($stringOrNull)' => self::SURE_NOT_FALSEY,
-				],
+				[],
 			],
 			[
 				new Expr\BinaryOp\Identical(
@@ -552,21 +550,17 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				new Expr\Empty_(new Variable('array')),
+				[],
 				[
-					'$array' => '~nonEmpty',
-				],
-				[
-					'$array' => 'nonEmpty & ~false|null',
+					'$array' => '~0|0.0|\'\'|\'0\'|array()|false|null',
 				],
 			],
 			[
 				new BooleanNot(new Expr\Empty_(new Variable('array'))),
 				[
-					'$array' => 'nonEmpty & ~false|null',
+					'$array' => '~0|0.0|\'\'|\'0\'|array()|false|null',
 				],
-				[
-					'$array' => '~nonEmpty',
-				],
+				[],
 			],
 			[
 				new FuncCall(new Name('count'), [

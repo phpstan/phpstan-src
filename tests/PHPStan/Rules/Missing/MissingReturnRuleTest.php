@@ -14,9 +14,12 @@ class MissingReturnRuleTest extends RuleTestCase
 	/** @var bool */
 	private $checkExplicitMixedMissingReturn;
 
+	/** @var bool */
+	private $checkPhpDocMissingReturn = true;
+
 	protected function getRule(): Rule
 	{
-		return new MissingReturnRule($this->checkExplicitMixedMissingReturn, true);
+		return new MissingReturnRule($this->checkExplicitMixedMissingReturn, $this->checkPhpDocMissingReturn);
 	}
 
 	public function testRule(): void
@@ -141,6 +144,98 @@ class MissingReturnRuleTest extends RuleTestCase
 
 		require_once __DIR__ . '/data/bug-3669.php';
 		$this->analyse([__DIR__ . '/data/bug-3669.php'], []);
+	}
+
+	public function dataCheckPhpDocMissingReturn(): array
+	{
+		return [
+			[
+				true,
+				[
+					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo() should return int|string but return statement is missing.',
+						11,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo2() should return string|null but return statement is missing.',
+						19,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo3() should return int|string but return statement is missing.',
+						29,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo4() should return string|null but return statement is missing.',
+						39,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Foo::doFoo5() should return mixed but return statement is missing.',
+						49,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo() should return int|string but return statement is missing.',
+						59,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo2() should return string|null but return statement is missing.',
+						64,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo3() should return int|string but return statement is missing.',
+						71,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo4() should return string|null but return statement is missing.',
+						78,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo5() should return mixed but return statement is missing.',
+						85,
+					],
+				],
+			],
+			[
+				false,
+				[
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo() should return int|string but return statement is missing.',
+						59,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo2() should return string|null but return statement is missing.',
+						64,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo3() should return int|string but return statement is missing.',
+						71,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo4() should return string|null but return statement is missing.',
+						78,
+					],
+					[
+						'Method CheckPhpDocMissingReturn\Bar::doFoo5() should return mixed but return statement is missing.',
+						85,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataCheckPhpDocMissingReturn
+	 * @param bool $checkPhpDocMissingReturn
+	 * @param mixed[] $errors
+	 */
+	public function testCheckPhpDocMissingReturn(bool $checkPhpDocMissingReturn, array $errors): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->checkPhpDocMissingReturn = $checkPhpDocMissingReturn;
+		$this->analyse([__DIR__ . '/data/check-phpdoc-missing-return.php'], $errors);
 	}
 
 }

@@ -11546,7 +11546,7 @@ return [
 'sqlsrv_server_info' => ['array', 'conn'=>'resource'],
 'sqrt' => ['float', 'number'=>'float'],
 'srand' => ['void', 'seed='=>'int', 'mode='=>'int'],
-'sscanf' => ['int|null', 'str'=>'string', 'format'=>'string', '&...w_vars'=>'string|int|float|null'],
+'sscanf' => ['int|null', 'str'=>'string', 'format'=>'string', '&w_war'=>'string|int|float|null', '&...w_vars='=>'string|int|float|null'],
 'sscanf\'1' => ['array|null', 'str'=>'string', 'format'=>'string'],
 'ssdeep_fuzzy_compare' => ['int', 'signature1'=>'string', 'signature2'=>'string'],
 'ssdeep_fuzzy_hash' => ['string', 'to_hash'=>'string'],

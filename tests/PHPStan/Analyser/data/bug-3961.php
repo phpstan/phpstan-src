@@ -14,8 +14,8 @@ class Foo
 		assertType('array<int, string>', explode('.', $v, -2));
 		assertType('array<int, string>&nonEmpty', explode('.', $v, 0));
 		assertType('array<int, string>&nonEmpty', explode('.', $v, 1));
-		assertType('array<int, string>|false', explode($d, $v));
-		assertType('(array<int, string>|false)', explode($m, $v));
+		assertType('(array<int, string>&nonEmpty)|false', explode($d, $v));
+		assertType('((array<int, string>&nonEmpty)|false)', explode($m, $v));
 	}
 
 }

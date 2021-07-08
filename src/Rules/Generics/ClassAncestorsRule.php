@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\Rules\Rule;
@@ -11,7 +12,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Class_>
+ * @implements \PHPStan\Rules\Rule<InClassNode>
  */
 class ClassAncestorsRule implements Rule
 {
@@ -31,21 +32,27 @@ class ClassAncestorsRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Class_::class;
+		return InClassNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!isset($node->namespacedName)) {
-			// anonymous class
+		$originalNode = $node->getOriginalNode();
+		if (!$originalNode instanceof Node\Stmt\Class_) {
 			return [];
 		}
-
-		$className = (string) $node->namespacedName;
+		if (!$scope->isInClass()) {
+			return [];
+		}
+		$classReflection = $scope->getClassReflection();
+		if ($classReflection->isAnonymous()) {
+			return [];
+		}
+		$className = $classReflection->getName();
 
 		$extendsTags = [];
 		$implementsTags = [];
-		$docComment = $node->getDocComment();
+		$docComment = $originalNode->getDocComment();
 		if ($docComment !== null) {
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$scope->getFile(),
@@ -59,7 +66,7 @@ class ClassAncestorsRule implements Rule
 		}
 
 		$extendsErrors = $this->genericAncestorsCheck->check(
-			$node->extends !== null ? [$node->extends] : [],
+			$originalNode->extends !== null ? [$originalNode->extends] : [],
 			array_map(static function (ExtendsTag $tag): Type {
 				return $tag->getType();
 			}, $extendsTags),
@@ -76,7 +83,7 @@ class ClassAncestorsRule implements Rule
 		);
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
-			$node->implements,
+			$originalNode->implements,
 			array_map(static function (ImplementsTag $tag): Type {
 				return $tag->getType();
 			}, $implementsTags),

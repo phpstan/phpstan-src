@@ -45,4 +45,50 @@ class Foo
 		return 'str';
 	}
 
+	private function dolor2(): ?string {
+		if (rand()) {
+			return 'foo';
+		}
+	}
+
+	/**
+	 * @return string|null
+	 */
+	private function dolor3() {
+		if (rand()) {
+			return 'foo';
+		}
+	}
+
+	/**
+	 * @return string|int
+	 */
+	private function dolor4() {
+		if (rand()) {
+			return 'foo';
+		}
+	}
+
+	/**
+	 * @return string|null
+	 */
+	private function dolor5() {
+		if (rand()) {
+			return 'foo';
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	private function dolor6() {
+		if (rand()) {
+			return 'foo';
+		}
+
+		return 'bar';
+	}
+
 }

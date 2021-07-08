@@ -37,3 +37,49 @@ function ipsum(): ?string {
 
 	return 'str';
 }
+
+function dolor2(): ?string {
+	if (rand()) {
+		return 'foo';
+	}
+}
+
+/**
+ * @return string|null
+ */
+function dolor3() {
+	if (rand()) {
+		return 'foo';
+	}
+}
+
+/**
+ * @return string|int
+ */
+function dolor4() {
+	if (rand()) {
+		return 'foo';
+	}
+}
+
+/**
+ * @return string|null
+ */
+function dolor5() {
+	if (rand()) {
+		return 'foo';
+	}
+
+	return null;
+}
+
+/**
+ * @return string|null
+ */
+function dolor6() {
+	if (rand()) {
+		return 'foo';
+	}
+
+	return 'bar';
+}

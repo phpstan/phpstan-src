@@ -17,21 +17,27 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 
 	private StatementResult $statementResult;
 
+	/** @var ExecutionEndNode[] */
+	private array $executionEnds;
+
 	/**
 	 * @param \PhpParser\Node\Stmt\Function_ $function
 	 * @param \PHPStan\Node\ReturnStatement[] $returnStatements
 	 * @param \PHPStan\Analyser\StatementResult $statementResult
+	 * @param ExecutionEndNode[] $executionEnds
 	 */
 	public function __construct(
 		Function_ $function,
 		array $returnStatements,
-		StatementResult $statementResult
+		StatementResult $statementResult,
+		array $executionEnds
 	)
 	{
 		parent::__construct($function->getAttributes());
 		$this->function = $function;
 		$this->returnStatements = $returnStatements;
 		$this->statementResult = $statementResult;
+		$this->executionEnds = $executionEnds;
 	}
 
 	/**
@@ -47,9 +53,22 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		return $this->statementResult;
 	}
 
+	/**
+	 * @return ExecutionEndNode[]
+	 */
+	public function getExecutionEnds(): array
+	{
+		return $this->executionEnds;
+	}
+
 	public function returnsByRef(): bool
 	{
 		return $this->function->byRef;
+	}
+
+	public function hasNativeReturnTypehint(): bool
+	{
+		return $this->function->returnType !== null;
 	}
 
 	public function getType(): string

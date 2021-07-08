@@ -92,6 +92,16 @@ class TooWideMethodReturnTypehintRule implements Rule
 				continue;
 			}
 
+			if ($type instanceof NullType && !$node->hasNativeReturnTypehint()) {
+				foreach ($node->getExecutionEnds() as $executionEnd) {
+					if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {
+						continue;
+					}
+
+					continue 2;
+				}
+			}
+
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() never returns %s so it can be removed from the return typehint.',
 				$method->getDeclaringClass()->getDisplayName(),

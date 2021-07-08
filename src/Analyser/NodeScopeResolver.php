@@ -445,12 +445,17 @@ class NodeScopeResolver
 			$nodeCallback(new InFunctionNode($stmt), $functionScope);
 
 			$gatheredReturnStatements = [];
-			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements): void {
+			$executionEnds = [];
+			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$executionEnds): void {
 				$nodeCallback($node, $scope);
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
 				}
 				if ($scope->isInAnonymousFunction()) {
+					return;
+				}
+				if ($node instanceof ExecutionEndNode) {
+					$executionEnds[] = $node;
 					return;
 				}
 				if (!$node instanceof Return_) {
@@ -463,7 +468,8 @@ class NodeScopeResolver
 			$nodeCallback(new FunctionReturnStatementsNode(
 				$stmt,
 				$gatheredReturnStatements,
-				$statementResult
+				$statementResult,
+				$executionEnds
 			), $functionScope);
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 			$hasYield = false;
@@ -529,12 +535,17 @@ class NodeScopeResolver
 
 			if ($stmt->stmts !== null) {
 				$gatheredReturnStatements = [];
-				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements): void {
+				$executionEnds = [];
+				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$executionEnds): void {
 					$nodeCallback($node, $scope);
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
 						return;
 					}
 					if ($scope->isInAnonymousFunction()) {
+						return;
+					}
+					if ($node instanceof ExecutionEndNode) {
+						$executionEnds[] = $node;
 						return;
 					}
 					if (!$node instanceof Return_) {
@@ -546,7 +557,8 @@ class NodeScopeResolver
 				$nodeCallback(new MethodReturnStatementsNode(
 					$stmt,
 					$gatheredReturnStatements,
-					$statementResult
+					$statementResult,
+					$executionEnds
 				), $methodScope);
 			}
 		} elseif ($stmt instanceof Echo_) {

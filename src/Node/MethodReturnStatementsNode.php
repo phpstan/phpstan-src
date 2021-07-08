@@ -17,21 +17,27 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 
 	private StatementResult $statementResult;
 
+	/** @var ExecutionEndNode[] */
+	private array $executionEnds;
+
 	/**
 	 * @param \PhpParser\Node\Stmt\ClassMethod $method
 	 * @param \PHPStan\Node\ReturnStatement[] $returnStatements
 	 * @param \PHPStan\Analyser\StatementResult $statementResult
+	 * @param ExecutionEndNode[] $executionEnds
 	 */
 	public function __construct(
 		ClassMethod $method,
 		array $returnStatements,
-		StatementResult $statementResult
+		StatementResult $statementResult,
+		array $executionEnds
 	)
 	{
 		parent::__construct($method->getAttributes());
 		$this->classMethod = $method;
 		$this->returnStatements = $returnStatements;
 		$this->statementResult = $statementResult;
+		$this->executionEnds = $executionEnds;
 	}
 
 	/**
@@ -47,9 +53,22 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		return $this->statementResult;
 	}
 
+	/**
+	 * @return ExecutionEndNode[]
+	 */
+	public function getExecutionEnds(): array
+	{
+		return $this->executionEnds;
+	}
+
 	public function returnsByRef(): bool
 	{
 		return $this->classMethod->byRef;
+	}
+
+	public function hasNativeReturnTypehint(): bool
+	{
+		return $this->classMethod->returnType !== null;
 	}
 
 	public function getType(): string

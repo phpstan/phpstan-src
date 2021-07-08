@@ -21,13 +21,21 @@ class ClassAncestorsRule implements Rule
 
 	private \PHPStan\Rules\Generics\GenericAncestorsCheck $genericAncestorsCheck;
 
+	private CrossCheckInterfacesHelper $crossCheckInterfacesHelper;
+
+	private bool $crossCheckInterfaces;
+
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
-		GenericAncestorsCheck $genericAncestorsCheck
+		GenericAncestorsCheck $genericAncestorsCheck,
+		CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
+		bool $crossCheckInterfaces = false
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->genericAncestorsCheck = $genericAncestorsCheck;
+		$this->crossCheckInterfacesHelper = $crossCheckInterfacesHelper;
+		$this->crossCheckInterfaces = $crossCheckInterfaces;
 	}
 
 	public function getNodeType(): string
@@ -98,6 +106,12 @@ class ClassAncestorsRule implements Rule
 			sprintf('Class %s implements generic interface %%s but does not specify its types: %%s', $className),
 			sprintf('in implemented type %%s of class %s', $className)
 		);
+
+		if ($this->crossCheckInterfaces) {
+			foreach ($this->crossCheckInterfacesHelper->check($classReflection) as $error) {
+				$implementsErrors[] = $error;
+			}
+		}
 
 		return array_merge($extendsErrors, $implementsErrors);
 	}

@@ -13,11 +13,9 @@ rules:
 	- PHPStan\Rules\Cast\PrintRule
 	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
-	- PHPStan\Rules\Generics\ClassAncestorsRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule
 	- PHPStan\Rules\Generics\FunctionTemplateTypeRule
 	- PHPStan\Rules\Generics\FunctionSignatureVarianceRule
-	- PHPStan\Rules\Generics\InterfaceAncestorsRule
 	- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
@@ -44,6 +42,18 @@ services:
 		class: PHPStan\Rules\Functions\CallCallablesRule
 		arguments:
 			reportMaybes: %reportMaybes%
+		tags:
+			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\Generics\ClassAncestorsRule
+		arguments:
+			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
+		tags:
+			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\Generics\InterfaceAncestorsRule
+		arguments:
+			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 		tags:
 			- phpstan.rules.rule
 	-

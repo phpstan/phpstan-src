@@ -22,5 +22,6 @@ parameters:
 		deepInspectTypes: true
 		neverInGenericReturnType: true
 		validateOverridingMethodsInStubs: true
+		crossCheckInterfaces: true
 	stubFiles:
 		- ../stubs/arrayFunctions.stub

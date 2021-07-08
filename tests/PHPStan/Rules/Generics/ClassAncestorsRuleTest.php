@@ -21,7 +21,9 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				true
-			)
+			),
+			new CrossCheckInterfacesHelper(),
+			true
 		);
 	}
 
@@ -200,6 +202,16 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			[
 				'Type string in generic type Bug3922AncestorsReversed\QueryHandlerInterface<Bug3922AncestorsReversed\BarQuery, string> in PHPDoc tag @implements is not subtype of template type int of interface Bug3922AncestorsReversed\QueryHandlerInterface.',
 				54,
+			],
+		]);
+	}
+
+	public function testCrossCheckInterfaces(): void
+	{
+		$this->analyse([__DIR__ . '/data/cross-check-interfaces.php'], [
+			[
+				'Interface CrossCheckInterfaces\ItemListInterface specifies template type TValue of interface Traversable as CrossCheckInterfaces\Item but it\'s already specified as string.',
+				19,
 			],
 		]);
 	}

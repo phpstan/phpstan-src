@@ -21,13 +21,21 @@ class InterfaceAncestorsRule implements Rule
 
 	private \PHPStan\Rules\Generics\GenericAncestorsCheck $genericAncestorsCheck;
 
+	private CrossCheckInterfacesHelper $crossCheckInterfacesHelper;
+
+	private bool $crossCheckInterfaces;
+
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
-		GenericAncestorsCheck $genericAncestorsCheck
+		GenericAncestorsCheck $genericAncestorsCheck,
+		CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
+		bool $crossCheckInterfaces = false
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->genericAncestorsCheck = $genericAncestorsCheck;
+		$this->crossCheckInterfacesHelper = $crossCheckInterfacesHelper;
+		$this->crossCheckInterfaces = $crossCheckInterfaces;
 	}
 
 	public function getNodeType(): string
@@ -95,6 +103,12 @@ class InterfaceAncestorsRule implements Rule
 			'',
 			''
 		);
+
+		if ($this->crossCheckInterfaces) {
+			foreach ($this->crossCheckInterfacesHelper->check($classReflection) as $error) {
+				$implementsErrors[] = $error;
+			}
+		}
 
 		return array_merge($extendsErrors, $implementsErrors);
 	}

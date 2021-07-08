@@ -21,7 +21,9 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				true
-			)
+			),
+			new CrossCheckInterfacesHelper(),
+			true
 		);
 	}
 
@@ -193,6 +195,16 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			[
 				'Template type T is declared as covariant, but occurs in invariant position in extended type InterfaceAncestorsExtends\FooGeneric9<T, T> of interface InterfaceAncestorsExtends\FooGeneric10.',
 				215,
+			],
+		]);
+	}
+
+	public function testCrossCheckInterfaces(): void
+	{
+		$this->analyse([__DIR__ . '/data/cross-check-interfaces-interfaces.php'], [
+			[
+				'Interface CrossCheckInterfacesInInterfaces\ItemListInterface specifies template type TValue of interface Traversable as CrossCheckInterfacesInInterfaces\Item but it\'s already specified as string.',
+				19,
 			],
 		]);
 	}

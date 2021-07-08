@@ -22,6 +22,7 @@ use PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule;
 use PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule;
 use PHPStan\Rules\Generics\ClassAncestorsRule;
 use PHPStan\Rules\Generics\ClassTemplateTypeRule;
+use PHPStan\Rules\Generics\CrossCheckInterfacesHelper;
 use PHPStan\Rules\Generics\FunctionSignatureVarianceRule;
 use PHPStan\Rules\Generics\FunctionTemplateTypeRule;
 use PHPStan\Rules\Generics\GenericAncestorsCheck;
@@ -57,13 +58,17 @@ class StubValidator
 
 	private bool $validateOverridingMethods;
 
+	private bool $crossCheckInterfaces;
+
 	public function __construct(
 		DerivativeContainerFactory $derivativeContainerFactory,
-		bool $validateOverridingMethods
+		bool $validateOverridingMethods,
+		bool $crossCheckInterfaces
 	)
 	{
 		$this->derivativeContainerFactory = $derivativeContainerFactory;
 		$this->validateOverridingMethods = $validateOverridingMethods;
+		$this->crossCheckInterfaces = $crossCheckInterfaces;
 	}
 
 	/**
@@ -133,6 +138,7 @@ class StubValidator
 		$functionDefinitionCheck = $container->getByType(FunctionDefinitionCheck::class);
 		$missingTypehintCheck = $container->getByType(MissingTypehintCheck::class);
 		$unresolvableTypeHelper = $container->getByType(UnresolvableTypeHelper::class);
+		$crossCheckInterfacesHelper = $container->getByType(CrossCheckInterfacesHelper::class);
 
 		$rules = [
 			// level 0
@@ -145,11 +151,11 @@ class StubValidator
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, true, false),
 
 			// level 2
-			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck),
+			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper, $this->crossCheckInterfaces),
 			new ClassTemplateTypeRule($templateTypeCheck),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
-			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck),
+			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper, $this->crossCheckInterfaces),
 			new InterfaceTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),

@@ -1068,8 +1068,8 @@ class ClassReflection implements ReflectionWithFilename
 		return null;
 	}
 
-	/** @return ExtendsTag[] */
-	private function getExtendsTags(): array
+	/** @return array<string, ExtendsTag> */
+	public function getExtendsTags(): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
 		if ($resolvedPhpDoc === null) {
@@ -1079,8 +1079,8 @@ class ClassReflection implements ReflectionWithFilename
 		return $resolvedPhpDoc->getExtendsTags();
 	}
 
-	/** @return ImplementsTag[] */
-	private function getImplementsTags(): array
+	/** @return array<string, ImplementsTag> */
+	public function getImplementsTags(): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
 		if ($resolvedPhpDoc === null) {

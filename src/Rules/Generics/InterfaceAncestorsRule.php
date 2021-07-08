@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\Rules\Rule;
@@ -11,7 +12,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Interface_>
+ * @implements \PHPStan\Rules\Rule<InClassNode>
  */
 class InterfaceAncestorsRule implements Rule
 {
@@ -31,19 +32,24 @@ class InterfaceAncestorsRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Interface_::class;
+		return InClassNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!isset($node->namespacedName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+		$originalNode = $node->getOriginalNode();
+		if (!$originalNode instanceof Node\Stmt\Interface_) {
+			return [];
 		}
+		if (!$scope->isInClass()) {
+			return [];
+		}
+		$classReflection = $scope->getClassReflection();
 
-		$interfaceName = (string) $node->namespacedName;
+		$interfaceName = $classReflection->getName();
 		$extendsTags = [];
 		$implementsTags = [];
-		$docComment = $node->getDocComment();
+		$docComment = $originalNode->getDocComment();
 		if ($docComment !== null) {
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$scope->getFile(),
@@ -57,7 +63,7 @@ class InterfaceAncestorsRule implements Rule
 		}
 
 		$extendsErrors = $this->genericAncestorsCheck->check(
-			$node->extends,
+			$originalNode->extends,
 			array_map(static function (ExtendsTag $tag): Type {
 				return $tag->getType();
 			}, $extendsTags),

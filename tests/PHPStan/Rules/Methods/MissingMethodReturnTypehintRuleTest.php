@@ -69,13 +69,7 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testBug4415(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-4415.php'], [
-			[
-				'Method Bug4415Rule\CategoryCollection::getIterator() return type has no value type specified in iterable type Iterator.',
-				76,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-4415.php'], []);
 	}
 
 	public function testBug5089(): void

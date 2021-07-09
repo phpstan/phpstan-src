@@ -17,7 +17,7 @@ class CrossCheckInterfacesHelper
 	{
 		$interfaceTemplateTypeMaps = [];
 		$errors = [];
-		$check = static function (ClassReflection $classReflection) use (&$interfaceTemplateTypeMaps, &$check, &$errors): void {
+		$check = static function (ClassReflection $classReflection, bool $first) use (&$interfaceTemplateTypeMaps, &$check, &$errors): void {
 			foreach ($classReflection->getInterfaces() as $interface) {
 				if (!$interface->isGeneric()) {
 					continue;
@@ -51,17 +51,40 @@ class CrossCheckInterfacesHelper
 			}
 
 			$parent = $classReflection->getParentClass();
-			while ($parent !== false) {
-				$check($parent);
-				$parent = $parent->getParentClass();
+			$checkParents = true;
+			if ($first && $parent !== false) {
+				$extendsTags = $classReflection->getExtendsTags();
+				if (!array_key_exists($parent->getName(), $extendsTags)) {
+					$checkParents = false;
+				}
 			}
 
+			if ($checkParents) {
+				while ($parent !== false) {
+					$check($parent, false);
+					$parent = $parent->getParentClass();
+				}
+			}
+
+			$interfaceTags = [];
+			if ($first) {
+				if ($classReflection->isInterface()) {
+					$interfaceTags = $classReflection->getExtendsTags();
+				} else {
+					$interfaceTags = $classReflection->getImplementsTags();
+				}
+			}
 			foreach ($classReflection->getInterfaces() as $interface) {
-				$check($interface);
+				if ($first) {
+					if (!array_key_exists($interface->getName(), $interfaceTags)) {
+						continue;
+					}
+				}
+				$check($interface, false);
 			}
 		};
 
-		$check($classReflection);
+		$check($classReflection, true);
 
 		return $errors;
 	}

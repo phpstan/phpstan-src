@@ -46,10 +46,3 @@ class C0 implements I {
  */
 class C extends C0 {
 }
-
-
-/**
- * @implements I<\DateTimeInterface>
- */
-class Override extends C {
-}

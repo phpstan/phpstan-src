@@ -596,12 +596,65 @@ class ClassReflection implements ReflectionWithFilename
 			return $this->cachedInterfaces;
 		}
 
-		$interfaces = [];
-
+		$interfaces = $this->getImmediateInterfaces();
+		$immediateInterfaces = $interfaces;
 		$parent = $this->getParentClass();
-		if ($parent !== false) {
-			foreach ($parent->getInterfaces() as $interface) {
-				$interfaces[$interface->getName()] = $interface;
+		while ($parent !== false) {
+			foreach ($parent->getImmediateInterfaces() as $parentInterface) {
+				$interfaces[$parentInterface->getName()] = $parentInterface;
+				foreach ($this->collectInterfaces($parentInterface) as $parentInterfaceInterface) {
+					$interfaces[$parentInterfaceInterface->getName()] = $parentInterfaceInterface;
+				}
+			}
+
+			$parent = $parent->getParentClass();
+		}
+
+		foreach ($immediateInterfaces as $immediateInterface) {
+			foreach ($this->collectInterfaces($immediateInterface) as $interfaceInterface) {
+				$interfaces[$interfaceInterface->getName()] = $interfaceInterface;
+			}
+		}
+
+		$this->cachedInterfaces = $interfaces;
+
+		return $interfaces;
+	}
+
+	/**
+	 * @return \PHPStan\Reflection\ClassReflection[]
+	 */
+	private function collectInterfaces(ClassReflection $interface): array
+	{
+		$interfaces = [];
+		foreach ($interface->getImmediateInterfaces() as $immediateInterface) {
+			$interfaces[$immediateInterface->getName()] = $immediateInterface;
+			foreach ($this->collectInterfaces($immediateInterface) as $immediateInterfaceInterface) {
+				$interfaces[$immediateInterfaceInterface->getName()] = $immediateInterfaceInterface;
+			}
+		}
+
+		return $interfaces;
+	}
+
+	/**
+	 * @return \PHPStan\Reflection\ClassReflection[]
+	 */
+	private function getImmediateInterfaces(): array
+	{
+		$indirectInterfaceNames = [];
+		$parent = $this->getParentClass();
+		while ($parent !== false) {
+			foreach ($parent->getNativeReflection()->getInterfaceNames() as $parentInterfaceName) {
+				$indirectInterfaceNames[] = $parentInterfaceName;
+			}
+
+			$parent = $parent->getParentClass();
+		}
+
+		foreach ($this->getNativeReflection()->getInterfaces() as $interfaceInterface) {
+			foreach ($interfaceInterface->getInterfaceNames() as $interfaceInterfaceName) {
+				$indirectInterfaceNames[] = $interfaceInterfaceName;
 			}
 		}
 
@@ -611,62 +664,44 @@ class ClassReflection implements ReflectionWithFilename
 			$implementsTags = $this->getImplementsTags();
 		}
 
-		$interfaceNames = $this->reflection->getInterfaceNames();
-		$genericInterfaces = [];
-
-		foreach ($implementsTags as $implementsTag) {
-			$implementedType = $implementsTag->getType();
-
-			if (!$this->isValidAncestorType($implementedType, $interfaceNames)) {
+		$immediateInterfaceNames = array_diff($this->getNativeReflection()->getInterfaceNames(), $indirectInterfaceNames);
+		$immediateInterfaces = [];
+		foreach ($immediateInterfaceNames as $immediateInterfaceName) {
+			if (!$this->reflectionProvider->hasClass($immediateInterfaceName)) {
 				continue;
 			}
 
-			if ($this->isGeneric()) {
-				$implementedType = TemplateTypeHelper::resolveTemplateTypes(
-					$implementedType,
-					$this->getActiveTemplateTypeMap()
+			$immediateInterface = $this->reflectionProvider->getClass($immediateInterfaceName);
+			if (array_key_exists($immediateInterface->getName(), $implementsTags)) {
+				$implementsTag = $implementsTags[$immediateInterface->getName()];
+				$implementedType = $implementsTag->getType();
+				if ($this->isGeneric()) {
+					$implementedType = TemplateTypeHelper::resolveTemplateTypes(
+						$implementedType,
+						$this->getActiveTemplateTypeMap()
+					);
+				}
+
+				if (
+					$implementedType instanceof GenericObjectType
+					&& $implementedType->getClassReflection() !== null
+				) {
+					$immediateInterfaces[$immediateInterface->getName()] = $implementedType->getClassReflection();
+					continue;
+				}
+			}
+
+			if ($immediateInterface->isGeneric()) {
+				$immediateInterfaces[$immediateInterface->getName()] = $immediateInterface->withTypes(
+					array_values($immediateInterface->getTemplateTypeMap()->resolveToBounds()->getTypes())
 				);
-			}
-
-			if (!$implementedType instanceof GenericObjectType) {
 				continue;
 			}
 
-			$reflectionIface = $implementedType->getClassReflection();
-			if ($reflectionIface === null) {
-				continue;
-			}
-
-			$genericInterfaces[] = $reflectionIface;
+			$immediateInterfaces[$immediateInterface->getName()] = $immediateInterface;
 		}
 
-		foreach ($genericInterfaces as $genericInterface) {
-			$interfaces = array_merge($interfaces, $genericInterface->getInterfaces());
-		}
-
-		foreach ($genericInterfaces as $genericInterface) {
-			$interfaces[$genericInterface->getName()] = $genericInterface;
-		}
-
-		foreach ($interfaceNames as $interfaceName) {
-			if (isset($interfaces[$interfaceName])) {
-				continue;
-			}
-
-			$interfaceReflection = $this->reflectionProvider->getClass($interfaceName);
-			if (!$interfaceReflection->isGeneric()) {
-				$interfaces[$interfaceName] = $interfaceReflection;
-				continue;
-			}
-
-			$interfaces[$interfaceName] = $interfaceReflection->withTypes(
-				array_values($interfaceReflection->getTemplateTypeMap()->resolveToBounds()->getTypes())
-			);
-		}
-
-		$this->cachedInterfaces = $interfaces;
-
-		return $interfaces;
+		return $immediateInterfaces;
 	}
 
 	/**
@@ -1069,7 +1104,7 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/** @return array<string, ExtendsTag> */
-	private function getExtendsTags(): array
+	public function getExtendsTags(): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
 		if ($resolvedPhpDoc === null) {
@@ -1080,7 +1115,7 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/** @return array<string, ImplementsTag> */
-	private function getImplementsTags(): array
+	public function getImplementsTags(): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
 		if ($resolvedPhpDoc === null) {

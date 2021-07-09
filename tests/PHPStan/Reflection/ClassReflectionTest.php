@@ -138,24 +138,9 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('GenericInheritance\\C0<DateTime>', $parent->getDisplayName());
 
 		$this->assertSame([
+			'GenericInheritance\\I<DateTime>',
 			'GenericInheritance\\I0<DateTime>',
 			'GenericInheritance\\I1<int>',
-			'GenericInheritance\\I<DateTime>',
-		], array_map(static function (ClassReflection $r): string {
-			return $r->getDisplayName();
-		}, array_values($reflection->getInterfaces())));
-	}
-
-	public function testGenericInheritanceOverride(): void
-	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
-		$reflection = $broker->getClass(\GenericInheritance\Override::class);
-
-		$this->assertSame([
-			'GenericInheritance\\I0<DateTimeInterface>',
-			'GenericInheritance\\I1<int>',
-			'GenericInheritance\\I<DateTimeInterface>',
 		], array_map(static function (ClassReflection $r): string {
 			return $r->getDisplayName();
 		}, array_values($reflection->getInterfaces())));

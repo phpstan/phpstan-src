@@ -28,3 +28,21 @@ interface ItemList2 extends  \IteratorAggregate, ItemListInterface
 {
 
 }
+
+interface ItemList3 extends ItemList // do not report
+{
+
+}
+
+/**
+ * @extends \Traversable<int, mixed>
+ */
+interface ResultStatement extends \Traversable
+{
+
+}
+
+interface Statement extends ResultStatement
+{
+
+}

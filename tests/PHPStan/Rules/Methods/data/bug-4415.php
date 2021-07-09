@@ -2,6 +2,8 @@
 
 namespace Bug4415Rule;
 
+use function PHPStan\Testing\assertType;
+
 /**
  * @template T
  * @extends \IteratorAggregate<T>
@@ -85,3 +87,10 @@ class Category {
 		return '';
 	}
 }
+
+function (CategoryCollection $c): void {
+	foreach ($c as $k => $v) {
+		assertType('mixed', $k);
+		assertType(Category::class, $v);
+	}
+};

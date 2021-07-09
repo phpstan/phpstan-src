@@ -191,7 +191,7 @@ class PhpDocNodeResolver
 
 		foreach (['@extends', '@template-extends', '@phpstan-extends'] as $tagName) {
 			foreach ($phpDocNode->getExtendsTagValues($tagName) as $tagValue) {
-				$resolved[$tagValue->type->type->name] = new ExtendsTag(
+				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ExtendsTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
 				);
 			}
@@ -209,7 +209,7 @@ class PhpDocNodeResolver
 
 		foreach (['@implements', '@template-implements', '@phpstan-implements'] as $tagName) {
 			foreach ($phpDocNode->getImplementsTagValues($tagName) as $tagValue) {
-				$resolved[$tagValue->type->type->name] = new ImplementsTag(
+				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ImplementsTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
 				);
 			}
@@ -227,7 +227,7 @@ class PhpDocNodeResolver
 
 		foreach (['@use', '@template-use', '@phpstan-use'] as $tagName) {
 			foreach ($phpDocNode->getUsesTagValues($tagName) as $tagValue) {
-				$resolved[$tagValue->type->type->name] = new UsesTag(
+				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new UsesTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
 				);
 			}

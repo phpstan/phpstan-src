@@ -203,7 +203,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/cross-check-interfaces-interfaces.php'], [
 			[
-				'Interface CrossCheckInterfacesInInterfaces\ItemListInterface specifies template type TValue of interface Traversable as CrossCheckInterfacesInInterfaces\Item but it\'s already specified as string.',
+				'Interface IteratorAggregate specifies template type TValue of interface Traversable as string but it\'s already specified as CrossCheckInterfacesInInterfaces\Item.',
 				19,
 			],
 		]);

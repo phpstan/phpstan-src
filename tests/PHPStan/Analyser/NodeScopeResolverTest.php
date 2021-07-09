@@ -438,6 +438,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/sscanf.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-offset-get.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-object-lower-bound.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/class-reflection-interfaces.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-4415.php');
 	}
 
 	/**

@@ -21,7 +21,7 @@
 		"nette/neon": "^3.0",
 		"nette/schema": "^1.0",
 		"nette/utils": "^3.1.3",
-		"nikic/php-parser": "4.11.0",
+		"nikic/php-parser": "dev-master#c758510a37218d631fd10f67bca5bccbfef864fa as 4.11.0",
 		"ondram/ci-detector": "^3.4.0",
 		"ondrejmirtes/better-reflection": "4.3.61",
 		"phpstan/php-8-stubs": "^0.1.21",

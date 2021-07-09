@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8935821e0ae449b7a35345d12e270aa5",
+    "content-hash": "1444c37e9e0463764d3e43fec7b20f44",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1946,16 +1946,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.11.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "fe14cf3672a149364fb66dfe11bf6549af899f94"
+                "reference": "c758510a37218d631fd10f67bca5bccbfef864fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/fe14cf3672a149364fb66dfe11bf6549af899f94",
-                "reference": "fe14cf3672a149364fb66dfe11bf6549af899f94",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/c758510a37218d631fd10f67bca5bccbfef864fa",
+                "reference": "c758510a37218d631fd10f67bca5bccbfef864fa",
                 "shasum": ""
             },
             "require": {
@@ -1966,6 +1966,7 @@
                 "ircmaxell/php-yacc": "^0.0.7",
                 "phpunit/phpunit": "^6.5 || ^7.0 || ^8.0 || ^9.0"
             },
+            "default-branch": true,
             "bin": [
                 "bin/php-parse"
             ],
@@ -1996,9 +1997,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v4.11.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/master"
             },
-            "time": "2021-07-03T13:36:55+00:00"
+            "time": "2021-07-09T14:52:58+00:00"
         },
         {
             "name": "ondram/ci-detector",
@@ -6385,10 +6386,18 @@
             "time": "2021-03-09T10:59:23+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "nikic/php-parser",
+            "version": "9999999-dev",
+            "alias": "4.11.0",
+            "alias_normalized": "4.11.0.0"
+        }
+    ],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "nikic/php-parser": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

@@ -24,3 +24,17 @@ array_walk(
 		return '';
 	}
 );
+
+function (): void {
+	$object = (object)['foo' => 'bar'];
+	array_walk($object, function ($v) {
+		return '_' . $v;
+	});
+};
+
+function (): void {
+	$object = (object)['foo' => 'bar'];
+	array_walk_recursive($object, function ($v) {
+		return '_' . $v;
+	});
+};

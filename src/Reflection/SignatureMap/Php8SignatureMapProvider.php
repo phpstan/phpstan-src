@@ -10,7 +10,6 @@ use PHPStan\Php8StubsMap;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
@@ -291,11 +290,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			if (!$name instanceof Variable || !is_string($name->name)) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			if ($name->name === 'array') {
-				$parameterType = new ArrayType(new MixedType(), new MixedType());
-			} else {
-				$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, null);
-			}
+			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, null);
 			$parameters[] = new ParameterSignature(
 				$name->name,
 				$param->default !== null || $param->variadic,

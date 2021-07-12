@@ -290,7 +290,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				33,
 			],
 			[
-				'Parameter #1 $array of function reset expects array, null given.',
+				'Parameter #1 $array of function reset expects array|object, null given.',
 				39,
 			],
 		]);
@@ -318,7 +318,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			$errors = [
 				[
-					'Parameter #2 $array of function implode expects array, string given.',
+					'Parameter #2 $array of function implode expects array|null, string given.',
 					8,
 				],
 			];

@@ -105,8 +105,8 @@ class Php8SignatureMapProviderTest extends TestCase
 					[
 						'name' => 'array',
 						'optional' => false,
-						'type' => new ArrayType(new MixedType(), new MixedType()),
-						'nativeType' => new ArrayType(new MixedType(), new MixedType()),
+						'type' => new UnionType([new ArrayType(new MixedType(), new MixedType()), new ObjectWithoutClassType()]),
+						'nativeType' => new UnionType([new ArrayType(new MixedType(), new MixedType()), new ObjectWithoutClassType()]),
 						'passedByReference' => PassedByReference::createReadsArgument(),
 						'variadic' => false,
 					],

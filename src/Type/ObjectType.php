@@ -656,7 +656,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(\Iterator::class)->yes()) {
-			return ParametersAcceptorSelector::selectSingle($this->getMethod('key', new OutOfClassScope())->getVariants())->getReturnType();
+			return RecursionGuard::run($this, function (): Type {
+				return ParametersAcceptorSelector::selectSingle(
+					$this->getMethod('key', new OutOfClassScope())->getVariants()
+				)->getReturnType();
+			});
 		}
 
 		if ($this->isInstanceOf(\IteratorAggregate::class)->yes()) {
@@ -685,9 +689,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getIterableValueType(): Type
 	{
 		if ($this->isInstanceOf(\Iterator::class)->yes()) {
-			return ParametersAcceptorSelector::selectSingle(
-				$this->getMethod('current', new OutOfClassScope())->getVariants()
-			)->getReturnType();
+			return RecursionGuard::run($this, function (): Type {
+				return ParametersAcceptorSelector::selectSingle(
+					$this->getMethod('current', new OutOfClassScope())->getVariants()
+				)->getReturnType();
+			});
 		}
 
 		if ($this->isInstanceOf(\IteratorAggregate::class)->yes()) {

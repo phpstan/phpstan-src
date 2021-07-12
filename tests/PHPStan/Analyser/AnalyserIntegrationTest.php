@@ -410,6 +410,18 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[1]->getMessage());
 	}
 
+	public function testBug5231(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5231.php');
+		$this->assertCount(5, $errors);
+	}
+
+	public function testBug5231Two(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5231_2.php');
+		$this->assertCount(1, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

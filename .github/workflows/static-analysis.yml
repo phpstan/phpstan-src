@@ -25,6 +25,7 @@ jobs:
           - "7.3"
           - "7.4"
           - "8.0"
+          - "8.1"
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "make phpstan"
@@ -50,7 +51,7 @@ jobs:
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies"
 
       - name: "Transform source code"
-        if: matrix.php-version != '7.4' && matrix.php-version != '8.0'
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
         run: php bin/transform-source.php
 
       - name: "PHPStan"

@@ -337,7 +337,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			$errors = [
 				[
-					'Parameter #2 $array of function implode expects array, string given.',
+					'Parameter #2 $array of function implode expects array|null, string given.',
 					8,
 				],
 			];

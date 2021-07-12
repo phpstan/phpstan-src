@@ -31,6 +31,33 @@ class Foo
 
 }
 
+class Foo2
+{
+
+	public function doFoo()
+	{
+		$array = [];
+		assertType('false', prev($array));
+	}
+
+	/**
+	 * @param int[] $a
+	 */
+	public function doBar(array $a)
+	{
+		assertType('int|false', prev($a));
+	}
+
+	/**
+	 * @param non-empty-array<int, string> $a
+	 */
+	public function doBaz(array $a)
+	{
+		assertType('string|false', prev($a));
+	}
+
+}
+
 interface HttpClientPoolItem
 {
 	public function isDisabled(): bool;

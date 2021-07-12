@@ -15,7 +15,7 @@ class ArrayNextDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'next';
+		return in_array($functionReflection->getName(), ['next', 'prev'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type

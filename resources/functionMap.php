@@ -3337,7 +3337,7 @@ return [
 'getimagesize' => ['array|false', 'imagefile'=>'string', '&w_info='=>'array'],
 'getimagesizefromstring' => ['array|false', 'data'=>'string', '&w_info='=>'array'],
 'getlastmod' => ['int|false'],
-'getmxrr' => ['bool', 'hostname'=>'string', '&w_mxhosts'=>'array', '&w_weight='=>'array'],
+'getmxrr' => ['bool', 'hostname'=>'string', '&hosts'=>'array', '&weight='=>'array'],
 'getmygid' => ['int|false'],
 'getmyinode' => ['int|false'],
 'getmypid' => ['int|false'],

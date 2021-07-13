@@ -12,7 +12,7 @@ class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false), new PropertyDescriptor(), new PropertyReflectionFinder());
+		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, true), new PropertyDescriptor(), new PropertyReflectionFinder());
 	}
 
 	public function testTypesAssignedToProperties(): void
@@ -187,6 +187,11 @@ class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				168,
 			],
 		]);
+	}
+
+	public function testExplicitMixedTemplates(): void
+	{
+		$this->analyse([__DIR__ . '/data/explicit-mixed-assign-template.php'], []);
 	}
 
 }

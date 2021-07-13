@@ -67,3 +67,24 @@ class Bar
 	}
 
 }
+
+/**
+ * @template T
+ */
+class Baz{
+	/** @var T */
+	private $t;
+
+	/**
+	 * @param T $t
+	 */
+	public function acceptsT($t): void
+	{
+
+	}
+
+	public function doFoo(): void
+	{
+		$this->acceptsT($this->t);
+	}
+}

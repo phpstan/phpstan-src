@@ -1239,3 +1239,33 @@ class NeverReturn
 	}
 
 }
+
+class GeneratorMethodThatDoNotWork
+{
+	public function countTo3Wrong(): iterable
+	{
+		yield 1;
+
+		return $this->yieldTwoAndThree();
+	}
+
+	public function countToThreeCorrectly(): iterable
+	{
+		yield 1;
+
+		return yield from $this->yieldTwoAndThree();
+	}
+
+	public function countTo3Correctly(): iterable
+	{
+		yield 1;
+
+		return (yield from $this->yieldTwoAndThree());
+	}
+
+	private function yieldTwoAndThree(): iterable
+	{
+		yield 2;
+		yield from [3];
+	}
+}

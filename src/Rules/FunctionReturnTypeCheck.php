@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\GenericTypeVariableResolver;
+use PHPStan\Type\IterableType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
@@ -29,6 +31,7 @@ class FunctionReturnTypeCheck
 	 * @param string $emptyReturnStatementMessage
 	 * @param string $voidMessage
 	 * @param string $typeMismatchMessage
+	 * @param string $returnYieldFromMessage
 	 * @param bool $isGenerator
 	 * @return RuleError[]
 	 */
@@ -41,6 +44,7 @@ class FunctionReturnTypeCheck
 		string $voidMessage,
 		string $typeMismatchMessage,
 		string $neverMessage,
+		string $returnYieldFromMessage,
 		bool $isGenerator
 	): array
 	{
@@ -53,6 +57,19 @@ class FunctionReturnTypeCheck
 		}
 
 		if ($isGenerator) {
+			$returnTypeIsIterable = (new IterableType(new MixedType(), new MixedType()))
+				->isSuperTypeOf($returnType)
+				->yes();
+			$returnIsYieldish = $returnValue === null || $returnValue instanceof Expr\YieldFrom;
+
+			if ($returnTypeIsIterable && !$returnIsYieldish) {
+				return [
+					RuleErrorBuilder::message($returnYieldFromMessage)
+						->line($returnNode->getLine())
+						->build(),
+				];
+			}
+
 			if (!$returnType instanceof TypeWithClassName) {
 				return [];
 			}

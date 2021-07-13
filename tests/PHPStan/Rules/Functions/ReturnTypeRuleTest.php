@@ -46,20 +46,28 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				87,
 			],
 			[
+				'Function ReturnTypes\returnFromGeneratorMixed() should never return an iterable directly when already using yield.',
+				141,
+			],
+			[
 				'Function ReturnTypes\returnFromGeneratorString() should return string but empty return statement found.',
 				152,
 			],
 			[
-				'Function ReturnTypes\returnFromGeneratorString() should return string but returns int.',
+				'Function ReturnTypes\returnFromGeneratorString() should never return an iterable directly when already using yield.',
 				155,
 			],
 			[
-				'Function ReturnTypes\returnVoidFromGenerator2() with return type void returns int but should not return anything.',
+				'Function ReturnTypes\returnVoidFromGenerator2() should never return an iterable directly when already using yield.',
 				173,
 			],
 			[
 				'Function ReturnTypes\returnNever() should never return but return statement found.',
 				181,
+			],
+			[
+				'Function ReturnTypes\countTo3Wrong() should never return an iterable directly when already using yield.',
+				188,
 			],
 		]);
 	}

@@ -176,6 +176,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				552,
 			],
 			[
+				'Method ReturnTypes\GeneratorMethod::doFoo() should never return an iterable directly when already using yield.',
+				596,
+			],
+			[
 				'Method ReturnTypes\ReturnTernary::returnTernary() should return ReturnTypes\Foo but returns false.',
 				625,
 			],
@@ -266,6 +270,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Method ReturnTypes\NeverReturn::doFoo() should never return but return statement found.',
 				1238,
+			],
+			[
+				'Method ReturnTypes\GeneratorMethodThatDoNotWork::countTo3Wrong() should never return an iterable directly when already using yield.',
+				1249,
 			],
 		]);
 	}

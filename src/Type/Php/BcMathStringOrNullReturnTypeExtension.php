@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\UnaryMinus;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -21,6 +22,14 @@ use function is_numeric;
 
 class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
+
+	/** @var PhpVersion */
+ private $phpVersion;
+
+	public function __construct(PhpVersion $phpVersion)
+	{
+		$this->phpVersion = $phpVersion;
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -41,7 +50,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 
 		$defaultReturnType = new UnionType([$stringAndNumericStringType, new NullType()]);
 
-		if (isset($functionCall->args[1]) === false) {
+		if (isset($functionCall->args[1]) === false || $this->phpVersion->getVersionId() >= 80000) {
 			return $stringAndNumericStringType;
 		}
 
@@ -126,7 +135,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	}
 
 	/**
-	 * bcpowmod()
+	 * @see bcpowmod()
 	 * https://www.php.net/manual/en/function.bcpowmod.php
 	 * > Returns the result as a string, or FALSE if modulus is 0 or exponent is negative.
 	 * @param FuncCall $functionCall

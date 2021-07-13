@@ -41,7 +41,7 @@ class GitlabErrorFormatter implements ErrorFormatter
 				'location' => [
 					'path' => $this->relativePathHelper->getRelativePath($fileSpecificError->getFile()),
 					'lines' => [
-						'begin' => $fileSpecificError->getLine(),
+						'begin' => $fileSpecificError->getLine() ?? 0,
 					],
 				],
 			];

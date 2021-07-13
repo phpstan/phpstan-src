@@ -34,7 +34,7 @@ class Analyser
 	/**
 	 * @param string[] $files
 	 * @param \Closure(string $file): void|null $preFileCallback
-	 * @param \Closure(int): void|null $postFileCallback
+	 * @param \Closure(int $step, ?string $file=): void|null $postFileCallback
 	 * @param bool $debug
 	 * @param string[]|null $allAnalysedFiles
 	 * @return AnalyserResult
@@ -103,7 +103,7 @@ class Analyser
 				continue;
 			}
 
-			$postFileCallback(1);
+			$postFileCallback(1, $file);
 		}
 
 		$this->restoreCollectErrorsHandler();

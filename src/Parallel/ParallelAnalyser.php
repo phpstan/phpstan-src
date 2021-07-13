@@ -39,7 +39,7 @@ class ParallelAnalyser
 	/**
 	 * @param Schedule $schedule
 	 * @param string $mainScript
-	 * @param \Closure(int): void|null $postFileCallback
+	 * @param \Closure(int $step, ?string $file=): void|null $postFileCallback
 	 * @param string|null $projectConfigFile
 	 * @param string|null $tmpFile
 	 * @param string|null $insteadOfFile

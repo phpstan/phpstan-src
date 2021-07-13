@@ -37,7 +37,7 @@ class AnalyserRunner
 	 * @param string[] $files
 	 * @param string[] $allAnalysedFiles
 	 * @param (\Closure(string $file): void)|null $preFileCallback
-	 * @param (\Closure(int): void)|null $postFileCallback
+	 * @param (\Closure(int $step, ?string $file=): void)|null $postFileCallback
 	 * @param bool $debug
 	 * @param bool $allowParallel
 	 * @param string|null $projectConfigFile

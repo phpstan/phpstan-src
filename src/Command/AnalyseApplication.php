@@ -172,7 +172,7 @@ class AnalyseApplication
 			$progressStarted = false;
 			$fileOrder = 0;
 			$preFileCallback = null;
-			$postFileCallback = function (int $step) use ($errorOutput, &$progressStarted, $allAnalysedFilesCount, $filesCount, &$fileOrder): void {
+			$postFileCallback = function (int $step, ?string $file = null) use ($errorOutput, &$progressStarted, $allAnalysedFilesCount, $filesCount, &$fileOrder): void {
 				if (!$progressStarted) {
 					$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 					$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
@@ -192,11 +192,21 @@ class AnalyseApplication
 			};
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
+				$times = [];
+				$memories = [];
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory): void {
+				$previousTimestamp = microtime(true);
+				$i = 0;
+				$postFileCallback = static function (int $step, ?string $file = null) use ($stdOutput, &$previousMemory, &$previousTimestamp, &$i, $allAnalysedFilesCount, &$times, &$memories): void {
+					$i += $step;
+					$currentTimestamp = microtime(true);
+					$timeElapsedSecs = round($currentTimestamp - $previousTimestamp, 2);
 					$currentTotalMemory = memory_get_peak_usage(true);
-					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory)));
+					$stdOutput->writeLineFormatted(sprintf('(%s/%s) %s: consumed %s, total %s, time %s s', $i, $allAnalysedFilesCount, $file, BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $timeElapsedSecs));
+					$times[$file] = $timeElapsedSecs;
+					$memories[$file] = $currentTotalMemory - $previousMemory;
 					$previousMemory = $currentTotalMemory;
+					$previousTimestamp = $currentTimestamp;
 				};
 			}
 		}
@@ -205,6 +215,22 @@ class AnalyseApplication
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();
+		}
+
+		if (isset($times) && count($times) > 1) {
+			echo "\n\n== Files with longest analyzis time ==\n\n";
+			arsort($times, SORT_NUMERIC);
+			foreach (array_slice($times, 0, 25, true) as $file => $time) {
+				echo $file . ' -> ' . $time . " s\n";
+			}
+		}
+		if (isset($memories) && count($memories) > 1) {
+			echo "\n\n== Files with highest memory consumption ==\n\n";
+			arsort($memories, SORT_NUMERIC);
+			foreach (array_slice($memories, 0, 25, true) as $file => $memory) {
+				echo $file . ' -> ' . BytesHelper::bytes($memory) . "\n";
+			}
+			echo "\n";
 		}
 
 		return $analyserResult;

@@ -89,7 +89,7 @@ class LazyScopeFactory implements ScopeFactory
 			$this->container->getByType(Standard::class),
 			$this->container->getByType(TypeSpecifier::class),
 			$this->container->getByType(PropertyReflectionFinder::class),
-			$this->container->getByType(\PHPStan\Parser\Parser::class),
+			$this->container->getService('currentPhpVersionSimpleParser'),
 			$this->container->getByType(NodeScopeResolver::class),
 			$context,
 			$declareStrictTypes,

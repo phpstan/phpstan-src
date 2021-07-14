@@ -3609,12 +3609,20 @@ class MutatingScope implements Scope
 		$nodeFinder = new NodeFinder();
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;
-			$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
+
+			try {
+				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
+			} catch (\PHPStan\Parser\ParserErrorsException $e) {
+				continue;
+			}
 			if (!$expr instanceof Node\Stmt\Expression) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($exprStringToInvalidate): bool {
 				if (!$node instanceof Expr) {
+					return false;
+				}
+				if ($node instanceof EncapsedStringPart) {
 					return false;
 				}
 

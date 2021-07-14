@@ -919,7 +919,7 @@ class TypeSpecifier
 		?Scope $scope = null
 	): SpecifiedTypes
 	{
-		if ($expr instanceof New_ || $expr instanceof Instanceof_) {
+		if ($expr instanceof New_ || $expr instanceof Instanceof_ || $expr instanceof Expr\List_) {
 			return new SpecifiedTypes();
 		}
 

@@ -2,7 +2,12 @@
 
 namespace NonEmptyString;
 
+use function htmlspecialchars;
+use function lcfirst;
 use function PHPStan\Testing\assertType;
+use function strtolower;
+use function strtoupper;
+use function ucfirst;
 
 class Foo
 {
@@ -262,6 +267,43 @@ class GeneralizeConstantStringType
 	{
 		$a[''] = 2;
 		assertType('array<string, int>&nonEmpty', $a);
+	}
+
+}
+
+class MoreNonEmptyStringFunctions
+{
+
+	/**
+	 * @param non-empty-string $nonEmpty
+	 */
+	public function doFoo(string $s, string $nonEmpty)
+	{
+		assertType('string', strtoupper($s));
+		assertType('non-empty-string', strtoupper($nonEmpty));
+		assertType('string', strtolower($s));
+		assertType('non-empty-string', strtolower($nonEmpty));
+		assertType('string', mb_strtoupper($s));
+		assertType('non-empty-string', mb_strtoupper($nonEmpty));
+		assertType('string', mb_strtolower($s));
+		assertType('non-empty-string', mb_strtolower($nonEmpty));
+		assertType('string', lcfirst($s));
+		assertType('non-empty-string', lcfirst($nonEmpty));
+		assertType('string', ucfirst($s));
+		assertType('non-empty-string', ucfirst($nonEmpty));
+		assertType('string', ucwords($s));
+		assertType('non-empty-string', ucwords($nonEmpty));
+		assertType('string', htmlspecialchars($s));
+		assertType('non-empty-string', htmlspecialchars($nonEmpty));
+
+		assertType('string', sprintf($s));
+		assertType('non-empty-string', sprintf($nonEmpty));
+		assertType('string', vsprintf($s, []));
+		assertType('non-empty-string', vsprintf($nonEmpty, []));
+
+		assertType('0', strlen(''));
+		assertType('int<0, max>', strlen($s));
+		assertType('int<1, max>', strlen($nonEmpty));
 	}
 
 }

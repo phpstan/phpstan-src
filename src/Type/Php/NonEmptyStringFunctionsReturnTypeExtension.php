@@ -7,63 +7,48 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
-use PHPStan\Type\Type;
 
-class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'sprintf';
+		return in_array($functionReflection->getName(), [
+			'strtoupper',
+			'strtolower',
+			'mb_strtoupper',
+			'mb_strtolower',
+			'lcfirst',
+			'ucfirst',
+			'ucwords',
+			'htmlspecialchars',
+			'vsprintf',
+		], true);
 	}
 
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope
-	): Type
+	): \PHPStan\Type\Type
 	{
 		$args = $functionCall->args;
 		if (count($args) === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$formatType = $scope->getType($args[0]->value);
-		if ($formatType->isNonEmptyString()->yes()) {
-			$returnType = new IntersectionType([
+		$argType = $scope->getType($args[0]->value);
+		if ($argType->isNonEmptyString()->yes()) {
+			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
 			]);
-		} else {
-			$returnType = new StringType();
 		}
 
-		$values = [];
-		foreach ($args as $arg) {
-			$argType = $scope->getType($arg->value);
-			if (!$argType instanceof ConstantScalarType) {
-				return $returnType;
-			}
-
-			$values[] = $argType->getValue();
-		}
-
-		$format = array_shift($values);
-		if (!is_string($format)) {
-			return $returnType;
-		}
-
-		try {
-			$value = @sprintf($format, ...$values);
-		} catch (\Throwable $e) {
-			return $returnType;
-		}
-
-		return $scope->getTypeFromValue($value);
+		return new StringType();
 	}
 
 }

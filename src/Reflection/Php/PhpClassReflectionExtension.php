@@ -35,6 +35,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -994,7 +995,7 @@ class PhpClassReflectionExtension
 				continue;
 			}
 
-			$propertyType = TypeUtils::generalizeType($propertyType);
+			$propertyType = TypeUtils::generalizeType($propertyType, GeneralizePrecision::lessSpecific());
 			if ($propertyType instanceof ConstantArrayType) {
 				$propertyType = new ArrayType(new MixedType(true), new MixedType(true));
 			}

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -39,7 +40,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyna
 				}
 			}
 
-			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType());
+			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
 			$valueTypes[] = $argType->getIterableValueType();
 		}
 

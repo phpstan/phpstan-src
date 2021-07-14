@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -100,7 +101,7 @@ class ConstantArrayTypeBuilder
 			return;
 		}
 
-		$this->keyTypes[] = TypeUtils::generalizeType($offsetType);
+		$this->keyTypes[] = TypeUtils::generalizeType($offsetType, GeneralizePrecision::moreSpecific());
 		$this->valueTypes[] = $valueType;
 		$this->degradeToGeneralArray = true;
 	}

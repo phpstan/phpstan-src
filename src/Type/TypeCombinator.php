@@ -290,7 +290,7 @@ class TypeCombinator
 			}
 			foreach ($scalarTypeItems as $type) {
 				if (count($scalarTypeItems) > self::CONSTANT_SCALAR_UNION_THRESHOLD) {
-					$types[] = $type->generalize();
+					$types[] = $type->generalize(GeneralizePrecision::moreSpecific());
 
 					if ($type instanceof ConstantStringType) {
 						continue;

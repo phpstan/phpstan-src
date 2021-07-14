@@ -8,13 +8,16 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -292,11 +295,19 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new self($this->getValue() . $otherString->getValue());
 	}
 
-	public function generalize(): Type
+	public function generalize(?GeneralizePrecision $precision = null): Type
 	{
 		if ($this->isClassString) {
 			return new ClassStringType();
 		}
+
+		if ($this->getValue() !== '' && $precision !== null && $precision->isMoreSpecific()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
+		}
+
 		return new StringType();
 	}
 

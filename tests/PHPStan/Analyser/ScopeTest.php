@@ -28,7 +28,7 @@ class ScopeTest extends TestCase
 			[
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
-				'string',
+				'non-empty-string',
 			],
 			[
 				new ConstantIntegerType(0),
@@ -138,7 +138,7 @@ class ScopeTest extends TestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(1),
 				]),
-				'array<string, 1>',
+				'array<non-empty-string, 1>',
 			],
 			[
 				new ConstantArrayType([
@@ -153,7 +153,7 @@ class ScopeTest extends TestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(2),
 				]),
-				'array<string, int>',
+				'array<non-empty-string, int>',
 			],
 		];
 	}

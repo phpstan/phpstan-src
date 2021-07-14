@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 
@@ -54,8 +55,8 @@ class ArgumentBasedFunctionReturnTypeExtension implements \PHPStan\Type\DynamicF
 		$argumentKeyType = $argumentType->getIterableKeyType();
 		$argumentValueType = $argumentType->getIterableValueType();
 		if ($argument->unpack) {
-			$argumentKeyType = TypeUtils::generalizeType($argumentKeyType);
-			$argumentValueType = TypeUtils::generalizeType($argumentValueType->getIterableValueType());
+			$argumentKeyType = TypeUtils::generalizeType($argumentKeyType, GeneralizePrecision::moreSpecific());
+			$argumentValueType = TypeUtils::generalizeType($argumentValueType->getIterableValueType(), GeneralizePrecision::moreSpecific());
 		}
 
 		return new ArrayType(

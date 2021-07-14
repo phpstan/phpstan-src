@@ -5129,7 +5129,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'array<int|string, stdClass>',
+				'array<int|non-empty-string, stdClass>',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -5145,15 +5145,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
-				'array<int|string, \'foo\'|stdClass>',
+				'array<int|non-empty-string, \'foo\'|stdClass>',
 				'array_merge($stringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'array<int|string, \'foo\'|stdClass>',
+				'array<int|non-empty-string, \'foo\'|stdClass>',
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
 			],
 			[
-				'array<int|string, 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
+				'array<int|non-empty-string, 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[
@@ -9233,7 +9233,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherArrayCopy',
 			],
 			[
-				'array<string, int|null>',
+				'array<non-empty-string, int|null>',
 				'$yetAnotherArrayCopy',
 			],
 			[

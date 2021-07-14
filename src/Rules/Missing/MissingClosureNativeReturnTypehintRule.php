@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -112,7 +113,7 @@ class MissingClosureNativeReturnTypehintRule implements Rule
 			return $messages;
 		}
 
-		$returnType = TypeUtils::generalizeType($returnType);
+		$returnType = TypeUtils::generalizeType($returnType, GeneralizePrecision::lessSpecific());
 		$description = $returnType->describe(VerbosityLevel::typeOnly());
 		if ($returnType->isArray()->yes()) {
 			$description = 'array';

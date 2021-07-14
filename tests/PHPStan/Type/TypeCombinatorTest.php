@@ -841,8 +841,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new ConstantStringType('loremm'),
 					new ConstantStringType('loremmm'),
 				],
-				StringType::class,
-				'string',
+				IntersectionType::class,
+				'non-empty-string',
 			],
 			[
 				[

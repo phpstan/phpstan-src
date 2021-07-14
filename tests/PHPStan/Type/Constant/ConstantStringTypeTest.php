@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Testing\TestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -142,10 +143,14 @@ class ConstantStringTypeTest extends TestCase
 
 	public function testGeneralize(): void
 	{
-		$this->assertSame('string', (new ConstantStringType('NonexistentClass'))->generalize()->describe(VerbosityLevel::precise()));
-		$this->assertSame('string', (new ConstantStringType(\stdClass::class))->generalize()->describe(VerbosityLevel::precise()));
-		$this->assertSame('class-string', (new ConstantStringType(\stdClass::class, true))->generalize()->describe(VerbosityLevel::precise()));
-		$this->assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize()->describe(VerbosityLevel::precise()));
+		$this->assertSame('non-empty-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('string', (new ConstantStringType(''))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('non-empty-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('string', (new ConstantStringType(''))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('non-empty-string', (new ConstantStringType(\stdClass::class))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('class-string', (new ConstantStringType(\stdClass::class, true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 	}
 
 	public function testTextInvalidEncoding(): void

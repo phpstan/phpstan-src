@@ -63,6 +63,7 @@ use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
@@ -1934,7 +1935,7 @@ class MutatingScope implements Scope
 					$constantType instanceof ConstantType
 					&& in_array(sprintf('%s::%s', $propertyClassReflection->getName(), $constantName), $this->dynamicConstantNames, true)
 				) {
-					$constantType = $constantType->generalize();
+					$constantType = $constantType->generalize(GeneralizePrecision::lessSpecific());
 				}
 				$types[] = $constantType;
 			}
@@ -2196,7 +2197,7 @@ class MutatingScope implements Scope
 	private function resolveConstantType(string $constantName, Type $constantType): Type
 	{
 		if ($constantType instanceof ConstantType && in_array($constantName, $this->dynamicConstantNames, true)) {
-			return $constantType->generalize();
+			return $constantType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
 		return $constantType;
@@ -4497,7 +4498,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$resultTypes[] = TypeUtils::generalizeType($constantTypes['a'][0]);
+			$resultTypes[] = TypeUtils::generalizeType($constantTypes['a'][0], GeneralizePrecision::moreSpecific());
 		}
 
 		if (count($constantArrays['a']) > 0) {

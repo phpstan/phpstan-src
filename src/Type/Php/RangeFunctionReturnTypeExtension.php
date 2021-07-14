@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -68,8 +69,8 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 							new ArrayType(
 								new IntegerType(),
 								TypeCombinator::union(
-									$startConstant->generalize(),
-									$endConstant->generalize()
+									$startConstant->generalize(GeneralizePrecision::moreSpecific()),
+									$endConstant->generalize(GeneralizePrecision::moreSpecific())
 								)
 							),
 							new NonEmptyArrayType(),

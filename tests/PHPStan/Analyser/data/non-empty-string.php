@@ -238,3 +238,30 @@ class LiteralString
 	}
 
 }
+
+class GeneralizeConstantStringType
+{
+
+	/**
+	 * @param array<non-empty-string, int> $a
+	 * @param non-empty-string $s
+	 */
+	public function doFoo(array $a, string $s): void
+	{
+		$a[$s] = 2;
+
+		// there might be non-empty-string that becomes a number instead
+		assertType('array<string, int>&nonEmpty', $a);
+	}
+
+	/**
+	 * @param array<non-empty-string, int> $a
+	 * @param non-empty-string $s
+	 */
+	public function doFoo2(array $a, string $s): void
+	{
+		$a[''] = 2;
+		assertType('array<string, int>&nonEmpty', $a);
+	}
+
+}

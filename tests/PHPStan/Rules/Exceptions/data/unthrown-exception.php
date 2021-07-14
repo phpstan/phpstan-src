@@ -521,3 +521,17 @@ class TestReflectionProperty
 	}
 
 }
+
+class ExceptionGetMessage
+{
+
+	public function doFoo(\Exception $e)
+	{
+		try {
+			echo $e->getMessage();
+		} catch (\Exception $t) {
+
+		}
+	}
+
+}

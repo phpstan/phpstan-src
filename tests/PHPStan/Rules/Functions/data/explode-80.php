@@ -14,6 +14,7 @@ class Foo
 		explode($s, 'foo');
 		explode($nonEmptyString, 'foo');
 		explode('', 'foo');
+		explode(1, 'foo');
 	}
 
 }

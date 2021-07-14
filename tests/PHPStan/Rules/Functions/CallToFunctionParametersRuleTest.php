@@ -790,6 +790,10 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $separator of function explode expects non-empty-string, \'\' given.',
 				16,
 			],
+			[
+				'Parameter #1 $separator of function explode expects non-empty-string, 1 given.',
+				17,
+			],
 		]);
 	}
 

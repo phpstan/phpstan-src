@@ -25,6 +25,7 @@ use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\EncapsedStringPart;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\NodeFinder;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassMemberReflection;
@@ -3479,17 +3480,13 @@ class MutatingScope implements Scope
 				);
 			}
 
-			$args = [new Node\Arg($expr->var)];
-
 			$arrays = TypeUtils::getArrays($varType);
 			$scope = $this;
 			if (count($arrays) > 0) {
 				$scope = $scope->specifyExpressionType($expr->var, TypeCombinator::union(...$arrays));
 			}
 
-			return $scope->invalidateExpression($expr->var)
-				->invalidateExpression(new FuncCall(new Name\FullyQualified('count'), $args))
-				->invalidateExpression(new FuncCall(new Name('count'), $args));
+			return $scope->invalidateExpression($expr->var);
 		}
 
 		return $this;
@@ -3609,28 +3606,25 @@ class MutatingScope implements Scope
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
+		$nodeFinder = new NodeFinder();
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;
-			if (Strings::startsWith($exprString, $exprStringToInvalidate)) {
-				if ($exprString === $exprStringToInvalidate && $requireMoreCharacters) {
-					continue;
-				}
-				$nextLetter = substr($exprString, strlen($exprStringToInvalidate), 1);
-				if (Strings::match($nextLetter, '#[a-zA-Z_0-9\x7f-\xff]#') === null) {
-					unset($moreSpecificTypeHolders[$exprString]);
-					unset($nativeExpressionTypes[$exprString]);
-					$invalidated = true;
-					continue;
-				}
+			$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
+			if (!$expr instanceof Node\Stmt\Expression) {
+				throw new \PHPStan\ShouldNotHappenException();
 			}
-			$matches = \Nette\Utils\Strings::matchAll($exprString, '#\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*#');
-			if ($matches === []) {
+			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($exprStringToInvalidate): bool {
+				if (!$node instanceof Expr) {
+					return false;
+				}
+
+				return $this->getNodeKey($node) === $exprStringToInvalidate;
+			});
+			if ($found === null) {
 				continue;
 			}
 
-			$matches = array_column($matches, 0);
-
-			if (!in_array($exprStringToInvalidate, $matches, true)) {
+			if ($requireMoreCharacters && $exprString === $exprStringToInvalidate) {
 				continue;
 			}
 

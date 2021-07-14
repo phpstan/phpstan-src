@@ -219,3 +219,22 @@ class ImplodingStrings
 	}
 
 }
+
+class LiteralString
+{
+
+	function x(string $tableName, string $original): void {
+		assertType('non-empty-string', "from `$tableName`");
+	}
+
+	/**
+	 * @param non-empty-string $nonEmpty
+	 */
+	function concat(string $s, string $nonEmpty): void
+	{
+		assertType('string', $s . '');
+		assertType('non-empty-string', $nonEmpty . '');
+		assertType('non-empty-string', $nonEmpty . $s);
+	}
+
+}

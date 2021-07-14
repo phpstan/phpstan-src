@@ -563,11 +563,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, int): non-empty-string|null, Closure(string, int): non-empty-string given.',
 				13,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, int): non-empty-string|null, Closure(string, int): non-empty-string given.',
 				22,
 			],
 		]);
@@ -584,11 +584,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, int): non-empty-string|null, Closure(string, int): non-empty-string given.',
 				11,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, int): non-empty-string|null, Closure(string, int): non-empty-string given.',
 				18,
 			],
 		]);

@@ -2496,11 +2496,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'min(1, 2.2, 3.3)',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'"Hello $world"',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$string .= "str"',
 			],
 			[
@@ -3072,15 +3072,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$decrementedFooString',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$conditionalString . $conditionalString',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$conditionalString . $anotherConditionalString',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$anotherConditionalString . $conditionalString',
 			],
 			[

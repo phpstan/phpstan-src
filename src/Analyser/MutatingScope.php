@@ -45,6 +45,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -1045,6 +1046,13 @@ class MutatingScope implements Scope
 				return $leftStringType->append($rightStringType);
 			}
 
+			if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				]);
+			}
+
 			return new StringType();
 		}
 
@@ -1316,22 +1324,40 @@ class MutatingScope implements Scope
 		} elseif ($node instanceof String_) {
 			return new ConstantStringType($node->value);
 		} elseif ($node instanceof Node\Scalar\Encapsed) {
-			$constantString = new ConstantStringType('');
+			$parts = [];
 			foreach ($node->parts as $part) {
 				if ($part instanceof EncapsedStringPart) {
-					$partStringType = new ConstantStringType($part->value);
-				} else {
-					$partStringType = $this->getType($part)->toString();
-					if ($partStringType instanceof ErrorType) {
-						return new ErrorType();
-					}
-					if (!$partStringType instanceof ConstantStringType) {
-						return new StringType();
+					$parts[] = new ConstantStringType($part->value);
+					continue;
+				}
+
+				$partStringType = $this->getType($part)->toString();
+				if ($partStringType instanceof ErrorType) {
+					return new ErrorType();
+				}
+
+				$parts[] = $partStringType;
+			}
+
+			$constantString = new ConstantStringType('');
+			foreach ($parts as $part) {
+				if ($part instanceof ConstantStringType) {
+					$constantString = $constantString->append($part);
+					continue;
+				}
+
+				foreach ($parts as $partType) {
+					if ($partType->isNonEmptyString()->yes()) {
+						return new IntersectionType([
+							new StringType(),
+							new AccessoryNonEmptyStringType(),
+						]);
 					}
 				}
 
-				$constantString = $constantString->append($partStringType);
+				return new StringType();
 			}
+
 			return $constantString;
 		} elseif ($node instanceof DNumber) {
 			return new ConstantFloatType($node->value);

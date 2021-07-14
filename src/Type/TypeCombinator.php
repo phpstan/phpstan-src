@@ -120,7 +120,17 @@ class TypeCombinator
 			if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
 				return new ConstantStringType('');
 			}
-		} elseif ($fromType instanceof SubtractableType) {
+		} elseif ($fromType instanceof ObjectType && $fromType->getClassName() === \DateTimeInterface::class) {
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === \DateTimeImmutable::class) {
+				return new ObjectType(\DateTime::class);
+			}
+
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === \DateTime::class) {
+				return new ObjectType(\DateTimeImmutable::class);
+			}
+		}
+
+		if ($fromType instanceof SubtractableType) {
 			$typeToSubtractFrom = $fromType;
 			if ($fromType instanceof TemplateType) {
 				$typeToSubtractFrom = $fromType->getBound();

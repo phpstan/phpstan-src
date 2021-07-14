@@ -159,7 +159,7 @@ class Foo
 			assertNativeType(\DateTimeImmutable::class, $date);
 		} else {
 			assertType('*NEVER*', $date);
-			assertNativeType('DateTimeInterface~DateTimeImmutable', $date);
+			assertNativeType('DateTime', $date);
 		}
 
 		assertType(\DateTimeImmutable::class, $date);

@@ -11693,7 +11693,7 @@ return [
 'str_getcsv' => ['array', 'input'=>'string', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
 'str_ireplace' => ['string|string[]', 'search'=>'string|array', 'replace'=>'string|array', 'subject'=>'string|array', '&w_replace_count='=>'int'],
 'str_pad' => ['string', 'input'=>'string', 'pad_length'=>'int', 'pad_string='=>'string', 'pad_type='=>'int'],
-'str_repeat' => ['string', 'input'=>'string', 'multiplier'=>'0|positive-int'],
+'str_repeat' => ['string', 'input'=>'string', 'multiplier'=>'int'],
 'str_replace' => ['string|array', 'search'=>'string|array', 'replace'=>'string|array', 'subject'=>'string|array', '&w_replace_count='=>'int'],
 'str_rot13' => ['string', 'str'=>'string'],
 'str_shuffle' => ['string', 'str'=>'string'],

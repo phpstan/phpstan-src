@@ -8,6 +8,7 @@ use function PHPStan\Testing\assertType;
 use function strtolower;
 use function strtoupper;
 use function ucfirst;
+use function mb_strlen;
 
 class Foo
 {

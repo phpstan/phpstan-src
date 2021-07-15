@@ -1266,6 +1266,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\StrPadFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ParseUrlFunctionDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

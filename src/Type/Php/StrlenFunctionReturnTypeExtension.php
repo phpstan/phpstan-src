@@ -15,7 +15,7 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'strlen';
+		return in_array($functionReflection->getName(), ['strlen', 'mb_strlen'], true);
 	}
 
 	public function getTypeFromFunctionCall(

@@ -3603,6 +3603,7 @@ class MutatingScope implements Scope
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
+		$expressionToInvalidateClass = get_class($expressionToInvalidate);
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
@@ -3618,11 +3619,8 @@ class MutatingScope implements Scope
 			if (!$expr instanceof Node\Stmt\Expression) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($exprStringToInvalidate): bool {
-				if (!$node instanceof Expr) {
-					return false;
-				}
-				if ($node instanceof EncapsedStringPart) {
+			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
+				if (!$node instanceof $expressionToInvalidateClass) {
 					return false;
 				}
 

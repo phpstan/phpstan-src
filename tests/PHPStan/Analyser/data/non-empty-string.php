@@ -277,7 +277,7 @@ class MoreNonEmptyStringFunctions
 	/**
 	 * @param non-empty-string $nonEmpty
 	 */
-	public function doFoo(string $s, string $nonEmpty)
+	public function doFoo(string $s, string $nonEmpty, int $i)
 	{
 		assertType('string', strtoupper($s));
 		assertType('non-empty-string', strtoupper($nonEmpty));
@@ -309,6 +309,13 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', str_pad($nonEmpty, 1));
 		assertType('string', str_pad($s, 0));
 		assertType('non-empty-string', str_pad($s, 1));
+
+		assertType('non-empty-string', str_repeat($nonEmpty, 1));
+		assertType('\'\'', str_repeat($nonEmpty, 0));
+		assertType('string', str_repeat($nonEmpty, $i));
+		assertType('\'\'', str_repeat($s, 0));
+		assertType('string', str_repeat($s, 1));
+		assertType('string', str_repeat($s, $i));
 	}
 
 }

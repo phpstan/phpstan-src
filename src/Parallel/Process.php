@@ -130,6 +130,7 @@ class Process
 	public function bindConnection(ReadableStreamInterface $out, WritableStreamInterface $in): void
 	{
 		$out->on('data', function (array $json): void {
+			$this->cancelTimer();
 			if ($json['action'] !== 'result') {
 				return;
 			}

@@ -19,6 +19,7 @@ class FileHelper
 		return $this->workingDirectory;
 	}
 
+	/** @api */
 	public function absolutizePath(string $path): string
 	{
 		if (DIRECTORY_SEPARATOR === '/') {
@@ -37,6 +38,7 @@ class FileHelper
 		return rtrim($this->getWorkingDirectory(), '/\\') . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
 	}
 
+	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
 		$matches = \Nette\Utils\Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');

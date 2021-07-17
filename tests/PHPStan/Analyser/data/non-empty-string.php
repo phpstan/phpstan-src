@@ -295,6 +295,8 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', ucwords($nonEmpty));
 		assertType('string', htmlspecialchars($s));
 		assertType('non-empty-string', htmlspecialchars($nonEmpty));
+		assertType('string', htmlentities($s));
+		assertType('non-empty-string', htmlentities($nonEmpty));
 		
 		assertType('string', urlencode($s));
 		assertType('non-empty-string', urlencode($nonEmpty));

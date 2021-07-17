@@ -25,6 +25,7 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 			'ucfirst',
 			'ucwords',
 			'htmlspecialchars',
+			'htmlentities',
 			'urlencode',
 			'urldecode',
 			'rawurlencode',

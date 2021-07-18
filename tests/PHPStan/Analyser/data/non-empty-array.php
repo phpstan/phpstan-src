@@ -41,6 +41,6 @@ class Foo
 	public function arrayFunctions($array, $list): void
 	{
 		assertType('array&nonEmpty', array_combine($array, $array));
-		assertType('array<int, mixed>&nonEmpty', array_combine($list, $list));
+		assertType('array&nonEmpty', array_combine($list, $list));
 	}
 }

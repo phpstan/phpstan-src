@@ -72,7 +72,7 @@ class ArrayCombineFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFu
 		);
 		
 		if ($keysParamType instanceof NonEmptyArrayType && $valuesParamType instanceof NonEmptyArrayType) {
-			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			$arrayType = TypeCombinator::union($arrayType, new NonEmptyArrayType());
 		}
 
 		if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {

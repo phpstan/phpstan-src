@@ -44,7 +44,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			$positiveLength = $length instanceof ConstantIntegerType && $length->getValue() > 0;
 		}
       
-	  	if ($argType->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
+	  	if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
 			  return new IntersectionType([
 		  		new StringType(),
 			  	new AccessoryNonEmptyStringType(),

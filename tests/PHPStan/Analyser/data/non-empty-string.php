@@ -139,8 +139,8 @@ class Foo
 	 * @param positive-int $positiveInt
 	 */
 	public function doSubstr($nonEmpty, $positiveInt) {
-		assertType(substr($nonEmpty, -5));
-		assertType(substr($nonEmpty, 0, $positiveInt));
+		assertType('non-empty-string', substr($nonEmpty, -5));
+		assertType('non-empty-string', substr($nonEmpty, 0, $positiveInt));
 	}
 }
 

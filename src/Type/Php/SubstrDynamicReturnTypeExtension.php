@@ -31,17 +31,26 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-    if (count($args) === 2) {
+    if (count($args) > 2) {
       $string = $scope->getType($args[0]->value);
       $offset = $scope->getType($args[1]->value);
+		
+		$negativeOffset = $offset instanceof ConstantIntegerType && $offset->getValue() < 0;
+		$zeroOffset = $offset instanceof ConstantIntegerType && $offset->getValue() === 0;
+		$positiveLength = null;
+		
+		if (count($args) === 3) {
+			$length = $scope->getType($args[2]->value);
+			$positiveLength = $length instanceof ConstantIntegerType && $length->getValue() > 0;
+		}
       
-	  	if ($argType->isNonEmptyString()->yes() && $offset instanceof ConstantIntegerType && $offset->getValue() < 0) {
+	  	if ($argType->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
 			  return new IntersectionType([
 		  		new StringType(),
 			  	new AccessoryNonEmptyStringType(),
 		  	]);
 	  	}
-    }
+	}
 		
 
 		return new StringType();

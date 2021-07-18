@@ -134,9 +134,13 @@ class Foo
 		}
 	}
 
-	/** @param non-empty-string $nonEmpty */
-	public function doNegativeSubstr($nonEmpty) {
-		assertType[substr($nonEmpty, -5)]
+	/**
+	 * @param non-empty-string $nonEmpty
+	 * @param positive-int $positiveInt
+	 */
+	public function doNegativeSubstr($nonEmpty, $positiveInt) {
+		assertType(substr($nonEmpty, -5));
+		assertType(substr($nonEmpty, 0, $positiveInt));
 	}
 }
 

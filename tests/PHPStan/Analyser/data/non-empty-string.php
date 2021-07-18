@@ -138,7 +138,7 @@ class Foo
 	 * @param non-empty-string $nonEmpty
 	 * @param positive-int $positiveInt
 	 */
-	public function doSubstr($nonEmpty, $positiveInt) {
+	public function doSubstr($nonEmpty, $positiveInt): void {
 		assertType('non-empty-string', substr($nonEmpty, -5));
 		assertType('non-empty-string', substr($nonEmpty, 0, $positiveInt));
 	}

@@ -31,7 +31,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-    if (count($args) > 2) {
+    if (count($args) >= 2) {
       $string = $scope->getType($args[0]->value);
       $offset = $scope->getType($args[1]->value);
 		

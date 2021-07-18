@@ -893,7 +893,7 @@ class NodeScopeResolver
 			$bodyScopeMaybeRan = $bodyScope;
 			$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
-			$finalScope = $finalScopeResult->getScope();
+			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$finalScope = $finalScope->mergeWith($continueExitPoint->getScope());
 			}

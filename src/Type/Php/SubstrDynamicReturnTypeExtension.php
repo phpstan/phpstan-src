@@ -35,13 +35,13 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
       $string = $scope->getType($args[0]->value);
       $offset = $scope->getType($args[1]->value);
 		
-		$negativeOffset = $offset instanceof ConstantIntegerType && $offset->getValue() < 0;
-		$zeroOffset = $offset instanceof ConstantIntegerType && $offset->getValue() === 0;
-		$positiveLength = null;
+		$negativeOffset = $this->getIntValue($offset) < 0;
+		$zeroOffset = $this->getIntValue($offset) === 0;
+		$positiveLength = false;
 		
 		if (count($args) === 3) {
 			$length = $scope->getType($args[2]->value);
-			$positiveLength = $length instanceof ConstantIntegerType && $length->getValue() > 0;
+			$positiveLength = $this->getIntValue($length) > 0;
 		}
       
 	  	if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
@@ -55,5 +55,17 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 		return new StringType();
 	}
+
+private function getIntValue(Type $type): ?int {
+				if ($type instanceof IntegerRangeType) {
+					return $type->getMin();
+				}
+				if ($type instanceof ConstantIntegerType) {
+					return $type->getValue();
+				}
+				return null;
+			
+
+}
 
 }

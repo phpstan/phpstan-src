@@ -143,7 +143,7 @@ class Foo
 assertType('string', substr($s, 5));
 
 assertType('string', substr($s, -5));
-		 assertType('non-empty-string', substr($nonEmpty, -5))
+		 assertType('non-empty-string', substr($nonEmpty, -5));
 
 assertType('string', substr($s, 0, 5));
   		 assertType('non-empty-string', substr($nonEmpty, 0, 5));

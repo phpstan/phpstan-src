@@ -10,6 +10,8 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
 class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension

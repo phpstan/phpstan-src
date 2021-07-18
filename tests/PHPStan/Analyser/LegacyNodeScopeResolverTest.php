@@ -5009,11 +5009,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_combine([\'a\', \'b\', \'c\'], [\'d\', \'e\', \'f\'])',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<1|2|3, mixed>|false' : 'array<1|2|3, mixed>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'array<1|2|3, mixed>|false' : 'array<1|2|3, mixed>',
 				'array_combine([1, 2, 3], $array)',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<1|2|3>|false' : 'array<1|2|3>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'array<1|2|3>|false' : 'array<1|2|3>',
 				'array_combine($array, [1, 2, 3])',
 			],
 			[

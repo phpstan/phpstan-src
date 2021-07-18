@@ -134,6 +134,10 @@ class Foo
 		}
 	}
 
+	/** @param non-empty-string $nonEmpty */
+	public function doNegativeSubstr($nonEmpty) {
+		assertType[substr($nonEmpty, -5)]
+	}
 }
 
 class ImplodingStrings

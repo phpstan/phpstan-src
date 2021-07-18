@@ -140,6 +140,8 @@ class Foo
 	 */
 	public function doSubstr(string $s, $nonEmpty, $positiveInt): void {
 
+assertType('string', substr($s, 5));
+
 assertType('string', substr($s, -5));
 		 assertType('non-empty-string', substr($nonEmpty, -5))
 

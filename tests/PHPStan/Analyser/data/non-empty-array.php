@@ -34,4 +34,9 @@ class Foo
 		assertType('mixed', $invalidList2);
 	}
 
+	/** @param non-empty-array $nonE */
+	public function sayHello($nonE): void
+	{
+		assertType('array&nonEmpty', array_combine($nonE, $nonE));
+	}
 }

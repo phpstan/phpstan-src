@@ -71,7 +71,7 @@ class ArrayCombineFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFu
 			$valuesParamType instanceof ArrayType ? $valuesParamType->getItemType() : new MixedType()
 		);
 		
-		if ($keysParamType instanceof NonEmptyArrayType && $valuesParamType instanceof NonEmptyArrayType) {
+		if ($keysParamType->isIterableAtLeastOnce() && $valuesParamType->isIterableAtLeastOnce()) {
 			$arrayType = TypeCombinator::union($arrayType, new NonEmptyArrayType());
 		}
 

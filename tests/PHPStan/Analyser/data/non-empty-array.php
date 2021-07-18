@@ -35,7 +35,7 @@ class Foo
 	}
 
 	/** @param non-empty-array $nonE */
-	public function sayHello($nonE): void
+	public function arrayFunctions($nonE): void
 	{
 		assertType('array&nonEmpty', array_combine($nonE, $nonE));
 	}

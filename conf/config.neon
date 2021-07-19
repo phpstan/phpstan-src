@@ -929,7 +929,7 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\ArrayFlipFunctionReturnTypeReturnTypeExtension
+		class: PHPStan\Type\Php\ArrayFlipFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

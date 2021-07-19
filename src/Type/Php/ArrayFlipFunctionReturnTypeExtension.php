@@ -36,8 +36,8 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		    $valueTypes = $argType->getValueTypes();
 
         $flippedArrayType = new ArrayType(
-          $valuesParamType,
-		    	$keysParamType
+          $valueTypes,
+		    	$keyTypes
 	    	);
 
         if ($keysParamType->isIterableAtLeastOnce()->yes()) {

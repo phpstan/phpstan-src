@@ -32,16 +32,16 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		$argType = $scope->getType($array);
     
     if ($argType instanceof ArrayType) {
-        $keyTypes = $argType->getKeyType();
-		    $valueTypes = $argType->getValueTypes();
+        $keyType = $argType->getKeyType();
+		    $itemType = $argType->getItemType();
 
         $flippedArrayType = new ArrayType(
-          $valueTypes,
-		    	$keyTypes
+          $itemType,
+		    	$keyType
 	    	);
 
-        if ($keyTypes->isIterableAtLeastOnce()->yes()) {
-		  	    $flippedArrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+        if ($argType->isIterableAtLeastOnce()->yes()) {
+		  	    $flippedArrayType = TypeCombinator::intersect($flippedArrayType, new NonEmptyArrayType());
 		    }
       
         return $flippedArrayType;

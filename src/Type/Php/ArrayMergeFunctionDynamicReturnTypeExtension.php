@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
@@ -29,6 +30,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyna
 
 		$keyTypes = [];
 		$valueTypes = [];
+		$nonEmpty = false;
 		foreach ($functionCall->args as $arg) {
 			$argType = $scope->getType($arg->value);
 			if ($arg->unpack) {
@@ -42,12 +44,22 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyna
 
 			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
 			$valueTypes[] = $argType->getIterableValueType();
+
+			if ($argType->isIterableAtLeastOnce()) {
+				$nonEmpty = true;
+			}
 		}
 
-		return new ArrayType(
+		$arrayType = new ArrayType(
 			TypeCombinator::union(...$keyTypes),
 			TypeCombinator::union(...$valueTypes)
 		);
+
+		if ($nonEmpty) {
+			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+
+		return $arrayType;
 	}
 
 }

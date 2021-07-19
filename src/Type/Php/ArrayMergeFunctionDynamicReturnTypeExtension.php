@@ -45,7 +45,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyna
 			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
 			$valueTypes[] = $argType->getIterableValueType();
 
-			if ($argType->isIterableAtLeastOnce()) {
+			if ($argType->isIterableAtLeastOnce()->yes()) {
 				$nonEmpty = true;
 			}
 		}

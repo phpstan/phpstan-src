@@ -134,6 +134,29 @@ class Foo
 		}
 	}
 
+	/**
+	 * @param non-empty-string $nonEmpty
+	 * @param positive-int $positiveInt
+	 * @param 1|2|3 $postiveRange
+	 * @param -1|-2|-3 $negativeRange
+	 */
+	public function doSubstr(string $s, $nonEmpty, $positiveInt, $postiveRange, $negativeRange): void
+	{
+		assertType('string', substr($s, 5));
+
+		assertType('string', substr($s, -5));
+		assertType('non-empty-string', substr($nonEmpty, -5));
+		assertType('non-empty-string', substr($nonEmpty, $negativeRange));
+
+		assertType('string', substr($s, 0, 5));
+		assertType('non-empty-string', substr($nonEmpty, 0, 5));
+		assertType('non-empty-string', substr($nonEmpty, 0, $postiveRange));
+
+		assertType('string', substr($nonEmpty, 0, -5));
+
+		assertType('string', substr($s, 0, $positiveInt));
+		assertType('non-empty-string', substr($nonEmpty, 0, $positiveInt));
+	}
 }
 
 class ImplodingStrings
@@ -186,7 +209,7 @@ class ImplodingStrings
 	public function sayHello(): void
 	{
 		// coming from issue #5291
-		$s = array(1,2);
+		$s = array(1, 2);
 
 		assertType('non-empty-string', implode("a", $s));
 	}
@@ -194,7 +217,8 @@ class ImplodingStrings
 	/**
 	 * @param non-empty-string $glue
 	 */
-	public function nonE($glue, array $a) {
+	public function nonE($glue, array $a)
+	{
 		// coming from issue #5291
 		if (empty($a)) {
 			return "xyz";
@@ -206,7 +230,7 @@ class ImplodingStrings
 	public function sayHello2(): void
 	{
 		// coming from issue #5291
-		$s = array(1,2);
+		$s = array(1, 2);
 
 		assertType('non-empty-string', join("a", $s));
 	}
@@ -214,7 +238,8 @@ class ImplodingStrings
 	/**
 	 * @param non-empty-string $glue
 	 */
-	public function nonE2($glue, array $a) {
+	public function nonE2($glue, array $a)
+	{
 		// coming from issue #5291
 		if (empty($a)) {
 			return "xyz";
@@ -228,7 +253,8 @@ class ImplodingStrings
 class LiteralString
 {
 
-	function x(string $tableName, string $original): void {
+	function x(string $tableName, string $original): void
+	{
 		assertType('non-empty-string', "from `$tableName`");
 	}
 
@@ -297,7 +323,7 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', htmlspecialchars($nonEmpty));
 		assertType('string', htmlentities($s));
 		assertType('non-empty-string', htmlentities($nonEmpty));
-		
+
 		assertType('string', urlencode($s));
 		assertType('non-empty-string', urlencode($nonEmpty));
 		assertType('string', urldecode($s));

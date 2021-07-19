@@ -55,4 +55,5 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 		return new StringType();
 	}
+
 }

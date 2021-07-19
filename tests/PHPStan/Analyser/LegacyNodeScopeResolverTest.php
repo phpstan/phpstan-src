@@ -5133,7 +5133,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
-				'array<int|string, DateTimeImmutable|int>&nonEmpty',
+				'array<int|string, DateTimeImmutable|int>',
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
@@ -5157,7 +5157,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[
-				'array<int|string, DateTimeImmutable|int>&nonEmpty',
+				'array<int|string, DateTimeImmutable|int>',
 				'array_merge(...[$generalStringKeys, $generalDateTimeValues])',
 			],
 			[
@@ -9900,7 +9900,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array()|array(\'foo\' => array<array>&nonEmpty)',
+				'array()|array(\'foo\' => array<array>)',
 				'$data',
 			],
 		];

@@ -40,7 +40,7 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		    	$keyTypes
 	    	);
 
-        if ($keysParamType->isIterableAtLeastOnce()->yes()) {
+        if ($keyTypes->isIterableAtLeastOnce()->yes()) {
 		  	    $flippedArrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		    }
       

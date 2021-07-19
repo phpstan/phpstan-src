@@ -31,7 +31,7 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		$array = $functionCall->args[0]->value;
 		$argType = $scope->getType($array);
     
-    if ($argType instanceof ArrayType) {
+    if ($argType->isArray()->yes()) {
         $keyType = $argType->getKeyType();
 		    $itemType = $argType->getItemType();
 

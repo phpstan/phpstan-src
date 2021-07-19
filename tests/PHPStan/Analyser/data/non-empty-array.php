@@ -47,5 +47,7 @@ class Foo
 		assertType('array&nonEmpty', array_merge([], $array));
 		assertType('array&nonEmpty', array_merge($array, []));
 		assertType('array&nonEmpty', array_merge($array, $array));
+		
+		assertType('array&nonEmpty', array_flip($array));
 	}
 }

@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -15,6 +16,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 
 class ArrayCombineFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
@@ -68,6 +70,10 @@ class ArrayCombineFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFu
 			$keysParamType instanceof ArrayType ? $keysParamType->getItemType() : new MixedType(),
 			$valuesParamType instanceof ArrayType ? $valuesParamType->getItemType() : new MixedType()
 		);
+
+		if ($keysParamType->isIterableAtLeastOnce()->yes() && $valuesParamType->isIterableAtLeastOnce()->yes()) {
+			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
 
 		if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
 			return $arrayType;

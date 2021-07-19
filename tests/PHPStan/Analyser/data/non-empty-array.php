@@ -34,4 +34,13 @@ class Foo
 		assertType('mixed', $invalidList2);
 	}
 
+	/**
+	 * @param non-empty-array $array
+	 * @param non-empty-list $list
+	 */
+	public function arrayFunctions($array, $list): void
+	{
+		assertType('array&nonEmpty', array_combine($array, $array));
+		assertType('array&nonEmpty', array_combine($list, $list));
+	}
 }

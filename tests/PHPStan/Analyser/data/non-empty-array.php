@@ -43,6 +43,7 @@ class Foo
 		assertType('array&nonEmpty', array_combine($array, $array));
 		assertType('array&nonEmpty', array_combine($list, $list));
 
+		assertType('array&nonEmpty', array_merge($array));
 		assertType('array&nonEmpty', array_merge([], $array));
 		assertType('array&nonEmpty', array_merge($array, []));
 		assertType('array&nonEmpty', array_merge($array, $array));

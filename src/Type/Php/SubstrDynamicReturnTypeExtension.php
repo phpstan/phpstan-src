@@ -12,7 +12,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
-use PHPStan\Type\Type;
 
 class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -38,7 +37,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			$offset = $scope->getType($args[1]->value);
 
 			$negativeOffset = IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($offset)->yes();
-			$zeroOffset = $this->getIntValue($offset) === 0;
+			$zeroOffset = (new ConstantIntegerType(0))->isSuperTypeOf($offset)->yes();
 			$positiveLength = false;
 
 			if (count($args) === 3) {
@@ -56,17 +55,4 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 		return new StringType();
 	}
-
-	private function getIntValue(Type $type): ?int
-	{
-		if ($type instanceof IntegerRangeType) {
-			return $type->getMin();
-		}
-		if ($type instanceof ConstantIntegerType) {
-			return $type->getValue();
-		}
-
-		return null;
-	}
-
 }

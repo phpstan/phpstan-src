@@ -5,16 +5,10 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
@@ -22,13 +16,6 @@ use PHPStan\Type\UnionType;
 
 class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
-
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
-	{
-		$this->phpVersion = $phpVersion;
-	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{

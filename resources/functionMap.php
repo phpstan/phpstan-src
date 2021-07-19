@@ -6436,7 +6436,7 @@ return [
 'Memcached::decrementByKey' => ['int|false', 'server_key'=>'string', 'key'=>'string', 'offset='=>'int', 'initial_value='=>'int', 'expiry='=>'int'],
 'Memcached::delete' => ['bool', 'key'=>'string', 'time='=>'int'],
 'Memcached::deleteByKey' => ['bool', 'server_key'=>'string', 'key'=>'string', 'time='=>'int'],
-'Memcached::deleteMulti' => ['bool', 'keys'=>'array', 'time='=>'int'],
+'Memcached::deleteMulti' => ['array', 'keys'=>'array', 'time='=>'int'],
 'Memcached::deleteMultiByKey' => ['bool', 'server_key'=>'string', 'keys'=>'array', 'time='=>'int'],
 'Memcached::fetch' => ['array'],
 'Memcached::fetchAll' => ['array'],

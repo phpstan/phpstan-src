@@ -34,36 +34,21 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			$keyType = $argType->getIterableKeyType();
 			$itemType = $argType->getIterableValueType();
 
-			// make sure items, which get turned into keys contain only valid types
-			$itemType = $this->sanitizeKeyTypes($itemType);
+			$itemType = ArrayType::castToArrayKeyType($itemType);
 
-			if ($itemType !== null) {
-				$flippedArrayType = new ArrayType(
-					$itemType,
-					$keyType
-				);
+			$flippedArrayType = new ArrayType(
+				$itemType,
+				$keyType
+			);
 
-				if ($argType->isIterableAtLeastOnce()->yes()) {
-					$flippedArrayType = TypeCombinator::intersect($flippedArrayType, new NonEmptyArrayType());
-				}
-
-				return $flippedArrayType;
+			if ($argType->isIterableAtLeastOnce()->yes()) {
+				$flippedArrayType = TypeCombinator::intersect($flippedArrayType, new NonEmptyArrayType());
 			}
+
+			return $flippedArrayType;
 		}
 
 		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-	}
-
-	private function sanitizeKeyTypes(Type $type): ?Type
-	{
-		if (
-			!$type instanceof IntegerType
-			&& !$type instanceof StringType
-		) {
-			return null;
-		}
-
-		return $type;
 	}
 
 }

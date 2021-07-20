@@ -37,7 +37,7 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			$itemType = $argType->getIterableValueType();
 
 			// make sure items, which get turned into keys contain only valid types
-			$itemType = $this->sanitizeConstantArrayKeyTypes($itemType);
+			$itemType = $this->sanitizeKeyTypes($itemType);
 
 			if ($itemType !== null) {
 				$flippedArrayType = new ArrayType(
@@ -56,7 +56,7 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 	}
 
-	private function sanitizeConstantArrayKeyTypes(Type $type): Type
+	private function sanitizeKeyTypes(Type $type): ?Type
 	{
 		if (
 			!$type instanceof IntegerType

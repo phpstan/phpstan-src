@@ -37,8 +37,9 @@ class Foo
 	/**
 	 * @param non-empty-array $array
 	 * @param non-empty-list $list
+	 * @param non-empty-array<string> $stringArray
 	 */
-	public function arrayFunctions($array, $list): void
+	public function arrayFunctions($array, $list, $stringArray): void
 	{
 		assertType('array&nonEmpty', array_combine($array, $array));
 		assertType('array&nonEmpty', array_combine($list, $list));
@@ -47,7 +48,8 @@ class Foo
 		assertType('array&nonEmpty', array_merge([], $array));
 		assertType('array&nonEmpty', array_merge($array, []));
 		assertType('array&nonEmpty', array_merge($array, $array));
-		
-		assertType('array<(int|string)>&nonEmpty', array_flip($array));
+
+		assertType('array<int|string, (int|string)>&nonEmpty', array_flip($array));
+		assertType('array<string, (int|string)>&nonEmpty', array_flip($stringArray));
 	}
 }

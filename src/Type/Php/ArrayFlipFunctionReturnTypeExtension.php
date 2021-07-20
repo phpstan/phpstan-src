@@ -59,21 +59,15 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 	 *
 	 * @return array<int, ConstantIntegerType|ConstantStringType>|null
 	 */
-	private function sanitizeConstantArrayKeyTypes(array $types): ?array
+	private function sanitizeConstantArrayKeyTypes(Type $type): ?array
 	{
-		$sanitizedTypes = [];
-
-		foreach ($types as $type) {
-			if (
-				!$type instanceof ConstantIntegerType
-				&& !$type instanceof ConstantStringType
-			) {
-				return null;
-			}
-
-			$sanitizedTypes[] = $type;
+		if (
+			!$type instanceof ConstantIntegerType
+			&& !$type instanceof ConstantStringType
+		) {
+			return null;
 		}
 
-		return $sanitizedTypes;
+		return $type;
 	}
 }

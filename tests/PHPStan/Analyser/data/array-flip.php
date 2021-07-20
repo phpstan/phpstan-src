@@ -23,7 +23,7 @@ function foo3($list)
 }
 
 /**
- * @param array<array-key, 1|2|3> $list
+ * @param array<int, 1|2|3> $list
  */
 function foo4($array)
 {

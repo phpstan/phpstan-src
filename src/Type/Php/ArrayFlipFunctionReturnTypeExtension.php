@@ -56,12 +56,7 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 	}
 
-	/**
-	 * @param array<int, Type> $types
-	 *
-	 * @return array<int, ConstantIntegerType|ConstantStringType>|null
-	 */
-	private function sanitizeConstantArrayKeyTypes(Type $type): ?array
+	private function sanitizeConstantArrayKeyTypes(Type $type): Type
 	{
 		if (
 			!$type instanceof IntegerType

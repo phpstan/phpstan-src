@@ -351,4 +351,15 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4854.php'], []);
 	}
 
+	public function testMemcachePoolGet(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/memcache-pool-get.php'], []);
+	}
+
 }

@@ -97,7 +97,7 @@ class SignatureMapParser
 		}
 		if (strpos($reference, '&rw') === 0) {
 			$passedByReference = PassedByReference::createReadsArgument();
-		} elseif (strpos($reference, '&w') === 0) {
+		} elseif (strpos($reference, '&w') === 0 || strpos($reference, '&') === 0) {
 			$passedByReference = PassedByReference::createCreatesNewVariable();
 		} else {
 			$passedByReference = PassedByReference::createNo();

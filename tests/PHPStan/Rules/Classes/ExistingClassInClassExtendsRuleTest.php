@@ -16,7 +16,8 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassInClassExtendsRule(
 			new ClassCaseSensitivityCheck($broker),
-			$broker
+			$broker,
+			true
 		);
 	}
 
@@ -26,6 +27,10 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Class ExtendsImplements\Foo referenced with incorrect case: ExtendsImplements\FOO.',
 				15,
+			],
+			[
+				'Class ExtendsImplements\ExtendsFinalWithAnnotation extends @final class ExtendsImplements\FinalWithAnnotation.',
+				43,
 			],
 		]);
 	}
@@ -57,6 +62,16 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Class ExtendsError\Sit extends final class ExtendsError\FinalFoo.',
 				39,
+			],
+		]);
+	}
+
+	public function testFinalByTag(): void
+	{
+		$this->analyse([__DIR__ . '/data/extends-final-by-tag.php'], [
+			[
+				'Class ExtendsFinalByTag\Bar2 extends @final class ExtendsFinalByTag\Bar.',
+				21,
 			],
 		]);
 	}

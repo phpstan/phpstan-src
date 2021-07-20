@@ -46,6 +46,7 @@ parameters:
 		neverInGenericReturnType: false
 		validateOverridingMethodsInStubs: false
 		crossCheckInterfaces: false
+		finalByPhpDocTag: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -219,7 +220,8 @@ parametersSchema:
 		deepInspectTypes: bool(),
 		neverInGenericReturnType: bool(),
 		validateOverridingMethodsInStubs: bool(),
-		crossCheckInterfaces: bool()
+		crossCheckInterfaces: bool(),
+		finalByPhpDocTag: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

@@ -19,13 +19,17 @@ class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
 
 	private ReflectionProvider $reflectionProvider;
 
+	private bool $checkFinalByPhpDocTag;
+
 	public function __construct(
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		ReflectionProvider $reflectionProvider
+		ReflectionProvider $reflectionProvider,
+		bool $checkFinalByPhpDocTag = false
 	)
 	{
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->reflectionProvider = $reflectionProvider;
+		$this->checkFinalByPhpDocTag = $checkFinalByPhpDocTag;
 	}
 
 	public function getNodeType(): string
@@ -72,6 +76,12 @@ class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$extendedClassName
 				))->nonIgnorable()->build();
+			} elseif ($this->checkFinalByPhpDocTag && $reflection->isFinal()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s extends @final class %s.',
+					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+					$extendedClassName
+				))->build();
 			}
 		}
 

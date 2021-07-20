@@ -23,5 +23,6 @@ parameters:
 		neverInGenericReturnType: true
 		validateOverridingMethodsInStubs: true
 		crossCheckInterfaces: true
+		finalByPhpDocTag: true
 	stubFiles:
 		- ../stubs/arrayFunctions.stub

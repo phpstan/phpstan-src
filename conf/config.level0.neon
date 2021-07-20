@@ -42,7 +42,6 @@ rules:
 	- PHPStan\Rules\Classes\DuplicateDeclarationRule
 	- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
 	- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
-	- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
 	- PHPStan\Rules\Classes\InstantiationRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
@@ -97,6 +96,13 @@ services:
 
 	-
 		class: PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
+
+	-
+		class: PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+		arguments:
+			checkFinalByPhpDocTag: %featureToggles.finalByPhpDocTag%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInInstanceOfRule

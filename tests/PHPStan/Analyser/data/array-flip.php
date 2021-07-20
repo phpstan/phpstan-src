@@ -24,7 +24,7 @@ function foo3($list)
 }
 
 /**
- * @param array<int, 1|2|3> $list
+ * @param array<int, 1|2|3> $array
  */
 function foo4($array)
 {
@@ -34,7 +34,7 @@ function foo4($array)
 
 
 /**
- * @param array<1|2|3, string> $list
+ * @param array<1|2|3, string> $array
  */
 function foo5($array)
 {

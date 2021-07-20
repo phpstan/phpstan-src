@@ -8,7 +8,8 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\NullType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -33,19 +34,46 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			$keyType = $argType->getIterableKeyType();
 			$itemType = $argType->getIterableValueType();
 
-			$flippedArrayType = new ArrayType(
-				$itemType,
-				$keyType
-			);
+			// make sure items, which get turned into keys contain only valid types
+			$itemType = $this->sanitizeConstantArrayKeyTypes($itemType);
 
-			if ($argType->isIterableAtLeastOnce()->yes()) {
+			if ($itemType !== null) {
+				$flippedArrayType = new ArrayType(
+					$itemType,
+					$keyType
+				);
+
+				if ($argType->isIterableAtLeastOnce()->yes()) {
 					$flippedArrayType = TypeCombinator::intersect($flippedArrayType, new NonEmptyArrayType());
-			}
+				}
 
-			return $flippedArrayType;
+				return $flippedArrayType;
+			}
 		}
 
-		return new NullType();
+		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 	}
 
+	/**
+	 * @param array<int, Type> $types
+	 *
+	 * @return array<int, ConstantIntegerType|ConstantStringType>|null
+	 */
+	private function sanitizeConstantArrayKeyTypes(array $types): ?array
+	{
+		$sanitizedTypes = [];
+
+		foreach ($types as $type) {
+			if (
+				!$type instanceof ConstantIntegerType
+				&& !$type instanceof ConstantStringType
+			) {
+				return null;
+			}
+
+			$sanitizedTypes[] = $type;
+		}
+
+		return $sanitizedTypes;
+	}
 }

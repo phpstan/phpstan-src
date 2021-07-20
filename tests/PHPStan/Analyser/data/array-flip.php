@@ -19,7 +19,12 @@ function foo($integerList)
 function foo3($list)
 {
 	$flip = array_flip($list);
-	assertType('array|null', $flip);
+
+	if (PHP_VERSION_ID < 80000) {
+		assertType('array|null', $flip);
+	} else {
+		assertType('array', $flip);
+	}
 }
 
 /**

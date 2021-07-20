@@ -10,6 +10,8 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -62,8 +64,8 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 	private function sanitizeConstantArrayKeyTypes(Type $type): ?array
 	{
 		if (
-			!$type instanceof ConstantIntegerType
-			&& !$type instanceof ConstantStringType
+			!$type instanceof IntegerType
+			&& !$type instanceof StringType
 		) {
 			return null;
 		}

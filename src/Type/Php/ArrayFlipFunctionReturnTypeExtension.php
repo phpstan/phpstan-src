@@ -8,8 +8,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -67,4 +65,5 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 		return $type;
 	}
+
 }

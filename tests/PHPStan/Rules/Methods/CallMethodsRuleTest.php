@@ -493,6 +493,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
 				1658,
 			],
+			[
+				'Parameter #1 $date of method Test\HelloWorld3::sayHello() expects array<DateTime|DateTimeImmutable>|int, DateTimeInterface given.',
+				1732,
+			]
 		]);
 	}
 
@@ -767,6 +771,10 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
 				1658,
 			],
+			[
+				'Parameter #1 $date of method Test\HelloWorld3::sayHello() expects array<DateTime|DateTimeImmutable>|int, DateTimeInterface given.',
+				1732,
+			]
 		]);
 	}
 

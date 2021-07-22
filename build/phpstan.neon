@@ -21,6 +21,7 @@ parameters:
 	excludes_analyse:
 		- ../src/Reflection/SignatureMap/functionMap.php
 		- ../src/Reflection/SignatureMap/functionMetadata.php
+		- ../tests/*/data/*
 		- ../tests/tmp/*
 		- ../tests/PHPStan/Analyser/traits/*
 		- ../tests/notAutoloaded/*

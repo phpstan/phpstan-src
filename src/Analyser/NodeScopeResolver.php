@@ -1442,7 +1442,12 @@ class NodeScopeResolver
 
 			$throwsTag = $resolvedPhpDoc->getThrowsTag();
 			if ($throwsTag !== null) {
-				return [ThrowPoint::createExplicit($scope, $throwsTag->getType(), $statement, false)];
+				$throwsType = $throwsTag->getType();
+				if ($throwsType instanceof VoidType) {
+					return [];
+				}
+
+				return [ThrowPoint::createExplicit($scope, $throwsType, $statement, false)];
 			}
 		}
 

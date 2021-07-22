@@ -35,3 +35,21 @@ class HelloWorld2
 		$this->sayHello($d);
 	}
 }
+
+class HelloWorld3
+{
+	/**
+	 * @param array<\DateTime|\DateTimeImmutable>|int $date
+	 */
+	public function sayHello($date): void
+	{
+	}
+
+	/**
+	 * @param \DateTimeInterface $d
+	 */
+	public function foo($d): void
+	{
+		$this->sayHello($d);
+	}
+}

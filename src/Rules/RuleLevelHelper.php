@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StrictMixedType;
@@ -78,8 +79,11 @@ class RuleLevelHelper
 
 		if ($acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
 			if (
-				$acceptedType->describe(VerbosityLevel::precise()) === 'DateTimeInterface'
-				&& str_contains($acceptingType->describe(VerbosityLevel::precise()), 'DateTime|DateTimeImmutable')
+				$acceptedType->equals(new ObjectType(\DateTimeInterface::class))
+				&& $acceptingType->accepts(
+					new UnionType([new ObjectType(\DateTime::class), new ObjectType(\DateTimeImmutable::class)]),
+					$strictTypes
+				)->yes()
 			) {
 				return true;
 			}

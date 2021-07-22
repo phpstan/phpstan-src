@@ -88,9 +88,9 @@ class ArrayObject implements IteratorAggregate, ArrayAccess
 
 /**
  * @template TValue
- * @implements Iterator<int, TValue>
- * @implements IteratorAggregate<int, TValue>
- * @implements ArrayAccess<int, TValue>
+ * @implements Iterator<int, TValue|null>
+ * @implements IteratorAggregate<int, TValue|null>
+ * @implements ArrayAccess<int, TValue|null>
  */
 class SplFixedArray implements Iterator, IteratorAggregate, ArrayAccess, Countable
 {
@@ -102,7 +102,7 @@ class SplFixedArray implements Iterator, IteratorAggregate, ArrayAccess, Countab
 	public static function fromArray(array $array, bool $save_indexes = true): SplFixedArray { }
 
 	/**
-	 * @return array<int, TValue>
+	 * @return array<int, TValue|null>
 	 */
 	public function toArray(): array { }
 }

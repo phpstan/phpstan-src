@@ -6,7 +6,7 @@ class HelloWorld
 	 * @var int[]|\SplFixedArray
 	 * @phpstan-var \SplFixedArray<int>
 	 */
-	public \SplFixedArray $array;
+	public $array;
 
 	public function dump() : void{
 		foreach($this->array as $id => $v){

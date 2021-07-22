@@ -20,6 +20,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 
 class RuleLevelHelper
 {
@@ -76,6 +77,14 @@ class RuleLevelHelper
 		}
 
 		if ($acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
+			if (
+				$acceptedType->describe(VerbosityLevel::precise()) === 'DateTimeInterface'
+				&& str_contains($acceptingType->describe(VerbosityLevel::precise()), 'DateTime|DateTimeImmutable')
+			) {
+				return true;
+			}
+
+
 			foreach ($acceptingType->getTypes() as $innerType) {
 				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
 					return true;

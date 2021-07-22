@@ -70,6 +70,13 @@ class UnionType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		if (
+			$type->describe(VerbosityLevel::precise()) === 'DateTimeInterface'
+			&& str_contains($this->describe(VerbosityLevel::precise()), 'DateTime|DateTimeImmutable')
+		) {
+			return TrinaryLogic::createYes();
+		}
+
 		if ($type instanceof CompoundType && !$type instanceof CallableType) {
 			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
 		}

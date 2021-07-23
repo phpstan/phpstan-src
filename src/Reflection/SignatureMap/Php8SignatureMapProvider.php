@@ -157,7 +157,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		}
 
 		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName, 1)) {
-			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $variant);
+			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, 1);
 		}
 
 		$stubFile = self::DIRECTORY . '/' . Php8StubsMap::FUNCTIONS[$lowerName];

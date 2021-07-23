@@ -131,6 +131,21 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testCallToDefineCaseInsenstive(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/call-to-define.php'], [
+			[
+				// @todo wrong error, but not sure where to set it? deprecated parameter.
+				// define(): Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported
+				'Function define invoked with 3 parameters, 2 required.',
+				3,
+			],
+		]);
+	}
+
 	public function testCallToArrayMapVariadic(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-to-array-map-unique.php'], []);

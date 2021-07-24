@@ -55,6 +55,7 @@ return [
 		'strip_tags' => ['string', 'str'=>'string', 'allowable_tags='=>'string|array<int, string>'],
 		'WeakReference::create' => ['WeakReference', 'referent'=>'object'],
 		'WeakReference::get' => ['?object'],
+		'proc_open' => ['resource|false', 'command'=>'string|list<string>', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
 	],
 	'old' => [
 		'implode\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],

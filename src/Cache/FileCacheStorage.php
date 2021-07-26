@@ -55,7 +55,7 @@ class FileCacheStorage implements CacheStorage
 			}
 
 			return $cacheItem->getData();
-		});
+		})();
 	}
 
 	/**

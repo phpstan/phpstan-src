@@ -23,8 +23,13 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	$stubs[] = $file->getPathName();
 }
 
+exec('git rev-parse --short HEAD', $gitCommitOutputLines, $gitExitCode);
+if ($gitExitCode !== 0) {
+	die('Could not get Git commit');
+}
+
 return [
-	'prefix' => null,
+	'prefix' => sprintf('_PHPStan_%s', $gitCommitOutputLines[0]),
 	'finders' => [],
 	'files-whitelist' => $stubs,
 	'patchers' => [

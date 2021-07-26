@@ -152,7 +152,6 @@ return [
 		'bcpowmod' => ['?string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],
 		'com_load_typelib' => ['bool', 'typelib_name'=>'string', 'case_insensitive='=>'bool'],
 		'count_chars' => ['array<int,int>|false|string', 'input'=>'string', 'mode='=>'int'],
-		'create_function' => ['string', 'args'=>'string', 'code'=>'string'],
 		'date_add' => ['DateTime|false', 'object'=>'DateTime', 'interval'=>'DateInterval'],
 		'date_date_set' => ['DateTime|false', 'object'=>'DateTime', 'year'=>'int', 'month'=>'int', 'day'=>'int'],
 		'date_diff' => ['DateInterval|false', 'obj1'=>'DateTimeInterface', 'obj2'=>'DateTimeInterface', 'absolute='=>'bool'],

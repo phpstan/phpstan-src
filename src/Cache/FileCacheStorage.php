@@ -40,8 +40,9 @@ class FileCacheStorage implements CacheStorage
 	 */
 	public function load(string $key, string $variableKey)
 	{
-		return (function () use ($key, $variableKey) {
-			[,, $filePath] = $this->getFilePaths($key);
+		[,, $filePath] = $this->getFilePaths($key);
+		
+		return (static function () use ($key, $variableKey, $filePath) {
 			if (!is_file($filePath)) {
 				return null;
 			}

@@ -97,4 +97,28 @@ class CallToNonExistentFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testCreateFunctionPhp8(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/create_function.php'], [
+			[
+				'Function create_function not found.',
+				4,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
+	public function testCreateFunctionPhp7(): void
+	{
+		if (PHP_VERSION_ID >= 80000) {
+			$this->markTestSkipped('Test requires PHP 7.x.');
+		}
+
+		$this->analyse([__DIR__ . '/data/create_function.php'], []);
+	}
+
 }

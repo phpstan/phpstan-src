@@ -194,11 +194,24 @@ class ExportedNodeResolver
 				return null;
 			}
 
+			$classNode = $parentNode->getAttribute('parent');
+			if (!$classNode instanceof Class_ || !isset($classNode->namespacedName)) {
+				return null;
+			}
+
+			$docComment = $parentNode->getDocComment();
+
 			return new ExportedClassConstantNode(
 				$node->name->toString(),
 				$this->printer->prettyPrintExpr($node->value),
 				$parentNode->isPublic(),
-				$parentNode->isPrivate()
+				$parentNode->isPrivate(),
+				$this->exportPhpDocNode(
+					$fileName,
+					$classNode->namespacedName->toString(),
+					null,
+					$docComment !== null ? $docComment->getText() : null
+				),
 			);
 		}
 

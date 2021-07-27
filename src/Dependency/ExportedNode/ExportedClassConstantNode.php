@@ -16,17 +16,32 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 
 	private bool $private;
 
-	public function __construct(string $name, string $value, bool $public, bool $private)
+	private ?ExportedPhpDocNode $phpDoc;
+
+	public function __construct(string $name, string $value, bool $public, bool $private, ?ExportedPhpDocNode $phpDoc)
 	{
 		$this->name = $name;
 		$this->value = $value;
 		$this->public = $public;
 		$this->private = $private;
+		$this->phpDoc = $phpDoc;
 	}
 
 	public function equals(ExportedNode $node): bool
 	{
 		if (!$node instanceof self) {
+			return false;
+		}
+
+		if ($this->phpDoc === null) {
+			if ($node->phpDoc !== null) {
+				return false;
+			}
+		} elseif ($node->phpDoc !== null) {
+			if (!$this->phpDoc->equals($node->phpDoc)) {
+				return false;
+			}
+		} else {
 			return false;
 		}
 
@@ -46,7 +61,8 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 			$properties['name'],
 			$properties['value'],
 			$properties['public'],
-			$properties['private']
+			$properties['private'],
+			$properties['phpDoc']
 		);
 	}
 
@@ -60,7 +76,8 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 			$data['name'],
 			$data['value'],
 			$data['public'],
-			$data['private']
+			$data['private'],
+			$data['phpDoc'],
 		);
 	}
 
@@ -76,6 +93,7 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 				'value' => $this->value,
 				'public' => $this->public,
 				'private' => $this->private,
+				'phpDoc' => $this->phpDoc,
 			],
 		];
 	}

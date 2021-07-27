@@ -608,7 +608,7 @@ php;
 		if ($projectConfig !== null) {
 			$services = array_merge(
 				$projectConfig['services'] ?? [],
-				$projectConfig['rules'] ?? [],
+				$projectConfig['rules'] ?? []
 			);
 			foreach ($services as $service) {
 				$classes = $this->getClassesFromConfigDefinition($service);

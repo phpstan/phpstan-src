@@ -213,7 +213,7 @@ class ExportedNodeResolver
 					$classNode->namespacedName->toString(),
 					null,
 					$docComment !== null ? $docComment->getText() : null
-				),
+				)
 			);
 		}
 

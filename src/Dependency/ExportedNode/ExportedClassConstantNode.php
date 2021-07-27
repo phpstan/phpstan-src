@@ -83,7 +83,7 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 			$data['public'],
 			$data['private'],
 			$data['final'],
-			$data['phpDoc'],
+			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null
 		);
 	}
 

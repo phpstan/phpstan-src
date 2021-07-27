@@ -606,7 +606,10 @@ php;
 		$this->alreadyProcessed = [];
 		$projectExtensionFiles = [];
 		if ($projectConfig !== null) {
-			$services = $projectConfig['services'] ?? [];
+			$services = array_merge(
+				$projectConfig['services'] ?? [],
+				$projectConfig['rules'] ?? []
+			);
 			foreach ($services as $service) {
 				$classes = $this->getClassesFromConfigDefinition($service);
 				if (is_array($service)) {

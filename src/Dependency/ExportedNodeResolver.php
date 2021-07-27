@@ -180,7 +180,8 @@ class ExportedNodeResolver
 				$this->printType($parentNode->type),
 				$parentNode->isPublic(),
 				$parentNode->isPrivate(),
-				$parentNode->isStatic()
+				$parentNode->isStatic(),
+				$parentNode->isReadonly()
 			);
 		}
 

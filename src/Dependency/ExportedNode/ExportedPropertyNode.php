@@ -20,13 +20,16 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 
 	private bool $static;
 
+	private bool $readonly;
+
 	public function __construct(
 		string $name,
 		?ExportedPhpDocNode $phpDoc,
 		?string $type,
 		bool $public,
 		bool $private,
-		bool $static
+		bool $static,
+		bool $readonly
 	)
 	{
 		$this->name = $name;
@@ -35,6 +38,7 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 		$this->public = $public;
 		$this->private = $private;
 		$this->static = $static;
+		$this->readonly = $readonly;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -59,7 +63,8 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 			&& $this->type === $node->type
 			&& $this->public === $node->public
 			&& $this->private === $node->private
-			&& $this->static === $node->static;
+			&& $this->static === $node->static
+			&& $this->readonly === $node->readonly;
 	}
 
 	/**
@@ -74,7 +79,8 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 			$properties['type'],
 			$properties['public'],
 			$properties['private'],
-			$properties['static']
+			$properties['static'],
+			$properties['readonly']
 		);
 	}
 
@@ -90,7 +96,8 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 			$data['type'],
 			$data['public'],
 			$data['private'],
-			$data['static']
+			$data['static'],
+			$data['readonly']
 		);
 	}
 
@@ -108,6 +115,7 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 				'public' => $this->public,
 				'private' => $this->private,
 				'static' => $this->static,
+				'readonly' => $this->readonly,
 			],
 		];
 	}

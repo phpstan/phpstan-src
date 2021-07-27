@@ -207,6 +207,7 @@ class ExportedNodeResolver
 				$this->printer->prettyPrintExpr($node->value),
 				$parentNode->isPublic(),
 				$parentNode->isPrivate(),
+				$parentNode->isFinal(),
 				$this->exportPhpDocNode(
 					$fileName,
 					$classNode->namespacedName->toString(),

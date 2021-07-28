@@ -156,3 +156,36 @@ function (int $a, int $b, int $c): void {
 	assertType('int', $b * $c);
 	assertType('int', $a * $b * $c);
 };
+
+class X {
+	/**
+	 * @var int<0, 100>
+	 */
+	public $percentage;
+	/**
+	 * @var int<min, 100>
+	 */
+	public $min;
+	/**
+	 * @var int<0, max>
+	 */
+	public $max;
+
+	/**
+	 * @var int<0, something>
+	 */
+	public $error1;
+	/**
+	 * @var int<something, 100>
+	 */
+	public $error2;
+
+	public function supportsPhpdocIntegerRange() {
+		assertType('int<0, 100>', $this->percentage);
+		assertType('int<min, 100>', $this->min);
+		assertType('int<0, max>', $this->max);
+
+		assertType('*ERROR*', $this->error1);
+		assertType('*ERROR*', $this->error2);
+	}
+}

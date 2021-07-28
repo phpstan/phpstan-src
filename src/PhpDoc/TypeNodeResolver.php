@@ -474,6 +474,27 @@ class TypeNodeResolver
 			}
 
 			return new ErrorType();
+		} elseif ($mainTypeName === 'int') {
+			if (count($genericTypes) === 2) { // int<min, max>, int<1, 3>
+
+				if ($genericTypes[0] instanceof ConstantIntegerType) {
+					$min = $genericTypes[0]->getValue();
+				} elseif ($typeNode->genericTypes[0] instanceof IdentifierTypeNode && $typeNode->genericTypes[0]->name === 'min') {
+					$min = null;
+				} else {
+					return new ErrorType();
+				}
+
+				if ($genericTypes[1] instanceof ConstantIntegerType) {
+					$max = $genericTypes[1]->getValue();
+				} elseif ($typeNode->genericTypes[1] instanceof IdentifierTypeNode && $typeNode->genericTypes[1]->name === 'max') {
+					$max = null;
+				} else {
+					return new ErrorType();
+				}
+
+				return IntegerRangeType::fromInterval($min, $max);
+			}
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);

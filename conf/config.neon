@@ -114,6 +114,7 @@ parameters:
 	memoryLimitFile: %tmpDir%/.memory_limit
 	tempResultCachePath: %tmpDir%/resultCaches
 	resultCachePath: %tmpDir%/resultCache.php
+	resultCacheChecksProjectExtensionFilesDependencies: false
 	staticReflectionClassNamePatterns:
 		- '#^PhpParser\\#'
 		- '#^PHPStan\\#'
@@ -305,6 +306,7 @@ parametersSchema:
 	memoryLimitFile: string()
 	tempResultCachePath: string()
 	resultCachePath: string()
+	resultCacheChecksProjectExtensionFilesDependencies: bool()
 	staticReflectionClassNamePatterns: listOf(string())
 	dynamicConstantNames: listOf(string())
 	customRulesetUsed: bool()
@@ -477,6 +479,7 @@ services:
 			bootstrapFiles: %bootstrapFiles%
 			scanFiles: %scanFiles%
 			scanDirectories: %scanDirectories%
+			checkDependenciesOfProjectExtensionFiles: %resultCacheChecksProjectExtensionFilesDependencies%
 
 	-
 		class: PHPStan\Analyser\ResultCache\ResultCacheClearer

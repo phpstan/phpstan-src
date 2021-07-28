@@ -62,6 +62,8 @@ class ResultCacheManager
 	/** @var array<string, true> */
 	private array $alreadyProcessed = [];
 
+	private bool $checkDependenciesOfProjectExtensionFiles;
+
 	/**
 	 * @param ExportedNodeFetcher $exportedNodeFetcher
 	 * @param FileFinder $scanFileFinder
@@ -92,7 +94,8 @@ class ResultCacheManager
 		array $bootstrapFiles,
 		array $scanFiles,
 		array $scanDirectories,
-		array $fileReplacements
+		array $fileReplacements,
+		bool $checkDependenciesOfProjectExtensionFiles
 	)
 	{
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
@@ -109,6 +112,7 @@ class ResultCacheManager
 		$this->scanFiles = $scanFiles;
 		$this->scanDirectories = $scanDirectories;
 		$this->fileReplacements = $fileReplacements;
+		$this->checkDependenciesOfProjectExtensionFiles = $checkDependenciesOfProjectExtensionFiles;
 	}
 
 	/**
@@ -688,9 +692,12 @@ php;
 		$this->alreadyProcessed[$fileName] = true;
 
 		$files = [$fileName];
-		foreach ($dependencies[$fileName] as $fileDep) {
-			foreach ($this->getAllDependencies($fileDep, $dependencies) as $fileDep2) {
-				$files[] = $fileDep2;
+
+		if ($this->checkDependenciesOfProjectExtensionFiles) {
+			foreach ($dependencies[$fileName] as $fileDep) {
+				foreach ($this->getAllDependencies($fileDep, $dependencies) as $fileDep2) {
+					$files[] = $fileDep2;
+				}
 			}
 		}
 

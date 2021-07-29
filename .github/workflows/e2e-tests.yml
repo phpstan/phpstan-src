@@ -16,6 +16,7 @@ jobs:
     name: "Result cache E2E tests"
 
     runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -46,6 +47,7 @@ jobs:
   e2e-tests:
     name: "E2E tests"
     runs-on: "ubuntu-latest"
+    timeout-minutes: 30
 
     strategy:
       matrix:

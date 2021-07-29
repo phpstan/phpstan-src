@@ -224,17 +224,36 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$analysisResult = $application->analyse(
-			$files,
-			$onlyFiles,
-			$inceptionResult->getStdOutput(),
-			$inceptionResult->getErrorOutput(),
-			$inceptionResult->isDefaultLevelUsed(),
-			$debug,
-			$inceptionResult->getProjectConfigFile(),
-			$inceptionResult->getProjectConfigArray(),
-			$input
-		);
+		try {
+			$analysisResult = $application->analyse(
+				$files,
+				$onlyFiles,
+				$inceptionResult->getStdOutput(),
+				$inceptionResult->getErrorOutput(),
+				$inceptionResult->isDefaultLevelUsed(),
+				$debug,
+				$inceptionResult->getProjectConfigFile(),
+				$inceptionResult->getProjectConfigArray(),
+				$input
+			);
+		} catch (\Throwable $t) {
+			if ($debug) {
+				$inceptionResult->getStdOutput()->writeRaw(sprintf(
+					'Uncaught %s: %s in %s:%d',
+					get_class($t),
+					$t->getMessage(),
+					$t->getFile(),
+					$t->getLine()
+				));
+				$inceptionResult->getStdOutput()->writeLineFormatted('');
+				$inceptionResult->getStdOutput()->writeRaw($t->getTraceAsString());
+				$inceptionResult->getStdOutput()->writeLineFormatted('');
+
+				return $inceptionResult->handleReturn(1);
+			}
+
+			throw $t;
+		}
 
 		if ($generateBaselineFile !== null) {
 			if (!$analysisResult->hasErrors()) {

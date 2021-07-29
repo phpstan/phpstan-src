@@ -15,6 +15,7 @@ jobs:
   tests:
     name: "Tests"
     runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -55,6 +56,7 @@ jobs:
   tests-old-phpunit:
     name: "Tests with old PHPUnit"
     runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -97,6 +99,7 @@ jobs:
     name: "Tests with code coverage"
 
     runs-on: "ubuntu-latest"
+    timeout-minutes: 30
 
     steps:
       - name: "Checkout"

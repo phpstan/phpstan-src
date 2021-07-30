@@ -180,6 +180,11 @@ class X {
 	 */
 	public $error2;
 
+	/**
+	 * @var int<min, max>
+	 */
+	public $int;
+
 	public function supportsPhpdocIntegerRange() {
 		assertType('int<0, 100>', $this->percentage);
 		assertType('int<min, 100>', $this->min);
@@ -187,5 +192,6 @@ class X {
 
 		assertType('*ERROR*', $this->error1);
 		assertType('*ERROR*', $this->error2);
+		assertType('int', $this->int);
 	}
 }

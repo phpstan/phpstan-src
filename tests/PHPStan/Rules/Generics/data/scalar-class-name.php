@@ -9,7 +9,7 @@ interface Scalar
 	/**
 	 * @return T
 	 */
-	public function value(): mixed;
+	public function value();
 }
 
 namespace MaxGoryunov\SavingIterator\Fakes;
@@ -24,24 +24,31 @@ use MaxGoryunov\SavingIterator\Src\Scalar;
 class The implements Scalar
 {
 	/**
+	 * @var T
+	 */
+	private $subject;
+
+	/**
+	 * @var Closure(T): mixed
+	 */
+	private $context;
+
+	/**
 	 * @param T                 $subject
 	 * @param Closure(T): mixed $context
 	 */
 	public function __construct(
-		/**
-		 * @var T
-		 */
-		private mixed $subject,
-		/**
-		 * @var Closure(T): mixed
-		 */
-		private Closure $context
-	) {
+		$subject,
+		$context
+	)
+	{
+		$this->subject = $subject;
+		$this->context = $context;
 	}
 	/**
 	 * @return T
 	 */
-	public function value(): mixed
+	public function value()
 	{
 		($this->context)($this->subject);
 		return $this->subject;

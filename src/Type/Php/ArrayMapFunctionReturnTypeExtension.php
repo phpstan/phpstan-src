@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\MixedType;
@@ -37,6 +38,10 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 			)->getReturnType();
 		}
 
+		$mappedArrayType = new ArrayType(
+			new MixedType(),
+			$valueType
+		);
 		$arrayType = $scope->getType($functionCall->args[1]->value);
 		$constantArrays = TypeUtils::getConstantArrays($arrayType);
 		if (count($constantArrays) > 0) {
@@ -52,18 +57,19 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 				$arrayTypes[] = $returnedArrayBuilder->getArray();
 			}
 
-			return TypeCombinator::union(...$arrayTypes);
+			$mappedArrayType = TypeCombinator::union(...$arrayTypes);
 		} elseif ($arrayType->isArray()->yes()) {
-			return TypeCombinator::intersect(new ArrayType(
+			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 				$arrayType->getIterableKeyType(),
 				$valueType
 			), ...TypeUtils::getAccessoryTypes($arrayType));
 		}
 
-		return new ArrayType(
-			new MixedType(),
-			$valueType
-		);
+		if ($arrayType->isIterableAtLeastOnce()->yes()) {
+			$mappedArrayType = TypeCombinator::intersect($mappedArrayType, new NonEmptyArrayType());
+		}
+
+		return $mappedArrayType;
 	}
 
 }

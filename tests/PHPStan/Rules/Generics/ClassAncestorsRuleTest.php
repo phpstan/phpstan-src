@@ -216,4 +216,9 @@ class ClassAncestorsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testScalarClassName(): void
+	{
+		$this->analyse([__DIR__ . '/data/scalar-class-name.php'], []);
+	}
+
 }

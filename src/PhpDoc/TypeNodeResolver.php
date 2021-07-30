@@ -156,6 +156,12 @@ class TypeNodeResolver
 				return new BenevolentUnionType([new IntegerType(), new StringType()]);
 
 			case 'scalar':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
 				return new UnionType([new IntegerType(), new FloatType(), new StringType(), new BooleanType()]);
 
 			case 'number':

@@ -305,6 +305,16 @@ class MoreNonEmptyStringFunctions
 	 */
 	public function doFoo(string $s, string $nonEmpty, int $i)
 	{
+		assertType('string', addslashes($s));
+		assertType('non-empty-string', addslashes($nonEmpty));
+		assertType('string', addcslashes($s));
+		assertType('non-empty-string', addcslashes($nonEmpty));
+		
+		assertType('string', escapeshellarg($s));
+		assertType('non-empty-string', escapeshellarg($nonEmpty));
+		assertType('string', escapeshellcmd($s));
+		assertType('non-empty-string', escapeshellcmd($nonEmpty));
+		
 		assertType('string', strtoupper($s));
 		assertType('non-empty-string', strtoupper($nonEmpty));
 		assertType('string', strtolower($s));

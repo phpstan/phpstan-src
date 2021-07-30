@@ -17,6 +17,10 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), [
+			'addslashes',
+			'addcslashes',
+			'escapeshellarg',
+			'escapeshellcmd',
 			'strtoupper',
 			'strtolower',
 			'mb_strtoupper',

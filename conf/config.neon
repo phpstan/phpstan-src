@@ -84,7 +84,7 @@ parameters:
 	scanDirectories: []
 	parallel:
 		jobSize: 20
-		processTimeout: 60.0
+		processTimeout: 600.0
 		maximumNumberOfProcesses: 32
 		minimumNumberOfJobsPerProcess: 2
 		buffer: 134217728 # 128 MB

@@ -15,6 +15,7 @@ jobs:
   lint:
     name: "Lint"
     runs-on: "ubuntu-latest"
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -53,6 +54,7 @@ jobs:
     name: "Coding Standard"
 
     runs-on: "ubuntu-latest"
+    timeout-minutes: 30
 
     strategy:
       matrix:
@@ -85,6 +87,7 @@ jobs:
     name: "Dependency Analysis"
 
     runs-on: "ubuntu-latest"
+    timeout-minutes: 30
 
     strategy:
       matrix:

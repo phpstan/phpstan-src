@@ -75,7 +75,8 @@ class RuleLevelHelper
 			$acceptedType = TypeCombinator::removeNull($acceptedType);
 		}
 
-		if ($acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
+		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
+		if (!$accepts->yes() && $acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
 			foreach ($acceptingType->getTypes() as $innerType) {
 				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
 					return true;
@@ -102,8 +103,6 @@ class RuleLevelHelper
 				$strictTypes
 			);
 		}
-
-		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
 
 		return $this->checkUnionTypes ? $accepts->yes() : !$accepts->no();
 	}

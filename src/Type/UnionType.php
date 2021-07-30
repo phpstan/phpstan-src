@@ -70,6 +70,16 @@ class UnionType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		if (
+			$type->equals(new ObjectType(\DateTimeInterface::class))
+			&& $this->accepts(
+				new UnionType([new ObjectType(\DateTime::class), new ObjectType(\DateTimeImmutable::class)]),
+				$strictTypes
+			)->yes()
+		) {
+			return TrinaryLogic::createYes();
+		}
+
 		if ($type instanceof CompoundType && !$type instanceof CallableType) {
 			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
 		}

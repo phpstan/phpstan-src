@@ -13,7 +13,6 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StrictMixedType;
@@ -21,7 +20,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\VerbosityLevel;
 
 class RuleLevelHelper
 {
@@ -77,18 +75,8 @@ class RuleLevelHelper
 			$acceptedType = TypeCombinator::removeNull($acceptedType);
 		}
 
-		if ($acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
-			if (
-				$acceptedType->equals(new ObjectType(\DateTimeInterface::class))
-				&& $acceptingType->accepts(
-					new UnionType([new ObjectType(\DateTime::class), new ObjectType(\DateTimeImmutable::class)]),
-					$strictTypes
-				)->yes()
-			) {
-				return true;
-			}
-
-
+		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
+		if (!$accepts->yes() && $acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
 			foreach ($acceptingType->getTypes() as $innerType) {
 				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
 					return true;
@@ -115,8 +103,6 @@ class RuleLevelHelper
 				$strictTypes
 			);
 		}
-
-		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
 
 		return $this->checkUnionTypes ? $accepts->yes() : !$accepts->no();
 	}

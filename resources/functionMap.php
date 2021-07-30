@@ -944,7 +944,7 @@ return [
 'chmod' => ['bool', 'filename'=>'string', 'mode'=>'int'],
 'chop' => ['string', 'str'=>'string', 'character_mask='=>'string'],
 'chown' => ['bool', 'filename'=>'string', 'user'=>'string|int'],
-'chr' => ['string', 'ascii'=>'int'],
+'chr' => ['non-empty-string', 'ascii'=>'int'],
 'chroot' => ['bool', 'directory'=>'string'],
 'chunk_split' => ['string', 'str'=>'string', 'chunklen='=>'int', 'ending='=>'string'],
 'class_alias' => ['bool', 'user_class_name'=>'string', 'alias_name'=>'string', 'autoload='=>'bool'],

@@ -310,6 +310,11 @@ class MoreNonEmptyStringFunctions
 		assertType('string', addcslashes($s));
 		assertType('non-empty-string', addcslashes($nonEmpty));
 		
+		assertType('string', escapeshellarg($s));
+		assertType('non-empty-string', escapeshellarg($nonEmpty));
+		assertType('string', escapeshellcmd($s));
+		assertType('non-empty-string', escapeshellcmd($nonEmpty));
+		
 		assertType('string', strtoupper($s));
 		assertType('non-empty-string', strtoupper($nonEmpty));
 		assertType('string', strtolower($s));

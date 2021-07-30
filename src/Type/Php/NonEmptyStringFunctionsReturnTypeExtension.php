@@ -19,6 +19,8 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 		return in_array($functionReflection->getName(), [
 			'addslashes',
 			'addcslashes',
+			'escapeshellarg',
+			'escapeshellcmd',
 			'strtoupper',
 			'strtolower',
 			'mb_strtoupper',

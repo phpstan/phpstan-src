@@ -5105,6 +5105,10 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$filledIntegersWithKeys',
 			],
 			[
+				'array<int, string>&nonEmpty',
+				'$filledNonEmptyArray',
+			],
+			[
 				'array(1, 2)',
 				'array_keys($integerKeys)',
 			],

@@ -38,6 +38,8 @@ $reducedIntegersToStringWithInt = array_reduce($uniquedIntegers, function (): st
 
 $filledIntegers = array_fill(0, 5, 1);
 $filledIntegersWithKeys = array_fill_keys([0], 1);
+/** @var positive-int $posInt */
+$filledNonEmptyArray = array_fill(0, $posInt, 'foo');
 
 $integerKeys = [
 	1 => 'foo',

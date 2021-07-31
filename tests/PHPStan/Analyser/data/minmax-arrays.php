@@ -118,3 +118,22 @@ function dummy5(int $i, int $j): void
 function dummy6(string $s, string $t): void {
 	assertType('array(?0 => non-empty-string, ?1 => non-empty-string)', array_filter([$s, $t]));
 }
+
+class HelloWorld
+{
+	public function setRange(int $range): void
+	{
+		if ($range < 0) {
+			return;
+		}
+		assertType('int<0, 100>', min($range, 100));
+	}
+
+	public function setRange2(int $range): void
+	{
+		if ($range > 100) {
+			return;
+		}
+		assertType('int<0, 100>', max($range, 0));
+	}
+}

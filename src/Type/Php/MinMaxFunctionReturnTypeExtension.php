@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -100,13 +101,18 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 	{
 		$resultType = null;
 		foreach ($types as $type) {
-			if (!$type instanceof ConstantType) {
+			if (!$type instanceof ConstantType && !$type instanceof IntegerRangeType) {
 				return TypeCombinator::union(...$types);
 			}
 
 			if ($resultType === null) {
 				$resultType = $type;
 				continue;
+			}
+
+			$mergedType = $this->mergeRangeTypes($resultType, $type, $functionName);
+			if ($mergedType) {
+				$resultType = $mergedType;
 			}
 
 			$compareResult = $this->compareTypes($resultType, $type);
@@ -126,6 +132,50 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		}
 
 		return $resultType;
+	}
+
+	private function mergeRangeTypes(
+		Type $firstType,
+		Type $secondType,
+		string $functionName
+	): ?Type
+	{
+		$rangeType = $scalarType = null;
+
+		if (
+			$firstType instanceof IntegerRangeType
+			&& $secondType instanceof ConstantScalarType
+		) {
+			$rangeType = $firstType;
+			$scalarType = $secondType;
+		}
+
+		if (
+			$firstType instanceof ConstantScalarType
+			&& $secondType instanceof IntegerRangeType
+		) {
+			$rangeType = $secondType;
+			$scalarType = $firstType;
+		}
+
+		if ($rangeType && $scalarType) {
+			$min = $rangeType->getMin();
+			$max = $rangeType->getMax();
+
+			if ($functionName === 'min') {
+				if ($rangeType->getMax() === null) {
+					$max = $scalarType->getValue();
+				}
+			} elseif ($functionName === 'max') {
+				if ($rangeType->getMin() === null) {
+					$min = $scalarType->getValue();
+				}
+			}
+
+			return IntegerRangeType::fromInterval($min, $max);
+		}
+
+		return null;
 	}
 
 	private function compareTypes(

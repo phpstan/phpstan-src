@@ -47,7 +47,7 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 		if ($startType instanceof ConstantIntegerType && $endType instanceof ConstantIntegerType && $stepType instanceof ConstantIntegerType && $stepType->getValue() === 1) {
 			return new ArrayType(
 				new IntegerType(),
-				IntegerRangeType::fromInterval($stepType->getValue(), $endType->getValue());
+				IntegerRangeType::fromInterval($stepType->getValue(), $endType->getValue())
 			);
 		}
 

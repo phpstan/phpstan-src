@@ -9,7 +9,9 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
@@ -33,6 +35,11 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		$startIndexType = $scope->getType($functionCall->args[0]->value);
 		$numberType = $scope->getType($functionCall->args[1]->value);
 		$valueType = $scope->getType($functionCall->args[2]->value);
+
+		// check against negative-int
+		if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($numberType)->yes()) {
+			return new ConstantBooleanType(false);
+		}
 
 		if (
 			$startIndexType instanceof ConstantIntegerType

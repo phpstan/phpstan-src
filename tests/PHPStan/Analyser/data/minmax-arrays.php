@@ -127,6 +127,7 @@ class HelloWorld
 			return;
 		}
 		assertType('int<0, 100>', min($range, 100));
+		assertType('int<0, 100>', min(100, $range));
 	}
 
 	public function setRange2(int $range): void
@@ -135,5 +136,6 @@ class HelloWorld
 			return;
 		}
 		assertType('int<0, 100>', max($range, 0));
+		assertType('int<0, 100>', max(0, $range));
 	}
 }

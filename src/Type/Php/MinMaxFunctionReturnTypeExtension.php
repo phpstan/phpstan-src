@@ -164,11 +164,11 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 			$max = $rangeType->getMax();
 
 			if ($functionName === 'min') {
-				if ($rangeType->getMax() === null) {
+				if ($rangeType->getMax() === null || $rangeType->getMax() > $intType->getValue()) {
 					$max = $intType->getValue();
 				}
 			} elseif ($functionName === 'max') {
-				if ($rangeType->getMin() === null) {
+				if ($rangeType->getMin() === null || $rangeType->getMin() < $intType->getValue()) {
 					$min = $intType->getValue();
 				}
 			}

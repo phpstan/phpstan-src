@@ -10,6 +10,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
@@ -56,6 +57,14 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			return $arrayBuilder->getArray();
 		}
 
+		// check against positive-int
+		if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($numberType)->yes()) {
+			return new IntersectionType([
+				new ArrayType(new IntegerType(), $valueType),
+				new NonEmptyArrayType(),
+			]);
+		}
+
 		if (
 			$numberType instanceof ConstantIntegerType
 			&& $numberType->getValue() > 0
@@ -65,6 +74,8 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 				new NonEmptyArrayType(),
 			]);
 		}
+
+
 
 		return new ArrayType(new IntegerType(), $valueType);
 	}

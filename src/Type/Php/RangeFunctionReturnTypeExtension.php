@@ -15,6 +15,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -42,6 +43,10 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 		$startType = $scope->getType($functionCall->args[0]->value);
 		$endType = $scope->getType($functionCall->args[1]->value);
 		$stepType = count($functionCall->args) >= 3 ? $scope->getType($functionCall->args[2]->value) : new ConstantIntegerType(1);
+
+		if ($startType instanceof ConstantIntegerType && $endType instanceof ConstantIntegerType && $stepType instanceof ConstantIntegerType && $stepType->getValue() === 1) {
+			return IntegerRangeType::fromInterval($stepType->getValue(), $endType->getValue());
+		}
 
 		$constantReturnTypes = [];
 

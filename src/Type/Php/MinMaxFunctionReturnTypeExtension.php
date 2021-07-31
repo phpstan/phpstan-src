@@ -111,7 +111,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 			}
 
 			$mergedType = $this->mergeRangeTypes($resultType, $type, $functionName);
-			if ($mergedType) {
+			if ($mergedType !== null) {
 				$resultType = $mergedType;
 			}
 
@@ -158,7 +158,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 			$scalarType = $firstType;
 		}
 
-		if ($rangeType && $scalarType) {
+		if ($rangeType !== null && $scalarType !== null) {
 			$min = $rangeType->getMin();
 			$max = $rangeType->getMax();
 

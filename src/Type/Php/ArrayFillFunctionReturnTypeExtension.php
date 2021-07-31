@@ -65,16 +65,6 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			]);
 		}
 
-		if (
-			$numberType instanceof ConstantIntegerType
-			&& $numberType->getValue() > 0
-		) {
-			return new IntersectionType([
-				new ArrayType(new IntegerType(), $valueType),
-				new NonEmptyArrayType(),
-			]);
-		}
-
 		return new ArrayType(new IntegerType(), $valueType);
 	}
 

@@ -5181,7 +5181,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_fill(-2, 4, \'pear\')',
 			],
 			[
-				'array<int, stdClass>',
+				'array<int, stdClass>&nonEmpty',
 				'array_fill($integer, 2, new \stdClass())',
 			],
 			[

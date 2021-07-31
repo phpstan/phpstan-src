@@ -44,7 +44,8 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 		$endType = $scope->getType($functionCall->args[1]->value);
 		$stepType = count($functionCall->args) >= 3 ? $scope->getType($functionCall->args[2]->value) : new ConstantIntegerType(1);
 
-		if ($startType instanceof ConstantIntegerType && $endType instanceof ConstantIntegerType && $stepType instanceof ConstantIntegerType && $stepType->getValue() === 1) {
+		if ($startType instanceof ConstantIntegerType && $endType instanceof ConstantIntegerType &&
+			(count($functionCall->args) === 2 || $stepType instanceof ConstantIntegerType && $stepType->getValue() === 1)) {
 			$min = min($stepType->getValue(), $endType->getValue());
 			$max = max($stepType->getValue(), $endType->getValue());
 

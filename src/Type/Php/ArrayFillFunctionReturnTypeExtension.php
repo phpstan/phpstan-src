@@ -75,8 +75,6 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			]);
 		}
 
-
-
 		return new ArrayType(new IntegerType(), $valueType);
 	}
 

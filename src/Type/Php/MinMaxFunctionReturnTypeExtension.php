@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
@@ -140,35 +141,35 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		string $functionName
 	): ?Type
 	{
-		$rangeType = $scalarType = null;
+		$rangeType = $intType = null;
 
 		if (
 			$firstType instanceof IntegerRangeType
-			&& $secondType instanceof ConstantScalarType
+			&& $secondType instanceof ConstantIntegerType
 		) {
 			$rangeType = $firstType;
-			$scalarType = $secondType;
+			$intType = $secondType;
 		}
 
 		if (
-			$firstType instanceof ConstantScalarType
+			$firstType instanceof ConstantIntegerType
 			&& $secondType instanceof IntegerRangeType
 		) {
 			$rangeType = $secondType;
-			$scalarType = $firstType;
+			$intType = $firstType;
 		}
 
-		if ($rangeType !== null && $scalarType !== null) {
+		if ($rangeType !== null && $intType !== null) {
 			$min = $rangeType->getMin();
 			$max = $rangeType->getMax();
 
 			if ($functionName === 'min') {
 				if ($rangeType->getMax() === null) {
-					$max = $scalarType->getValue();
+					$max = $intType->getValue();
 				}
 			} elseif ($functionName === 'max') {
 				if ($rangeType->getMin() === null) {
-					$min = $scalarType->getValue();
+					$min = $intType->getValue();
 				}
 			}
 

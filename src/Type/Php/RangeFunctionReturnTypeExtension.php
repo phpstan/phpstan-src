@@ -46,8 +46,8 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 
 		if ($startType instanceof ConstantIntegerType && $endType instanceof ConstantIntegerType &&
 			(count($functionCall->args) === 2 || $stepType instanceof ConstantIntegerType && $stepType->getValue() === 1)) {
-			$min = min($stepType->getValue(), $endType->getValue());
-			$max = max($stepType->getValue(), $endType->getValue());
+			$min = min($startType->getValue(), $endType->getValue());
+			$max = max($startType->getValue(), $endType->getValue());
 
 			return new IntersectionType([
 				new ArrayType(

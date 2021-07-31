@@ -45,10 +45,13 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 		$stepType = count($functionCall->args) >= 3 ? $scope->getType($functionCall->args[2]->value) : new ConstantIntegerType(1);
 
 		if ($startType instanceof ConstantIntegerType && $endType instanceof ConstantIntegerType && $stepType instanceof ConstantIntegerType && $stepType->getValue() === 1) {
+			$min = min($stepType->getValue(), $endType->getValue());
+			$max = max($stepType->getValue(), $endType->getValue());
+
 			return new IntersectionType([
 				new ArrayType(
 					new IntegerType(),
-					IntegerRangeType::fromInterval($stepType->getValue(), $endType->getValue())
+					IntegerRangeType::fromInterval($min, $max)
 				),
 				new NonEmptyArrayType(),
 			]);

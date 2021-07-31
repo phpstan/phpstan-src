@@ -6149,7 +6149,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array(2, 3, 4, 5)',
+				'int<2, 5>',
 				'range(2, 5)',
 			],
 			[
@@ -6189,11 +6189,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(doFoo() ? -1 : 1, doFoo() ? 1 : 2)',
 			],
 			[
-				'array(3, 2, 1, 0, -1)',
+				'int<-1, 3>',
 				'range(3, -1)',
 			],
 			[
-				'array<int, int>&nonEmpty',
+				'array<int, int<0, 50>>&nonEmpty',
 				'range(0, 50)',
 			],
 		];

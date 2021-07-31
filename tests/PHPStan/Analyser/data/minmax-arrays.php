@@ -138,4 +138,13 @@ class HelloWorld
 		assertType('int<0, 100>', max($range, 0));
 		assertType('int<0, 100>', max(0, $range));
 	}
+	
+	/**
+	 * @var int<3, 5> $range
+	 */
+	public function boundRange($range): void
+	{
+		assertType('int<4, 5>', min($range, 4));
+		assertType('int<3, 4>', max(4, $range));
+	}
 }

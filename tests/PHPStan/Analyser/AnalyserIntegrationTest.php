@@ -219,7 +219,8 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testTwoSameClassesInSingleFile(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/two-same-classes.php');
-		$this->assertCount(5, $errors);
+		$this->assertCount(4, $errors);
+
 		$error = $errors[0];
 		$this->assertSame('Property TwoSame\Foo::$prop (string) does not accept default value of type int.', $error->getMessage());
 		$this->assertSame(9, $error->getLine());

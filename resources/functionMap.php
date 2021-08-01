@@ -9061,7 +9061,6 @@ return [
 'radius_server_secret' => ['string', 'radius_handle'=>'resource'],
 'radius_strerror' => ['string', 'radius_handle'=>'resource'],
 'rand' => ['int', 'min'=>'int', 'max'=>'int'],
-'rand\'1' => ['int'],
 'random_bytes' => ['string', 'length'=>'int'],
 'random_int' => ['int', 'min'=>'int', 'max'=>'int'],
 'range' => ['array', 'low'=>'int|float|string', 'high'=>'int|float|string', 'step='=>'int|float'],

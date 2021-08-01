@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
@@ -16,11 +17,15 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'random_int';
+		return in_array($functionReflection->getName(), ['random_int', 'rand']);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
+		if ($functionReflection->getName() === 'rand' && count($functionCall->args) === 0) {
+			return new IntegerType();
+		}
+
 		if (count($functionCall->args) < 2) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}

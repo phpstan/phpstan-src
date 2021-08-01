@@ -37,3 +37,6 @@ assertType('int<0, 1>', random_int(random_int(0, 1), 1));
 
 assertType('int<-5, 5>', random_int(random_int(-5, 0), random_int(0, 5)));
 assertType('int', random_int(random_int(PHP_INT_MIN, 0), random_int(0, PHP_INT_MAX)));
+
+assertType('int<-5, 5>', rand(-5, 5));
+assertType('int', rand());

@@ -23,7 +23,7 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		if ($functionReflection->getName() === 'rand' && count($functionCall->args) === 0) {
-			return new IntegerType();
+			return IntegerRangeType::fromInterval(0, null);
 		}
 
 		if (count($functionCall->args) < 2) {

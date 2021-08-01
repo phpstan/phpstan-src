@@ -17,7 +17,7 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return in_array($functionReflection->getName(), ['random_int', 'rand']);
+		return in_array($functionReflection->getName(), ['random_int', 'rand'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type

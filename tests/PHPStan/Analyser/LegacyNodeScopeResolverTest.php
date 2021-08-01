@@ -8317,7 +8317,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'filter_var(3.27, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE)',
 			],
 			[
-				'int',
+				'int<0, max>',
 				'filter_var(rand(), FILTER_VALIDATE_INT)',
 			],
 			[

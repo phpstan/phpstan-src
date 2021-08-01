@@ -167,7 +167,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					466,
 				],
 				[
-					'Strict comparison using === between int<0, 1> and \'foo\' will always evaluate to false.',
+					'Strict comparison using === between int<0, 1> and 100 will always evaluate to false.',
 					622,
 				],
 				[
@@ -345,7 +345,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					466,
 				],
 				[
-					'Strict comparison using === between int<0, 1> and \'foo\' will always evaluate to false.',
+					'Strict comparison using === between int<0, 1> and 100 will always evaluate to false.',
 					622,
 				],
 				[

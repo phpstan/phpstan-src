@@ -15,7 +15,7 @@ class Foo
 
 }
 
-if (rand(0, 1)) {
+if (rand(0, 0)) {
 	class Foo
 	{
 

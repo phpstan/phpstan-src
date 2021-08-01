@@ -26,7 +26,7 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		}
 
 		if (count($functionCall->args) < 2) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->args, $functionReflection->getVariants())->getReturnType();
 		}
 
 		$minType = $scope->getType($functionCall->args[0]->value)->toInteger();

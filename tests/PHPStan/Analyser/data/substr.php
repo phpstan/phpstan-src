@@ -14,6 +14,6 @@ class Substr
 		assertType('false', substr('a', 2));
 		assertType('string|false', substr($i, 2));
 		assertType('string|false', substr($s, $i));
-		assertType('string', substr(3.1, $i));
+		assertType('string|false', substr(3.1, $i));
 	}
 }

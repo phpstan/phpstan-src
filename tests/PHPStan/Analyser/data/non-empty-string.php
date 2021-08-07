@@ -140,21 +140,18 @@ class Foo
 	 * @param 1|2|3 $postiveRange
 	 * @param -1|-2|-3 $negativeRange
 	 */
-	public function doSubstr(string $s, $nonEmpty, $positiveInt, $postiveRange, $negativeRange): void
+	public function doSubstr($nonEmpty, $positiveInt, $postiveRange, $negativeRange): void
 	{
-		assertType('string', substr($s, 5));
-
-		assertType('string', substr($s, -5));
+		// regular string-cases are covered in substr.php
+		
 		assertType('non-empty-string', substr($nonEmpty, -5));
 		assertType('non-empty-string', substr($nonEmpty, $negativeRange));
 
-		assertType('string', substr($s, 0, 5));
 		assertType('non-empty-string', substr($nonEmpty, 0, 5));
 		assertType('non-empty-string', substr($nonEmpty, 0, $postiveRange));
 
 		assertType('string', substr($nonEmpty, 0, -5));
 
-		assertType('string', substr($s, 0, $positiveInt));
 		assertType('non-empty-string', substr($nonEmpty, 0, $positiveInt));
 	}
 }
@@ -309,12 +306,12 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', addslashes($nonEmpty));
 		assertType('string', addcslashes($s));
 		assertType('non-empty-string', addcslashes($nonEmpty));
-		
+
 		assertType('string', escapeshellarg($s));
 		assertType('non-empty-string', escapeshellarg($nonEmpty));
 		assertType('string', escapeshellcmd($s));
 		assertType('non-empty-string', escapeshellcmd($nonEmpty));
-		
+
 		assertType('string', strtoupper($s));
 		assertType('non-empty-string', strtoupper($nonEmpty));
 		assertType('string', strtolower($s));

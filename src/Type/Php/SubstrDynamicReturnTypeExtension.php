@@ -4,17 +4,28 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 
 class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+	private PhpVersion $phpVersion;
+
+	public function __construct(PhpVersion $phpVersion)
+	{
+		$this->phpVersion = $phpVersion;
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -32,8 +43,9 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
+		$string = $scope->getType($args[0]->value);
+
 		if (count($args) >= 2) {
-			$string = $scope->getType($args[0]->value);
 			$offset = $scope->getType($args[1]->value);
 
 			$negativeOffset = IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($offset)->yes();
@@ -53,7 +65,22 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 		}
 
-		return new StringType();
+		if ($string instanceof StringType) {
+			if ($this->phpVersion->getVersionId() >= 80000) {
+				return new StringType();
+			}
+
+			return TypeCombinator::union(
+				new StringType(),
+				new ConstantBooleanType(false)
+			);
+		}
+
+		// since php8 substr() returns an empty string where it previously returned false.
+		if ($this->phpVersion->getVersionId() >= 80000) {
+			return new StringType();
+		}
+		return new ConstantBooleanType(false);
 	}
 
 }

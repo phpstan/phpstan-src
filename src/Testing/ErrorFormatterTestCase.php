@@ -60,7 +60,7 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\TestCase
 
 	protected function getAnalysisResult(int $numFileErrors, int $numGenericErrors): AnalysisResult
 	{
-		if ($numFileErrors > 4 || $numFileErrors < 0 || $numGenericErrors > 2 || $numGenericErrors < 0) {
+		if ($numFileErrors > 5 || $numFileErrors < 0 || $numGenericErrors > 2 || $numGenericErrors < 0) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
@@ -69,6 +69,7 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\TestCase
 			new Error('Foo', self::DIRECTORY_PATH . '/foo.php', 1),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', 5),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/folder with unicode 😃/file name with "spaces" and unicode 😃.php', 2),
+			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', null),
 		], 0, $numFileErrors);
 
 		$genericErrors = array_slice([

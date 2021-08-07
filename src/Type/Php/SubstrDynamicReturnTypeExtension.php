@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -70,7 +71,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return new StringType();
 		}
 
-		if ($string instanceof StringType) {
+		if ($string instanceof StringType || $string instanceof FloatType) {
 			return TypeCombinator::union(
 				new StringType(),
 				new ConstantBooleanType(false)

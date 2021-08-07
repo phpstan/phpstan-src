@@ -65,21 +65,18 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 		}
 
-		if ($string instanceof StringType) {
-			if ($this->phpVersion->getVersionId() >= 80000) {
-				return new StringType();
-			}
+		// since php8 substr() returns an empty string where it previously returned false.
+		if ($this->phpVersion->getVersionId() >= 80000) {
+			return new StringType();
+		}
 
+		if ($string instanceof StringType) {
 			return TypeCombinator::union(
 				new StringType(),
 				new ConstantBooleanType(false)
 			);
 		}
 
-		// since php8 substr() returns an empty string where it previously returned false.
-		if ($this->phpVersion->getVersionId() >= 80000) {
-			return new StringType();
-		}
 		return new ConstantBooleanType(false);
 	}
 

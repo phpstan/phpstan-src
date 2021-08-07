@@ -51,7 +51,6 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		}
 
 		$string = $scope->getType($args[0]->value);
-		$offset = $scope->getType($args[1]->value);
 
 		// since php8 substr() returns an empty string where it previously returned false, in case of errors
 		$errorType = new ConstantBooleanType(false);
@@ -59,7 +58,9 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			$errorType = new StringType();
 		}
 
-		if ($string instanceof ConstantStringType) {
+		if ($string instanceof ConstantStringType && count($args) >= 2) {
+			$offset = $scope->getType($args[1]->value);
+
 			if ($offset instanceof ConstantIntegerType) {
 				if (count($args) === 2) {
 					$substr = substr($string->getValue(), $offset->getValue());

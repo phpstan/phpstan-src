@@ -143,7 +143,7 @@ class Foo
 	public function doSubstr($nonEmpty, $positiveInt, $postiveRange, $negativeRange): void
 	{
 		// regular string-cases are covered in substr.php
-		
+
 		assertType('non-empty-string', substr($nonEmpty, -5));
 		assertType('non-empty-string', substr($nonEmpty, $negativeRange));
 

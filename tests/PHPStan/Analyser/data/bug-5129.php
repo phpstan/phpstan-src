@@ -20,7 +20,7 @@ class HelloWorld
 		assertType('0', strlen($this->foo));
 
 		$this->foo = 'x';
-		assertType('int<1, max>', strlen($this->foo));
+		assertType('1', strlen($this->foo));
 		if (strlen($this->foo) > 0) {
 			return;
 		}

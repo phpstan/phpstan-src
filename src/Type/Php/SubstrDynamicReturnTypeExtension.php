@@ -58,6 +58,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			$errorType = new ConstantStringType('');
 		}
 
+		// resolve constant only cases
 		if ($string instanceof ConstantStringType && count($args) >= 2) {
 			$offset = $scope->getType($args[1]->value);
 
@@ -86,6 +87,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 		}
 
+		// handle non-empty strings
 		if (count($args) >= 2) {
 			$offset = $scope->getType($args[1]->value);
 
@@ -106,6 +108,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 		}
 
+		// handle fatal error cases
 		if ($string instanceof ArrayType || $string instanceof ObjectType) {
 			if ($this->phpVersion->getVersionId() >= 80000) {
 				return new NeverType();
@@ -113,18 +116,20 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return new NullType();
 		}
 
-		if ($string instanceof StringType || $string instanceof FloatType) {
-			if ($this->phpVersion->getVersionId() >= 80000) {
-				return new StringType();
-			}
-
-			return TypeCombinator::union(
-				new StringType(),
-				new ConstantBooleanType(false)
-			);
+		// error case
+		if (!$string instanceof StringType && !$string instanceof FloatType) {
+			return $errorType;
 		}
 
-		return $errorType;
+		// happy path
+		if ($this->phpVersion->getVersionId() >= 80000) {
+		    return new StringType();
+	    }
+
+		return TypeCombinator::union(
+			new StringType(),
+			new ConstantBooleanType(false)
+		);
 	}
 
 }

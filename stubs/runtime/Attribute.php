@@ -1,10 +1,6 @@
 <?php
 
-if (\PHP_VERSION_ID < 80000) {
-	if (class_exists('Attribute', false)) {
-		return;
-	}
-
+if (\PHP_VERSION_ID < 80000 && !class_exists('Attribute', false)) {
 	#[Attribute(Attribute::TARGET_CLASS)]
 	class Attribute
 	{
@@ -62,5 +58,12 @@ if (\PHP_VERSION_ID < 80000) {
 			$this->flags = $flags;
 		}
 
+	}
+}
+
+if (\PHP_VERSION_ID < 80100 && !class_exists('ReturnTypeWillChange', false)) {
+	#[Attribute(Attribute::TARGET_METHOD)]
+	final class ReturnTypeWillChange
+	{
 	}
 }

@@ -55,7 +55,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		// since php8 substr() returns an empty string where it previously returned false, in case of errors
 		$errorType = new ConstantBooleanType(false);
 		if ($this->phpVersion->getVersionId() >= 80000) {
-			$errorType = new StringType();
+			$errorType = new ConstantStringType('');
 		}
 
 		if ($string instanceof ConstantStringType && count($args) >= 2) {

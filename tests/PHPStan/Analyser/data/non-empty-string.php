@@ -303,7 +303,7 @@ class MoreNonEmptyStringFunctions
 	/**
 	 * @param non-empty-string $nonEmpty
 	 */
-	public function doFoo(string $s, string $nonEmpty, int $i)
+	public function doFoo(string $s, string $nonEmpty, int $i, bool $bool)
 	{
 		assertType('string', addslashes($s));
 		assertType('non-empty-string', addslashes($nonEmpty));
@@ -349,6 +349,9 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', vsprintf($nonEmpty, []));
 
 		assertType('0', strlen(''));
+		assertType('5', strlen('hallo'));
+		assertType('int<0, 1>', strlen($bool));
+		assertType('int<1, max>', strlen($i));
 		assertType('int<0, max>', strlen($s));
 		assertType('int<1, max>', strlen($nonEmpty));
 

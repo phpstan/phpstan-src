@@ -12,11 +12,11 @@ class Substr
 		assertType('*NEVER*', substr([], true));
 		assertType('*NEVER*', substr(new \stdClass(), true));
 		// error cases
-		assertType('string', substr(null, true));
-		assertType('string', substr(true, true));
-		assertType('string', substr('a', 2));
-		assertType('string', substr("hallo", 10));
-		assertType('string', substr("hallo", 10, 1));
+		assertType("''", substr(null, true));
+		assertType("''", substr(true, true));
+		assertType("''", substr('a', 2));
+		assertType("''", substr("hallo", 10));
+		assertType("''", substr("hallo", 10, 1));
 		// happy path
 		assertType('string', substr($i, 2));
 		assertType('string', substr($s, $i));

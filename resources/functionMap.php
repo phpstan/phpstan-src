@@ -3727,7 +3727,7 @@ return [
 'gzdecode' => ['string|false', 'data'=>'string', 'length='=>'int'],
 'gzdeflate' => ['string|false', 'data'=>'string', 'level='=>'int', 'encoding='=>'int'],
 'gzencode' => ['string|false', 'data'=>'string', 'level='=>'int', 'encoding_mode='=>'int'],
-'gzeof' => ['int', 'zp'=>'resource'],
+'gzeof' => ['bool', 'zp'=>'resource'],
 'gzfile' => ['array|false', 'filename'=>'string', 'use_include_path='=>'int'],
 'gzgetc' => ['string|false', 'zp'=>'resource'],
 'gzgets' => ['string|false', 'zp'=>'resource', 'length='=>'int'],

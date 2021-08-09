@@ -4602,7 +4602,6 @@ return [
 'imageinterlace' => ['int', 'im'=>'resource', 'interlace='=>'int'],
 'imageistruecolor' => ['bool', 'im'=>'resource'],
 'imagejpeg' => ['bool', 'im'=>'resource', 'filename='=>'string|resource|null', 'quality='=>'int'],
-'imagejpeg\'1' => ['string|false', 'im'=>'resource', 'filename='=>'null', 'quality='=>'int'],
 'imagelayereffect' => ['bool', 'im'=>'resource', 'effect'=>'int'],
 'imageline' => ['bool', 'im'=>'resource', 'x1'=>'int', 'y1'=>'int', 'x2'=>'int', 'y2'=>'int', 'col'=>'int'],
 'imageloadfont' => ['int|false', 'filename'=>'string'],

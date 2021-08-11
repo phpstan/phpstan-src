@@ -160,6 +160,8 @@ parameters:
 		- PHP_SHLIB_SUFFIX
 		- PHP_FD_SETSIZE
 		- OPENSSL_VERSION_NUMBER
+		- ZEND_DEBUG_BUILD
+		- ZEND_THREAD_SAFE
 	editorUrl: null
 
 extensions:

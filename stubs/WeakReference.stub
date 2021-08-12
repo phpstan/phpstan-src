@@ -16,3 +16,14 @@ final class WeakReference
 	/** @return ?T */
 	public function get() {}
 }
+
+
+/**
+ * @template TKey of object
+ * @template TValue
+ * @implements \ArrayAccess<TKey, TValue>
+ * @implements \IteratorAggregate<TKey, TValue>
+ */
+final class WeakMap implements \ArrayAccess, \Countable, \IteratorAggregate
+{
+}

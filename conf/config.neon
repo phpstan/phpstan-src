@@ -39,6 +39,7 @@ parameters:
 		skipCheckGenericClasses:
 			- RecursiveIterator
 			- RecursiveArrayIterator
+			- WeakMap
 		rememberFunctionValues: false
 		preciseExceptionTracking: false
 		apiRules: false

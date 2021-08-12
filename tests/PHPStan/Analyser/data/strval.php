@@ -36,7 +36,7 @@ function intvalTest(string $string): void
 	assertType('1', intval(true));
 	assertType('0|1', intval(rand(0, 1) === 0));
 	assertType('42', intval(42));
-	assertType('int', intval(rand()));
+	assertType('int<0, max>', intval(rand()));
 	assertType('int', intval(rand() * 0.1));
 	assertType('0', intval([]));
 	assertType('1', intval([null]));

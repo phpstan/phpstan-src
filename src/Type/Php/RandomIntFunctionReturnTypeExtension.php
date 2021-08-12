@@ -16,13 +16,17 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'random_int';
+		return in_array($functionReflection->getName(), ['random_int', 'rand'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
+		if ($functionReflection->getName() === 'rand' && count($functionCall->args) === 0) {
+			return IntegerRangeType::fromInterval(0, null);
+		}
+
 		if (count($functionCall->args) < 2) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->args, $functionReflection->getVariants())->getReturnType();
 		}
 
 		$minType = $scope->getType($functionCall->args[0]->value)->toInteger();

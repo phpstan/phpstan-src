@@ -11,18 +11,18 @@ class Foo
 	{
 		function (): void {
 			if (rand(0, 1)) {
-				assertType('int', rand(0, 1));
+				assertType('int<0, 1>', rand(0, 1));
 			}
 		};
 
 		function (): void {
 			if (rand(0, 1) === 0) {
-				assertType('int', rand(0, 1));
+				assertType('int<0, 1>', rand(0, 1));
 			}
 		};
 		function (): void {
-			assertType('\'foo\'|int<min, -1>|int<1, max>', rand(0, 1) ?: 'foo');
-			assertType('\'foo\'|int', rand(0, 1) ? rand(0, 1) : 'foo');
+			assertType('1|\'foo\'', rand(0, 1) ?: 'foo');
+			assertType('\'foo\'|int<0, 1>', rand(0, 1) ? rand(0, 1) : 'foo');
 		};
 	}
 

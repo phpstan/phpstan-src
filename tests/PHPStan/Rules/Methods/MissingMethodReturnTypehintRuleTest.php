@@ -77,4 +77,9 @@ class MissingMethodReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5089.php'], []);
 	}
 
+	public function testBug5436(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5436.php'], []);
+	}
+
 }

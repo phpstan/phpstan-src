@@ -6,6 +6,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
@@ -68,6 +69,10 @@ class TemplateTypeHelper
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof ConstantType && !$type instanceof ConstantArrayType) {
 				return $type->generalize(GeneralizePrecision::lessSpecific());
+			}
+
+			if ($type->isNonEmptyString()->yes()) {
+				return new StringType();
 			}
 
 			return $traverse($type);

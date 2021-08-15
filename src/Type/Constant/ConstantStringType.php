@@ -298,7 +298,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function generalize(?GeneralizePrecision $precision = null): Type
 	{
 		if ($this->isClassString) {
-			return new ClassStringType();
+			if ($precision !== null && $precision->isMoreSpecific()) {
+				return new ClassStringType();
+			}
+
+			return new StringType();
 		}
 
 		if ($this->getValue() !== '' && $precision !== null && $precision->isMoreSpecific()) {

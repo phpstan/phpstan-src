@@ -68,3 +68,21 @@ class Bar
 	}
 
 }
+
+class MorePreciseKey
+{
+
+	/** @var array<1|2|3, string> */
+	private $test;
+
+	public function doFoo(int $i): void
+	{
+		$this->test[$i] = 'foo';
+	}
+
+	public function doBar(): void
+	{
+		$this->test[4] = 'foo';
+	}
+
+}

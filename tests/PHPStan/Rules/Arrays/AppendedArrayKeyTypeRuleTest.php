@@ -45,6 +45,14 @@ class AppendedArrayKeyTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Array (array<string, mixed>) does not accept key 1.',
 				46,
 			],
+			[
+				'Array (array<1|2|3, string>) does not accept key int.',
+				80,
+			],
+			[
+				'Array (array<1|2|3, string>) does not accept key 4.',
+				85,
+			],
 		]);
 	}
 

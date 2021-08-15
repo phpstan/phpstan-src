@@ -76,10 +76,11 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 		}
 
 		if (!$arrayType->getIterableKeyType()->isSuperTypeOf($keyType)->yes()) {
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($arrayType->getIterableKeyType(), $keyType);
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept key %s.',
-					$arrayType->describe(VerbosityLevel::typeOnly()),
+					$arrayType->describe($verbosity),
 					$keyType->describe(VerbosityLevel::value())
 				))->build(),
 			];

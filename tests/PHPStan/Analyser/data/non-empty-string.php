@@ -282,7 +282,7 @@ class GeneralizeConstantStringType
 		$a[$s] = 2;
 
 		// there might be non-empty-string that becomes a number instead
-		assertType('array<string, int>&nonEmpty', $a);
+		assertType('array<non-empty-string, int>&nonEmpty', $a);
 	}
 
 	/**
@@ -309,12 +309,12 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', addslashes($nonEmpty));
 		assertType('string', addcslashes($s));
 		assertType('non-empty-string', addcslashes($nonEmpty));
-		
+
 		assertType('string', escapeshellarg($s));
 		assertType('non-empty-string', escapeshellarg($nonEmpty));
 		assertType('string', escapeshellcmd($s));
 		assertType('non-empty-string', escapeshellcmd($nonEmpty));
-		
+
 		assertType('string', strtoupper($s));
 		assertType('non-empty-string', strtoupper($nonEmpty));
 		assertType('string', strtolower($s));

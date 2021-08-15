@@ -56,4 +56,9 @@ class AppendedArrayKeyTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug5372Two(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5372_2.php'], []);
+	}
+
 }

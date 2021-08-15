@@ -317,7 +317,7 @@ class ArrayType implements Type
 				return new IntegerType();
 			}
 
-			if ($offsetType instanceof StringType) {
+			if ($offsetType instanceof StringType || $offsetType->isNonEmptyString()->yes()) {
 				return $offsetType;
 			}
 

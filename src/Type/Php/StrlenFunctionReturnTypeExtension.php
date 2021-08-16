@@ -43,7 +43,7 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			if ($min === null || $len < $min) {
 				$min = $len;
 			}
-			if ($len > $max) {
+			if ($max === null || $len > $max) {
 				$max = $len;
 			}
 		}

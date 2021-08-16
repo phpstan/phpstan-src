@@ -65,12 +65,12 @@ class TemplateTypeMap
 
 	public function isEmpty(): bool
 	{
-		return count($this->types) === 0;
+		return $this->count() === 0;
 	}
 
 	public function count(): int
 	{
-		return count($this->types);
+		return count($this->types + $this->lowerBoundTypes);
 	}
 
 	/** @return array<string,\PHPStan\Type\Type> */

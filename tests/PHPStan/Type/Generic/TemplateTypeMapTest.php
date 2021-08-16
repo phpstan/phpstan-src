@@ -16,6 +16,11 @@ class TemplateTypeMapTest extends TestCase
 		]))->convertToLowerBoundTypes();
 
 		yield [
+			$map,
+			\Exception::class,
+		];
+
+		yield [
 			$map->union(new TemplateTypeMap([
 				'T' => new ObjectType(\InvalidArgumentException::class),
 			])),
@@ -51,6 +56,7 @@ class TemplateTypeMapTest extends TestCase
 	/** @dataProvider dataUnionWithLowerBoundTypes */
 	public function testUnionWithLowerBoundTypes(TemplateTypeMap $map, string $expectedTDescription): void
 	{
+		$this->assertFalse($map->isEmpty());
 		$t = $map->getType('T');
 		$this->assertNotNull($t);
 		$this->assertSame($expectedTDescription, $t->describe(VerbosityLevel::precise()));

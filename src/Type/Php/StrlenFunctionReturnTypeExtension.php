@@ -49,9 +49,6 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 				$max = $len;
 			}
 		}
-		if ($min !== null && $min === $max) {
-			return new ConstantIntegerType($max);
-		}
 		if ($min || $max) {
 			return IntegerRangeType::fromInterval($min, $max);
 		}

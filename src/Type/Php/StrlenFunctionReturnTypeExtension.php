@@ -37,7 +37,7 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		$constantStrings = TypeUtils::getConstantStrings($argType);
 		$min = null;
 		$max = null;
-		foreach($constantStrings as $constantString) {
+		foreach ($constantStrings as $constantString) {
 			$len = strlen($constantString->getValue());
 
 			if ($min === null || $len < $min) {

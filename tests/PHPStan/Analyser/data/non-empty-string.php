@@ -302,7 +302,7 @@ class MoreNonEmptyStringFunctions
 
 	/**
 	 * @param non-empty-string $nonEmpty
-	 * @param 1|2|5|10 $constUnion
+	 * @param '1'|'2'|'5'|'10' $constUnion
 	 */
 	public function doFoo(string $s, string $nonEmpty, int $i, bool $bool, $constUnion)
 	{

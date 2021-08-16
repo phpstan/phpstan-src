@@ -52,7 +52,8 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			return IntegerRangeType::fromInterval($min, $max);
 		}
 
-		if ($argType instanceof BooleanType) {
+		$bool = new BooleanType();
+		if ($bool->isSuperTypeOf($argType)->yes()) {
 			return IntegerRangeType::fromInterval(0, 1);
 		}
 

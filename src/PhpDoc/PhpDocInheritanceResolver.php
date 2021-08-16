@@ -39,6 +39,27 @@ class PhpDocInheritanceResolver
 		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $declaringTraitName, null);
 	}
 
+	public function resolvePhpDocForConstant(
+		?string $docComment,
+		ClassReflection $classReflection,
+		string $classReflectionFileName,
+		string $constantName
+	): ResolvedPhpDocBlock
+	{
+		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForConstant(
+			$docComment,
+			$classReflection,
+			null,
+			$constantName,
+			$classReflectionFileName,
+			null,
+			[],
+			[]
+		);
+
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, null, null);
+	}
+
 	/**
 	 * @param string|null $docComment
 	 * @param string $fileName

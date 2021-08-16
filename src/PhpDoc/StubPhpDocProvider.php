@@ -27,6 +27,9 @@ class StubPhpDocProvider
 	/** @var array<string, array<string, ResolvedPhpDocBlock|null>> */
 	private array $propertyMap = [];
 
+	/** @var array<string, array<string, ResolvedPhpDocBlock|null>> */
+	private array $constantMap = [];
+
 	/** @var array<string, array<string, null>> */
 	private array $methodMap = [];
 
@@ -45,6 +48,9 @@ class StubPhpDocProvider
 
 	/** @var array<string, array<string, array{string, string}>> */
 	private array $knownPropertiesDocComments = [];
+
+	/** @var array<string, array<string, array{string, string}>> */
+	private array $knownConstantsDocComments = [];
 
 	/** @var array<string, array<string, array{string, string}>> */
 	private array $knownMethodsDocComments = [];
@@ -117,6 +123,32 @@ class StubPhpDocProvider
 			);
 
 			return $this->propertyMap[$className][$propertyName];
+		}
+
+		return null;
+	}
+
+	public function findClassConstantPhpDoc(string $className, string $constantName): ?ResolvedPhpDocBlock
+	{
+		if (!$this->isKnownClass($className)) {
+			return null;
+		}
+
+		if (array_key_exists($constantName, $this->constantMap[$className])) {
+			return $this->constantMap[$className][$constantName];
+		}
+
+		if (array_key_exists($constantName, $this->knownConstantsDocComments[$className])) {
+			[$file, $docComment] = $this->knownConstantsDocComments[$className][$constantName];
+			$this->constantMap[$className][$constantName] = $this->fileTypeMapper->getResolvedPhpDoc(
+				$file,
+				$className,
+				null,
+				null,
+				$docComment
+			);
+
+			return $this->constantMap[$className][$constantName];
 		}
 
 		return null;
@@ -306,7 +338,9 @@ class StubPhpDocProvider
 
 		$this->methodMap[$className] = [];
 		$this->propertyMap[$className] = [];
+		$this->constantMap[$className] = [];
 		$this->knownPropertiesDocComments[$className] = [];
+		$this->knownConstantsDocComments[$className] = [];
 		$this->knownMethodsDocComments[$className] = [];
 
 		foreach ($node->stmts as $stmt) {
@@ -318,6 +352,14 @@ class StubPhpDocProvider
 						continue;
 					}
 					$this->knownPropertiesDocComments[$className][$property->name->toString()] = [$stubFile, $docComment->getText()];
+				}
+			} elseif ($stmt instanceof Node\Stmt\ClassConst) {
+				foreach ($stmt->consts as $const) {
+					if ($docComment === null) {
+						$this->constantMap[$className][$const->name->toString()] = null;
+						continue;
+					}
+					$this->knownConstantsDocComments[$className][$const->name->toString()] = [$stubFile, $docComment->getText()];
 				}
 			} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 				if ($docComment === null) {

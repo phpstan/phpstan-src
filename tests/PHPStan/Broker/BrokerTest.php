@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegist
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -47,6 +48,7 @@ class BrokerTest extends \PHPStan\Testing\TestCase
 			$classReflectionExtensionRegistryProvider,
 			$this->createMock(FunctionReflectionFactory::class),
 			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),
+			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(PhpVersion::class),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
 			self::getContainer()->getByType(StubPhpDocProvider::class),

@@ -1,0 +1,14 @@
+<?php
+
+namespace ClassConstantStubFiles;
+
+class Foo
+{
+
+	/** @var int */
+	const BAR = 1;
+
+	/** @var int */
+	const BAZ = 1;
+
+}

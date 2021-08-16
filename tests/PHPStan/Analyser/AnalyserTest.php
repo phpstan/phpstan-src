@@ -17,6 +17,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
@@ -507,6 +508,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,
+			self::getContainer()->getByType(StubPhpDocProvider::class),
 			self::getContainer()->getByType(PhpVersion::class),
 			$phpDocInheritanceResolver,
 			$fileHelper,

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassNameHelper;
@@ -42,6 +43,8 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
+	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
+
 	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
 	/** @var \PHPStan\Reflection\FunctionReflection[] */
@@ -61,6 +64,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		FunctionReflectionFactory $functionReflectionFactory,
 		FileTypeMapper $fileTypeMapper,
+		PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		PhpVersion $phpVersion,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		StubPhpDocProvider $stubPhpDocProvider,
@@ -71,6 +75,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->functionReflectionFactory = $functionReflectionFactory;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
 		$this->phpVersion = $phpVersion;
 		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
@@ -154,6 +159,8 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			$classReflection = new ClassReflection(
 				$this->reflectionProviderProvider->getReflectionProvider(),
 				$this->fileTypeMapper,
+				$this->stubPhpDocProvider,
+				$this->phpDocInheritanceResolver,
 				$this->phpVersion,
 				$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 				$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),

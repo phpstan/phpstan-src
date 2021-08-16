@@ -28,6 +28,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -1890,7 +1891,8 @@ class MutatingScope implements Scope
 						if (strtolower($constantName) === 'class') {
 							return new GenericClassStringType(new StaticType($this->getClassReflection()));
 						}
-						return new MixedType();
+
+						$namesToResolve[] = 'static';
 					}
 				}
 				if (in_array(strtolower($constantClass), $namesToResolve, true)) {
@@ -1926,15 +1928,26 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
-				if (!$propertyClassReflection->hasConstant($constantName)) {
+				$constantClassReflection = $this->reflectionProvider->getClass($referencedClass);
+				if (!$constantClassReflection->hasConstant($constantName)) {
 					continue;
 				}
 
-				$constantType = $propertyClassReflection->getConstant($constantName)->getValueType();
+				$constantReflection = $constantClassReflection->getConstant($constantName);
+				if (
+					$constantReflection instanceof ClassConstantReflection
+					&& $node->class instanceof Name
+					&& strtolower((string) $node->class) === 'static'
+					&& !$constantClassReflection->isFinal()
+					&& !$constantReflection->hasPhpDocType()
+				) {
+					return new MixedType();
+				}
+
+				$constantType = $constantReflection->getValueType();
 				if (
 					$constantType instanceof ConstantType
-					&& in_array(sprintf('%s::%s', $propertyClassReflection->getName(), $constantName), $this->dynamicConstantNames, true)
+					&& in_array(sprintf('%s::%s', $constantClassReflection->getName(), $constantName), $this->dynamicConstantNames, true)
 				) {
 					$constantType = $constantType->generalize(GeneralizePrecision::lessSpecific());
 				}

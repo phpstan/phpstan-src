@@ -13,6 +13,8 @@ class ClassConstantReflection implements ConstantReflection
 
 	private \ReflectionClassConstant $reflection;
 
+	private ?Type $phpDocType;
+
 	private ?string $deprecatedDescription;
 
 	private bool $isDeprecated;
@@ -24,6 +26,7 @@ class ClassConstantReflection implements ConstantReflection
 	public function __construct(
 		ClassReflection $declaringClass,
 		\ReflectionClassConstant $reflection,
+		?Type $phpDocType,
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal
@@ -31,6 +34,7 @@ class ClassConstantReflection implements ConstantReflection
 	{
 		$this->declaringClass = $declaringClass;
 		$this->reflection = $reflection;
+		$this->phpDocType = $phpDocType;
 		$this->deprecatedDescription = $deprecatedDescription;
 		$this->isDeprecated = $isDeprecated;
 		$this->isInternal = $isInternal;
@@ -59,11 +63,21 @@ class ClassConstantReflection implements ConstantReflection
 		return $this->reflection->getValue();
 	}
 
+	public function hasPhpDocType(): bool
+	{
+		return $this->phpDocType !== null;
+	}
+
 	public function getValueType(): Type
 	{
 		if ($this->valueType === null) {
-			$this->valueType = ConstantTypeHelper::getTypeFromValue($this->getValue());
+			if ($this->phpDocType === null) {
+				$this->valueType = ConstantTypeHelper::getTypeFromValue($this->getValue());
+			} else {
+				$this->valueType = $this->phpDocType;
+			}
 		}
+
 		return $this->valueType;
 	}
 

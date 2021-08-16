@@ -5,7 +5,9 @@ namespace PHPStan\Reflection;
 use Attribute;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
@@ -35,6 +37,10 @@ class ClassReflection implements ReflectionWithFilename
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+
+	private StubPhpDocProvider $stubPhpDocProvider;
+
+	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
 	private PhpVersion $phpVersion;
 
@@ -122,6 +128,8 @@ class ClassReflection implements ReflectionWithFilename
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		FileTypeMapper $fileTypeMapper,
+		StubPhpDocProvider $stubPhpDocProvider,
+		PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		PhpVersion $phpVersion,
 		array $propertiesClassReflectionExtensions,
 		array $methodsClassReflectionExtensions,
@@ -135,6 +143,8 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->stubPhpDocProvider = $stubPhpDocProvider;
+		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
 		$this->phpVersion = $phpVersion;
 		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
 		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
@@ -777,21 +787,40 @@ class ClassReflection implements ReflectionWithFilename
 			$deprecatedDescription = null;
 			$isDeprecated = false;
 			$isInternal = false;
-			$declaringClass = $reflectionConstant->getDeclaringClass();
+			$declaringClass = $this->reflectionProvider->getClass($reflectionConstant->getDeclaringClass()->getName());
 			$fileName = $declaringClass->getFileName();
-			if ($reflectionConstant->getDocComment() !== false && $fileName !== false) {
-				$docComment = $reflectionConstant->getDocComment();
-				$className = $declaringClass->getName();
-				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $className, null, null, $docComment);
+			$phpDocType = null;
+			$resolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
+				$declaringClass->getName(),
+				$name
+			);
+			if ($resolvedPhpDoc === null && $fileName !== false) {
+				$docComment = null;
+				if ($reflectionConstant->getDocComment() !== false) {
+					$docComment = $reflectionConstant->getDocComment();
+				}
+				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForConstant(
+					$docComment,
+					$declaringClass,
+					$fileName,
+					$name
+				);
+			}
 
+			if ($resolvedPhpDoc !== null) {
 				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 				$isDeprecated = $resolvedPhpDoc->isDeprecated();
 				$isInternal = $resolvedPhpDoc->isInternal();
+				$varTags = $resolvedPhpDoc->getVarTags();
+				if (isset($varTags[0]) && count($varTags) === 1) {
+					$phpDocType = $varTags[0]->getType();
+				}
 			}
 
 			$this->constants[$name] = new ClassConstantReflection(
-				$this->reflectionProvider->getClass($declaringClass->getName()),
+				$declaringClass,
 				$reflectionConstant,
+				$phpDocType,
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal
@@ -1061,6 +1090,8 @@ class ClassReflection implements ReflectionWithFilename
 		return new self(
 			$this->reflectionProvider,
 			$this->fileTypeMapper,
+			$this->stubPhpDocProvider,
+			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,

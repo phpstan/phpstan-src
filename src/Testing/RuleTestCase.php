@@ -18,6 +18,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
@@ -77,6 +78,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),
 				$fileTypeMapper,
+				self::getContainer()->getByType(StubPhpDocProvider::class),
 				self::getContainer()->getByType(PhpVersion::class),
 				$phpDocInheritanceResolver,
 				$fileHelper,

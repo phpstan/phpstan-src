@@ -21,6 +21,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassNameHelper;
@@ -51,6 +52,8 @@ class BetterReflectionProvider implements ReflectionProvider
 	private \PHPStan\BetterReflection\Reflector\ConstantReflector $constantReflector;
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+
+	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
 	private PhpVersion $phpVersion;
 
@@ -84,6 +87,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		ClassReflector $classReflector,
 		FileTypeMapper $fileTypeMapper,
+		PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		PhpVersion $phpVersion,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		StubPhpDocProvider $stubPhpDocProvider,
@@ -101,6 +105,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->classReflector = $classReflector;
 		$this->fileTypeMapper = $fileTypeMapper;
+		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
 		$this->phpVersion = $phpVersion;
 		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
@@ -155,6 +160,8 @@ class BetterReflectionProvider implements ReflectionProvider
 		$classReflection = new ClassReflection(
 			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->fileTypeMapper,
+			$this->stubPhpDocProvider,
+			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
@@ -227,6 +234,8 @@ class BetterReflectionProvider implements ReflectionProvider
 		self::$anonymousClasses[$className] = new ClassReflection(
 			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->fileTypeMapper,
+			$this->stubPhpDocProvider,
+			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),

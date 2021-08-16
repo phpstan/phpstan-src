@@ -19,6 +19,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -69,6 +70,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,
+			self::getContainer()->getByType(StubPhpDocProvider::class),
 			self::getContainer()->getByType(PhpVersion::class),
 			$phpDocInheritanceResolver,
 			$fileHelper,

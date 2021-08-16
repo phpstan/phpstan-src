@@ -8,6 +8,8 @@ use Attributes\IsAttribute3;
 use Attributes\IsNotAttribute;
 use PHPStan\Broker\Broker;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\PhpDocInheritanceResolver;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Type\FileTypeMapper;
 use WrongClassConstantFile\SecuredRouter;
 
@@ -32,7 +34,9 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	{
 		$broker = $this->createMock(Broker::class);
 		$fileTypeMapper = $this->createMock(FileTypeMapper::class);
-		$classReflection = new ClassReflection($broker, $fileTypeMapper, new PhpVersion(PHP_VERSION_ID), [], [], $className, new \ReflectionClass($className), null, null, null);
+		$stubPhpDocProvider = $this->createMock(StubPhpDocProvider::class);
+		$phpDocInheritanceResolver = $this->createMock(PhpDocInheritanceResolver::class);
+		$classReflection = new ClassReflection($broker, $fileTypeMapper, $stubPhpDocProvider, $phpDocInheritanceResolver, new PhpVersion(PHP_VERSION_ID), [], [], $className, new \ReflectionClass($className), null, null, null);
 		$this->assertSame($has, $classReflection->hasTraitUse(\HasTraitUse\FooTrait::class));
 	}
 
@@ -95,10 +99,14 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	{
 		$broker = $this->createReflectionProvider();
 		$fileTypeMapper = $this->createMock(FileTypeMapper::class);
+		$stubPhpDocProvider = $this->createMock(StubPhpDocProvider::class);
+		$phpDocInheritanceResolver = $this->createMock(PhpDocInheritanceResolver::class);
 
 		$classReflection = new ClassReflection(
 			$broker,
 			$fileTypeMapper,
+			$stubPhpDocProvider,
+			$phpDocInheritanceResolver,
 			new PhpVersion(PHP_VERSION_ID),
 			[],
 			[],

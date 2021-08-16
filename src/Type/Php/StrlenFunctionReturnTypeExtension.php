@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use Bug4003\Boo;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -12,6 +13,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\TypeUtils;
 
 class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -34,15 +36,33 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 		$argType = $scope->getType($args[0]->value);
 
-		if ($argType instanceof ConstantStringType) {
-			return new ConstantIntegerType(strlen($argType->getValue()));
+		$constantStrings = TypeUtils::getConstantStrings($argType);
+		$min = null;
+		$max = null;
+		foreach($constantStrings as $constantString) {
+			$len = strlen($constantString->getValue());
+
+			if ($min === null || $len < $min) {
+				$min = $len;
+			}
+			if ($len > $max) {
+				$max = $len;
+			}
 		}
+		if ($min !== null && $min === $max) {
+			return new ConstantIntegerType($max);
+		}
+		if ($min || $max) {
+			return IntegerRangeType::fromInterval($min, $max);
+		}
+
 		if ($argType instanceof BooleanType) {
 			return IntegerRangeType::fromInterval(0, 1);
 		}
 
 		$isNonEmpty = $argType->isNonEmptyString();
-		if ($isNonEmpty->yes() || $argType instanceof IntegerType) {
+		$integer = new IntegerType();
+		if ($isNonEmpty->yes() || $integer->isSuperTypeOf($argType)->yes()) {
 			return IntegerRangeType::fromInterval(1, null);
 		}
 

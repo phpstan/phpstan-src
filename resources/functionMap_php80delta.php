@@ -146,6 +146,7 @@ return [
 	'old' => [
 
 		'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'array_fill' => ['array', 'start_key'=>'int', 'num'=>'0|positive', 'val'=>'mixed'],
 		'bcdiv' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['?string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],

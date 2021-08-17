@@ -210,3 +210,18 @@ class MethodAccessingTraitProperty
 	}
 
 }
+
+class AccessWithStatic
+{
+
+	private static $foo;
+	private $bar;
+
+	public function doBar()
+	{
+		static::$foo; // reported by different rule
+		static::$bar;
+		static::$nonexistent;
+	}
+
+}

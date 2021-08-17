@@ -174,6 +174,14 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				209,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
+			[
+				'Static access to instance property AccessWithStatic::$bar.',
+				223,
+			],
+			[
+				'Access to an undefined static property static(AccessWithStatic)::$nonexistent.',
+				224,
+			],
 		]);
 	}
 

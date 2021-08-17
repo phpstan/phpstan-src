@@ -37,7 +37,7 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		if (
 			$startIndexType instanceof ConstantIntegerType
 			&& $numberType instanceof ConstantIntegerType
-			&& $numberType->getValue() <= static::MAX_SIZE_USE_CONSTANT_ARRAY
+			&& $numberType->getValue() <= self::MAX_SIZE_USE_CONSTANT_ARRAY
 		) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			$nextIndex = $startIndexType->getValue();

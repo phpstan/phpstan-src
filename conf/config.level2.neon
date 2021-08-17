@@ -7,6 +7,8 @@ parameters:
 	checkPhpDocMissingReturn: true
 
 conditionalTags:
+	PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule:
+		phpstan.rules.rule: %featureToggles.privateStaticCall%
 	PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule:
 		phpstan.rules.rule: %featureToggles.classConstants%
 	PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule:
@@ -40,6 +42,8 @@ rules:
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
 
 services:
+	-
+		class: PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
 	-
 		class: PHPStan\Rules\Classes\MixinRule
 		arguments:

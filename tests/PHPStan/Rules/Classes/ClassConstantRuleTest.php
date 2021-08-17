@@ -144,12 +144,16 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 				116,
 			],
 			[
+				'Access to undefined constant static(ClassConstantVisibility\AccessWithStatic)::BAR.',
+				129,
+			],
+			[
 				'Class ClassConstantVisibility\Foo referenced with incorrect case: ClassConstantVisibility\FOO.',
-				122,
+				135,
 			],
 			[
 				'Access to private constant PRIVATE_FOO of class ClassConstantVisibility\Foo.',
-				122,
+				135,
 			],
 		]);
 	}

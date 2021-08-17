@@ -118,6 +118,19 @@ class Ipsum
 
 }
 
+class AccessWithStatic
+{
+
+	private const FOO = 1;
+
+	public function doFoo()
+	{
+		static::FOO; // reported by a different rule
+		static::BAR;
+	}
+
+}
+
 function () {
 	FOO::PRIVATE_FOO;
 };

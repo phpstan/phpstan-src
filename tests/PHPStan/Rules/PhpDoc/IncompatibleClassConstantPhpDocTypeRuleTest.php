@@ -36,6 +36,10 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Foo::DOLOR contains generic type IncompatibleClassConstantPhpDoc\Foo<int> but class IncompatibleClassConstantPhpDoc\Foo is not generic.',
 				26,
 			],
+			[
+				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Bar::BAZ with type string is incompatible with value 2.',
+				35,
+			],
 		]);
 	}
 

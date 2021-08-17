@@ -26,3 +26,27 @@ class Foo
 	const DOLOR = 1;
 
 }
+
+class Bar extends Foo
+{
+
+	const BAR = 2;
+
+	const BAZ = 2;
+
+}
+
+class Baz
+{
+
+	/** @var string */
+	private const BAZ = 'foo';
+
+}
+
+class Lorem extends Baz
+{
+
+	private const BAZ = 1;
+
+}

@@ -99,6 +99,11 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return (bool) ($this->flags & Class_::MODIFIER_STATIC);
 	}
 
+	public function isReadOnly(): bool
+	{
+		return (bool) ($this->flags & Class_::MODIFIER_READONLY);
+	}
+
 	/**
 	 * @return Identifier|Name|NullableType|UnionType|null
 	 */

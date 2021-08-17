@@ -50,6 +50,7 @@ parameters:
 		finalByPhpDocTag: false
 		classConstants: false
 		privateStaticCall: false
+		overridingProperty: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -229,7 +230,8 @@ parametersSchema:
 		crossCheckInterfaces: bool(),
 		finalByPhpDocTag: bool(),
 		classConstants: bool(),
-		privateStaticCall: bool()
+		privateStaticCall: bool(),
+		overridingProperty: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

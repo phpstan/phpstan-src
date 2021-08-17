@@ -97,6 +97,15 @@ class PhpPropertyReflection implements PropertyReflection
 		return $this->reflection->isPublic();
 	}
 
+	public function isReadOnly(): bool
+	{
+		if (method_exists($this->reflection, 'isReadOnly')) {
+			return $this->reflection->isReadOnly();
+		}
+
+		return false;
+	}
+
 	public function getReadableType(): Type
 	{
 		if ($this->type === null) {
@@ -147,6 +156,11 @@ class PhpPropertyReflection implements PropertyReflection
 		}
 
 		return new MixedType();
+	}
+
+	public function hasNativeType(): bool
+	{
+		return $this->nativeType !== null;
 	}
 
 	public function getNativeType(): Type

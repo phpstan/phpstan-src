@@ -26,5 +26,6 @@ parameters:
 		finalByPhpDocTag: true
 		classConstants: true
 		privateStaticCall: true
+		overridingProperty: true
 	stubFiles:
 		- ../stubs/arrayFunctions.stub

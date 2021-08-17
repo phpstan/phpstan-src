@@ -29,6 +29,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.fileWhitespace%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
+	PHPStan\Rules\Properties\OverridingPropertyRule:
+		phpstan.rules.rule: %featureToggles.overridingProperty%
 
 parametersSchema:
 	missingClosureNativeReturnCheckObjectTypehint: bool()
@@ -212,6 +214,11 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+
+	-
+		class: PHPStan\Rules\Properties\OverridingPropertyRule
+		arguments:
+			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule

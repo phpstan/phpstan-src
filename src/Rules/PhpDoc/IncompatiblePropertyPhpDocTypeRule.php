@@ -43,7 +43,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		$propertyName = $node->getName();
 		$propertyReflection = $scope->getClassReflection()->getNativeProperty($propertyName);
 
-		if (!$propertyReflection->hasPhpDoc()) {
+		if (!$propertyReflection->hasPhpDocType()) {
 			return [];
 		}
 

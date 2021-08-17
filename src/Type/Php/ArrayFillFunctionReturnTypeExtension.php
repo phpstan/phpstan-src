@@ -21,6 +21,7 @@ use PHPStan\Type\TypeCombinator;
 
 class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
+
 	private const MAX_SIZE_USE_CONSTANT_ARRAY = 100;
 
 	private PhpVersion $phpVersion;

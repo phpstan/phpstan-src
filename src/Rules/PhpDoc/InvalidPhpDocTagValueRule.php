@@ -40,6 +40,7 @@ class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 			&& !$node instanceof Node\Stmt\Property
 			&& !$node instanceof Node\Expr\Assign
 			&& !$node instanceof Node\Expr\AssignRef
+			&& !$node instanceof Node\Stmt\ClassConst
 		) {
 			return [];
 		}

@@ -83,3 +83,11 @@ class Bar
 	private $foo;
 
 }
+
+class Baz
+{
+
+	/** @var self&\stdClass */
+	const FOO = 1;
+
+}

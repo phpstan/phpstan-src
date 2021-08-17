@@ -97,6 +97,10 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 				67,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
+			[
+				'PHPDoc tag @var contains unresolvable type.',
+				90,
+			],
 		]);
 	}
 

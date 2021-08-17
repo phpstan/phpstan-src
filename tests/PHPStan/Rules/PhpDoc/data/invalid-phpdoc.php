@@ -73,3 +73,11 @@ class InlineThrows
 	}
 
 }
+
+class ClassConstant
+{
+
+	/** @var (Foo|Bar */
+	const FOO = 1;
+
+}

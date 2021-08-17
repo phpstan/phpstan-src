@@ -4,7 +4,7 @@ namespace TypesNamespaceDeductedTypes;
 
 use TypesNamespaceFunctions;
 
-class Foo
+final class Foo
 {
 
 	const INTEGER_CONSTANT = 1;

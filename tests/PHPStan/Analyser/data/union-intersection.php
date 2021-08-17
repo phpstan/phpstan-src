@@ -5,6 +5,7 @@ namespace UnionIntersection;
 class WithFoo
 {
 
+	/** @var 1 */
 	const FOO_CONSTANT = 1;
 
 	/** @var Foo */
@@ -25,7 +26,10 @@ class WithFoo
 class WithFooAndBar
 {
 
+	/** @var 1 */
 	const FOO_CONSTANT = 1;
+
+	/** @var 1 */
 	const BAR_CONSTANT = 1;
 
 	/** @var AnotherFoo */
@@ -59,7 +63,10 @@ class WithFooAndBar
 interface WithFooAndBarInterface
 {
 
+	/** @var 1 */
 	const FOO_CONSTANT = 1;
+
+	/** @var 1 */
 	const BAR_CONSTANT = 1;
 
 	public function doFoo(): AnotherFoo;
@@ -80,6 +87,7 @@ interface SomeInterface
 class Dolor
 {
 
+	/** @var array{1, 2, 3} */
 	const PARENT_CONSTANT = [1, 2, 3];
 
 }

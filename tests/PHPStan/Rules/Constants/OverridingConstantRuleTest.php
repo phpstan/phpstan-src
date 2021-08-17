@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Constants;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\RuleTestCase;
 
 /** @extends RuleTestCase<OverridingConstantRule> */
@@ -11,7 +10,7 @@ class OverridingConstantRuleTest extends RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new OverridingConstantRule(new PhpVersion(PHP_VERSION_ID), true);
+		return new OverridingConstantRule(true);
 	}
 
 	public function testRule(): void

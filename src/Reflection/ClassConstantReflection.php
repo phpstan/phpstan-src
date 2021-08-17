@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Type;
@@ -15,6 +16,8 @@ class ClassConstantReflection implements ConstantReflection
 
 	private ?Type $phpDocType;
 
+	private PhpVersion $phpVersion;
+
 	private ?string $deprecatedDescription;
 
 	private bool $isDeprecated;
@@ -27,6 +30,7 @@ class ClassConstantReflection implements ConstantReflection
 		ClassReflection $declaringClass,
 		\ReflectionClassConstant $reflection,
 		?Type $phpDocType,
+		PhpVersion $phpVersion,
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal
@@ -35,6 +39,7 @@ class ClassConstantReflection implements ConstantReflection
 		$this->declaringClass = $declaringClass;
 		$this->reflection = $reflection;
 		$this->phpDocType = $phpDocType;
+		$this->phpVersion = $phpVersion;
 		$this->deprecatedDescription = $deprecatedDescription;
 		$this->isDeprecated = $isDeprecated;
 		$this->isInternal = $isInternal;
@@ -107,7 +112,11 @@ class ClassConstantReflection implements ConstantReflection
 			return $this->reflection->isFinal();
 		}
 
-		return false;
+		if (!$this->phpVersion->isInterfaceConstantImplicitlyFinal()) {
+			return false;
+		}
+
+		return $this->declaringClass->isInterface();
 	}
 
 	public function isDeprecated(): TrinaryLogic

@@ -821,6 +821,7 @@ class ClassReflection implements ReflectionWithFilename
 				$declaringClass,
 				$reflectionConstant,
 				$phpDocType,
+				$this->phpVersion,
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal

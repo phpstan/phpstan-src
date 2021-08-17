@@ -37,9 +37,12 @@ $reducedIntegersToStringWithInt = array_reduce($uniquedIntegers, function (): st
 }, 1);
 
 $filledIntegers = array_fill(0, 5, 1);
+$emptyFilled = array_fill(3, 0, 'banana');
 $filledIntegersWithKeys = array_fill_keys([0], 1);
 /** @var negative-int $negInt */
 $filledAlwaysFalse = array_fill(0, $negInt, 1);
+/** @var positive-int $posInt */
+$filledNonEmptyArray = array_fill(0, $posInt, 'foo');
 $filledNegativeConstAlwaysFalse = array_fill(0, -5, 1);
 /** @var int<-3, 5> $maybeNegRange */
 $filledByMaybeNegativeRange = array_fill(0, $maybeNegRange, 1);

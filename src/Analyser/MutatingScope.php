@@ -1877,6 +1877,7 @@ class MutatingScope implements Scope
 			return new ErrorType();
 		} elseif ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Identifier) {
 			$constantName = $node->name->name;
+			$isObject = false;
 			if ($node->class instanceof Name) {
 				$constantClass = (string) $node->class;
 				$constantClassType = new ObjectType($constantClass);
@@ -1893,6 +1894,7 @@ class MutatingScope implements Scope
 						}
 
 						$namesToResolve[] = 'static';
+						$isObject = true;
 					}
 				}
 				if (in_array(strtolower($constantClass), $namesToResolve, true)) {
@@ -1908,6 +1910,7 @@ class MutatingScope implements Scope
 				}
 			} else {
 				$constantClassType = $this->getType($node->class);
+				$isObject = true;
 			}
 
 			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
@@ -1936,8 +1939,7 @@ class MutatingScope implements Scope
 				$constantReflection = $constantClassReflection->getConstant($constantName);
 				if (
 					$constantReflection instanceof ClassConstantReflection
-					&& $node->class instanceof Name
-					&& strtolower((string) $node->class) === 'static'
+					&& $isObject
 					&& !$constantClassReflection->isFinal()
 					&& !$constantReflection->hasPhpDocType()
 				) {

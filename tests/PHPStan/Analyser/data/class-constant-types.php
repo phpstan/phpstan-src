@@ -19,12 +19,15 @@ class Foo
 	{
 		assertType('1', self::NO_TYPE);
 		assertType('mixed', static::NO_TYPE);
+		assertType('mixed', $this::NO_TYPE);
 
 		assertType('string', self::TYPE);
 		assertType('string', static::TYPE);
+		assertType('string', $this::TYPE);
 
 		assertType('string', self::PRIVATE_TYPE);
 		assertType('string', static::PRIVATE_TYPE);
+		assertType('string', $this::PRIVATE_TYPE);
 	}
 
 }
@@ -40,9 +43,11 @@ class Bar extends Foo
 	{
 		assertType('string', self::TYPE);
 		assertType('string', static::TYPE);
+		assertType('string', $this::TYPE);
 
 		assertType('\'bar\'', self::PRIVATE_TYPE);
 		assertType('mixed', static::PRIVATE_TYPE);
+		assertType('mixed', $this::PRIVATE_TYPE);
 	}
 
 }
@@ -57,6 +62,7 @@ class Baz extends Foo
 	{
 		assertType('int', self::TYPE);
 		assertType('int', static::TYPE);
+		assertType('int', $this::TYPE);
 	}
 
 }
@@ -71,6 +77,7 @@ class Lorem extends Foo
 	{
 		assertType('string', self::TYPE);
 		assertType('string', static::TYPE);
+		assertType('string', $this::TYPE);
 	}
 
 }

@@ -129,7 +129,13 @@ class PhpPropertyReflection implements PropertyReflection
 		return $this->reflection->isPromoted();
 	}
 
+	/** @deprecated Use hasPhpDocType() */
 	public function hasPhpDoc(): bool
+	{
+		return $this->hasPhpDocType();
+	}
+
+	public function hasPhpDocType(): bool
 	{
 		return $this->phpDocType !== null;
 	}

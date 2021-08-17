@@ -25,5 +25,6 @@ parameters:
 		crossCheckInterfaces: true
 		finalByPhpDocTag: true
 		classConstants: true
+		privateStaticCall: true
 	stubFiles:
 		- ../stubs/arrayFunctions.stub

@@ -9,6 +9,8 @@ parameters:
 conditionalTags:
 	PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule:
 		phpstan.rules.rule: %featureToggles.classConstants%
+	PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule:
+		phpstan.rules.rule: %featureToggles.privateStaticCall%
 
 rules:
 	- PHPStan\Rules\Cast\EchoRule
@@ -54,6 +56,8 @@ services:
 			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 		tags:
 			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
 	-
 		class: PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	-

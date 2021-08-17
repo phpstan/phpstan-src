@@ -49,6 +49,7 @@ parameters:
 		crossCheckInterfaces: false
 		finalByPhpDocTag: false
 		classConstants: false
+		privateStaticCall: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -227,7 +228,8 @@ parametersSchema:
 		validateOverridingMethodsInStubs: bool(),
 		crossCheckInterfaces: bool(),
 		finalByPhpDocTag: bool(),
-		classConstants: bool()
+		classConstants: bool(),
+		privateStaticCall: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

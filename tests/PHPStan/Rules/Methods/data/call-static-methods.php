@@ -329,3 +329,19 @@ class MethodCallingTraitWithStaticMethod
 	}
 
 }
+
+class CallWithStatic
+{
+
+	private function doFoo()
+	{
+
+	}
+
+	public function doBar()
+	{
+		static::doFoo(); // reported by different rule
+		static::nonexistent();
+	}
+
+}

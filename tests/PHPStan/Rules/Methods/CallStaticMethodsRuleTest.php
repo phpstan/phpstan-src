@@ -225,6 +225,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				328,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
+			[
+				'Call to an undefined static method static(CallStaticMethods\CallWithStatic)::nonexistent().',
+				344,
+			],
 		]);
 	}
 

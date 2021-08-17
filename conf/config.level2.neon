@@ -6,6 +6,10 @@ parameters:
 	checkThisOnly: false
 	checkPhpDocMissingReturn: true
 
+conditionalTags:
+	PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule:
+		phpstan.rules.rule: %featureToggles.classConstants%
+
 rules:
 	- PHPStan\Rules\Cast\EchoRule
 	- PHPStan\Rules\Cast\InvalidCastRule
@@ -50,6 +54,8 @@ services:
 			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 		tags:
 			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	-
 		class: PHPStan\Rules\Generics\InterfaceAncestorsRule
 		arguments:

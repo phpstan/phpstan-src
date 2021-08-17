@@ -48,6 +48,7 @@ parameters:
 		validateOverridingMethodsInStubs: false
 		crossCheckInterfaces: false
 		finalByPhpDocTag: false
+		classConstants: false
 	fileExtensions:
 		- php
 	checkAlwaysTrueCheckTypeFunctionCall: false
@@ -225,7 +226,8 @@ parametersSchema:
 		neverInGenericReturnType: bool(),
 		validateOverridingMethodsInStubs: bool(),
 		crossCheckInterfaces: bool(),
-		finalByPhpDocTag: bool()
+		finalByPhpDocTag: bool(),
+		classConstants: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAlwaysTrueCheckTypeFunctionCall: bool()

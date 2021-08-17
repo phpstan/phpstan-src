@@ -24,5 +24,6 @@ parameters:
 		validateOverridingMethodsInStubs: true
 		crossCheckInterfaces: true
 		finalByPhpDocTag: true
+		classConstants: true
 	stubFiles:
 		- ../stubs/arrayFunctions.stub

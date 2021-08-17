@@ -127,4 +127,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function isInterfaceConstantImplicitlyFinal(): bool
+	{
+		return $this->versionId < 80100;
+	}
+
 }

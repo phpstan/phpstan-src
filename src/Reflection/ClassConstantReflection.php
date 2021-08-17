@@ -101,6 +101,15 @@ class ClassConstantReflection implements ConstantReflection
 		return $this->reflection->isPublic();
 	}
 
+	public function isFinal(): bool
+	{
+		if (method_exists($this->reflection, 'isFinal')) {
+			return $this->reflection->isFinal();
+		}
+
+		return false;
+	}
+
 	public function isDeprecated(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->isDeprecated);

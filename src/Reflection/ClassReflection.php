@@ -650,7 +650,7 @@ class ClassReflection implements ReflectionWithFilename
 	/**
 	 * @return \PHPStan\Reflection\ClassReflection[]
 	 */
-	private function getImmediateInterfaces(): array
+	public function getImmediateInterfaces(): array
 	{
 		$indirectInterfaceNames = [];
 		$parent = $this->getParentClass();

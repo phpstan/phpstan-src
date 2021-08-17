@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -14,12 +15,20 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
-
 	private const MAX_SIZE_USE_CONSTANT_ARRAY = 100;
+
+	private PhpVersion $phpVersion;
+
+	public function __construct(PhpVersion $phpVersion)
+	{
+		$this->phpVersion = $phpVersion;
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -36,8 +45,20 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		$numberType = $scope->getType($functionCall->args[1]->value);
 		$valueType = $scope->getType($functionCall->args[2]->value);
 
-		// check against negative-int
+		if ($numberType instanceof IntegerRangeType) {
+			if ($numberType->getMin() < 0) {
+				return TypeCombinator::union(
+					new ArrayType(new IntegerType(), $valueType),
+					new ConstantBooleanType(false)
+				);
+			}
+		}
+
+		// check against negative-int, which is not allowed
 		if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($numberType)->yes()) {
+			if ($this->phpVersion->getVersionId() >= 80000) {
+				return new NeverType();
+			}
 			return new ConstantBooleanType(false);
 		}
 
@@ -63,10 +84,7 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			return $arrayBuilder->getArray();
 		}
 
-		if (
-			$numberType instanceof ConstantIntegerType
-			&& $numberType->getValue() > 0
-		) {
+		if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($numberType)->yes()) {
 			return new IntersectionType([
 				new ArrayType(new IntegerType(), $valueType),
 				new NonEmptyArrayType(),

@@ -29,6 +29,9 @@ class ConstantTypeHelper
 			return new ConstantStringType($value);
 		} elseif (is_array($value)) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			if (count($value) > 256) {
+				$arrayBuilder->degradeToGeneralArray();
+			}
 			foreach ($value as $k => $v) {
 				$arrayBuilder->setOffsetValueType(self::getTypeFromValue($k), self::getTypeFromValue($v));
 			}

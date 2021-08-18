@@ -1133,7 +1133,7 @@ class MutatingScope implements Scope
 				} elseif ($rightType instanceof ConstantIntegerType) {
 					$rangeMax = $rightType->getValue() - 1;
 				} elseif ($rightType instanceof UnionType) {
-					foreach($rightType->getTypes() as $type) {
+					foreach ($rightType->getTypes() as $type) {
 						if ($type instanceof IntegerRangeType) {
 							$rangeMax = max($rangeMax, $type->getMax() !== null ? $type->getMax() - 1 : null);
 						} elseif ($type instanceof ConstantIntegerType) {

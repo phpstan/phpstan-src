@@ -1780,6 +1780,30 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				StringType::class,
 				'string',
 			],
+			[
+				[
+					new StringType(),
+					new UnionType([
+						new ConstantStringType(''),
+						new ConstantStringType('0'),
+						new ConstantBooleanType(false),
+					]),
+				],
+				UnionType::class,
+				'string|false',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+					new UnionType([
+						new ConstantStringType(''),
+						new ConstantStringType('0'),
+						new ConstantBooleanType(false),
+					]),
+				],
+				UnionType::class,
+				'string|false',
+			],
 		];
 	}
 

@@ -247,6 +247,10 @@ class TypeCombinator
 			unset($types[$i]);
 		}
 
+		foreach ($scalarTypes as $classType => $scalarTypeItems) {
+			$scalarTypes[$classType] = array_values($scalarTypeItems);
+		}
+
 		/** @var ArrayType[] $arrayTypes */
 		$arrayTypes = $arrayTypes;
 
@@ -280,102 +284,65 @@ class TypeCombinator
 
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
 			if (isset($hasGenericScalarTypes[$classType])) {
+				unset($scalarTypes[$classType]);
 				continue;
 			}
 			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
 				$types[] = new BooleanType();
+				unset($scalarTypes[$classType]);
 				continue;
 			}
-			foreach ($scalarTypeItems as $type) {
-				$types[] = $type;
+
+			for ($i = 0; $i < count($scalarTypeItems); $i++) {
+				for ($j = 0; $j < count($types); $j++) {
+					$compareResult = self::compareTypesInUnion($scalarTypeItems[$i], $types[$j]);
+					if ($compareResult === null) {
+						continue;
+					}
+
+					[$a, $b] = $compareResult;
+					if ($a !== null) {
+						$scalarTypeItems[$i] = $a;
+						array_splice($types, $j--, 1);
+						continue 1;
+					}
+					if ($b !== null) {
+						$types[$j] = $b;
+						array_splice($scalarTypeItems, $i--, 1);
+						continue 2;
+					}
+				}
 			}
+
+			$scalarTypes[$classType] = $scalarTypeItems;
 		}
 
 		// transform A | A to A
 		// transform A | never to A
 		for ($i = 0; $i < count($types); $i++) {
 			for ($j = $i + 1; $j < count($types); $j++) {
-				if ($types[$i] instanceof IntegerRangeType) {
-					$type = $types[$i]->tryUnion($types[$j]);
-					if ($type !== null) {
-						$types[$i] = $type;
-						$i--;
-						array_splice($types, $j, 1);
-						continue 2;
-					}
+				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
+				if ($compareResult === null) {
+					continue;
 				}
 
-				if ($types[$i] instanceof SubtractableType) {
-					$typeWithoutSubtractedTypeA = $types[$i]->getTypeWithoutSubtractedType();
-					if ($typeWithoutSubtractedTypeA instanceof MixedType && $types[$j] instanceof MixedType) {
-						$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOfMixed($types[$j]);
-					} else {
-						$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOf($types[$j]);
-					}
-					if ($isSuperType->yes()) {
-						$subtractedType = null;
-						if ($types[$j] instanceof SubtractableType) {
-							$subtractedType = $types[$j]->getSubtractedType();
-						}
-						$types[$i] = self::intersectWithSubtractedType($types[$i], $subtractedType);
-						array_splice($types, $j--, 1);
-						continue 1;
-					}
-				}
-
-				if ($types[$j] instanceof SubtractableType) {
-					$typeWithoutSubtractedTypeB = $types[$j]->getTypeWithoutSubtractedType();
-					if ($typeWithoutSubtractedTypeB instanceof MixedType && $types[$i] instanceof MixedType) {
-						$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOfMixed($types[$i]);
-					} else {
-						$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOf($types[$i]);
-					}
-					if ($isSuperType->yes()) {
-						$subtractedType = null;
-						if ($types[$i] instanceof SubtractableType) {
-							$subtractedType = $types[$i]->getSubtractedType();
-						}
-						$types[$j] = self::intersectWithSubtractedType($types[$j], $subtractedType);
-						array_splice($types, $i--, 1);
-						continue 2;
-					}
-				}
-
-				if (
-					!$types[$j] instanceof ConstantArrayType
-					&& $types[$j]->isSuperTypeOf($types[$i])->yes()
-				) {
-					array_splice($types, $i--, 1);
-					continue 2;
-				}
-
-				if (
-					!$types[$i] instanceof ConstantArrayType
-					&& $types[$i]->isSuperTypeOf($types[$j])->yes()
-				) {
+				[$a, $b] = $compareResult;
+				if ($a !== null) {
+					$types[$i] = $a;
 					array_splice($types, $j--, 1);
 					continue 1;
 				}
-
-				if (
-					$types[$i] instanceof ConstantStringType
-					&& $types[$i]->getValue() === ''
-					&& $types[$j]->describe(VerbosityLevel::value()) === 'non-empty-string'
-				) {
-					$types[$i] = new StringType();
-					array_splice($types, $j--, 1);
-					continue 1;
-				}
-
-				if (
-					$types[$j] instanceof ConstantStringType
-					&& $types[$j]->getValue() === ''
-					&& $types[$i]->describe(VerbosityLevel::value()) === 'non-empty-string'
-				) {
-					$types[$j] = new StringType();
+				if ($b !== null) {
+					$types[$j] = $b;
 					array_splice($types, $i--, 1);
 					continue 2;
 				}
+			}
+		}
+
+		foreach ($scalarTypes as $scalarTypeItems) {
+			foreach ($scalarTypeItems as $scalarType) {
+				$types[] = $scalarType;
 			}
 		}
 
@@ -406,6 +373,95 @@ class TypeCombinator
 		}
 
 		return new UnionType($types);
+	}
+
+	/**
+	 * @param Type $a
+	 * @param Type $b
+	 * @return array{Type, null}|array{null, Type}|null
+	 */
+	private static function compareTypesInUnion(Type $a, Type $b): ?array
+	{
+		if ($a instanceof IntegerRangeType) {
+			$type = $a->tryUnion($b);
+			if ($type !== null) {
+				$a = $type;
+				return [$a, null];
+			}
+		}
+		if ($b instanceof IntegerRangeType) {
+			$type = $b->tryUnion($a);
+			if ($type !== null) {
+				$b = $type;
+				return [null, $b];
+			}
+		}
+
+		if ($a instanceof SubtractableType) {
+			$typeWithoutSubtractedTypeA = $a->getTypeWithoutSubtractedType();
+			if ($typeWithoutSubtractedTypeA instanceof MixedType && $b instanceof MixedType) {
+				$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOfMixed($b);
+			} else {
+				$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOf($b);
+			}
+			if ($isSuperType->yes()) {
+				$subtractedType = null;
+				if ($b instanceof SubtractableType) {
+					$subtractedType = $b->getSubtractedType();
+				}
+				$a = self::intersectWithSubtractedType($a, $subtractedType);
+				return [$a, null];
+			}
+		}
+
+		if ($b instanceof SubtractableType) {
+			$typeWithoutSubtractedTypeB = $b->getTypeWithoutSubtractedType();
+			if ($typeWithoutSubtractedTypeB instanceof MixedType && $a instanceof MixedType) {
+				$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOfMixed($a);
+			} else {
+				$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOf($a);
+			}
+			if ($isSuperType->yes()) {
+				$subtractedType = null;
+				if ($a instanceof SubtractableType) {
+					$subtractedType = $a->getSubtractedType();
+				}
+				$b = self::intersectWithSubtractedType($b, $subtractedType);
+				return [null, $b];
+			}
+		}
+
+		if (
+			!$b instanceof ConstantArrayType
+			&& $b->isSuperTypeOf($a)->yes()
+		) {
+			return [null, $b];
+		}
+
+		if (
+			!$a instanceof ConstantArrayType
+			&& $a->isSuperTypeOf($b)->yes()
+		) {
+			return [$a, null];
+		}
+
+		if (
+			$a instanceof ConstantStringType
+			&& $a->getValue() === ''
+			&& $b->describe(VerbosityLevel::value()) === 'non-empty-string'
+		) {
+			return [null, new StringType()];
+		}
+
+		if (
+			$b instanceof ConstantStringType
+			&& $b->getValue() === ''
+			&& $a->describe(VerbosityLevel::value()) === 'non-empty-string'
+		) {
+			return [new StringType(), null];
+		}
+
+		return null;
 	}
 
 	private static function unionWithSubtractedType(

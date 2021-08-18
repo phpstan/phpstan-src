@@ -1129,8 +1129,10 @@ class MutatingScope implements Scope
 				$rangeMax = null;
 				if ($rightType instanceof IntegerRangeType) {
 					$rangeMax = $rightType->getMax() !== null ? $rightType->getMax() - 1 : null;
-				} elseif ($rightType instanceof ConstantIntegerType) {
-					$rangeMax = $rightType->getValue() - 1;
+				} else {
+					foreach(TypeUtils::getConstantTypes($rightType) as $constantType) {
+						$rangeMax = max($rangeMax, $constantType->getValue() - 1);
+					}
 				}
 
 				if ($positiveInt->isSuperTypeOf($leftType)->yes()) {

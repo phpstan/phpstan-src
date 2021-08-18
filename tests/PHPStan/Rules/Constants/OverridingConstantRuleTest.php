@@ -68,6 +68,27 @@ class OverridingConstantRuleTest extends RuleTestCase
 			51,
 		];
 
+		$errors[] = [
+			'Private constant OverridingFinalConstant\PrivateDolor::PROTECTED_CONST overriding protected constant OverridingFinalConstant\Dolor::PROTECTED_CONST should be protected or public.',
+			69,
+		];
+		$errors[] = [
+			'Private constant OverridingFinalConstant\PrivateDolor::PUBLIC_CONST overriding public constant OverridingFinalConstant\Dolor::PUBLIC_CONST should also be public.',
+			70,
+		];
+		$errors[] = [
+			'Private constant OverridingFinalConstant\PrivateDolor::ANOTHER_PUBLIC_CONST overriding public constant OverridingFinalConstant\Dolor::ANOTHER_PUBLIC_CONST should also be public.',
+			71,
+		];
+		$errors[] = [
+			'Protected constant OverridingFinalConstant\ProtectedDolor::PUBLIC_CONST overriding public constant OverridingFinalConstant\Dolor::PUBLIC_CONST should also be public.',
+			80,
+		];
+		$errors[] = [
+			'Protected constant OverridingFinalConstant\ProtectedDolor::ANOTHER_PUBLIC_CONST overriding public constant OverridingFinalConstant\Dolor::ANOTHER_PUBLIC_CONST should also be public.',
+			81,
+		];
+
 		$this->analyse([__DIR__ . '/data/overriding-final-constant.php'], $errors);
 	}
 

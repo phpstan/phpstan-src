@@ -74,6 +74,27 @@ class OverridingConstantRule implements Rule
 			))->nonIgnorable()->build();
 		}
 
+		if ($prototype->isPublic()) {
+			if (!$constantReflection->isPublic()) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s constant %s::%s overriding public constant %s::%s should also be public.',
+					$constantReflection->isPrivate() ? 'Private' : 'Protected',
+					$constantReflection->getDeclaringClass()->getDisplayName(),
+					$constantReflection->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getName()
+				))->nonIgnorable()->build();
+			}
+		} elseif ($constantReflection->isPrivate()) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Private constant %s::%s overriding protected constant %s::%s should be protected or public.',
+				$constantReflection->getDeclaringClass()->getDisplayName(),
+				$constantReflection->getName(),
+				$prototype->getDeclaringClass()->getDisplayName(),
+				$prototype->getName()
+			))->nonIgnorable()->build();
+		}
+
 		if (!$this->checkPhpDocMethodSignatures) {
 			return $errors;
 		}

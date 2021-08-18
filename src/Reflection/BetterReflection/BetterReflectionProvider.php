@@ -82,6 +82,9 @@ class BetterReflectionProvider implements ReflectionProvider
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private static array $anonymousClasses = [];
 
+	/** @var array<string, GlobalConstantReflection> */
+	private array $cachedConstants = [];
+
 	public function __construct(
 		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
@@ -359,6 +362,10 @@ class BetterReflectionProvider implements ReflectionProvider
 			throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
 		}
 
+		if (array_key_exists($constantName, $this->cachedConstants)) {
+			return $this->cachedConstants[$constantName];
+		}
+
 		$constantReflection = $this->constantReflector->reflect($constantName);
 		try {
 			$constantValue = $constantReflection->getValue();
@@ -369,7 +376,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$fileName = null;
 		}
 
-		return new RuntimeConstantReflection(
+		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,
 			$constantValueType,
 			$fileName

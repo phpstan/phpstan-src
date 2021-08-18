@@ -59,6 +59,9 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	/** @var \PHPStan\Reflection\ClassReflection[] */
 	private static array $anonymousClasses = [];
 
+	/** @var array<string, GlobalConstantReflection> */
+	private array $cachedConstants = [];
+
 	public function __construct(
 		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
@@ -341,7 +344,11 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
 		}
 
-		return new RuntimeConstantReflection(
+		if (array_key_exists($constantName, $this->cachedConstants)) {
+			return $this->cachedConstants[$constantName];
+		}
+
+		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,
 			ConstantTypeHelper::getTypeFromValue(constant($constantName)),
 			null

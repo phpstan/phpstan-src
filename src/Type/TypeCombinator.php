@@ -23,8 +23,6 @@ use PHPStan\Type\Generic\TemplateUnionType;
 class TypeCombinator
 {
 
-	private const CONSTANT_SCALAR_UNION_THRESHOLD = 8;
-
 	public static function addNull(Type $type): Type
 	{
 		return self::union($type, new NullType());
@@ -289,15 +287,6 @@ class TypeCombinator
 				continue;
 			}
 			foreach ($scalarTypeItems as $type) {
-				if (count($scalarTypeItems) > self::CONSTANT_SCALAR_UNION_THRESHOLD) {
-					$types[] = $type->generalize(GeneralizePrecision::moreSpecific());
-
-					if ($type instanceof ConstantStringType) {
-						continue;
-					}
-
-					break;
-				}
 				$types[] = $type;
 			}
 		}

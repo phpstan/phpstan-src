@@ -44,6 +44,6 @@ function ()
 	assertType('array(\'Bug2677\\\\A\', \'Bug2677\\\\B\', \'Bug2677\\\\C\', \'Bug2677\\\\D\', \'Bug2677\\\\E\', \'Bug2677\\\\F\', \'Bug2677\\\\G\', \'Bug2677\\\\H\', \'Bug2677\\\\I\', \'Bug2677\\\\J\', \'Bug2677\\\\K\', \'Bug2677\\\\L\', \'Bug2677\\\\M\', \'Bug2677\\\\N\', \'Bug2677\\\\O\', \'Bug2677\\\\P\')', $classes);
 
 	foreach ($classes as $class) {
-		assertType('class-string', $class);
+		assertType('\'Bug2677\\\\A\'|\'Bug2677\\\\B\'|\'Bug2677\\\\C\'|\'Bug2677\\\\D\'|\'Bug2677\\\\E\'|\'Bug2677\\\\F\'|\'Bug2677\\\\G\'|\'Bug2677\\\\H\'|\'Bug2677\\\\I\'|\'Bug2677\\\\J\'|\'Bug2677\\\\K\'|\'Bug2677\\\\L\'|\'Bug2677\\\\M\'|\'Bug2677\\\\N\'|\'Bug2677\\\\O\'|\'Bug2677\\\\P\'', $class);
 	}
 };

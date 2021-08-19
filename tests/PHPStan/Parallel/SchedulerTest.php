@@ -2,7 +2,6 @@
 
 namespace PHPStan\Parallel;
 
-use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 
 class SchedulerTest extends TestCase
@@ -89,7 +88,7 @@ class SchedulerTest extends TestCase
 	): void
 	{
 		if ($numberOfFiles < 0) {
-			throw new ShouldNotHappenException();
+			throw new \PHPStan\ShouldNotHappenException();
 		}
 
 		$files = array_fill(0, $numberOfFiles, 'file.php');

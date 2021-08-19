@@ -69,21 +69,27 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		}
 
 		// rewrite min($x, $y) as $x < $y ? $x : $y
+		// in case we don't handle arrays, which have different semantics
 		$functionName = $functionReflection->getName();
+		$args = $functionCall->args;
 		if (count($functionCall->args) === 2) {
-			$args = $functionCall->args;
-			if ($functionName === 'min') {
-				return $scope->getType(new Ternary(
-					new Smaller($args[0]->value, $args[1]->value),
-					$args[0]->value,
-					$args[1]->value
-				));
-			} elseif ($functionName === 'max') {
-				return $scope->getType(new Ternary(
-					new Smaller($args[0]->value, $args[1]->value),
-					$args[1]->value,
-					$args[0]->value
-				));
+			$argType0 = $scope->getType($args[0]->value);
+			$argType1 = $scope->getType($args[1]->value);
+
+			if ($argType0->isArray()->no() && $argType1->isArray()->no()) {
+				if ($functionName === 'min') {
+					return $scope->getType(new Ternary(
+						new Smaller($args[0]->value, $args[1]->value),
+						$args[0]->value,
+						$args[1]->value
+					));
+				} elseif ($functionName === 'max') {
+					return $scope->getType(new Ternary(
+						new Smaller($args[0]->value, $args[1]->value),
+						$args[1]->value,
+						$args[0]->value
+					));
+				}
 			}
 		}
 

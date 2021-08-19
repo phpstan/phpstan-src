@@ -8534,7 +8534,7 @@ return [
 'pg_fetch_row' => ['array|false', 'result'=>'resource', 'row='=>'?int', 'result_type='=>'int'],
 'pg_field_is_null' => ['int|false', 'result'=>'', 'field_name_or_number'=>'string|int'],
 'pg_field_is_null\'1' => ['int', 'result'=>'', 'row'=>'int', 'field_name_or_number'=>'string|int'],
-'pg_field_name' => ['string', 'result'=>'resource', 'field_number'=>'int'],
+'pg_field_name' => ['string|false', 'result'=>'resource', 'field_number'=>'int'],
 'pg_field_num' => ['int', 'result'=>'resource', 'field_name'=>'string'],
 'pg_field_prtlen' => ['int|false', 'result'=>'', 'field_name_or_number'=>''],
 'pg_field_prtlen\'1' => ['int', 'result'=>'', 'row'=>'int', 'field_name_or_number'=>'string|int'],

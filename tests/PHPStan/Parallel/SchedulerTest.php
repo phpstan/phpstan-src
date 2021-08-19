@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parallel;
 
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 
 class SchedulerTest extends TestCase
@@ -87,6 +88,10 @@ class SchedulerTest extends TestCase
 		array $expectedJobSizes
 	): void
 	{
+		if ($numberOfFiles < 0) {
+			throw new ShouldNotHappenException();
+		}
+
 		$files = array_fill(0, $numberOfFiles, 'file.php');
 		$scheduler = new Scheduler($jobSize, $maximumNumberOfProcesses, $minimumNumberOfJobsPerProcess);
 		$schedule = $scheduler->scheduleWork($cpuCores, $files);

@@ -40,17 +40,23 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		foreach ($constantStrings as $constantString) {
 			$len = strlen($constantString->getValue());
 
-			if ($min === null || $len < $min) {
+			if ($min === null) {
+				$min = $len;
+				$max = $len;
+			}
+
+			if ($len < $min) {
 				$min = $len;
 			}
-			if ($max !== null && $len <= $max) {
+			if ($len <= $max) {
 				continue;
 			}
 
 			$max = $len;
 		}
 
-		if ($min !== null || $max !== null) {
+		// $max is always != null, when $min is != null
+		if ($min !== null) {
 			return IntegerRangeType::fromInterval($min, $max);
 		}
 

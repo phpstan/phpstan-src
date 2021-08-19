@@ -293,22 +293,22 @@ class TypeCombinator
 				continue;
 			}
 
-			for ($i = 0; $i < count($scalarTypeItems); $i++) {
-				for ($j = 0; $j < count($types); $j++) {
-					$compareResult = self::compareTypesInUnion($scalarTypeItems[$i], $types[$j]);
+			for ($i = 0; $i < count($types); $i++) {
+				for ($j = 0; $j < count($scalarTypeItems); $j++) {
+					$compareResult = self::compareTypesInUnion($types[$i], $scalarTypeItems[$j]);
 					if ($compareResult === null) {
 						continue;
 					}
 
 					[$a, $b] = $compareResult;
 					if ($a !== null) {
-						$scalarTypeItems[$i] = $a;
-						array_splice($types, $j--, 1);
+						$types[$i] = $a;
+						array_splice($scalarTypeItems, $j--, 1);
 						continue 1;
 					}
 					if ($b !== null) {
-						$types[$j] = $b;
-						array_splice($scalarTypeItems, $i--, 1);
+						$scalarTypeItems[$j] = $b;
+						array_splice($types, $i--, 1);
 						continue 2;
 					}
 				}

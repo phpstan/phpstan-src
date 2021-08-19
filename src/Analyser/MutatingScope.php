@@ -1111,6 +1111,48 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Mod || $node instanceof Expr\AssignOp\Mod) {
+			if ($node instanceof Node\Expr\AssignOp) {
+				$left = $node->var;
+				$right = $node->expr;
+			} else {
+				$left = $node->left;
+				$right = $node->right;
+			}
+
+			$leftType = $this->getType($left);
+			$rightType = $this->getType($right);
+
+			$integer = new IntegerType();
+			$positiveInt = IntegerRangeType::fromInterval(0, null);
+			if ($integer->isSuperTypeOf($rightType)->yes()) {
+				$rangeMin = null;
+				$rangeMax = null;
+
+				if ($rightType instanceof IntegerRangeType) {
+					$rangeMax = $rightType->getMax() !== null ? $rightType->getMax() - 1 : null;
+				} elseif ($rightType instanceof ConstantIntegerType) {
+					$rangeMax = $rightType->getValue() - 1;
+				} elseif ($rightType instanceof UnionType) {
+					foreach ($rightType->getTypes() as $type) {
+						if ($type instanceof IntegerRangeType) {
+							$rangeMax = max($rangeMax, $type->getMax() !== null ? $type->getMax() - 1 : null);
+						} elseif ($type instanceof ConstantIntegerType) {
+							$rangeMax = max($rangeMax, $type->getValue() - 1);
+						}
+					}
+				}
+
+				if ($positiveInt->isSuperTypeOf($leftType)->yes()) {
+					$rangeMin = 0;
+				} elseif ($rangeMax !== null) {
+					$rangeMin = $rangeMax * -1;
+				}
+
+				return IntegerRangeType::fromInterval($rangeMin, $rangeMax);
+			} elseif ($positiveInt->isSuperTypeOf($leftType)->yes()) {
+				return IntegerRangeType::fromInterval(0, null);
+			}
+
 			return new IntegerType();
 		}
 

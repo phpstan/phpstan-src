@@ -463,6 +463,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/class-constant-types.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/modulo-operator.php');
 	}
 
 	/**

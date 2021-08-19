@@ -57,7 +57,7 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 		// check against negative-int, which is not allowed
 		if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($numberType)->yes()) {
-			if ($this->phpVersion->getVersionId() >= 80000) {
+			if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
 				return new NeverType();
 			}
 			return new ConstantBooleanType(false);

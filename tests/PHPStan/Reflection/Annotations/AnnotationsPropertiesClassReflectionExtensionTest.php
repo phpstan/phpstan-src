@@ -6,7 +6,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Type\VerbosityLevel;
 
-class AnnotationsPropertiesClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
+class AnnotationsPropertiesClassReflectionExtensionTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataProperties(): array

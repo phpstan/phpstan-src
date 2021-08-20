@@ -5,10 +5,10 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use TestDirectorySourceLocator\AFoo;
 
-class OptimizedDirectorySourceLocatorTest extends TestCase
+class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 {
 
 	public function dataClass(): array

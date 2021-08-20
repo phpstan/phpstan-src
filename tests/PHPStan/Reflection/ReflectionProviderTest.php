@@ -3,12 +3,12 @@
 namespace PHPStan\Reflection;
 
 use PhpParser\Node\Name;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
-class ReflectionProviderTest extends TestCase
+class ReflectionProviderTest extends PHPStanTestCase
 {
 
 	public function dataFunctionThrowType(): iterable

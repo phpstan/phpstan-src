@@ -6,7 +6,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 
-class UniversalObjectCratesClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
+class UniversalObjectCratesClassReflectionExtensionTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testNonexistentClass(): void

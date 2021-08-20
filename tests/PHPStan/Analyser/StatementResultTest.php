@@ -9,7 +9,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 
-class StatementResultTest extends \PHPStan\Testing\TestCase
+class StatementResultTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsAlwaysTerminating(): array

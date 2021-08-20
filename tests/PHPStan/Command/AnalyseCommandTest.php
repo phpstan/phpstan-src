@@ -8,7 +8,7 @@ use const DIRECTORY_SEPARATOR;
 /**
  * @group exec
  */
-class AnalyseCommandTest extends \PHPStan\Testing\TestCase
+class AnalyseCommandTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	/**

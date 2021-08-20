@@ -6,7 +6,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 
-class DeprecatedAnnotationsTest extends \PHPStan\Testing\TestCase
+class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataDeprecatedAnnotations(): array

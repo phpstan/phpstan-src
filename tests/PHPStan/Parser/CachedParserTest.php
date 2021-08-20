@@ -4,9 +4,9 @@ namespace PHPStan\Parser;
 
 use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\File\FileReader;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 
-class CachedParserTest extends TestCase
+class CachedParserTest extends PHPStanTestCase
 {
 
 	/**

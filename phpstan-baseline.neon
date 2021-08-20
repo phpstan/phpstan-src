@@ -243,7 +243,7 @@ parameters:
 		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
-			path: src/Testing/TestCase.php
+			path: src/Testing/PHPStanTestCase.php
 
 		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"

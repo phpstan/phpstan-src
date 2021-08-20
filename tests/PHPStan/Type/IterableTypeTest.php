@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class IterableTypeTest extends \PHPStan\Testing\TestCase
+class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

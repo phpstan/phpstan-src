@@ -6,7 +6,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 
-class InternalAnnotationsTest extends \PHPStan\Testing\TestCase
+class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataInternalAnnotations(): array

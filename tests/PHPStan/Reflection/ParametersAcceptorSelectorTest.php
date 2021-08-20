@@ -22,7 +22,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
+class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataSelectFromTypes(): \Generator

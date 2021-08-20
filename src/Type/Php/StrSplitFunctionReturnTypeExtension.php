@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -13,8 +14,10 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 
 final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -89,7 +92,10 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		$stringType = $scope->getType($functionCall->args[0]->value);
 		if (!$stringType instanceof ConstantStringType) {
-			return new ArrayType(new IntegerType(), new StringType());
+			return TypeCombinator::intersect(
+				new ArrayType(new IntegerType(), new StringType()),
+				new NonEmptyArrayType()
+			);
 		}
 		$stringValue = $stringType->getValue();
 

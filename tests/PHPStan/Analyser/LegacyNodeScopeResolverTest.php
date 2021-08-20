@@ -5864,7 +5864,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				'array<int, string>',
+				'array<int, string>&nonEmpty',
 				'$strSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -5884,7 +5884,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'array<int, string>',
+				'array<int, string>&nonEmpty',
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
@@ -9658,7 +9658,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				'array<int, string>',
+				'array<int, string>&nonEmpty',
 				'$mbStrSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -9678,7 +9678,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'array<int, string>',
+				'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
@@ -9734,7 +9734,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
 			],
 			[
-				'array<int, string>',
+				'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndValidEncoding',
 			],
 			[

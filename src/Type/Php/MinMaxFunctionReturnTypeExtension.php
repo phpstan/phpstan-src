@@ -2,7 +2,9 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -64,6 +66,31 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 			return new ErrorType();
 		}
 
+		// rewrite min($x, $y) as $x < $y ? $x : $y
+		// we don't handle arrays, which have different semantics
+		$functionName = $functionReflection->getName();
+		$args = $functionCall->args;
+		if (count($functionCall->args) === 2) {
+			$argType0 = $scope->getType($args[0]->value);
+			$argType1 = $scope->getType($args[1]->value);
+
+			if ($argType0->isArray()->no() && $argType1->isArray()->no()) {
+				if ($functionName === 'min') {
+					return $scope->getType(new Ternary(
+						new Smaller($args[0]->value, $args[1]->value),
+						$args[0]->value,
+						$args[1]->value
+					));
+				} elseif ($functionName === 'max') {
+					return $scope->getType(new Ternary(
+						new Smaller($args[0]->value, $args[1]->value),
+						$args[1]->value,
+						$args[0]->value
+					));
+				}
+			}
+		}
+
 		$argumentTypes = [];
 		foreach ($functionCall->args as $arg) {
 			$argType = $scope->getType($arg->value);
@@ -83,7 +110,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		}
 
 		return $this->processType(
-			$functionReflection->getName(),
+			$functionName,
 			$argumentTypes
 		);
 	}

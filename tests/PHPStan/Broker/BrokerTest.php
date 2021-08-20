@@ -22,7 +22,7 @@ use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Type\FileTypeMapper;
 
-class BrokerTest extends \PHPStan\Testing\TestCase
+class BrokerTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	/** @var \PHPStan\Broker\Broker */

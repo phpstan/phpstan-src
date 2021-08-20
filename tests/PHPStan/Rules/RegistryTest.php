@@ -4,7 +4,7 @@ namespace PHPStan\Rules;
 
 use PHPStan\Analyser\Scope;
 
-class RegistryTest extends \PHPStan\Testing\TestCase
+class RegistryTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function testGetRules(): void

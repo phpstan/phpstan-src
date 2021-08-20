@@ -6,10 +6,10 @@ use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\Reflector\ConstantReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\BaseTestCase;
 use TestSingleFileSourceLocator\AFoo;
 
-class OptimizedSingleFileSourceLocatorTest extends TestCase
+class OptimizedSingleFileSourceLocatorTest extends BaseTestCase
 {
 
 	public function dataClass(): array

@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\BaseTestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use function file_exists;
@@ -12,7 +12,7 @@ use function file_exists;
 /**
  * @group exec
  */
-class TraitsCachingIssueIntegrationTest extends TestCase
+class TraitsCachingIssueIntegrationTest extends BaseTestCase
 {
 
 	/** @var string|null */

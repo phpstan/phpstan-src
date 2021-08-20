@@ -7,7 +7,7 @@ use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\BaseTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
@@ -26,7 +26,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
-class Php8SignatureMapProviderTest extends TestCase
+class Php8SignatureMapProviderTest extends BaseTestCase
 {
 
 	public function dataFunctions(): array

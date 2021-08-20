@@ -3,9 +3,9 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\BaseTestCase;
 
-final class AnalysisResultTest extends TestCase
+final class AnalysisResultTest extends BaseTestCase
 {
 
 	public function testErrorsAreSortedByFileNameAndLine(): void

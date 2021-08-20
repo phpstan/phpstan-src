@@ -9,7 +9,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class TemplateTypeTest extends \PHPStan\Testing\TestCase
+class TemplateTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataAccepts(): array

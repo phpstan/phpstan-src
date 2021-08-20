@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 
-class ObjectWithoutClassTypeTest extends \PHPStan\Testing\TestCase
+class ObjectWithoutClassTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

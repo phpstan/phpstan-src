@@ -11,7 +11,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use Test\ClassWithToString;
 
-class IntersectionTypeTest extends \PHPStan\Testing\TestCase
+class IntersectionTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataAccepts(): \Iterator

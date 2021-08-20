@@ -13,7 +13,7 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Type\FileTypeMapper;
 use WrongClassConstantFile\SecuredRouter;
 
-class ClassReflectionTest extends \PHPStan\Testing\TestCase
+class ClassReflectionTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataHasTraitUse(): array

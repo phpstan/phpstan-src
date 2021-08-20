@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-class FileTypeMapperTest extends \PHPStan\Testing\TestCase
+class FileTypeMapperTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function testGetResolvedPhpDoc(): void

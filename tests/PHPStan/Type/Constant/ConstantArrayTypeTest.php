@@ -18,7 +18,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
-class ConstantArrayTypeTest extends \PHPStan\Testing\TestCase
+class ConstantArrayTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataAccepts(): iterable

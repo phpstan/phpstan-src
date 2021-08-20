@@ -6,7 +6,7 @@ use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\Reflector\ConstantReflector;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\BaseTestCase;
 use TestSingleFileSourceLocator\AFoo;
 use TestSingleFileSourceLocator\InCondition;
 
@@ -15,7 +15,7 @@ function testFunctionForLocator(): void // phpcs:disable
 
 }
 
-class AutoloadSourceLocatorTest extends TestCase
+class AutoloadSourceLocatorTest extends BaseTestCase
 {
 
 	public function testAutoloadEverythingInFile(): void

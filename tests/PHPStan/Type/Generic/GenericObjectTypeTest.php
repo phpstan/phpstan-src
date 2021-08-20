@@ -16,7 +16,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class GenericObjectTypeTest extends \PHPStan\Testing\TestCase
+class GenericObjectTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

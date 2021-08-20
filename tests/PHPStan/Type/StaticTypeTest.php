@@ -8,7 +8,7 @@ use StaticTypeTest\Base;
 use StaticTypeTest\Child;
 use StaticTypeTest\FinalChild;
 
-class StaticTypeTest extends \PHPStan\Testing\TestCase
+class StaticTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataIsIterable(): array

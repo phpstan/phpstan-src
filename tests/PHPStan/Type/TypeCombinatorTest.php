@@ -24,7 +24,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class TypeCombinatorTest extends \PHPStan\Testing\TestCase
+class TypeCombinatorTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataAddNull(): array

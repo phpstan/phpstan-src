@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 
-class ClosureTypeTest extends \PHPStan\Testing\TestCase
+class ClosureTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

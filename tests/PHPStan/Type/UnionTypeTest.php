@@ -21,7 +21,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class UnionTypeTest extends \PHPStan\Testing\TestCase
+class UnionTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataIsCallable(): array

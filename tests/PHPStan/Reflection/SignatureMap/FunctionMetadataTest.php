@@ -4,9 +4,9 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use Nette\Schema\Expect;
 use Nette\Schema\Processor;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\BaseTestCase;
 
-class FunctionMetadataTest extends TestCase
+class FunctionMetadataTest extends BaseTestCase
 {
 
 	public function testSchema(): void

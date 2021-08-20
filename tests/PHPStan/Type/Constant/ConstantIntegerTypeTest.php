@@ -7,7 +7,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
-class ConstantIntegerTypeTest extends \PHPStan\Testing\TestCase
+class ConstantIntegerTypeTest extends \PHPStan\Testing\BaseTestCase
 {
 
 	public function dataAccepts(): iterable

@@ -2,12 +2,12 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\BaseTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 
-class ClassStringTypeTest extends TestCase
+class ClassStringTypeTest extends BaseTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

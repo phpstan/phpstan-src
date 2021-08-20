@@ -101,9 +101,6 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$items = isset($encoding)
 			? mb_str_split($stringValue, $splitLength, $encoding)
 			: str_split($stringValue, $splitLength);
-		if (!is_array($items)) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
 
 		return self::createConstantArrayFrom($items, $scope);
 	}

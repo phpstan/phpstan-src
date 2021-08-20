@@ -5880,7 +5880,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$gettimeofdayBenevolent',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$strSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -5904,7 +5904,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
@@ -5912,7 +5912,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$strSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			// parse_url
@@ -9674,7 +9674,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -9698,7 +9698,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
@@ -9706,7 +9706,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			[
@@ -9718,7 +9718,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithOneSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithOneSplitLengthAndVariableEncoding',
 			],
 			[
@@ -9730,7 +9730,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndVariableEncoding',
 			],
 			[
@@ -9746,7 +9746,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndValidEncoding',
 			],
 			[
@@ -9754,7 +9754,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
 			],
 			[
@@ -9766,11 +9766,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndValidEncoding',
 			],
 			[
@@ -9778,7 +9778,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>&nonEmpty|false' : 'array<int, string>&nonEmpty',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndVariableEncoding',
 			],
 		];

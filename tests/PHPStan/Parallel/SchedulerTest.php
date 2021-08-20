@@ -73,7 +73,7 @@ class SchedulerTest extends TestCase
 	 * @param int $maximumNumberOfProcesses
 	 * @param int $minimumNumberOfJobsPerProcess
 	 * @param int $jobSize
-	 * @param int $numberOfFiles
+	 * @param 0|positive-int $numberOfFiles
 	 * @param int $expectedNumberOfProcesses
 	 * @param array<int> $expectedJobSizes
 	 */
@@ -87,10 +87,6 @@ class SchedulerTest extends TestCase
 		array $expectedJobSizes
 	): void
 	{
-		if ($numberOfFiles < 0) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
 		$files = array_fill(0, $numberOfFiles, 'file.php');
 		$scheduler = new Scheduler($jobSize, $maximumNumberOfProcesses, $minimumNumberOfJobsPerProcess);
 		$schedule = $scheduler->scheduleWork($cpuCores, $files);

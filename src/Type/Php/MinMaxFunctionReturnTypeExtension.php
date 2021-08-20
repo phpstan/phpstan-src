@@ -67,7 +67,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		}
 
 		// rewrite min($x, $y) as $x < $y ? $x : $y
-		// in case we don't handle arrays, which have different semantics
+		// we don't handle arrays, which have different semantics
 		$functionName = $functionReflection->getName();
 		$args = $functionCall->args;
 		if (count($functionCall->args) === 2) {

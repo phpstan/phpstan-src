@@ -54,6 +54,9 @@ class ParentDirectoryRelativePathHelper implements RelativePathHelper
 		}
 
 		$dotsCount = $parentPartsCount - $i;
+		if ($dotsCount < 0) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
 
 		return array_merge(array_fill(0, $dotsCount, '..'), array_slice($filenameParts, $i));
 	}

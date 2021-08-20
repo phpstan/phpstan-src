@@ -73,7 +73,7 @@ class SchedulerTest extends TestCase
 	 * @param int $maximumNumberOfProcesses
 	 * @param int $minimumNumberOfJobsPerProcess
 	 * @param int $jobSize
-	 * @param int $numberOfFiles
+	 * @param 0|positive-int $numberOfFiles
 	 * @param int $expectedNumberOfProcesses
 	 * @param array<int> $expectedJobSizes
 	 */

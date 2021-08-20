@@ -22,6 +22,7 @@
 return [
 	'new' => [
 		'array_combine' => ['associative-array', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'array_fill' => ['array', 'start_key'=>'int', 'num'=>'0|positive-int', 'val'=>'mixed'],
 		'bcdiv' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],
@@ -146,6 +147,7 @@ return [
 	'old' => [
 
 		'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'array_fill' => ['array', 'start_key'=>'int', 'num'=>'int', 'val'=>'mixed'],
 		'bcdiv' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['?string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],

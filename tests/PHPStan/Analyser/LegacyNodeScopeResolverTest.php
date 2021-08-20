@@ -5101,8 +5101,32 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$filledIntegers',
 			],
 			[
+				'array()',
+				'$emptyFilled',
+			],
+			[
 				'array(1)',
 				'$filledIntegersWithKeys',
+			],
+			[
+				'array<int, \'foo\'>&nonEmpty',
+				'$filledNonEmptyArray',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
+				'$filledAlwaysFalse',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
+				'$filledNegativeConstAlwaysFalse',
+			],
+			[
+				'array<int, 1>|false',
+				'$filledByMaybeNegativeRange',
+			],
+			[
+				'array<int, 1>&nonEmpty',
+				'$filledByPositiveRange',
 			],
 			[
 				'array(1, 2)',

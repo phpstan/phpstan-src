@@ -271,7 +271,7 @@ return [
 'array_diff_uassoc\'1' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'arr3'=>'array', 'arg4'=>'array|callable(mixed,mixed):int', '...rest='=>'array|callable'],
 'array_diff_ukey' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'key_comp_func'=>'callable(mixed,mixed):int'],
 'array_diff_ukey\'1' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'arr3'=>'array', 'arg4'=>'array|callable(mixed,mixed):int', '...rest='=>'array|callable(mixed,mixed):int'],
-'array_fill' => ['array', 'start_index'=>'int', 'count'=>'int', 'value'=>'mixed'],
+'array_fill' => ['array', 'start_key'=>'int', 'num'=>'int', 'val'=>'mixed'],
 'array_fill_keys' => ['array', 'keys'=>'array', 'val'=>'mixed'],
 'array_filter' => ['array', 'input'=>'array', 'callback='=>'callable(mixed,mixed):bool|callable(mixed):bool', 'flag='=>'int'],
 'array_flip' => ['array', 'input'=>'array<int|string>'],

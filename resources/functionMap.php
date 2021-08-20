@@ -58,9 +58,9 @@
 return [
 '_' => ['string', 'message'=>'string'],
 '__halt_compiler' => ['void'],
-'abs' => ['int', 'number'=>'int'],
+'abs' => ['0|positive-int', 'number'=>'int'],
 'abs\'1' => ['float', 'number'=>'float'],
-'abs\'2' => ['float|int', 'number'=>'string'],
+'abs\'2' => ['float|0|positive-int', 'number'=>'string'],
 'accelerator_get_configuration' => ['array'],
 'accelerator_get_scripts' => ['array'],
 'accelerator_get_status' => ['array', 'fetch_scripts'=>'bool'],

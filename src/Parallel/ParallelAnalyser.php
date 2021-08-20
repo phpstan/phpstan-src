@@ -17,6 +17,8 @@ use function parse_url;
 class ParallelAnalyser
 {
 
+	private const DEFAULT_TIMEOUT = 600.0;
+
 	private int $internalErrorsCountLimit;
 
 	private float $processTimeout;
@@ -32,7 +34,7 @@ class ParallelAnalyser
 	)
 	{
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
-		$this->processTimeout = $processTimeout;
+		$this->processTimeout = max($processTimeout, self::DEFAULT_TIMEOUT);
 		$this->decoderBufferSize = $decoderBufferSize;
 	}
 

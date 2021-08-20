@@ -14,7 +14,7 @@ class Foo
 	 * @param int<min, 3>|int<4, max> $unionRange
 	 * @param int<min, 3>|7 $hybridUnionRange
 	 */
-	function doBar(int $i, $p, $range, $zeroOrMore, $intConst, $unionRange, $hybridUnionRange, $mixed)
+	function doBar(int $i, int $j, $p, $range, $zeroOrMore, $intConst, $unionRange, $hybridUnionRange, $mixed)
 	{
 		assertType('int<-1, 1>', $i % 2);
 		assertType('int<0, 1>', $p % 2);
@@ -38,5 +38,11 @@ class Foo
 		assertType('int<0, 6>', $p % $hybridUnionRange);
 
 		assertType('int<0, max>', $zeroOrMore % $mixed);
+
+		if ($i === 0) {
+			return;
+		}
+
+		assertType('int', $j % $i);
 	}
 }

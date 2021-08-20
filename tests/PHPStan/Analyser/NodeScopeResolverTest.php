@@ -463,6 +463,11 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/class-constant-types.php');
+
+		if (self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3379.php');
+		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/modulo-operator.php');
 	}
 

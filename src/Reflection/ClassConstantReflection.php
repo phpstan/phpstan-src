@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantTypeHelper;
@@ -65,7 +66,11 @@ class ClassConstantReflection implements ConstantReflection
 	 */
 	public function getValue()
 	{
-		return $this->reflection->getValue();
+		try {
+			return $this->reflection->getValue();
+		} catch (UnableToCompileNode $e) {
+			return NAN;
+		}
 	}
 
 	public function hasPhpDocType(): bool

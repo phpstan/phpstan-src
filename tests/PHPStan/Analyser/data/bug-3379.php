@@ -2,6 +2,8 @@
 
 namespace Bug3379;
 
+use function PHPStan\Testing\assertType;
+
 class Foo
 {
 
@@ -11,4 +13,5 @@ class Foo
 
 function () {
 	echo Foo::URL;
+	assertType('mixed', Foo::URL);
 };

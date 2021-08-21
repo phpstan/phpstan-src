@@ -11,9 +11,12 @@ use PHPStan\Testing\RuleTestCase;
 class OverridingPropertyRuleTest extends RuleTestCase
 {
 
+	/** @var bool */
+	private $reportMaybes;
+
 	protected function getRule(): Rule
 	{
-		return new OverridingPropertyRule(true);
+		return new OverridingPropertyRule(true, $this->reportMaybes);
 	}
 
 	public function testRule(): void
@@ -22,6 +25,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires static reflection.');
 		}
 
+		$this->reportMaybes = true;
 		$this->analyse([__DIR__ . '/data/overriding-property.php'], [
 			[
 				'Static property OverridingProperty\Bar::$protectedFoo overrides non-static property OverridingProperty\Foo::$protectedFoo.',
@@ -88,10 +92,76 @@ class OverridingPropertyRuleTest extends RuleTestCase
 				142,
 			],
 			[
-				'Type 4 of property OverridingProperty\Typed2WithPhpDoc::$foo is not the same as type 1|2|3 of overridden property OverridingProperty\TypedWithPhpDoc::$foo.',
+				'PHPDoc type 4 of property OverridingProperty\Typed2WithPhpDoc::$foo is not the same as PHPDoc type 1|2|3 of overridden property OverridingProperty\TypedWithPhpDoc::$foo.',
 				158,
+				sprintf(
+					"You can fix 3rd party PHPDoc types with stub files:\n   %s",
+					'<fg=cyan>https://phpstan.org/user-guide/stub-files</>'
+				),
 			],
 		]);
+	}
+
+	public function dataRulePHPDocTypes(): array
+	{
+		$tip = sprintf(
+			"You can fix 3rd party PHPDoc types with stub files:\n   %s",
+			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
+		);
+		$tipWithOption = sprintf(
+			"You can fix 3rd party PHPDoc types with stub files:\n   %s\n   This error can be turned off by setting\n   %s",
+			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
+			'<fg=cyan>reportMaybesInPropertyPhpDocTypes: false</> in your <fg=cyan>%configurationFile%</>.'
+		);
+
+		return [
+			[
+				false,
+				[
+					[
+						'PHPDoc type array of property OverridingPropertyPhpDoc\Bar::$arrayClassStrings is not covariant with PHPDoc type array<class-string> of overridden property OverridingPropertyPhpDoc\Foo::$arrayClassStrings.',
+						26,
+						$tip,
+					],
+					[
+						'PHPDoc type int of property OverridingPropertyPhpDoc\Bar::$string is not covariant with PHPDoc type string of overridden property OverridingPropertyPhpDoc\Foo::$string.',
+						29,
+						$tip,
+					],
+				],
+			],
+			[
+				true,
+				[
+					[
+						'PHPDoc type array<class-string> of property OverridingPropertyPhpDoc\Bar::$array is not the same as PHPDoc type array of overridden property OverridingPropertyPhpDoc\Foo::$array.',
+						23,
+						$tipWithOption,
+					],
+					[
+						'PHPDoc type array of property OverridingPropertyPhpDoc\Bar::$arrayClassStrings is not the same as PHPDoc type array<class-string> of overridden property OverridingPropertyPhpDoc\Foo::$arrayClassStrings.',
+						26,
+						$tip,
+					],
+					[
+						'PHPDoc type int of property OverridingPropertyPhpDoc\Bar::$string is not the same as PHPDoc type string of overridden property OverridingPropertyPhpDoc\Foo::$string.',
+						29,
+						$tip,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataRulePHPDocTypes
+	 * @param bool $reportMaybes
+	 * @param mixed[] $errors
+	 */
+	public function testRulePHPDocTypes(bool $reportMaybes, array $errors): void
+	{
+		$this->reportMaybes = $reportMaybes;
+		$this->analyse([__DIR__ . '/data/overriding-property-phpdoc.php'], $errors);
 	}
 
 }

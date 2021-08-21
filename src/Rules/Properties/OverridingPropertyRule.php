@@ -20,9 +20,15 @@ class OverridingPropertyRule implements Rule
 
 	private bool $checkPhpDocMethodSignatures;
 
-	public function __construct(bool $checkPhpDocMethodSignatures)
+	private bool $reportMaybes;
+
+	public function __construct(
+		bool $checkPhpDocMethodSignatures,
+		bool $reportMaybes
+	)
 	{
 		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
+		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
@@ -152,21 +158,49 @@ class OverridingPropertyRule implements Rule
 		}
 
 		$propertyReflection = $classReflection->getNativeProperty($node->getName());
-		if ($propertyReflection->getReadableType()->equals($prototype->getReadableType())) {
+		if ($prototype->getReadableType()->equals($propertyReflection->getReadableType())) {
 			return $errors;
 		}
 
 		$verbosity = VerbosityLevel::getRecommendedLevelByType($prototype->getReadableType(), $propertyReflection->getReadableType());
-
-		$errors[] = RuleErrorBuilder::message(sprintf(
-			'Type %s of property %s::$%s is not the same as type %s of overridden property %s::$%s.',
+		$isSuperType = $prototype->getReadableType()->isSuperTypeOf($propertyReflection->getReadableType());
+		$canBeTurnedOffError = RuleErrorBuilder::message(sprintf(
+			'PHPDoc type %s of property %s::$%s is not the same as PHPDoc type %s of overridden property %s::$%s.',
 			$propertyReflection->getReadableType()->describe($verbosity),
 			$classReflection->getDisplayName(),
 			$node->getName(),
 			$prototype->getReadableType()->describe($verbosity),
 			$prototype->getDeclaringClass()->getDisplayName(),
 			$node->getName()
+		))->tip(sprintf(
+			"You can fix 3rd party PHPDoc types with stub files:\n   %s\n   This error can be turned off by setting\n   %s",
+			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
+			'<fg=cyan>reportMaybesInPropertyPhpDocTypes: false</> in your <fg=cyan>%configurationFile%</>.'
 		))->build();
+		$cannotBeTurnedOffError = RuleErrorBuilder::message(sprintf(
+			'PHPDoc type %s of property %s::$%s is %s PHPDoc type %s of overridden property %s::$%s.',
+			$propertyReflection->getReadableType()->describe($verbosity),
+			$classReflection->getDisplayName(),
+			$node->getName(),
+			$this->reportMaybes ? 'not the same as' : 'not covariant with',
+			$prototype->getReadableType()->describe($verbosity),
+			$prototype->getDeclaringClass()->getDisplayName(),
+			$node->getName()
+		))->tip(sprintf(
+			"You can fix 3rd party PHPDoc types with stub files:\n   %s",
+			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>'
+		))->build();
+		if ($this->reportMaybes) {
+			if (!$isSuperType->yes()) {
+				$errors[] = $cannotBeTurnedOffError;
+			} else {
+				$errors[] = $canBeTurnedOffError;
+			}
+		} else {
+			if (!$isSuperType->yes()) {
+				$errors[] = $cannotBeTurnedOffError;
+			}
+		}
 
 		return $errors;
 	}

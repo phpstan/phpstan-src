@@ -220,6 +220,7 @@ services:
 		class: PHPStan\Rules\Properties\OverridingPropertyRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
+			reportMaybes: %reportMaybesInPropertyPhpDocTypes%
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule

@@ -82,6 +82,7 @@ parameters:
 	implicitThrows: true
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
+	reportMaybesInPropertyPhpDocTypes: false
 	reportStaticMethodSignatures: false
 	mixinExcludeClasses: []
 	scanFiles: []
@@ -267,6 +268,7 @@ parametersSchema:
 	tipsOfTheDay: bool()
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()
+	reportMaybesInPropertyPhpDocTypes: bool()
 	reportStaticMethodSignatures: bool()
 	parallel: structure([
 		jobSize: int(),

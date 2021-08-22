@@ -1405,3 +1405,20 @@ function (): void {
 	$array = ['a' => 1, 'b' => 2];
 	assertType('array(\'a\' => int, \'b\' => int)', a($array));
 };
+
+
+/**
+ * @template T of bool
+ * @param T $b
+ * @return T
+ */
+function boolBound(bool $b): bool
+{
+	return $b;
+}
+
+function (bool $b): void {
+	assertType('true', boolBound(true));
+	assertType('false', boolBound(false));
+	assertType('bool', boolBound($b));
+};

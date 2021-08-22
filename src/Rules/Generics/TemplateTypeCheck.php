@@ -7,6 +7,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -110,6 +111,7 @@ class TemplateTypeCheck
 					$boundClass === MixedType::class
 					|| $boundClass === StringType::class
 					|| $boundClass === IntegerType::class
+					|| $boundClass === BooleanType::class
 					|| $boundClass === ObjectWithoutClassType::class
 					|| $boundClass === ObjectType::class
 					|| $boundClass === GenericObjectType::class

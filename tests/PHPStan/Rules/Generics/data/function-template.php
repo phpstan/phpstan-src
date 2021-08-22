@@ -33,3 +33,9 @@ function lorem()
 {
 
 }
+
+/** @template T of bool */
+function ipsum()
+{
+
+}

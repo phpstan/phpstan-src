@@ -32,6 +32,10 @@ class UnionTypeHelper
 	 */
 	public static function sortTypes(array $types): array
 	{
+		if (count($types) > 1024) {
+			return $types;
+		}
+
 		usort($types, static function (Type $a, Type $b): int {
 			if ($a instanceof NullType) {
 				return 1;

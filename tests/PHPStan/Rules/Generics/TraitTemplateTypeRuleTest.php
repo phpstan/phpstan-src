@@ -38,10 +38,6 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 				16,
 			],
 			[
-				'PHPDoc tag @template T for trait TraitTemplateType\Baz with bound type float is not supported.',
-				24,
-			],
-			[
 				'PHPDoc tag @template for trait TraitTemplateType\Lorem cannot have existing type alias TypeAlias as its name.',
 				33,
 			],

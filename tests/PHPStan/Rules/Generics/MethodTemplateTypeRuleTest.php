@@ -42,10 +42,6 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 				37,
 			],
 			[
-				'PHPDoc tag @template T for method MethodTemplateType\Baz::doFoo() with bound type float is not supported.',
-				50,
-			],
-			[
 				'PHPDoc tag @template for method MethodTemplateType\Lorem::doFoo() cannot have existing type alias TypeAlias as its name.',
 				66,
 			],

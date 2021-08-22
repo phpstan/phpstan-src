@@ -42,10 +42,6 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				16,
 			],
 			[
-				'PHPDoc tag @template T for class ClassTemplateType\Baz with bound type float is not supported.',
-				24,
-			],
-			[
 				'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',
 				32,
 			],
@@ -68,10 +64,6 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @template T for anonymous class has invalid bound type ClassTemplateType\Zazzzu.',
 				63,
-			],
-			[
-				'PHPDoc tag @template T for anonymous class with bound type float is not supported.',
-				68,
 			],
 			[
 				'Class ClassTemplateType\Baz referenced with incorrect case: ClassTemplateType\baz.',

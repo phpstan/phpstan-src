@@ -36,12 +36,12 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				16,
 			],
 			[
-				'PHPDoc tag @template T for function FunctionTemplateType\baz() with bound type float is not supported.',
-				24,
-			],
-			[
 				'PHPDoc tag @template for function FunctionTemplateType\lorem() cannot have existing type alias TypeAlias as its name.',
 				32,
+			],
+			[
+				'PHPDoc tag @template T for function FunctionTemplateType\resourceBound() with bound type resource is not supported.',
+				50,
 			],
 		]);
 	}

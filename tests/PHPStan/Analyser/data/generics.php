@@ -1422,3 +1422,18 @@ function (bool $b): void {
 	assertType('false', boolBound(false));
 	assertType('bool', boolBound($b));
 };
+
+/**
+ * @template T of float
+ * @param T $f
+ * @return T
+ */
+function floatBound(float $f): float
+{
+	return $f;
+}
+
+function (float $f): void {
+	assertType('1.0', floatBound(1.0));
+	assertType('float', floatBound($f));
+};

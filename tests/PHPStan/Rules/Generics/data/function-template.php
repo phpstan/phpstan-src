@@ -39,3 +39,15 @@ function ipsum()
 {
 
 }
+
+/** @template T of float */
+function dolor()
+{
+
+}
+
+/** @template T of resource */
+function resourceBound()
+{
+
+}

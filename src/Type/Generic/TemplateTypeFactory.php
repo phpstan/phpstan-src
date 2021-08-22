@@ -5,6 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -43,6 +44,10 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof IntegerType && ($boundClass === IntegerType::class || $bound instanceof TemplateType)) {
 			return new TemplateIntegerType($scope, $strategy, $variance, $name, $bound);
+		}
+
+		if ($bound instanceof FloatType && ($boundClass === FloatType::class || $bound instanceof TemplateType)) {
+			return new TemplateFloatType($scope, $strategy, $variance, $name, $bound);
 		}
 
 		if ($bound instanceof BooleanType && ($boundClass === BooleanType::class || $bound instanceof TemplateType)) {

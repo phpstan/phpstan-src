@@ -46,6 +46,9 @@ class UnionType implements CompoundType
 			if (!($type instanceof UnionType)) {
 				continue;
 			}
+			if ($type instanceof TemplateType) {
+				continue;
+			}
 
 			$throwException();
 		}

@@ -185,6 +185,9 @@ class TypeCombinator
 			if (!($types[$i] instanceof UnionType)) {
 				continue;
 			}
+			if ($types[$i] instanceof TemplateType) {
+				continue;
+			}
 
 			array_splice($types, $i, 1, $types[$i]->getTypes());
 		}

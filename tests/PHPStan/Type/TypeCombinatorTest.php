@@ -1804,6 +1804,24 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				UnionType::class,
 				'string|false',
 			],
+			[
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('doFoo'),
+						'T',
+						new UnionType([
+							new StringType(),
+							new IntegerType(),
+							new FloatType(),
+							new BooleanType(),
+						]),
+						TemplateTypeVariance::createInvariant()
+					),
+					new NullType(),
+				],
+				UnionType::class,
+				'T of bool|float|int|string (function doFoo(), parameter)|null',
+			],
 		];
 	}
 

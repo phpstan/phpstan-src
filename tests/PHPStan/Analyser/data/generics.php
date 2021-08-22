@@ -1437,3 +1437,28 @@ function (float $f): void {
 	assertType('1.0', floatBound(1.0));
 	assertType('float', floatBound($f));
 };
+
+/**
+ * @template T of string|int|float|bool
+ */
+class UnionT
+{
+
+	/**
+	 * @param T|null $t
+	 * @return T|null
+	 */
+	public function doFoo($t)
+	{
+		return $t;
+	}
+
+}
+
+/**
+ * @param UnionT<string> $foo
+ */
+function foooo(UnionT $foo): void
+{
+	assertType('string|null', $foo->doFoo('a'));
+}

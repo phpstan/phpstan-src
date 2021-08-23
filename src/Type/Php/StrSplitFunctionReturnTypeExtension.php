@@ -101,7 +101,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$items = isset($encoding)
 			? mb_str_split($stringValue, $splitLength, $encoding)
 			: str_split($stringValue, $splitLength);
-		if (!is_array($items)) {
+		if ($items === false) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 

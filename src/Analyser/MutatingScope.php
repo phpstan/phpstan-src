@@ -1277,7 +1277,7 @@ class MutatingScope implements Scope
 					}
 				}
 
-				if ($min || $max) {
+				if ($min !== null || $max !== null) {
 					return IntegerRangeType::fromInterval($min, $max);
 				}
 			}

@@ -301,12 +301,12 @@ class TypeUtils
 		}
 
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {
-			$hasPropertyTypes = [[]];
+			$hasPropertyTypes = [];
 			foreach ($type->getTypes() as $innerType) {
 				$hasPropertyTypes[] = self::getHasPropertyTypes($innerType);
 			}
 
-			return array_merge(...$hasPropertyTypes);
+			return $hasPropertyTypes === [] ? [] : array_merge(...$hasPropertyTypes);
 		}
 
 		return [];

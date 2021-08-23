@@ -98,69 +98,66 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($varTagType)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getStartLine())->build();
+				$errors[] = [RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getStartLine())->build()];
 				continue;
 			}
 
 			if ($this->checkMissingVarTagTypehint) {
 				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($varTagType) as $iterableType) {
 					$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errors[] = [RuleErrorBuilder::message(sprintf(
 						'%s has no value type specified in iterable type %s.',
 						$identifier,
 						$iterableTypeDescription
-					))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+					))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build()];
 				}
 			}
 
-			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
+			$errors[] = $this->genericObjectTypeCheck->check(
 				$varTagType,
 				sprintf('%s contains generic type %%s but class %%s is not generic.', $identifier),
 				sprintf('Generic type %%s in %s does not specify all template types of class %%s: %%s', $identifier),
 				sprintf('Generic type %%s in %s specifies %%d template types, but class %%s supports only %%d: %%s', $identifier),
 				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of class %%s.', $identifier)
-			));
+			);
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$errors[] = [RuleErrorBuilder::message(sprintf(
 					'%s contains generic %s but does not specify its types: %s',
 					$identifier,
 					$innerName,
 					implode(', ', $genericTypeNames)
-				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build()];
 			}
 
 			$referencedClasses = $varTagType->getReferencedClasses();
 			foreach ($referencedClasses as $referencedClass) {
 				if ($this->reflectionProvider->hasClass($referencedClass)) {
 					if ($this->reflectionProvider->getClass($referencedClass)->isTrait()) {
-						$errors[] = RuleErrorBuilder::message(sprintf(
+						$errors[] = [RuleErrorBuilder::message(sprintf(
 							sprintf('%s has invalid type %%s.', $identifier),
 							$referencedClass
-						))->build();
+						))->build()];
 					}
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$errors[] = [RuleErrorBuilder::message(sprintf(
 					sprintf('%s contains unknown class %%s.', $identifier),
 					$referencedClass
-				))->discoveringSymbolsTip()->build();
+				))->discoveringSymbolsTip()->build()];
 			}
 
 			if (!$this->checkClassCaseSensitivity) {
 				continue;
 			}
 
-			$errors = array_merge(
-				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($node): ClassNameNodePair {
+			$errors[] = $this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($node): ClassNameNodePair {
 					return new ClassNameNodePair($class, $node);
-				}, $referencedClasses))
-			);
+			}, $referencedClasses));
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 }

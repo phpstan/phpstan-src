@@ -78,11 +78,10 @@ final class CompactVariablesRule implements Rule
 		if ($type instanceof ConstantArrayType) {
 			$result = [];
 			foreach ($type->getValueTypes() as $valueType) {
-				$constantStrings = $this->findConstantStrings($valueType);
-				$result = array_merge($result, $constantStrings);
+				$result[] = $this->findConstantStrings($valueType);
 			}
 
-			return $result;
+			return $result === [] ? [] : array_merge(...$result);
 		}
 
 		return [];

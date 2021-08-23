@@ -65,7 +65,7 @@ class StringType implements Type
 			return new ErrorType();
 		}
 
-		if ((new IntegerType())->isSuperTypeOf($offsetType)->yes() || $offsetType instanceof MixedType) {
+		if ($offsetType instanceof MixedType || (new IntegerType())->isSuperTypeOf($offsetType)->yes()) {
 			return new StringType();
 		}
 

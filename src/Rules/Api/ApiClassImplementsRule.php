@@ -39,10 +39,10 @@ class ApiClassImplementsRule implements Rule
 	{
 		$errors = [];
 		foreach ($node->implements as $implements) {
-			$errors = array_merge($errors, $this->checkName($scope, $implements));
+			$errors[] = $this->checkName($scope, $implements);
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 	/**

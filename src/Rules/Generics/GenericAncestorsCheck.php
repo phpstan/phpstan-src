@@ -71,16 +71,16 @@ class GenericAncestorsCheck
 		$messages = [];
 		foreach ($ancestorTypes as $ancestorType) {
 			if (!$ancestorType instanceof GenericObjectType) {
-				$messages[] = RuleErrorBuilder::message(sprintf($incompatibleTypeMessage, $ancestorType->describe(VerbosityLevel::typeOnly())))->build();
+				$messages[] = [RuleErrorBuilder::message(sprintf($incompatibleTypeMessage, $ancestorType->describe(VerbosityLevel::typeOnly())))->build()];
 				continue;
 			}
 
 			$ancestorTypeClassName = $ancestorType->getClassName();
 			if (!isset($names[$ancestorTypeClassName])) {
 				if (count($names) === 0) {
-					$messages[] = RuleErrorBuilder::message($noNamesMessage)->build();
+					$messages[] = [RuleErrorBuilder::message($noNamesMessage)->build()];
 				} else {
-					$messages[] = RuleErrorBuilder::message(sprintf($noRelatedNameMessage, $ancestorTypeClassName, implode(', ', array_keys($names))))->build();
+					$messages[] = [RuleErrorBuilder::message(sprintf($noRelatedNameMessage, $ancestorTypeClassName, implode(', ', array_keys($names))))->build()];
 				}
 
 				continue;
@@ -95,14 +95,14 @@ class GenericAncestorsCheck
 				$extraTypesMessage,
 				$typeIsNotSubtypeMessage
 			);
-			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
+			$messages[] = $genericObjectTypeCheckMessages;
 
 			foreach ($ancestorType->getReferencedClasses() as $referencedClass) {
 				if ($this->reflectionProvider->hasClass($referencedClass)) {
 					continue;
 				}
 
-				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))->build();
+				$messages[] = [RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))->build()];
 			}
 
 			$variance = TemplateTypeVariance::createInvariant();
@@ -111,7 +111,7 @@ class GenericAncestorsCheck
 				$ancestorType->describe(VerbosityLevel::typeOnly())
 			);
 			foreach ($this->varianceCheck->check($variance, $ancestorType, $messageContext) as $message) {
-				$messages[] = $message;
+				$messages[] = [$message];
 			}
 		}
 
@@ -129,15 +129,15 @@ class GenericAncestorsCheck
 					continue;
 				}
 
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$messages[] = [RuleErrorBuilder::message(sprintf(
 					$genericClassInNonGenericObjectType,
 					$unusedName,
 					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes()))
-				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build()];
 			}
 		}
 
-		return $messages;
+		return $messages === [] ? [] : array_merge(...$messages);
 	}
 
 }

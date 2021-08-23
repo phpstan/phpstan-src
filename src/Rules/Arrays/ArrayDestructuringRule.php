@@ -105,7 +105,7 @@ class ArrayDestructuringRule implements Rule
 				'',
 				$keyType
 			);
-			$errors = array_merge($errors, $itemErrors);
+			$errors[] = $itemErrors;
 
 			if ($keyExpr === null) {
 				$i++;
@@ -117,14 +117,14 @@ class ArrayDestructuringRule implements Rule
 				continue;
 			}
 
-			$errors = array_merge($errors, $this->getErrors(
+			$errors[] = $this->getErrors(
 				$scope,
 				$item->value,
 				new Expr\ArrayDimFetch($expr, $keyExpr)
-			));
+			);
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 }

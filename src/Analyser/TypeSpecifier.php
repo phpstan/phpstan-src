@@ -224,8 +224,8 @@ class TypeSpecifier
 				if (
 					!$context->null()
 					&& $exprNode instanceof FuncCall
-					&& count($exprNode->args) === 1
 					&& $exprNode->name instanceof Name
+					&& count($exprNode->args) === 1
 					&& strtolower((string) $exprNode->name) === 'strlen'
 					&& $constantType instanceof ConstantIntegerType
 				) {
@@ -402,8 +402,8 @@ class TypeSpecifier
 
 			if (
 				$expr->left instanceof FuncCall
-				&& count($expr->left->args) === 1
 				&& $expr->left->name instanceof Name
+				&& count($expr->left->args) === 1
 				&& in_array(strtolower((string) $expr->left->name), ['count', 'strlen'], true)
 				&& (
 					!$expr->right instanceof FuncCall
@@ -427,8 +427,8 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->args) === 1
 				&& $expr->right->name instanceof Name
+				&& count($expr->right->args) === 1
 				&& strtolower((string) $expr->right->name) === 'count'
 				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
 			) {
@@ -446,8 +446,8 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->args) === 1
 				&& $expr->right->name instanceof Name
+				&& count($expr->right->args) === 1
 				&& strtolower((string) $expr->right->name) === 'strlen'
 				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
 			) {
@@ -699,9 +699,10 @@ class TypeSpecifier
 					$tmpVars[] = $var;
 				}
 
-				$vars = array_merge($vars, array_reverse($tmpVars));
+				$vars[] = array_reverse($tmpVars);
 			}
 
+			$vars = array_merge(...$vars);
 			if (count($vars) === 0) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
@@ -1105,7 +1106,7 @@ class TypeSpecifier
 	 */
 	private function getTypeSpecifyingExtensionsForType(array $extensions, string $className): array
 	{
-		$extensionsForClass = [[]];
+		$extensionsForClass = [];
 		$class = $this->reflectionProvider->getClass($className);
 		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
 			if (!isset($extensions[$extensionClassName])) {
@@ -1115,7 +1116,7 @@ class TypeSpecifier
 			$extensionsForClass[] = $extensions[$extensionClassName];
 		}
 
-		return array_merge(...$extensionsForClass);
+		return $extensionsForClass === [] ? [] : array_merge(...$extensionsForClass);
 	}
 
 }

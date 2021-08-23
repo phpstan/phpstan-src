@@ -72,18 +72,18 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 		foreach ($resolvedPhpDoc->getParamTags() as $parameterName => $phpDocParamTag) {
 			$phpDocParamType = $phpDocParamTag->getType();
 			if (!isset($nativeParameterTypes[$parameterName])) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$errors[] = [RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param references unknown parameter: $%s',
 					$parameterName
-				))->identifier('phpDoc.unknownParameter')->metadata(['parameterName' => $parameterName])->build();
+				))->identifier('phpDoc.unknownParameter')->metadata(['parameterName' => $parameterName])->build()];
 
 			} elseif (
 				$this->unresolvableTypeHelper->containsUnresolvableType($phpDocParamType)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$errors[] = [RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param for parameter $%s contains unresolvable type.',
 					$parameterName
-				))->build();
+				))->build()];
 
 			} else {
 				$nativeParamType = $nativeParameterTypes[$parameterName];
@@ -96,7 +96,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 				}
 				$isParamSuperType = $nativeParamType->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocParamType));
 
-				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
+				$errors[] = $this->genericObjectTypeCheck->check(
 					$phpDocParamType,
 					sprintf(
 						'PHPDoc tag @param for parameter $%s contains generic type %%s but class %%s is not generic.',
@@ -114,23 +114,23 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 						'Type %%s in generic type %%s in PHPDoc tag @param for parameter $%s is not subtype of template type %%s of class %%s.',
 						$parameterName
 					)
-				));
+				);
 
 				if ($isParamSuperType->no()) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errors[] = [RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @param for parameter $%s with type %s is incompatible with native type %s.',
 						$parameterName,
 						$phpDocParamType->describe(VerbosityLevel::typeOnly()),
 						$nativeParamType->describe(VerbosityLevel::typeOnly())
-					))->build();
+					))->build()];
 
 				} elseif ($isParamSuperType->maybe()) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errors[] = [RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @param for parameter $%s with type %s is not subtype of native type %s.',
 						$parameterName,
 						$phpDocParamType->describe(VerbosityLevel::typeOnly()),
 						$nativeParamType->describe(VerbosityLevel::typeOnly())
-					))->build();
+					))->build()];
 				}
 			}
 		}
@@ -141,35 +141,35 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($phpDocReturnType)
 			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->build();
+				$errors[] = [RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->build()];
 
 			} else {
 				$isReturnSuperType = $nativeReturnType->isSuperTypeOf($phpDocReturnType);
-				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
+				$errors[] = $this->genericObjectTypeCheck->check(
 					$phpDocReturnType,
 					'PHPDoc tag @return contains generic type %s but class %s is not generic.',
 					'Generic type %s in PHPDoc tag @return does not specify all template types of class %s: %s',
 					'Generic type %s in PHPDoc tag @return specifies %d template types, but class %s supports only %d: %s',
 					'Type %s in generic type %s in PHPDoc tag @return is not subtype of template type %s of class %s.'
-				));
+				);
 				if ($isReturnSuperType->no()) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errors[] = [RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @return with type %s is incompatible with native type %s.',
 						$phpDocReturnType->describe(VerbosityLevel::typeOnly()),
 						$nativeReturnType->describe(VerbosityLevel::typeOnly())
-					))->build();
+					))->build()];
 
 				} elseif ($isReturnSuperType->maybe()) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errors[] = [RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @return with type %s is not subtype of native type %s.',
 						$phpDocReturnType->describe(VerbosityLevel::typeOnly()),
 						$nativeReturnType->describe(VerbosityLevel::typeOnly())
-					))->build();
+					))->build()];
 				}
 			}
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 	/**

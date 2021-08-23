@@ -83,50 +83,47 @@ class MixinRule implements Rule
 		foreach ($mixinTags as $mixinTag) {
 			$type = $mixinTag->getType();
 			if (!$type->canCallMethods()->yes() || !$type->canAccessProperties()->yes()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build();
+				$errors[] = [RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build()];
 				continue;
 			}
 
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($type)
 			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @mixin contains unresolvable type.')->build();
+				$errors[] = [RuleErrorBuilder::message('PHPDoc tag @mixin contains unresolvable type.')->build()];
 				continue;
 			}
 
-			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
+			$errors[] = $this->genericObjectTypeCheck->check(
 				$type,
 				'PHPDoc tag @mixin contains generic type %s but class %s is not generic.',
 				'Generic type %s in PHPDoc tag @mixin does not specify all template types of class %s: %s',
 				'Generic type %s in PHPDoc tag @mixin specifies %d template types, but class %s supports only %d: %s',
 				'Type %s in generic type %s in PHPDoc tag @mixin is not subtype of template type %s of class %s.'
-			));
+			);
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$errors[] = [RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @mixin contains generic %s but does not specify its types: %s',
 					$innerName,
 					implode(', ', $genericTypeNames)
-				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build()];
 			}
 
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
+					$errors[] = [RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))->discoveringSymbolsTip()->build()];
 				} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))->build();
+					$errors[] = [RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))->build()];
 				} elseif ($this->checkClassCaseSensitivity) {
-					$errors = array_merge(
-						$errors,
-						$this->classCaseSensitivityCheck->checkClassNames([
-							new ClassNameNodePair($class, $node),
-						])
-					);
+					$errors[] = $this->classCaseSensitivityCheck->checkClassNames([
+						new ClassNameNodePair($class, $node),
+					]);
 				}
 			}
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 }

@@ -47,26 +47,23 @@ class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 				if ($scope->isInClassExists($className)) {
 					continue;
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))->line($class->getLine())->discoveringSymbolsTip()->build();
+				$errors[] = [RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))->line($class->getLine())->discoveringSymbolsTip()->build()];
 				continue;
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($className);
 			if (!$classReflection->isInterface() && !$classReflection->implementsInterface(\Throwable::class)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s is not an exception.', $classReflection->getDisplayName()))->line($class->getLine())->build();
+				$errors[] = [RuleErrorBuilder::message(sprintf('Caught class %s is not an exception.', $classReflection->getDisplayName()))->line($class->getLine())->build()];
 			}
 
 			if (!$this->checkClassCaseSensitivity) {
 				continue;
 			}
 
-			$errors = array_merge(
-				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)])
-			);
+			$errors[] = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 }

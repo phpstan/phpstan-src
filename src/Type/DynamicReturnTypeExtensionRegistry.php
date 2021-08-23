@@ -100,7 +100,7 @@ class DynamicReturnTypeExtensionRegistry
 			return [];
 		}
 
-		$extensionsForClass = [[]];
+		$extensionsForClass = [];
 		$class = $this->reflectionProvider->getClass($className);
 		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
 			if (!isset($extensions[$extensionClassName])) {
@@ -110,7 +110,7 @@ class DynamicReturnTypeExtensionRegistry
 			$extensionsForClass[] = $extensions[$extensionClassName];
 		}
 
-		return array_merge(...$extensionsForClass);
+		return $extensionsForClass === [] ? [] : array_merge(...$extensionsForClass);
 	}
 
 	/**

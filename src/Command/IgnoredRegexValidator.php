@@ -103,7 +103,7 @@ class IgnoredRegexValidator
 
 	private function removeDelimiters(string $regex): string
 	{
-		$delimiter = substr($regex, 0, 1);
+		$delimiter = $regex[0];
 		$endDelimiterPosition = strrpos($regex, $delimiter);
 		if ($endDelimiterPosition === false) {
 			throw new \PHPStan\ShouldNotHappenException();

@@ -133,7 +133,7 @@ class StaticType implements TypeWithClassName
 		if ($type instanceof ObjectType) {
 			$result = $this->getStaticObjectType()->isSuperTypeOf($type);
 			$classReflection = $type->getClassReflection();
-			if ($result->yes() && $classReflection !== null && $classReflection->isFinal()) {
+			if ($classReflection !== null && $result->yes() && $classReflection->isFinal()) {
 				return $result;
 			}
 

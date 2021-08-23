@@ -49,9 +49,10 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	{
 		$errors = [];
 		foreach ($this->getClassNames($node, $scope) as [$class, $isName]) {
-			$errors = array_merge($errors, $this->checkClassName($class, $isName, $node, $scope));
+			$errors[] = $this->checkClassName($class, $isName, $node, $scope);
 		}
-		return $errors;
+
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 	/**

@@ -55,10 +55,10 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 
 		$errors = [];
 		foreach ($names as $name) {
-			$errors = array_merge($errors, $this->processSingleProperty($scope, $node, $name));
+			$errors[] = $this->processSingleProperty($scope, $node, $name);
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 	/**

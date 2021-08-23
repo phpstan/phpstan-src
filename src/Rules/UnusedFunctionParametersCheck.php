@@ -85,7 +85,7 @@ class UnusedFunctionParametersCheck
 						continue;
 					}
 
-					$variableNames[] = $argType->getValue();
+					$variableNames[] = [$argType->getValue()];
 				}
 			}
 			foreach ($node->getSubNodeNames() as $subNodeName) {
@@ -93,15 +93,15 @@ class UnusedFunctionParametersCheck
 					continue;
 				}
 				$subNode = $node->{$subNodeName};
-				$variableNames = array_merge($variableNames, $this->getUsedVariables($scope, $subNode));
+				$variableNames[] = $this->getUsedVariables($scope, $subNode);
 			}
 		} elseif (is_array($node)) {
 			foreach ($node as $subNode) {
-				$variableNames = array_merge($variableNames, $this->getUsedVariables($scope, $subNode));
+				$variableNames[] = $this->getUsedVariables($scope, $subNode);
 			}
 		}
 
-		return $variableNames;
+		return $variableNames === [] ? [] : array_merge(...$variableNames);
 	}
 
 }

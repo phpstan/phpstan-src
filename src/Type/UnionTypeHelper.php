@@ -23,7 +23,7 @@ class UnionTypeHelper
 			$subTypeClasses[] = $type->getReferencedClasses();
 		}
 
-		return array_merge(...$subTypeClasses);
+		return $subTypeClasses === [] ? [] : array_merge(...$subTypeClasses);
 	}
 
 	/**

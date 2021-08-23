@@ -39,10 +39,10 @@ class ApiInterfaceExtendsRule implements Rule
 	{
 		$errors = [];
 		foreach ($node->extends as $extends) {
-			$errors = array_merge($errors, $this->checkName($scope, $extends));
+			$errors[] = $this->checkName($scope, $extends);
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 	/**

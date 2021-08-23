@@ -36,11 +36,10 @@ final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
 
 		$errors = [];
 		foreach ($node->consts as $const) {
-			$constantName = $const->name->toString();
-			$errors = array_merge($errors, $this->processSingleConstant($scope->getClassReflection(), $constantName));
+			$errors[] = $this->processSingleConstant($scope->getClassReflection(), $const->name->toString());
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 	/**

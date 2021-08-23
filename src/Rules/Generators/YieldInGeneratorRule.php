@@ -60,7 +60,7 @@ class YieldInGeneratorRule implements Rule
 			return [];
 		}
 
-		if ($isSuperType->maybe() && !$this->reportMaybes) {
+		if (!$this->reportMaybes && $isSuperType->maybe()) {
 			return [];
 		}
 

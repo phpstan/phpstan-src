@@ -73,7 +73,7 @@ class Analyser
 					$this->registry,
 					null
 				);
-				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
+				$errors[] = $fileAnalyserResult->getErrors();
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
@@ -92,7 +92,7 @@ class Analyser
 					"\n",
 					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md'
 				);
-				$errors[] = new Error($internalErrorMessage, $file, null, $t);
+				$errors[] = [new Error($internalErrorMessage, $file, null, $t)];
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
 					break;
@@ -108,7 +108,11 @@ class Analyser
 
 		$this->restoreCollectErrorsHandler();
 
-		$errors = array_merge($errors, $this->collectedErrors);
+		if ($this->collectedErrors !== []) {
+			$errors[] = $this->collectedErrors;
+		}
+
+		$errors = $errors === [] ? [] : array_merge(...$errors);
 
 		return new AnalyserResult(
 			$errors,

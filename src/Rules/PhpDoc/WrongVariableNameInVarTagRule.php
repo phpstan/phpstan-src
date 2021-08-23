@@ -188,10 +188,10 @@ class WrongVariableNameInVarTagRule implements Rule
 					continue;
 				}
 
-				$names = array_merge($names, $this->getAssignedVariables($item->value));
+				$names[] = $this->getAssignedVariables($item->value);
 			}
 
-			return $names;
+			return $names === [] ? [] : array_merge(...$names);
 		}
 
 		return [];
@@ -326,7 +326,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf('Variable $%s in PHPDoc tag @var does not exist.', $name))->build();
 		}
 
-		if (count($variableLessVarTags) !== 1 || $defaultExpr === null) {
+		if ($defaultExpr === null || count($variableLessVarTags) !== 1) {
 			if (count($variableLessVarTags) > 0) {
 				$errors[] = RuleErrorBuilder::message('PHPDoc tag @var does not specify variable name.')->build();
 			}

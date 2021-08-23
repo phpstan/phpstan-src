@@ -70,16 +70,16 @@ class TemplateTypeCheck
 		foreach ($templateTags as $templateTag) {
 			$templateTagName = $templateTag->getName();
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$messages[] = [RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsClassMessage,
 					$templateTagName
-				))->build();
+				))->build()];
 			}
 			if ($this->typeAliasResolver->hasTypeAlias($templateTagName, $templateTypeScope->getClassName())) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$messages[] = [RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsTypeMessage,
 					$templateTagName
-				))->build();
+				))->build()];
 			}
 			$boundType = $templateTag->getBound();
 			foreach ($boundType->getReferencedClasses() as $referencedClass) {
@@ -90,18 +90,18 @@ class TemplateTypeCheck
 					continue;
 				}
 
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$messages[] = [RuleErrorBuilder::message(sprintf(
 					$invalidBoundTypeMessage,
 					$templateTagName,
 					$referencedClass
-				))->build();
+				))->build()];
 			}
 
 			if ($this->checkClassCaseSensitivity) {
 				$classNameNodePairs = array_map(static function (string $referencedClass) use ($node): ClassNameNodePair {
 					return new ClassNameNodePair($referencedClass, $node);
 				}, $boundType->getReferencedClasses());
-				$messages = array_merge($messages, $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs));
+				$messages[] = $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs);
 			}
 
 			TypeTraverser::map($templateTag->getBound(), static function (Type $type, callable $traverse) use (&$messages, $notSupportedBoundMessage, $templateTagName): Type {
@@ -119,7 +119,7 @@ class TemplateTypeCheck
 					return $traverse($type);
 				}
 
-				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $type->describe(VerbosityLevel::typeOnly())))->build();
+				$messages[] = [RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $type->describe(VerbosityLevel::typeOnly())))->build()];
 
 				return $type;
 			});
@@ -131,12 +131,10 @@ class TemplateTypeCheck
 				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $templateTagName),
 				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $templateTagName)
 			);
-			foreach ($genericObjectErrors as $genericObjectError) {
-				$messages[] = $genericObjectError;
-			}
+			$messages[] = $genericObjectErrors;
 		}
 
-		return $messages;
+		return $messages === [] ? [] : array_merge(...$messages);
 	}
 
 }

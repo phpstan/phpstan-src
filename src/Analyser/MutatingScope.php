@@ -761,8 +761,8 @@ class MutatingScope implements Scope
 
 			if (
 				$leftBooleanType instanceof ConstantBooleanType
-				&& $leftBooleanType->getValue()
 				&& $rightBooleanType instanceof ConstantBooleanType
+				&& $leftBooleanType->getValue()
 				&& $rightBooleanType->getValue()
 			) {
 				return new ConstantBooleanType(true);
@@ -802,8 +802,8 @@ class MutatingScope implements Scope
 
 			if (
 				$leftBooleanType instanceof ConstantBooleanType
-				&& !$leftBooleanType->getValue()
 				&& $rightBooleanType instanceof ConstantBooleanType
+				&& !$leftBooleanType->getValue()
 				&& !$rightBooleanType->getValue()
 			) {
 				return new ConstantBooleanType(false);
@@ -1073,9 +1073,10 @@ class MutatingScope implements Scope
 
 			$rightTypes = TypeUtils::getConstantScalars($this->getType($right)->toNumber());
 			foreach ($rightTypes as $rightType) {
+				$rightTypeValue = $rightType->getValue();
 				if (
-					$rightType->getValue() === 0
-					|| $rightType->getValue() === 0.0
+					$rightTypeValue === 0
+					|| $rightTypeValue === 0.0
 				) {
 					return new ErrorType();
 				}
@@ -1521,7 +1522,7 @@ class MutatingScope implements Scope
 				}
 
 				if (count($returnTypes) === 0) {
-					if (count($closureExecutionEnds) > 0 && !$hasNull) {
+					if (!$hasNull && count($closureExecutionEnds) > 0) {
 						$returnType = new NeverType(true);
 					} else {
 						$returnType = new VoidType();
@@ -1844,8 +1845,8 @@ class MutatingScope implements Scope
 			}
 
 			if (
-				TypeCombinator::containsNull($leftType)
-				|| $node->left instanceof PropertyFetch
+				$node->left instanceof PropertyFetch
+				|| TypeCombinator::containsNull($leftType)
 				|| (
 					$node->left instanceof Variable
 					&& is_string($node->left->name)
@@ -2331,7 +2332,7 @@ class MutatingScope implements Scope
 	{
 		$variableTypes = $this->variableTypes;
 		foreach ($this->nativeExpressionTypes as $expressionType => $type) {
-			if (substr($expressionType, 0, 1) !== '$') {
+			if ($expressionType[0] !== '$') {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
 
@@ -3093,7 +3094,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if ($this->hasVariableType('this')->yes() && !$closure->static) {
+		if (!$closure->static && $this->hasVariableType('this')->yes()) {
 			$variableTypes['this'] = VariableTypeHolder::createYes($this->getVariableType('this'));
 		}
 
@@ -3695,8 +3696,10 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			unset($moreSpecificTypeHolders[$exprString]);
-			unset($nativeExpressionTypes[$exprString]);
+			unset(
+				$moreSpecificTypeHolders[$exprString],
+				$nativeExpressionTypes[$exprString]
+			);
 			$invalidated = true;
 		}
 
@@ -3730,9 +3733,9 @@ class MutatingScope implements Scope
 		$typeAfterRemove = TypeCombinator::remove($exprType, $typeToRemove);
 		if (
 			!$expr instanceof Variable
-			&& $exprType->equals($typeAfterRemove)
 			&& !$exprType instanceof ErrorType
 			&& !$exprType instanceof NeverType
+			&& $exprType->equals($typeAfterRemove)
 		) {
 			return $this;
 		}

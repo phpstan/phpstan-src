@@ -60,13 +60,10 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 
 		$errors = [];
 		foreach ($propertyReflections as $propertyReflection) {
-			$errors = array_merge($errors, $this->processSingleProperty(
-				$propertyReflection,
-				$node
-			));
+			$errors[] = $this->processSingleProperty($propertyReflection, $node);
 		}
 
-		return $errors;
+		return $errors === [] ? [] : array_merge(...$errors);
 	}
 
 	/**

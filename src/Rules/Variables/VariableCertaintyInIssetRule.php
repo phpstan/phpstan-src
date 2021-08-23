@@ -49,7 +49,7 @@ class VariableCertaintyInIssetRule implements \PHPStan\Rules\Rule
 					'Variable $%s in isset() is never defined.',
 					$var->name
 				))->build();
-			} elseif ($certainty->yes() && !$isSubNode) {
+			} elseif (!$isSubNode && $certainty->yes()) {
 				$variableType = $scope->getVariableType($var->name);
 				if ($variableType->isSuperTypeOf(new NullType())->no()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(

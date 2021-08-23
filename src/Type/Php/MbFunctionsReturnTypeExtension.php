@@ -41,10 +41,11 @@ class MbFunctionsReturnTypeExtension implements \PHPStan\Type\DynamicFunctionRet
 				if ($aliases === false) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
-				$supportedEncodings = array_merge($supportedEncodings, $aliases, [$encoding]);
+				$supportedEncodings[] = $aliases;
+				$supportedEncodings[] = [$encoding];
 			}
 		}
-		$this->supportedEncodings = array_map('strtoupper', $supportedEncodings);
+		$this->supportedEncodings = array_map('strtoupper', $supportedEncodings === [] ? [] : array_merge(...$supportedEncodings));
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

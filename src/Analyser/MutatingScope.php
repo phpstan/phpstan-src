@@ -1992,7 +1992,18 @@ class MutatingScope implements Scope
 					return new MixedType();
 				}
 
-				$constantType = $constantReflection->getValueType();
+				if (
+					$isObject
+					&& (
+						!$constantReflection instanceof ClassConstantReflection
+						|| !$constantClassReflection->isFinal()
+					)
+				) {
+					$constantType = $constantReflection->getValueType();
+				} else {
+					$constantType = ConstantTypeHelper::getTypeFromValue($constantReflection->getValue());
+				}
+
 				if (
 					$constantType instanceof ConstantType
 					&& in_array(sprintf('%s::%s', $constantClassReflection->getName(), $constantName), $this->dynamicConstantNames, true)

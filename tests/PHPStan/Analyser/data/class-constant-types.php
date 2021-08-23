@@ -21,11 +21,11 @@ class Foo
 		assertType('mixed', static::NO_TYPE);
 		assertType('mixed', $this::NO_TYPE);
 
-		assertType('string', self::TYPE);
+		assertType('\'foo\'', self::TYPE);
 		assertType('string', static::TYPE);
 		assertType('string', $this::TYPE);
 
-		assertType('string', self::PRIVATE_TYPE);
+		assertType('\'foo\'', self::PRIVATE_TYPE);
 		assertType('string', static::PRIVATE_TYPE);
 		assertType('string', $this::PRIVATE_TYPE);
 	}
@@ -41,7 +41,7 @@ class Bar extends Foo
 
 	public function doFoo()
 	{
-		assertType('string', self::TYPE);
+		assertType('\'bar\'', self::TYPE);
 		assertType('string', static::TYPE);
 		assertType('string', $this::TYPE);
 
@@ -60,7 +60,7 @@ class Baz extends Foo
 
 	public function doFoo()
 	{
-		assertType('int', self::TYPE);
+		assertType('1', self::TYPE);
 		assertType('int', static::TYPE);
 		assertType('int', $this::TYPE);
 	}
@@ -75,9 +75,37 @@ class Lorem extends Foo
 
 	public function doFoo()
 	{
-		assertType('string', self::TYPE);
+		assertType('1', self::TYPE);
 		assertType('string', static::TYPE);
 		assertType('string', $this::TYPE);
+	}
+
+}
+
+final class FinalFoo
+{
+
+	const NO_TYPE = 1;
+
+	/** @var string */
+	const TYPE = 'foo';
+
+	/** @var string */
+	private const PRIVATE_TYPE = 'foo';
+
+	public function doFoo()
+	{
+		assertType('1', self::NO_TYPE);
+		assertType('1', static::NO_TYPE);
+		assertType('1', $this::NO_TYPE);
+
+		assertType('\'foo\'', self::TYPE);
+		assertType('\'foo\'', static::TYPE);
+		assertType('\'foo\'', $this::TYPE);
+
+		assertType('\'foo\'', self::PRIVATE_TYPE);
+		assertType('\'foo\'', static::PRIVATE_TYPE);
+		assertType('\'foo\'', $this::PRIVATE_TYPE);
 	}
 
 }

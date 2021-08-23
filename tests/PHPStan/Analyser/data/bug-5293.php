@@ -49,7 +49,7 @@ class HelloWorld
 	{
 		array_map(
 			function (string $currencyCode): int {
-				assertType('non-empty-string', $currencyCode);
+				assertType('\'AUD\'|\'BGN\'|\'BRL\'|\'CAD\'|\'CHF\'|\'CZK\'|\'DKK\'|\'EUR\'|\'GBP\'|\'HUF\'|\'NOK\'|\'NZD\'|\'PLN\'|\'RON\'|\'SEK\'|\'SGD\'|\'USD\'', $currencyCode);
 				return 1;
 			},
 			self::SUPPORTED_CURRENCIES

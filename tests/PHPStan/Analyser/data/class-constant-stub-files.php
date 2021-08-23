@@ -15,6 +15,10 @@ class Foo
 }
 
 function (): void {
-	assertType('int', Foo::BAR);
-	assertType('int', Foo::BAZ);
+	assertType('1', Foo::BAR);
+	assertType('1', Foo::BAZ);
+
+	$foo = new Foo();
+	assertType('int', $foo::BAR);
+	assertType('int', $foo::BAZ);
 };

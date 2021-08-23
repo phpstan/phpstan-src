@@ -197,14 +197,18 @@ class X {
 
 	/**
 	 * @param int $i
+	 * @param positive-int $pi
 	 * @param int<1, 10> $r1
 	 * @param int<5, 10> $r2
 	 * @param int<min, 5> $rMin
 	 * @param int<5, max> $rMax
 	 */
-	public function math($i, $r1, $r2, $rMin, $rMax) {
+	public function math($i, $pi, $r1, $r2, $rMin, $rMax) {
 		assertType('int', $r1 + $i);
 		assertType('int', $r1 - $i);
+
+		assertType('int<2, max>', $pi + 1);
+		assertType('int<-1, max>', $pi - 2);
 
 		assertType('int<5, 14>', $r1 + 4);
 		assertType('int<-3, 6>', $r1 - 4);

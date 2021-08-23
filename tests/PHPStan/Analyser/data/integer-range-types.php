@@ -194,4 +194,32 @@ class X {
 		assertType('*ERROR*', $this->error2);
 		assertType('int', $this->int);
 	}
+
+	/**
+	 * @param int $i
+	 * @param int<1, 10> $r1
+	 * @param int<5, 10> $r2
+	 * @param int<min, 5> $rMin
+	 * @param int<5, max> $rMax
+	 */
+	public function math($i, $r1, $r2, $rMin, $rMax) {
+		assertType('int', $r1 + $i);
+		assertType('int', $r1 - $i);
+
+		assertType('int<5, 14>', $r1 + 4);
+		assertType('int<-3, 6>', $r1 - 4);
+		assertType('int<min, 9>', $rMin + 4);
+		assertType('int<1, max>', $rMax - 4);
+
+		assertType('int<6, 20>', $r1 + $r2);
+		assertType('int<-4, 0>', $r1 - $r2);
+
+		assertType('int<min, 15>', $r1 + $rMin);
+		assertType('int<min, 5>', $r1 - $rMin);
+		assertType('int<min, 15>', $rMin + $r1);
+		assertType('int<min, -5>', $rMin - $r1);
+
+		assertType('int<6, max>', $r1 + $rMax);
+		assertType('int<-4, max>', $r1 - $rMax);
+	}
 }

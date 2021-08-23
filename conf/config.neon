@@ -1492,6 +1492,11 @@ services:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
+	-
+		class: PHPStan\Type\Php\ReflectionClassGetAttributesMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
 		factory: @PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver

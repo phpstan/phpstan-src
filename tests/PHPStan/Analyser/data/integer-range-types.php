@@ -221,5 +221,7 @@ class X {
 
 		assertType('int<6, max>', $r1 + $rMax);
 		assertType('int<-4, max>', $r1 - $rMax);
+		assertType('int<6, max>', $rMax + $r1);
+		assertType('int<4, max>', $rMax - $r1);
 	}
 }

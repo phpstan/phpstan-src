@@ -146,6 +146,9 @@ class TypeNodeResolver
 			case 'string':
 				return new StringType();
 
+			case 'literal-string':
+				return new StringType();
+
 			case 'class-string':
 				return new ClassStringType();
 

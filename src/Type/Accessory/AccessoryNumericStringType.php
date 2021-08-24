@@ -159,6 +159,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isLiteralString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

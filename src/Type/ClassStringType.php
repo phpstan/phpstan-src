@@ -75,6 +75,11 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isLiteralString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

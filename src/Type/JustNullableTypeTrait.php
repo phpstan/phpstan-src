@@ -67,4 +67,9 @@ trait JustNullableTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isLiteralString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

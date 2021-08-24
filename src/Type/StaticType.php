@@ -349,6 +349,11 @@ class StaticType implements TypeWithClassName
 		return $this->getStaticObjectType()->isNonEmptyString();
 	}
 
+	public function isLiteralString(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isLiteralString();
+	}
+
 	/**
 	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]

@@ -12,6 +12,7 @@ use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflectio
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -141,7 +142,7 @@ class IntersectionType implements CompoundType
 				$typeNames = [];
 				$accessoryTypes = [];
 				foreach ($this->types as $type) {
-					if ($type instanceof AccessoryNonEmptyStringType) {
+					if ($type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType) {
 						$accessoryTypes[] = $type;
 					}
 					if ($type instanceof AccessoryType && !$type instanceof AccessoryNumericStringType && !$type instanceof NonEmptyArrayType && !$type instanceof AccessoryNonEmptyStringType) {
@@ -150,8 +151,10 @@ class IntersectionType implements CompoundType
 					$typeNames[] = $type->describe($level);
 				}
 
-				if (count($accessoryTypes) === 1) {
-					return $accessoryTypes[0]->describe($level);
+				if (count($accessoryTypes) > 0) {
+					return implode('&', array_map(static function (Type $type) use ($level): string {
+						return $type->describe($level);
+					}, $accessoryTypes));
 				}
 
 				return implode('&', $typeNames);
@@ -160,14 +163,16 @@ class IntersectionType implements CompoundType
 				$typeNames = [];
 				$accessoryTypes = [];
 				foreach ($this->types as $type) {
-					if ($type instanceof AccessoryNonEmptyStringType) {
+					if ($type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType) {
 						$accessoryTypes[] = $type;
 					}
 					$typeNames[] = $type->describe($level);
 				}
 
-				if (count($accessoryTypes) === 1) {
-					return $accessoryTypes[0]->describe($level);
+				if (count($accessoryTypes) > 0) {
+					return implode('&', array_map(static function (Type $type) use ($level): string {
+						return $type->describe($level);
+					}, $accessoryTypes));
 				}
 
 				return implode('&', $typeNames);
@@ -330,6 +335,13 @@ class IntersectionType implements CompoundType
 	{
 		return $this->intersectResults(static function (Type $type): TrinaryLogic {
 			return $type->isNonEmptyString();
+		});
+	}
+
+	public function isLiteralString(): TrinaryLogic
+	{
+		return $this->intersectResults(static function (Type $type): TrinaryLogic {
+			return $type->isLiteralString();
 		});
 	}
 

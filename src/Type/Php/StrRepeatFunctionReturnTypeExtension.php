@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -39,13 +40,19 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return new ConstantStringType('');
 		}
 
+		$accessoryTypes = [];
 		if ($inputType->isNonEmptyString()->yes()) {
 			if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($multiplierType)->yes()) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryNonEmptyStringType(),
-				]);
+				$accessoryTypes[] = new AccessoryNonEmptyStringType();
 			}
+		}
+
+		if ($inputType->isLiteralString()->yes()) {
+			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+
+		if (count($accessoryTypes) > 0) {
+			return new IntersectionType([new StringType(), ...$accessoryTypes]);
 		}
 
 		return new StringType();

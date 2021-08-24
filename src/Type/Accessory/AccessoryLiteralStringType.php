@@ -5,27 +5,32 @@ namespace PHPStan\Type\Accessory;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\CompoundTypeHelper;
-use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
-class NonEmptyArrayType implements CompoundType, AccessoryType
+class AccessoryLiteralStringType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
+	use NonIterableTypeTrait;
 	use TruthyBooleanTypeTrait;
-	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonGenericTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -39,26 +44,27 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		if ($type instanceof MixedType) {
+			return TrinaryLogic::createNo();
+		}
 		if ($type instanceof CompoundType) {
 			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
 		}
 
-		return $type->isArray()
-			->and($type->isIterableAtLeastOnce());
+		return $type->isLiteralString();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($this->equals($type)) {
-			return TrinaryLogic::createYes();
-		}
-
 		if ($type instanceof CompoundType) {
 			return $type->isSubTypeOf($this);
 		}
 
-		return $type->isArray()
-			->and($type->isIterableAtLeastOnce());
+		if ($this->equals($type)) {
+			return TrinaryLogic::createYes();
+		}
+
+		return $type->isLiteralString();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -67,8 +73,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isArray()
-			->and($otherType->isIterableAtLeastOnce())
+		return $otherType->isLiteralString()
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
@@ -84,7 +89,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function describe(\PHPStan\Type\VerbosityLevel $level): string
 	{
-		return 'nonEmpty';
+		return 'literal-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -94,12 +99,16 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return (new IntegerType())->isSuperTypeOf($offsetType)->and(TrinaryLogic::createMaybe());
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		return new MixedType();
+		if ($this->hasOffsetValueType($offsetType)->no()) {
+			return new ErrorType();
+		}
+
+		return new StringType();
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
@@ -107,69 +116,56 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
-	public function isIterable(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
-	public function isIterableAtLeastOnce(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
-	public function getIterableKeyType(): Type
-	{
-		return new MixedType();
-	}
-
-	public function getIterableValueType(): Type
-	{
-		return new MixedType();
-	}
-
 	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
-	public function isNumericString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isNonEmptyString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}
 
 	public function toNumber(): Type
 	{
-		return new ErrorType();
+		return new UnionType([
+			$this->toInteger(),
+			$this->toFloat(),
+		]);
 	}
 
 	public function toInteger(): Type
 	{
-		return new ConstantIntegerType(1);
+		return new IntegerType();
 	}
 
 	public function toFloat(): Type
 	{
-		return new ConstantFloatType(1.0);
+		return new FloatType();
 	}
 
 	public function toString(): Type
 	{
-		return new ErrorType();
+		return $this;
 	}
 
 	public function toArray(): Type
 	{
-		return new MixedType();
+		return new ConstantArrayType(
+			[new ConstantIntegerType(0)],
+			[$this],
+			1
+		);
+	}
+
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isLiteralString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
 	}
 
 	public function traverse(callable $cb): Type

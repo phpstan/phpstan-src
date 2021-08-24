@@ -28,6 +28,7 @@ use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -147,7 +148,7 @@ class TypeNodeResolver
 				return new StringType();
 
 			case 'literal-string':
-				return new StringType();
+				return new IntersectionType([new StringType(), new AccessoryLiteralStringType()]);
 
 			case 'class-string':
 				return new ClassStringType();

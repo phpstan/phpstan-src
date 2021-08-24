@@ -47,6 +47,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -1051,11 +1052,17 @@ class MutatingScope implements Scope
 				return $leftStringType->append($rightStringType);
 			}
 
+			$accessoryTypes = [];
 			if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryNonEmptyStringType(),
-				]);
+				$accessoryTypes[] = new AccessoryNonEmptyStringType();
+			}
+
+			if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
+				$accessoryTypes[] = new AccessoryLiteralStringType();
+			}
+
+			if (count($accessoryTypes) > 0) {
+				return new IntersectionType([new StringType(), ...$accessoryTypes]);
 			}
 
 			return new StringType();

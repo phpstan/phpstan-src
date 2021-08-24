@@ -75,6 +75,10 @@ class TemplateTypeHelper
 				return new StringType();
 			}
 
+			if ($type->isLiteralString()->yes()) {
+				return new StringType();
+			}
+
 			return $traverse($type);
 		});
 	}

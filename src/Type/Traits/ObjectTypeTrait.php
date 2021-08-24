@@ -119,6 +119,11 @@ trait ObjectTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isLiteralString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

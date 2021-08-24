@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
@@ -31,11 +32,16 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		if (count($args) === 1) {
 			$argType = $scope->getType($args[0]->value);
 			if ($argType->isArray()->yes()) {
+				$accessoryTypes = [];
 				if ($argType->isIterableAtLeastOnce()->yes() && $argType->getIterableValueType()->isNonEmptyString()->yes()) {
-					return new IntersectionType([
-						new StringType(),
-						new AccessoryNonEmptyStringType(),
-					]);
+					$accessoryTypes[] = new AccessoryNonEmptyStringType();
+				}
+				if ($argType->getIterableValueType()->isLiteralString()->yes()) {
+					$accessoryTypes[] = new AccessoryLiteralStringType();
+				}
+
+				if (count($accessoryTypes) > 0) {
+					return new IntersectionType([new StringType(), ...$accessoryTypes]);
 				}
 
 				return new StringType();
@@ -48,19 +54,19 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 		$separatorType = $scope->getType($args[0]->value);
 		$arrayType = $scope->getType($args[1]->value);
+		$accessoryTypes = [];
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
-			if ($arrayType->getIterableValueType()->isNonEmptyString()->yes()) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryNonEmptyStringType(),
-				]);
+			if ($arrayType->getIterableValueType()->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
+				$accessoryTypes[] = new AccessoryNonEmptyStringType();
 			}
-			if ($separatorType->isNonEmptyString()->yes()) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryNonEmptyStringType(),
-				]);
-			}
+		}
+
+		if ($arrayType->getIterableValueType()->isLiteralString()->yes() && $separatorType->isLiteralString()->yes()) {
+			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+
+		if (count($accessoryTypes) > 0) {
+			return new IntersectionType([new StringType(), ...$accessoryTypes]);
 		}
 
 		return new StringType();

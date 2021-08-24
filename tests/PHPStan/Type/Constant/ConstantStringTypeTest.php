@@ -143,12 +143,12 @@ class ConstantStringTypeTest extends TestCase
 
 	public function testGeneralize(): void
 	{
-		$this->assertSame('non-empty-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('string', (new ConstantStringType(''))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('non-empty-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&non-empty-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string', (new ConstantStringType(''))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&non-empty-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('string', (new ConstantStringType(''))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('non-empty-string', (new ConstantStringType(\stdClass::class))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&non-empty-string', (new ConstantStringType(\stdClass::class))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('class-string', (new ConstantStringType(\stdClass::class, true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 	}

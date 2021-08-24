@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
@@ -247,6 +248,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createFromBoolean($this->getValue() !== '');
 	}
 
+	public function isLiteralString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		if ($offsetType instanceof ConstantIntegerType) {
@@ -309,6 +315,14 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
+				new AccessoryLiteralStringType(),
+			]);
+		}
+
+		if ($precision !== null && $precision->isMoreSpecific()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryLiteralStringType(),
 			]);
 		}
 

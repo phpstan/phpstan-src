@@ -3072,15 +3072,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$decrementedFooString',
 			],
 			[
-				'non-empty-string',
+				'literal-string&non-empty-string',
 				'$conditionalString . $conditionalString',
 			],
 			[
-				'non-empty-string',
+				'literal-string&non-empty-string',
 				'$conditionalString . $anotherConditionalString',
 			],
 			[
-				'non-empty-string',
+				'literal-string&non-empty-string',
 				'$anotherConditionalString . $conditionalString',
 			],
 			[
@@ -9274,7 +9274,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherArrayCopy',
 			],
 			[
-				'array<non-empty-string, int|null>',
+				'array<literal-string&non-empty-string, int|null>',
 				'$yetAnotherArrayCopy',
 			],
 			[

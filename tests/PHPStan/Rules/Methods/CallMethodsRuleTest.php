@@ -2051,6 +2051,55 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				72,
 			],
+			/*[
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
+				85,
+			],*/
+		]);
+	}
+
+	public function testLiteralString(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/literal-string.php'], [
+			[
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, string given.',
+				18,
+			],
+			[
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, int given.',
+				21,
+			],
+			[
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, 1 given.',
+				22,
+			],
+			[
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, mixed given.',
+				25,
+			],
+			[
+				'Parameter #1 $a of method LiteralStringMethod\Foo::requireArrayOfLiteralStrings() expects array<literal-string>, array<string> given.',
+				58,
+			],
+			[
+				'Parameter #1 $a of method LiteralStringMethod\Foo::requireArrayOfLiteralStrings() expects array<literal-string>, array given.',
+				60,
+			],
+			[
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, array<string, mixed> given.',
+				65,
+			],
+			[
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, mixed given.',
+				66,
+			],
+			[
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, mixed given.',
+				67,
+			],
 		]);
 	}
 

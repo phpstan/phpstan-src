@@ -222,7 +222,7 @@ class X {
 		assertType('int<-3, 6>', $r1 - 4);
 		assertType('int<4, 40>', $r1 * 4);
 		assertType('int<0, 2>', $r1 / 4);
-		assertType('int<min, 9>', $rMin + 4);
+		assertType('int<9, max>', $rMax + 4);
 		assertType('int<1, max>', $rMax - 4);
 		assertType('int<20, max>', $rMax * 4);
 		assertType('int<1, max>', $rMax / 4);

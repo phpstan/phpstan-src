@@ -1264,7 +1264,7 @@ class MutatingScope implements Scope
 				if ($leftType instanceof ConstantIntegerType) {
 					$min = $leftType->getValue();
 					$max = $leftType->getValue();
-				} elseif ($leftType instanceof IntegerRangeType) {
+				} else {
 					$min = $leftType->getMin();
 					$max = $leftType->getMax();
 				}
@@ -1283,7 +1283,7 @@ class MutatingScope implements Scope
 						$min = $min !== null ? $min / $rightType->getValue() : null;
 						$max = $max !== null ? $max / $rightType->getValue() : null;
 					}
-				} elseif ($rightType instanceof IntegerRangeType) {
+				} else {
 					if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
 						$min = $min !== null && $rightType->getMin() !== null ? $min + $rightType->getMin() : null;
 						$max = $max !== null && $rightType->getMax() !== null ? $max + $rightType->getMax() : null;

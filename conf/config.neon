@@ -4,6 +4,7 @@ parameters:
 	bootstrap: null
 	bootstrapFiles:
 		- ../stubs/runtime/ReflectionUnionType.php
+		- ../stubs/runtime/ReflectionAttribute.php
 		- ../stubs/runtime/Attribute.php
 	excludes_analyse: []
 	excludePaths: null
@@ -1491,6 +1492,11 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionClassGetAttributesMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver

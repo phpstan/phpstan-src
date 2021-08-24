@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @template-covariant T of object
+ */
+class ReflectionAttribute
+{
+    /**
+     * @return class-string<T>
+     */
+    public function getName() : string
+    {
+    }
+
+    /**
+     * @return T
+     */
+    public function newInstance() : object
+    {
+    }
+}

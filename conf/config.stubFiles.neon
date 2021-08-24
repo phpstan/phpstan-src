@@ -1,5 +1,6 @@
 parameters:
 	stubFiles:
+		- ../stubs/ReflectionAttribute.stub
 		- ../stubs/ReflectionClass.stub
 		- ../stubs/iterable.stub
 		- ../stubs/ArrayObject.stub

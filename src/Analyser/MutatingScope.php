@@ -1258,8 +1258,6 @@ class MutatingScope implements Scope
 			if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType) &&
 				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType ) &&
 				!($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow)) {
-				$min = null;
-				$max = null;
 
 				if ($leftType instanceof ConstantIntegerType) {
 					$min = $leftType->getValue();
@@ -1280,8 +1278,8 @@ class MutatingScope implements Scope
 						$min = $min !== null ? $min * $rightType->getValue() : null;
 						$max = $max !== null ? $max * $rightType->getValue() : null;
 					} elseif ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
-						$min = $min !== null ? $min / $rightType->getValue() : null;
-						$max = $max !== null ? $max / $rightType->getValue() : null;
+						$min = $min !== null ? (int) ($min / $rightType->getValue()) : null;
+						$max = $max !== null ? (int) ($max / $rightType->getValue()) : null;
 					}
 				} else {
 					if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
@@ -1294,21 +1292,12 @@ class MutatingScope implements Scope
 						$min = $min !== null && $rightType->getMin() !== null ? $min * $rightType->getMin() : null;
 						$max = $max !== null && $rightType->getMax() !== null ? $max * $rightType->getMax() : null;
 					} elseif ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
-						$min = $min !== null && $rightType->getMin() !== null ? $min / $rightType->getMin() : null;
-						$max = $max !== null && $rightType->getMax() !== null ? $max / $rightType->getMax() : null;
+						$min = $min !== null && $rightType->getMin() !== null ? (int) ($min / $rightType->getMin()) : null;
+						$max = $max !== null && $rightType->getMax() !== null ? (int) ($max / $rightType->getMax()) : null;
 					}
 				}
 
 				if ($min !== null || $max !== null) {
-					if ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
-						if ($min !== null) {
-							$min = (int) $min;
-						}
-						if ($max !== null) {
-							$max = (int) $max;
-						}
-					}
-
 					return IntegerRangeType::fromInterval($min, $max);
 				}
 			}

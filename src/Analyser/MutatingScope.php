@@ -1256,7 +1256,8 @@ class MutatingScope implements Scope
 			$rightType = $this->getType($right);
 
 			if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType) &&
-				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType )) {
+				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType ) &&
+				!($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow)) {
 				$min = null;
 				$max = null;
 

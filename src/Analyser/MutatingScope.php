@@ -1278,6 +1278,9 @@ class MutatingScope implements Scope
 					} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
 						$min = $min !== null ? $min * $rightType->getValue() : null;
 						$max = $max !== null ? $max * $rightType->getValue() : null;
+					} elseif ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+						$min = $min !== null ? $min / $rightType->getValue() : null;
+						$max = $max !== null ? $max / $rightType->getValue() : null;
 					}
 				} elseif ($rightType instanceof IntegerRangeType) {
 					if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
@@ -1289,10 +1292,22 @@ class MutatingScope implements Scope
 					} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
 						$min = $min !== null && $rightType->getMin() !== null ? $min * $rightType->getMin() : null;
 						$max = $max !== null && $rightType->getMax() !== null ? $max * $rightType->getMax() : null;
+					} elseif ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+						$min = $min !== null && $rightType->getMin() !== null ? $min / $rightType->getMin() : null;
+						$max = $max !== null && $rightType->getMax() !== null ? $max / $rightType->getMax() : null;
 					}
 				}
 
 				if ($min !== null || $max !== null) {
+					if ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+						if ($min !== null) {
+							$min = (int) $min;
+						}
+						if ($max !== null) {
+							$max = (int) $max;
+						}
+					}
+
 					return IntegerRangeType::fromInterval($min, $max);
 				}
 			}

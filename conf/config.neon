@@ -4,6 +4,7 @@ parameters:
 	bootstrap: null
 	bootstrapFiles:
 		- ../stubs/runtime/ReflectionUnionType.php
+		- ../stubs/runtime/ReflectionAttribute.php
 		- ../stubs/runtime/Attribute.php
 	excludes_analyse: []
 	excludePaths: null

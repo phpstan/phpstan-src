@@ -1260,41 +1260,33 @@ class MutatingScope implements Scope
 				!($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow)) {
 
 				if ($leftType instanceof ConstantIntegerType) {
-					$min = $leftType->getValue();
-					$max = $leftType->getValue();
+					$leftMin = $leftType->getValue();
+					$leftMax = $leftType->getValue();
 				} else {
-					$min = $leftType->getMin();
-					$max = $leftType->getMax();
+					$leftMin = $leftType->getMin();
+					$leftMax = $leftType->getMax();
 				}
 
 				if ($rightType instanceof ConstantIntegerType) {
-					if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
-						$min = $min !== null ? $min + $rightType->getValue() : null;
-						$max = $max !== null ? $max + $rightType->getValue() : null;
-					} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
-						$min = $min !== null ? $min - $rightType->getValue() : null;
-						$max = $max !== null ? $max - $rightType->getValue() : null;
-					} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
-						$min = $min !== null ? $min * $rightType->getValue() : null;
-						$max = $max !== null ? $max * $rightType->getValue() : null;
-					} else {
-						$min = $min !== null ? (int) ($min / $rightType->getValue()) : null;
-						$max = $max !== null ? (int) ($max / $rightType->getValue()) : null;
-					}
+					$rightMin = $rightType->getValue();
+					$rightMax = $rightType->getValue();
 				} else {
-					if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
-						$min = $min !== null && $rightType->getMin() !== null ? $min + $rightType->getMin() : null;
-						$max = $max !== null && $rightType->getMax() !== null ? $max + $rightType->getMax() : null;
-					} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
-						$min = $min !== null && $rightType->getMin() !== null ? $min - $rightType->getMin() : null;
-						$max = $max !== null && $rightType->getMax() !== null ? $max - $rightType->getMax() : null;
-					} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
-						$min = $min !== null && $rightType->getMin() !== null ? $min * $rightType->getMin() : null;
-						$max = $max !== null && $rightType->getMax() !== null ? $max * $rightType->getMax() : null;
-					} else {
-						$min = $min !== null && $rightType->getMin() !== null ? (int) ($min / $rightType->getMin()) : null;
-						$max = $max !== null && $rightType->getMax() !== null ? (int) ($max / $rightType->getMax()) : null;
-					}
+					$rightMin = $rightType->getMin();
+					$rightMax = $rightType->getMax();
+				}
+
+				if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
+					$min = $leftMin !== null && $rightMin !== null ? $leftMin + $rightMin : null;
+					$max = $leftMax !== null && $rightMax !== null ? $leftMax + $rightMax : null;
+				} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
+					$min = $leftMin !== null && $rightMin !== null ? $leftMin - $rightMin : null;
+					$max = $leftMax !== null && $rightMax !== null ? $leftMax - $rightMax : null;
+				} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
+					$min = $leftMin !== null && $rightMin !== null ? $leftMin * $rightMin : null;
+					$max = $leftMax !== null && $rightMax !== null ? $leftMax * $rightMax : null;
+				} else {
+					$min = $leftMin !== null && $rightMin !== null ? (int) ($leftMin / $rightMin) : null;
+					$max = $leftMax !== null && $rightMax !== null ? (int) ($leftMax / $rightMax) : null;
 				}
 
 				if ($min !== null || $max !== null) {

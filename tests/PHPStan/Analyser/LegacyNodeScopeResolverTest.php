@@ -5153,6 +5153,10 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
+				"array('foo' => 'foo', 1 => stdClass, 'bar' => stdClass)",
+				'array_replace($stringOrIntegerKeys, $stringKeys)',
+			],
+			[
 				"array('foo' => stdClass, 0 => stdClass)",
 				'array_merge($stringOrIntegerKeys)',
 			],

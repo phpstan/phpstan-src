@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -17,6 +18,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
@@ -127,6 +129,10 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		} else {
 			$type = $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 			$otherType = $this->getOtherType($flagsArg, $scope);
+
+			if ($inputType->isNonEmptyString()->yes()) {
+				$type = new IntersectionType([$type, new AccessoryNonEmptyStringType()]);
+			}
 
 			if ($otherType->isSuperTypeOf($type)->no()) {
 				$type = new UnionType([$type, $otherType]);

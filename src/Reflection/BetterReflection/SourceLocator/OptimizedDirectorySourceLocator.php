@@ -208,15 +208,24 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		}
 		// strip strings
 		$contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
+		if ($contents === null) {
+			return ['classes' => [], 'functions' => []];
+		}
 		// strip leading non-php code if needed
 		if (substr($contents, 0, 2) !== '<?') {
 			$contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
+			if ($contents === null) {
+				return ['classes' => [], 'functions' => []];
+			}
 			if ($replacements === 0) {
 				return ['classes' => [], 'functions' => []];
 			}
 		}
 		// strip non-php blocks in the file
 		$contents = preg_replace('{\?>(?:[^<]++|<(?!\?))*+<\?}s', '?><?', $contents);
+		if ($contents === null) {
+			return ['classes' => [], 'functions' => []];
+		}
 		// strip trailing non-php code if needed
 		$pos = strrpos($contents, '?>');
 		if ($pos !== false && strpos(substr($contents, $pos), '<?') === false) {
@@ -225,6 +234,9 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		// strip comments if short open tags are in the file
 		if (preg_match('{(<\?)(?!(php|hh))}i', $contents)) {
 			$contents = preg_replace('{//.* | /\*(?:[^*]++|\*(?!/))*\*/}x', '', $contents);
+			if ($contents === null) {
+				return ['classes' => [], 'functions' => []];
+			}
 		}
 
 		preg_match_all('{

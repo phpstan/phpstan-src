@@ -14,6 +14,8 @@ use function array_filter;
 class ConstantArrayTypeBuilder
 {
 
+	public const ARRAY_COUNT_LIMIT = 256;
+
 	/** @var array<int, Type> */
 	private array $keyTypes;
 

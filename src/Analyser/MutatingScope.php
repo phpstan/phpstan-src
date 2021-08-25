@@ -1609,7 +1609,7 @@ class MutatingScope implements Scope
 
 		} elseif ($node instanceof Array_) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			if (count($node->items) > 256) {
+			if (count($node->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 				$arrayBuilder->degradeToGeneralArray();
 			}
 			foreach ($node->items as $arrayItem) {

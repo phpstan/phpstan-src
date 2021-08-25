@@ -32,7 +32,7 @@ class ConstantTypeHelper
 			return new ConstantStringType($value);
 		} elseif (is_array($value)) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			if (count($value) > 256) {
+			if (count($value) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 				$arrayBuilder->degradeToGeneralArray();
 			}
 			foreach ($value as $k => $v) {

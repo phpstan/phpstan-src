@@ -263,7 +263,7 @@ return [
 'array_chunk' => ['array[]', 'input'=>'array', 'size'=>'int', 'preserve_keys='=>'bool'],
 'array_column' => ['array', 'array'=>'array', 'column_key'=>'mixed', 'index_key='=>'mixed'],
 'array_combine' => ['array|false', 'keys'=>'array', 'values'=>'array'],
-'array_count_values' => ['int[]', 'input'=>'array'],
+'array_count_values' => ['array<int|string, 0|positive-int>', 'input'=>'array'],
 'array_diff' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...args='=>'array'],
 'array_diff_assoc' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...args='=>'array'],
 'array_diff_key' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...args='=>'array'],

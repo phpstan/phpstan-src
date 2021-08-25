@@ -140,10 +140,9 @@ class OptimizedDirectorySourceLocatorTest extends TestCase
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->createByFiles([__DIR__ . '/data/bug-5525.php']);
 		$classReflector = new ClassReflector($locator);
-		$functionReflector = new FunctionReflector($locator, $classReflector);
 
-		$this->expectException(IdentifierNotFound::class);
-		$functionReflector->reflect('spl_autoload_register');
+		$class = $classReflector->reflect(\Faker\Provider\nl_BE\Text::class);
+		$this->assertSame(\Faker\Provider\nl_BE\Text::class, $class->getName());
 	}
 
 }

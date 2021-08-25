@@ -7,6 +7,21 @@ use function PHPStan\Testing\assertType;
 class Foo
 {
 
+	private const DEFAULT_SETTINGS = [
+		'remove' => 'first',
+		'limit' => PHP_INT_MAX,
+	];
+
+	/**
+	 * @param array<string, float|null> $settings
+	 */
+	public function arrayMergeWithConst(array $settings): void
+	{
+		$settings = array_merge(self::DEFAULT_SETTINGS, $settings);
+
+		assertType("array<string, 9223372036854775807|'first'|float|null>&nonEmpty", $settings);
+	}
+
 	/**
 	 * @param array{foo: '1', bar: '2', lall: '3', 2: '2', 3: '3'} $array1
 	 * @param array{foo: '1', bar: '4', lall2: '3', 2: '4', 3: '6'} $array2
@@ -32,6 +47,8 @@ class Foo
 		assertType("array<int>", array_merge($array1, $array1));
 		assertType("array<int|string>", array_merge($array1, $array2));
 		assertType("array<int|string>", array_merge($array2, $array1));
+
+		assertType("array('foo' => '')", array_merge(['foo' => ''])); // issue #2567
 	}
 
 	/**

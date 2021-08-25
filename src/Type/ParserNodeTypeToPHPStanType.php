@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
 class ParserNodeTypeToPHPStanType
@@ -11,22 +12,24 @@ class ParserNodeTypeToPHPStanType
 
 	/**
 	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $type
-	 * @param string|null $className
+	 * @param ClassReflection|null $classReflection
 	 * @return Type
 	 */
-	public static function resolve($type, ?string $className): Type
+	public static function resolve($type, ?ClassReflection $classReflection): Type
 	{
 		if ($type === null) {
 			return new MixedType();
 		} elseif ($type instanceof Name) {
 			$typeClassName = (string) $type;
 			$lowercasedClassName = strtolower($typeClassName);
-			if ($className !== null && in_array($lowercasedClassName, ['self', 'static'], true)) {
-				$typeClassName = $className;
+			if ($classReflection !== null && in_array($lowercasedClassName, ['self', 'static'], true)) {
+				$typeClassName = $classReflection->getName();
 			} elseif (
 				$lowercasedClassName === 'parent'
+				&& $classReflection !== null
+				&& $classReflection->getParentClass() !== false
 			) {
-				throw new \PHPStan\ShouldNotHappenException('parent type is not supported here');
+				$typeClassName = $classReflection->getParentClass()->getName();
 			}
 
 			if ($lowercasedClassName === 'static') {
@@ -35,11 +38,11 @@ class ParserNodeTypeToPHPStanType
 
 			return new ObjectType($typeClassName);
 		} elseif ($type instanceof NullableType) {
-			return TypeCombinator::addNull(self::resolve($type->type, $className));
+			return TypeCombinator::addNull(self::resolve($type->type, $classReflection));
 		} elseif ($type instanceof \PhpParser\Node\UnionType) {
 			$types = [];
 			foreach ($type->types as $unionTypeType) {
-				$types[] = self::resolve($unionTypeType, $className);
+				$types[] = self::resolve($unionTypeType, $classReflection);
 			}
 
 			return TypeCombinator::union(...$types);

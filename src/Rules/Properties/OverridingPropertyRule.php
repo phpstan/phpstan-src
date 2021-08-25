@@ -123,7 +123,7 @@ class OverridingPropertyRule implements Rule
 					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly())
 				))->nonIgnorable()->build();
 			} else {
-				$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection()->getName());
+				$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection());
 				if (!$prototype->getNativeType()->equals($nativeType)) {
 					$typeErrors[] = RuleErrorBuilder::message(sprintf(
 						'Type %s of property %s::$%s is not the same as type %s of overridden property %s::$%s.',
@@ -141,7 +141,7 @@ class OverridingPropertyRule implements Rule
 				'Property %s::$%s (%s) overriding property %s::$%s should not have a native type.',
 				$classReflection->getDisplayName(),
 				$node->getName(),
-				ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection()->getName())->describe(VerbosityLevel::typeOnly()),
+				ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection())->describe(VerbosityLevel::typeOnly()),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName()
 			))->nonIgnorable()->build();

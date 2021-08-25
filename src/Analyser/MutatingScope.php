@@ -3322,7 +3322,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		return ParserNodeTypeToPHPStanType::resolve($type, $this->isInClass() ? $this->getClassReflection()->getName() : null);
+		return ParserNodeTypeToPHPStanType::resolve($type, $this->isInClass() ? $this->getClassReflection() : null);
 	}
 
 	public function enterForeach(Expr $iteratee, string $valueName, ?string $keyName): self

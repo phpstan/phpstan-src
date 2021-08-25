@@ -2,12 +2,15 @@ parameters:
 	stubFiles:
 		- ../stubs/ReflectionAttribute.stub
 		- ../stubs/ReflectionClass.stub
+		- ../stubs/ReflectionClassConstant.stub
+		- ../stubs/ReflectionFunctionAbstract.stub
+		- ../stubs/ReflectionParameter.stub
+		- ../stubs/ReflectionProperty.stub
 		- ../stubs/iterable.stub
 		- ../stubs/ArrayObject.stub
 		- ../stubs/WeakReference.stub
 		- ../stubs/ext-ds.stub
 		- ../stubs/PDOStatement.stub
-		- ../stubs/ReflectionFunctionAbstract.stub
 		- ../stubs/date.stub
 		- ../stubs/zip.stub
 		- ../stubs/dom.stub

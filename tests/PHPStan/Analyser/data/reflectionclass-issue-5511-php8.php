@@ -9,35 +9,63 @@ class Abc
 {
 }
 
-#[Abc]
-class X
-{
-}
-
 /**
  * @param string $str
  * @param class-string $className
  * @param class-string<Abc> $genericClassName
  */
-function testGetAttributes(string $str, string $className, string $genericClassName): void
+function testGetAttributes(
+	\ReflectionClass $reflectionClass,
+	\ReflectionMethod $reflectionMethod,
+	\ReflectionParameter $reflectionParameter,
+	\ReflectionProperty $reflectionProperty,
+	\ReflectionClassConstant $reflectionClassConstant,
+	\ReflectionFunction $reflectionFunction,
+	string $str,
+	string $className,
+	string $genericClassName
+): void
 {
-	$class = new \ReflectionClass(X::class);
+	$classAll = $reflectionClass->getAttributes();
+	$classAbc1 = $reflectionClass->getAttributes(Abc::class);
+	$classAbc2 = $reflectionClass->getAttributes(Abc::class, \ReflectionAttribute::IS_INSTANCEOF);
+	$classGCN = $reflectionClass->getAttributes($genericClassName);
+	$classCN = $reflectionClass->getAttributes($className);
+	$classStr = $reflectionClass->getAttributes($str);
+	$classNonsense = $reflectionClass->getAttributes("some random string");
 
-	$attrsAll = $class->getAttributes();
-	$attrsAbc1 = $class->getAttributes(Abc::class);
-	$attrsAbc2 = $class->getAttributes(Abc::class, \ReflectionAttribute::IS_INSTANCEOF);
-	$attrsGCN = $class->getAttributes($genericClassName);
-	$attrsCN = $class->getAttributes($className);
-	$attrsStr = $class->getAttributes($str);
-	$attrsNonsense = $class->getAttributes("some random string");
+	assertType('array<ReflectionAttribute<object>>', $classAll);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $classAbc1);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $classAbc2);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $classGCN);
+	assertType('array<ReflectionAttribute<object>>', $classCN);
+	assertType('array<ReflectionAttribute<object>>', $classStr);
+	assertType('array<ReflectionAttribute<some random string>>', $classNonsense);
 
-	assertType('array<ReflectionAttribute<object>>', $attrsAll);
-	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $attrsAbc1);
-	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $attrsAbc2);
-	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $attrsGCN);
-	assertType('array<ReflectionAttribute<object>>', $attrsCN);
-	assertType('array<ReflectionAttribute<object>>', $attrsStr);
-	assertType('array<ReflectionAttribute<some random string>>', $attrsNonsense);
+	$methodAll = $reflectionMethod->getAttributes();
+	$methodAbc = $reflectionMethod->getAttributes(Abc::class);
+	assertType('array<ReflectionAttribute<object>>', $methodAll);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $methodAbc);
+
+	$paramAll = $reflectionParameter->getAttributes();
+	$paramAbc = $reflectionParameter->getAttributes(Abc::class);
+	assertType('array<ReflectionAttribute<object>>', $paramAll);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $paramAbc);
+
+	$propAll = $reflectionProperty->getAttributes();
+	$propAbc = $reflectionProperty->getAttributes(Abc::class);
+	assertType('array<ReflectionAttribute<object>>', $propAll);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $propAbc);
+
+	$constAll = $reflectionClassConstant->getAttributes();
+	$constAbc = $reflectionClassConstant->getAttributes(Abc::class);
+	assertType('array<ReflectionAttribute<object>>', $constAll);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $constAbc);
+
+	$funcAll = $reflectionFunction->getAttributes();
+	$funcAbc = $reflectionFunction->getAttributes(Abc::class);
+	assertType('array<ReflectionAttribute<object>>', $funcAll);
+	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $funcAbc);
 }
 
 /**

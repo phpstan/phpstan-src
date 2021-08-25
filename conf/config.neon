@@ -1494,9 +1494,40 @@ services:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\ReflectionClassGetAttributesMethodReturnTypeExtension
+		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension
+		arguments:
+			className: ReflectionClass
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension
+		arguments:
+			className: ReflectionClassConstant
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension
+		arguments:
+			className: ReflectionFunctionAbstract
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension
+		arguments:
+			className: ReflectionParameter
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension
+		arguments:
+			className: ReflectionProperty
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver

@@ -101,6 +101,8 @@ use function array_key_exists;
 class MutatingScope implements Scope
 {
 
+	public const CALCULATE_SCALARS_LIMIT = 128;
+
 	private const OPERATOR_SIGIL_MAP = [
 		Node\Expr\AssignOp\Plus::class => '+',
 		Node\Expr\AssignOp\Minus::class => '-',
@@ -1099,11 +1101,18 @@ class MutatingScope implements Scope
 			$leftTypes = TypeUtils::getConstantScalars($this->getType($left));
 			$rightTypes = TypeUtils::getConstantScalars($this->getType($right));
 
-			if (count($leftTypes) > 0 && count($rightTypes) > 0) {
+			$leftTypesCount = count($leftTypes);
+			$rightTypesCount = count($rightTypes);
+			if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 				$resultTypes = [];
+				$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
 				foreach ($leftTypes as $leftType) {
 					foreach ($rightTypes as $rightType) {
-						$resultTypes[] = $this->calculateFromScalars($node, $leftType, $rightType);
+						$resultType = $this->calculateFromScalars($node, $leftType, $rightType);
+						if ($generalize) {
+							$resultType = TypeUtils::generalizeType($resultType);
+						}
+						$resultTypes[] = $resultType;
 					}
 				}
 				return TypeCombinator::union(...$resultTypes);

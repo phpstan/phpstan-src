@@ -33,6 +33,7 @@ class ArrayReplaceFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dy
 		$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 		$returnedArrayBuilderFilled = false;
 		$nonEmpty = false;
+		$offsetCount = 0;
 		foreach ($functionCall->args as $arg) {
 			$argType = $scope->getType($arg->value);
 
@@ -45,6 +46,11 @@ class ArrayReplaceFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dy
 				foreach ($arrays as $constantArray) {
 					foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 						$returnedArrayBuilderFilled = true;
+						$offsetCount++;
+
+						if ($offsetCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+							$returnedArrayBuilder->degradeToGeneralArray();
+						}
 
 						$returnedArrayBuilder->setOffsetValueType(
 							$keyType,

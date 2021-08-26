@@ -1255,13 +1255,26 @@ class MutatingScope implements Scope
 			$leftType = $this->getType($left);
 			$rightType = $this->getType($right);
 
-			if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType) &&
-				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType) &&
+			if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
+				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType) &&
 				!($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow)) {
 
 				if ($leftType instanceof ConstantIntegerType) {
 					$leftMin = $leftType->getValue();
 					$leftMax = $leftType->getValue();
+				} elseif ($leftType instanceof UnionType) {
+					$leftMin = null;
+					$leftMax = null;
+
+					foreach ($leftType->getTypes() as $type) {
+						if ($type instanceof IntegerRangeType) {
+							$leftMin = $leftMin !== null ? min($leftMin, $type->getMin()) : $type->getMin();
+							$leftMax = max($leftMax, $type->getMax());
+						} elseif ($type instanceof ConstantIntegerType) {
+							$leftMin = $leftMin !== null ? min($leftMin, $type->getValue()) : $type->getValue();
+							$leftMax = max($leftMax, $type->getValue());
+						}
+					}
 				} else {
 					$leftMin = $leftType->getMin();
 					$leftMax = $leftType->getMax();
@@ -1270,6 +1283,25 @@ class MutatingScope implements Scope
 				if ($rightType instanceof ConstantIntegerType) {
 					$rightMin = $rightType->getValue();
 					$rightMax = $rightType->getValue();
+				} elseif ($rightType instanceof UnionType) {
+					$rightMin = null;
+					$rightMax = null;
+
+					foreach ($rightType->getTypes() as $type) {
+						if ($type instanceof IntegerRangeType) {
+							$rightMin = $rightMin !== null ? min($rightMin, $type->getMin()) : $type->getMin();
+							$rightMax = max($rightMax, $type->getMax());
+						} elseif ($type instanceof ConstantIntegerType) {
+							if ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus ||
+								$node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+								$rightMin = max($rightMin, $type->getValue());
+								$rightMax = $rightMax !== null ? min($rightMax, $type->getValue()) : $type->getValue();
+							} else {
+								$rightMin = $rightMin !== null ? min($rightMin, $type->getValue()) : $type->getValue();
+								$rightMax = max($rightMax, $type->getValue());
+							}
+						}
+					}
 				} else {
 					$rightMin = $rightType->getMin();
 					$rightMax = $rightType->getMax();

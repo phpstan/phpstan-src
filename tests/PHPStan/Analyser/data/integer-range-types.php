@@ -214,6 +214,8 @@ class X {
 		assertType('int<-2, 9>', $r1 - $j);
 		assertType('int<1, 30>', $r1 * $j);
 		assertType('int<0, 10>', $r1 / $j);
+		assertType('int<min, 15>', $rMin * $j);
+		assertType('int<5, max>', $rMax * $j);
 
 		assertType('int<2, max>', $pi + 1);
 		assertType('int<-1, max>', $pi - 2);

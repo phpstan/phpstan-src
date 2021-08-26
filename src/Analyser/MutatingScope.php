@@ -1271,8 +1271,14 @@ class MutatingScope implements Scope
 							$leftMin = $leftMin !== null ? min($leftMin, $type->getMin()) : $type->getMin();
 							$leftMax = max($leftMax, $type->getMax());
 						} elseif ($type instanceof ConstantIntegerType) {
-							$leftMin = $leftMin !== null ? min($leftMin, $type->getValue()) : $type->getValue();
-							$leftMax = max($leftMax, $type->getValue());
+							if ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus ||
+								$node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+								$leftMin = max($leftMin, $type->getValue());
+								$leftMax = $leftMax !== null ? min($leftMax, $type->getValue()) : $type->getValue();
+							} else {
+								$leftMin = $leftMin !== null ? min($leftMin, $type->getValue()) : $type->getValue();
+								$leftMax = max($leftMax, $type->getValue());
+							}
 						}
 					}
 				} else {
@@ -1313,12 +1319,20 @@ class MutatingScope implements Scope
 				} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
 					$min = $leftMin !== null && $rightMin !== null ? $leftMin - $rightMin : null;
 					$max = $leftMax !== null && $rightMax !== null ? $leftMax - $rightMax : null;
+
+					if ($min !== null && $max !== null && $min > $max) {
+						[$min, $max] = [$max, $min];
+					}
 				} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
 					$min = $leftMin !== null && $rightMin !== null ? $leftMin * $rightMin : null;
 					$max = $leftMax !== null && $rightMax !== null ? $leftMax * $rightMax : null;
 				} else {
 					$min = $leftMin !== null && $rightMin !== null ? (int) ($leftMin / $rightMin) : null;
 					$max = $leftMax !== null && $rightMax !== null ? (int) ($leftMax / $rightMax) : null;
+
+					if ($min !== null && $max !== null && $min > $max) {
+						[$min, $max] = [$max, $min];
+					}
 				}
 
 				if ($min !== null || $max !== null) {

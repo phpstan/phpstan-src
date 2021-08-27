@@ -52,7 +52,8 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		}
 
 		if (count($accessoryTypes) > 0) {
-			return new IntersectionType([new StringType(), ...$accessoryTypes]);
+			$accessoryTypes[] = new StringType();
+			return new IntersectionType($accessoryTypes);
 		}
 
 		return new StringType();

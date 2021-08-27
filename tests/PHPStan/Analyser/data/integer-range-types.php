@@ -204,8 +204,11 @@ class X {
 	 * @param int<5, 10> $r2
 	 * @param int<min, 5> $rMin
 	 * @param int<5, max> $rMax
+	 *
+	 * @param 20|40|60 $x
+	 * @param 2|4 $y
 	 */
-	public function math($i, $j, $z, $pi, $r1, $r2, $rMin, $rMax) {
+	public function math($i, $j, $z, $pi, $r1, $r2, $rMin, $rMax, $x, $y) {
 		assertType('int', $r1 + $i);
 		assertType('int', $r1 - $i);
 		assertType('int', $r1 * $i);
@@ -272,5 +275,7 @@ class X {
 		assertType('int<4, max>', $rMax - $r1);
 		assertType('int<5, max>', $rMax * $r1);
 		assertType('float|int<5, max>', $rMax / $r1);
+
+		assertType('5|10|15|20|30', $x / $y);
 	}
 }

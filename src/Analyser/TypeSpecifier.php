@@ -326,6 +326,26 @@ class TypeSpecifier
 						$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate()
 					);
 				}
+
+				if (
+					!$context->null()
+					&& $exprNode instanceof FuncCall
+					&& count($exprNode->args) === 1
+					&& $exprNode->name instanceof Name
+					&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
+					&& $constantType instanceof ConstantIntegerType
+				) {
+					if ($context->truthy() || $constantType->getValue() === 0) {
+						$newContext = $context;
+						if ($constantType->getValue() === 0) {
+							$newContext = $newContext->negate();
+						}
+						$argType = $scope->getType($exprNode->args[0]->value);
+						if ($argType->isArray()->yes()) {
+							return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
+						}
+					}
+				}
 			}
 
 			$leftType = $scope->getType($expr->left);
@@ -404,11 +424,11 @@ class TypeSpecifier
 				$expr->left instanceof FuncCall
 				&& count($expr->left->args) === 1
 				&& $expr->left->name instanceof Name
-				&& in_array(strtolower((string) $expr->left->name), ['count', 'strlen'], true)
+				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen'], true)
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
-					|| !in_array(strtolower((string) $expr->right->name), ['count', 'strlen'], true)
+					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen'], true)
 				)
 			) {
 				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
@@ -429,7 +449,7 @@ class TypeSpecifier
 				&& $expr->right instanceof FuncCall
 				&& count($expr->right->args) === 1
 				&& $expr->right->name instanceof Name
-				&& strtolower((string) $expr->right->name) === 'count'
+				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
 			) {
 				if (

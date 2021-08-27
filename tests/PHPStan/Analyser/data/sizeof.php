@@ -55,7 +55,7 @@ class Sizeof
 
 	function doFoo6(array $arr): string
 	{
-		if ([] != $arr) {
+		if ($arr != []) {
 			assertType('array&nonEmpty', $arr);
 		}
 		return "";

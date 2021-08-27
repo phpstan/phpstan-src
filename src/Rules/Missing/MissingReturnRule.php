@@ -114,6 +114,7 @@ class MissingReturnRule implements Rule
 		if (
 			$returnType instanceof MixedType
 			&& !$returnType instanceof TemplateMixedType
+			&& !$node->hasNativeReturnTypehint()
 			&& (
 				!$returnType->isExplicitMixed()
 				|| !$this->checkExplicitMixedMissingReturn

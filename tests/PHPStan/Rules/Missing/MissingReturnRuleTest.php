@@ -250,4 +250,36 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/check-phpdoc-missing-return.php'], $errors);
 	}
 
+	public function dataModelMixin(): array
+	{
+		return [
+			[
+				true,
+			],
+			[
+				false,
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataModelMixin
+	 * @param bool $checkExplicitMixedMissingReturn
+	 */
+	public function testModelMixin(bool $checkExplicitMixedMissingReturn): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixedMissingReturn = $checkExplicitMixedMissingReturn;
+		$this->checkPhpDocMissingReturn = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/model-mixin.php'], [
+			[
+				'Method ModelMixin\Model::__callStatic() should return mixed but return statement is missing.',
+				13,
+			],
+		]);
+	}
+
 }

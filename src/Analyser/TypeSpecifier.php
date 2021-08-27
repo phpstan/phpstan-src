@@ -377,7 +377,7 @@ class TypeSpecifier
 			}
 
 			if (
-				$context->truthy()
+				$context->falsey()
 				&& $rightType->isArray()->yes()
 				&& $leftType instanceof ConstantArrayType && $leftType->isEmpty()
 			) {
@@ -385,7 +385,7 @@ class TypeSpecifier
 			}
 
 			if (
-				$context->truthy()
+				$context->falsey()
 				&& $leftType->isArray()->yes()
 				&& $rightType instanceof ConstantArrayType && $rightType->isEmpty()
 			) {

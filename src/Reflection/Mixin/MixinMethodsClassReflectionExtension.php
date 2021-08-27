@@ -54,7 +54,6 @@ class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExte
 			if (
 				!$static
 				&& $classReflection->hasNativeMethod('__callStatic')
-				&& !$classReflection->hasNativeMethod('__call')
 			) {
 				$static = true;
 			}

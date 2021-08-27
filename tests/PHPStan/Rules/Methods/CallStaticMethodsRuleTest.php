@@ -445,4 +445,10 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5259.php'], []);
 	}
 
+	public function testBug5536(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-5536.php'], []);
+	}
+
 }

@@ -2029,6 +2029,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug5536(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5536.php'], []);
+	}
+
 	public function testBug5372(): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {

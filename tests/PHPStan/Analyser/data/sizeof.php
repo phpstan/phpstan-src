@@ -44,4 +44,20 @@ class Sizeof
 		}
 		return "";
 	}
+
+	function doFoo5(array $arr): string
+	{
+		if ([] != $arr) {
+			assertType('array&nonEmpty', $arr);
+		}
+		return "";
+	}
+
+	function doFoo6(array $arr): string
+	{
+		if ([] != $arr) {
+			assertType('array&nonEmpty', $arr);
+		}
+		return "";
+	}
 }

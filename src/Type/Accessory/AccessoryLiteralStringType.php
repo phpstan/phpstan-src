@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\CompoundTypeHelper;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -17,7 +18,6 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -28,7 +28,6 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
-	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
 
@@ -142,6 +141,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function toString(): Type
 	{
 		return $this;
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function toArray(): Type

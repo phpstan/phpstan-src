@@ -5,7 +5,7 @@ namespace sizeof;
 use function PHPStan\Testing\assertType;
 
 
-class x
+class Sizeof
 {
 	/**
 	 * @param int[] $ints
@@ -27,5 +27,27 @@ class x
 			assertType('false', min($ints));
 			assertType('false', max($ints));
 		}
+	}
+
+	/**
+	 * @param string[] $arr
+	 */
+	function doFoo3(array $arr): string
+	{
+		if (0 != count($arr)) {
+			assertType('string', reset($arr));
+		}
+		return "";
+	}
+
+	/**
+	 * @param string[] $arr
+	 */
+	function doFoo4(array $arr): string
+	{
+		if (0 != sizeof($arr)) {
+			assertType('string', reset($arr));
+		}
+		return "";
 	}
 }

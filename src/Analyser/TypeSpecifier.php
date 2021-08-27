@@ -355,6 +355,26 @@ class TypeSpecifier
 			}
 
 			if (
+				!$context->null()
+				&& $exprNode instanceof FuncCall
+				&& count($exprNode->args) === 1
+				&& $exprNode->name instanceof Name
+				&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
+				&& $constantType instanceof ConstantIntegerType
+			) {
+				if ($context->truthy() || $constantType->getValue() === 0) {
+					$newContext = $context;
+					if ($constantType->getValue() === 0) {
+						$newContext = $newContext->negate();
+					}
+					$argType = $scope->getType($exprNode->args[0]->value);
+					if ($argType->isArray()->yes()) {
+						return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
+					}
+				}
+			}
+
+			if (
 				$expr->left instanceof FuncCall
 				&& $expr->left->name instanceof Name
 				&& strtolower($expr->left->name->toString()) === 'get_class'

@@ -381,7 +381,7 @@ class TypeSpecifier
 				&& $rightType->isArray()->yes()
 				&& $leftType instanceof ConstantArrayType && $leftType->isEmpty()
 			) {
-				return $this->create($expr->right, new NonEmptyArrayType(), $context, false, $scope);
+				return $this->create($expr->right, new NonEmptyArrayType(), $context->negate(), false, $scope);
 			}
 
 			if (
@@ -389,7 +389,7 @@ class TypeSpecifier
 				&& $leftType->isArray()->yes()
 				&& $rightType instanceof ConstantArrayType && $rightType->isEmpty()
 			) {
-				return $this->create($expr->left, new NonEmptyArrayType(), $context, false, $scope);
+				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope);
 			}
 
 			if (

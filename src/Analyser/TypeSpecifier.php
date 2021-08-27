@@ -404,11 +404,11 @@ class TypeSpecifier
 				$expr->left instanceof FuncCall
 				&& count($expr->left->args) === 1
 				&& $expr->left->name instanceof Name
-				&& in_array(strtolower((string) $expr->left->name), ['count', 'strlen'], true)
+				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen'], true)
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
-					|| !in_array(strtolower((string) $expr->right->name), ['count', 'strlen'], true)
+					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen'], true)
 				)
 			) {
 				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller

@@ -585,6 +585,28 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 				],
 			],
 			[
+				new FuncCall(new Name('sizeof'), [
+					new Arg(new Variable('array')),
+				]),
+				[
+					'$array' => 'nonEmpty',
+				],
+				[
+					'$array' => '~nonEmpty',
+				],
+			],
+			[
+				new BooleanNot(new FuncCall(new Name('sizeof'), [
+					new Arg(new Variable('array')),
+				])),
+				[
+					'$array' => '~nonEmpty',
+				],
+				[
+					'$array' => 'nonEmpty',
+				],
+			],
+			[
 				new Variable('foo'),
 				[
 					'$foo' => self::SURE_NOT_FALSEY,

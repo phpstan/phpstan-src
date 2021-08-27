@@ -17,7 +17,7 @@ class CountFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'count';
+		return in_array($functionReflection->getName(), ['sizeof', 'count'], true);
 	}
 
 	public function getTypeFromFunctionCall(

@@ -206,7 +206,7 @@ class TypeSpecifier
 					&& $exprNode instanceof FuncCall
 					&& count($exprNode->args) === 1
 					&& $exprNode->name instanceof Name
-					&& strtolower((string) $exprNode->name) === 'count'
+					&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
 					&& $constantType instanceof ConstantIntegerType
 				) {
 					if ($context->truthy() || $constantType->getValue() === 0) {

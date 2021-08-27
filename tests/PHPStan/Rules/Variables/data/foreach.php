@@ -107,6 +107,35 @@ function (array $arr) {
 
 };
 
+function (array $arr) {
+
+	if (sizeof($arr) === 0) {
+		return;
+	}
+
+	foreach ($arr as $val) {
+		$test = 1;
+	}
+
+	echo $val;
+	echo $test;
+
+};
+
+function (array $arr) {
+
+	if (sizeof($arr) === 0) {
+		return;
+	}
+
+	if ($arr) {
+		$test = 1;
+	}
+
+	echo $test;
+
+};
+
 /*function (array $arr) {
 
 	if (count($arr) > 0) {

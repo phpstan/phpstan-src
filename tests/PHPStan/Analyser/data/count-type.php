@@ -15,6 +15,7 @@ class Foo
 	)
 	{
 		assertType('int<1, max>', count($nonEmpty));
+		assertType('int<1, max>', sizeof($nonEmpty));
 	}
 
 }

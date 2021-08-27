@@ -27,7 +27,7 @@ class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 	{
 		return !$context->null()
 			&& count($node->args) >= 1
-			&& $functionReflection->getName() === 'count';
+			&& in_array($functionReflection->getName(), ['sizeof', 'count'], true);
 	}
 
 	public function specifyTypes(

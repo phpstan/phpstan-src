@@ -78,7 +78,7 @@ class ImpossibleCheckTypeHelper
 				], true)) {
 					return null;
 				}
-				if ($functionName === 'count') {
+				if (in_array($functionName, ['count', 'sizeof'], true)) {
 					return null;
 				} elseif ($functionName === 'defined') {
 					return null;

@@ -29,24 +29,18 @@ class Sizeof
 		}
 	}
 
-	/**
-	 * @param string[] $arr
-	 */
 	function doFoo3(array $arr): string
 	{
 		if (0 != count($arr)) {
-			assertType('string', reset($arr));
+			assertType('array&nonEmpty', $arr);
 		}
 		return "";
 	}
 
-	/**
-	 * @param string[] $arr
-	 */
 	function doFoo4(array $arr): string
 	{
 		if (0 != sizeof($arr)) {
-			assertType('string', reset($arr));
+			assertType('array&nonEmpty', $arr);
 		}
 		return "";
 	}

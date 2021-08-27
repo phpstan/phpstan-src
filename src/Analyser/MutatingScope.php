@@ -1341,7 +1341,7 @@ class MutatingScope implements Scope
 					if ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
 						if ($min === $max && $min === 0) {
 							// division of upper and lower bound turns into a tiny 0.x fraction, which casted to int turns into 0.
-							// this leads to a useless 0|float type, return only float instead
+							// this leads to a useless 0|float type; we return only float instead.
 							return new FloatType();
 						}
 						return TypeCombinator::union($integerRange, new FloatType());

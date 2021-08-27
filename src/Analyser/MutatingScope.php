@@ -1255,6 +1255,102 @@ class MutatingScope implements Scope
 			$leftType = $this->getType($left);
 			$rightType = $this->getType($right);
 
+			if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
+				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType) &&
+				!($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow)) {
+
+				if ($leftType instanceof ConstantIntegerType) {
+					$leftMin = $leftType->getValue();
+					$leftMax = $leftType->getValue();
+				} elseif ($leftType instanceof UnionType) {
+					$leftMin = null;
+					$leftMax = null;
+
+					foreach ($leftType->getTypes() as $type) {
+						if ($type instanceof IntegerRangeType) {
+							$leftMin = $leftMin !== null ? min($leftMin, $type->getMin()) : $type->getMin();
+							$leftMax = max($leftMax, $type->getMax());
+						} elseif ($type instanceof ConstantIntegerType) {
+							if ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus ||
+								$node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+								$leftMin = max($leftMin, $type->getValue());
+								$leftMax = $leftMax !== null ? min($leftMax, $type->getValue()) : $type->getValue();
+							} else {
+								$leftMin = $leftMin !== null ? min($leftMin, $type->getValue()) : $type->getValue();
+								$leftMax = max($leftMax, $type->getValue());
+							}
+						}
+					}
+				} else {
+					$leftMin = $leftType->getMin();
+					$leftMax = $leftType->getMax();
+				}
+
+				if ($rightType instanceof ConstantIntegerType) {
+					$rightMin = $rightType->getValue();
+					$rightMax = $rightType->getValue();
+				} elseif ($rightType instanceof UnionType) {
+					$rightMin = null;
+					$rightMax = null;
+
+					foreach ($rightType->getTypes() as $type) {
+						if ($type instanceof IntegerRangeType) {
+							$rightMin = $rightMin !== null ? min($rightMin, $type->getMin()) : $type->getMin();
+							$rightMax = max($rightMax, $type->getMax());
+						} elseif ($type instanceof ConstantIntegerType) {
+							if ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus ||
+								$node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+								$rightMin = max($rightMin, $type->getValue());
+								$rightMax = $rightMax !== null ? min($rightMax, $type->getValue()) : $type->getValue();
+							} else {
+								$rightMin = $rightMin !== null ? min($rightMin, $type->getValue()) : $type->getValue();
+								$rightMax = max($rightMax, $type->getValue());
+							}
+						}
+					}
+				} else {
+					$rightMin = $rightType->getMin();
+					$rightMax = $rightType->getMax();
+				}
+
+				if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
+					$min = $leftMin !== null && $rightMin !== null ? $leftMin + $rightMin : null;
+					$max = $leftMax !== null && $rightMax !== null ? $leftMax + $rightMax : null;
+				} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
+					$min = $leftMin !== null && $rightMin !== null ? $leftMin - $rightMin : null;
+					$max = $leftMax !== null && $rightMax !== null ? $leftMax - $rightMax : null;
+
+					if ($min !== null && $max !== null && $min > $max) {
+						[$min, $max] = [$max, $min];
+					}
+				} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
+					$min = $leftMin !== null && $rightMin !== null ? $leftMin * $rightMin : null;
+					$max = $leftMax !== null && $rightMax !== null ? $leftMax * $rightMax : null;
+				} else {
+					$min = $leftMin !== null && $rightMin !== null ? (int) ($leftMin / $rightMin) : null;
+					$max = $leftMax !== null && $rightMax !== null ? (int) ($leftMax / $rightMax) : null;
+
+					if ($min !== null && $max !== null && $min > $max) {
+						[$min, $max] = [$max, $min];
+					}
+				}
+
+				if ($min !== null || $max !== null) {
+					$integerRange = IntegerRangeType::fromInterval($min, $max);
+
+					if ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+						if ($min === $max && $min === 0) {
+							// division of upper and lower bound turns into a tiny 0.x fraction, which casted to int turns into 0.
+							// this leads to a useless 0|float type; we return only float instead.
+							return new FloatType();
+						}
+						return TypeCombinator::union($integerRange, new FloatType());
+					}
+
+					return $integerRange;
+				}
+			}
+
 			$operatorSigil = null;
 
 			if ($node instanceof BinaryOp) {

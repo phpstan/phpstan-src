@@ -1336,7 +1336,13 @@ class MutatingScope implements Scope
 				}
 
 				if ($min !== null || $max !== null) {
-					return IntegerRangeType::fromInterval($min, $max);
+					$integerRange = IntegerRangeType::fromInterval($min, $max);
+
+					if ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+						return TypeCombinator::union($integerRange, new FloatType());
+					}
+
+					return $integerRange;
 				}
 			}
 

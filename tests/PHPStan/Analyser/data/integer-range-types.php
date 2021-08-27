@@ -214,63 +214,63 @@ class X {
 		assertType('int<2, 13>', $r1 + $j);
 		assertType('int<-2, 9>', $r1 - $j);
 		assertType('int<1, 30>', $r1 * $j);
-		assertType('int<0, 10>', $r1 / $j);
+		assertType('float|int<0, 10>', $r1 / $j);
 		assertType('int<min, 15>', $rMin * $j);
 		assertType('int<5, max>', $rMax * $j);
 
 		assertType('int<2, 13>', $j + $r1);
 		assertType('int<-9, 2>', $j - $r1);
 		assertType('int<1, 30>', $j * $r1);
-		assertType('int<0, 3>', $j / $r1);
+		assertType('float|int<0, 3>', $j / $r1);
 		assertType('int<min, 15>', $j * $rMin);
 		assertType('int<5, max>', $j * $rMax);
 
 		assertType('int<-19, 13>', $r1 + $z);
 		assertType('int<-2, 30>', $r1 - $z);
 		assertType('int<-20, 30>', $r1 * $z);
-		assertType('0', $r1 / $z);
+		assertType('0|float', $r1 / $z);
 		assertType('int<min, 15>', $rMin * $z);
 		assertType('int<-100, max>', $rMax * $z);
 
 		assertType('int<2, max>', $pi + 1);
 		assertType('int<-1, max>', $pi - 2);
 		assertType('int<2, max>', $pi * 2);
-		assertType('int<0, max>', $pi / 2);
+		assertType('float|int<0, max>', $pi / 2);
 		assertType('int<2, max>', 1 + $pi);
 		assertType('int<1, max>', 2 - $pi);
 		assertType('int<2, max>', 2 * $pi);
-		assertType('int<2, max>', 2 / $pi);
+		assertType('float|int<2, max>', 2 / $pi);
 
 		assertType('int<5, 14>', $r1 + 4);
 		assertType('int<-3, 6>', $r1 - 4);
 		assertType('int<4, 40>', $r1 * 4);
-		assertType('int<0, 2>', $r1 / 4);
+		assertType('float|int<0, 2>', $r1 / 4);
 		assertType('int<9, max>', $rMax + 4);
 		assertType('int<1, max>', $rMax - 4);
 		assertType('int<20, max>', $rMax * 4);
-		assertType('int<1, max>', $rMax / 4);
+		assertType('float|int<1, max>', $rMax / 4);
 
 		assertType('int<6, 20>', $r1 + $r2);
 		assertType('int<-4, 0>', $r1 - $r2);
 		assertType('int<5, 100>', $r1 * $r2);
-		assertType('int<0, 1>', $r1 / $r2);
+		assertType('float|int<0, 1>', $r1 / $r2);
 
 		assertType('int<min, 15>', $r1 + $rMin);
 		assertType('int<min, 5>', $r1 - $rMin);
 		assertType('int<min, 50>', $r1 * $rMin);
-		assertType('int<min, 2>', $r1 / $rMin);
+		assertType('float|int<min, 2>', $r1 / $rMin);
 		assertType('int<min, 15>', $rMin + $r1);
 		assertType('int<min, -5>', $rMin - $r1);
 		assertType('int<min, 50>', $rMin * $r1);
-		assertType('int<min, 0>', $rMin / $r1);
+		assertType('float|int<min, 0>', $rMin / $r1);
 
 		assertType('int<6, max>', $r1 + $rMax);
 		assertType('int<-4, max>', $r1 - $rMax);
 		assertType('int<5, max>', $r1 * $rMax);
-		assertType('int<0, max>', $r1 / $rMax);
+		assertType('float|int<0, max>', $r1 / $rMax);
 		assertType('int<6, max>', $rMax + $r1);
 		assertType('int<4, max>', $rMax - $r1);
 		assertType('int<5, max>', $rMax * $r1);
-		assertType('int<5, max>', $rMax / $r1);
+		assertType('float|int<5, max>', $rMax / $r1);
 	}
 }

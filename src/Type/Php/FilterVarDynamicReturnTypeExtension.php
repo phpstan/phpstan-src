@@ -27,10 +27,9 @@ use PHPStan\Type\UnionType;
 
 class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
 	/**
 	 * All validation filters match 0x100.
-	 *
-	 * @var int
 	 */
 	private const VALIDATION_FILTER_BITMASK = 0x100;
 

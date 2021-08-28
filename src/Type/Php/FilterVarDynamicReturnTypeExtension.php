@@ -66,6 +66,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$this->getConstant('FILTER_SANITIZE_STRING') => $stringType,
 			$this->getConstant('FILTER_SANITIZE_URL') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_BOOLEAN') => $booleanType,
+			$this->getConstant('FILTER_VALIDATE_DOMAIN') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_EMAIL') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_FLOAT') => $floatType,
 			$this->getConstant('FILTER_VALIDATE_INT') => $intType,

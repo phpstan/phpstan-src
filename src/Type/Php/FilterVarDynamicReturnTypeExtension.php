@@ -224,7 +224,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $exprType->getOffsetValueType($this->flagsString);
 	}
 
-	private function canStringBeSanitized(Type $filterType, int $filterValue, ?Node\Arg $flagsArg, $scope): bool
+	private function canStringBeSanitized(Type $filterType, int $filterValue, ?Node\Arg $flagsArg, Scope $scope): bool
 	{
 		if (!$filterType instanceof StringType) {
 			return true;

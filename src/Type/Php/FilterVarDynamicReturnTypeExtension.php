@@ -232,7 +232,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		// All validation filters match 0x100
 		// If it is a validation filter, the string will not be changed
-		if ($filterValue & 0x100) {
+		if (($filterValue & 0x100) !== 0) {
 			return false;
 		}
 

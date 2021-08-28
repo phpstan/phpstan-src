@@ -131,7 +131,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$type = $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 			$otherType = $this->getOtherType($flagsArg, $scope);
 
-			if ($inputType->isNonEmptyString()->yes()) {
+			if ($inputType->isNonEmptyString()->yes()
+				&& !$this->canStringBeSanitized($type, $filterValue, $flagsArg, $scope)) {
 				$type = new IntersectionType([$type, new AccessoryNonEmptyStringType()]);
 			}
 
@@ -221,6 +222,29 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		return $exprType->getOffsetValueType($this->flagsString);
+	}
+
+	private function canStringBeSanitized(Type $filterType, int $filterValue, ?Node\Arg $flagsArg, $scope): bool
+	{
+		if (!$filterType instanceof StringType) {
+			return true;
+		}
+
+		// All validation filters match 0x100
+		// If it is a validation filter, the string will not be changed
+		if ($filterValue & 0x100) {
+			return false;
+		}
+
+		// FILTER_DEFAULT will not sanitize, unless it has FILTER_FLAG_STRIP_LOW,
+		// FILTER_FLAG_STRIP_HIGH, or FILTER_FLAG_STRIP_BACKTICK
+		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
+			return $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_LOW'), $flagsArg, $scope)
+				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_HIGH'), $flagsArg, $scope)
+				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_BACKTICK'), $flagsArg, $scope);
+		}
+
+		return true;
 	}
 
 }

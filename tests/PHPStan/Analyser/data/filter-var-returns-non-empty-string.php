@@ -56,5 +56,9 @@ class Foo
 
 		$return = filter_var($str2, FILTER_VALIDATE_URL);
 		assertType('string|false', $return);
+
+		$str2 = 'foo';
+		$return = filter_var($str2, FILTER_VALIDATE_INT);
+		assertType('int|false', $return);
 	}
 }

@@ -28,6 +28,11 @@ use PHPStan\Type\UnionType;
 class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
+	/**
+	 * All validation filters match 0x100.
+	 */
+	private const VALIDATION_FILTER_BITMASK = 0x100;
+
 	private ReflectionProvider $reflectionProvider;
 
 	private ConstantStringType $flagsString;
@@ -66,6 +71,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$this->getConstant('FILTER_SANITIZE_STRING') => $stringType,
 			$this->getConstant('FILTER_SANITIZE_URL') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_BOOLEAN') => $booleanType,
+			$this->getConstant('FILTER_VALIDATE_DOMAIN') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_EMAIL') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_FLOAT') => $floatType,
 			$this->getConstant('FILTER_VALIDATE_INT') => $intType,
@@ -130,7 +136,9 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$type = $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 			$otherType = $this->getOtherType($flagsArg, $scope);
 
-			if ($inputType->isNonEmptyString()->yes()) {
+			if ($inputType->isNonEmptyString()->yes()
+				&& $type instanceof StringType
+				&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
 				$type = new IntersectionType([$type, new AccessoryNonEmptyStringType()]);
 			}
 
@@ -220,6 +228,24 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		return $exprType->getOffsetValueType($this->flagsString);
+	}
+
+	private function canStringBeSanitized(int $filterValue, ?Node\Arg $flagsArg, Scope $scope): bool
+	{
+		// If it is a validation filter, the string will not be changed
+		if (($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0) {
+			return false;
+		}
+
+		// FILTER_DEFAULT will not sanitize, unless it has FILTER_FLAG_STRIP_LOW,
+		// FILTER_FLAG_STRIP_HIGH, or FILTER_FLAG_STRIP_BACKTICK
+		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
+			return $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_LOW'), $flagsArg, $scope)
+				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_HIGH'), $flagsArg, $scope)
+				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_BACKTICK'), $flagsArg, $scope);
+		}
+
+		return true;
 	}
 
 }

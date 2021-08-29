@@ -40,7 +40,9 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 			if (!$fileSpecificError->canBeIgnored()) {
 				continue;
 			}
-			$fileErrors[$fileSpecificError->getFilePath()][] = $fileSpecificError->getMessage();
+			$filePath = $fileSpecificError->getFilePath();
+			$relativeFilePath = $this->relativePathHelper->getRelativePath($filePath);
+			$fileErrors[$relativeFilePath][] = $fileSpecificError->getMessage();
 		}
 		ksort($fileErrors, SORT_STRING);
 
@@ -61,7 +63,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 				$errorsToOutput[] = [
 					'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
 					'count' => $count,
-					'path' => Helpers::escape($this->relativePathHelper->getRelativePath($file)),
+					'path' => Helpers::escape($file),
 				];
 			}
 		}

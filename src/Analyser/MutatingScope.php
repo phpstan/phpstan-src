@@ -1846,6 +1846,9 @@ class MutatingScope implements Scope
 
 			$stringType = new StringType();
 			if ($stringType->isSuperTypeOf($varType)->yes()) {
+				if ($varType->isLiteralString()->yes()) {
+					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
+				}
 				return $stringType;
 			}
 

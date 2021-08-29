@@ -39,4 +39,14 @@ class Foo
 		assertType('string', implode($literalString, [$string]));
 	}
 
+	/** @param literal-string $literalString */
+	public function increment($literalString, string $string)
+	{
+		$literalString++;
+		assertType('literal-string', $literalString);
+
+		$string++;
+		assertType('string', $string);
+	}
+
 }

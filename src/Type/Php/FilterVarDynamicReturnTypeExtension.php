@@ -231,7 +231,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function canStringBeSanitized(Type $filterType, int $filterValue, ?Node\Arg $flagsArg, Scope $scope): bool
 	{
-		if (!$filterType instanceof StringType) {
+		if ($filterType->isSuperTypeOf(new StringType())->no()) {
 			return true;
 		}
 

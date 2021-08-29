@@ -25,6 +25,7 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -372,6 +373,22 @@ class TypeSpecifier
 					),
 					$context
 				);
+			}
+
+			if (
+				$context->falsey()
+				&& $rightType->isArray()->yes()
+				&& $leftType instanceof ConstantArrayType && $leftType->isEmpty()
+			) {
+				return $this->create($expr->right, new NonEmptyArrayType(), $context->negate(), false, $scope);
+			}
+
+			if (
+				$context->falsey()
+				&& $leftType->isArray()->yes()
+				&& $rightType instanceof ConstantArrayType && $rightType->isEmpty()
+			) {
+				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope);
 			}
 
 			if (

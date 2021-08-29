@@ -137,7 +137,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$otherType = $this->getOtherType($flagsArg, $scope);
 
 			if ($inputType->isNonEmptyString()->yes()
-				&& !$this->canStringBeSanitized($type, $filterValue, $flagsArg, $scope)) {
+				&& $type instanceof StringType
+				&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
 				$type = new IntersectionType([$type, new AccessoryNonEmptyStringType()]);
 			}
 
@@ -229,12 +230,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $exprType->getOffsetValueType($this->flagsString);
 	}
 
-	private function canStringBeSanitized(Type $filterType, int $filterValue, ?Node\Arg $flagsArg, Scope $scope): bool
+	private function canStringBeSanitized(int $filterValue, ?Node\Arg $flagsArg, Scope $scope): bool
 	{
-		if ($filterType->isSuperTypeOf(new StringType())->no()) {
-			return true;
-		}
-
 		// If it is a validation filter, the string will not be changed
 		if (($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0) {
 			return false;

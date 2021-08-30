@@ -102,7 +102,7 @@ class InvalidBinaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 				134,
 			],
 			[
-				'Binary operation "+" between (array|string) and 1 results in an error.',
+				'Binary operation "+" between array|string and 1 results in an error.',
 				136,
 			],
 			[

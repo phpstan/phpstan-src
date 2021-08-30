@@ -2852,11 +2852,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$sumWithStaticConst',
 			],
 			[
-				'(float|int)',
+				'float|int',
 				'$severalSumWithStaticConst1',
 			],
 			[
-				'(float|int)',
+				'float|int',
 				'$severalSumWithStaticConst2',
 			],
 			[

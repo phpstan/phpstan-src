@@ -86,4 +86,13 @@ class Foo
 		assertType('float|int<min, 1610612736>', $volume);
 	}
 
+	public function doDolor(int $i): void
+	{
+		$chunks = min(200, $i);
+		assertType('int<min, 200>', $chunks);
+		$divThirty = $chunks / 30;
+		assertType('float|int<min, 6>', $divThirty);
+		assertType('float|int<min, 9>', $divThirty + 3);
+	}
+
 }

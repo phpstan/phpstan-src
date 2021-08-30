@@ -5153,7 +5153,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				"array('foo' => stdClass, 0 => stdClass)",
+				'array<int|non-empty-string, stdClass>&nonEmpty',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -5161,36 +5161,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
-				'array<0|string, int|stdClass>&nonEmpty',
+				'array<int|string, int|stdClass>&nonEmpty',
 				'array_merge($generalStringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'array<0|string, int|stdClass>&nonEmpty',
+				'array<int|string, int|stdClass>&nonEmpty',
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
-				"array('foo' => stdClass, 'bar' => stdClass, 0 => stdClass)",
+				'array<int|non-empty-string, \'foo\'|stdClass>&nonEmpty',
 				'array_merge($stringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				"array('foo' => 1, 'bar' => 2, 0 => 2, 1 => 3)",
-				"array_merge(['foo' => 4, 'bar' => 5], ...[['foo' => 1, 'bar' => 2], [2, 3]])",
-			],
-			[
-				"array('foo' => 1, 'foo2' => stdClass)",
-				'array_merge([\'foo\' => new stdClass()], ...[[\'foo2\' => new stdClass()], [\'foo\' => 1]])',
-			],
-
-			[
-				"array('foo' => 1, 'foo2' => stdClass)",
-				'array_merge([\'foo\' => new stdClass()], ...[[\'foo2\' => new stdClass()], [\'foo\' => 1]])',
-			],
-			[
-				"array('foo' => 'foo', 0 => stdClass, 'bar' => stdClass)",
+				'array<int|non-empty-string, \'foo\'|stdClass>&nonEmpty',
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
 			],
 			[
-				"array('color' => 'green', 0 => 2, 1 => 4, 2 => 'a', 3 => 'b', 'shape' => 'trapezoid', 4 => 4)",
+				'array<int|non-empty-string, 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>&nonEmpty',
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[

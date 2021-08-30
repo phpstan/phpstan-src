@@ -8,11 +8,11 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 
 class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
@@ -30,38 +30,20 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyna
 
 		$keyTypes = [];
 		$valueTypes = [];
-		$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-		$returnedArrayBuilderFilled = false;
 		$nonEmpty = false;
-		$offsetCount = 0;
 		foreach ($functionCall->args as $arg) {
 			$argType = $scope->getType($arg->value);
-
 			if ($arg->unpack) {
 				$argType = $argType->getIterableValueType();
-			}
-
-			$arrays = TypeUtils::getConstantArrays($argType);
-			if (count($arrays) > 0) {
-				foreach ($arrays as $constantArray) {
-					foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-						$returnedArrayBuilderFilled = true;
-						$offsetCount++;
-						if ($offsetCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-							$returnedArrayBuilder->degradeToGeneralArray();
-						}
-
-						$returnedArrayBuilder->setOffsetValueType(
-							is_numeric($keyType->getValue()) ? null : $keyType,
-							$constantArray->getValueTypes()[$i]
-						);
+				if ($argType instanceof UnionType) {
+					foreach ($argType->getTypes() as $innerType) {
+						$argType = $innerType;
 					}
 				}
-
-			} else {
-				$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
-				$valueTypes[] = $argType->getIterableValueType();
 			}
+
+			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
+			$valueTypes[] = $argType->getIterableValueType();
 
 			if (!$argType->isIterableAtLeastOnce()->yes()) {
 				continue;
@@ -70,23 +52,10 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyna
 			$nonEmpty = true;
 		}
 
-		if (count($keyTypes) > 0) {
-			$arrayType = new ArrayType(
-				TypeCombinator::union(...$keyTypes),
-				TypeCombinator::union(...$valueTypes)
-			);
-
-			if ($returnedArrayBuilderFilled) {
-				$arrayType = TypeCombinator::union($returnedArrayBuilder->getArray(), $arrayType);
-			}
-		} elseif ($returnedArrayBuilderFilled) {
-			$arrayType = $returnedArrayBuilder->getArray();
-		} else {
-			$arrayType = new ArrayType(
-				TypeCombinator::union(...$keyTypes),
-				TypeCombinator::union(...$valueTypes)
-			);
-		}
+		$arrayType = new ArrayType(
+			TypeCombinator::union(...$keyTypes),
+			TypeCombinator::union(...$valueTypes)
+		);
 
 		if ($nonEmpty) {
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());

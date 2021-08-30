@@ -49,11 +49,6 @@ class Foo
 		assertType('array&nonEmpty', array_merge($array, []));
 		assertType('array&nonEmpty', array_merge($array, $array));
 
-		assertType('array&nonEmpty', array_replace($array));
-		assertType('array&nonEmpty', array_replace([], $array));
-		assertType('array&nonEmpty', array_replace($array, []));
-		assertType('array&nonEmpty', array_replace($array, $array));
-
 		assertType('array<int|string, (int|string)>&nonEmpty', array_flip($array));
 		assertType('array<string, (int|string)>&nonEmpty', array_flip($stringArray));
 	}

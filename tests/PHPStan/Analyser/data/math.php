@@ -76,4 +76,14 @@ class Foo
 		assertType('int<-1, 1>', $comparison * $nullsReverse);
 	}
 
+	public function doIpsum(int $newLevel): void
+	{
+		$min = min(30, $newLevel);
+		assertType('int<min, 30>', $min);
+		$minDivFive = $min / 5;
+		assertType('float|int<min, 6>', $minDivFive);
+		$volume = 0x10000000 * $minDivFive;
+		assertType('float|int<min, 1610612736>', $volume);
+	}
+
 }

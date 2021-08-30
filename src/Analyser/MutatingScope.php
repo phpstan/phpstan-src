@@ -1335,8 +1335,8 @@ class MutatingScope implements Scope
 					$min = $leftMin !== null && $rightMin !== null ? $leftMin * $rightMin : null;
 					$max = $leftMax !== null && $rightMax !== null ? $leftMax * $rightMax : null;
 				} else {
-					$min = $leftMin !== null && $rightMin !== null ? (int) ($leftMin / $rightMin) : null;
-					$max = $leftMax !== null && $rightMax !== null ? (int) ($leftMax / $rightMax) : null;
+					$min = $leftMin !== null && $rightMin !== null && $rightMin !== 0 ? (int) ($leftMin / $rightMin) : null;
+					$max = $leftMax !== null && $rightMax !== null && $rightMax !== 0 ? (int) ($leftMax / $rightMax) : null;
 
 					if ($min !== null && $max !== null && $min > $max) {
 						[$min, $max] = [$max, $min];

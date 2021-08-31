@@ -16,7 +16,7 @@ class A {
 	/**
 	 * @phpstan-var array<self::FIELD_*, string>
 	 */
-	private array $parameters = [];
+	private $parameters = [];
 
 	/**
 	 * @phpstan-param self::FIELD_* $key

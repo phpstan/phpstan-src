@@ -13,8 +13,8 @@ class Foo
 	 */
 	public function doFoo(int $range1, int $range2): void
 	{
-		assertType('float|int', 5 / $range1);
-		assertType('float|int', 5 / $range2);
+		assertType('(float|int)', 5 / $range1);
+		assertType('(float|int)', 5 / $range2);
 		assertType('*ERROR*', 5 / 0);
 	}
 

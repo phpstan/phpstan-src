@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 class Collector {
 	/** @var array<string, object> */
-	private array $collection = [];
+	private $collection = [];
 	
 	public function rewind(): void { 
 		if (reset($this->collection) !== false) {

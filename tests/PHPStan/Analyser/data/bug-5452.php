@@ -9,6 +9,9 @@ class Collector {
 	private $collection = [];
 	
 	public function rewind(): void { 
+		if (reset($this->collection) === false) {
+			assertType('array<string, object>', $this->collection);
+		}
 		if (reset($this->collection) !== false) {
 			assertType('array<string, object>&nonEmpty', $this->collection);
 		}

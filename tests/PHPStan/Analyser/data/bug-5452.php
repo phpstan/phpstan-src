@@ -12,5 +12,11 @@ class Collector {
 		if (reset($this->collection) !== false) {
 			assertType('array<string, object>&nonEmpty', $this->collection);
 		}
+		if (reset($this->collection) == null) {
+			assertType('array<string, object>&nonEmpty', $this->collection);
+		}
+		if (reset($this->collection) == "hello") {
+			assertType('array<string, object>&nonEmpty', $this->collection);
+		}
 	}
 }

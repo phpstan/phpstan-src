@@ -400,11 +400,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function toNumber(): Type
-	{
-		return new parent();
-	}
-
 	public function toBoolean(): BooleanType
 	{
 		$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($this);

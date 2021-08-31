@@ -228,10 +228,10 @@ class X {
 		assertType('int<min, 15>', $j * $rMin);
 		assertType('int<5, max>', $j * $rMax);
 
-		assertType('int<-19, 13>', $r1 + $z);
-		assertType('int<-2, 30>', $r1 - $z);
-		assertType('int<-20, 30>', $r1 * $z);
-		assertType('float', $r1 / $z);
+		assertType('int<-19, -10>|int<2, 13>', $r1 + $z);
+		assertType('int<-2, 9>|int<21, 30>', $r1 - $z);
+		assertType('int<-200, -20>|int<1, 30>', $r1 * $z);
+		assertType('float|int<0, 10>', $r1 / $z);
 		assertType('int<min, 15>', $rMin * $z);
 		assertType('int<-100, max>', $rMax * $z);
 
@@ -240,7 +240,7 @@ class X {
 		assertType('int<2, max>', $pi * 2);
 		assertType('float|int<0, max>', $pi / 2);
 		assertType('int<2, max>', 1 + $pi);
-		assertType('int<1, max>', 2 - $pi);
+		assertType('int<min, 2>', 2 - $pi);
 		assertType('int<2, max>', 2 * $pi);
 		assertType('float|int<2, max>', 2 / $pi);
 

@@ -1287,10 +1287,10 @@ class MutatingScope implements Scope
 
 					$union = TypeCombinator::union(...$unionParts);
 					if ($leftType instanceof BenevolentUnionType) {
-						return TypeUtils::toBenevolentUnion($union);
+						return TypeUtils::toBenevolentUnion($union)->toNumber();
 					}
 
-					return $union;
+					return $union->toNumber();
 				}
 
 				return $this->integerRangeMath($leftType, $node, $rightType);
@@ -5135,16 +5135,16 @@ class MutatingScope implements Scope
 				if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
 					$unionParts[] = $this->integerRangeMath($range, $node, $type);
 				} else {
-					$unionParts[] = $type;
+					$unionParts[] = $type->toNumber();
 				}
 			}
 
 			$union = TypeCombinator::union(...$unionParts);
 			if ($operand instanceof BenevolentUnionType) {
-				return TypeUtils::toBenevolentUnion($union);
+				return TypeUtils::toBenevolentUnion($union)->toNumber();
 			}
 
-			return $union;
+			return $union->toNumber();
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {

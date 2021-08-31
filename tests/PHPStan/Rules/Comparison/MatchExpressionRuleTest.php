@@ -123,4 +123,12 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5454(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-5454.php'], []);
+	}
+
 }

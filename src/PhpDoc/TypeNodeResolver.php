@@ -724,7 +724,7 @@ class TypeNodeResolver
 				return new ErrorType();
 			}
 
-			return $classReflection->getConstant($constantName)->getValueType();
+			return ConstantTypeHelper::getTypeFromValue($classReflection->getConstant($constantName)->getValue());
 		}
 
 		if ($constExpr instanceof ConstExprFloatNode) {

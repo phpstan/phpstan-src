@@ -241,6 +241,20 @@ class TypeSpecifier
 						}
 					}
 				}
+				
+				if (
+					$context->truthy()
+					&& $exprNode instanceof FuncCall
+					&& count($exprNode->args) === 1
+					&& $exprNode->name instanceof Name
+					&& strtolower((string) $exprNode->name) === 'reset'
+				) {
+					
+						$argType = $scope->getType($exprNode->args[0]->value);
+						if ($argType->isArray()->yes()) {
+							return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $context, false, $scope);
+						}
+				}
 			}
 
 			if ($context->true()) {

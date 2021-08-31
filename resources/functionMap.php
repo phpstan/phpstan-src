@@ -8230,7 +8230,7 @@ return [
 'parse_ini_file' => ['array|false', 'filename'=>'string', 'process_sections='=>'bool', 'scanner_mode='=>'int'],
 'parse_ini_string' => ['array|false', 'ini_string'=>'string', 'process_sections='=>'bool', 'scanner_mode='=>'int'],
 'parse_str' => ['void', 'encoded_string'=>'string', '&w_result='=>'array'],
-'parse_url' => ['mixed', 'url'=>'string', 'url_component='=>'int'],
+'parse_url' => ['array|int|string|false|null', 'url'=>'string', 'url_component='=>'int'],
 'ParseError::__clone' => ['void'],
 'ParseError::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'(?Throwable)|(?ParseError)'],
 'ParseError::__toString' => ['string'],

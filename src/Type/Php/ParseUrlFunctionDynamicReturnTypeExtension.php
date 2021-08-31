@@ -36,12 +36,10 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle(
-			$functionReflection->getVariants()
-		)->getReturnType();
-
 		if (count($functionCall->args) < 1) {
-			return $defaultReturnType;
+			return ParametersAcceptorSelector::selectSingle(
+				$functionReflection->getVariants()
+			)->getReturnType();
 		}
 
 		$this->cacheReturnTypes();

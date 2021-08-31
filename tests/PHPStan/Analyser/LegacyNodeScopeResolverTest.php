@@ -5917,7 +5917,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			// parse_url
 			[
-				'mixed',
+				'array|int|string|false|null',
 				'$parseUrlWithoutParameters',
 			],
 			[

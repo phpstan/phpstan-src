@@ -1289,7 +1289,12 @@ class MutatingScope implements Scope
 						}
 					}
 
-					return TypeCombinator::union(...$unionParts);
+					$union = TypeCombinator::union(...$unionParts);
+					if ($leftType instanceof BenevolentUnionType) {
+						return TypeUtils::toBenevolentUnion($union);
+					}
+
+					return $union;
 				}
 
 				return $this->integerRangeMath($leftType, $node, $rightType);
@@ -5115,7 +5120,7 @@ class MutatingScope implements Scope
 	 * @param \PhpParser\Node\Expr\AssignOp\Div|\PhpParser\Node\Expr\AssignOp\Minus|\PhpParser\Node\Expr\AssignOp\Mul|\PhpParser\Node\Expr\AssignOp\Plus|\PhpParser\Node\Expr\BinaryOp\Div|\PhpParser\Node\Expr\BinaryOp\Minus|\PhpParser\Node\Expr\BinaryOp\Mul|\PhpParser\Node\Expr\BinaryOp\Plus $node
 	 * @param IntegerRangeType|ConstantIntegerType|UnionType $operand
 	 */
-	private function integerRangeMath(IntegerRangeType $range, $node, $operand): Type
+	private function integerRangeMath(IntegerRangeType $range, Expr $node, Type $operand): Type
 	{
 		if ($operand instanceof UnionType) {
 
@@ -5132,7 +5137,12 @@ class MutatingScope implements Scope
 				}
 			}
 
-			return TypeCombinator::union(...$unionParts);
+			$union = TypeCombinator::union(...$unionParts);
+			if ($operand instanceof BenevolentUnionType) {
+				return TypeUtils::toBenevolentUnion($union);
+			}
+
+			return $union;
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {

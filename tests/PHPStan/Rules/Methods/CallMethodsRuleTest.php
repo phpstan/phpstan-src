@@ -2103,4 +2103,17 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug3555(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3555.php'], [
+			[
+				'Parameter #1 $arg of method Bug3555\Enum::run() expects 1|2|3|4|5|6|7|8|9, 100 given.',
+				28,
+			],
+		]);
+	}
+
 }

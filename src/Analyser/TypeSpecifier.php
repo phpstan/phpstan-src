@@ -243,7 +243,7 @@ class TypeSpecifier
 				}
 				
 				if (
-					$context->truthy()
+					$context->false()
 					&& $exprNode instanceof FuncCall
 					&& count($exprNode->args) === 1
 					&& $exprNode->name instanceof Name

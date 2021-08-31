@@ -5224,6 +5224,10 @@ class MutatingScope implements Scope
 					[$min, $max] = [$max, $min];
 				}
 
+				if ($min === null && $max === null) {
+					return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+				}
+
 				return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 			}
 		}

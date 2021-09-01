@@ -45,7 +45,7 @@ class ResetFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 	{
 		if (
 			count($node->args) === 1
-			&& $context->truthy()
+			&& $context->true()
 		) {
 			$argType = $scope->getType($node->args[0]->value);
 			if ($argType->isArray()->yes()) {

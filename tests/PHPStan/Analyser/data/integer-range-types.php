@@ -268,7 +268,7 @@ class X {
 		assertType('float|int<min, 0>', $rMin / $r1);
 
 		assertType('int<6, max>', $r1 + $rMax);
-		assertType('int<-4, max>', $r1 - $rMax);
+		assertType('int', $r1 - $rMax);
 		assertType('int<5, max>', $r1 * $rMax);
 		assertType('float|int<0, max>', $r1 / $rMax);
 		assertType('int<6, max>', $rMax + $r1);

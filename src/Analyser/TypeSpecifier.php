@@ -180,7 +180,6 @@ class TypeSpecifier
 				$exprNode = $expressions[0];
 				/** @var \PHPStan\Type\ConstantScalarType $constantType */
 				$constantType = $expressions[1];
-
 				if ($constantType->getValue() === false) {
 					$types = $this->create($exprNode, $constantType, $context, false, $scope);
 					return $types->unionWith($this->specifyTypesInCondition(
@@ -199,20 +198,6 @@ class TypeSpecifier
 					));
 				}
 
-/*				if (
-					$exprNode instanceof FuncCall
-					&& count($exprNode->args) === 1
-					&& $exprNode->name instanceof Name
-					&& strtolower((string) $exprNode->name) === 'reset'
-				) {
-					var_dump($context);
-
-					$argType = $scope->getType($exprNode->args[0]->value);
-					if ($argType->isArray()->yes()) {
-						return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $context, false, $scope);
-					}
-				}
-*/
 				if ($constantType->getValue() === null) {
 					return $this->create($exprNode, $constantType, $context, false, $scope);
 				}

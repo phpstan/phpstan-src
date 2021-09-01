@@ -16,6 +16,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateUnionType;
 
 /** @api */
 class UnionType implements CompoundType
@@ -153,7 +154,7 @@ class UnionType implements CompoundType
 		$joinTypes = static function (array $types) use ($level): string {
 			$typeNames = [];
 			foreach ($types as $type) {
-				if ($type instanceof ClosureType || $type instanceof CallableType) {
+				if ($type instanceof ClosureType || $type instanceof CallableType || $type instanceof TemplateUnionType) {
 					$typeNames[] = sprintf('(%s)', $type->describe($level));
 				} elseif ($type instanceof IntersectionType) {
 					$intersectionDescription = $type->describe($level);

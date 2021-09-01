@@ -1820,7 +1820,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 					new NullType(),
 				],
 				UnionType::class,
-				'T of bool|float|int|string (function doFoo(), parameter)|null',
+				'(T of bool|float|int|string (function doFoo(), parameter))|null',
 			],
 		];
 	}

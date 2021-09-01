@@ -512,4 +512,19 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3151.php'], []);
 	}
 
+	public function testTemplateUnion(): void
+	{
+		$this->analyse([__DIR__ . '/data/return-template-union.php'], [
+			[
+				'Method ReturnTemplateUnion\Foo::doFoo2() should return T of bool|float|int|string but returns (T of bool|float|int|string)|null.',
+				25,
+			],
+			[
+				// should not be reported
+				'Method ReturnTemplateUnion\Foo::doFoo3() should return (T of bool|float|int|string)|null but returns (T of bool|float|int|string)|null.',
+				35,
+			],
+		]);
+	}
+
 }

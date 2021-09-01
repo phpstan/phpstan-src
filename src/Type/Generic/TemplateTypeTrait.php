@@ -162,7 +162,7 @@ trait TemplateTypeTrait
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
-		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
+		if (!$receivedType instanceof TemplateType && ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType)) {
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 

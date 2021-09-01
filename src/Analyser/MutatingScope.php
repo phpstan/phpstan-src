@@ -1763,6 +1763,7 @@ class MutatingScope implements Scope
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
 			$varType = $this->getType($node->var);
 			$varScalars = TypeUtils::getConstantScalars($varType);
+			$stringType = new StringType();
 			if (count($varScalars) > 0) {
 				$newTypes = [];
 
@@ -1777,19 +1778,18 @@ class MutatingScope implements Scope
 					$newTypes[] = $this->getTypeFromValue($varValue);
 				}
 				return TypeCombinator::union(...$newTypes);
-			} elseif ($varType instanceof IntegerRangeType) {
-				return $varType->shift($node instanceof Expr\PreInc ? +1 : -1);
-			}
-
-			$stringType = new StringType();
-			if ($stringType->isSuperTypeOf($varType)->yes()) {
+			} elseif ($stringType->isSuperTypeOf($varType)->yes()) {
 				if ($varType->isLiteralString()->yes()) {
 					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
 				}
 				return $stringType;
 			}
 
-			return $varType->toNumber();
+			if ($node instanceof Expr\PreInc) {
+				return $this->getType(new BinaryOp\Plus($node->var, new LNumber(1)));
+			}
+
+			return $this->getType(new BinaryOp\Minus($node->var, new LNumber(1)));
 		} elseif ($node instanceof Expr\Yield_) {
 			$functionReflection = $this->getFunction();
 			if ($functionReflection === null) {

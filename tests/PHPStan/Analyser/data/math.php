@@ -95,4 +95,18 @@ class Foo
 		assertType('float|int<min, 9>', $divThirty + 3);
 	}
 
+	public function doSit(int $i, int $j): void
+	{
+		if ($i < 0) {
+			return;
+		}
+		if ($j < 1) {
+			return;
+		}
+
+		assertType('int<0, max>', $i);
+		assertType('int<1, max>', $j);
+		assertType('int', $i - $j);
+	}
+
 }

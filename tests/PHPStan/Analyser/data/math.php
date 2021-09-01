@@ -55,7 +55,7 @@ class Foo
 		assertType('0', $rangeFiveBoth - $rangeFiveBoth);
 
 		assertType('int<-10, max>', $rangeFiveBoth + $rangeFiveLeft);
-		assertType('int<0, max>', $rangeFiveBoth - $rangeFiveLeft);
+		assertType('int', $rangeFiveBoth - $rangeFiveLeft);
 
 		assertType('int<min, 10>', $rangeFiveBoth + $rangeFiveRight);
 		assertType('int<min, 0>', $rangeFiveBoth - $rangeFiveRight);
@@ -93,6 +93,20 @@ class Foo
 		$divThirty = $chunks / 30;
 		assertType('float|int<min, 6>', $divThirty);
 		assertType('float|int<min, 9>', $divThirty + 3);
+	}
+
+	public function doSit(int $i, int $j): void
+	{
+		if ($i < 0) {
+			return;
+		}
+		if ($j < 1) {
+			return;
+		}
+
+		assertType('int<0, max>', $i);
+		assertType('int<1, max>', $j);
+		assertType('int', $i - $j);
 	}
 
 }

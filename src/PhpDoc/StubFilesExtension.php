@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
+/** @api */
 interface StubFilesExtension
 {
 

@@ -1263,6 +1263,58 @@ class MutatingScope implements Scope
 			$leftType = $this->getType($left);
 			$rightType = $this->getType($right);
 
+			if ($node instanceof Expr\AssignOp\Plus || $node instanceof Expr\BinaryOp\Plus) {
+				$leftConstantArrays = TypeUtils::getConstantArrays($leftType);
+				$rightConstantArrays = TypeUtils::getConstantArrays($rightType);
+
+				if (count($leftConstantArrays) > 0 && count($rightConstantArrays) > 0) {
+					$resultTypes = [];
+					foreach ($rightConstantArrays as $rightConstantArray) {
+						foreach ($leftConstantArrays as $leftConstantArray) {
+							$newArrayBuilder = ConstantArrayTypeBuilder::createFromConstantArray($rightConstantArray);
+							foreach ($leftConstantArray->getKeyTypes() as $leftKeyType) {
+								$newArrayBuilder->setOffsetValueType(
+									$leftKeyType,
+									$leftConstantArray->getOffsetValueType($leftKeyType)
+								);
+							}
+							$resultTypes[] = $newArrayBuilder->getArray();
+						}
+					}
+
+					return TypeCombinator::union(...$resultTypes);
+				}
+				$arrayType = new ArrayType(new MixedType(), new MixedType());
+
+				if ($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->yes()) {
+					if ($leftType->getIterableKeyType()->equals($rightType->getIterableKeyType())) {
+						// to preserve BenevolentUnionType
+						$keyType = $leftType->getIterableKeyType();
+					} else {
+						$keyTypes = [];
+						foreach ([
+									 $leftType->getIterableKeyType(),
+									 $rightType->getIterableKeyType(),
+								 ] as $keyType) {
+							$keyTypes[] = $keyType;
+						}
+						$keyType = TypeCombinator::union(...$keyTypes);
+					}
+					return new ArrayType(
+						$keyType,
+						TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType())
+					);
+				}
+
+				if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
+					return new BenevolentUnionType([
+						new FloatType(),
+						new IntegerType(),
+						new ArrayType(new MixedType(), new MixedType()),
+					]);
+				}
+			}
+
 			if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
 				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType) &&
 				!($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow)) {
@@ -1318,58 +1370,6 @@ class MutatingScope implements Scope
 
 				if (count($extensionTypes) > 0) {
 					return TypeCombinator::union(...$extensionTypes);
-				}
-			}
-
-			if ($node instanceof Expr\AssignOp\Plus || $node instanceof Expr\BinaryOp\Plus) {
-				$leftConstantArrays = TypeUtils::getConstantArrays($leftType);
-				$rightConstantArrays = TypeUtils::getConstantArrays($rightType);
-
-				if (count($leftConstantArrays) > 0 && count($rightConstantArrays) > 0) {
-					$resultTypes = [];
-					foreach ($rightConstantArrays as $rightConstantArray) {
-						foreach ($leftConstantArrays as $leftConstantArray) {
-							$newArrayBuilder = ConstantArrayTypeBuilder::createFromConstantArray($rightConstantArray);
-							foreach ($leftConstantArray->getKeyTypes() as $leftKeyType) {
-								$newArrayBuilder->setOffsetValueType(
-									$leftKeyType,
-									$leftConstantArray->getOffsetValueType($leftKeyType)
-								);
-							}
-							$resultTypes[] = $newArrayBuilder->getArray();
-						}
-					}
-
-					return TypeCombinator::union(...$resultTypes);
-				}
-				$arrayType = new ArrayType(new MixedType(), new MixedType());
-
-				if ($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->yes()) {
-					if ($leftType->getIterableKeyType()->equals($rightType->getIterableKeyType())) {
-						// to preserve BenevolentUnionType
-						$keyType = $leftType->getIterableKeyType();
-					} else {
-						$keyTypes = [];
-						foreach ([
-							$leftType->getIterableKeyType(),
-							$rightType->getIterableKeyType(),
-						] as $keyType) {
-							$keyTypes[] = $keyType;
-						}
-						$keyType = TypeCombinator::union(...$keyTypes);
-					}
-					return new ArrayType(
-						$keyType,
-						TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType())
-					);
-				}
-
-				if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
-					return new BenevolentUnionType([
-						new FloatType(),
-						new IntegerType(),
-						new ArrayType(new MixedType(), new MixedType()),
-					]);
 				}
 			}
 

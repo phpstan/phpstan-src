@@ -1293,9 +1293,9 @@ class MutatingScope implements Scope
 					} else {
 						$keyTypes = [];
 						foreach ([
-									 $leftType->getIterableKeyType(),
-									 $rightType->getIterableKeyType(),
-								 ] as $keyType) {
+							$leftType->getIterableKeyType(),
+							$rightType->getIterableKeyType(),
+						] as $keyType) {
 							$keyTypes[] = $keyType;
 						}
 						$keyType = TypeCombinator::union(...$keyTypes);

@@ -702,11 +702,12 @@ class TypeNodeResolver
 			$classReflection = $this->getReflectionProvider()->getClass($className);
 
 			$constantName = $constExpr->name;
-			if (Strings::endsWith($constantName, '*')) {
-				$constantNameStartsWith = Strings::substring($constantName, 0, Strings::length($constantName) - 1);
+			if (Strings::contains($constantName, '*')) {
+				// convert * into .*? and escape everything else so the constants can be matched against the pattern
+				$pattern = '{^' . str_replace('\\*', '.*?', preg_quote($constantName)) . '$}D';
 				$constantTypes = [];
 				foreach ($classReflection->getNativeReflection()->getConstants() as $classConstantName => $constantValue) {
-					if (!Strings::startsWith($classConstantName, $constantNameStartsWith)) {
+					if (Strings::match($classConstantName, $pattern) === null) {
 						continue;
 					}
 

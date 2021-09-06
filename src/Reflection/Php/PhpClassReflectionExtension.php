@@ -454,8 +454,8 @@ class PhpClassReflectionExtension
 		}
 
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {
-			$variantNumbers = [];
-			$i = 0;
+			$variantNumbers = [0];
+			$i = 1;
 			while ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName(), $i)) {
 				$variantNumbers[] = $i;
 				$i++;

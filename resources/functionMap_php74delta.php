@@ -59,5 +59,6 @@ return [
 	],
 	'old' => [
 		'implode\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],
+		'Reflector::export' => ['?string'],
 	],
 ];

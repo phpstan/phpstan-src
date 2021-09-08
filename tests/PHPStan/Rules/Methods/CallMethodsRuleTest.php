@@ -1431,26 +1431,57 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/shadowed-trait-method.php'], []);
 	}
 
-	public function testExplicitMixed(): void
+	public function dataExplicitMixed(): array
 	{
+		return [
+			[
+				true,
+				[
+					[
+						'Cannot call method foo() on mixed.',
+						17,
+					],
+					[
+						'Parameter #1 $i of method CheckExplicitMixedMethodCall\Bar::doBar() expects int, mixed given.',
+						43,
+					],
+					[
+						'Parameter #1 $i of method CheckExplicitMixedMethodCall\Bar::doBar() expects int, T given.',
+						65,
+					],
+					[
+						'Parameter #1 $cb of method CheckExplicitMixedMethodCall\CallableMixed::doFoo() expects callable(mixed): void, Closure(int): void given.',
+						133,
+					],
+					[
+						'Parameter #1 $cb of method CheckExplicitMixedMethodCall\CallableMixed::doBar2() expects callable(): int, Closure(): mixed given.',
+						152,
+					],
+				],
+			],
+			[
+				false,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataExplicitMixed
+	 * @param bool $checkExplicitMixed
+	 * @param mixed[] $errors
+	 */
+	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/check-explicit-mixed.php'], [
-			[
-				'Cannot call method foo() on mixed.',
-				17,
-			],
-			[
-				'Parameter #1 $i of method CheckExplicitMixedMethodCall\Bar::doBar() expects int, mixed given.',
-				43,
-			],
-			[
-				'Parameter #1 $i of method CheckExplicitMixedMethodCall\Bar::doBar() expects int, T given.',
-				65,
-			],
-		]);
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->analyse([__DIR__ . '/data/check-explicit-mixed.php'], $errors);
 	}
 
 	public function testBug3409(): void

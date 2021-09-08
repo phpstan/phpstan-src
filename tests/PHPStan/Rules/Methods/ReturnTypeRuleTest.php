@@ -530,15 +530,34 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
-	public function testBug5218(): void
+	public function dataBug5218(): array
 	{
-		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/bug-5218.php'], [
+		return [
 			[
-				'Method Bug5218\IA::getIterator() should return Traversable<string, int> but returns ArrayIterator<string, mixed>.',
-				14,
+				true,
+				[
+					[
+						'Method Bug5218\IA::getIterator() should return Traversable<string, int> but returns ArrayIterator<string, mixed>.',
+						14,
+					],
+				],
 			],
-		]);
+			[
+				false,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataBug5218
+	 * @param bool $checkExplicitMixed
+	 * @param array $errors
+	 */
+	public function testBug5218(bool $checkExplicitMixed, array $errors): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->analyse([__DIR__ . '/data/bug-5218.php'], $errors);
 	}
 
 }

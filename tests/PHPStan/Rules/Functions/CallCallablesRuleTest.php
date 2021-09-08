@@ -169,15 +169,34 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
-	public function testBug3566(): void
+	public function dataBug3566(): array
 	{
-		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/bug-3566.php'], [
+		return [
 			[
-				'Parameter #1 $ of closure expects int, TMemberType given.',
-				29,
+				true,
+				[
+					[
+						'Parameter #1 $ of closure expects int, TMemberType given.',
+						29,
+					],
+				],
 			],
-		]);
+			[
+				false,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataBug3566
+	 * @param bool $checkExplicitMixed
+	 * @param mixed[] $errors
+	 */
+	public function testBug3566(bool $checkExplicitMixed, array $errors): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->analyse([__DIR__ . '/data/bug-3566.php'], $errors);
 	}
 
 }

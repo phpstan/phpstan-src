@@ -11,9 +11,12 @@ use PHPStan\Rules\RuleLevelHelper;
 class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $checkExplicitMixed = false;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -523,6 +526,17 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				// should not be reported
 				'Method ReturnTemplateUnion\Foo::doFoo3() should return (T of bool|float|int|string)|null but returns (T of bool|float|int|string)|null.',
 				35,
+			],
+		]);
+	}
+
+	public function testBug5218(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5218.php'], [
+			[
+				'Method Bug5218\IA::getIterator() should return Traversable<string, int> but returns ArrayIterator<string, mixed>.',
+				14,
 			],
 		]);
 	}

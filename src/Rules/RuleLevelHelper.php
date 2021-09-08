@@ -18,6 +18,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 
@@ -60,10 +61,17 @@ class RuleLevelHelper
 	{
 		if (
 			$this->checkExplicitMixed
-			&& $acceptedType instanceof MixedType
-			&& $acceptedType->isExplicitMixed()
 		) {
-			$acceptedType = new StrictMixedType();
+			$acceptedType = TypeTraverser::map($acceptedType, static function (Type $type, callable $traverse): Type {
+				if (
+					$type instanceof MixedType
+					&& $type->isExplicitMixed()
+				) {
+					return new StrictMixedType();
+				}
+
+				return $traverse($type);
+			});
 		}
 
 		if (

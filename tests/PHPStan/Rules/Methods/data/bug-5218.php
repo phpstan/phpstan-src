@@ -14,3 +14,16 @@ final class IA implements \IteratorAggregate
 		return new \ArrayIterator($this->data);
 	}
 }
+
+class Foo
+{
+
+	/**
+	 * @return mixed
+	 */
+	public function doFoo()
+	{
+		return 1;
+	}
+
+}

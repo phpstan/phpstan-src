@@ -3665,7 +3665,7 @@ return [
 'Grpc\ChannelCredentials::createComposite' => ['Grpc\ChannelCredentials', 'cred1'=>'Grpc\ChannelCredentials', 'cred2'=>'Grpc\CallCredentials'],
 'Grpc\ChannelCredentials::createDefault' => ['Grpc\ChannelCredentials'],
 'Grpc\ChannelCredentials::createInsecure' => ['null'],
-'Grpc\ChannelCredentials::createSsl' => ['Grpc\ChannelCredentials', 'pem_root_certs'=>'string', 'pem_private_key='=>'string', 'pem_cert_chain='=>'string'],
+'Grpc\ChannelCredentials::createSsl' => ['Grpc\ChannelCredentials', 'pem_root_certs='=>'string|null', 'pem_private_key='=>'string|null', 'pem_cert_chain='=>'string|null'],
 'Grpc\ChannelCredentials::setDefaultRootsPem' => ['', 'pem_roots'=>'string'],
 'Grpc\Server::__construct' => ['void', 'args'=>'array'],
 'Grpc\Server::addHttp2Port' => ['bool', 'addr'=>'string'],

@@ -14,9 +14,12 @@ use PHPStan\Rules\RuleLevelHelper;
 class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $checkExplicitMixed = false;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed);
 		return new CallCallablesRule(
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
@@ -162,6 +165,17 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Unknown parameter $z in call to callable callable(int, int): void.',
 				25,
+			],
+		]);
+	}
+
+	public function testBug3566(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-3566.php'], [
+			[
+				'Parameter #1 $ of closure expects int, TMemberType given.',
+				29,
 			],
 		]);
 	}

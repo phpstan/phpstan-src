@@ -26,6 +26,14 @@ class StrictMixedType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		if ($type instanceof static) {
+			return TrinaryLogic::createYes();
+		}
+
+		if ($type instanceof CompoundType) {
+			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+		}
+
 		return TrinaryLogic::createNo();
 	}
 

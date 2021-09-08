@@ -62,7 +62,10 @@ class RuleLevelHelper
 		if (
 			$this->checkExplicitMixed
 		) {
-			$acceptedType = TypeTraverser::map($acceptedType, static function (Type $type, callable $traverse): Type {
+			$traverse = static function (Type $type, callable $traverse): Type {
+				if ($type instanceof TemplateMixedType) {
+					return $type->toStrictMixedType();
+				}
 				if (
 					$type instanceof MixedType
 					&& $type->isExplicitMixed()
@@ -71,7 +74,9 @@ class RuleLevelHelper
 				}
 
 				return $traverse($type);
-			});
+			};
+			$acceptingType = TypeTraverser::map($acceptingType, $traverse);
+			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
 		}
 
 		if (

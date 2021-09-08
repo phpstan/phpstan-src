@@ -8,10 +8,10 @@ use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 
 /** @api */
-final class TemplateMixedType extends MixedType implements TemplateType
+final class TemplateStrictMixedType extends StrictMixedType implements TemplateType
 {
 
-	/** @use TemplateTypeTrait<MixedType> */
+	/** @use TemplateTypeTrait<StrictMixedType> */
 	use TemplateTypeTrait;
 
 	public function __construct(
@@ -19,11 +19,9 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		MixedType $bound
+		StrictMixedType $bound
 	)
 	{
-		parent::__construct(true);
-
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;
@@ -38,11 +36,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		$isSuperType = $this->isSuperTypeOf($acceptingType);
-		if ($isSuperType->no()) {
-			return $isSuperType;
-		}
-		return TrinaryLogic::createYes();
+		return $this->isSubTypeOf($acceptingType);
 	}
 
 	public function traverse(callable $cb): Type
@@ -59,17 +53,6 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		}
 
 		return $this;
-	}
-
-	public function toStrictMixedType(): TemplateStrictMixedType
-	{
-		return new TemplateStrictMixedType(
-			$this->scope,
-			$this->strategy,
-			$this->variance,
-			$this->name,
-			new StrictMixedType()
-		);
 	}
 
 }

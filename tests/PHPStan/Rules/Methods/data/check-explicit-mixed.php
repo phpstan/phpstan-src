@@ -67,3 +67,25 @@ class Bar
 	}
 
 }
+
+class TemplateMixed
+{
+
+	/**
+	 * @template T
+	 * @param T $t
+	 */
+	public function doFoo($t): void
+	{
+		$this->doBar($t);
+	}
+
+	/**
+	 * @param mixed $mixed
+	 */
+	public function doBar($mixed): void
+	{
+		$this->doFoo($mixed);
+	}
+
+}

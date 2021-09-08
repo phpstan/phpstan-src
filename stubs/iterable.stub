@@ -81,10 +81,10 @@ class Generator implements Iterator
 }
 
 /**
- * @implements Traversable<mixed, mixed>
- * @implements ArrayAccess<mixed, mixed>
- * @implements Iterator<mixed, mixed>
- * @implements RecursiveIterator<mixed, mixed>
+ * @implements Traversable<string, SimpleXMLElement>
+ * @implements ArrayAccess<int|string, SimpleXMLElement>
+ * @implements Iterator<string, SimpleXMLElement>
+ * @implements RecursiveIterator<string, SimpleXMLElement>
  */
 class SimpleXMLElement implements Traversable, ArrayAccess, Iterator, RecursiveIterator
 {

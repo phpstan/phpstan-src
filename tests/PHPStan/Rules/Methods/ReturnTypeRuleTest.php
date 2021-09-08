@@ -552,7 +552,7 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 	/**
 	 * @dataProvider dataBug5218
 	 * @param bool $checkExplicitMixed
-	 * @param array $errors
+	 * @param mixed[] $errors
 	 */
 	public function testBug5218(bool $checkExplicitMixed, array $errors): void
 	{

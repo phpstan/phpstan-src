@@ -207,9 +207,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			new Error('Second error in a different file', 'TestfileB', 4),
 			new Error('Error #1 in a different file', 'TestfileB', 5),
 			new Error('Second error in a different file', 'TestfileB', 6),
-			new Error('Error with Windows path separators', 'TestFiles\\TestA', 1),
-			new Error('Error with Unix path separators', 'TestFiles/TestA', 1),
-			new Error('Error without path separators', 'TestFilesFoo', 1),
+			new Error('Error with Windows directory separators', 'TestFiles\\TestA', 1),
+			new Error('Error with Unix directory separators', 'TestFiles/TestA', 1),
+			new Error('Error without directory separators', 'TestFilesFoo', 1),
 		];
 		yield [$errors];
 		mt_srand(0);
@@ -245,17 +245,17 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 				'parameters' => [
 					'ignoreErrors' => [
 						[
-							'message' => '#^Error with Unix path separators$#',
+							'message' => '#^Error with Unix directory separators$#',
 							'count' => 1,
 							'path' => 'TestFiles/TestA',
 						],
 						[
-							'message' => '#^Error with Windows path separators$#',
+							'message' => '#^Error with Windows directory separators$#',
 							'count' => 1,
 							'path' => 'TestFiles/TestA',
 						],
 						[
-							'message' => '#^Error without path separators$#',
+							'message' => '#^Error without directory separators$#',
 							'count' => 1,
 							'path' => 'TestFilesFoo',
 						],

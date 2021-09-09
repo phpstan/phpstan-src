@@ -207,6 +207,8 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			new Error('Second error in a different file', 'TestfileB', 4),
 			new Error('Error #1 in a different file', 'TestfileB', 5),
 			new Error('Second error in a different file', 'TestfileB', 6),
+			new Error('Error with directory separator', 'folder\\TestfileB', 7),
+			new Error('Error with directory separator', 'folder/TestfileB', 8),
 		];
 		yield [$errors];
 		mt_srand(0);
@@ -260,6 +262,16 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 							'message' => '#^Second error in a different file$#',
 							'count' => 2,
 							'path' => 'TestfileB',
+						],
+						[
+							'message' => '#^Error with directory separator$#',
+							'count' => 1,
+							'path' => 'folder/TestfileB',
+						],
+						[
+							'message' => '#^Error with directory separator$#',
+							'count' => 1,
+							'path' => 'folder\\TestfileB',
 						],
 					],
 				],

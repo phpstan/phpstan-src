@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
@@ -61,14 +60,8 @@ class EmptyRule implements \PHPStan\Rules\Rule
 
 			return 'is not nullable';
 		});
-		if ($error === null) {
-			return [];
-		}
 
-		$exprType = $scope->getType($node->expr);
-		$exprBooleanType = $exprType->toBoolean();
-		$isFalse = (new ConstantBooleanType(false))->isSuperTypeOf($exprBooleanType);
-		if (!$exprType instanceof ErrorType && $isFalse->maybe()) {
+		if ($error === null) {
 			return [];
 		}
 

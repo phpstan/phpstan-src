@@ -13,6 +13,13 @@ use PHPStan\Type\NullType;
 class VariableCertaintyInIssetRule implements \PHPStan\Rules\Rule
 {
 
+	private bool $bleedingEdge;
+
+	public function __construct(bool $bleedingEdge = false)
+	{
+		$this->bleedingEdge = $bleedingEdge;
+	}
+
 	public function getNodeType(): string
 	{
 		return Node\Expr\Isset_::class;
@@ -20,6 +27,10 @@ class VariableCertaintyInIssetRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->bleedingEdge) {
+			return [];
+		}
+
 		$messages = [];
 		foreach ($node->vars as $var) {
 			$isSubNode = false;

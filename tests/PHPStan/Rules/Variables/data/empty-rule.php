@@ -39,4 +39,21 @@ class Foo
 		empty($a[3]);
 	}
 
+	public function doBaz()
+	{
+		empty($a);
+
+		$b = 'test';
+		empty($b);
+
+		if (rand(0, 1)) {
+			$c = 'foo';
+		}
+
+		empty($c); // maybe undefined
+
+		$d = rand(0, 1) ? '' : 'foo';
+		empty($d); // maybe falsy
+	}
+
 }

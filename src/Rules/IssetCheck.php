@@ -18,13 +18,17 @@ class IssetCheck
 
 	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
+	private bool $bleedingEdge;
+
 	public function __construct(
 		PropertyDescriptor $propertyDescriptor,
-		PropertyReflectionFinder $propertyReflectionFinder
+		PropertyReflectionFinder $propertyReflectionFinder,
+		bool $bleedingEdge = false
 	)
 	{
 		$this->propertyDescriptor = $propertyDescriptor;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
+		$this->bleedingEdge = $bleedingEdge;
 	}
 
 	/**
@@ -36,6 +40,25 @@ class IssetCheck
 			$hasVariable = $scope->hasVariableType($expr->name);
 			if ($hasVariable->maybe()) {
 				return null;
+			}
+
+			if (
+				$error === null
+				&& $this->bleedingEdge
+			) {
+				if ($hasVariable->yes()) {
+					if ($expr->name === '_SESSION') {
+						return null;
+					}
+
+					return $this->generateError(
+						$scope->getVariableType($expr->name),
+						sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
+						$typeMessageCallback
+					);
+				}
+
+				return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $expr->name, $operatorDescription))->build();
 			}
 
 			return $error;

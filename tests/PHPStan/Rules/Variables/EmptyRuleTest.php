@@ -15,7 +15,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder()));
+		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
 	}
 
 	public function testRule(): void
@@ -44,6 +44,24 @@ class EmptyRuleTest extends RuleTestCase
 			[
 				'Offset 2 on array(\'\', \'0\', \'foo\', \'\'|\'foo\') in empty() always exists and is not falsy.',
 				38,
+			],
+			[
+				'Variable $a in empty() is never defined.',
+				44,
+			],
+			[
+				'Variable $b in empty() always exists and is not falsy.',
+				47,
+			],
+		]);
+	}
+
+	public function testBug970(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-970.php'], [
+			[
+				'aaa',
+				10,
 			],
 		]);
 	}

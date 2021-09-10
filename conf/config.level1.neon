@@ -7,17 +7,15 @@ parameters:
 	reportMagicMethods: true
 	reportMagicProperties: true
 
-
-conditionalTags:
-	PHPStan\Rules\Variables\VariableCertaintyNullCoalesceRule:
-		phpstan.rules.rule: %featureToggles.nullCoalesce%
-
 rules:
 	- PHPStan\Rules\Classes\UnusedConstructorParametersRule
 	- PHPStan\Rules\Constants\ConstantRule
 	- PHPStan\Rules\Functions\UnusedClosureUsesRule
-	- PHPStan\Rules\Variables\VariableCertaintyInIssetRule
 
 services:
 	-
-		class: PHPStan\Rules\Variables\VariableCertaintyNullCoalesceRule
+		class: PHPStan\Rules\Variables\VariableCertaintyInIssetRule
+		arguments:
+			bleedingEdge: %featureToggles.bleedingEdge%
+		tags:
+			- phpstan.rules.rule

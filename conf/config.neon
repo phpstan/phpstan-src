@@ -859,6 +859,8 @@ services:
 
 	-
 		class: PHPStan\Rules\IssetCheck
+		arguments:
+			bleedingEdge: %featureToggles.bleedingEdge%
 
 	-
 		# checked as part of OverridingMethodRule

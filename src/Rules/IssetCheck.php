@@ -8,7 +8,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -28,7 +27,10 @@ class IssetCheck
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
 	}
 
-	public function check(Expr $expr, Scope $scope, string $operatorDescription, ?RuleError $error = null): ?RuleError
+	/**
+	 * @param callable(Type): ?string $typeMessageCallback
+	 */
+	public function check(Expr $expr, Scope $scope, string $operatorDescription, callable $typeMessageCallback, ?RuleError $error = null): ?RuleError
 	{
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			$hasVariable = $scope->hasVariableType($expr->name);
@@ -70,10 +72,10 @@ class IssetCheck
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
 					$operatorDescription
-				));
+				), $typeMessageCallback);
 
 				if ($error !== null) {
-					return $this->check($expr->var, $scope, $operatorDescription, $error);
+					return $this->check($expr->var, $scope, $operatorDescription, $typeMessageCallback, $error);
 				}
 			}
 
@@ -104,42 +106,39 @@ class IssetCheck
 
 			$error = $error ?? $this->generateError(
 				$propertyReflection->getWritableType(),
-				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription)
+				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription),
+				$typeMessageCallback
 			);
 
 			if ($error !== null) {
 				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->check($expr->var, $scope, $operatorDescription, $error);
+					return $this->check($expr->var, $scope, $operatorDescription, $typeMessageCallback, $error);
 				}
 
 				if ($expr->class instanceof Expr) {
-					return $this->check($expr->class, $scope, $operatorDescription, $error);
+					return $this->check($expr->class, $scope, $operatorDescription, $typeMessageCallback, $error);
 				}
 			}
 
 			return $error;
 		}
 
-		return $error ?? $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription));
+		return $error ?? $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription), $typeMessageCallback);
 	}
 
-	private function generateError(Type $type, string $message): ?RuleError
+	/**
+	 * @param callable(Type): ?string $typeMessageCallback
+	 */
+	private function generateError(Type $type, string $message, callable $typeMessageCallback): ?RuleError
 	{
-		$nullType = new NullType();
-
-		if ($type->equals($nullType)) {
-			return RuleErrorBuilder::message(
-				sprintf('%s is always null.', $message)
-			)->build();
+		$typeMessage = $typeMessageCallback($type);
+		if ($typeMessage === null) {
+			return null;
 		}
 
-		if ($type->isSuperTypeOf($nullType)->no()) {
-			return RuleErrorBuilder::message(
-				sprintf('%s is not nullable.', $message)
-			)->build();
-		}
-
-		return null;
+		return RuleErrorBuilder::message(
+			sprintf('%s %s.', $message, $typeMessage)
+		)->build();
 	}
 
 }

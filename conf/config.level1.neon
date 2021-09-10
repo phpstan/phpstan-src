@@ -12,6 +12,14 @@ rules:
 	- PHPStan\Rules\Constants\ConstantRule
 	- PHPStan\Rules\Functions\UnusedClosureUsesRule
 
+conditionalTags:
+	PHPStan\Rules\Variables\EmptyRule:
+		phpstan.rules.rule: %featureToggles.nullCoalesce%
+	PHPStan\Rules\Variables\IssetRule:
+		phpstan.rules.rule: %featureToggles.nullCoalesce%
+	PHPStan\Rules\Variables\NullCoalesceRule:
+		phpstan.rules.rule: %featureToggles.nullCoalesce%
+
 services:
 	-
 		class: PHPStan\Rules\Variables\VariableCertaintyInIssetRule
@@ -19,3 +27,12 @@ services:
 			bleedingEdge: %featureToggles.bleedingEdge%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Variables\EmptyRule
+
+	-
+		class: PHPStan\Rules\Variables\IssetRule
+
+	-
+		class: PHPStan\Rules\Variables\NullCoalesceRule

@@ -28,12 +28,9 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.unusedClassElements%
 	PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule:
 		phpstan.rules.rule: %featureToggles.unusedClassElements%
-	PHPStan\Rules\Variables\EmptyRule:
-		phpstan.rules.rule: %featureToggles.nullCoalesce%
-	PHPStan\Rules\Variables\IssetRule:
-		phpstan.rules.rule: %featureToggles.nullCoalesce%
-	PHPStan\Rules\Variables\NullCoalesceRule:
-		phpstan.rules.rule: %featureToggles.nullCoalesce%
+
+parameters:
+	checkAdvancedIsset: true
 
 services:
 	-
@@ -165,12 +162,3 @@ services:
 			checkProtectedAndPublicMethods: %checkTooWideReturnTypesInProtectedAndPublicMethods%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Variables\EmptyRule
-
-	-
-		class: PHPStan\Rules\Variables\IssetRule
-
-	-
-		class: PHPStan\Rules\Variables\NullCoalesceRule

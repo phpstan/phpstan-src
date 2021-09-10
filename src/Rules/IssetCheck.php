@@ -18,16 +18,20 @@ class IssetCheck
 
 	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
+	private bool $checkAdvancedIsset;
+
 	private bool $bleedingEdge;
 
 	public function __construct(
 		PropertyDescriptor $propertyDescriptor,
 		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $bleedingEdge = false
+		bool $checkAdvancedIsset,
+		bool $bleedingEdge
 	)
 	{
 		$this->propertyDescriptor = $propertyDescriptor;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
+		$this->checkAdvancedIsset = $checkAdvancedIsset;
 		$this->bleedingEdge = $bleedingEdge;
 	}
 
@@ -68,11 +72,19 @@ class IssetCheck
 			$dimType = $scope->getType($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
-				return $error;
+				return $error ?? $this->checkUndefined($expr->var, $scope, $operatorDescription);
 			}
 
 			if ($hasOffsetValue->no()) {
-				return $error ?? RuleErrorBuilder::message(
+				if ($error !== null) {
+					return $error;
+				}
+
+				if (!$this->checkAdvancedIsset) {
+					return null;
+				}
+
+				return RuleErrorBuilder::message(
 					sprintf(
 						'Offset %s on %s %s does not exist.',
 						$dimType->describe(VerbosityLevel::value()),
@@ -89,8 +101,15 @@ class IssetCheck
 			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
 			if ($hasOffsetValue->yes()) {
+				if ($error !== null) {
+					return $error;
+				}
 
-				$error = $error ?? $this->generateError($type->getOffsetValueType($dimType), sprintf(
+				if (!$this->checkAdvancedIsset) {
+					return null;
+				}
+
+				$error = $this->generateError($type->getOffsetValueType($dimType), sprintf(
 					'Offset %s on %s %s always exists and',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
@@ -110,24 +129,62 @@ class IssetCheck
 			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $scope);
 
 			if ($propertyReflection === null) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->checkUndefined($expr->var, $scope, $operatorDescription);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->checkUndefined($expr->class, $scope, $operatorDescription);
+				}
+
 				return null;
 			}
 
 			if (!$propertyReflection->isNative()) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->checkUndefined($expr->var, $scope, $operatorDescription);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->checkUndefined($expr->class, $scope, $operatorDescription);
+				}
+
 				return null;
 			}
 
 			$nativeType = $propertyReflection->getNativeType();
 			if (!$nativeType instanceof MixedType) {
 				if (!$scope->isSpecified($expr)) {
+					if ($expr instanceof Node\Expr\PropertyFetch) {
+						return $this->checkUndefined($expr->var, $scope, $operatorDescription);
+					}
+
+					if ($expr->class instanceof Expr) {
+						return $this->checkUndefined($expr->class, $scope, $operatorDescription);
+					}
+
 					return null;
 				}
 			}
 
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $expr);
 			$propertyType = $propertyReflection->getWritableType();
+			if ($error !== null) {
+				return $error;
+			}
+			if (!$this->checkAdvancedIsset) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->checkUndefined($expr->var, $scope, $operatorDescription);
+				}
 
-			$error = $error ?? $this->generateError(
+				if ($expr->class instanceof Expr) {
+					return $this->checkUndefined($expr->class, $scope, $operatorDescription);
+				}
+
+				return null;
+			}
+
+			$error = $this->generateError(
 				$propertyReflection->getWritableType(),
 				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription),
 				$typeMessageCallback
@@ -146,7 +203,59 @@ class IssetCheck
 			return $error;
 		}
 
-		return $error ?? $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription), $typeMessageCallback);
+		if ($error !== null) {
+			return $error;
+		}
+
+		if (!$this->checkAdvancedIsset) {
+			return null;
+		}
+
+		return $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription), $typeMessageCallback);
+	}
+
+	private function checkUndefined(Expr $expr, Scope $scope, string $operatorDescription): ?RuleError
+	{
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
+			$hasVariable = $scope->hasVariableType($expr->name);
+			if (!$hasVariable->no()) {
+				return null;
+			}
+
+			return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $expr->name, $operatorDescription))->build();
+		}
+
+		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
+			$type = $scope->getType($expr->var);
+			$dimType = $scope->getType($expr->dim);
+			$hasOffsetValue = $type->hasOffsetValueType($dimType);
+			if (!$type->isOffsetAccessible()->yes()) {
+				return $this->checkUndefined($expr->var, $scope, $operatorDescription);
+			}
+
+			if (!$hasOffsetValue->no()) {
+				return $this->checkUndefined($expr->var, $scope, $operatorDescription);
+			}
+
+			return RuleErrorBuilder::message(
+				sprintf(
+					'Offset %s on %s %s does not exist.',
+					$dimType->describe(VerbosityLevel::value()),
+					$type->describe(VerbosityLevel::value()),
+					$operatorDescription
+				)
+			)->build();
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return $this->checkUndefined($expr->var, $scope, $operatorDescription);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
+			return $this->checkUndefined($expr->class, $scope, $operatorDescription);
+		}
+
+		return null;
 	}
 
 	/**

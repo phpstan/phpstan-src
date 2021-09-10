@@ -15,7 +15,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
+		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
 	}
 
 	public function testRule(): void
@@ -60,8 +60,8 @@ class EmptyRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-970.php'], [
 			[
-				'aaa',
-				10,
+				'Variable $ar in empty() is never defined.',
+				9,
 			],
 		]);
 	}

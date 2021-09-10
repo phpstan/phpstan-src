@@ -136,3 +136,9 @@ function (\ReflectionClass $ref): void {
 	echo $ref->name ?? 'foo';
 	echo $ref->nonexistent ?? 'bar';
 };
+
+function (): void {
+	echo $foo ?? 'foo';
+
+	echo $bar->bar ?? 'foo';
+};

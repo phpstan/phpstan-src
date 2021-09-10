@@ -54,6 +54,7 @@ parameters:
 		overridingProperty: false
 	fileExtensions:
 		- php
+	checkAdvancedIsset: false
 	checkAlwaysTrueCheckTypeFunctionCall: false
 	checkAlwaysTrueInstanceof: false
 	checkAlwaysTrueStrictComparison: false
@@ -239,6 +240,7 @@ parametersSchema:
 		overridingProperty: bool()
 	])
 	fileExtensions: listOf(string())
+	checkAdvancedIsset: bool()
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
 	checkAlwaysTrueInstanceof: bool()
 	checkAlwaysTrueStrictComparison: bool()
@@ -861,6 +863,7 @@ services:
 		class: PHPStan\Rules\IssetCheck
 		arguments:
 			bleedingEdge: %featureToggles.bleedingEdge%
+			checkAdvancedIsset: %checkAdvancedIsset%
 
 	-
 		# checked as part of OverridingMethodRule

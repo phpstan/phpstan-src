@@ -14,7 +14,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new NullCoalesceRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
+		return new NullCoalesceRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
 	}
 
 	public function testCoalesceRule(): void
@@ -43,6 +43,10 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ?? always exists and is not nullable.',
 				67,
+			],
+			[
+				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ?? does not exist.',
+				73,
 			],
 			[
 				'Offset \'b\' on array() on left side of ?? does not exist.',
@@ -104,6 +108,14 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
 				136,
 			],
+			[
+				'Variable $foo on left side of ?? is never defined.',
+				141,
+			],
+			[
+				'Variable $bar on left side of ?? is never defined.',
+				143,
+			],
 		]);
 	}
 
@@ -137,6 +149,10 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ??= always exists and is not nullable.',
 				67,
+			],
+			[
+				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 0|1, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ??= does not exist.',
+				73,
 			],
 			[
 				'Offset \'b\' on array() on left side of ??= does not exist.',

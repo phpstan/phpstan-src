@@ -26,15 +26,15 @@ function foo()
 
 	}
 
-	/** @var string|null $anotherAlwaysDefinedNullable */
+	/** @var array|null $anotherAlwaysDefinedNullable */
 	$anotherAlwaysDefinedNullable = doFoo();
 
 	if (isset($anotherAlwaysDefinedNullable['test']['test'])) { // fine, checking for nullability
 
 	}
 
-	$anotherAlwaysDefinedNotNullable = 'string';
-
+	/** @var array $anotherAlwaysDefinedNotNullable */
+	$anotherAlwaysDefinedNotNullable = doFoo();
 	if (isset($anotherAlwaysDefinedNotNullable['test']['test'])) { // fine, variable always exists, but what about the array index?
 
 	}

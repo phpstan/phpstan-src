@@ -16,7 +16,7 @@ class IssetRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IssetRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
+		return new IssetRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
 	}
 
 	public function testRule(): void
@@ -45,6 +45,10 @@ class IssetRuleTest extends RuleTestCase
 			[
 				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) in isset() always exists and is not nullable.',
 				67,
+			],
+			[
+				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) in isset() does not exist.',
+				73,
 			],
 			[
 				'Offset \'b\' on array() in isset() does not exist.',
@@ -166,7 +170,7 @@ class IssetRuleTest extends RuleTestCase
 				116,
 			],
 			[
-				'Variable $variableInSecondCase in isset() always exists and is not nullable.',
+				'Variable $variableInSecondCase in isset() always exists and is always null.',
 				117,
 			],
 			[

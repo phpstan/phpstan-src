@@ -8,5 +8,15 @@
         "message": "Variable $bar on left side of ?? is never defined.",
         "line": 6,
         "ignorable": true
+    },
+    {
+        "message": "Variable $a on left side of ?? is never defined.",
+        "line": 15,
+        "ignorable": true
+    },
+    {
+        "message": "Variable $s on left side of ?? always exists and is always null.",
+        "line": 23,
+        "ignorable": true
     }
 ]

@@ -2326,8 +2326,14 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Coalesce) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
 
-			if ($expr->left instanceof PropertyFetch || $expr->left instanceof StaticPropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
-				$scope = $nonNullabilityResult->getScope();
+			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
+				$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $expr->left->var);
+			} elseif ($expr->left instanceof StaticPropertyFetch) {
+				if ($expr->left->class instanceof Expr) {
+					$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $expr->left->class);
+				} else {
+					$scope = $nonNullabilityResult->getScope();
+				}
 			} else {
 				$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $expr->left);
 			}

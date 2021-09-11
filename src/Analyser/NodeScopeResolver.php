@@ -2343,7 +2343,13 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 
-			if (!$expr->left instanceof PropertyFetch) {
+			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
+				$scope = $this->lookForExitVariableAssign($scope, $expr->left->var);
+			} elseif ($expr->left instanceof StaticPropertyFetch) {
+				if ($expr->left->class instanceof Expr) {
+					$scope = $this->lookForExitVariableAssign($scope, $expr->left->class);
+				}
+			} else {
 				$scope = $this->lookForExitVariableAssign($scope, $expr->left);
 			}
 			$result = $this->processExprNode($expr->right, $scope, $nodeCallback, $context->enterDeep());

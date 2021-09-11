@@ -13,6 +13,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -100,6 +101,10 @@ class ImpossibleCheckTypeHelper
 
 						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
 						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
+							return null;
+						}
+
+						if ($needleType instanceof ConstantType && !$haystackType instanceof ConstantArrayType) {
 							return null;
 						}
 

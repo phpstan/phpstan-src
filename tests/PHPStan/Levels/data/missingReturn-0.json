@@ -2,7 +2,7 @@
     {
         "message": "Method Levels\\MissingReturn\\Foo::doFoo() should return int but return statement is missing.",
         "line": 8,
-        "ignorable": true
+        "ignorable": false
     },
     {
         "message": "Method Levels\\MissingReturn\\Foo::doBar() should return int but return statement is missing.",

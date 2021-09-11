@@ -17,6 +17,13 @@ use PHPStan\Type\VerbosityLevel;
 class DeadCatchRule implements Rule
 {
 
+	private bool $bleedingEdge;
+
+	public function __construct(bool $bleedingEdge = false)
+	{
+		$this->bleedingEdge = $bleedingEdge;
+	}
+
 	public function getNodeType(): string
 	{
 		return Node\Stmt\TryCatch::class;
@@ -24,6 +31,10 @@ class DeadCatchRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->bleedingEdge) {
+			return [];
+		}
+
 		$catchTypes = array_map(static function (Node\Stmt\Catch_ $catch): Type {
 			return TypeCombinator::union(...array_map(static function (Node\Name $className): ObjectType {
 				return new ObjectType($className->toString());

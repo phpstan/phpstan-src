@@ -6,7 +6,6 @@ rules:
 	- PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
 	- PHPStan\Rules\DeadCode\NoopRule
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
-	- PHPStan\Rules\Exceptions\DeadCatchRule
 	- PHPStan\Rules\Functions\CallToFunctionStamentWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToMethodStamentWithoutSideEffectsRule
@@ -152,6 +151,13 @@ services:
 
 	-
 		class: PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
+
+	-
+		class: PHPStan\Rules\Exceptions\DeadCatchRule
+		arguments:
+			bleedingEdge: %featureToggles.bleedingEdge%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule

@@ -171,4 +171,14 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDeadCatch(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch.php'], [
+			[
+				'Dead catch - TypeError is already caught above.',
+				27,
+			],
+		]);
+	}
+
 }

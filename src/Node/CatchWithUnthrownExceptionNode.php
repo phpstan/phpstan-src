@@ -14,11 +14,14 @@ class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
 
 	private Type $caughtType;
 
-	public function __construct(Catch_ $originalNode, Type $caughtType)
+	private Type $originalCaughtType;
+
+	public function __construct(Catch_ $originalNode, Type $caughtType, Type $originalCaughtType)
 	{
 		parent::__construct($originalNode->getAttributes());
 		$this->originalNode = $originalNode;
 		$this->caughtType = $caughtType;
+		$this->originalCaughtType = $originalCaughtType;
 	}
 
 	public function getOriginalNode(): Catch_
@@ -29,6 +32,11 @@ class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
 	public function getCaughtType(): Type
 	{
 		return $this->caughtType;
+	}
+
+	public function getOriginalCaughtType(): Type
+	{
+		return $this->originalCaughtType;
 	}
 
 	public function getType(): string

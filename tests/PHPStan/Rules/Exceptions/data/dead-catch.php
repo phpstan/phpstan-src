@@ -8,7 +8,7 @@ class Foo
 	public function doFoo()
 	{
 		try {
-
+			doFoo();
 		} catch (\Exception $e) {
 
 		} catch (\TypeError $e) {
@@ -21,7 +21,7 @@ class Foo
 	public function doBar()
 	{
 		try {
-
+			doFoo();
 		} catch (\Throwable $e) {
 
 		} catch (\TypeError $e) {

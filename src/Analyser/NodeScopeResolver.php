@@ -1233,7 +1233,7 @@ class NodeScopeResolver
 						}
 
 						if (count($throwableThrowPoints) === 0) {
-							$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType), $scope);
+							$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
 							continue;
 						}
 

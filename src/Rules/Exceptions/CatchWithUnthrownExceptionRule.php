@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -22,6 +23,14 @@ class CatchWithUnthrownExceptionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($node->getCaughtType() instanceof NeverType) {
+			return [
+				RuleErrorBuilder::message(
+					sprintf('Dead catch - %s is already caught above.', $node->getOriginalCaughtType()->describe(VerbosityLevel::typeOnly()))
+				)->line($node->getLine())->build(),
+			];
+		}
+
 		return [
 			RuleErrorBuilder::message(
 				sprintf('Dead catch - %s is never thrown in the try block.', $node->getCaughtType()->describe(VerbosityLevel::typeOnly()))

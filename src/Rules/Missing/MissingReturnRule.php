@@ -28,13 +28,17 @@ class MissingReturnRule implements Rule
 
 	private bool $checkPhpDocMissingReturn;
 
+	private bool $bleedingEdge;
+
 	public function __construct(
 		bool $checkExplicitMixedMissingReturn,
-		bool $checkPhpDocMissingReturn
+		bool $checkPhpDocMissingReturn,
+		bool $bleedingEdge = false
 	)
 	{
 		$this->checkExplicitMixedMissingReturn = $checkExplicitMixedMissingReturn;
 		$this->checkPhpDocMissingReturn = $checkPhpDocMissingReturn;
+		$this->bleedingEdge = $bleedingEdge;
 	}
 
 	public function getNodeType(): string
@@ -106,8 +110,14 @@ class MissingReturnRule implements Rule
 		}
 
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			$errorBuilder = RuleErrorBuilder::message(sprintf('%s should always throw an exception or terminate script execution but doesn\'t do that.', $description))->line($node->getNode()->getStartLine());
+
+			if ($this->bleedingEdge && $node->hasNativeReturnTypehint()) {
+				$errorBuilder->nonIgnorable();
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf('%s should always throw an exception or terminate script execution but doesn\'t do that.', $description))->line($node->getNode()->getStartLine())->build(),
+				$errorBuilder->build(),
 			];
 		}
 
@@ -123,10 +133,16 @@ class MissingReturnRule implements Rule
 			return [];
 		}
 
+		$errorBuilder = RuleErrorBuilder::message(
+			sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly()))
+		)->line($node->getNode()->getStartLine());
+
+		if ($this->bleedingEdge && $node->hasNativeReturnTypehint()) {
+			$errorBuilder->nonIgnorable();
+		}
+
 		return [
-			RuleErrorBuilder::message(
-				sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly()))
-			)->line($node->getNode()->getStartLine())->build(),
+			$errorBuilder->build(),
 		];
 	}
 

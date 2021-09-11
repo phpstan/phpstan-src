@@ -172,6 +172,7 @@ services:
 		arguments:
 			checkExplicitMixedMissingReturn: %checkExplicitMixedMissingReturn%
 			checkPhpDocMissingReturn: %checkPhpDocMissingReturn%
+			bleedingEdge: %featureToggles.bleedingEdge%
 		tags:
 			- phpstan.rules.rule
 

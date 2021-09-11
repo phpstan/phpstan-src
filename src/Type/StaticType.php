@@ -110,7 +110,7 @@ class StaticType implements TypeWithClassName
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if (!$type instanceof static) {

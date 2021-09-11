@@ -71,7 +71,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType && !$type instanceof self) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return $this->isSuperTypeOfInternal($type, true);

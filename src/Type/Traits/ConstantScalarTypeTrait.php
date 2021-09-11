@@ -4,7 +4,6 @@ namespace PHPStan\Type\Traits;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
-use PHPStan\Type\CompoundTypeHelper;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
@@ -19,7 +18,7 @@ trait ConstantScalarTypeTrait
 		}
 
 		if ($type instanceof CompoundType) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return TrinaryLogic::createNo();

@@ -4,7 +4,6 @@ namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
-use PHPStan\Type\CompoundTypeHelper;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
@@ -49,7 +48,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return $type->isOffsetAccessible()

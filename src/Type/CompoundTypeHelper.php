@@ -4,6 +4,9 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 
+/**
+ * @deprecated
+ */
 class CompoundTypeHelper
 {
 

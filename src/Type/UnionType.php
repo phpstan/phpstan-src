@@ -85,7 +85,7 @@ class UnionType implements CompoundType
 		}
 
 		if ($type instanceof CompoundType && !$type instanceof CallableType) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		$results = [];

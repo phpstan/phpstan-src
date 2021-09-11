@@ -57,7 +57,7 @@ class NullType implements ConstantScalarType
 		}
 
 		if ($type instanceof CompoundType) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return TrinaryLogic::createNo();

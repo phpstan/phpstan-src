@@ -5,7 +5,6 @@ namespace PHPStan\Type\Accessory;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
-use PHPStan\Type\CompoundTypeHelper;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
@@ -47,7 +46,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createNo();
 		}
 		if ($type instanceof CompoundType) {
-			return CompoundTypeHelper::accepts($type, $this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return $type->isLiteralString();

@@ -1021,12 +1021,7 @@ class MutatingScope implements Scope
 			}
 
 			if ($type instanceof IntegerRangeType) {
-				$negativeRange = $this->resolveType(new Node\Expr\BinaryOp\Mul($node->expr, new LNumber(-1)));
-
-				if ( $negativeRange instanceof IntegerRangeType && ($negativeRange->getMin() === null || $negativeRange->getMax() === null)) {
-					return IntegerRangeType::fromInterval($negativeRange->getMax(), $negativeRange->getMin());
-				}
-				return $negativeRange;
+				return $this->resolveType(new Node\Expr\BinaryOp\Mul($node->expr, new LNumber(-1)));
 			}
 
 			return $type;
@@ -5203,7 +5198,7 @@ class MutatingScope implements Scope
 						$max = null;
 					}
 
-					if ($min !== null && $max !== null && $min > $max) {
+					if ($operand instanceof ConstantIntegerType && $operand->getValue() < 0 && $min !== null && $max !== null && $min > $max) {
 						[$min, $max] = [$max, $min];
 					}
 				}
@@ -5218,6 +5213,10 @@ class MutatingScope implements Scope
 			}
 
 			if ($min !== null && $max !== null && $min > $max) {
+				[$min, $max] = [$max, $min];
+			}
+			
+			if ($min === null || $max === null) {
 				[$min, $max] = [$max, $min];
 			}
 

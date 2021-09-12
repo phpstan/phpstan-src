@@ -233,7 +233,7 @@ class X {
 		assertType('int<-200, -20>|int<1, 30>', $r1 * $z);
 		assertType('float|int<0, 10>', $r1 / $z);
 		assertType('int', $rMin * $z);
-		assertType('int<-100, max>', $rMax * $z);
+		assertType('int<min, -100>|int<5, max>', $rMax * $z);
 
 		assertType('int<2, max>', $pi + 1);
 		assertType('int<-1, max>', $pi - 2);

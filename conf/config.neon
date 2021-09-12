@@ -34,10 +34,7 @@ parameters:
 		wrongVarUsage: false
 		arrayDestructuring: false
 		objectFromNewClass: false
-		skipCheckGenericClasses:
-			- RecursiveIterator
-			- RecursiveArrayIterator
-			- WeakMap
+		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
 		deepInspectTypes: false

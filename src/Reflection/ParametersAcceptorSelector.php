@@ -5,7 +5,6 @@ namespace PHPStan\Reflection;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
@@ -50,8 +49,7 @@ class ParametersAcceptorSelector
 		$types = [];
 		$unpack = false;
 		if (
-			BleedingEdgeToggle::isBleedingEdge()
-			&& count($args) > 0
+			count($args) > 0
 			&& count($parametersAcceptors) > 0
 		) {
 			$functionName = null;

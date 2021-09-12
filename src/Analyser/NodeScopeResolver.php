@@ -50,7 +50,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
@@ -91,14 +90,11 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\PassedByReference;
-use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -3155,47 +3151,6 @@ class NodeScopeResolver
 					$argValue = $arg->value;
 					if ($argValue instanceof Variable && is_string($argValue->name)) {
 						$scope = $scope->assignVariable($argValue->name, new MixedType());
-					}
-				}
-
-				if (!BleedingEdgeToggle::isBleedingEdge() && $calleeReflection instanceof FunctionReflection) {
-					if (
-						$i === 0
-						&& $calleeReflection->getName() === 'array_map'
-						&& isset($args[1])
-					) {
-						$parameterType = new CallableType([
-							new DummyParameter('item', $scope->getType($args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-						], new MixedType(), false);
-					}
-
-					if (
-						$i === 1
-						&& $calleeReflection->getName() === 'array_filter'
-						&& isset($args[0])
-					) {
-						if (isset($args[2])) {
-							$mode = $scope->getType($args[2]->value);
-							if ($mode instanceof ConstantIntegerType) {
-								if ($mode->getValue() === ARRAY_FILTER_USE_KEY) {
-									$arrayFilterParameters = [
-										new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
-									];
-								} elseif ($mode->getValue() === ARRAY_FILTER_USE_BOTH) {
-									$arrayFilterParameters = [
-										new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-										new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
-									];
-								}
-							}
-						}
-						$parameterType = new CallableType(
-							$arrayFilterParameters ?? [
-								new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-							],
-							new MixedType(),
-							false
-						);
 					}
 				}
 			}

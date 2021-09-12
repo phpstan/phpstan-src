@@ -284,13 +284,15 @@ class X {
 	 * @param int<-5, 10> $r2
 	 * @param int<min, 5> $rMin
 	 * @param int<5, max> $rMax
+	 * @param int<0, 50> $rZero
 	 */
-	public function unaryMinus($r1, $r2, $rMin, $rMax) {
+	public function unaryMinus($r1, $r2, $rMin, $rMax, $rZero) {
 
 		assertType('int<-10, -1>', -$r1);
 		assertType('int<-10, 5>', -$r2);
 		assertType('int<-5, max>', -$rMin);
 		assertType('int<min, -5>', -$rMax);
+		assertType('int<-50, 0>', -$rZero);
 	}
 
 }

@@ -8,7 +8,6 @@ parameters:
 		- ../stubs/runtime/Attribute.php
 	excludes_analyse: []
 	excludePaths: null
-	autoload_directories: []
 	level: null
 	paths: []
 	exceptions:
@@ -193,7 +192,6 @@ parametersSchema:
 			analyseAndScan: listOf(string())
 		])
 	), nullable())
-	autoload_directories: listOf(string())
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	exceptions: structure([
@@ -1684,7 +1682,6 @@ services:
 		arguments:
 			parser: @phpParserDecorator
 			php8Parser: @php8PhpParser
-			autoloadDirectories: %autoload_directories%
 			scanFiles: %scanFiles%
 			scanDirectories: %scanDirectories%
 			analysedPaths: %analysedPaths%

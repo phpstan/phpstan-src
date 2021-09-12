@@ -54,9 +54,6 @@ class BetterReflectionSourceLocatorFactory
 	private $container;
 
 	/** @var string[] */
-	private $autoloadDirectories;
-
-	/** @var string[] */
 	private $scanFiles;
 
 	/** @var string[] */
@@ -78,8 +75,6 @@ class BetterReflectionSourceLocatorFactory
 	private array $staticReflectionClassNamePatterns;
 
 	/**
-	 * @param string[] $autoloadDirectories
-	 * @param string[] $autoloadFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
 	 * @param string[] $analysedPaths
@@ -98,7 +93,6 @@ class BetterReflectionSourceLocatorFactory
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
 		Container $container,
-		array $autoloadDirectories,
 		array $scanFiles,
 		array $scanDirectories,
 		array $analysedPaths,
@@ -117,7 +111,6 @@ class BetterReflectionSourceLocatorFactory
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->autoloadSourceLocator = $autoloadSourceLocator;
 		$this->container = $container;
-		$this->autoloadDirectories = $autoloadDirectories;
 		$this->scanFiles = $scanFiles;
 		$this->scanDirectories = $scanDirectories;
 		$this->analysedPaths = $analysedPaths;
@@ -156,7 +149,7 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
 		}
 
-		$directories = array_unique(array_merge($analysedDirectories, $this->autoloadDirectories, $this->scanDirectories));
+		$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
 		foreach ($directories as $directory) {
 			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
 		}

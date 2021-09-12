@@ -308,20 +308,6 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
-		$autoloadDirectories = $container->getParameter('autoload_directories');
-		if (count($autoloadDirectories) > 0 && $manageMemoryLimitFile) {
-			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_directories</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('You might not need it anymore - try removing it from your');
-			$errorOutput->writeLineFormatted('configuration file and run PHPStan again.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('If the analysis fails, replace it with <fg=cyan>scanDirectories</>.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('Read more about this in PHPStan\'s documentation:');
-			$errorOutput->writeLineFormatted('https://phpstan.org/user-guide/discovering-symbols');
-			$errorOutput->writeLineFormatted('');
-		}
-
 		$bootstrapFile = $container->getParameter('bootstrap');
 		if ($bootstrapFile !== null) {
 			if ($manageMemoryLimitFile) {

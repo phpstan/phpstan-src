@@ -280,6 +280,9 @@ class X {
 		
 		assertType('int<-5, max>', -1 * $rMin);
 		assertType('int<min, -10>', -2 * $rMax);
+		
+		assertType('int<-5, max>', $rMin * -1);
+		assertType('int<min, -10>', $rMax * -2);
 	}
 
 	/**

@@ -534,11 +534,6 @@ services:
 			parser: @regexParser
 
 	-
-		class: PHPStan\Dependency\DependencyDumper
-		arguments:
-			fileFinder: @fileFinderAnalyse
-
-	-
 		class: PHPStan\Dependency\DependencyResolver
 
 	-

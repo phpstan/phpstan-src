@@ -5198,7 +5198,7 @@ class MutatingScope implements Scope
 						$max = null;
 					}
 
-					if ($operand instanceof ConstantIntegerType && $operand->getValue() < 0 && $min !== null && $max !== null && $min > $max) {
+					if ($min !== null && $max !== null && $min > $max) {
 						[$min, $max] = [$max, $min];
 					}
 				}
@@ -5216,7 +5216,9 @@ class MutatingScope implements Scope
 				[$min, $max] = [$max, $min];
 			}
 			
-			if ($min === null || $max === null) {
+			if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
+				|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
+				&& ($min === null || $max === null)) {
 				[$min, $max] = [$max, $min];
 			}
 

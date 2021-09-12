@@ -153,13 +153,6 @@ services:
 		class: PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
 
 	-
-		class: PHPStan\Rules\Exceptions\DeadCatchRule
-		arguments:
-			bleedingEdge: %featureToggles.bleedingEdge%
-		tags:
-			- phpstan.rules.rule
-
-	-
 		class: PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
 
 	-

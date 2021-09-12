@@ -308,19 +308,6 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
-		$bootstrapFile = $container->getParameter('bootstrap');
-		if ($bootstrapFile !== null) {
-			if ($manageMemoryLimitFile) {
-				$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>bootstrap</>. ⚠️️');
-				$errorOutput->writeLineFormatted('');
-				$errorOutput->writeLineFormatted('This option has been replaced with <fg=cyan>bootstrapFiles</> which accepts a list of files');
-				$errorOutput->writeLineFormatted('to execute before the analysis.');
-				$errorOutput->writeLineFormatted('');
-			}
-
-			self::executeBootstrapFile($bootstrapFile, $container, $errorOutput, $debugEnabled);
-		}
-
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
 			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
 		}

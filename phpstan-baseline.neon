@@ -12,7 +12,7 @@ parameters:
 
 		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
-			count: 2
+			count: 1
 			path: src/Command/CommandHelper.php
 
 		-

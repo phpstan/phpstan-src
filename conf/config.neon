@@ -1,7 +1,6 @@
 includes:
 	- config.stubFiles.neon
 parameters:
-	bootstrap: null
 	bootstrapFiles:
 		- ../stubs/runtime/ReflectionUnionType.php
 		- ../stubs/runtime/ReflectionAttribute.php
@@ -177,7 +176,6 @@ extensions:
 	parametersSchema: PHPStan\DependencyInjection\ParametersSchemaExtension
 
 parametersSchema:
-	bootstrap: schema(string(), nullable())
 	bootstrapFiles: listOf(string())
 	excludes_analyse: listOf(string())
 	excludePaths: schema(anyOf(

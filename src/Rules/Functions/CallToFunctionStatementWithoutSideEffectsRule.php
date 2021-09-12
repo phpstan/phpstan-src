@@ -13,7 +13,7 @@ use PHPStan\Type\VoidType;
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
  */
-class CallToFunctionStamentWithoutSideEffectsRule implements Rule
+class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
 
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;

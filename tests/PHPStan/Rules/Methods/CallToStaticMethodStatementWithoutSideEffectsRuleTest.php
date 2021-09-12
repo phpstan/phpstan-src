@@ -7,15 +7,15 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToStaticMethodStamentWithoutSideEffectsRule>
+ * @extends \PHPStan\Testing\RuleTestCase<CallToStaticMethodStatementWithoutSideEffectsRule>
  */
-class CallToStaticMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
+class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new CallToStaticMethodStamentWithoutSideEffectsRule(
+		return new CallToStaticMethodStatementWithoutSideEffectsRule(
 			new RuleLevelHelper($broker, true, false, true, false),
 			$broker
 		);

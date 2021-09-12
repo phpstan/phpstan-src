@@ -8,10 +8,10 @@ rules:
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
 	- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
-	- PHPStan\Rules\Functions\CallToFunctionStamentWithoutSideEffectsRule
+	- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
-	- PHPStan\Rules\Methods\CallToMethodStamentWithoutSideEffectsRule
-	- PHPStan\Rules\Methods\CallToStaticMethodStamentWithoutSideEffectsRule
+	- PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
+	- PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\NullsafeMethodCallRule
 	- PHPStan\Rules\Properties\NullsafePropertyFetchRule
 	- PHPStan\Rules\TooWideTypehints\TooWideArrowFunctionReturnTypehintRule

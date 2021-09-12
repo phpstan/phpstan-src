@@ -6,14 +6,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToFunctionStamentWithoutSideEffectsRule>
+ * @extends \PHPStan\Testing\RuleTestCase<CallToFunctionStatementWithoutSideEffectsRule>
  */
-class CallToFunctionStamentWithoutSideEffectsRuleTest extends RuleTestCase
+class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new CallToFunctionStamentWithoutSideEffectsRule($this->createReflectionProvider());
+		return new CallToFunctionStatementWithoutSideEffectsRule($this->createReflectionProvider());
 	}
 
 	public function testRule(): void

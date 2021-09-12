@@ -7,14 +7,14 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToMethodStamentWithoutSideEffectsRule>
+ * @extends \PHPStan\Testing\RuleTestCase<CallToMethodStatementWithoutSideEffectsRule>
  */
-class CallToMethodStamentWithoutSideEffectsRuleTest extends RuleTestCase
+class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new CallToMethodStamentWithoutSideEffectsRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
+		return new CallToMethodStatementWithoutSideEffectsRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
 	}
 
 	public function testRule(): void

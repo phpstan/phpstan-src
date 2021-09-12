@@ -15,7 +15,7 @@ use PHPStan\Type\VoidType;
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
  */
-class CallToMethodStamentWithoutSideEffectsRule implements Rule
+class CallToMethodStatementWithoutSideEffectsRule implements Rule
 {
 
 	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;

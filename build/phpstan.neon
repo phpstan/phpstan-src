@@ -18,7 +18,7 @@ parameters:
 		- ../tests/phpstan-bootstrap.php
 	checkUninitializedProperties: true
 	checkMissingCallableSignature: true
-	excludes_analyse:
+	excludePaths:
 		- ../src/Reflection/SignatureMap/functionMap.php
 		- ../src/Reflection/SignatureMap/functionMetadata.php
 		- ../tests/*/data/*

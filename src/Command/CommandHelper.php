@@ -419,6 +419,10 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('');
 
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		} elseif (count($excludesAnalyse) > 0) {
+			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>excludes_analyse</>. ⚠️️');
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted(sprintf('Parameter <fg=cyan>excludes_analyse</> has been deprecated so use <fg=cyan>excludePaths</> only from now on.'));
 		}
 
 		$tempResultCachePath = $container->getParameter('tempResultCachePath');

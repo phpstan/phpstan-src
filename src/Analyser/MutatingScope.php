@@ -1021,7 +1021,12 @@ class MutatingScope implements Scope
 			}
 
 			if ($type instanceof IntegerRangeType) {
-				return $this->resolveType(new Node\Expr\BinaryOp\Mul($node->expr, new LNumber(-1)));
+				$negativeRange = $this->resolveType(new Node\Expr\BinaryOp\Mul($node->expr, new LNumber(-1)));
+
+				if ( $negativeRange->getMin() === null || $negativeRange->getMax() === null) {
+					return IntegerRangeType::fromInterval($negativeRange->getMax(), $negativeRange->getMin());
+				}
+				return $negativeRange;
 			}
 
 			return $type;

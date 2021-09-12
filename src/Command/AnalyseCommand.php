@@ -181,19 +181,6 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			return 1;
 		}
 
-		if ($errorFormat === 'baselineNeon') {
-			$errorOutput = $inceptionResult->getErrorOutput();
-			$errorOutput->writeLineFormatted('⚠️  You\'re using an obsolete option <fg=cyan>--error-format baselineNeon</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('   There\'s a new and much better option <fg=cyan>--generate-baseline</>. Here are the advantages:');
-			$errorOutput->writeLineFormatted('   1) The current baseline file does not have to be commented-out');
-			$errorOutput->writeLineFormatted('      nor emptied when generating the new baseline. It\'s excluded automatically.');
-			$errorOutput->writeLineFormatted('   2) Output no longer has to be redirected to a file, PHPStan saves the baseline');
-			$errorOutput->writeLineFormatted('      to a specified path (defaults to <fg=cyan>phpstan-baseline.neon</>).');
-			$errorOutput->writeLineFormatted('   3) Baseline contains correct relative paths if saved to a subdirectory.');
-			$errorOutput->writeLineFormatted('');
-		}
-
 		$generateBaselineFile = $inceptionResult->getGenerateBaselineFile();
 		if ($generateBaselineFile !== null) {
 			$baselineExtension = pathinfo($generateBaselineFile, PATHINFO_EXTENSION);

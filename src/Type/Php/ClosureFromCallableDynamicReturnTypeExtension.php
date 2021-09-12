@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -25,6 +26,14 @@ class ClosureFromCallableDynamicReturnTypeExtension implements \PHPStan\Type\Dyn
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
 	{
+		if (!isset($methodCall->args[0])) {
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->args,
+				$methodReflection->getVariants()
+			)->getReturnType();
+		}
+
 		$callableType = $scope->getType($methodCall->args[0]->value);
 		if ($callableType->isCallable()->no()) {
 			return new ErrorType();

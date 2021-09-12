@@ -53,7 +53,7 @@ phpstan:
 	php bin/phpstan clear-result-cache -q && php -d memory_limit=768M bin/phpstan
 
 phpstan-static-reflection:
-	php bin/phpstan clear-result-cache -q && php -d memory_limit=768M bin/phpstan analyse -c phpstan-static-reflection.neon
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=800M bin/phpstan analyse -c phpstan-static-reflection.neon
 
 phpstan-result-cache:
 	php -d memory_limit=768M bin/phpstan

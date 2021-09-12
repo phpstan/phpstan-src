@@ -1828,6 +1828,14 @@ class NodeScopeResolver
 			$functionReflection = null;
 			$throwPoints = [];
 			if ($expr->name instanceof Expr) {
+				$nameType = $scope->getType($expr->name);
+				if ($nameType->isCallable()->yes()) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$expr->args,
+						$nameType->getCallableParametersAcceptors($scope)
+					);
+				}
 				$nameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$throwPoints = $nameResult->getThrowPoints();
 				$scope = $nameResult->getScope();

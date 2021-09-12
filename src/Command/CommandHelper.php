@@ -308,25 +308,6 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
-		$autoloadFiles = $container->getParameter('autoload_files');
-		if ($manageMemoryLimitFile && count($autoloadFiles) > 0) {
-			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_files</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('You might not need it anymore - try removing it from your');
-			$errorOutput->writeLineFormatted('configuration file and run PHPStan again.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('If the analysis fails, there are now two distinct options');
-			$errorOutput->writeLineFormatted('to choose from to replace <fg=cyan>autoload_files</>:');
-			$errorOutput->writeLineFormatted('1) <fg=cyan>scanFiles</> - PHPStan will scan those for classes and functions');
-			$errorOutput->writeLineFormatted('   definitions. PHPStan will not execute those files.');
-			$errorOutput->writeLineFormatted('2) <fg=cyan>bootstrapFiles</> - PHPStan will execute these files to prepare');
-			$errorOutput->writeLineFormatted('   the PHP runtime environment for the analysis.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('Read more about this in PHPStan\'s documentation:');
-			$errorOutput->writeLineFormatted('https://phpstan.org/user-guide/discovering-symbols');
-			$errorOutput->writeLineFormatted('');
-		}
-
 		$autoloadDirectories = $container->getParameter('autoload_directories');
 		if (count($autoloadDirectories) > 0 && $manageMemoryLimitFile) {
 			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_directories</>. ⚠️️');
@@ -339,16 +320,6 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('Read more about this in PHPStan\'s documentation:');
 			$errorOutput->writeLineFormatted('https://phpstan.org/user-guide/discovering-symbols');
 			$errorOutput->writeLineFormatted('');
-		}
-
-		foreach ($autoloadFiles as $parameterAutoloadFile) {
-			if (!file_exists($parameterAutoloadFile)) {
-				$errorOutput->writeLineFormatted(sprintf('Autoload file %s does not exist.', $parameterAutoloadFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
-			(static function (string $file) use ($container): void {
-				require_once $file;
-			})($parameterAutoloadFile);
 		}
 
 		$bootstrapFile = $container->getParameter('bootstrap');

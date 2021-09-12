@@ -39,10 +39,6 @@ class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->missingCheckedExceptionInThrows) {
-			return [];
-		}
-
 		$statementResult = $node->getStatementResult();
 		$methodReflection = $scope->getFunction();
 		if (!$methodReflection instanceof MethodReflection) {
@@ -63,6 +59,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 				if (
 					$throwPointType instanceof TypeWithClassName
 					&& $this->exceptionTypeResolver->isCheckedException($throwPointType->getClassName(), $throwPoint->getScope())
+					&& $this->missingCheckedExceptionInThrows
 				) {
 					continue;
 				}

@@ -47,9 +47,39 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 				],
 			],
 			[
-				false,
+				true,
 				[\ThrowsVoidFunction\MyException::class],
 				[],
+			],
+			[
+				true,
+				['DifferentException'],
+				[
+					[
+						'Function ThrowsVoidFunction\foo() throws exception ThrowsVoidFunction\MyException but the PHPDoc contains @throws void.',
+						15,
+					],
+				],
+			],
+			[
+				false,
+				[],
+				[
+					[
+						'Function ThrowsVoidFunction\foo() throws exception ThrowsVoidFunction\MyException but the PHPDoc contains @throws void.',
+						15,
+					],
+				],
+			],
+			[
+				false,
+				[\ThrowsVoidFunction\MyException::class],
+				[
+					[
+						'Function ThrowsVoidFunction\foo() throws exception ThrowsVoidFunction\MyException but the PHPDoc contains @throws void.',
+						15,
+					],
+				],
 			],
 		];
 	}

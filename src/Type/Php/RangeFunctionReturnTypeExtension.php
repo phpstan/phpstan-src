@@ -105,7 +105,8 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 
 		$numberType = new UnionType([new IntegerType(), new FloatType()]);
 		$isNumber = $numberType->isSuperTypeOf($argType)->yes();
-		if ($isNumber) {
+		$isNumericString = $argType->isNumericString()->yes();
+		if ($isNumber || $isNumericString) {
 			return new ArrayType(new IntegerType(), $numberType);
 		}
 

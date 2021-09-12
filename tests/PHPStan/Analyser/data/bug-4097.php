@@ -11,6 +11,18 @@ class Bar {}
  */
 class SnapshotRepository
 {
+
+	/** @var T[] */
+	private $entities;
+
+	/**
+	 * @param T[] $entities
+	 */
+	public function __construct(array $entities)
+	{
+		$this->entities = $entities;
+	}
+
 	/**
 	 * @return \Traversable<Snapshot>
 	 */
@@ -18,7 +30,7 @@ class SnapshotRepository
 	{
 		yield from \array_map(
 			\Closure::fromCallable([$this, 'buildSnapshot']),
-			[]
+			$this->entities
 		);
 	}
 

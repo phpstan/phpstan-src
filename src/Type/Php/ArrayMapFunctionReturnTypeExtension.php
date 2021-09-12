@@ -10,6 +10,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -30,12 +31,11 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 
 		$valueType = new MixedType();
 		$callableType = $scope->getType($functionCall->args[0]->value);
-		if (!$callableType->isCallable()->no()) {
-			$valueType = ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$functionCall->args,
-				$callableType->getCallableParametersAcceptors($scope)
-			)->getReturnType();
+		if ($callableType->isCallable()->yes()) {
+			$valueType = new NeverType();
+			foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
+				$valueType = TypeCombinator::union($valueType, $parametersAcceptor->getReturnType());
+			}
 		}
 
 		$mappedArrayType = new ArrayType(

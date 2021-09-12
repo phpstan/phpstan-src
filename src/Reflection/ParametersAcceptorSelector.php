@@ -2,9 +2,14 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\CallableType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
@@ -43,6 +48,87 @@ class ParametersAcceptorSelector
 	{
 		$types = [];
 		$unpack = false;
+		if (count($args) > 0 && count($parametersAcceptors) > 0) {
+			$functionName = null;
+			$argParent = $args[0]->getAttribute('parent');
+			if ($argParent instanceof FuncCall && $argParent->name instanceof Name) {
+				$functionName = $argParent->name->toLowerString();
+			}
+			if (
+				$functionName === 'array_map'
+				&& isset($args[1])
+			) {
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				$parameters[0] = new NativeParameterReflection(
+					$parameters[0]->getName(),
+					$parameters[0]->isOptional(),
+					new CallableType([
+						new DummyParameter('item', $scope->getType($args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+					], new MixedType(), false),
+					$parameters[0]->passedByReference(),
+					$parameters[0]->isVariadic(),
+					$parameters[0]->getDefaultValue()
+				);
+				$parametersAcceptors = [
+					new FunctionVariant(
+						$acceptor->getTemplateTypeMap(),
+						$acceptor->getResolvedTemplateTypeMap(),
+						$parameters,
+						$acceptor->isVariadic(),
+						$acceptor->getReturnType()
+					),
+				];
+			}
+
+			if (
+				$functionName === 'array_filter'
+				&& isset($args[0])
+			) {
+				if (isset($args[2])) {
+					$mode = $scope->getType($args[2]->value);
+					if ($mode instanceof ConstantIntegerType) {
+						if ($mode->getValue() === ARRAY_FILTER_USE_KEY) {
+							$arrayFilterParameters = [
+								new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
+							];
+						} elseif ($mode->getValue() === ARRAY_FILTER_USE_BOTH) {
+							$arrayFilterParameters = [
+								new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
+							];
+						}
+					}
+				}
+
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				$parameters[1] = new NativeParameterReflection(
+					$parameters[1]->getName(),
+					$parameters[1]->isOptional(),
+					new CallableType(
+						$arrayFilterParameters ?? [
+							new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+						],
+						new MixedType(),
+						false
+					),
+					$parameters[1]->passedByReference(),
+					$parameters[1]->isVariadic(),
+					$parameters[1]->getDefaultValue()
+				);
+				$parametersAcceptors = [
+					new FunctionVariant(
+						$acceptor->getTemplateTypeMap(),
+						$acceptor->getResolvedTemplateTypeMap(),
+						$parameters,
+						$acceptor->isVariadic(),
+						$acceptor->getReturnType()
+					),
+				];
+			}
+		}
+
 		foreach ($args as $arg) {
 			$type = $scope->getType($arg->value);
 			if ($arg->unpack) {

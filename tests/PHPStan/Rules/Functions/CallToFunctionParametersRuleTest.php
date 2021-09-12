@@ -15,12 +15,15 @@ use const PHP_VERSION_ID;
 class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $checkExplicitMixed = false;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(true), true, true, true, true, true)
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(true), true, true, true, true, true)
 		);
 	}
 
@@ -809,6 +812,12 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				6,
 			],
 		]);
+	}
+
+	public function testBug5609(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5609.php'], []);
 	}
 
 }

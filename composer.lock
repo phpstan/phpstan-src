@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f96f805a466ae4dbe320e30ca8f2f7e",
+    "content-hash": "42d609d884ab7fa716f14e7e006e29a0",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2177,16 +2177,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "0.5.7",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "816e826ce0b7fb32098d8cb6de62511ce6021cea"
+                "reference": "9e8e6e79f86c2e4fdddb189e569276ce693b6dd7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/816e826ce0b7fb32098d8cb6de62511ce6021cea",
-                "reference": "816e826ce0b7fb32098d8cb6de62511ce6021cea",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/9e8e6e79f86c2e4fdddb189e569276ce693b6dd7",
+                "reference": "9e8e6e79f86c2e4fdddb189e569276ce693b6dd7",
                 "shasum": ""
             },
             "require": {
@@ -2203,7 +2203,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.5-dev"
+                    "dev-master": "1.0-dev"
                 }
             },
             "autoload": {
@@ -2220,9 +2220,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/0.5.7"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.0.0"
             },
-            "time": "2021-09-12T11:52:00+00:00"
+            "time": "2021-09-12T20:00:31+00:00"
         },
         {
             "name": "psr/container",
@@ -4247,36 +4247,32 @@
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
-            "version": "0.12.5",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-deprecation-rules.git",
-                "reference": "bfabc6a1b4617fbcbff43f03a4c04eae9bafae21"
+                "reference": "a6a1ed55749e2e39ad15b1976d523ba0af57f9c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/bfabc6a1b4617fbcbff43f03a4c04eae9bafae21",
-                "reference": "bfabc6a1b4617fbcbff43f03a4c04eae9bafae21",
+                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/a6a1ed55749e2e39ad15b1976d523ba0af57f9c3",
+                "reference": "a6a1ed55749e2e39ad15b1976d523ba0af57f9c3",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0",
-                "phpstan/phpstan": "^0.12.26"
+                "phpstan/phpstan": "^1.0"
             },
             "require-dev": {
-                "consistence/coding-standard": "^3.0.1",
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
-                "ergebnis/composer-normalize": "^2.0.2",
-                "jakub-onderka/php-parallel-lint": "^1.0",
-                "phing/phing": "^2.16.0",
-                "phpstan/phpstan-phpunit": "^0.12",
-                "phpunit/phpunit": "^7.0",
-                "slevomat/coding-standard": "^4.5.2"
+                "php-parallel-lint/php-parallel-lint": "^1.2",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpunit/phpunit": "^9.5"
             },
+            "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.12-dev"
+                    "dev-master": "1.0-dev"
                 },
                 "phpstan": {
                     "includes": [
@@ -4296,9 +4292,9 @@
             "description": "PHPStan rules for detecting usage of deprecated classes, methods, properties, constants and traits.",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-deprecation-rules/issues",
-                "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/0.12.5"
+                "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/master"
             },
-            "time": "2020-07-21T14:52:30+00:00"
+            "time": "2021-09-12T20:22:56+00:00"
         },
         {
             "name": "phpstan/phpstan-nette",
@@ -4306,17 +4302,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-nette.git",
-                "reference": "9feb3cafff0f1d3bba38f0e8680085089deceb62"
+                "reference": "b9fc63948d9e2f2e1c00681fd0734c8df7e40627"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/9feb3cafff0f1d3bba38f0e8680085089deceb62",
-                "reference": "9feb3cafff0f1d3bba38f0e8680085089deceb62",
+                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/b9fc63948d9e2f2e1c00681fd0734c8df7e40627",
+                "reference": "b9fc63948d9e2f2e1c00681fd0734c8df7e40627",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0",
-                "phpstan/phpstan": "^0.12.86"
+                "phpstan/phpstan": "^1.0"
             },
             "conflict": {
                 "nette/application": "<2.3.0",
@@ -4329,18 +4325,17 @@
             "require-dev": {
                 "nette/forms": "^3.0",
                 "nette/utils": "^2.3.0 || ^3.0.0",
-                "phing/phing": "^2.16.3",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
-                "phpstan/phpstan-php-parser": "^0.12.2",
-                "phpstan/phpstan-phpunit": "^0.12.16",
-                "phpstan/phpstan-strict-rules": "^0.12.5",
-                "phpunit/phpunit": "^7.5.20"
+                "phpstan/phpstan-php-parser": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "phpunit/phpunit": "^9.5"
             },
             "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.12-dev"
+                    "dev-master": "1.0-dev"
                 },
                 "phpstan": {
                     "includes": [
@@ -4363,41 +4358,37 @@
                 "issues": "https://github.com/phpstan/phpstan-nette/issues",
                 "source": "https://github.com/phpstan/phpstan-nette/tree/master"
             },
-            "time": "2021-04-30T11:16:08+00:00"
+            "time": "2021-09-12T20:23:43+00:00"
         },
         {
             "name": "phpstan/phpstan-php-parser",
-            "version": "0.12.2",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-php-parser.git",
-                "reference": "0b27eec1e92d48fa82199844dec119b1b22baba0"
+                "reference": "fd0b1ddaed99074bbd986b8493fd6391d59a86b2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-php-parser/zipball/0b27eec1e92d48fa82199844dec119b1b22baba0",
-                "reference": "0b27eec1e92d48fa82199844dec119b1b22baba0",
+                "url": "https://api.github.com/repos/phpstan/phpstan-php-parser/zipball/fd0b1ddaed99074bbd986b8493fd6391d59a86b2",
+                "reference": "fd0b1ddaed99074bbd986b8493fd6391d59a86b2",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0",
-                "phpstan/phpstan": "^0.12"
+                "phpstan/phpstan": "^1.0"
             },
             "require-dev": {
-                "consistence/coding-standard": "^3.0.1",
-                "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
-                "ergebnis/composer-normalize": "^2.0.2",
-                "jakub-onderka/php-parallel-lint": "^1.0",
-                "phing/phing": "^2.16.0",
-                "phpstan/phpstan-phpunit": "^0.12",
-                "phpstan/phpstan-strict-rules": "^0.12",
-                "phpunit/phpunit": "^7.0",
-                "slevomat/coding-standard": "^4.5.2"
+                "php-parallel-lint/php-parallel-lint": "^1.2",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "phpunit/phpunit": "^9.5"
             },
+            "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.12-dev"
+                    "dev-master": "1.0-dev"
                 },
                 "phpstan": {
                     "includes": [
@@ -4417,9 +4408,9 @@
             "description": "PHP-Parser extensions for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-php-parser/issues",
-                "source": "https://github.com/phpstan/phpstan-php-parser/tree/0.12.2"
+                "source": "https://github.com/phpstan/phpstan-php-parser/tree/master"
             },
-            "time": "2020-07-21T14:50:29+00:00"
+            "time": "2021-09-12T20:24:59+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -4427,32 +4418,31 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "52f7072ddc5f81492f9d2de65a24813a48c90b18"
+                "reference": "6c0e48e98f082e94be11bca4db64489194c66b06"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/52f7072ddc5f81492f9d2de65a24813a48c90b18",
-                "reference": "52f7072ddc5f81492f9d2de65a24813a48c90b18",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/6c0e48e98f082e94be11bca4db64489194c66b06",
+                "reference": "6c0e48e98f082e94be11bca4db64489194c66b06",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0",
-                "phpstan/phpstan": "^0.12.86"
+                "phpstan/phpstan": "^1.0"
             },
             "conflict": {
                 "phpunit/phpunit": "<7.0"
             },
             "require-dev": {
-                "phing/phing": "^2.16.3",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
-                "phpstan/phpstan-strict-rules": "^0.12.6",
-                "phpunit/phpunit": "^7.5.20"
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "phpunit/phpunit": "^9.5"
             },
             "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.12-dev"
+                    "dev-master": "1.0-dev"
                 },
                 "phpstan": {
                     "includes": [
@@ -4475,36 +4465,36 @@
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
                 "source": "https://github.com/phpstan/phpstan-phpunit/tree/master"
             },
-            "time": "2021-04-30T11:10:37+00:00"
+            "time": "2021-09-12T20:25:39+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",
-            "version": "0.12.9",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "0705fefc7c9168529fd130e341428f5f10f4f01d"
+                "reference": "6a7b2714e4e05d9db2cacad9ec2c245d63565607"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/0705fefc7c9168529fd130e341428f5f10f4f01d",
-                "reference": "0705fefc7c9168529fd130e341428f5f10f4f01d",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/6a7b2714e4e05d9db2cacad9ec2c245d63565607",
+                "reference": "6a7b2714e4e05d9db2cacad9ec2c245d63565607",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0",
-                "phpstan/phpstan": "^0.12.66"
+                "phpstan/phpstan": "^1.0"
             },
             "require-dev": {
-                "phing/phing": "^2.16.3",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
-                "phpstan/phpstan-phpunit": "^0.12.16",
-                "phpunit/phpunit": "^7.5.20"
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpunit/phpunit": "^9.5"
             },
+            "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.12-dev"
+                    "dev-master": "1.0-dev"
                 },
                 "phpstan": {
                     "includes": [
@@ -4524,9 +4514,9 @@
             "description": "Extra strict and opinionated rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
-                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/0.12.9"
+                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/master"
             },
-            "time": "2021-01-13T08:50:28+00:00"
+            "time": "2021-09-12T20:26:32+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

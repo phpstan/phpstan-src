@@ -25,7 +25,7 @@
 		"ondram/ci-detector": "^3.4.0",
 		"ondrejmirtes/better-reflection": "4.3.67",
 		"phpstan/php-8-stubs": "^0.1.23",
-		"phpstan/phpdoc-parser": "^0.5.7",
+		"phpstan/phpdoc-parser": "^1.0",
 		"react/child-process": "^0.6.1",
 		"react/event-loop": "^1.1",
 		"react/http": "^1.1",
@@ -43,11 +43,11 @@
 		"brianium/paratest": "^6.2.0",
 		"nategood/httpful": "^0.2.20",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
-		"phpstan/phpstan-deprecation-rules": "^0.12.3",
-		"phpstan/phpstan-nette": "^0.12.18",
-		"phpstan/phpstan-php-parser": "^0.12",
-		"phpstan/phpstan-phpunit": "^0.12.19",
-		"phpstan/phpstan-strict-rules": "^0.12",
+		"phpstan/phpstan-deprecation-rules": "^1.0",
+		"phpstan/phpstan-nette": "^1.0",
+		"phpstan/phpstan-php-parser": "^1.0",
+		"phpstan/phpstan-phpunit": "^1.0",
+		"phpstan/phpstan-strict-rules": "^1.0",
 		"phpunit/phpunit": "^9.5.4",
 		"vaimo/composer-patches": "^4.22"
 	},
@@ -60,7 +60,7 @@
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-master": "0.12-dev"
+			"dev-master": "1.0-dev"
 		},
 		"patcher": {
 			"search": "patches"

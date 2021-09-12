@@ -42,7 +42,6 @@ parameters:
 			- RecursiveArrayIterator
 			- WeakMap
 		rememberFunctionValues: false
-		preciseExceptionTracking: false
 		apiRules: false
 		deepInspectTypes: false
 		neverInGenericReturnType: false
@@ -228,7 +227,6 @@ parametersSchema:
 		objectFromNewClass: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
-		preciseExceptionTracking: bool(),
 		apiRules: bool(),
 		deepInspectTypes: bool(),
 		neverInGenericReturnType: bool(),
@@ -479,7 +477,6 @@ services:
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			implicitThrows: %implicitThrows%
-			preciseExceptionTracking: %featureToggles.preciseExceptionTracking%
 
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory

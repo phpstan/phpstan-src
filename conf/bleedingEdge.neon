@@ -17,7 +17,6 @@ parameters:
 		objectFromNewClass: true
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true
-		preciseExceptionTracking: true
 		apiRules: true
 		deepInspectTypes: true
 		neverInGenericReturnType: true

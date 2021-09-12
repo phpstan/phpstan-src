@@ -88,7 +88,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],
 				[],
-				true,
 				true
 			);
 			$fileAnalyser = new FileAnalyser(

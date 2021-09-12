@@ -77,7 +77,6 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 			true,
 			$this->getEarlyTerminatingMethodCalls(),
 			$this->getEarlyTerminatingFunctionCalls(),
-			true,
 			true
 		);
 		$resolver->setAnalysedFiles(array_map(static function (string $file) use ($fileHelper): string {

@@ -160,8 +160,6 @@ class NodeScopeResolver
 
 	private bool $implicitThrows;
 
-	private bool $preciseExceptionTracking;
-
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
@@ -178,7 +176,6 @@ class NodeScopeResolver
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
 	 * @param bool $implicitThrows
-	 * @param bool $preciseExceptionTracking
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -196,8 +193,7 @@ class NodeScopeResolver
 		bool $polluteScopeWithAlwaysIterableForeach,
 		array $earlyTerminatingMethodCalls,
 		array $earlyTerminatingFunctionCalls,
-		bool $implicitThrows,
-		bool $preciseExceptionTracking
+		bool $implicitThrows
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -216,7 +212,6 @@ class NodeScopeResolver
 		$this->earlyTerminatingMethodCalls = $earlyTerminatingMethodCalls;
 		$this->earlyTerminatingFunctionCalls = $earlyTerminatingFunctionCalls;
 		$this->implicitThrows = $implicitThrows;
-		$this->preciseExceptionTracking = $preciseExceptionTracking;
 	}
 
 	/**
@@ -1180,88 +1175,77 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
-				if ($this->preciseExceptionTracking) {
-					$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
-						return new ObjectType($name->toString());
-					}, $catchNode->types));
-					$originalCatchType = $catchType;
-					$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
-					$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
-					$matchingThrowPoints = [];
-					$newThrowPoints = [];
-					foreach ($throwPoints as $throwPoint) {
-						if (!$throwPoint->isExplicit() && !$catchType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
-							continue;
-						}
-						$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
-						if ($isSuperType->no()) {
-							continue;
-						}
+				$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
+					return new ObjectType($name->toString());
+				}, $catchNode->types));
+				$originalCatchType = $catchType;
+				$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
+				$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
+				$matchingThrowPoints = [];
+				$newThrowPoints = [];
+				foreach ($throwPoints as $throwPoint) {
+					if (!$throwPoint->isExplicit() && !$catchType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+						continue;
+					}
+					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
+					if ($isSuperType->no()) {
+						continue;
+					}
+					$matchingThrowPoints[] = $throwPoint;
+				}
+				$hasExplicit = count($matchingThrowPoints) > 0;
+				foreach ($throwPoints as $throwPoint) {
+					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
+					if (!$hasExplicit && !$isSuperType->no()) {
 						$matchingThrowPoints[] = $throwPoint;
 					}
-					$hasExplicit = count($matchingThrowPoints) > 0;
-					foreach ($throwPoints as $throwPoint) {
-						$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
-						if (!$hasExplicit && !$isSuperType->no()) {
-							$matchingThrowPoints[] = $throwPoint;
-						}
-						if ($isSuperType->yes()) {
-							continue;
-						}
-						$newThrowPoints[] = $throwPoint->subtractCatchType($catchType);
+					if ($isSuperType->yes()) {
+						continue;
 					}
-					$throwPoints = $newThrowPoints;
-
-					if (count($matchingThrowPoints) === 0) {
-						$throwableThrowPoints = [];
-						if ($originalCatchType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
-							foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
-								if (!$originalThrowPoint->canContainAnyThrowable()) {
-									continue;
-								}
-
-								$throwableThrowPoints[] = $originalThrowPoint;
-							}
-						}
-
-						if (count($throwableThrowPoints) === 0) {
-							$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
-							continue;
-						}
-
-						$matchingThrowPoints = $throwableThrowPoints;
-					}
-
-					$catchScope = null;
-					foreach ($matchingThrowPoints as $matchingThrowPoint) {
-						if ($catchScope === null) {
-							$catchScope = $matchingThrowPoint->getScope();
-						} else {
-							$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
-						}
-					}
-
-					$variableName = null;
-					if ($catchNode->var !== null) {
-						if (!is_string($catchNode->var->name)) {
-							throw new \PHPStan\ShouldNotHappenException();
-						}
-
-						$variableName = $catchNode->var->name;
-					}
-
-					$catchScopeResult = $this->processStmtNodes($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $nodeCallback);
-					$catchScopeForFinally = $catchScopeResult->getScope();
-				} else {
-					$initialScope = $scope;
-					if (count($throwPoints) > 0) {
-						$initialScope = $throwPoints[0]->getScope();
-					}
-
-					$catchScopeForFinally = $this->processCatchNode($catchNode, $branchScope, $nodeCallback)->getScope();
-					$catchScopeResult = $this->processCatchNode($catchNode, $initialScope->mergeWith($branchScope), static function (): void {
-					});
+					$newThrowPoints[] = $throwPoint->subtractCatchType($catchType);
 				}
+				$throwPoints = $newThrowPoints;
+
+				if (count($matchingThrowPoints) === 0) {
+					$throwableThrowPoints = [];
+					if ($originalCatchType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+						foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
+							if (!$originalThrowPoint->canContainAnyThrowable()) {
+								continue;
+							}
+
+							$throwableThrowPoints[] = $originalThrowPoint;
+						}
+					}
+
+					if (count($throwableThrowPoints) === 0) {
+						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
+						continue;
+					}
+
+					$matchingThrowPoints = $throwableThrowPoints;
+				}
+
+				$catchScope = null;
+				foreach ($matchingThrowPoints as $matchingThrowPoint) {
+					if ($catchScope === null) {
+						$catchScope = $matchingThrowPoint->getScope();
+					} else {
+						$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
+					}
+				}
+
+				$variableName = null;
+				if ($catchNode->var !== null) {
+					if (!is_string($catchNode->var->name)) {
+						throw new \PHPStan\ShouldNotHappenException();
+					}
+
+					$variableName = $catchNode->var->name;
+				}
+
+				$catchScopeResult = $this->processStmtNodes($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $nodeCallback);
+				$catchScopeForFinally = $catchScopeResult->getScope();
 
 				$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
 				$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();
@@ -1499,31 +1483,6 @@ class NodeScopeResolver
 			null,
 			sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine())
 		);
-	}
-
-	/**
-	 * @param Node\Stmt\Catch_ $catchNode
-	 * @param MutatingScope $catchScope
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @return StatementResult
-	 */
-	private function processCatchNode(
-		Node\Stmt\Catch_ $catchNode,
-		MutatingScope $catchScope,
-		callable $nodeCallback
-	): StatementResult
-	{
-		$variableName = null;
-		if ($catchNode->var !== null) {
-			if (!is_string($catchNode->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
-			}
-
-			$variableName = $catchNode->var->name;
-		}
-
-		$catchScope = $catchScope->enterCatch($catchNode->types, $variableName);
-		return $this->processStmtNodes($catchNode, $catchNode->stmts, $catchScope, $nodeCallback);
 	}
 
 	private function lookForEnterVariableAssign(MutatingScope $scope, Expr $expr): MutatingScope

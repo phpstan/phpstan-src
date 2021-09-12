@@ -515,11 +515,9 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			false,
-			false,
 			true,
 			[],
 			[],
-			true,
 			true
 		);
 		$lexer = new \PhpParser\Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);

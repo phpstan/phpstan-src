@@ -20,19 +20,15 @@ class IssetCheck
 
 	private bool $checkAdvancedIsset;
 
-	private bool $bleedingEdge;
-
 	public function __construct(
 		PropertyDescriptor $propertyDescriptor,
 		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $checkAdvancedIsset,
-		bool $bleedingEdge
+		bool $checkAdvancedIsset
 	)
 	{
 		$this->propertyDescriptor = $propertyDescriptor;
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
 		$this->checkAdvancedIsset = $checkAdvancedIsset;
-		$this->bleedingEdge = $bleedingEdge;
 	}
 
 	/**
@@ -46,10 +42,7 @@ class IssetCheck
 				return null;
 			}
 
-			if (
-				$error === null
-				&& $this->bleedingEdge
-			) {
+			if ($error === null) {
 				if ($hasVariable->yes()) {
 					if ($expr->name === '_SESSION') {
 						return null;

@@ -864,7 +864,6 @@ services:
 	-
 		class: PHPStan\Rules\IssetCheck
 		arguments:
-			bleedingEdge: %featureToggles.bleedingEdge%
 			checkAdvancedIsset: %checkAdvancedIsset%
 
 	-

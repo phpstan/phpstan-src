@@ -15,7 +15,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
+		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
 	}
 
 	public function testRule(): void

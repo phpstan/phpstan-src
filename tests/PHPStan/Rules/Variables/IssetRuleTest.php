@@ -16,7 +16,7 @@ class IssetRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IssetRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
+		return new IssetRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
 	}
 
 	public function testRule(): void

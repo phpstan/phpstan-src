@@ -14,7 +14,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new NullCoalesceRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
+		return new NullCoalesceRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
 	}
 
 	public function testCoalesceRule(): void

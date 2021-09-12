@@ -278,4 +278,19 @@ class X {
 
 		assertType('5|10|15|20|30', $x / $y);
 	}
+
+	/**
+	 * @param int<1, 10> $r1
+	 * @param int<-5, 10> $r2
+	 * @param int<min, 5> $rMin
+	 * @param int<5, max> $rMax
+	 */
+	public function unaryMinus($r1, $r2, $rMin, $rMax) {
+
+		assertType('int<-10, -1>', -$r1);
+		assertType('int<-10, 5>', -$r2);
+		assertType('int<-5, max>', -$rMin);
+		assertType('int<min, -5>', -$rMax);
+	}
+
 }

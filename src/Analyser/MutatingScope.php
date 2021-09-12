@@ -1006,6 +1006,7 @@ class MutatingScope implements Scope
 		if ($node instanceof Node\Expr\UnaryMinus) {
 			$type = $this->getType($node->expr)->toNumber();
 			$scalarValues = TypeUtils::getConstantScalars($type);
+
 			if (count($scalarValues) > 0) {
 				$newTypes = [];
 				foreach ($scalarValues as $scalarValue) {
@@ -1017,6 +1018,10 @@ class MutatingScope implements Scope
 				}
 
 				return TypeCombinator::union(...$newTypes);
+			}
+
+			if ($type instanceof IntegerRangeType) {
+				return $this->resolveType(new Node\Expr\BinaryOp\Mul($node->expr, new LNumber(-1)));
 			}
 
 			return $type;

@@ -10360,33 +10360,18 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $evaluatedPointExpression
 	): void
 	{
-		foreach ([true, false] as $polluteCatchScopeWithTryAssignments) {
-			$this->polluteCatchScopeWithTryAssignments = $polluteCatchScopeWithTryAssignments;
-
-			try {
-				$this->assertTypes(
-					__DIR__ . '/data/try-catch-scope.php',
-					$description,
-					$expression,
-					[],
-					[],
-					[],
-					[],
-					$evaluatedPointExpression,
-					[],
-					false
-				);
-			} catch (\PHPUnit\Framework\ExpectationFailedException $e) {
-				throw new \PHPUnit\Framework\ExpectationFailedException(
-					sprintf(
-						'%s (polluteCatchScopeWithTryAssignments: %s)',
-						$e->getMessage(),
-						$polluteCatchScopeWithTryAssignments ? 'true' : 'false'
-					),
-					$e->getComparisonFailure()
-				);
-			}
-		}
+		$this->assertTypes(
+			__DIR__ . '/data/try-catch-scope.php',
+			$description,
+			$expression,
+			[],
+			[],
+			[],
+			[],
+			$evaluatedPointExpression,
+			[],
+			false
+		);
 	}
 
 	/**

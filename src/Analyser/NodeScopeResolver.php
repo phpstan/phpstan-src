@@ -150,8 +150,6 @@ class NodeScopeResolver
 
 	private bool $polluteScopeWithLoopInitialAssignments;
 
-	private bool $polluteCatchScopeWithTryAssignments;
-
 	private bool $polluteScopeWithAlwaysIterableForeach;
 
 	/** @var string[][] className(string) => methods(string[]) */
@@ -176,7 +174,6 @@ class NodeScopeResolver
 	 * @param FileHelper $fileHelper
 	 * @param TypeSpecifier $typeSpecifier
 	 * @param bool $polluteScopeWithLoopInitialAssignments
-	 * @param bool $polluteCatchScopeWithTryAssignments
 	 * @param bool $polluteScopeWithAlwaysIterableForeach
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
@@ -196,7 +193,6 @@ class NodeScopeResolver
 		TypeSpecifier $typeSpecifier,
 		DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		bool $polluteScopeWithLoopInitialAssignments,
-		bool $polluteCatchScopeWithTryAssignments,
 		bool $polluteScopeWithAlwaysIterableForeach,
 		array $earlyTerminatingMethodCalls,
 		array $earlyTerminatingFunctionCalls,
@@ -216,7 +212,6 @@ class NodeScopeResolver
 		$this->typeSpecifier = $typeSpecifier;
 		$this->dynamicThrowTypeExtensionProvider = $dynamicThrowTypeExtensionProvider;
 		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
-		$this->polluteCatchScopeWithTryAssignments = $polluteCatchScopeWithTryAssignments;
 		$this->polluteScopeWithAlwaysIterableForeach = $polluteScopeWithAlwaysIterableForeach;
 		$this->earlyTerminatingMethodCalls = $earlyTerminatingMethodCalls;
 		$this->earlyTerminatingFunctionCalls = $earlyTerminatingFunctionCalls;
@@ -1185,7 +1180,7 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
-				if ($this->preciseExceptionTracking || !$this->polluteCatchScopeWithTryAssignments) {
+				if ($this->preciseExceptionTracking) {
 					$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
 						return new ObjectType($name->toString());
 					}, $catchNode->types));

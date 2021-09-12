@@ -85,7 +85,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$typeSpecifier,
 				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
-				$this->shouldPolluteCatchScopeWithTryAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],
 				[],
@@ -181,11 +180,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	}
 
 	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool
-	{
-		return false;
-	}
-
-	protected function shouldPolluteCatchScopeWithTryAssignments(): bool
 	{
 		return false;
 	}

@@ -31,9 +31,6 @@ use PHPStan\Type\VerbosityLevel;
 abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 {
 
-	/** @var bool */
-	protected $polluteCatchScopeWithTryAssignments = true;
-
 	/**
 	 * @param string $file
 	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
@@ -77,7 +74,6 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			true,
-			$this->polluteCatchScopeWithTryAssignments,
 			true,
 			$this->getEarlyTerminatingMethodCalls(),
 			$this->getEarlyTerminatingFunctionCalls(),

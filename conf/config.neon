@@ -99,7 +99,6 @@ parameters:
 	phpVersion: null
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
-	polluteCatchScopeWithTryAssignments: false
 	propertyAlwaysWrittenTags: []
 	propertyAlwaysReadTags: []
 	additionalConstructors: []
@@ -285,7 +284,6 @@ parametersSchema:
 	phpVersion: schema(anyOf(schema(int(), min(70100), max(80099))), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
-	polluteCatchScopeWithTryAssignments: bool()
 	propertyAlwaysWrittenTags: listOf(string())
 	propertyAlwaysReadTags: listOf(string())
 	additionalConstructors: listOf(string())
@@ -477,7 +475,6 @@ services:
 		arguments:
 			classReflector: @nodeScopeResolverClassReflector
 			polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
-			polluteCatchScopeWithTryAssignments: %polluteCatchScopeWithTryAssignments%
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%

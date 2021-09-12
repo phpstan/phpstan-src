@@ -843,4 +843,32 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug5356(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-5356.php'], [
+			[
+				'Parameter #1 $callback of function array_map expects callable(string): mixed, Closure(array): \'a\' given.',
+				13,
+			],
+			[
+				'Parameter #1 $callback of function array_map expects callable(string): mixed, Closure(array): \'a\' given.',
+				21,
+			],
+		]);
+	}
+
+	public function testBug1954(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1954.php'], [
+			[
+				'Parameter #1 $callback of function array_map expects callable(1|stdClass): mixed, Closure(string): string given.',
+				7,
+			],
+		]);
+	}
+
 }

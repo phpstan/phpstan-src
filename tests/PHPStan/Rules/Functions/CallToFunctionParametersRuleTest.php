@@ -820,4 +820,27 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5609.php'], []);
 	}
 
+	public function dataArrayMapMultiple(): array
+	{
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	/**
+	 * @dataProvider dataArrayMapMultiple
+	 * @param bool $checkExplicitMixed
+	 */
+	public function testArrayMapMultiple(bool $checkExplicitMixed): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->analyse([__DIR__ . '/data/array_map_multiple.php'], [
+			[
+				'Parameter #1 $callback of function array_map expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, int): void given.',
+				58,
+			],
+		]);
+	}
+
 }

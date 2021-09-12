@@ -65,12 +65,24 @@ class ParametersAcceptorSelector
 			) {
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
+				if (!isset($args[2])) {
+					$callbackParameters = [
+						new DummyParameter('item', $scope->getType($args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+					];
+				} else {
+					$callbackParameters = [];
+					foreach ($args as $i => $arg) {
+						if ($i === 0) {
+							continue;
+						}
+
+						$callbackParameters[] = new DummyParameter('item', $scope->getType($arg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
+					}
+				}
 				$parameters[0] = new NativeParameterReflection(
 					$parameters[0]->getName(),
 					$parameters[0]->isOptional(),
-					new CallableType([
-						new DummyParameter('item', $scope->getType($args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-					], new MixedType(), false),
+					new CallableType($callbackParameters, new MixedType(), false),
 					$parameters[0]->passedByReference(),
 					$parameters[0]->isVariadic(),
 					$parameters[0]->getDefaultValue()

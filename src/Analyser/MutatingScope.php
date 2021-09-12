@@ -1517,9 +1517,20 @@ class MutatingScope implements Scope
 						&& $argOrder === 0
 						&& isset($funcCall->args[1])
 					) {
-						$callableParameters = [
-							new DummyParameter('item', $this->getType($funcCall->args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-						];
+						if (!isset($funcCall->args[2])) {
+							$callableParameters = [
+								new DummyParameter('item', $this->getType($funcCall->args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+							];
+						} else {
+							$callableParameters = [];
+							foreach ($funcCall->args as $i => $funcCallArg) {
+								if ($i === 0) {
+									continue;
+								}
+
+								$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
+							}
+						}
 					}
 				}
 			}

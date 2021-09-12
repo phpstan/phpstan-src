@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -44,23 +45,31 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 		);
 		$arrayType = $scope->getType($functionCall->args[1]->value);
 		$constantArrays = TypeUtils::getConstantArrays($arrayType);
-		if (count($constantArrays) > 0) {
-			$arrayTypes = [];
-			foreach ($constantArrays as $constantArray) {
-				$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-				foreach ($constantArray->getKeyTypes() as $keyType) {
-					$returnedArrayBuilder->setOffsetValueType(
-						$keyType,
-						$valueType
-					);
-				}
-				$arrayTypes[] = $returnedArrayBuilder->getArray();
-			}
 
-			$mappedArrayType = TypeCombinator::union(...$arrayTypes);
-		} elseif ($arrayType->isArray()->yes()) {
+		if (!isset($functionCall->args[2])) {
+			if (count($constantArrays) > 0) {
+				$arrayTypes = [];
+				foreach ($constantArrays as $constantArray) {
+					$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+					foreach ($constantArray->getKeyTypes() as $keyType) {
+						$returnedArrayBuilder->setOffsetValueType(
+							$keyType,
+							$valueType
+						);
+					}
+					$arrayTypes[] = $returnedArrayBuilder->getArray();
+				}
+
+				$mappedArrayType = TypeCombinator::union(...$arrayTypes);
+			} elseif ($arrayType->isArray()->yes()) {
+				$mappedArrayType = TypeCombinator::intersect(new ArrayType(
+					$arrayType->getIterableKeyType(),
+					$valueType
+				), ...TypeUtils::getAccessoryTypes($arrayType));
+			}
+		} else {
 			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
-				$arrayType->getIterableKeyType(),
+				new IntegerType(),
 				$valueType
 			), ...TypeUtils::getAccessoryTypes($arrayType));
 		}

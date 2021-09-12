@@ -50,6 +50,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
@@ -3157,7 +3158,7 @@ class NodeScopeResolver
 					}
 				}
 
-				if ($calleeReflection instanceof FunctionReflection) {
+				if (!BleedingEdgeToggle::isBleedingEdge() && $calleeReflection instanceof FunctionReflection) {
 					if (
 						$i === 0
 						&& $calleeReflection->getName() === 'array_map'

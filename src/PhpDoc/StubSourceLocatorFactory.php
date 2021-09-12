@@ -15,7 +15,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceL
 class StubSourceLocatorFactory
 {
 
-	private \PhpParser\Parser $parser;
+	private \PhpParser\Parser $php8Parser;
 
 	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
@@ -30,14 +30,14 @@ class StubSourceLocatorFactory
 	 * @param string[] $stubFiles
 	 */
 	public function __construct(
-		\PhpParser\Parser $parser,
+		\PhpParser\Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		Container $container,
 		array $stubFiles
 	)
 	{
-		$this->parser = $parser;
+		$this->php8Parser = $php8Parser;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 		$this->container = $container;
@@ -47,14 +47,14 @@ class StubSourceLocatorFactory
 	public function create(): SourceLocator
 	{
 		$locators = [];
-		$astLocator = new Locator($this->parser, function (): FunctionReflector {
+		$astPhp8Locator = new Locator($this->php8Parser, function (): FunctionReflector {
 			return $this->container->getService('stubFunctionReflector');
 		});
 		foreach ($this->stubFiles as $stubFile) {
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($stubFile);
 		}
 
-		$locators[] = new PhpInternalSourceLocator($astLocator, $this->phpStormStubsSourceStubber);
+		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpStormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

@@ -4473,12 +4473,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "6a7b2714e4e05d9db2cacad9ec2c245d63565607"
+                "reference": "80d247b087dd6b046bfc808f8a49dbd6277ec19c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/6a7b2714e4e05d9db2cacad9ec2c245d63565607",
-                "reference": "6a7b2714e4e05d9db2cacad9ec2c245d63565607",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/80d247b087dd6b046bfc808f8a49dbd6277ec19c",
+                "reference": "80d247b087dd6b046bfc808f8a49dbd6277ec19c",
                 "shasum": ""
             },
             "require": {
@@ -4516,7 +4516,7 @@
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
                 "source": "https://github.com/phpstan/phpstan-strict-rules/tree/master"
             },
-            "time": "2021-09-12T20:26:32+00:00"
+            "time": "2021-09-12T21:41:14+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

@@ -1,6 +1,5 @@
 parameters:
 	customRulesetUsed: false
-	missingClosureNativeReturnCheckObjectTypehint: false
 
 conditionalTags:
 	PHPStan\Rules\Api\ApiInstantiationRule:
@@ -23,17 +22,12 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.classConstants%
 	PHPStan\Rules\Functions\ClosureUsesThisRule:
 		phpstan.rules.rule: %featureToggles.closureUsesThis%
-	PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule:
-		phpstan.rules.rule: %checkMissingClosureNativeReturnTypehintRule%
 	PHPStan\Rules\Whitespace\FileWhitespaceRule:
 		phpstan.rules.rule: %featureToggles.fileWhitespace%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
 	PHPStan\Rules\Properties\OverridingPropertyRule:
 		phpstan.rules.rule: %featureToggles.overridingProperty%
-
-parametersSchema:
-	missingClosureNativeReturnCheckObjectTypehint: bool()
 
 rules:
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
@@ -161,11 +155,6 @@ services:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule
-		arguments:
-			checkObjectTypehint: %missingClosureNativeReturnCheckObjectTypehint%
 
 	-
 		class: PHPStan\Rules\Missing\MissingReturnRule

@@ -73,7 +73,6 @@ parameters:
 	checkPhpDocMissingReturn: false
 	checkPhpDocMethodSignatures: false
 	checkExtraArguments: false
-	checkMissingClosureNativeReturnTypehintRule: false
 	checkMissingTypehints: false
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
@@ -255,7 +254,6 @@ parametersSchema:
 	checkPhpDocMissingReturn: bool()
 	checkPhpDocMethodSignatures: bool()
 	checkExtraArguments: bool()
-	checkMissingClosureNativeReturnTypehintRule: bool()
 	checkMissingTypehints: bool()
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()

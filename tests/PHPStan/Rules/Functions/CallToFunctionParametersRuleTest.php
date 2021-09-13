@@ -865,7 +865,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 		];
 		if ($checkExplicitMixed) {
-			$errors[]  =[
+			$errors[] = [
 				'Parameter #2 $callback of function array_filter expects callable(mixed): mixed, Closure(int): true given.',
 				20,
 			];

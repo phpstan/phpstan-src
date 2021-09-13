@@ -1,4 +1,4 @@
 parameters:
 	tmpDir: tmp
-	autoload_directories:
+	scanDirectories:
 		- data

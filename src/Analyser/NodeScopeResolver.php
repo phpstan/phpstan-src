@@ -1961,7 +1961,6 @@ class NodeScopeResolver
 			if ($expr->name instanceof Expr) {
 				$methodNameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$throwPoints = array_merge($throwPoints, $methodNameResult->getThrowPoints());
-				$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				$scope = $methodNameResult->getScope();
 			} else {
 				$calledOnType = $scope->getType($expr->var);
@@ -1977,8 +1976,6 @@ class NodeScopeResolver
 					if ($methodThrowPoint !== null) {
 						$throwPoints[] = $methodThrowPoint;
 					}
-				} else {
-					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
@@ -1991,6 +1988,8 @@ class NodeScopeResolver
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}
 				}
+			} else {
+				$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			}
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());

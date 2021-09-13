@@ -1,12 +1,12 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has no return typehint specified\\.$#"
+			message: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: UnixNewlines.php
 
 		-
-			message: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has parameter \\$object with no typehint specified\\.$#"
+			message: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has parameter \\$object with no type specified\\.$#"
 			count: 1
 			path: UnixNewlines.php
 

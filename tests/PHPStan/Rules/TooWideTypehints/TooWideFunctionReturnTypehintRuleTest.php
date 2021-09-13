@@ -29,19 +29,19 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Function TooWideFunctionReturnType\ipsum() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\ipsum() never returns null so it can be removed from the return type.',
 				27,
 			],
 			[
-				'Function TooWideFunctionReturnType\dolor2() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\dolor2() never returns null so it can be removed from the return type.',
 				41,
 			],
 			[
-				'Function TooWideFunctionReturnType\dolor4() never returns int so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\dolor4() never returns int so it can be removed from the return type.',
 				59,
 			],
 			[
-				'Function TooWideFunctionReturnType\dolor6() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\dolor6() never returns null so it can be removed from the return type.',
 				79,
 			],
 		]);

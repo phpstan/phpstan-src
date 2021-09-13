@@ -28,19 +28,19 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 				18,
 			],
 			[
-				'Method TooWideMethodReturnType\Foo::dolor() never returns null so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Foo::dolor() never returns null so it can be removed from the return type.',
 				34,
 			],
 			[
-				'Method TooWideMethodReturnType\Foo::dolor2() never returns null so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Foo::dolor2() never returns null so it can be removed from the return type.',
 				48,
 			],
 			[
-				'Method TooWideMethodReturnType\Foo::dolor4() never returns int so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Foo::dolor4() never returns int so it can be removed from the return type.',
 				66,
 			],
 			[
-				'Method TooWideMethodReturnType\Foo::dolor6() never returns null so it can be removed from the return typehint.',
+				'Method TooWideMethodReturnType\Foo::dolor6() never returns null so it can be removed from the return type.',
 				86,
 			],
 		]);
@@ -82,7 +82,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-5095.php'], [
 			[
-				'Method Bug5095\Parser::unaryOperatorFor() never returns \'not\' so it can be removed from the return typehint.',
+				'Method Bug5095\Parser::unaryOperatorFor() never returns \'not\' so it can be removed from the return type.',
 				21,
 			],
 		]);

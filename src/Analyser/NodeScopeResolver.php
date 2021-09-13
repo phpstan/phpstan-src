@@ -1961,6 +1961,7 @@ class NodeScopeResolver
 			if ($expr->name instanceof Expr) {
 				$methodNameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$throwPoints = array_merge($throwPoints, $methodNameResult->getThrowPoints());
+				$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				$scope = $methodNameResult->getScope();
 			} else {
 				$calledOnType = $scope->getType($expr->var);

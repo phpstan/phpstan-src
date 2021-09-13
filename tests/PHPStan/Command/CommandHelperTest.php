@@ -166,22 +166,11 @@ class CommandHelperTest extends TestCase
 			[
 				__DIR__ . '/relative-paths/root.neon',
 				[
-					'bootstrap' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 					'bootstrapFiles' => [
 						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php'),
 						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionAttribute.php'),
 						realpath(__DIR__ . '/../../../stubs/runtime/Attribute.php'),
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
-					],
-					'autoload_files' => [
-						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
-						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
-						__DIR__ . DIRECTORY_SEPARATOR . 'up.php',
-					],
-					'autoload_directories' => [
-						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
-						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths',
-						realpath(__DIR__ . '/../../../') . '/conf',
 					],
 					'scanFiles' => [
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
@@ -197,17 +186,20 @@ class CommandHelperTest extends TestCase
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
 					],
 					'memoryLimitFile' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . '.memory_limit',
-					'excludes_analyse' => [
-						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
-						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'data',
-						'*/src/*/data',
+					'excludePaths' => [
+						'analyseAndScan' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+							__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'data',
+							'*/src/*/data',
+						],
+						'analyse' => [],
 					],
 				],
 			],
 			[
 				__DIR__ . '/relative-paths/nested/nested.neon',
 				[
-					'autoload_files' => [
+					'scanFiles' => [
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'here.php',
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'up.php',

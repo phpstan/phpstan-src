@@ -1,5 +1,5 @@
 parameters:
-	autoload_files:
+	scanFiles:
 		- here.php
 		- test/there.php
 		- ../up.php

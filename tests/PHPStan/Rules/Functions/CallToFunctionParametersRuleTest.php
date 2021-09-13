@@ -843,6 +843,36 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function dataArrayFilterCallback(): array
+	{
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	/**
+	 * @dataProvider dataArrayFilterCallback
+	 * @param bool $checkExplicitMixed
+	 */
+	public function testArrayFilterCallback(bool $checkExplicitMixed): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$errors = [
+			[
+				'Parameter #2 $callback of function array_filter expects callable(int): mixed, Closure(string): true given.',
+				17,
+			],
+		];
+		if ($checkExplicitMixed) {
+			$errors[]  =[
+				'Parameter #2 $callback of function array_filter expects callable(mixed): mixed, Closure(int): true given.',
+				20,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);
+	}
+
 	public function testBug5356(): void
 	{
 		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {

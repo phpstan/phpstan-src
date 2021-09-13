@@ -284,7 +284,8 @@ class X {
 	 * @param int<min, 5> $rMin
 	 * @param int<5, max> $rMax
 	 *
-	 * @see e.g. https://www.wolframalpha.com/input/?i=%28interval%5B2%2C%E2%88%9E%5D+%2F+-1%29
+	 * @see https://www.wolframalpha.com/input/?i=%28interval%5B2%2C%E2%88%9E%5D+%2F+-1%29
+	 * @see https://3v4l.org/ur9Wf
 	 */
 	public function maximaInversion($rMin, $rMax) {
 		assertType('int<-5, max>', -1 * $rMin);

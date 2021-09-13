@@ -291,11 +291,11 @@ class X {
 		assertType('int<-5, max>', $rMin * -1);
 		assertType('int<min, -10>', $rMax * -2);
 
-		assertType('int<-5, max>', -1 / $rMin);
-		assertType('int<min, -10>', -2 / $rMax);
+		assertType('float|int<0, max>', -1 / $rMin);
+		assertType('float|int<min, 0>', -2 / $rMax);
 
-		assertType('int<-5, max>', $rMin / -1);
-		assertType('int<min, -10>', $rMax / -2);
+		assertType('float|int<-5, max>', $rMin / -1);
+		assertType('float|int<min, -2>', $rMax / -2);
 	}
 
 	/**

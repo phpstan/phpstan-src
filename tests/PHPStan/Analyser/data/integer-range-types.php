@@ -277,12 +277,25 @@ class X {
 		assertType('float|int<5, max>', $rMax / $r1);
 
 		assertType('5|10|15|20|30', $x / $y);
-		
+
+	}
+
+	/**
+	 * @param int<min, 5> $rMin
+	 * @param int<5, max> $rMax
+	 */
+	public function maxima($rMin, $rMax) {
 		assertType('int<-5, max>', -1 * $rMin);
 		assertType('int<min, -10>', -2 * $rMax);
-		
+
 		assertType('int<-5, max>', $rMin * -1);
 		assertType('int<min, -10>', $rMax * -2);
+
+		assertType('int<-5, max>', -1 / $rMin);
+		assertType('int<min, -10>', -2 / $rMax);
+
+		assertType('int<-5, max>', $rMin / -1);
+		assertType('int<min, -10>', $rMax / -2);
 	}
 
 	/**

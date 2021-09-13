@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\Testing\BaseTestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -14,7 +14,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
-class ConstantStringTypeTest extends BaseTestCase
+class ConstantStringTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

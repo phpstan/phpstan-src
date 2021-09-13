@@ -6,7 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
-class BooleanTypeTest extends \PHPStan\Testing\BaseTestCase
+class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataAccepts(): array

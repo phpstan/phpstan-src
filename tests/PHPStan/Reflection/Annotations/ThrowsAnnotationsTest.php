@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
 use PHPStan\Type\VerbosityLevel;
 
-class ThrowsAnnotationsTest extends \PHPStan\Testing\BaseTestCase
+class ThrowsAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataThrowsAnnotations(): array

@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-class TypeSpecifierContextTest extends \PHPStan\Testing\BaseTestCase
+class TypeSpecifierContextTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataContext(): array

@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class HasPropertyTypeTest extends \PHPStan\Testing\BaseTestCase
+class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

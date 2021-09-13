@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\File\FileHelper;
 
-class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\BaseTestCase
+class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	/** @var \PHPStan\File\FileHelper */

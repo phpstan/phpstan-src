@@ -13,7 +13,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use const PHP_VERSION_ID;
 use function array_reverse;
 
-class AnalyserIntegrationTest extends \PHPStan\Testing\BaseTestCase
+class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testUndefinedVariableFromAssignErrorHasLine(): void

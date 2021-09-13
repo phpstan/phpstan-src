@@ -11,7 +11,7 @@ use PHPStan\Command\Symfony\SymfonyStyle;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
 
-abstract class ErrorFormatterTestCase extends \PHPStan\Testing\BaseTestCase
+abstract class ErrorFormatterTestCase extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	protected const DIRECTORY_PATH = '/data/folder/with space/and unicode 😃/project';

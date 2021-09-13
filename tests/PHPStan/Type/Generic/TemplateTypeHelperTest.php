@@ -6,7 +6,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 
-class TemplateTypeHelperTest extends \PHPStan\Testing\BaseTestCase
+class TemplateTypeHelperTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testIssue2512(): void

@@ -4,11 +4,11 @@ namespace PHPStan\Reflection;
 
 use NativeUnionTypes\Foo;
 use PhpParser\Node\Name;
-use PHPStan\Testing\BaseTestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class UnionTypesTest extends BaseTestCase
+class UnionTypesTest extends PHPStanTestCase
 {
 
 	public function testUnionTypes(): void

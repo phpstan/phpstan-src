@@ -18,7 +18,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class SignatureMapParserTest extends \PHPStan\Testing\BaseTestCase
+class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataGetFunctions(): array

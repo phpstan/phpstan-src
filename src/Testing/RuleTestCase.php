@@ -28,7 +28,7 @@ use PHPStan\Type\FileTypeMapper;
  * @api
  * @template TRule of \PHPStan\Rules\Rule
  */
-abstract class RuleTestCase extends \PHPStan\Testing\BaseTestCase
+abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	private ?\PHPStan\Analyser\Analyser $analyser = null;

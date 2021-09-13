@@ -3,9 +3,9 @@
 namespace PHPStan\Command;
 
 use PHPStan\PhpDoc\TypeStringResolver;
-use PHPStan\Testing\BaseTestCase;
+use PHPStan\Testing\PHPStanTestCase;
 
-class IgnoredRegexValidatorTest extends BaseTestCase
+class IgnoredRegexValidatorTest extends PHPStanTestCase
 {
 
 	public function dataValidate(): array

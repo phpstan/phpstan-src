@@ -2,6 +2,6 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
-\PHPStan\Testing\BaseTestCase::$useStaticReflectionProvider = true;
+\PHPStan\Testing\PHPStanTestCase::$useStaticReflectionProvider = true;
 
-\PHPStan\Testing\BaseTestCase::getContainer();
+\PHPStan\Testing\PHPStanTestCase::getContainer();

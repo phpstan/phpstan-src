@@ -28,7 +28,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 
 /** @api */
-abstract class TypeInferenceTestCase extends \PHPStan\Testing\BaseTestCase
+abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	/**

@@ -2,4 +2,4 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
-\PHPStan\Testing\BaseTestCase::getContainer();
+\PHPStan\Testing\PHPStanTestCase::getContainer();

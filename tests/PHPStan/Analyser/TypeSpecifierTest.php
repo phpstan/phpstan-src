@@ -27,7 +27,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class TypeSpecifierTest extends \PHPStan\Testing\BaseTestCase
+class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array()|false|null';

@@ -4,9 +4,9 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
-use PHPStan\Testing\BaseTestCase;
+use PHPStan\Testing\PHPStanTestCase;
 
-class DefaultExceptionTypeResolverTest extends BaseTestCase
+class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 {
 
 	public function dataIsCheckedException(): array

@@ -23,7 +23,7 @@ use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Type\FileTypeMapper;
 
-class AnalyserTest extends \PHPStan\Testing\BaseTestCase
+class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testReturnErrorIfIgnoredMessagesDoesNotOccur(): void

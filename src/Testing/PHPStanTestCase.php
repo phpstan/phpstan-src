@@ -76,7 +76,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 
 /** @api */
-abstract class BaseTestCase extends \PHPUnit\Framework\TestCase
+abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 {
 
 	/** @var bool */

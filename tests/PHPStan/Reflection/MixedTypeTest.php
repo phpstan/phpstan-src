@@ -4,10 +4,10 @@ namespace PHPStan\Reflection;
 
 use NativeMixedType\Foo;
 use PhpParser\Node\Name;
-use PHPStan\Testing\BaseTestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\MixedType;
 
-class MixedTypeTest extends BaseTestCase
+class MixedTypeTest extends PHPStanTestCase
 {
 
 	public function testMixedType(): void

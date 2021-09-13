@@ -9,7 +9,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Type\VerbosityLevel;
 
-class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\BaseTestCase
+class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataMethods(): array

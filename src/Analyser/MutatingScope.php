@@ -5216,7 +5216,7 @@ class MutatingScope implements Scope
 				[$min, $max] = [$max, $min];
 			}
 
-			// invert maximas multiplication < 0
+			// invert maximas on multiplication with negative constants
 			if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
 				|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
 				&& ($min === null || $max === null)) {
@@ -5248,7 +5248,7 @@ class MutatingScope implements Scope
 					[$min, $max] = [$max, $min];
 				}
 
-				// invert maximas on division < 0
+				// invert maximas on division with negative constants
 				if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
 						|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
 					&& ($min === null || $max === null)) {

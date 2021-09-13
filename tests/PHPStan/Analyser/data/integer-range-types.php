@@ -286,7 +286,7 @@ class X {
 	 *
 	 * @see e.g. https://www.wolframalpha.com/input/?i=%28interval%5B2%2C%E2%88%9E%5D+%2F+-1%29
 	 */
-	public function maxima($rMin, $rMax) {
+	public function maximaInversion($rMin, $rMax) {
 		assertType('int<-5, max>', -1 * $rMin);
 		assertType('int<min, -10>', -2 * $rMax);
 

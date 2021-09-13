@@ -78,7 +78,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function dataSelfCompare(): \Iterator
 	{
-		$broker = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 
 		$integerType = new IntegerType();
 		$stringType = new StringType();
@@ -123,14 +123,14 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		yield [new ObjectType('Foo')];
 		yield [new ObjectWithoutClassType(new ObjectType('Foo'))];
 		yield [new ResourceType()];
-		yield [new StaticType('Foo')];
+		yield [new StaticType($reflectionProvider->getClass('Foo'))];
 		yield [new StrictMixedType()];
 		yield [new StringAlwaysAcceptingObjectWithToStringType()];
 		yield [$stringType];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', null, TemplateTypeVariance::createInvariant())];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectType('Foo'), TemplateTypeVariance::createInvariant())];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectWithoutClassType(), TemplateTypeVariance::createInvariant())];
-		yield [new ThisType($broker->getClass('Foo'))];
+		yield [new ThisType($reflectionProvider->getClass('Foo'))];
 		yield [new UnionType([$integerType, $stringType])];
 		yield [new VoidType()];
 	}

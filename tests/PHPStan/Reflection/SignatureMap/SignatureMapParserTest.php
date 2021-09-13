@@ -23,6 +23,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function dataGetFunctions(): array
 	{
+		$reflectionProvider = $this->createReflectionProvider();
 		return [
 			[
 				['int', 'fp' => 'resource', 'fields' => 'array', 'delimiter=' => 'string', 'enclosure=' => 'string', 'escape_char=' => 'string'],
@@ -323,7 +324,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 							false
 						),
 					],
-					new StaticType(\DateTime::class),
+					new StaticType($reflectionProvider->getClass(\DateTime::class)),
 					new MixedType(),
 					false
 				),

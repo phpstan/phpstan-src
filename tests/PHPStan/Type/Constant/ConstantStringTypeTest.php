@@ -19,6 +19,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 
 	public function dataIsSuperTypeOf(): array
 	{
+		$reflectionProvider = $this->createReflectionProvider();
 		return [
 			0 => [
 				new ConstantStringType(\Exception::class),
@@ -112,17 +113,17 @@ class ConstantStringTypeTest extends PHPStanTestCase
 			],
 			13 => [
 				new ConstantStringType(\Exception::class),
-				new GenericClassStringType(new StaticType(\Exception::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
 				TrinaryLogic::createMaybe(),
 			],
 			14 => [
 				new ConstantStringType(\Exception::class),
-				new GenericClassStringType(new StaticType(\InvalidArgumentException::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\InvalidArgumentException::class))),
 				TrinaryLogic::createNo(),
 			],
 			15 => [
 				new ConstantStringType(\Exception::class),
-				new GenericClassStringType(new StaticType(\Throwable::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Throwable::class))),
 				TrinaryLogic::createMaybe(),
 			],
 		];

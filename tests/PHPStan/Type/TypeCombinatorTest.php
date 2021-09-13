@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -125,7 +124,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function dataRemoveNull(): array
 	{
-		$reflectionProvider = Broker::getInstance();
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return [
 			[
 				new MixedType(),
@@ -193,7 +193,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new UnionType([
-					new ThisType(\Exception::class),
+					new ThisType($reflectionProvider->getClass(\Exception::class)),
 					new NullType(),
 				]),
 				ThisType::class,
@@ -1911,6 +1911,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function dataIntersect(): array
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return [
 			[
 				[
@@ -1955,7 +1957,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new ObjectType('Foo'),
-					new StaticType('Foo'),
+					new StaticType($reflectionProvider->getClass('Foo')),
 				],
 				StaticType::class,
 				'static(Foo)',

@@ -49,7 +49,12 @@ class TypehintHelper
 				}
 				return new NonexistentParentClassType();
 			case 'static':
-				return $selfClass !== null ? new StaticType($selfClass) : new ErrorType();
+				$broker = Broker::getInstance();
+				if ($selfClass !== null && $broker->hasClass($selfClass)) {
+					return new StaticType($broker->getClass($selfClass));
+				}
+
+				return new ErrorType();
 			case 'null':
 				return new NullType();
 			default:

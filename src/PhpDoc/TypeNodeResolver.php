@@ -302,8 +302,13 @@ class TypeNodeResolver
 					return new ObjectType($nameScope->getClassName());
 
 				case 'static':
-					return new StaticType($nameScope->getClassName());
+					if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
+						$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
 
+						return new StaticType($classReflection);
+					}
+
+					return new ErrorType();
 				case 'parent':
 					if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
 						$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());

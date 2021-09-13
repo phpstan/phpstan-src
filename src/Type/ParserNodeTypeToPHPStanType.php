@@ -23,6 +23,9 @@ class ParserNodeTypeToPHPStanType
 			$typeClassName = (string) $type;
 			$lowercasedClassName = strtolower($typeClassName);
 			if ($classReflection !== null && in_array($lowercasedClassName, ['self', 'static'], true)) {
+				if ($lowercasedClassName === 'static') {
+					return new StaticType($classReflection);
+				}
 				$typeClassName = $classReflection->getName();
 			} elseif (
 				$lowercasedClassName === 'parent'
@@ -30,10 +33,6 @@ class ParserNodeTypeToPHPStanType
 				&& $classReflection->getParentClass() !== false
 			) {
 				$typeClassName = $classReflection->getParentClass()->getName();
-			}
-
-			if ($lowercasedClassName === 'static') {
-				return new StaticType($typeClassName);
 			}
 
 			return new ObjectType($typeClassName);

@@ -65,7 +65,7 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 		$this->analyse([__DIR__ . '/data/promoted-properties-missing-typehint.php'], [
 			[
-				'Property PromotedPropertiesMissingTypehint\Foo::$lorem has no typehint specified.',
+				'Property PromotedPropertiesMissingTypehint\Foo::$lorem has no type specified.',
 				15,
 			],
 			[

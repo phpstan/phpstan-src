@@ -232,8 +232,8 @@ class X {
 		assertType('int<-2, 9>|int<21, 30>', $r1 - $z);
 		assertType('int<-200, -20>|int<1, 30>', $r1 * $z);
 		assertType('float|int<0, 10>', $r1 / $z);
-		assertType('int<min, 15>', $rMin * $z);
-		assertType('int<-100, max>', $rMax * $z);
+		assertType('int', $rMin * $z);
+		assertType('int<min, -100>|int<5, max>', $rMax * $z);
 
 		assertType('int<2, max>', $pi + 1);
 		assertType('int<-1, max>', $pi - 2);
@@ -277,6 +277,28 @@ class X {
 		assertType('float|int<5, max>', $rMax / $r1);
 
 		assertType('5|10|15|20|30', $x / $y);
+
+	}
+
+	/**
+	 * @param int<min, 5> $rMin
+	 * @param int<5, max> $rMax
+	 *
+	 * @see https://www.wolframalpha.com/input/?i=%28interval%5B2%2C%E2%88%9E%5D+%2F+-1%29
+	 * @see https://3v4l.org/ur9Wf
+	 */
+	public function maximaInversion($rMin, $rMax) {
+		assertType('int<-5, max>', -1 * $rMin);
+		assertType('int<min, -10>', -2 * $rMax);
+
+		assertType('int<-5, max>', $rMin * -1);
+		assertType('int<min, -10>', $rMax * -2);
+
+		assertType('float|int<0, max>', -1 / $rMin);
+		assertType('float|int<min, 0>', -2 / $rMax);
+
+		assertType('float|int<-5, max>', $rMin / -1);
+		assertType('float|int<min, -2>', $rMax / -2);
 	}
 
 	/**

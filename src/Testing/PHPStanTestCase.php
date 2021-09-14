@@ -165,13 +165,11 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 
 		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider(
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicMethodReturnTypeExtensions()),
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicStaticMethodReturnTypeExtensions()),
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions())
+			self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
+			self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
+			self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG)
 		);
-		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider(
-			$this->getOperatorTypeSpecifyingExtensions()
-		);
+		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider([]);
 
 		$broker = new Broker(
 			$reflectionProvider,
@@ -603,38 +601,6 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 	public function getCurrentWorkingDirectory(): string
 	{
 		return $this->getFileHelper()->normalizePath(__DIR__ . '/../..');
-	}
-
-	/**
-	 * @return \PHPStan\Type\DynamicMethodReturnTypeExtension[]
-	 */
-	public function getDynamicMethodReturnTypeExtensions(): array
-	{
-		return [];
-	}
-
-	/**
-	 * @return \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[]
-	 */
-	public function getDynamicStaticMethodReturnTypeExtensions(): array
-	{
-		return [];
-	}
-
-	/**
-	 * @return \PHPStan\Type\DynamicFunctionReturnTypeExtension[]
-	 */
-	public function getDynamicFunctionReturnTypeExtensions(): array
-	{
-		return [];
-	}
-
-	/**
-	 * @return \PHPStan\Type\OperatorTypeSpecifyingExtension[]
-	 */
-	public function getOperatorTypeSpecifyingExtensions(): array
-	{
-		return [];
 	}
 
 	/**

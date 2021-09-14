@@ -4,10 +4,8 @@ name: "Compile PHAR"
 
 on:
   push:
-    branches:
-      - "master"
     tags:
-      - '1.*'
+      - '0.12.*'
 
 jobs:
   compile:
@@ -52,6 +50,7 @@ jobs:
         uses: "actions/checkout@v2"
         with:
           repository: phpstan/phpstan
+          ref: 0.12.x
           path: phpstan-dist
           token: ${{ secrets.PAT }}
 
@@ -80,20 +79,11 @@ jobs:
           git config user.email "ondrej@mirtes.cz" && \
           git config user.name "Ondrej Mirtes"
 
-      - name: "Commit PHAR - master"
-        working-directory: phpstan-dist
-        if: "!startsWith(github.ref, 'refs/tags/')"
-        run: |
-          git add phpstan.phar phpstan.phar.asc && \
-          git commit -S -m "Updated PHPStan to commit ${{ github.event.after }}" -m "${{ steps.git-log.outputs.log }}" && \
-          git push --quiet origin master
-
       - name: "Commit PHAR - tag"
         working-directory: phpstan-dist
-        if: "startsWith(github.ref, 'refs/tags/')"
         run: |
           git add phpstan.phar phpstan.phar.asc && \
           git commit -S -m "PHPStan ${GITHUB_REF#refs/tags/}" -m "${{ steps.git-log.outputs.log }}" && \
-          git push --quiet origin master && \
+          git push --quiet origin 0.12.x && \
           git tag -s ${GITHUB_REF#refs/tags/} -m "${GITHUB_REF#refs/tags/}" && \
           git push --quiet origin ${GITHUB_REF#refs/tags/}

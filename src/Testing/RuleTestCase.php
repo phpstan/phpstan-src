@@ -34,12 +34,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 
 	protected function getTypeSpecifier(): TypeSpecifier
 	{
-		return $this->createTypeSpecifier(
-			new \PhpParser\PrettyPrinter\Standard(),
-			$this->createReflectionProvider(),
-			$this->getMethodTypeSpecifyingExtensions(),
-			$this->getStaticMethodTypeSpecifyingExtensions()
-		);
+		return self::getContainer()->getService('typeSpecifier');
 	}
 
 	private function getAnalyser(): Analyser
@@ -50,13 +45,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 			]);
 
 			$broker = $this->createBroker();
-			$printer = new \PhpParser\PrettyPrinter\Standard();
-			$typeSpecifier = $this->createTypeSpecifier(
-				$printer,
-				$broker,
-				$this->getMethodTypeSpecifyingExtensions(),
-				$this->getStaticMethodTypeSpecifyingExtensions()
-			);
+			$typeSpecifier = $this->getTypeSpecifier();
 			$nodeScopeResolver = new NodeScopeResolver(
 				$broker,
 				self::getReflectors()[0],

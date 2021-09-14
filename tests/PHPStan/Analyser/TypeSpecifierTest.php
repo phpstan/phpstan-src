@@ -48,7 +48,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		$broker = $this->createBroker();
 		$this->printer = new \PhpParser\PrettyPrinter\Standard();
-		$this->typeSpecifier = $this->createTypeSpecifier($this->printer, $broker);
+		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$this->scope = $this->createScopeFactory($broker, $this->typeSpecifier)->create(ScopeContext::create(''));
 		$this->scope = $this->scope->enterClass($broker->getClass('DateTime'));
 		$this->scope = $this->scope->assignVariable('bar', new ObjectType('Bar'));

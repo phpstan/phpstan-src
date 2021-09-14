@@ -1464,8 +1464,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/var-annotations.php',
 			$description,
 			$expression,
-			[],
-			[],
 			'die',
 			[],
 			false
@@ -3430,8 +3428,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/literal-arrays-keys.php',
 			$description,
 			'$key',
-			[],
-			[],
 			$evaluatedPointExpressionType
 		);
 	}
@@ -4182,8 +4178,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/switch-get-class.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -4579,8 +4573,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/overwritingVariable.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpressionType
 		);
 	}
@@ -4921,8 +4913,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$file,
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -7096,8 +7086,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/type-elimination.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -7752,8 +7740,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/foreach-loop-variables.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -7775,8 +7761,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/while-loop-variables.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -7798,8 +7782,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/for-loop-variables.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -7912,8 +7894,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/do-while-loop-variables.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -7950,8 +7930,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/multiple-classes-per-file.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -8453,8 +8431,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/closure-passed-by-reference.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -8555,8 +8531,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/closure-passed-by-reference-return.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -8589,8 +8563,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/closure-inferred-typehint.php',
 			$description,
 			$expression,
-			[],
-			[],
 			'die',
 			[],
 			false
@@ -8892,8 +8864,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/specified-function-call.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -9054,8 +9024,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/constant-types-duplicate-condition.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -9112,8 +9080,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/anonymous-class-name.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -9185,8 +9151,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/dynamic-constant.php',
 			$description,
 			$expression,
-			[],
-			[],
 			'die',
 			[
 				'DynamicConstants\\DynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS',
@@ -9325,8 +9289,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/property-array.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -9460,8 +9422,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/get-parent-class.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -9498,8 +9458,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/is_countable.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression
 		);
 	}
@@ -10316,8 +10274,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/try-catch-scope.php',
 			$description,
 			$expression,
-			[],
-			[],
 			$evaluatedPointExpression,
 			[],
 			false
@@ -10328,8 +10284,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 * @param string $file
 	 * @param string $description
 	 * @param string $expression
-	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
-	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 * @param string $evaluatedPointExpression
 	 * @param string[] $dynamicConstantNames
 	 * @param bool $useCache
@@ -10338,8 +10292,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $file,
 		string $description,
 		string $expression,
-		array $methodTypeSpecifyingExtensions = [],
-		array $staticMethodTypeSpecifyingExtensions = [],
 		string $evaluatedPointExpression = 'die',
 		array $dynamicConstantNames = [],
 		bool $useCache = true
@@ -10375,8 +10327,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 					$assertType($scope);
 				},
-				$methodTypeSpecifyingExtensions,
-				$staticMethodTypeSpecifyingExtensions,
 				$dynamicConstantNames
 			);
 	}

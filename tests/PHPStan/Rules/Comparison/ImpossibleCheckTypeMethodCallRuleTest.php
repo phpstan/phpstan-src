@@ -45,6 +45,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends \PHPStan\Testing\RuleTestCas
 	 */
 	protected function getMethodTypeSpecifyingExtensions(): array
 	{
+		// todo remove
 		return [
 			new AssertionClassMethodTypeSpecifyingExtension(null),
 			new class() implements MethodTypeSpecifyingExtension,

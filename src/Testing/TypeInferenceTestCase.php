@@ -25,21 +25,16 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @param string $file
 	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
-	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
-	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 * @param string[] $dynamicConstantNames
 	 */
 	public function processFile(
 		string $file,
 		callable $callback,
-		array $methodTypeSpecifyingExtensions = [],
-		array $staticMethodTypeSpecifyingExtensions = [],
 		array $dynamicConstantNames = []
 	): void
 	{
-		$printer = new \PhpParser\PrettyPrinter\Standard();
 		$reflectionProvider = $this->createReflectionProvider();
-		$typeSpecifier = $this->createTypeSpecifier($printer, $reflectionProvider, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions);
+		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$resolver = new NodeScopeResolver(
 			$reflectionProvider,

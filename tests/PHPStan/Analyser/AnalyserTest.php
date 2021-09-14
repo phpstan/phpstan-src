@@ -487,7 +487,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 		$printer = new \PhpParser\PrettyPrinter\Standard();
 		$fileHelper = $this->getFileHelper();
 
-		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);
+		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 

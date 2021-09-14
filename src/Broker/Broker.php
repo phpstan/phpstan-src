@@ -25,7 +25,7 @@ class Broker implements ReflectionProvider
 	/** @var string[] */
 	private array $universalObjectCratesClasses;
 
-	private static ?\PHPStan\Broker\Broker $instance = null;
+	private static ?Broker $instance = null;
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
@@ -46,9 +46,9 @@ class Broker implements ReflectionProvider
 		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
-	public static function registerInstance(Broker $reflectionProvider): void
+	public static function registerInstance(Broker $broker): void
 	{
-		self::$instance = $reflectionProvider;
+		self::$instance = $broker;
 	}
 
 	public static function getInstance(): Broker

@@ -30,6 +30,8 @@ use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Parser\CachedParser;
@@ -143,36 +145,11 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @api
-	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
-	 * @param \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
-	 * @return \PHPStan\Broker\Broker
+	 * @return \PHPStan\Reflection\ReflectionProvider
 	 */
-	public function createBroker(
-		array $dynamicMethodReturnTypeExtensions = [],
-		array $dynamicStaticMethodReturnTypeExtensions = []
-	): Broker
+	public function createBroker(): ReflectionProvider
 	{
-		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider(
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicMethodReturnTypeExtensions, $this->getDynamicMethodReturnTypeExtensions()),
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $dynamicStaticMethodReturnTypeExtensions, $this->getDynamicStaticMethodReturnTypeExtensions()),
-			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions())
-		);
-		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider(
-			$this->getOperatorTypeSpecifyingExtensions()
-		);
-		$reflectionProvider = $this->createReflectionProvider();
-		$broker = new Broker(
-			$reflectionProvider,
-			$dynamicReturnTypeExtensionRegistryProvider,
-			$operatorTypeSpecifyingExtensionRegistryProvider,
-			self::getContainer()->getParameter('universalObjectCratesClasses')
-		);
-		$dynamicReturnTypeExtensionRegistryProvider->setBroker($broker);
-		$dynamicReturnTypeExtensionRegistryProvider->setReflectionProvider($reflectionProvider);
-		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($broker);
-		$this->getClassReflectionExtensionRegistryProvider()->setBroker($broker);
-
-		return $broker;
+		return $this->createReflectionProvider();
 	}
 
 	/** @api */
@@ -186,6 +163,26 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 			self::$useStaticReflectionProvider
 		);
 		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
+
+		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider(
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicMethodReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicStaticMethodReturnTypeExtensions()),
+			array_merge(self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG), $this->getDynamicFunctionReturnTypeExtensions())
+		);
+		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider(
+			$this->getOperatorTypeSpecifyingExtensions()
+		);
+
+		$broker = new Broker(
+			$reflectionProvider,
+			$dynamicReturnTypeExtensionRegistryProvider,
+			$operatorTypeSpecifyingExtensionRegistryProvider,
+			self::getContainer()->getParameter('universalObjectCratesClasses')
+		);
+		$dynamicReturnTypeExtensionRegistryProvider->setBroker($broker);
+		$dynamicReturnTypeExtensionRegistryProvider->setReflectionProvider($reflectionProvider);
+		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($broker);
+		$this->getClassReflectionExtensionRegistryProvider()->setBroker($broker);
 
 		return $reflectionProvider;
 	}
@@ -563,15 +560,15 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		return $this->classReflectionExtensionRegistryProvider;
 	}
 
-	public function createScopeFactory(Broker $broker, TypeSpecifier $typeSpecifier): ScopeFactory
+	public function createScopeFactory(ReflectionProvider $reflectionProvider, TypeSpecifier $typeSpecifier): ScopeFactory
 	{
 		$container = self::getContainer();
 
 		return new DirectScopeFactory(
 			MutatingScope::class,
-			$broker,
-			$broker->getDynamicReturnTypeExtensionRegistryProvider(),
-			$broker->getOperatorTypeSpecifyingExtensionRegistryProvider(),
+			$reflectionProvider,
+			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
+			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 			new \PhpParser\PrettyPrinter\Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),

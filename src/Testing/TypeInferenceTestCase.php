@@ -10,7 +10,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Broker\Broker;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
@@ -22,8 +21,6 @@ use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 
@@ -34,8 +31,6 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @param string $file
 	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
-	 * @param DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
-	 * @param DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
 	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
 	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 * @param string[] $dynamicConstantNames
@@ -43,8 +38,6 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 	public function processFile(
 		string $file,
 		callable $callback,
-		array $dynamicMethodReturnTypeExtensions = [],
-		array $dynamicStaticMethodReturnTypeExtensions = [],
 		array $methodTypeSpecifyingExtensions = [],
 		array $staticMethodTypeSpecifyingExtensions = [],
 		array $dynamicConstantNames = []
@@ -54,15 +47,14 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 
 		$printer = new \PhpParser\PrettyPrinter\Standard();
-		$broker = $this->createBroker($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions);
-		Broker::registerInstance($broker);
-		$typeSpecifier = $this->createTypeSpecifier($printer, $broker, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions);
+		$reflectionProvider = $this->createReflectionProvider();
+		$typeSpecifier = $this->createTypeSpecifier($printer, $reflectionProvider, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions);
 		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
 		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($broker), $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($currentWorkingDirectory)));
+		$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($reflectionProvider), $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($currentWorkingDirectory)));
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 		$resolver = new NodeScopeResolver(
-			$broker,
+			$reflectionProvider,
 			self::getReflectors()[0],
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
@@ -83,7 +75,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 			return $fileHelper->normalizePath($file);
 		}, array_merge([$file], $this->getAdditionalAnalysedFiles())));
 
-		$scopeFactory = $this->createScopeFactory($broker, $typeSpecifier);
+		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier);
 		if (count($dynamicConstantNames) > 0) {
 			$reflectionProperty = new \ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
 			$reflectionProperty->setAccessible(true);

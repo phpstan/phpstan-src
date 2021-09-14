@@ -27,7 +27,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		require_once __DIR__ . '/data/typehints.php';
 		$this->analyse([__DIR__ . '/data/typehints.php'], [
 			[
-				'Return type of function TestFunctionTypehints\foo() has invalid type TestFunctionTypehints\NonexistentClass.',
+				'Function TestFunctionTypehints\foo() has invalid return type TestFunctionTypehints\NonexistentClass.',
 				15,
 			],
 			[
@@ -35,7 +35,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				20,
 			],
 			[
-				'Return type of function TestFunctionTypehints\returnParent() has invalid type TestFunctionTypehints\parent.',
+				'Function TestFunctionTypehints\returnParent() has invalid return type TestFunctionTypehints\parent.',
 				33,
 			],
 			[
@@ -67,7 +67,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				61,
 			],
 			[
-				'Return type of function TestFunctionTypehints\referencesTraitsInNative() has invalid type TestFunctionTypehints\SomeTrait.',
+				'Function TestFunctionTypehints\referencesTraitsInNative() has invalid return type TestFunctionTypehints\SomeTrait.',
 				61,
 			],
 			[
@@ -75,7 +75,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				70,
 			],
 			[
-				'Return type of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid type TestFunctionTypehints\SomeTrait.',
+				'Function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid return type TestFunctionTypehints\SomeTrait.',
 				70,
 			],
 			[
@@ -98,7 +98,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		require_once __DIR__ . '/data/typehintsWithoutNamespace.php';
 		$this->analyse([__DIR__ . '/data/typehintsWithoutNamespace.php'], [
 			[
-				'Return type of function fooWithoutNamespace() has invalid type NonexistentClass.',
+				'Function fooWithoutNamespace() has invalid return type NonexistentClass.',
 				13,
 			],
 			[
@@ -138,7 +138,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				59,
 			],
 			[
-				'Return type of function referencesTraitsInNativeWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
+				'Function referencesTraitsInNativeWithoutNamespace() has invalid return type SomeTraitWithoutNamespace.',
 				59,
 			],
 			[
@@ -146,7 +146,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				68,
 			],
 			[
-				'Return type of function referencesTraitsInPhpDocWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
+				'Function referencesTraitsInPhpDocWithoutNamespace() has invalid return type SomeTraitWithoutNamespace.',
 				68,
 			],
 		]);

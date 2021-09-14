@@ -31,7 +31,7 @@ class ExistingClassesInArrowFunctionTypehintsRule implements \PHPStan\Rules\Rule
 			$node->getParams(),
 			$node->getReturnType(),
 			'Parameter $%s of anonymous function has invalid type %s.',
-			'Return type of anonymous function has invalid type %s.',
+			'Anonymous function has invalid return type %s.',
 			'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.'
 		);
 	}

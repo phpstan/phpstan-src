@@ -42,7 +42,7 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 				$functionName
 			),
 			sprintf(
-				'Return type of function %s() has invalid type %%s.',
+				'Function %s() has invalid return type %%s.',
 				$functionName
 			),
 			sprintf('Function %s() uses native union types but they\'re supported only on PHP 8.0 and later.', $functionName),

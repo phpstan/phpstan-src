@@ -32,7 +32,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 				10,
 			],
 			[
-				'Return type of anonymous function has invalid type ArrowFunctionExistingClassesInTypehints\Baz.',
+				'Anonymous function has invalid return type ArrowFunctionExistingClassesInTypehints\Baz.',
 				10,
 			],
 		]);

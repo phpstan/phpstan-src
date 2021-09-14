@@ -25,7 +25,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 	{
 		$this->analyse([__DIR__ . '/data/closure-typehints.php'], [
 			[
-				'Return type of anonymous function has invalid type TestClosureFunctionTypehints\NonexistentClass.',
+				'Anonymous function has invalid return type TestClosureFunctionTypehints\NonexistentClass.',
 				10,
 			],
 			[
@@ -45,7 +45,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 				45,
 			],
 			[
-				'Return type of anonymous function has invalid type TestClosureFunctionTypehints\SomeTrait.',
+				'Anonymous function has invalid return type TestClosureFunctionTypehints\SomeTrait.',
 				50,
 			],
 		]);
@@ -59,7 +59,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 				35,
 			],
 			[
-				'Return type of anonymous function has invalid type TestClosureFunctionTypehintsPhp71\NonexistentClass.',
+				'Anonymous function has invalid return type TestClosureFunctionTypehintsPhp71\NonexistentClass.',
 				35,
 			],
 		]);

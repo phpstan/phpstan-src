@@ -1,0 +1,6 @@
+parameters:
+	inferPrivatePropertyTypeFromConstructor: true
+services:
+	cacheStorage:
+		class: PHPStan\Cache\MemoryCacheStorage
+		arguments!: []

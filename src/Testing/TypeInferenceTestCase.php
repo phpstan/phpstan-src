@@ -9,17 +9,11 @@ use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
-use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\PhpDoc\PhpDocNodeResolver;
-use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
-use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
@@ -43,26 +37,20 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 		array $dynamicConstantNames = []
 	): void
 	{
-		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
-
 		$printer = new \PhpParser\PrettyPrinter\Standard();
 		$reflectionProvider = $this->createReflectionProvider();
 		$typeSpecifier = $this->createTypeSpecifier($printer, $reflectionProvider, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions);
-		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($reflectionProvider), $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($currentWorkingDirectory)));
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$resolver = new NodeScopeResolver(
 			$reflectionProvider,
 			self::getReflectors()[0],
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
-			$fileTypeMapper,
+			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(StubPhpDocProvider::class),
 			self::getContainer()->getByType(PhpVersion::class),
-			$phpDocInheritanceResolver,
-			$fileHelper,
+			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
+			self::getContainer()->getByType(FileHelper::class),
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			true,

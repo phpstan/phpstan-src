@@ -20,58 +20,24 @@ use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
-use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Broker\Broker;
-use PHPStan\Cache\Cache;
-use PHPStan\Cache\MemoryCacheStorage;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
-use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Parser\CachedParser;
-use PHPStan\Parser\FunctionCallStatementFinder;
-use PHPStan\Parser\Parser;
 use PHPStan\Parser\PhpParserDecorator;
-use PHPStan\Php\PhpVersion;
-use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\PhpDoc\PhpDocNodeResolver;
-use PHPStan\PhpDoc\PhpDocStringResolver;
-use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
-use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
-use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
-use PHPStan\Reflection\BetterReflection\BetterReflectionProvider;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector;
 use PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
-use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\FunctionReflectionFactory;
-use PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension;
-use PHPStan\Reflection\Mixin\MixinPropertiesClassReflectionExtension;
-use PHPStan\Reflection\Php\PhpClassReflectionExtension;
-use PHPStan\Reflection\Php\PhpFunctionReflection;
-use PHPStan\Reflection\Php\PhpMethodReflection;
-use PHPStan\Reflection\Php\PhpMethodReflectionFactory;
-use PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension;
-use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider;
-use PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory;
-use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
-use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
-use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
-use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 
 /** @api */
@@ -84,8 +50,6 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 	/** @var array<string, Container> */
 	private static array $containers = [];
 
-	private ?DirectClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider = null;
-
 	/** @var array{ClassReflector, FunctionReflector, ConstantReflector}|null */
 	private static $reflectors;
 
@@ -96,16 +60,16 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 	public static function getContainer(): Container
 	{
 		$additionalConfigFiles = static::getAdditionalConfigFiles();
+		$additionalConfigFiles[] = __DIR__ . '/TestCase.neon';
+		if (self::$useStaticReflectionProvider) {
+			$additionalConfigFiles[] = __DIR__ . '/TestCase-staticReflection.neon';
+		}
 		$cacheKey = sha1(implode("\n", $additionalConfigFiles));
 
 		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
 			if (!@mkdir($tmpDir, 0777) && !is_dir($tmpDir)) {
 				self::fail(sprintf('Cannot create temp directory %s', $tmpDir));
-			}
-
-			if (self::$useStaticReflectionProvider) {
-				$additionalConfigFiles[] = __DIR__ . '/TestCase-staticReflection.neon';
 			}
 
 			$rootDir = __DIR__ . '/../..';
@@ -142,7 +106,6 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @api
-	 * @return \PHPStan\Reflection\ReflectionProvider
 	 */
 	public function createBroker(): ReflectionProvider
 	{
@@ -152,37 +115,7 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 	/** @api */
 	public function createReflectionProvider(): ReflectionProvider
 	{
-		$setterReflectionProviderProvider = new ReflectionProvider\SetterReflectionProviderProvider();
-		$staticReflectionProvider = $this->createStaticReflectionProvider($setterReflectionProviderProvider);
-		$reflectionProvider = $this->createReflectionProviderByParameters(
-			$this->createRuntimeReflectionProvider($setterReflectionProviderProvider),
-			$staticReflectionProvider,
-			self::$useStaticReflectionProvider
-		);
-		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
-
-		$broker = new Broker(
-			$reflectionProvider,
-			self::getContainer()->getParameter('universalObjectCratesClasses')
-		);
-		$this->getClassReflectionExtensionRegistryProvider()->setBroker($broker);
-
-		return $reflectionProvider;
-	}
-
-	private function createReflectionProviderByParameters(
-		ReflectionProvider $runtimeReflectionProvider,
-		ReflectionProvider $staticReflectionProvider,
-		bool $disableRuntimeReflectionProvider
-	): ReflectionProvider
-	{
-		$reflectionProviderFactory = new ReflectionProviderFactory(
-			$runtimeReflectionProvider,
-			$staticReflectionProvider,
-			$disableRuntimeReflectionProvider
-		);
-
-		return $reflectionProviderFactory->create();
+		return self::getContainer()->getByType(ReflectionProvider::class);
 	}
 
 	private static function getPhpStormStubsSourceStubber(): PhpStormStubsSourceStubber
@@ -192,212 +125,6 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		}
 
 		return self::$phpStormStubsSourceStubber;
-	}
-
-	private function createRuntimeReflectionProvider(
-		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
-	): ReflectionProvider
-	{
-		$functionCallStatementFinder = new FunctionCallStatementFinder();
-		$parser = $this->getParser();
-		$cache = new Cache(new MemoryCacheStorage());
-		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
-		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$anonymousClassNameHelper = new AnonymousClassNameHelper(new FileHelper($currentWorkingDirectory), new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
-		$fileTypeMapper = new FileTypeMapper($reflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
-		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
-		$functionReflectionFactory = $this->getFunctionReflectionFactory(
-			$functionCallStatementFinder,
-			$cache
-		);
-		$reflectionProvider = new ClassBlacklistReflectionProvider(
-			new RuntimeReflectionProvider(
-				$reflectionProviderProvider,
-				$classReflectionExtensionRegistryProvider,
-				$functionReflectionFactory,
-				$fileTypeMapper,
-				self::getContainer()->getByType(PhpDocInheritanceResolver::class),
-				self::getContainer()->getByType(PhpVersion::class),
-				self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
-				self::getContainer()->getByType(StubPhpDocProvider::class),
-				self::getContainer()->getByType(PhpStormStubsSourceStubber::class)
-			),
-			self::getPhpStormStubsSourceStubber(),
-			[
-				'#^PhpParser\\\\#',
-				'#^PHPStan\\\\#',
-				'#^Hoa\\\\#',
-			],
-			null
-		);
-		$this->setUpReflectionProvider(
-			$reflectionProviderProvider,
-			$classReflectionExtensionRegistryProvider,
-			$functionCallStatementFinder,
-			$parser,
-			$cache,
-			$fileTypeMapper
-		);
-
-		return $reflectionProvider;
-	}
-
-	private function setUpReflectionProvider(
-		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
-		DirectClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
-		FunctionCallStatementFinder $functionCallStatementFinder,
-		\PHPStan\Parser\Parser $parser,
-		Cache $cache,
-		FileTypeMapper $fileTypeMapper
-	): void
-	{
-		$methodReflectionFactory = new class($parser, $functionCallStatementFinder, $cache, $reflectionProviderProvider) implements PhpMethodReflectionFactory {
-
-			private \PHPStan\Parser\Parser $parser;
-
-			private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
-
-			private \PHPStan\Cache\Cache $cache;
-
-			private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
-
-			public function __construct(
-				Parser $parser,
-				FunctionCallStatementFinder $functionCallStatementFinder,
-				Cache $cache,
-				ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
-			)
-			{
-				$this->parser = $parser;
-				$this->functionCallStatementFinder = $functionCallStatementFinder;
-				$this->cache = $cache;
-				$this->reflectionProviderProvider = $reflectionProviderProvider;
-			}
-
-			/**
-			 * @param ClassReflection $declaringClass
-			 * @param ClassReflection|null $declaringTrait
-			 * @param \PHPStan\Reflection\Php\BuiltinMethodReflection $reflection
-			 * @param TemplateTypeMap $templateTypeMap
-			 * @param Type[] $phpDocParameterTypes
-			 * @param Type|null $phpDocReturnType
-			 * @param Type|null $phpDocThrowType
-			 * @param string|null $deprecatedDescription
-			 * @param bool $isDeprecated
-			 * @param bool $isInternal
-			 * @param bool $isFinal
-			 * @param string|null $stubPhpDocString
-			 * @param bool|null $isPure
-			 * @return PhpMethodReflection
-			 */
-			public function create(
-				ClassReflection $declaringClass,
-				?ClassReflection $declaringTrait,
-				\PHPStan\Reflection\Php\BuiltinMethodReflection $reflection,
-				TemplateTypeMap $templateTypeMap,
-				array $phpDocParameterTypes,
-				?Type $phpDocReturnType,
-				?Type $phpDocThrowType,
-				?string $deprecatedDescription,
-				bool $isDeprecated,
-				bool $isInternal,
-				bool $isFinal,
-				?string $stubPhpDocString,
-				?bool $isPure = null
-			): PhpMethodReflection
-			{
-				return new PhpMethodReflection(
-					$declaringClass,
-					$declaringTrait,
-					$reflection,
-					$this->reflectionProviderProvider->getReflectionProvider(),
-					$this->parser,
-					$this->functionCallStatementFinder,
-					$this->cache,
-					$templateTypeMap,
-					$phpDocParameterTypes,
-					$phpDocReturnType,
-					$phpDocThrowType,
-					$deprecatedDescription,
-					$isDeprecated,
-					$isInternal,
-					$isFinal,
-					$stubPhpDocString,
-					$isPure
-				);
-			}
-
-		};
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
-		$annotationsMethodsClassReflectionExtension = new AnnotationsMethodsClassReflectionExtension();
-		$annotationsPropertiesClassReflectionExtension = new AnnotationsPropertiesClassReflectionExtension();
-		$signatureMapProvider = self::getContainer()->getByType(SignatureMapProvider::class);
-		$phpExtension = new PhpClassReflectionExtension(self::getContainer()->getByType(ScopeFactory::class), self::getContainer()->getByType(NodeScopeResolver::class), $methodReflectionFactory, $phpDocInheritanceResolver, $annotationsMethodsClassReflectionExtension, $annotationsPropertiesClassReflectionExtension, $signatureMapProvider, $parser, self::getContainer()->getByType(StubPhpDocProvider::class), $reflectionProviderProvider, $fileTypeMapper, true, []);
-		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($phpExtension);
-		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new UniversalObjectCratesClassReflectionExtension([\stdClass::class]));
-		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new MixinPropertiesClassReflectionExtension([]));
-		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension(new SimpleXMLElementClassPropertyReflectionExtension());
-		$classReflectionExtensionRegistryProvider->addPropertiesClassReflectionExtension($annotationsPropertiesClassReflectionExtension);
-		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($phpExtension);
-		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension(new MixinMethodsClassReflectionExtension([]));
-		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension($annotationsMethodsClassReflectionExtension);
-		$classReflectionExtensionRegistryProvider->addMethodsClassReflectionExtension(new SoapClientMethodsClassReflectionExtension());
-	}
-
-	private function createStaticReflectionProvider(
-		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
-	): ReflectionProvider
-	{
-		$parser = $this->getParser();
-		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
-		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$cache = new Cache(new MemoryCacheStorage());
-		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
-		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($fileHelper->normalizePath($currentWorkingDirectory, '/')));
-		$fileTypeMapper = new FileTypeMapper($reflectionProviderProvider, $parser, $phpDocStringResolver, $phpDocNodeResolver, $cache, $anonymousClassNameHelper);
-		$functionCallStatementFinder = new FunctionCallStatementFinder();
-		$functionReflectionFactory = $this->getFunctionReflectionFactory(
-			$functionCallStatementFinder,
-			$cache
-		);
-
-		[$classReflector, $functionReflector, $constantReflector] = self::getReflectors();
-
-		$classReflectionExtensionRegistryProvider = $this->getClassReflectionExtensionRegistryProvider();
-
-		$reflectionProvider = new BetterReflectionProvider(
-			$reflectionProviderProvider,
-			$classReflectionExtensionRegistryProvider,
-			$classReflector,
-			$fileTypeMapper,
-			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
-			self::getContainer()->getByType(PhpVersion::class),
-			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
-			self::getContainer()->getByType(StubPhpDocProvider::class),
-			$functionReflectionFactory,
-			$relativePathHelper,
-			$anonymousClassNameHelper,
-			self::getContainer()->getByType(Standard::class),
-			$fileHelper,
-			$functionReflector,
-			$constantReflector,
-			self::getPhpStormStubsSourceStubber()
-		);
-
-		$this->setUpReflectionProvider(
-			$reflectionProviderProvider,
-			$classReflectionExtensionRegistryProvider,
-			$functionCallStatementFinder,
-			$parser,
-			$cache,
-			$fileTypeMapper
-		);
-
-		return $reflectionProvider;
 	}
 
 	/**
@@ -461,86 +188,9 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		return self::$reflectors;
 	}
 
-	private function getFunctionReflectionFactory(
-		FunctionCallStatementFinder $functionCallStatementFinder,
-		Cache $cache
-	): FunctionReflectionFactory
+	public function getClassReflectionExtensionRegistryProvider(): ClassReflectionExtensionRegistryProvider
 	{
-		return new class($this->getParser(), $functionCallStatementFinder, $cache) implements FunctionReflectionFactory {
-
-			private \PHPStan\Parser\Parser $parser;
-
-			private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
-
-			private \PHPStan\Cache\Cache $cache;
-
-			public function __construct(
-				Parser $parser,
-				FunctionCallStatementFinder $functionCallStatementFinder,
-				Cache $cache
-			)
-			{
-				$this->parser = $parser;
-				$this->functionCallStatementFinder = $functionCallStatementFinder;
-				$this->cache = $cache;
-			}
-
-			/**
-			 * @param \ReflectionFunction $function
-			 * @param TemplateTypeMap $templateTypeMap
-			 * @param Type[] $phpDocParameterTypes
-			 * @param Type|null $phpDocReturnType
-			 * @param Type|null $phpDocThrowType
-			 * @param string|null $deprecatedDescription
-			 * @param bool $isDeprecated
-			 * @param bool $isInternal
-			 * @param bool $isFinal
-			 * @param string|false $filename
-			 * @param bool|null $isPure
-			 * @return PhpFunctionReflection
-			 */
-			public function create(
-				\ReflectionFunction $function,
-				TemplateTypeMap $templateTypeMap,
-				array $phpDocParameterTypes,
-				?Type $phpDocReturnType,
-				?Type $phpDocThrowType,
-				?string $deprecatedDescription,
-				bool $isDeprecated,
-				bool $isInternal,
-				bool $isFinal,
-				$filename,
-				?bool $isPure = null
-			): PhpFunctionReflection
-			{
-				return new PhpFunctionReflection(
-					$function,
-					$this->parser,
-					$this->functionCallStatementFinder,
-					$this->cache,
-					$templateTypeMap,
-					$phpDocParameterTypes,
-					$phpDocReturnType,
-					$phpDocThrowType,
-					$deprecatedDescription,
-					$isDeprecated,
-					$isInternal,
-					$isFinal,
-					$filename,
-					$isPure
-				);
-			}
-
-		};
-	}
-
-	public function getClassReflectionExtensionRegistryProvider(): DirectClassReflectionExtensionRegistryProvider
-	{
-		if ($this->classReflectionExtensionRegistryProvider === null) {
-			$this->classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
-		}
-
-		return $this->classReflectionExtensionRegistryProvider;
+		return self::getContainer()->getByType(ClassReflectionExtensionRegistryProvider::class);
 	}
 
 	public function createScopeFactory(ReflectionProvider $reflectionProvider, TypeSpecifier $typeSpecifier): ScopeFactory
@@ -581,11 +231,6 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
 	{
 		return true;
-	}
-
-	public function getCurrentWorkingDirectory(): string
-	{
-		return $this->getFileHelper()->normalizePath(__DIR__ . '/../..');
 	}
 
 	/**

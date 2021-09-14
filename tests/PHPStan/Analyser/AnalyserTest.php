@@ -3,22 +3,15 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
-use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
-use PHPStan\File\RelativePathHelper;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\PhpDoc\PhpDocNodeResolver;
-use PHPStan\PhpDoc\PhpDocStringResolver;
-
 use PHPStan\PhpDoc\StubPhpDocProvider;
-use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Type\FileTypeMapper;
@@ -494,12 +487,8 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 		$printer = new \PhpParser\PrettyPrinter\Standard();
 		$fileHelper = $this->getFileHelper();
 
-		/** @var RelativePathHelper $relativePathHelper */
-		$relativePathHelper = self::getContainer()->getService('simpleRelativePathHelper');
-		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
 		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);
-		$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($broker), $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper));
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 
 		$nodeScopeResolver = new NodeScopeResolver(

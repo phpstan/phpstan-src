@@ -4,7 +4,10 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Broker\Broker;
 
-/** @api */
+/**
+ * @api
+ * @deprecated Inject PHPStan\Reflection\ReflectionProvider into the constructor instead
+ */
 interface BrokerAwareExtension
 {
 

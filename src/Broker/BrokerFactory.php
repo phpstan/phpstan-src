@@ -3,8 +3,6 @@
 namespace PHPStan\Broker;
 
 use PHPStan\DependencyInjection\Container;
-use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Reflection\ReflectionProvider;
 
 class BrokerFactory
@@ -28,8 +26,6 @@ class BrokerFactory
 	{
 		return new Broker(
 			$this->container->getByType(ReflectionProvider::class),
-			$this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
-			$this->container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 			$this->container->getParameter('universalObjectCratesClasses')
 		);
 	}

@@ -7,8 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
@@ -39,8 +37,6 @@ class BrokerTest extends \PHPStan\Testing\PHPStanTestCase
 		$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
 
 		$classReflectionExtensionRegistryProvider = new DirectClassReflectionExtensionRegistryProvider([], []);
-		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider([], [], []);
-		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider([]);
 
 		$setterReflectionProviderProvider = new SetterReflectionProviderProvider();
 		$reflectionProvider = new RuntimeReflectionProvider(
@@ -57,13 +53,9 @@ class BrokerTest extends \PHPStan\Testing\PHPStanTestCase
 		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 		$this->broker = new Broker(
 			$reflectionProvider,
-			$dynamicReturnTypeExtensionRegistryProvider,
-			$operatorTypeSpecifyingExtensionRegistryProvider,
 			[]
 		);
 		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
-		$dynamicReturnTypeExtensionRegistryProvider->setBroker($this->broker);
-		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($this->broker);
 	}
 
 	public function testClassNotFound(): void

@@ -3,24 +3,16 @@
 namespace PHPStan\Broker;
 
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\OperatorTypeSpecifyingExtension;
-use PHPStan\Type\Type;
 
 /** @api */
 class Broker implements ReflectionProvider
 {
 
 	private ReflectionProvider $reflectionProvider;
-
-	private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider;
-
-	private \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider;
 
 	/** @var string[] */
 	private array $universalObjectCratesClasses;
@@ -29,20 +21,14 @@ class Broker implements ReflectionProvider
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider
-	 * @param \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
-		OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
 		array $universalObjectCratesClasses
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
-		$this->dynamicReturnTypeExtensionRegistryProvider = $dynamicReturnTypeExtensionRegistryProvider;
-		$this->operatorTypeSpecifyingExtensionRegistryProvider = $operatorTypeSpecifyingExtensionRegistryProvider;
 		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
@@ -120,58 +106,6 @@ class Broker implements ReflectionProvider
 	public function getUniversalObjectCratesClasses(): array
 	{
 		return $this->universalObjectCratesClasses;
-	}
-
-	/**
-	 * @param string $className
-	 * @return \PHPStan\Type\DynamicMethodReturnTypeExtension[]
-	 */
-	public function getDynamicMethodReturnTypeExtensionsForClass(string $className): array
-	{
-		return $this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicMethodReturnTypeExtensionsForClass($className);
-	}
-
-	/**
-	 * @param string $className
-	 * @return \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[]
-	 */
-	public function getDynamicStaticMethodReturnTypeExtensionsForClass(string $className): array
-	{
-		return $this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($className);
-	}
-
-	/**
-	 * @return OperatorTypeSpecifyingExtension[]
-	 */
-	public function getOperatorTypeSpecifyingExtensions(string $operator, Type $leftType, Type $rightType): array
-	{
-		return $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->getOperatorTypeSpecifyingExtensions($operator, $leftType, $rightType);
-	}
-
-	/**
-	 * @return \PHPStan\Type\DynamicFunctionReturnTypeExtension[]
-	 */
-	public function getDynamicFunctionReturnTypeExtensions(): array
-	{
-		return $this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicFunctionReturnTypeExtensions();
-	}
-
-	/**
-	 * @internal
-	 * @return DynamicReturnTypeExtensionRegistryProvider
-	 */
-	public function getDynamicReturnTypeExtensionRegistryProvider(): DynamicReturnTypeExtensionRegistryProvider
-	{
-		return $this->dynamicReturnTypeExtensionRegistryProvider;
-	}
-
-	/**
-	 * @internal
-	 * @return \PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider
-	 */
-	public function getOperatorTypeSpecifyingExtensionRegistryProvider(): OperatorTypeSpecifyingExtensionRegistryProvider
-	{
-		return $this->operatorTypeSpecifyingExtensionRegistryProvider;
 	}
 
 }

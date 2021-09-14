@@ -22,14 +22,11 @@ use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\Broker;
-use PHPStan\Broker\BrokerFactory;
 use PHPStan\Cache\Cache;
 use PHPStan\Cache\MemoryCacheStorage;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\DirectDynamicReturnTypeExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\DirectOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
@@ -164,22 +161,10 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		);
 		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 
-		$dynamicReturnTypeExtensionRegistryProvider = new DirectDynamicReturnTypeExtensionRegistryProvider(
-			self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
-			self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
-			self::getContainer()->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG)
-		);
-		$operatorTypeSpecifyingExtensionRegistryProvider = new DirectOperatorTypeSpecifyingExtensionRegistryProvider([]);
-
 		$broker = new Broker(
 			$reflectionProvider,
-			$dynamicReturnTypeExtensionRegistryProvider,
-			$operatorTypeSpecifyingExtensionRegistryProvider,
 			self::getContainer()->getParameter('universalObjectCratesClasses')
 		);
-		$dynamicReturnTypeExtensionRegistryProvider->setBroker($broker);
-		$dynamicReturnTypeExtensionRegistryProvider->setReflectionProvider($reflectionProvider);
-		$operatorTypeSpecifyingExtensionRegistryProvider->setBroker($broker);
 		$this->getClassReflectionExtensionRegistryProvider()->setBroker($broker);
 
 		return $reflectionProvider;

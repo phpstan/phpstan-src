@@ -19,7 +19,6 @@ parameters:
 		apiRules: true
 		deepInspectTypes: true
 		neverInGenericReturnType: true
-		crossCheckInterfaces: true
 		finalByPhpDocTag: true
 		classConstants: true
 		privateStaticCall: true

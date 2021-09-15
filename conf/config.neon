@@ -38,7 +38,6 @@ parameters:
 		apiRules: false
 		deepInspectTypes: false
 		neverInGenericReturnType: false
-		crossCheckInterfaces: false
 		finalByPhpDocTag: false
 		classConstants: false
 		privateStaticCall: false
@@ -216,7 +215,6 @@ parametersSchema:
 		apiRules: bool(),
 		deepInspectTypes: bool(),
 		neverInGenericReturnType: bool(),
-		crossCheckInterfaces: bool(),
 		finalByPhpDocTag: bool(),
 		classConstants: bool(),
 		privateStaticCall: bool(),
@@ -424,8 +422,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\StubValidator
-		arguments:
-			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 
 	-
 		class: PHPStan\Analyser\Analyser

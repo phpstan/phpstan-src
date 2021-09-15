@@ -56,15 +56,11 @@ class StubValidator
 
 	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
 
-	private bool $crossCheckInterfaces;
-
 	public function __construct(
-		DerivativeContainerFactory $derivativeContainerFactory,
-		bool $crossCheckInterfaces
+		DerivativeContainerFactory $derivativeContainerFactory
 	)
 	{
 		$this->derivativeContainerFactory = $derivativeContainerFactory;
-		$this->crossCheckInterfaces = $crossCheckInterfaces;
 	}
 
 	/**
@@ -148,11 +144,11 @@ class StubValidator
 			new OverridingMethodRule($container->getByType(PhpVersion::class), new MethodSignatureRule(true, true), true),
 
 			// level 2
-			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper, $this->crossCheckInterfaces),
+			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new ClassTemplateTypeRule($templateTypeCheck),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
-			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper, $this->crossCheckInterfaces),
+			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new InterfaceTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),

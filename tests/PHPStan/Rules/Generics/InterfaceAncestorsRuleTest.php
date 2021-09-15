@@ -22,8 +22,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				new VarianceCheck(),
 				true
 			),
-			new CrossCheckInterfacesHelper(),
-			true
+			new CrossCheckInterfacesHelper()
 		);
 	}
 

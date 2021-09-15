@@ -58,8 +58,6 @@ services:
 			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\Generics\ClassAncestorsRule
-		arguments:
-			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 		tags:
 			- phpstan.rules.rule
 	-
@@ -70,8 +68,6 @@ services:
 		class: PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
 	-
 		class: PHPStan\Rules\Generics\InterfaceAncestorsRule
-		arguments:
-			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 		tags:
 			- phpstan.rules.rule
 	-

@@ -827,4 +827,5 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-5477.php'], []);
 	}
+
 }

@@ -202,7 +202,32 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		}
 
 		// strip heredocs/nowdocs
-		$contents = preg_replace('{<<<[ \t]*([\'"]?)(\w+)\\1(?:\r\n|\n|\r)(?:.*(?=[\r\n]+[ \t]*\\2))[\r\n]+[ \t]*\\2(?=\s*[;,.)])}s', 'null', $contents);
+		$heredocRegex = '{
+            # opening heredoc/nowdoc delimiter (word-chars)
+            <<<[ \t]*+([\'"]?)(\w++)\\1
+            # needs to be followed by a newline
+            (?:\r\n|\n|\r)
+            # the meat of it, matching line by line until end delimiter
+            (?:
+                # a valid line is optional white-space (possessive match) not followed by the end delimiter, then anything goes for the rest of the line
+                [\t ]*+(?!\\2 \b)[^\r\n]*+
+                # end of line(s)
+                [\r\n]++
+            )*
+            # end delimiter
+            [\t ]*+ \\2 (?=\b)
+        }x';
+
+		// run first assuming the file is valid unicode
+		$contentWithoutHeredoc = preg_replace($heredocRegex . 'u', 'null', $contents);
+		if ($contentWithoutHeredoc === null) {
+			// run again without unicode support if the file failed to be parsed
+			$contents = preg_replace($heredocRegex, 'null', $contents);
+		} else {
+			$contents = $contentWithoutHeredoc;
+		}
+		unset($contentWithoutHeredoc);
+
 		if ($contents === null) {
 			return ['classes' => [], 'functions' => []];
 		}
@@ -212,7 +237,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			return ['classes' => [], 'functions' => []];
 		}
 		// strip leading non-php code if needed
-		if (substr($contents, 0, 2) !== '<?') {
+		if (strpos($contents, '<?') !== 0) {
 			$contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
 			if ($contents === null) {
 				return ['classes' => [], 'functions' => []];

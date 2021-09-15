@@ -20,10 +20,6 @@ rules:
 conditionalTags:
 	PHPStan\Rules\Arrays\ArrayDestructuringRule:
 		phpstan.rules.rule: %featureToggles.arrayDestructuring%
-	PHPStan\Rules\Exceptions\ThrowsVoidFunctionWithExplicitThrowPointRule:
-		phpstan.rules.rule: %featureToggles.throwsVoid%
-	PHPStan\Rules\Exceptions\ThrowsVoidMethodWithExplicitThrowPointRule:
-		phpstan.rules.rule: %featureToggles.throwsVoid%
 
 parameters:
 	checkPhpDocMethodSignatures: true
@@ -65,12 +61,16 @@ services:
 		arguments:
 			exceptionTypeResolver: @exceptionTypeResolver
 			missingCheckedExceptionInThrows: %exceptions.check.missingCheckedExceptionInThrows%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Exceptions\ThrowsVoidMethodWithExplicitThrowPointRule
 		arguments:
 			exceptionTypeResolver: @exceptionTypeResolver
 			missingCheckedExceptionInThrows: %exceptions.check.missingCheckedExceptionInThrows%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Functions\ReturnTypeRule

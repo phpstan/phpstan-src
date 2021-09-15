@@ -38,7 +38,6 @@ parameters:
 		apiRules: false
 		deepInspectTypes: false
 		neverInGenericReturnType: false
-		validateOverridingMethodsInStubs: false
 		crossCheckInterfaces: false
 		finalByPhpDocTag: false
 		classConstants: false
@@ -217,7 +216,6 @@ parametersSchema:
 		apiRules: bool(),
 		deepInspectTypes: bool(),
 		neverInGenericReturnType: bool(),
-		validateOverridingMethodsInStubs: bool(),
 		crossCheckInterfaces: bool(),
 		finalByPhpDocTag: bool(),
 		classConstants: bool(),
@@ -427,7 +425,6 @@ services:
 	-
 		class: PHPStan\PhpDoc\StubValidator
 		arguments:
-			validateOverridingMethods: %featureToggles.validateOverridingMethodsInStubs%
 			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 
 	-

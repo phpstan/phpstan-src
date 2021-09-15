@@ -19,7 +19,6 @@ parameters:
 		apiRules: true
 		deepInspectTypes: true
 		neverInGenericReturnType: true
-		validateOverridingMethodsInStubs: true
 		crossCheckInterfaces: true
 		finalByPhpDocTag: true
 		classConstants: true

@@ -56,18 +56,14 @@ class StubValidator
 
 	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
 
-	private bool $validateOverridingMethods;
-
 	private bool $crossCheckInterfaces;
 
 	public function __construct(
 		DerivativeContainerFactory $derivativeContainerFactory,
-		bool $validateOverridingMethods,
 		bool $crossCheckInterfaces
 	)
 	{
 		$this->derivativeContainerFactory = $derivativeContainerFactory;
-		$this->validateOverridingMethods = $validateOverridingMethods;
 		$this->crossCheckInterfaces = $crossCheckInterfaces;
 	}
 
@@ -149,6 +145,7 @@ class StubValidator
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, true, false),
+			new OverridingMethodRule($container->getByType(PhpVersion::class), new MethodSignatureRule(true, true), true),
 
 			// level 2
 			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper, $this->crossCheckInterfaces),
@@ -179,14 +176,6 @@ class StubValidator
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 		];
-
-		if ($this->validateOverridingMethods) {
-			$rules[] = new OverridingMethodRule(
-				$container->getByType(PhpVersion::class),
-				new MethodSignatureRule(true, true),
-				true
-			);
-		}
 
 		return new Registry($rules);
 	}

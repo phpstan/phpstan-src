@@ -42,6 +42,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
+          tools: composer:2.1.6
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress --no-suggest"
@@ -78,6 +79,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
+          tools: composer:2.1.6
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress --no-suggest"
@@ -123,6 +125,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          tools: composer:2.1.6
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress --no-suggest"

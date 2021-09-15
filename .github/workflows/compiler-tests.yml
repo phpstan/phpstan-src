@@ -27,7 +27,6 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.0"
-          tools: composer:2.1.6
 
       - name: "Install dependencies"
         run: "composer install --no-dev --no-interaction --no-progress --no-suggest"

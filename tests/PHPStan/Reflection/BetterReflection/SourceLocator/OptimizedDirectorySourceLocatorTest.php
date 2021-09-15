@@ -146,7 +146,10 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$classReflector = new ClassReflector($locator);
 
 		$class = $classReflector->reflect('Faker\\Provider\\nl_BE\\Text');
-		$this->assertSame('Faker\\Provider\\nl_BE\\Text', $class->getName());
+
+		/** @var string $className */
+		$className = $class->getName();
+		$this->assertSame('Faker\\Provider\\nl_BE\\Text', $className);
 	}
 
 }

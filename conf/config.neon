@@ -20,7 +20,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
-		closureUsesThis: false
 		randomIntParameters: false
 		nullCoalesce: false
 		fileWhitespace: false
@@ -200,7 +199,6 @@ parametersSchema:
 	featureToggles: structure([
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
-		closureUsesThis: bool(),
 		randomIntParameters: bool(),
 		nullCoalesce: bool(),
 		fileWhitespace: bool(),

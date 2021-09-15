@@ -20,8 +20,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Constants\OverridingConstantRule:
 		phpstan.rules.rule: %featureToggles.classConstants%
-	PHPStan\Rules\Functions\ClosureUsesThisRule:
-		phpstan.rules.rule: %featureToggles.closureUsesThis%
 	PHPStan\Rules\Whitespace\FileWhitespaceRule:
 		phpstan.rules.rule: %featureToggles.fileWhitespace%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
@@ -52,6 +50,7 @@ rules:
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ClosureAttributesRule
+	- PHPStan\Rules\Functions\ClosureUsesThisRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
@@ -124,9 +123,6 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
-
-	-
-		class: PHPStan\Rules\Functions\ClosureUsesThisRule
 
 	-
 		class: PHPStan\Rules\Methods\CallMethodsRule

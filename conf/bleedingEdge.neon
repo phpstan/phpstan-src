@@ -1,7 +1,6 @@
 parameters:
 	featureToggles:
 		bleedingEdge: true
-		closureUsesThis: true
 		randomIntParameters: true
 		nullCoalesce: true
 		fileWhitespace: true

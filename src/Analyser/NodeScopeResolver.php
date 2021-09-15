@@ -1148,7 +1148,10 @@ class NodeScopeResolver
 			$branchScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback);
 			$branchScope = $branchScopeResult->getScope();
 			$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
-			$finalScope = $branchScopeResult->getScope()->mergeWith($finalScope);
+
+			if ($finalScope === null) {
+				$finalScope =  $branchScopeResult->getScope();
+			}
 
 			$exitPoints = [];
 			$alwaysTerminating = $branchScopeResult->isAlwaysTerminating();

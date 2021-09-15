@@ -17,3 +17,4 @@ parameters:
 		- ../stubs/spl.stub
 		- ../stubs/SplObjectStorage.stub
 		- ../stubs/Exception.stub
+		- ../stubs/arrayFunctions.stub

@@ -27,5 +27,3 @@ parameters:
 		privateStaticCall: true
 		overridingProperty: true
 		throwsVoid: true
-	stubFiles:
-		- ../stubs/arrayFunctions.stub

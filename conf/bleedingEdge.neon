@@ -12,7 +12,6 @@ parameters:
 		checkMissingTemplateTypeInParameter: true
 		wrongVarUsage: true
 		arrayDestructuring: true
-		objectFromNewClass: true
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true
 		apiRules: true

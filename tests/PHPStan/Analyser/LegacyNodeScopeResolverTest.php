@@ -1683,7 +1683,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$loremObjectLiteral',
 			],
 			[
-				'mixed~string',
+				'object',
 				'$mixedObjectLiteral',
 			],
 			[

@@ -130,7 +130,6 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 			$this->getParser(),
 			self::getContainer()->getByType(NodeScopeResolver::class),
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			false,
 			$container
 		);
 	}

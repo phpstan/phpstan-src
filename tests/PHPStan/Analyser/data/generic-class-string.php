@@ -15,7 +15,7 @@ class C
  * @param mixed $a
  */
 function testMixed($a) {
-	assertType('mixed~string', new $a());
+	assertType('object', new $a());
 
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('class-string<DateTimeInterface>|DateTimeInterface', $a);
@@ -36,7 +36,7 @@ function testMixed($a) {
  * @param object $a
  */
 function testObject($a) {
-	assertType('mixed~string', new $a());
+	assertType('object', new $a());
 
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('DateTimeInterface', $a);
@@ -47,7 +47,7 @@ function testObject($a) {
  * @param string $a
  */
 function testString($a) {
-	assertType('mixed~string', new $a());
+	assertType('object', new $a());
 
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('class-string<DateTimeInterface>', $a);
@@ -63,7 +63,7 @@ function testString($a) {
  * @param string|object $a
  */
 function testStringObject($a) {
-	assertType('mixed~string', new $a());
+	assertType('object', new $a());
 
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('class-string<DateTimeInterface>|DateTimeInterface', $a);
@@ -92,7 +92,7 @@ function testClassExists(string $str)
 	assertType('string', $str);
 	if (class_exists($str)) {
 		assertType('class-string', $str);
-		assertType('mixed~string', new $str());
+		assertType('object', new $str());
 	}
 
 	$existentClass = \stdClass::class;

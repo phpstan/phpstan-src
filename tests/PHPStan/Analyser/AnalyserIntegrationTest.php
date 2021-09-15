@@ -348,7 +348,8 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testBug4713(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4713.php');
-		$this->assertCount(0, $errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Method Bug4713\Service::createInstance() should return Bug4713\Service but returns object.', $errors[0]->getMessage());
 
 		$reflectionProvider = $this->createBroker();
 		$class = $reflectionProvider->getClass(Service::class);

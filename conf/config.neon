@@ -31,7 +31,6 @@ parameters:
 		checkMissingTemplateTypeInParameter: false
 		wrongVarUsage: false
 		arrayDestructuring: false
-		objectFromNewClass: false
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
@@ -207,7 +206,6 @@ parametersSchema:
 		checkMissingTemplateTypeInParameter: bool(),
 		wrongVarUsage: bool(),
 		arrayDestructuring: bool(),
-		objectFromNewClass: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		apiRules: bool(),

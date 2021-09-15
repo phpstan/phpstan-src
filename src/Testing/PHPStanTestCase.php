@@ -10,6 +10,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\Reflector\ConstantReflector;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
@@ -86,9 +87,9 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 	/**
 	 * @api
 	 */
-	public function createBroker(): ReflectionProvider
+	public function createBroker(): Broker
 	{
-		return $this->createReflectionProvider();
+		return self::getContainer()->getByType(Broker::class);
 	}
 
 	/** @api */

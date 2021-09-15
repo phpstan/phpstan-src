@@ -52,7 +52,7 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 
 			$rootDir = __DIR__ . '/../..';
 			$fileHelper = new FileHelper($rootDir);
-			$rootDir = $fileHelper->normalizePath($rootDir);
+			$rootDir = $fileHelper->normalizePath($rootDir, '/');
 			$containerFactory = new ContainerFactory($rootDir);
 			$container = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',

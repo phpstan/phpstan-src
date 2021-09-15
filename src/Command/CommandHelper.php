@@ -334,10 +334,7 @@ class CommandHelper
 
 		$alreadyAddedStubFiles = [];
 		foreach ($container->getParameter('stubFiles') as $stubFile) {
-			if (
-				$container->getParameter('featureToggles')['detectDuplicateStubFiles']
-				&& array_key_exists($stubFile, $alreadyAddedStubFiles)
-			) {
+			if (array_key_exists($stubFile, $alreadyAddedStubFiles)) {
 				$errorOutput->writeLineFormatted(sprintf('Stub file %s is added multiple times.', $stubFile));
 
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();

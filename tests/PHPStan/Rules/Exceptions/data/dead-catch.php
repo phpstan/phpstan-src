@@ -29,4 +29,11 @@ class Foo
 		}
 	}
 
+	function evalString(string $evalString) {
+		try {
+			eval($evalString);
+		} catch (\Throwable $exception) {
+			//
+		}
+	}
 }

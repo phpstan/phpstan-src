@@ -6,6 +6,7 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
@@ -41,6 +42,10 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof ArrayType && ($boundClass === ArrayType::class || $bound instanceof TemplateType)) {
 			return new TemplateArrayType($scope, $strategy, $variance, $name, $bound);
+		}
+
+		if ($bound instanceof ConstantArrayType && ($boundClass === ConstantArrayType::class || $bound instanceof TemplateType)) {
+			return new TemplateConstantArrayType($scope, $strategy, $variance, $name, $bound);
 		}
 
 		if ($bound instanceof StringType && ($boundClass === StringType::class || $bound instanceof TemplateType)) {

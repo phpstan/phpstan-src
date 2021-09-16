@@ -1546,3 +1546,17 @@ function (): void {
 	assertType("array(array('a' => 'a'), array('b' => 'b'), array('c' => 'c'))", arrayBound4([['a' => 'a'], ['b' => 'b'], ['c' => 'c']]));
 	assertType('array<string>', arrayBound5(range('a', 'c')));
 };
+
+/**
+ * @template T of array{0: string, 1: bool}git add
+ * @param T $a
+ * @return T
+ */
+function constantArrayBound(array $a): array
+{
+	return $a;
+}
+
+function (): void {
+	assertType("array('string', true)", constantArrayBound(['string', true]));
+};

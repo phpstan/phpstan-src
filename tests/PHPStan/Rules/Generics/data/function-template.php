@@ -57,3 +57,9 @@ function izumi()
 {
 
 }
+
+/** @template T of array{0: string, 1: bool} */
+function nakano()
+{
+
+}

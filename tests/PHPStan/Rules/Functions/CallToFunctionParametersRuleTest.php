@@ -901,4 +901,14 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug2782(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2782.php'], [
+			[
+				'Parameter #2 $callback of function usort expects callable(stdClass, stdClass): int, Closure(int, int): -1|1 given.',
+				13,
+			],
+		]);
+	}
+
 }

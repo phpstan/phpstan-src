@@ -69,11 +69,11 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				53,
 			],
 			[
-				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid return type parent.',
+				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
 				62,
 			],
 			[
-				'Method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
+				'Method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid return type parent.',
 				62,
 			],
 			[

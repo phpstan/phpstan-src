@@ -441,6 +441,12 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertCount(0, $errors);
 	}
 
+	public function testBug5639(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5639.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

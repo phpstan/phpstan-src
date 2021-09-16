@@ -391,7 +391,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$preciseNameCallback,
 			$preciseWithSubtracted,
 			function () use ($preciseWithSubtracted): string {
-				return $preciseWithSubtracted() . '-' . static::class . '-' . $this->describeAdditionalCacheKey();
+				$reflection = $this->classReflection;
+				$line = '';
+				if ($reflection !== null) {
+					$line .= '-';
+					$line .= (string) $reflection->getNativeReflection()->getStartLine();
+					$line .= '-';
+				}
+
+				return $preciseWithSubtracted() . '-' . static::class . '-' . $line . $this->describeAdditionalCacheKey();
 			}
 		);
 	}
@@ -410,6 +418,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$description = $this->className;
 		if ($this->subtractedType !== null) {
 			$description .= sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
+		}
+
+		$reflection = $this->classReflection;
+		if ($reflection !== null) {
+			$description .= '-';
+			$description .= (string) $reflection->getNativeReflection()->getStartLine();
+			$description .= '-';
 		}
 
 		return $description;

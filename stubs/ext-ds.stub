@@ -43,7 +43,7 @@ final class Deque implements Sequence
 	/**
 	 * @return Deque<TValue>
 	 */
-	public function copy(): Deque
+	public function copy()
 	{
 	}
 
@@ -392,7 +392,7 @@ interface Sequence extends Collection
 	/**
 	 * @return Sequence<TValue>
 	 */
-	public function copy(): Sequence;
+	public function copy();
 
 	/**
 	 * @param TValue ...$values
@@ -541,7 +541,7 @@ final class Vector implements Sequence
 	/**
 	 * @return Vector<TValue>
 	 */
-	public function copy(): Vector
+	public function copy()
 	{
 	}
 

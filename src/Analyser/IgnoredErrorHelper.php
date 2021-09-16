@@ -41,7 +41,6 @@ class IgnoredErrorHelper
 	{
 		$otherIgnoreErrors = [];
 		$ignoreErrorsByFile = [];
-		$warnings = [];
 		$errors = [];
 		foreach ($this->ignoreErrors as $i => $ignoreError) {
 			try {
@@ -89,11 +88,11 @@ class IgnoredErrorHelper
 					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
 					$ignoredTypes = $validationResult->getIgnoredTypes();
 					if (count($ignoredTypes) > 0) {
-						$warnings[] = $this->createIgnoredTypesWarning($ignoreMessage, $ignoredTypes);
+						$errors[] = $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
 					}
 
 					if ($validationResult->hasAnchorsInTheMiddle()) {
-						$warnings[] = $this->createAnchorInTheMiddleWarning($ignoreMessage);
+						$errors[] = $this->createAnchorInTheMiddleError($ignoreMessage);
 					}
 
 					if ($validationResult->areAllErrorsIgnored()) {
@@ -109,11 +108,11 @@ class IgnoredErrorHelper
 					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
 					$ignoredTypes = $validationResult->getIgnoredTypes();
 					if (count($ignoredTypes) > 0) {
-						$warnings[] = $this->createIgnoredTypesWarning($ignoreMessage, $ignoredTypes);
+						$errors[] = $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
 					}
 
 					if ($validationResult->hasAnchorsInTheMiddle()) {
-						$warnings[] = $this->createAnchorInTheMiddleWarning($ignoreMessage);
+						$errors[] = $this->createAnchorInTheMiddleError($ignoreMessage);
 					}
 
 					if ($validationResult->areAllErrorsIgnored()) {
@@ -127,7 +126,7 @@ class IgnoredErrorHelper
 			}
 		}
 
-		return new IgnoredErrorHelperResult($this->fileHelper, $errors, $warnings, $otherIgnoreErrors, $ignoreErrorsByFile, $this->ignoreErrors, $this->reportUnmatchedIgnoredErrors);
+		return new IgnoredErrorHelperResult($this->fileHelper, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $this->ignoreErrors, $this->reportUnmatchedIgnoredErrors);
 	}
 
 	/**
@@ -135,7 +134,7 @@ class IgnoredErrorHelper
 	 * @param array<string, string> $ignoredTypes
 	 * @return string
 	 */
-	private function createIgnoredTypesWarning(string $regex, array $ignoredTypes): string
+	private function createIgnoredTypesError(string $regex, array $ignoredTypes): string
 	{
 		return sprintf(
 			"Ignored error %s has an unescaped '|' which leads to ignoring more errors than intended. Use '\\|' instead.\n%s",
@@ -149,7 +148,7 @@ class IgnoredErrorHelper
 		);
 	}
 
-	private function createAnchorInTheMiddleWarning(string $regex): string
+	private function createAnchorInTheMiddleError(string $regex): string
 	{
 		return sprintf("Ignored error %s has an unescaped anchor '$' in the middle. This leads to unintended behavior. Use '\\$' instead.", $regex);
 	}

@@ -472,7 +472,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 		return array_merge(
 			$errors,
-			$ignoredErrorHelperResult->getWarnings(),
 			$analyserResult->getInternalErrors()
 		);
 	}

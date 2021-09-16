@@ -104,7 +104,7 @@ class ResultCacheEndToEndTest extends TestCase
 		$fileHelper = new FileHelper(__DIR__);
 
 		$result = $this->runPhpstan(1);
-		$this->assertSame(4, $result['totals']['file_errors'], Json::encode($result));
+		$this->assertSame(5, $result['totals']['file_errors'], Json::encode($result));
 		$this->assertSame(0, $result['totals']['errors'], Json::encode($result));
 
 		$message = $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php')]['messages'][0]['message'];
@@ -113,6 +113,7 @@ class ResultCacheEndToEndTest extends TestCase
 		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php')]['messages'][1]['message']);
 		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php')]['messages'][2]['message']);
 		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php')]['messages'][3]['message']);
+		$this->assertSame('Reflection error: PhpParser\Serializer not found.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Serializer/XML.php')]['messages'][4]['message']);
 
 		file_put_contents($serializerPath, $originalSerializerCode);
 		$this->runPhpstan(0);

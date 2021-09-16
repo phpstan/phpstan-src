@@ -85,6 +85,94 @@ class OverwrittenExitPointByFinallyRuleTest extends RuleTestCase
 				'The overwriting return is on this line.',
 				51,
 			],
+			[
+				'This throw is overwritten by a different one in the finally block below.',
+				62,
+			],
+			[
+				'This throw is overwritten by a different one in the finally block below.',
+				64,
+			],
+			[
+				'The overwriting return is on this line.',
+				66,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				81,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				83,
+			],
+			[
+				'The overwriting return is on this line.',
+				85,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				91,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				93,
+			],
+			[
+				'The overwriting return is on this line.',
+				95,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				101,
+			],
+			[
+				'The overwriting return is on this line.',
+				103,
+			],
+			[
+				'This throw is overwritten by a different one in the finally block below.',
+				122,
+			],
+			[
+				'This throw is overwritten by a different one in the finally block below.',
+				124,
+			],
+			[
+				'The overwriting return is on this line.',
+				126,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				141,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				143,
+			],
+			[
+				'The overwriting return is on this line.',
+				145,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				151,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				153,
+			],
+			[
+				'The overwriting return is on this line.',
+				155,
+			],
+			[
+				'This exit point is overwritten by a different one in the finally block below.',
+				161,
+			],
+			[
+				'The overwriting return is on this line.',
+				163,
+			],
 		]);
 	}
 

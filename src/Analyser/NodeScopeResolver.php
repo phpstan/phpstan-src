@@ -1975,7 +1975,7 @@ class NodeScopeResolver
 						$expr->args,
 						$methodReflection->getVariants()
 					);
-					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $expr, $scope);
+					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
 					if ($methodThrowPoint !== null) {
 						$throwPoints[] = $methodThrowPoint;
 					}
@@ -2642,8 +2642,15 @@ class NodeScopeResolver
 			return ThrowPoint::createExplicit($scope, $throwType, $funcCall, false);
 		}
 
-		if ($functionReflection->getThrowType() !== null) {
-			$throwType = $functionReflection->getThrowType();
+		$throwType = $functionReflection->getThrowType();
+		if ($throwType === null && $parametersAcceptor !== null) {
+			$returnType = $parametersAcceptor->getReturnType();
+			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+				$throwType = new ObjectType(\Throwable::class);
+			}
+		}
+
+		if ($throwType !== null) {
 			if (!$throwType instanceof VoidType) {
 				return ThrowPoint::createExplicit($scope, $throwType, $funcCall, true);
 			}
@@ -2675,7 +2682,7 @@ class NodeScopeResolver
 		return null;
 	}
 
-	private function getMethodThrowPoint(MethodReflection $methodReflection, MethodCall $methodCall, MutatingScope $scope): ?ThrowPoint
+	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?ThrowPoint
 	{
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
 			if (!$extension->isMethodSupported($methodReflection)) {
@@ -2690,8 +2697,15 @@ class NodeScopeResolver
 			return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
 		}
 
-		if ($methodReflection->getThrowType() !== null) {
-			$throwType = $methodReflection->getThrowType();
+		$throwType = $methodReflection->getThrowType();
+		if ($throwType === null) {
+			$returnType = $parametersAcceptor->getReturnType();
+			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+				$throwType = new ObjectType(\Throwable::class);
+			}
+		}
+
+		if ($throwType !== null) {
 			if (!$throwType instanceof VoidType) {
 				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
 			}

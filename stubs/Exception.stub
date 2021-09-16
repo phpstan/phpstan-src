@@ -46,7 +46,6 @@ interface Throwable
 
 	/**
 	 * @return string
-	 * @throws void
 	 */
 	public function __toString();
 }

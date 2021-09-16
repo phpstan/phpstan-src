@@ -65,7 +65,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				53,
 			],
 			[
-				'Return type of method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid type parent.',
+				'Method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid type parent.',
 				53,
 			],
 			[
@@ -73,7 +73,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				62,
 			],
 			[
-				'Return type of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
+				'Method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
 				62,
 			],
 			[

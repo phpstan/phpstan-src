@@ -106,7 +106,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 				18,
 			],
 			[
-				'Return type of function returnParentWithoutNamespace() has invalid type parent.',
+				'Function returnParentWithoutNamespace() has invalid type parent.',
 				31,
 			],
 			[

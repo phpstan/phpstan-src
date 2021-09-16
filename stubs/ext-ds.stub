@@ -390,6 +390,11 @@ interface Sequence extends Collection
 	public function apply(callable $callback);
 
 	/**
+	 * @return Sequence<TValue>
+	 */
+	public function copy(): Sequence;
+
+	/**
 	 * @param TValue ...$values
 	 */
 	public function contains(...$values): bool;

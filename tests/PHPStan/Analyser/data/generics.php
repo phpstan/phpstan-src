@@ -1462,3 +1462,28 @@ function foooo(UnionT $foo): void
 {
 	assertType('string|null', $foo->doFoo('a'));
 }
+
+/**
+ * @template T1 of object
+ * @param T1 $type
+ * @return T1
+ */
+function newObject($type): void
+{
+	assertType('T1 of object (function PHPStan\Generics\FunctionsAssertType\newObject(), argument)', new $type);
+}
+
+function newStdClass(\stdClass $std): void
+{
+	assertType('stdClass', new $std);
+}
+
+/**
+ * @template T1 of object
+ * @param class-string<T1> $type
+ * @return T1
+ */
+function newClassString($type): void
+{
+	assertType('T1 of object (function PHPStan\Generics\FunctionsAssertType\newClassString(), argument)', new $type);
+}

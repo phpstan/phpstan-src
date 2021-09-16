@@ -4974,11 +4974,11 @@ class MutatingScope implements Scope
 			if ($type instanceof ConstantStringType) {
 				return new ObjectType($type->getValue());
 			}
-			if ($type instanceof TypeWithClassName) {
-				return $type;
-			}
 			if ($type instanceof GenericClassStringType) {
 				return $type->getGenericType();
+			}
+			if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+				return $type;
 			}
 			return null;
 		};

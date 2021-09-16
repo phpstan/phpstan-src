@@ -1150,6 +1150,7 @@ class NodeScopeResolver
 			$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
 
 			$exitPoints = [];
+			$finallyExitPoints = [];
 			$alwaysTerminating = $branchScopeResult->isAlwaysTerminating();
 			$hasYield = $branchScopeResult->hasYield();
 
@@ -1159,6 +1160,7 @@ class NodeScopeResolver
 				$finallyScope = null;
 			}
 			foreach ($branchScopeResult->getExitPoints() as $exitPoint) {
+				$finallyExitPoints[] = $exitPoint;
 				if ($exitPoint->getStatement() instanceof Throw_) {
 					continue;
 				}
@@ -1257,6 +1259,7 @@ class NodeScopeResolver
 					$finallyScope = $finallyScope->mergeWith($catchScopeForFinally);
 				}
 				foreach ($catchScopeResult->getExitPoints() as $exitPoint) {
+					$finallyExitPoints[] = $exitPoint;
 					if ($exitPoint->getStatement() instanceof Throw_) {
 						continue;
 					}
@@ -1296,7 +1299,7 @@ class NodeScopeResolver
 				if (count($finallyResult->getExitPoints()) > 0) {
 					$nodeCallback(new FinallyExitPointsNode(
 						$finallyResult->getExitPoints(),
-						$exitPoints
+						$finallyExitPoints
 					), $scope);
 				}
 				$exitPoints = array_merge($exitPoints, $finallyResult->getExitPoints());

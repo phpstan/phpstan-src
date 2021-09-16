@@ -1238,4 +1238,18 @@ class NeverReturn
 		return;
 	}
 
+	/**
+	 * @return never
+	 */
+	public function doBaz3(): string
+	{
+		try {
+			throw new \Exception('try');
+		} catch (\Exception $e) {
+			throw new \Exception('catch');
+		} finally {
+			return 'finally';
+		}
+	}
+
 }

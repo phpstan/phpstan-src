@@ -270,6 +270,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Method ReturnTypes\NeverReturn::doFoo() should never return but return statement found.',
 				1238,
 			],
+			[
+				'Method ReturnTypes\NeverReturn::doBaz3() should never return but return statement found.',
+				1251,
+			],
 		]);
 	}
 

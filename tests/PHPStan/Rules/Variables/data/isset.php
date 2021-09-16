@@ -160,3 +160,11 @@ function numericStringOffset(string $code): string
 
 	throw new \RuntimeException();
 }
+
+/**
+ * @param array{foo: string} $array
+ */
+function offsetFromPhpdoc(array $array)
+{
+	echo isset($array['foo']) ? $array['foo'] : 0;
+}

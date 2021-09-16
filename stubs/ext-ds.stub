@@ -19,7 +19,7 @@ interface Collection extends Traversable, Countable, JsonSerializable
 	/**
 	 * @return Collection<TKey, TValue>
 	 */
-	public function copy(): Collection;
+	public function copy();
 
 	/**
 	 * @return array<TKey, TValue>
@@ -398,7 +398,7 @@ interface Sequence extends Collection
 	 * @param (callable(TValue): bool)|null $callback
 	 * @return Sequence<TValue>
 	 */
-	public function filter(callable $callback = null): Sequence;
+	public function filter(callable $callback = null);
 
 	/**
 	 * @param TValue $value
@@ -442,14 +442,14 @@ interface Sequence extends Collection
 	 * @param callable(TValue): TNewValue $callback
 	 * @return Sequence<TNewValue>
 	 */
-	public function map(callable $callback): Sequence;
+	public function map(callable $callback);
 
 	/**
 	 * @template TValue2
 	 * @param iterable<TValue2> $values
 	 * @return Sequence<TValue|TValue2>
 	 */
-	public function merge(iterable $values): Sequence;
+	public function merge(iterable $values);
 
 	/**
 	 * @return TValue
@@ -480,7 +480,7 @@ interface Sequence extends Collection
 	/**
 	 * @return Sequence<TValue>
 	 */
-	public function reversed(): Sequence;
+	public function reversed();
 
 	/**
 	 * @param TValue $value
@@ -498,7 +498,7 @@ interface Sequence extends Collection
 	/**
 	 * @return Sequence<TValue>
 	 */
-	public function slice(int $index, ?int $length = null): Sequence;
+	public function slice(int $index, ?int $length = null);
 
 	/**
 	 * @param (callable(TValue, TValue): int)|null $comparator
@@ -510,7 +510,7 @@ interface Sequence extends Collection
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return Sequence<TValue>
 	 */
-	public function sorted(callable $comparator = null): Sequence;
+	public function sorted(callable $comparator = null);
 
 	/**
 	 * @param TValue ...$values

@@ -51,3 +51,9 @@ function resourceBound()
 {
 
 }
+
+/** @template T of array */
+function izumi()
+{
+
+}

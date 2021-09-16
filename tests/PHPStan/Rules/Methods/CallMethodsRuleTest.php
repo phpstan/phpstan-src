@@ -497,6 +497,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Parameter #1 $date of method Test\HelloWorld3::sayHello() expects array<DateTime|DateTimeImmutable>|int, DateTimeInterface given.',
 				1732,
 			],
+			[
+				'Parameter #1 $a of method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar() expects array<string>, array<int, int> given.',
+				1751,
+			],
+			[
+				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()
+    💡 See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+				1751,
+			],
 		]);
 	}
 
@@ -774,6 +783,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter #1 $date of method Test\HelloWorld3::sayHello() expects array<DateTime|DateTimeImmutable>|int, DateTimeInterface given.',
 				1732,
+			],
+			[
+				'Parameter #1 $a of method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar() expects array<string>, array<int, int> given.',
+				1751,
+			],
+			[
+				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()
+    💡 See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+				1751,
 			],
 		]);
 	}

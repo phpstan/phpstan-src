@@ -47,7 +47,7 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 
 		$exceptions = [];
 
-		foreach (range(0, 8) as $level) {
+		foreach (range(0, 9) as $level) {
 			unset($outputLines);
 			exec(sprintf('%s %s clear-result-cache %s 2>&1', escapeshellarg(PHP_BINARY), $command, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : ''), $clearResultCacheOutputLines, $clearResultCacheExitCode);
 			if ($clearResultCacheExitCode !== 0) {

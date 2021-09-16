@@ -221,7 +221,10 @@ class CommandHelper
 			}
 		}
 
-		if ($projectConfigFile !== null) {
+		if (
+			$projectConfigFile !== null
+			&& $projectConfigFile !== $currentWorkingDirectoryFileHelper->normalizePath(__DIR__ . '/../../conf/config.stubFiles.neon')
+		) {
 			$additionalConfigFiles[] = $projectConfigFile;
 		}
 

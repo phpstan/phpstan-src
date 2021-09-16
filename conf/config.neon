@@ -828,6 +828,7 @@ services:
 		class: PHPStan\Rules\IssetCheck
 		arguments:
 			checkAdvancedIsset: %checkAdvancedIsset%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
 		# checked as part of OverridingMethodRule

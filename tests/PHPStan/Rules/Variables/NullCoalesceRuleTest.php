@@ -12,13 +12,27 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new NullCoalesceRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
+		return new NullCoalesceRule(new IssetCheck(
+			new PropertyDescriptor(),
+			new PropertyReflectionFinder(),
+			true,
+			$this->treatPhpDocTypesAsCertain
+		));
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testCoalesceRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce.php'], [
 			[
 				'Property CoalesceRule\FooCoalesce::$string (string) on left side of ?? is not nullable.',
@@ -125,6 +139,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
 			[
 				'Property CoalesceAssignRule\FooCoalesce::$string (string) on left side of ??= is not nullable.',
@@ -191,11 +206,13 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-nullsafe.php'], []);
 	}
 
 	public function testVariableCertaintyInNullCoalesce(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null.php'], [
 			[
 				'Variable $scalar on left side of ?? always exists and is not nullable.',
@@ -218,6 +235,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[
 				'Variable $scalar on left side of ??= always exists and is not nullable.',
@@ -236,6 +254,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testNullCoalesceInGlobalScope(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-global-scope.php'], [
 			[
 				'Variable $bar on left side of ?? always exists and is not nullable.',

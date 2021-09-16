@@ -13,13 +13,27 @@ use PHPStan\Testing\RuleTestCase;
 class EmptyRuleTest extends RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true));
+		return new EmptyRule(new IssetCheck(
+			new PropertyDescriptor(),
+			new PropertyReflectionFinder(),
+			true,
+			$this->treatPhpDocTypesAsCertain
+		));
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/empty-rule.php'], [
 			[
 				'Offset \'nonexistent\' on array(?0 => bool, ?1 => false, 2 => bool, 3 => false, 4 => true) in empty() does not exist.',
@@ -58,6 +72,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug970(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-970.php'], [
 			[
 				'Variable $ar in empty() is never defined.',

@@ -10,6 +10,7 @@ parameters:
 	level: null
 	paths: []
 	exceptions:
+		implicitThrows: true
 		uncheckedExceptionRegexes: []
 		uncheckedExceptionClasses: []
 		checkedExceptionRegexes: []
@@ -68,7 +69,6 @@ parameters:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
 	inferPrivatePropertyTypeFromConstructor: false
-	implicitThrows: true
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
 	reportMaybesInPropertyPhpDocTypes: false
@@ -183,6 +183,7 @@ parametersSchema:
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	exceptions: structure([
+		implicitThrows: bool(),
 		uncheckedExceptionRegexes: listOf(string()),
 		uncheckedExceptionClasses: listOf(string()),
 		checkedExceptionRegexes: listOf(string()),
@@ -243,7 +244,7 @@ parametersSchema:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
-	implicitThrows: bool()
+
 	tipsOfTheDay: bool()
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()
@@ -450,7 +451,7 @@ services:
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
-			implicitThrows: %implicitThrows%
+			implicitThrows: %exceptions.implicitThrows%
 
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory

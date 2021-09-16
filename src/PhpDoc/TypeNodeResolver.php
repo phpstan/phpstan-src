@@ -151,6 +151,8 @@ class TypeNodeResolver
 				return new IntersectionType([new StringType(), new AccessoryLiteralStringType()]);
 
 			case 'class-string':
+			case 'interface-string':
+			case 'trait-string':
 				return new ClassStringType();
 
 			case 'callable-string':
@@ -480,7 +482,7 @@ class TypeNodeResolver
 			if (count($genericTypes) === 2) { // iterable<KeyType, ValueType>
 				return new IterableType($genericTypes[0], $genericTypes[1]);
 			}
-		} elseif ($mainTypeName === 'class-string') {
+		} elseif (in_array($mainTypeName, ['class-string', 'interface-string'], true)) {
 			if (count($genericTypes) === 1) {
 				$genericType = $genericTypes[0];
 				if ((new ObjectWithoutClassType())->isSuperTypeOf($genericType)->yes() || $genericType instanceof MixedType) {

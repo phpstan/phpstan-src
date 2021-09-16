@@ -502,9 +502,9 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				1751,
 			],
 			[
-				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()
-    💡 See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()',
 				1751,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}
@@ -789,9 +789,9 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				1751,
 			],
 			[
-				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()
-    💡 See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()',
 				1751,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}

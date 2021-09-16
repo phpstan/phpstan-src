@@ -1548,7 +1548,7 @@ function (): void {
 };
 
 /**
- * @template T of array{0: string, 1: bool}git add
+ * @template T of array{0: string, 1: bool}
  * @param T $a
  * @return T
  */

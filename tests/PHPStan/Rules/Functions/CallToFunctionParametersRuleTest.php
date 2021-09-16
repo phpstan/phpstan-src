@@ -630,16 +630,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testUasortCallback(): void
 	{
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/uasort.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
 				7,
 			],
 		]);
@@ -650,16 +643,10 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
 
 		$this->analyse([__DIR__ . '/data/uasort_arrow.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
 				7,
 			],
 		]);
@@ -667,16 +654,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testUsortCallback(): void
 	{
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/usort.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
 				14,
 			],
 		]);
@@ -688,16 +668,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/usort_arrow.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
 				14,
 			],
 		]);
@@ -705,20 +678,13 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testUksortCallback(): void
 	{
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/uksort.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
 				14,
 			],
 			[
-				sprintf('Parameter #2 $%s of function uksort expects callable(int, int): int, Closure(string, string): 1 given.', $paramTwoName),
+				'Parameter #2 $callback of function uksort expects callable(int, int): int, Closure(string, string): 1 given.',
 				50,
 			],
 		]);
@@ -730,20 +696,13 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/uksort_arrow.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
 				14,
 			],
 			[
-				sprintf('Parameter #2 $%s of function uksort expects callable(int, int): int, Closure(string, string): 1 given.', $paramTwoName),
+				'Parameter #2 $callback of function uksort expects callable(int, int): int, Closure(string, string): 1 given.',
 				44,
 			],
 		]);

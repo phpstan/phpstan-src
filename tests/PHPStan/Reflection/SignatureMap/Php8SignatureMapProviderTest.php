@@ -220,7 +220,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 				'uasort',
 				[
 					[
-						'name' => 'cmp_function',
+						'name' => 'callback',
 						'optional' => false,
 						'type' => new CallableType([
 							new NativeParameterReflection('', false, new MixedType(true), PassedByReference::createNo(), false, null),

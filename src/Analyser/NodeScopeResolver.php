@@ -2337,13 +2337,19 @@ class NodeScopeResolver
 			$expr instanceof Expr\BitwiseNot
 			|| $expr instanceof Cast
 			|| $expr instanceof Expr\Clone_
-			|| $expr instanceof Expr\Eval_
 			|| $expr instanceof Expr\Print_
 			|| $expr instanceof Expr\UnaryMinus
 			|| $expr instanceof Expr\UnaryPlus
 		) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
+			$hasYield = $result->hasYield();
+
+			$scope = $result->getScope();
+		} elseif ($expr instanceof Expr\Eval_) {
+			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
+			$throwPoints = $result->getThrowPoints();
+			$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			$hasYield = $result->hasYield();
 
 			$scope = $result->getScope();

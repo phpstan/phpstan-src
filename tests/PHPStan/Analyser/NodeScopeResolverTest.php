@@ -507,6 +507,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/missing-closure-native-return-typehint.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4741.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/more-type-strings.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/eval-implicit-throw.php');
 	}
 
 	/**

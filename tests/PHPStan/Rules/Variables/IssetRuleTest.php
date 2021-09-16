@@ -110,7 +110,11 @@ class IssetRuleTest extends RuleTestCase
 			],
 			[
 				"Offset 'foo' on array('foo' => string) in isset() always exists and is not nullable.",
-				169,
+				170,
+			],
+			[
+				"Offset 'bar' on array('bar' => 1) in isset() always exists and is not nullable.",
+				173,
 			],
 		]);
 	}

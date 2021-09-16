@@ -67,7 +67,9 @@ class IssetCheck
 			$type = $this->treatPhpDocTypesAsCertain
 				? $scope->getType($expr->var)
 				: $scope->getNativeType($expr->var);
-			$dimType = $scope->getType($expr->dim);
+			$dimType = $this->treatPhpDocTypesAsCertain
+				? $scope->getType($expr->dim)
+				: $scope->getNativeType($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $error ?? $this->checkUndefined($expr->var, $scope, $operatorDescription);

@@ -58,7 +58,7 @@ class Exception implements Throwable
 	 * @return string
 	 * @throws void
 	 */
-	final public function getMessage() {}
+	final public function getMessage(): string {}
 
 	/**
 	 * @return mixed
@@ -70,31 +70,31 @@ class Exception implements Throwable
 	 * @return string
 	 * @throws void
 	 */
-	final public function getFile() {}
+	final public function getFile(): string {}
 
 	/**
 	 * @return int
 	 * @throws void
 	 */
-	final public function getLine() {}
+	final public function getLine(): int {}
 
 	/**
 	 * @return list<array<string,mixed>>
 	 * @throws void
 	 */
-	final public function getTrace() {}
+	final public function getTrace(): array {}
 
 	/**
 	 * @return null|Throwable
 	 * @throws void
 	 */
-	final public function getPrevious() {}
+	final public function getPrevious(): ?Throwable {}
 
 	/**
 	 * @return string
 	 * @throws void
 	 */
-	final public function getTraceAsString() {}
+	final public function getTraceAsString(): string {}
 
 }
 
@@ -105,7 +105,7 @@ class Error implements Throwable
 	 * @return string
 	 * @throws void
 	 */
-	final public function getMessage() {}
+	final public function getMessage(): string {}
 
 	/**
 	 * @return mixed
@@ -117,30 +117,30 @@ class Error implements Throwable
 	 * @return string
 	 * @throws void
 	 */
-	final public function getFile() {}
+	final public function getFile(): string {}
 
 	/**
 	 * @return int
 	 * @throws void
 	 */
-	final public function getLine() {}
+	final public function getLine(): int {}
 
 	/**
 	 * @return list<array<string,mixed>>
 	 * @throws void
 	 */
-	final public function getTrace() {}
+	final public function getTrace(): array {}
 
 	/**
 	 * @return null|Throwable
 	 * @throws void
 	 */
-	final public function getPrevious() {}
+	final public function getPrevious(): ?Throwable {}
 
 	/**
 	 * @return string
 	 * @throws void
 	 */
-	final public function getTraceAsString() {}
+	final public function getTraceAsString(): string {}
 
 }

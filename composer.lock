@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f6ecea8ad1c410153bb884e8b26248e",
+    "content-hash": "07913e44f81b3c9d6fca5cd7a637b594",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2177,16 +2177,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "9e8e6e79f86c2e4fdddb189e569276ce693b6dd7"
+                "reference": "605e3697d7e521a8c7f032662e13a8c104d60fbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/9e8e6e79f86c2e4fdddb189e569276ce693b6dd7",
-                "reference": "9e8e6e79f86c2e4fdddb189e569276ce693b6dd7",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/605e3697d7e521a8c7f032662e13a8c104d60fbf",
+                "reference": "605e3697d7e521a8c7f032662e13a8c104d60fbf",
                 "shasum": ""
             },
             "require": {
@@ -2195,8 +2195,8 @@
             "require-dev": {
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan": "^0.12.87",
-                "phpstan/phpstan-strict-rules": "^0.12.5",
+                "phpstan/phpstan": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.0",
                 "phpunit/phpunit": "^9.5",
                 "symfony/process": "^5.2"
             },
@@ -2220,9 +2220,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.0.0"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.1.0"
             },
-            "time": "2021-09-12T20:00:31+00:00"
+            "time": "2021-09-16T20:28:27+00:00"
         },
         {
             "name": "psr/container",

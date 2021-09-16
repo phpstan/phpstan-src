@@ -134,9 +134,11 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/anonymous-class-wrong-filename-regression.php');
 		$this->assertCount(5, $errors);
-		$this->assertStringContainsString('Return type of method', $errors[0]->getMessage());
+		$this->assertStringContainsString('Method', $errors[0]->getMessage());
+		$this->assertStringContainsString('has invalid return type', $errors[0]->getMessage());
 		$this->assertSame(16, $errors[0]->getLine());
-		$this->assertStringContainsString('Return type of method', $errors[1]->getMessage());
+		$this->assertStringContainsString('Method', $errors[1]->getMessage());
+		$this->assertStringContainsString('has invalid return type', $errors[1]->getMessage());
 		$this->assertSame(16, $errors[1]->getLine());
 		$this->assertSame('Instantiated class AnonymousClassWrongFilename\Bar not found.', $errors[2]->getMessage());
 		$this->assertSame(18, $errors[2]->getLine());

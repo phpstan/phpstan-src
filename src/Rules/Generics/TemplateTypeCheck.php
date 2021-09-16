@@ -7,7 +7,9 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
@@ -110,6 +112,8 @@ class TemplateTypeCheck
 				$boundClass = get_class($type);
 				if (
 					$boundClass === MixedType::class
+					|| $boundClass === ConstantArrayType::class
+					|| $boundClass === ArrayType::class
 					|| $boundClass === StringType::class
 					|| $boundClass === IntegerType::class
 					|| $boundClass === FloatType::class

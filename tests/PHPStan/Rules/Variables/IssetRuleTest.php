@@ -13,6 +13,7 @@ use PHPStan\Testing\RuleTestCase;
  */
 class IssetRuleTest extends RuleTestCase
 {
+
 	/** @var bool */
 	private $treatPhpDocTypesAsCertain;
 

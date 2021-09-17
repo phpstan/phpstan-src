@@ -23,7 +23,6 @@ parameters:
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
 		fileWhitespace: false
-		unusedClassElements: false
 		readComposerPhpVersion: false
 		dateTimeInstantiation: false
 		checkLogicalAndConstantCondition: false
@@ -196,7 +195,6 @@ parametersSchema:
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
 		fileWhitespace: bool(),
-		unusedClassElements: bool(),
 		readComposerPhpVersion: bool(),
 		dateTimeInstantiation: bool(),
 		checkLogicalAndConstantCondition: bool(),

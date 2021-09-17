@@ -22,7 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
-		nullCoalesce: false
 		fileWhitespace: false
 		unusedClassElements: false
 		readComposerPhpVersion: false
@@ -196,7 +195,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
-		nullCoalesce: bool(),
 		fileWhitespace: bool(),
 		unusedClassElements: bool(),
 		readComposerPhpVersion: bool(),

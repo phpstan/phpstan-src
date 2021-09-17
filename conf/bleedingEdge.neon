@@ -2,7 +2,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		randomIntParameters: true
-		nullCoalesce: true
 		fileWhitespace: true
 		unusedClassElements: true
 		readComposerPhpVersion: true

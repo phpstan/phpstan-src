@@ -13,7 +13,7 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCa
 
 	protected function getRule(): Rule
 	{
-		return new IncompatiblePropertyPhpDocTypeRule(new GenericObjectTypeCheck(), new UnresolvableTypeHelper(true));
+		return new IncompatiblePropertyPhpDocTypeRule(new GenericObjectTypeCheck(), new UnresolvableTypeHelper());
 	}
 
 	public function testRule(): void

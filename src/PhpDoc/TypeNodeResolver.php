@@ -75,17 +75,13 @@ class TypeNodeResolver
 
 	private Container $container;
 
-	private bool $deepInspectTypes;
-
 	public function __construct(
 		TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
-		Container $container,
-		bool $deepInspectTypes = false
+		Container $container
 	)
 	{
 		$this->extensionRegistryProvider = $extensionRegistryProvider;
 		$this->container = $container;
-		$this->deepInspectTypes = $deepInspectTypes;
 	}
 
 	/** @api */
@@ -445,13 +441,10 @@ class TypeNodeResolver
 			if (count($genericTypes) === 1) { // array<ValueType>
 				$arrayType = new ArrayType(new MixedType(true), $genericTypes[0]);
 			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
-				$keyType = $genericTypes[0];
-				if ($this->deepInspectTypes) {
-					$keyType = TypeCombinator::intersect($keyType, new UnionType([
-						new IntegerType(),
-						new StringType(),
-					]));
-				}
+				$keyType = TypeCombinator::intersect($genericTypes[0], new UnionType([
+					new IntegerType(),
+					new StringType(),
+				]));
 				$arrayType = new ArrayType($keyType, $genericTypes[1]);
 			} else {
 				return new ErrorType();

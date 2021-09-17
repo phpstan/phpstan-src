@@ -35,7 +35,6 @@ parameters:
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
-		deepInspectTypes: false
 		neverInGenericReturnType: false
 		finalByPhpDocTag: false
 		classConstants: false
@@ -210,7 +209,6 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		apiRules: bool(),
-		deepInspectTypes: bool(),
 		neverInGenericReturnType: bool(),
 		finalByPhpDocTag: bool(),
 		classConstants: bool(),
@@ -407,8 +405,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
-		arguments:
-			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolverExtensionRegistryProvider
@@ -845,7 +841,6 @@ services:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			checkMissingCallableSignature: %checkMissingCallableSignature%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
-			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\Rules\NullsafeCheck
@@ -855,8 +850,6 @@ services:
 
 	-
 		class: PHPStan\Rules\PhpDoc\UnresolvableTypeHelper
-		arguments:
-			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\Rules\Properties\LazyReadWritePropertiesExtensionProvider

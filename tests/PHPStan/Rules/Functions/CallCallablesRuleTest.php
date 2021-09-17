@@ -25,7 +25,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				$ruleLevelHelper,
 				new NullsafeCheck(),
 				new PhpVersion(80000),
-				new UnresolvableTypeHelper(true),
+				new UnresolvableTypeHelper(),
 				true,
 				true,
 				true,

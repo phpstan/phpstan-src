@@ -14,7 +14,7 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IncompatibleClassConstantPhpDocTypeRule(new GenericObjectTypeCheck(), new UnresolvableTypeHelper(true));
+		return new IncompatibleClassConstantPhpDocTypeRule(new GenericObjectTypeCheck(), new UnresolvableTypeHelper());
 	}
 
 	public function testRule(): void

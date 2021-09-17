@@ -40,7 +40,7 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(true), true, true, true, true, $this->checkNeverInGenericReturnType),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), true, true, true, true, $this->checkNeverInGenericReturnType),
 			$ruleLevelHelper,
 			true,
 			true

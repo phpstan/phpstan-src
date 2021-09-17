@@ -28,7 +28,7 @@ class PropertyAttributesRuleTest extends RuleTestCase
 					new RuleLevelHelper($reflectionProvider, true, false, true),
 					new NullsafeCheck(),
 					new PhpVersion(80000),
-					new UnresolvableTypeHelper(true),
+					new UnresolvableTypeHelper(),
 					true,
 					true,
 					true,

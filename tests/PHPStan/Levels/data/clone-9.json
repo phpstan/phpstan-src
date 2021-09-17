@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Cannot clone non-object variable $mixed of type mixed.",
+        "line": 36,
+        "ignorable": true
+    }
+]

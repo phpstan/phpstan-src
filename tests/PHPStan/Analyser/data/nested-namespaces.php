@@ -17,5 +17,21 @@ namespace y {
 			$this->boo = $boo;
 			$this->baz = $baz;
 		}
+
+		/**
+		 * @return boo
+		 */
+		public function getBoo(): boo
+		{
+			return $this->boo;
+		}
+
+		/**
+		 * @return mixed
+		 */
+		public function getBaz()
+		{
+			return $this->baz;
+		}
 	}
 }

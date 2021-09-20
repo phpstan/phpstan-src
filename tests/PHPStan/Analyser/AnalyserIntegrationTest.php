@@ -233,15 +233,15 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$error = $errors[2];
 		$this->assertSame('If condition is always false.', $error->getMessage());
-		$this->assertSame(18, $error->getLine());
+		$this->assertSame(26, $error->getLine());
 
 		$error = $errors[3];
 		$this->assertSame('Property TwoSame\Foo::$prop (int) does not accept default value of type string.', $error->getMessage());
-		$this->assertSame(25, $error->getLine());
+		$this->assertSame(33, $error->getLine());
 
 		$error = $errors[4];
 		$this->assertSame('Property TwoSame\Foo::$prop2 (int) does not accept default value of type string.', $error->getMessage());
-		$this->assertSame(28, $error->getLine());
+		$this->assertSame(36, $error->getLine());
 	}
 
 	public function testBug3405(): void

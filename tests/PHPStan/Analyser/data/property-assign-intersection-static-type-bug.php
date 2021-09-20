@@ -13,6 +13,14 @@ abstract class Base
 
 		$this->foo = $foo;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getFoo(): string
+	{
+		return $this->foo;
+	}
 }
 
 class Frontend extends Base

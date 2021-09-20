@@ -24,12 +24,12 @@ class ArrayRandFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$argsCount = count($functionCall->args);
-		if (count($functionCall->args) < 1) {
+		$argsCount = count($functionCall->getArgs());
+		if (count($functionCall->getArgs()) < 1) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$firstArgType = $scope->getType($functionCall->args[0]->value);
+		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isInteger = (new IntegerType())->isSuperTypeOf($firstArgType->getIterableKeyType());
 		$isString = (new StringType())->isSuperTypeOf($firstArgType->getIterableKeyType());
 
@@ -45,7 +45,7 @@ class ArrayRandFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			return $valueType;
 		}
 
-		$secondArgType = $scope->getType($functionCall->args[1]->value);
+		$secondArgType = $scope->getType($functionCall->getArgs()[1]->value);
 
 		if ($secondArgType instanceof ConstantIntegerType) {
 			if ($secondArgType->getValue() === 1) {

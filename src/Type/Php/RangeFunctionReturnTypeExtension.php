@@ -35,13 +35,13 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$startType = $scope->getType($functionCall->args[0]->value);
-		$endType = $scope->getType($functionCall->args[1]->value);
-		$stepType = count($functionCall->args) >= 3 ? $scope->getType($functionCall->args[2]->value) : new ConstantIntegerType(1);
+		$startType = $scope->getType($functionCall->getArgs()[0]->value);
+		$endType = $scope->getType($functionCall->getArgs()[1]->value);
+		$stepType = count($functionCall->getArgs()) >= 3 ? $scope->getType($functionCall->getArgs()[2]->value) : new ConstantIntegerType(1);
 
 		$constantReturnTypes = [];
 

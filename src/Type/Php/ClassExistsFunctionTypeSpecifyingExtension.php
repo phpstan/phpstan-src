@@ -34,12 +34,12 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			'class_exists',
 			'interface_exists',
 			'trait_exists',
-		], true) && isset($node->args[0]) && $context->truthy();
+		], true) && isset($node->getArgs()[0]) && $context->truthy();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$argType = $scope->getType($node->args[0]->value);
+		$argType = $scope->getType($node->getArgs()[0]->value);
 		$classStringType = new ClassStringType();
 		if (TypeCombinator::intersect($argType, $classStringType) instanceof NeverType) {
 			if ($argType instanceof ConstantStringType) {
@@ -58,7 +58,7 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		}
 
 		return $this->typeSpecifier->create(
-			$node->args[0]->value,
+			$node->getArgs()[0]->value,
 			$classStringType,
 			$context,
 			false,

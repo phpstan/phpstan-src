@@ -43,15 +43,15 @@ class FileAssertRule implements Rule
 
 		$function = $this->reflectionProvider->getFunction($node->name, $scope);
 		if ($function->getName() === 'PHPStan\\Testing\\assertType') {
-			return $this->processAssertType($node->args, $scope);
+			return $this->processAssertType($node->getArgs(), $scope);
 		}
 
 		if ($function->getName() === 'PHPStan\\Testing\\assertNativeType') {
-			return $this->processAssertNativeType($node->args, $scope);
+			return $this->processAssertNativeType($node->getArgs(), $scope);
 		}
 
 		if ($function->getName() === 'PHPStan\\Testing\\assertVariableCertainty') {
-			return $this->processAssertVariableCertainty($node->args, $scope);
+			return $this->processAssertVariableCertainty($node->getArgs(), $scope);
 		}
 
 		return [];

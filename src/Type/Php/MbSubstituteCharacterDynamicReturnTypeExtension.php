@@ -48,7 +48,7 @@ class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunction
 			$ranges[] = IntegerRangeType::fromInterval($minCodePoint, $maxCodePoint);
 		}
 
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return TypeCombinator::union(
 				new ConstantStringType('none'),
 				new ConstantStringType('long'),
@@ -57,7 +57,7 @@ class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunction
 			);
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isString = (new StringType())->isSuperTypeOf($argType);
 		$isNull = (new NullType())->isSuperTypeOf($argType);
 		$isInteger = (new IntegerType())->isSuperTypeOf($argType);

@@ -26,12 +26,12 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
 		$valueType = new MixedType();
-		$callableType = $scope->getType($functionCall->args[0]->value);
+		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
 		if ($callableType->isCallable()->yes()) {
 			$valueType = new NeverType();
 			foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
@@ -43,10 +43,10 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 			new MixedType(),
 			$valueType
 		);
-		$arrayType = $scope->getType($functionCall->args[1]->value);
+		$arrayType = $scope->getType($functionCall->getArgs()[1]->value);
 		$constantArrays = TypeUtils::getConstantArrays($arrayType);
 
-		if (!isset($functionCall->args[2])) {
+		if (!isset($functionCall->getArgs()[2])) {
 			if (count($constantArrays) > 0) {
 				$arrayTypes = [];
 				foreach ($constantArrays as $constantArray) {

@@ -6,9 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\UnionType;
 use PhpParser\NodeAbstract;
 
 /** @api */
@@ -19,7 +17,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 
 	private int $flags;
 
-	/** @var Identifier|Name|NullableType|UnionType|null */
+	/** @var Identifier|Name|Node\ComplexType|null */
 	private $type;
 
 	private ?Expr $default;
@@ -30,7 +28,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param int $flags
-	 * @param Identifier|Name|NullableType|UnionType|null $type
+	 * @param Identifier|Name|Node\ComplexType|null $type
 	 * @param string $name
 	 * @param Expr|null $default
 	 */
@@ -105,7 +103,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	}
 
 	/**
-	 * @return Identifier|Name|NullableType|UnionType|null
+	 * @return Identifier|Name|Node\ComplexType|null
 	 */
 	public function getNativeType()
 	{

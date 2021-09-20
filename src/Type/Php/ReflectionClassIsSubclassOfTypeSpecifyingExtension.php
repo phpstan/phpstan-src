@@ -32,13 +32,13 @@ class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSp
 	public function isMethodSupported(MethodReflection $methodReflection, MethodCall $node, TypeSpecifierContext $context): bool
 	{
 		return $methodReflection->getName() === 'isSubclassOf'
-			&& isset($node->args[0])
+			&& isset($node->getArgs()[0])
 			&& $context->true();
 	}
 
 	public function specifyTypes(MethodReflection $methodReflection, MethodCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$valueType = $scope->getType($node->args[0]->value);
+		$valueType = $scope->getType($node->getArgs()[0]->value);
 		if (!$valueType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
 		}

@@ -94,7 +94,7 @@ interface Scope extends ClassMemberAccessAnswerer
 	public function isParameterValueNullable(Param $parameter): bool;
 
 	/**
-	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $type
+	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
 	 * @param bool $isNullable
 	 * @param bool $isVariadic
 	 * @return Type

@@ -26,14 +26,14 @@ class IsArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!isset($node->args[0])) {
+		if (!isset($node->getArgs()[0])) {
 			return new SpecifiedTypes();
 		}
 		if ($context->null()) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new ArrayType(new MixedType(), new MixedType()), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new ArrayType(new MixedType(), new MixedType()), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

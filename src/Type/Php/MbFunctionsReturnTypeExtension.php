@@ -62,11 +62,11 @@ class MbFunctionsReturnTypeExtension implements \PHPStan\Type\DynamicFunctionRet
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		$positionEncodingParam = $this->encodingPositionMap[$functionReflection->getName()];
 
-		if (count($functionCall->args) < $positionEncodingParam) {
+		if (count($functionCall->getArgs()) < $positionEncodingParam) {
 			return TypeCombinator::remove($returnType, new BooleanType());
 		}
 
-		$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->args[$positionEncodingParam - 1]->value));
+		$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[$positionEncodingParam - 1]->value));
 		$results = array_unique(array_map(function (ConstantStringType $encoding): bool {
 			return $this->isSupportedEncoding($encoding->getValue());
 		}, $strings));

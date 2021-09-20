@@ -27,19 +27,19 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements \PHPStan\Type\
 		Scope $scope
 	): Type
 	{
-		if (count($functionCall->args) < 2) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->args, $functionReflection->getVariants())->getReturnType();
+		if (count($functionCall->getArgs()) < 2) {
+			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->getArgs(), $functionReflection->getVariants())->getReturnType();
 		}
 
-		$version1Strings = TypeUtils::getConstantStrings($scope->getType($functionCall->args[0]->value));
-		$version2Strings = TypeUtils::getConstantStrings($scope->getType($functionCall->args[1]->value));
+		$version1Strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[0]->value));
+		$version2Strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[1]->value));
 		$counts = [
 			count($version1Strings),
 			count($version2Strings),
 		];
 
-		if (isset($functionCall->args[2])) {
-			$operatorStrings = TypeUtils::getConstantStrings($scope->getType($functionCall->args[2]->value));
+		if (isset($functionCall->getArgs()[2])) {
+			$operatorStrings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
 			$counts[] = count($operatorStrings);
 			$returnType = new BooleanType();
 		} else {

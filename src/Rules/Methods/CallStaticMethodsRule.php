@@ -270,7 +270,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 		$errors = array_merge($errors, $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
-				$node->args,
+				$node->getArgs(),
 				$method->getVariants()
 			),
 			$scope,

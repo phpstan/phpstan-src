@@ -42,8 +42,8 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$minType = $scope->getType($node->args[0]->value)->toInteger();
-		$maxType = $scope->getType($node->args[1]->value)->toInteger();
+		$minType = $scope->getType($node->getArgs()[0]->value)->toInteger();
+		$maxType = $scope->getType($node->getArgs()[1]->value)->toInteger();
 
 		if (
 			!$minType instanceof ConstantIntegerType && !$minType instanceof IntegerRangeType

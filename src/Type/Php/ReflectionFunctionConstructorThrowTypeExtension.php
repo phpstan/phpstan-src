@@ -31,11 +31,11 @@ class ReflectionFunctionConstructorThrowTypeExtension implements DynamicStaticMe
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->args) < 1) {
+		if (count($methodCall->getArgs()) < 1) {
 			return $methodReflection->getThrowType();
 		}
 
-		$valueType = $scope->getType($methodCall->args[0]->value);
+		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		foreach (TypeUtils::getConstantStrings($valueType) as $constantString) {
 			if (!$this->reflectionProvider->hasFunction(new Name($constantString->getValue()), $scope)) {
 				return $methodReflection->getThrowType();

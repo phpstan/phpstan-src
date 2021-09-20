@@ -45,7 +45,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 		return $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
-				$node->args,
+				$node->getArgs(),
 				$function->getVariants()
 			),
 			$scope,

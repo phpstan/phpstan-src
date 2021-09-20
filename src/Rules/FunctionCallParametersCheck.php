@@ -94,7 +94,7 @@ class FunctionCallParametersCheck
 		/** @var array<int, array{Expr, Type, bool, string|null, int}> $arguments */
 		$arguments = [];
 		/** @var array<int, \PhpParser\Node\Arg> $args */
-		$args = $funcCall->args;
+		$args = $funcCall->getArgs();
 		$hasNamedArguments = false;
 		$hasUnpackedArgument = false;
 		$errors = [];

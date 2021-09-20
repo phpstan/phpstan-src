@@ -31,22 +31,22 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (count($node->args) < 3) {
+		if (count($node->getArgs()) < 3) {
 			return new SpecifiedTypes();
 		}
-		$strictNodeType = $scope->getType($node->args[2]->value);
+		$strictNodeType = $scope->getType($node->getArgs()[2]->value);
 		if (!(new ConstantBooleanType(true))->isSuperTypeOf($strictNodeType)->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 
-		$arrayValueType = $scope->getType($node->args[1]->value)->getIterableValueType();
+		$arrayValueType = $scope->getType($node->getArgs()[1]->value)->getIterableValueType();
 
 		if (
 			$context->truthy()
 			|| count(TypeUtils::getConstantScalars($arrayValueType)) > 0
 		) {
 			return $this->typeSpecifier->create(
-				$node->args[0]->value,
+				$node->getArgs()[0]->value,
 				$arrayValueType,
 				$context,
 				false,

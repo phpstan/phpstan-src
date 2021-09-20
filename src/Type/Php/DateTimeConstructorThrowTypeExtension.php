@@ -23,11 +23,11 @@ class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowT
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->args) === 0) {
+		if (count($methodCall->getArgs()) === 0) {
 			return null;
 		}
 
-		$valueType = $scope->getType($methodCall->args[0]->value);
+		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		$constantStrings = TypeUtils::getConstantStrings($valueType);
 
 		foreach ($constantStrings as $constantString) {

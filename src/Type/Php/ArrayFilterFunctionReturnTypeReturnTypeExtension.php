@@ -32,9 +32,9 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements \PHPStan\Type\
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$arrayArg = $functionCall->args[0]->value ?? null;
-		$callbackArg = $functionCall->args[1]->value ?? null;
-		$flagArg = $functionCall->args[2]->value ?? null;
+		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
+		$callbackArg = $functionCall->getArgs()[1]->value ?? null;
+		$flagArg = $functionCall->getArgs()[2]->value ?? null;
 
 		if ($arrayArg !== null) {
 			$arrayArgType = $scope->getType($arrayArg);

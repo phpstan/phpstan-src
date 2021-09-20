@@ -53,7 +53,7 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 
 		$formatArgumentPosition = $functionsArgumentPositions[$name];
 
-		$args = $node->args;
+		$args = $node->getArgs();
 		foreach ($args as $arg) {
 			if ($arg->unpack) {
 				return [];

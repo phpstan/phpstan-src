@@ -1788,7 +1788,7 @@ class NodeScopeResolver
 				if ($nameType->isCallable()->yes()) {
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 						$scope,
-						$expr->args,
+						$expr->getArgs(),
 						$nameType->getCallableParametersAcceptors($scope)
 					);
 				}
@@ -1799,11 +1799,11 @@ class NodeScopeResolver
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 					$scope,
-					$expr->args,
+					$expr->getArgs(),
 					$functionReflection->getVariants()
 				);
 			}
-			$result = $this->processArgs($functionReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
+			$result = $this->processArgs($functionReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -1830,9 +1830,9 @@ class NodeScopeResolver
 			if (
 				isset($functionReflection)
 				&& in_array($functionReflection->getName(), ['array_pop', 'array_shift'], true)
-				&& count($expr->args) >= 1
+				&& count($expr->getArgs()) >= 1
 			) {
-				$arrayArg = $expr->args[0]->value;
+				$arrayArg = $expr->getArgs()[0]->value;
 				$constantArrays = TypeUtils::getConstantArrays($scope->getType($arrayArg));
 				$scope = $scope->invalidateExpression($arrayArg);
 				if (count($constantArrays) > 0) {
@@ -1861,10 +1861,10 @@ class NodeScopeResolver
 			if (
 				isset($functionReflection)
 				&& in_array($functionReflection->getName(), ['array_push', 'array_unshift'], true)
-				&& count($expr->args) >= 2
+				&& count($expr->getArgs()) >= 2
 			) {
 				$argumentTypes = [];
-				foreach (array_slice($expr->args, 1) as $callArg) {
+				foreach (array_slice($expr->getArgs(), 1) as $callArg) {
 					$callArgType = $scope->getType($callArg->value);
 					if ($callArg->unpack) {
 						$iterableValueType = $callArgType->getIterableValueType();
@@ -1881,7 +1881,7 @@ class NodeScopeResolver
 					$argumentTypes[] = $callArgType;
 				}
 
-				$arrayArg = $expr->args[0]->value;
+				$arrayArg = $expr->getArgs()[0]->value;
 				$originalArrayType = $scope->getType($arrayArg);
 				$constantArrays = TypeUtils::getConstantArrays($originalArrayType);
 				if (
@@ -1938,7 +1938,7 @@ class NodeScopeResolver
 			}
 
 			if (isset($functionReflection) && $functionReflection->hasSideEffects()->yes()) {
-				foreach ($expr->args as $arg) {
+				foreach ($expr->getArgs() as $arg) {
 					$scope = $scope->invalidateExpression($arg->value, true);
 				}
 			}
@@ -1949,9 +1949,9 @@ class NodeScopeResolver
 				($expr->var instanceof Expr\Closure || $expr->var instanceof Expr\ArrowFunction)
 				&& $expr->name instanceof Node\Identifier
 				&& strtolower($expr->name->name) === 'call'
-				&& isset($expr->args[0])
+				&& isset($expr->getArgs()[0])
 			) {
-				$closureCallScope = $scope->enterClosureCall($scope->getType($expr->args[0]->value));
+				$closureCallScope = $scope->enterClosureCall($scope->getType($expr->getArgs()[0]->value));
 			}
 
 			$result = $this->processExprNode($expr->var, $closureCallScope ?? $scope, $nodeCallback, $context->enterDeep());
@@ -1974,7 +1974,7 @@ class NodeScopeResolver
 				if ($methodReflection !== null) {
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 						$scope,
-						$expr->args,
+						$expr->getArgs(),
 						$methodReflection->getVariants()
 					);
 					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
@@ -1983,13 +1983,13 @@ class NodeScopeResolver
 					}
 				}
 			}
-			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
+			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			if ($methodReflection !== null) {
 				$hasSideEffects = $methodReflection->hasSideEffects();
 				if ($hasSideEffects->yes()) {
 					$scope = $scope->invalidateExpression($expr->var, true);
-					foreach ($expr->args as $arg) {
+					foreach ($expr->getArgs() as $arg) {
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}
 				}
@@ -2058,7 +2058,7 @@ class NodeScopeResolver
 						$methodReflection = $classReflection->getMethod($methodName, $scope);
 						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 							$scope,
-							$expr->args,
+							$expr->getArgs(),
 							$methodReflection->getVariants()
 						);
 						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $expr, $scope);
@@ -2070,8 +2070,8 @@ class NodeScopeResolver
 							&& strtolower($methodName) === 'bind'
 						) {
 							$thisType = null;
-							if (isset($expr->args[1])) {
-								$argType = $scope->getType($expr->args[1]->value);
+							if (isset($expr->getArgs()[1])) {
+								$argType = $scope->getType($expr->getArgs()[1]->value);
 								if ($argType instanceof NullType) {
 									$thisType = null;
 								} else {
@@ -2079,8 +2079,8 @@ class NodeScopeResolver
 								}
 							}
 							$scopeClass = 'static';
-							if (isset($expr->args[2])) {
-								$argValue = $expr->args[2]->value;
+							if (isset($expr->getArgs()[2])) {
+								$argValue = $expr->getArgs()[2]->value;
 								$argValueType = $scope->getType($argValue);
 
 								$directClassNames = TypeUtils::getDirectClassNames($argValueType);
@@ -2109,7 +2109,7 @@ class NodeScopeResolver
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
-			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context, $closureBindScope ?? null);
+			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
 			$scopeFunction = $scope->getFunction();
 			if (
@@ -2129,7 +2129,7 @@ class NodeScopeResolver
 
 			if ($methodReflection !== null) {
 				if ($methodReflection->hasSideEffects()->yes()) {
-					foreach ($expr->args as $arg) {
+					foreach ($expr->getArgs() as $arg) {
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}
 				}
@@ -2449,10 +2449,10 @@ class NodeScopeResolver
 						$constructorReflection = $classReflection->getConstructor();
 						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 							$scope,
-							$expr->args,
+							$expr->getArgs(),
 							$constructorReflection->getVariants()
 						);
-						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $classReflection, $expr, $expr->class, $expr->args, $scope);
+						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $classReflection, $expr, $expr->class, $expr->getArgs(), $scope);
 						if ($constructorThrowPoint !== null) {
 							$throwPoints[] = $constructorThrowPoint;
 						}
@@ -2461,7 +2461,7 @@ class NodeScopeResolver
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
-			$result = $this->processArgs($constructorReflection, $parametersAcceptor, $expr->args, $scope, $nodeCallback, $context);
+			$result = $this->processArgs($constructorReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -2678,7 +2678,7 @@ class NodeScopeResolver
 				!$functionReflection->isBuiltin()
 				|| $requiredParameters === null
 				|| $requiredParameters > 0
-				|| count($funcCall->args) > 0
+				|| count($funcCall->getArgs()) > 0
 			) {
 				$functionReturnedType = $scope->getType($funcCall);
 				if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {

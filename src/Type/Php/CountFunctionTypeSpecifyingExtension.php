@@ -26,7 +26,7 @@ class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 	): bool
 	{
 		return !$context->null()
-			&& count($node->args) >= 1
+			&& count($node->getArgs()) >= 1
 			&& in_array($functionReflection->getName(), ['sizeof', 'count'], true);
 	}
 
@@ -37,11 +37,11 @@ class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		if (!(new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($scope->getType($node->args[0]->value))->yes()) {
+		if (!(new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($scope->getType($node->getArgs()[0]->value))->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new NonEmptyArrayType(), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new NonEmptyArrayType(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

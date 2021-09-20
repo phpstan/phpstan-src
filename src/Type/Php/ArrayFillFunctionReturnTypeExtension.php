@@ -38,13 +38,13 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (count($functionCall->args) < 3) {
+		if (count($functionCall->getArgs()) < 3) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$startIndexType = $scope->getType($functionCall->args[0]->value);
-		$numberType = $scope->getType($functionCall->args[1]->value);
-		$valueType = $scope->getType($functionCall->args[2]->value);
+		$startIndexType = $scope->getType($functionCall->getArgs()[0]->value);
+		$numberType = $scope->getType($functionCall->getArgs()[1]->value);
+		$valueType = $scope->getType($functionCall->getArgs()[2]->value);
 
 		if ($numberType instanceof IntegerRangeType) {
 			if ($numberType->getMin() < 0) {

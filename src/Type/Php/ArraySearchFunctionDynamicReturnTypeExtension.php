@@ -29,12 +29,12 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$argsCount = count($functionCall->args);
+		$argsCount = count($functionCall->getArgs());
 		if ($argsCount < 2) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$haystackArgType = $scope->getType($functionCall->args[1]->value);
+		$haystackArgType = $scope->getType($functionCall->getArgs()[1]->value);
 		$haystackIsArray = (new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($haystackArgType);
 		if ($haystackIsArray->no()) {
 			return new NullType();
@@ -44,14 +44,14 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false));
 		}
 
-		$strictArgType = $scope->getType($functionCall->args[2]->value);
+		$strictArgType = $scope->getType($functionCall->getArgs()[2]->value);
 		if (!($strictArgType instanceof ConstantBooleanType)) {
 			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false), new NullType());
 		} elseif ($strictArgType->getValue() === false) {
 			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false));
 		}
 
-		$needleArgType = $scope->getType($functionCall->args[0]->value);
+		$needleArgType = $scope->getType($functionCall->getArgs()[0]->value);
 		if ($haystackArgType->getIterableValueType()->isSuperTypeOf($needleArgType)->no()) {
 			return new ConstantBooleanType(false);
 		}

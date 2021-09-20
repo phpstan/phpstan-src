@@ -205,7 +205,7 @@ class TypeSpecifier
 				if (
 					!$context->null()
 					&& $exprNode instanceof FuncCall
-					&& count($exprNode->args) === 1
+					&& count($exprNode->getArgs()) === 1
 					&& $exprNode->name instanceof Name
 					&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
 					&& $constantType instanceof ConstantIntegerType
@@ -215,9 +215,9 @@ class TypeSpecifier
 						if ($constantType->getValue() === 0) {
 							$newContext = $newContext->negate();
 						}
-						$argType = $scope->getType($exprNode->args[0]->value);
+						$argType = $scope->getType($exprNode->getArgs()[0]->value);
 						if ($argType->isArray()->yes()) {
-							return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
+							return $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
 						}
 					}
 				}
@@ -225,7 +225,7 @@ class TypeSpecifier
 				if (
 					!$context->null()
 					&& $exprNode instanceof FuncCall
-					&& count($exprNode->args) === 1
+					&& count($exprNode->getArgs()) === 1
 					&& $exprNode->name instanceof Name
 					&& strtolower((string) $exprNode->name) === 'strlen'
 					&& $constantType instanceof ConstantIntegerType
@@ -235,9 +235,9 @@ class TypeSpecifier
 						if ($constantType->getValue() === 0) {
 							$newContext = $newContext->negate();
 						}
-						$argType = $scope->getType($exprNode->args[0]->value);
+						$argType = $scope->getType($exprNode->getArgs()[0]->value);
 						if ($argType instanceof StringType) {
-							return $this->create($exprNode->args[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope);
+							return $this->create($exprNode->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope);
 						}
 					}
 				}
@@ -331,7 +331,7 @@ class TypeSpecifier
 				if (
 					!$context->null()
 					&& $exprNode instanceof FuncCall
-					&& count($exprNode->args) === 1
+					&& count($exprNode->getArgs()) === 1
 					&& $exprNode->name instanceof Name
 					&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
 					&& $constantType instanceof ConstantIntegerType
@@ -341,9 +341,9 @@ class TypeSpecifier
 						if ($constantType->getValue() === 0) {
 							$newContext = $newContext->negate();
 						}
-						$argType = $scope->getType($exprNode->args[0]->value);
+						$argType = $scope->getType($exprNode->getArgs()[0]->value);
 						if ($argType->isArray()->yes()) {
-							return $this->create($exprNode->args[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
+							return $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
 						}
 					}
 				}
@@ -395,13 +395,13 @@ class TypeSpecifier
 				$expr->left instanceof FuncCall
 				&& $expr->left->name instanceof Name
 				&& strtolower($expr->left->name->toString()) === 'get_class'
-				&& isset($expr->left->args[0])
+				&& isset($expr->left->getArgs()[0])
 				&& $rightType instanceof ConstantStringType
 			) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					new Instanceof_(
-						$expr->left->args[0]->value,
+						$expr->left->getArgs()[0]->value,
 						new Name($rightType->getValue())
 					),
 					$context
@@ -412,13 +412,13 @@ class TypeSpecifier
 				$expr->right instanceof FuncCall
 				&& $expr->right->name instanceof Name
 				&& strtolower($expr->right->name->toString()) === 'get_class'
-				&& isset($expr->right->args[0])
+				&& isset($expr->right->getArgs()[0])
 				&& $leftType instanceof ConstantStringType
 			) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					new Instanceof_(
-						$expr->right->args[0]->value,
+						$expr->right->getArgs()[0]->value,
 						new Name($leftType->getValue())
 					),
 					$context
@@ -439,7 +439,7 @@ class TypeSpecifier
 
 			if (
 				$expr->left instanceof FuncCall
-				&& count($expr->left->args) === 1
+				&& count($expr->left->getArgs()) === 1
 				&& $expr->left->name instanceof Name
 				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen'], true)
 				&& (
@@ -464,7 +464,7 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->args) === 1
+				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
@@ -473,9 +473,9 @@ class TypeSpecifier
 					$context->truthy() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
 					|| ($context->falsey() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
 				) {
-					$argType = $scope->getType($expr->right->args[0]->value);
+					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isArray()->yes()) {
-						$result = $result->unionWith($this->create($expr->right->args[0]->value, new NonEmptyArrayType(), $context, false, $scope));
+						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new NonEmptyArrayType(), $context, false, $scope));
 					}
 				}
 			}
@@ -483,7 +483,7 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->args) === 1
+				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
 				&& strtolower((string) $expr->right->name) === 'strlen'
 				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
@@ -492,9 +492,9 @@ class TypeSpecifier
 					$context->truthy() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
 					|| ($context->falsey() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
 				) {
-					$argType = $scope->getType($expr->right->args[0]->value);
+					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType instanceof StringType) {
-						$result = $result->unionWith($this->create($expr->right->args[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope));
+						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope));
 					}
 				}
 			}

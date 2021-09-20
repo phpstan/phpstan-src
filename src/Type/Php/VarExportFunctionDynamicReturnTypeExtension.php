@@ -36,18 +36,18 @@ class VarExportFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 			$fallbackReturnType = new BooleanType();
 		}
 
-		if (count($functionCall->args) < 1) {
+		if (count($functionCall->getArgs()) < 1) {
 			return TypeCombinator::union(
 				new StringType(),
 				$fallbackReturnType
 			);
 		}
 
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return $fallbackReturnType;
 		}
 
-		$returnArgumentType = $scope->getType($functionCall->args[1]->value);
+		$returnArgumentType = $scope->getType($functionCall->getArgs()[1]->value);
 		if ((new ConstantBooleanType(true))->isSuperTypeOf($returnArgumentType)->yes()) {
 			return new StringType();
 		}

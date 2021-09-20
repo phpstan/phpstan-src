@@ -26,15 +26,15 @@ class ClosureFromCallableDynamicReturnTypeExtension implements \PHPStan\Type\Dyn
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
 	{
-		if (!isset($methodCall->args[0])) {
+		if (!isset($methodCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectFromArgs(
 				$scope,
-				$methodCall->args,
+				$methodCall->getArgs(),
 				$methodReflection->getVariants()
 			)->getReturnType();
 		}
 
-		$callableType = $scope->getType($methodCall->args[0]->value);
+		$callableType = $scope->getType($methodCall->getArgs()[0]->value);
 		if ($callableType->isCallable()->no()) {
 			return new ErrorType();
 		}

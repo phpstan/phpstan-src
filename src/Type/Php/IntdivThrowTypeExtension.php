@@ -22,12 +22,12 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if (count($funcCall->args) < 2) {
+		if (count($funcCall->getArgs()) < 2) {
 			return $functionReflection->getThrowType();
 		}
 
 		$containsMin = false;
-		$valueType = $scope->getType($funcCall->args[0]->value);
+		$valueType = $scope->getType($funcCall->getArgs()[0]->value);
 		foreach (TypeUtils::getConstantScalars($valueType) as $constantScalarType) {
 			if ($constantScalarType->getValue() === PHP_INT_MIN) {
 				$containsMin = true;
@@ -41,7 +41,7 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		}
 
 		$divisionByZero = false;
-		$divisorType = $scope->getType($funcCall->args[1]->value);
+		$divisorType = $scope->getType($funcCall->getArgs()[1]->value);
 		foreach (TypeUtils::getConstantScalars($divisorType) as $constantScalarType) {
 			if ($containsMin && $constantScalarType->getValue() === -1) {
 				return new ObjectType(\ArithmeticError::class);

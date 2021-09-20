@@ -23,12 +23,12 @@ final class NumberFormatFunctionDynamicReturnTypeExtension implements \PHPStan\T
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$stringType = new StringType();
-		if (!isset($functionCall->args[3])) {
+		if (!isset($functionCall->getArgs()[3])) {
 			return $stringType;
 		}
 
-		$thousandsType = $scope->getType($functionCall->args[3]->value);
-		$decimalType = $scope->getType($functionCall->args[2]->value);
+		$thousandsType = $scope->getType($functionCall->getArgs()[3]->value);
+		$decimalType = $scope->getType($functionCall->getArgs()[2]->value);
 
 		if (!$thousandsType instanceof ConstantStringType || $thousandsType->getValue() !== '') {
 			return $stringType;

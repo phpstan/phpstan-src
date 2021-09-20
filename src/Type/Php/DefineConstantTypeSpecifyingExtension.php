@@ -30,7 +30,7 @@ class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 	{
 		return $functionReflection->getName() === 'define'
 			&& $context->null()
-			&& count($node->args) >= 2;
+			&& count($node->getArgs()) >= 2;
 	}
 
 	public function specifyTypes(
@@ -40,7 +40,7 @@ class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		$constantName = $scope->getType($node->args[0]->value);
+		$constantName = $scope->getType($node->getArgs()[0]->value);
 		if (
 			!$constantName instanceof ConstantStringType
 			|| $constantName->getValue() === ''
@@ -52,7 +52,7 @@ class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 			new \PhpParser\Node\Expr\ConstFetch(
 				new \PhpParser\Node\Name\FullyQualified($constantName->getValue())
 			),
-			$scope->getType($node->args[1]->value),
+			$scope->getType($node->getArgs()[1]->value),
 			TypeSpecifierContext::createTruthy(),
 			false,
 			$scope

@@ -243,7 +243,7 @@ class ExportedNodeResolver
 	}
 
 	/**
-	 * @param Node\Identifier|Node\Name|Node\NullableType|Node\UnionType|null $type
+	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $type
 	 * @return string|null
 	 */
 	private function printType($type): ?string
@@ -267,7 +267,22 @@ class ExportedNodeResolver
 			}, $type->types));
 		}
 
-		return $type->toString();
+		if ($type instanceof Node\IntersectionType) {
+			return implode('&', array_map(function ($innerType): string {
+				$printedType = $this->printType($innerType);
+				if ($printedType === null) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+
+				return $printedType;
+			}, $type->types));
+		}
+
+		if ($type instanceof Node\Identifier || $type instanceof Name) {
+			return $type->toString();
+		}
+
+		throw new \PHPStan\ShouldNotHappenException();
 	}
 
 	/**
@@ -291,7 +306,7 @@ class ExportedNodeResolver
 					$innerTypes = $type->types;
 					$innerTypes[] = new Name('null');
 					$type = new Node\UnionType($innerTypes);
-				} elseif (!$type instanceof Node\NullableType) {
+				} elseif ($type instanceof Node\Identifier || $type instanceof Name) {
 					$type = new Node\NullableType($type);
 				}
 			}

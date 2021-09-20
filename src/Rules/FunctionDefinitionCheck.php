@@ -90,7 +90,7 @@ class FunctionDefinitionCheck
 	/**
 	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Param[] $parameters
-	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $returnTypeNode
+	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\ComplexType|null $returnTypeNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @param string $unionTypesMessage

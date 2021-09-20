@@ -126,16 +126,16 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 
 			$functionName = $nameNode->toString();
 			if ($functionName === 'PHPStan\\Testing\\assertType') {
-				$expectedType = $scope->getType($node->args[0]->value);
-				$actualType = $scope->getType($node->args[1]->value);
+				$expectedType = $scope->getType($node->getArgs()[0]->value);
+				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
-				$expectedType = $nativeScope->getNativeType($node->args[0]->value);
-				$actualType = $nativeScope->getNativeType($node->args[1]->value);
+				$expectedType = $nativeScope->getNativeType($node->getArgs()[0]->value);
+				$actualType = $nativeScope->getNativeType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
-				$certainty = $node->args[0]->value;
+				$certainty = $node->getArgs()[0]->value;
 				if (!$certainty instanceof StaticCall) {
 					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
 				}
@@ -153,7 +153,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 
 				// @phpstan-ignore-next-line
 				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
-				$variable = $node->args[1]->value;
+				$variable = $node->getArgs()[1]->value;
 				if (!$variable instanceof Node\Expr\Variable) {
 					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
 				}
@@ -167,7 +167,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 				return;
 			}
 
-			if (count($node->args) !== 2) {
+			if (count($node->getArgs()) !== 2) {
 				$this->fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
 					$functionName,

@@ -27,11 +27,11 @@ class HrtimeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		$arrayType = new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new IntegerType(), new IntegerType()], 2);
 		$numberType = TypeUtils::toBenevolentUnion(TypeCombinator::union(new IntegerType(), new FloatType()));
 
-		if (count($functionCall->args) < 1) {
+		if (count($functionCall->getArgs()) < 1) {
 			return $arrayType;
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isTrueType = (new ConstantBooleanType(true))->isSuperTypeOf($argType);
 		$isFalseType = (new ConstantBooleanType(false))->isSuperTypeOf($argType);
 		$compareTypes = $isTrueType->compareTo($isFalseType);

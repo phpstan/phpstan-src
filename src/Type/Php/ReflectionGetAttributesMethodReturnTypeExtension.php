@@ -41,10 +41,10 @@ class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodR
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		if (count($methodCall->args) === 0) {
+		if (count($methodCall->getArgs()) === 0) {
 			return $this->getDefaultReturnType($scope, $methodCall, $methodReflection);
 		}
-		$argType = $scope->getType($methodCall->args[0]->value);
+		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 
 		if ($argType instanceof ConstantStringType) {
 			$classType = new ObjectType($argType->getValue());
@@ -61,7 +61,7 @@ class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodR
 	{
 		return ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$methodCall->args,
+			$methodCall->getArgs(),
 			$methodReflection->getVariants()
 		)->getReturnType();
 	}

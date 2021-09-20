@@ -21,11 +21,11 @@ class ArrayFlipFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (count($functionCall->args) !== 1) {
+		if (count($functionCall->getArgs()) !== 1) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$array = $functionCall->args[0]->value;
+		$array = $functionCall->getArgs()[0]->value;
 		$argType = $scope->getType($array);
 
 		if ($argType->isArray()->yes()) {

@@ -26,12 +26,12 @@ class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return $defaultReturnType;
 		}
 
-		$format = $scope->getType($functionCall->args[0]->value);
-		$datetime = $scope->getType($functionCall->args[1]->value);
+		$format = $scope->getType($functionCall->getArgs()[0]->value);
+		$datetime = $scope->getType($functionCall->getArgs()[1]->value);
 
 		if (!$format instanceof ConstantStringType || !$datetime instanceof ConstantStringType) {
 			return $defaultReturnType;

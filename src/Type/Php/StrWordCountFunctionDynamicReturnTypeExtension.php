@@ -27,11 +27,11 @@ class StrWordCountFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dy
 		Scope $scope
 	): Type
 	{
-		$argsCount = count($functionCall->args);
+		$argsCount = count($functionCall->getArgs());
 		if ($argsCount === 1) {
 			return new IntegerType();
 		} elseif ($argsCount === 2 || $argsCount === 3) {
-			$formatType = $scope->getType($functionCall->args[1]->value);
+			$formatType = $scope->getType($functionCall->getArgs()[1]->value);
 			if ($formatType instanceof ConstantIntegerType) {
 				$val = $formatType->getValue();
 				if ($val === 0) {

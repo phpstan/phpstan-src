@@ -21,12 +21,12 @@ class StrTokFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): \PHPStan\Type\Type
 	{
-		$args = $functionCall->args;
+		$args = $functionCall->getArgs();
 		if (count($args) !== 2) {
 			return ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants())->getReturnType();
 		}
 
-		$delimiterType = $scope->getType($functionCall->args[0]->value);
+		$delimiterType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isEmptyString = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
 		if ($isEmptyString->yes()) {
 			return new ConstantBooleanType(false);

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PHPStan\Reflection\ClassReflection;
@@ -11,7 +12,7 @@ class ParserNodeTypeToPHPStanType
 {
 
 	/**
-	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $type
+	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
 	 * @param ClassReflection|null $classReflection
 	 * @return Type
 	 */
@@ -45,6 +46,15 @@ class ParserNodeTypeToPHPStanType
 			}
 
 			return TypeCombinator::union(...$types);
+		} elseif ($type instanceof \PhpParser\Node\IntersectionType) {
+			$types = [];
+			foreach ($type->types as $intersectionTypeType) {
+				$types[] = self::resolve($intersectionTypeType, $classReflection);
+			}
+
+			return TypeCombinator::intersect(...$types);
+		} elseif (!$type instanceof Identifier) {
+			throw new \PHPStan\ShouldNotHappenException(get_class($type));
 		}
 
 		$type = $type->name;

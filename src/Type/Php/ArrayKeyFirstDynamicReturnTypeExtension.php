@@ -21,11 +21,11 @@ class ArrayKeyFirstDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$iterableAtLeastOnce = $argType->isIterableAtLeastOnce();
 		if ($iterableAtLeastOnce->no()) {
 			return new NullType();

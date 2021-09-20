@@ -21,16 +21,16 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if ($functionReflection->getName() === 'rand' && count($functionCall->args) === 0) {
+		if ($functionReflection->getName() === 'rand' && count($functionCall->getArgs()) === 0) {
 			return IntegerRangeType::fromInterval(0, null);
 		}
 
-		if (count($functionCall->args) < 2) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->args, $functionReflection->getVariants())->getReturnType();
+		if (count($functionCall->getArgs()) < 2) {
+			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->getArgs(), $functionReflection->getVariants())->getReturnType();
 		}
 
-		$minType = $scope->getType($functionCall->args[0]->value)->toInteger();
-		$maxType = $scope->getType($functionCall->args[1]->value)->toInteger();
+		$minType = $scope->getType($functionCall->getArgs()[0]->value)->toInteger();
+		$maxType = $scope->getType($functionCall->getArgs()[1]->value)->toInteger();
 
 		return $this->createRange($minType, $maxType);
 	}

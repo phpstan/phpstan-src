@@ -22,12 +22,12 @@ class ArrayFillKeysFunctionReturnTypeExtension implements \PHPStan\Type\DynamicF
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$valueType = $scope->getType($functionCall->args[1]->value);
-		$keysType = $scope->getType($functionCall->args[0]->value);
+		$valueType = $scope->getType($functionCall->getArgs()[1]->value);
+		$keysType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantArrays = TypeUtils::getConstantArrays($keysType);
 		if (count($constantArrays) === 0) {
 			return new ArrayType($keysType->getIterableValueType(), $valueType);

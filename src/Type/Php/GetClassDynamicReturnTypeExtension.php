@@ -30,7 +30,7 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$args = $functionCall->args;
+		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
 			if ($scope->isInClass()) {
 				return new ConstantStringType($scope->getClassReflection()->getName(), true);

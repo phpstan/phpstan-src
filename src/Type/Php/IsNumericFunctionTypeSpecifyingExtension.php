@@ -30,7 +30,7 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!isset($node->args[0])) {
+		if (!isset($node->getArgs()[0])) {
 			return new SpecifiedTypes();
 		}
 		if ($context->null()) {
@@ -49,7 +49,7 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 			]);
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new UnionType($numericTypes), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new UnionType($numericTypes), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

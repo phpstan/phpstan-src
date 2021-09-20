@@ -26,7 +26,7 @@ class StrPadFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		Scope $scope
 	): \PHPStan\Type\Type
 	{
-		$args = $functionCall->args;
+		$args = $functionCall->getArgs();
 		if (count($args) < 2) {
 			return new StringType();
 		}

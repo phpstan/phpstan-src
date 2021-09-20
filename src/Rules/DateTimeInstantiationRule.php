@@ -26,13 +26,13 @@ class DateTimeInstantiationRule implements \PHPStan\Rules\Rule
 	{
 		if (
 			!($node->class instanceof \PhpParser\Node\Name)
-			|| \count($node->args) === 0
+			|| \count($node->getArgs()) === 0
 			|| !\in_array(strtolower((string) $node->class), ['datetime', 'datetimeimmutable'], true)
 		) {
 			return [];
 		}
 
-		$arg = $scope->getType($node->args[0]->value);
+		$arg = $scope->getType($node->getArgs()[0]->value);
 		if (!($arg instanceof ConstantStringType)) {
 			return [];
 		}

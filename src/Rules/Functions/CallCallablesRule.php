@@ -97,7 +97,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$node->args,
+			$node->getArgs(),
 			$parametersAcceptors
 		);
 

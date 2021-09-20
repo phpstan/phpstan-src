@@ -152,7 +152,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 		}
 
 		if (!$classReflection->hasConstructor()) {
-			if (count($node->args) > 0) {
+			if (count($node->getArgs()) > 0) {
 				return array_merge($messages, [
 					RuleErrorBuilder::message(sprintf(
 						'Class %s does not have a constructor and must be instantiated without any parameters.',
@@ -178,7 +178,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 		return array_merge($messages, $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
-				$node->args,
+				$node->getArgs(),
 				$constructorReflection->getVariants()
 			),
 			$scope,

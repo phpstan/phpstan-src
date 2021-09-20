@@ -30,7 +30,7 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 		Scope $scope
 	): Type
 	{
-		$arrayArg = $functionCall->args[0]->value ?? null;
+		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
 
 		if ($arrayArg === null) {
 			return new ArrayType(
@@ -41,8 +41,8 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 
 		$valueType = $scope->getType($arrayArg);
 
-		if (isset($functionCall->args[1])) {
-			$offset = $scope->getType($functionCall->args[1]->value);
+		if (isset($functionCall->getArgs()[1])) {
+			$offset = $scope->getType($functionCall->getArgs()[1]->value);
 			if (!$offset instanceof ConstantIntegerType) {
 				$offset = new ConstantIntegerType(0);
 			}
@@ -50,8 +50,8 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			$offset = new ConstantIntegerType(0);
 		}
 
-		if (isset($functionCall->args[2])) {
-			$limit = $scope->getType($functionCall->args[2]->value);
+		if (isset($functionCall->getArgs()[2])) {
+			$limit = $scope->getType($functionCall->getArgs()[2]->value);
 			if (!$limit instanceof ConstantIntegerType) {
 				$limit = new NullType();
 			}
@@ -71,8 +71,8 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			);
 		}
 
-		if (isset($functionCall->args[3])) {
-			$preserveKeys = $scope->getType($functionCall->args[3]->value);
+		if (isset($functionCall->getArgs()[3])) {
+			$preserveKeys = $scope->getType($functionCall->getArgs()[3]->value);
 			$preserveKeys = (new ConstantBooleanType(true))->isSuperTypeOf($preserveKeys)->yes();
 		} else {
 			$preserveKeys = false;

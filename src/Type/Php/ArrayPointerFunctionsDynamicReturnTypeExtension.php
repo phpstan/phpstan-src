@@ -31,11 +31,11 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements \PHPStan\Type\D
 		Scope $scope
 	): Type
 	{
-		if (count($functionCall->args) === 0) {
+		if (count($functionCall->getArgs()) === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$iterableAtLeastOnce = $argType->isIterableAtLeastOnce();
 		if ($iterableAtLeastOnce->no()) {
 			return new ConstantBooleanType(false);

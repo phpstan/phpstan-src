@@ -24,7 +24,7 @@ class ClosureBindDynamicReturnTypeExtension implements \PHPStan\Type\DynamicStat
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
 	{
-		$closureType = $scope->getType($methodCall->args[0]->value);
+		$closureType = $scope->getType($methodCall->getArgs()[0]->value);
 		if (!($closureType instanceof ClosureType)) {
 			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 		}

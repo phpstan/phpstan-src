@@ -1505,15 +1505,15 @@ class MutatingScope implements Scope
 					if (
 						$functionName === 'array_map'
 						&& $argOrder === 0
-						&& isset($funcCall->args[1])
+						&& isset($funcCall->getArgs()[1])
 					) {
-						if (!isset($funcCall->args[2])) {
+						if (!isset($funcCall->getArgs()[2])) {
 							$callableParameters = [
-								new DummyParameter('item', $this->getType($funcCall->args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('item', $this->getType($funcCall->getArgs()[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
 							];
 						} else {
 							$callableParameters = [];
-							foreach ($funcCall->args as $i => $funcCallArg) {
+							foreach ($funcCall->getArgs() as $i => $funcCallArg) {
 								if ($i === 0) {
 									continue;
 								}
@@ -2269,7 +2269,7 @@ class MutatingScope implements Scope
 
 				return ParametersAcceptorSelector::selectFromArgs(
 					$this,
-					$node->args,
+					$node->getArgs(),
 					$calledOnType->getCallableParametersAcceptors($this)
 				)->getReturnType();
 			}
@@ -2289,7 +2289,7 @@ class MutatingScope implements Scope
 
 			return ParametersAcceptorSelector::selectFromArgs(
 				$this,
-				$node->args,
+				$node->getArgs(),
 				$functionReflection->getVariants()
 			)->getReturnType();
 		}
@@ -3358,7 +3358,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $type
+	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
 	 * @param bool $isNullable
 	 * @param bool $isVariadic
 	 * @return Type
@@ -4891,7 +4891,7 @@ class MutatingScope implements Scope
 		$methodCall = new Expr\StaticCall(
 			new Name($resolvedClassName),
 			new Node\Identifier($constructorMethod->getName()),
-			$node->args
+			$node->getArgs()
 		);
 
 		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
@@ -4958,7 +4958,7 @@ class MutatingScope implements Scope
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$this,
-			$methodCall->args,
+			$methodCall->getArgs(),
 			$constructorMethod->getVariants()
 		);
 
@@ -5070,7 +5070,7 @@ class MutatingScope implements Scope
 
 		return ParametersAcceptorSelector::selectFromArgs(
 			$this,
-			$methodCall->args,
+			$methodCall->getArgs(),
 			$methodReflection->getVariants()
 		)->getReturnType();
 	}

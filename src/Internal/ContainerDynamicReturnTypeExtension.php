@@ -30,17 +30,17 @@ class ContainerDynamicReturnTypeExtension implements \PHPStan\Type\DynamicMethod
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		if (count($methodCall->args) === 0) {
+		if (count($methodCall->getArgs()) === 0) {
 			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 		}
-		$argType = $scope->getType($methodCall->args[0]->value);
+		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		if (!$argType instanceof ConstantStringType) {
 			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 		}
 
 		$type = new ObjectType($argType->getValue());
-		if ($methodReflection->getName() === 'getByType' && count($methodCall->args) >= 2) {
-			$argType = $scope->getType($methodCall->args[1]->value);
+		if ($methodReflection->getName() === 'getByType' && count($methodCall->getArgs()) >= 2) {
+			$argType = $scope->getType($methodCall->getArgs()[1]->value);
 			if ($argType instanceof ConstantBooleanType && $argType->getValue()) {
 				$type = TypeCombinator::addNull($type);
 			}

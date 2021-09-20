@@ -28,11 +28,11 @@ class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionRet
 	): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return $defaultReturnType;
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isString = (new StringType())->isSuperTypeOf($argType);
 		$isArray = (new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($argType);
 		$compare = $isString->compareTo($isArray);

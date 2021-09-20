@@ -39,12 +39,12 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (count($node->args) < 2) {
+		if (count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
-		$objectType = $scope->getType($node->args[0]->value);
-		$classType = $scope->getType($node->args[1]->value);
-		$allowStringType = isset($node->args[2]) ? $scope->getType($node->args[2]->value) : new ConstantBooleanType(true);
+		$objectType = $scope->getType($node->getArgs()[0]->value);
+		$classType = $scope->getType($node->getArgs()[1]->value);
+		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(true);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
 		if (!$classType instanceof ConstantStringType) {
@@ -59,7 +59,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 				}
 
 				return $this->typeSpecifier->create(
-					$node->args[0]->value,
+					$node->getArgs()[0]->value,
 					$type,
 					$context,
 					false,
@@ -100,7 +100,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 		});
 
 		return $this->typeSpecifier->create(
-			$node->args[0]->value,
+			$node->getArgs()[0]->value,
 			$type,
 			$context,
 			false,

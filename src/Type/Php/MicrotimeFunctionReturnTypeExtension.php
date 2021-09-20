@@ -23,11 +23,11 @@ class MicrotimeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (count($functionCall->args) < 1) {
+		if (count($functionCall->getArgs()) < 1) {
 			return new StringType();
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isTrueType = (new ConstantBooleanType(true))->isSuperTypeOf($argType);
 		$isFalseType = (new ConstantBooleanType(false))->isSuperTypeOf($argType);
 		$compareTypes = $isTrueType->compareTo($isFalseType);

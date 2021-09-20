@@ -11,6 +11,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\ObjectType;
@@ -137,8 +138,14 @@ class LocalTypeAliasesRule implements Rule
 					return $type;
 				}
 
-				if ($type instanceof ErrorType) {
+				if ($type instanceof CircularTypeAliasErrorType) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Circular definition detected in type alias %s.', $aliasName))->build();
+					$foundError = true;
+					return $type;
+				}
+
+				if ($type instanceof ErrorType) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))->build();
 					$foundError = true;
 					return $type;
 				}

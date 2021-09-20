@@ -123,7 +123,7 @@ class TypeAliasResolver
 			$unresolvedAlias = $localTypeAliases[$aliasName];
 			$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
 		} catch (\PHPStan\Type\CircularTypeAliasDefinitionException $e) {
-			$resolvedAliasType = new ErrorType();
+			$resolvedAliasType = new CircularTypeAliasErrorType();
 		}
 
 		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;

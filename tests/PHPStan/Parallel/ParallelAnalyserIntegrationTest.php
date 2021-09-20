@@ -51,7 +51,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 		$this->assertJsonStringEqualsJsonString(Json::encode([
 			'totals' => [
 				'errors' => 0,
-				'file_errors' => 3,
+				'file_errors' => 4,
 			],
 			'files' => [
 				sprintf('%s (in context of class ParallelAnalyserIntegrationTest\\Bar)', $filePath) => [
@@ -65,7 +65,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 					],
 				],
 				sprintf('%s (in context of class ParallelAnalyserIntegrationTest\\Foo)', $filePath) => [
-					'errors' => 2,
+					'errors' => 3,
 					'messages' => [
 						[
 							'message' => 'Method ParallelAnalyserIntegrationTest\\Foo::doFoo() has no return type specified.',
@@ -75,6 +75,11 @@ class ParallelAnalyserIntegrationTest extends TestCase
 						[
 							'message' => 'Access to an undefined property ParallelAnalyserIntegrationTest\\Foo::$test.',
 							'line' => 10,
+							'ignorable' => true,
+						],
+						[
+							'message' => 'Access to an undefined property ParallelAnalyserIntegrationTest\\Foo::$test.',
+							'line' => 15,
 							'ignorable' => true,
 						],
 					],

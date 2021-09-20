@@ -64,6 +64,9 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 			}
 		}
 
+                if ($arrayType->getIterableValueType()->isArray()->yes()) {
+                        return new ErrorType();
+                }
 		if ($arrayType->getIterableValueType() instanceof UnionType) {
 			foreach ($arrayType->getIterableValueType()->getTypes() as $subType) {
 				if ($subType->isArray()->yes()) {

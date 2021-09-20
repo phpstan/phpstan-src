@@ -963,6 +963,9 @@ class NodeScopeResolver
 
 			$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
 			$bodyScope = $bodyScopeResult->getScope();
+			foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+			}
 			$condBooleanType = $bodyScope->getType($stmt->cond)->toBoolean();
 			$alwaysIterates = $condBooleanType instanceof ConstantBooleanType && $condBooleanType->getValue();
 
@@ -970,9 +973,6 @@ class NodeScopeResolver
 				$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;
 			} else {
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-			}
-			foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 			}
 			$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
 			if ($finalScope === null) {

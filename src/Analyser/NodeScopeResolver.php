@@ -3649,7 +3649,7 @@ class NodeScopeResolver
 				continue;
 			}
 			$parserNodes = $this->parser->parseFile($fileName);
-			$this->processNodesForTraitUse($parserNodes, $traitReflection, $classScope, $nodeCallback);
+			$this->processNodesForTraitUse($parserNodes, $traitReflection, $classScope, $node->adaptations, $nodeCallback);
 		}
 	}
 
@@ -3657,13 +3657,41 @@ class NodeScopeResolver
 	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
 	 * @param ClassReflection $traitReflection
 	 * @param \PHPStan\Analyser\MutatingScope $scope
+	 * @param Node\Stmt\TraitUseAdaptation[] $adaptations
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processNodesForTraitUse($node, ClassReflection $traitReflection, MutatingScope $scope, callable $nodeCallback): void
+	private function processNodesForTraitUse($node, ClassReflection $traitReflection, MutatingScope $scope, array $adaptations, callable $nodeCallback): void
 	{
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Stmt\Trait_ && $traitReflection->getName() === (string) $node->namespacedName && $traitReflection->getNativeReflection()->getStartLine() === $node->getStartLine()) {
-				$this->processStmtNodes($node, $node->stmts, $scope->enterTrait($traitReflection), $nodeCallback);
+				$methodModifiers = [];
+				foreach ($adaptations as $adaptation) {
+					if (!$adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
+						continue;
+					}
+
+					if ($adaptation->newModifier === null) {
+						continue;
+					}
+
+					$methodModifiers[$adaptation->method->toLowerString()] = $adaptation->newModifier;
+				}
+
+				$stmts = $node->stmts;
+				foreach ($stmts as $i => $stmt) {
+					if (!$stmt instanceof Node\Stmt\ClassMethod) {
+						continue;
+					}
+					$methodName = $stmt->name->toLowerString();
+					if (!array_key_exists($methodName, $methodModifiers)) {
+						continue;
+					}
+
+					$methodAst = clone $stmt;
+					$methodAst->flags = ($methodAst->flags & ~ Node\Stmt\Class_::VISIBILITY_MODIFIER_MASK) | $methodModifiers[$methodName];
+					$stmts[$i] = $methodAst;
+				}
+				$this->processStmtNodes($node, $stmts, $scope->enterTrait($traitReflection), $nodeCallback);
 				return;
 			}
 			if ($node instanceof Node\Stmt\ClassLike) {
@@ -3674,11 +3702,11 @@ class NodeScopeResolver
 			}
 			foreach ($node->getSubNodeNames() as $subNodeName) {
 				$subNode = $node->{$subNodeName};
-				$this->processNodesForTraitUse($subNode, $traitReflection, $scope, $nodeCallback);
+				$this->processNodesForTraitUse($subNode, $traitReflection, $scope, $adaptations, $nodeCallback);
 			}
 		} elseif (is_array($node)) {
 			foreach ($node as $subNode) {
-				$this->processNodesForTraitUse($subNode, $traitReflection, $scope, $nodeCallback);
+				$this->processNodesForTraitUse($subNode, $traitReflection, $scope, $adaptations, $nodeCallback);
 			}
 		}
 	}

@@ -510,4 +510,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/parameter-type-widening.php'], $errors);
 	}
 
+	public function testBug4516(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-4516.php'], []);
+	}
+
 }

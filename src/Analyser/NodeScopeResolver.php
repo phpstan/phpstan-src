@@ -983,6 +983,8 @@ class NodeScopeResolver
 				$hasYield = $condResult->hasYield();
 				$throwPoints = $condResult->getThrowPoints();
 				$finalScope = $condResult->getFalseyScope();
+			} else {
+				$this->processExprNode($stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep());
 			}
 			foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);

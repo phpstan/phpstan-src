@@ -408,7 +408,7 @@ class NodeScopeResolver
 			foreach ($stmt->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attr) {
 					foreach ($attr->args as $arg) {
-						$nodeCallback($arg->value, $scope);
+						$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
 					}
 				}
 			}
@@ -469,7 +469,7 @@ class NodeScopeResolver
 			foreach ($stmt->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attr) {
 					foreach ($attr->args as $arg) {
-						$nodeCallback($arg->value, $scope);
+						$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
 					}
 				}
 			}
@@ -644,7 +644,7 @@ class NodeScopeResolver
 			foreach ($stmt->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attr) {
 					foreach ($attr->args as $arg) {
-						$nodeCallback($arg->value, $classScope);
+						$this->processExprNode($arg->value, $classScope, $nodeCallback, ExpressionContext::createDeep());
 					}
 				}
 			}
@@ -660,7 +660,7 @@ class NodeScopeResolver
 			foreach ($stmt->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attr) {
 					foreach ($attr->args as $arg) {
-						$nodeCallback($arg->value, $scope);
+						$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
 					}
 				}
 			}
@@ -1378,7 +1378,7 @@ class NodeScopeResolver
 				foreach ($stmt->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
 						foreach ($attr->args as $arg) {
-							$nodeCallback($arg->value, $scope);
+							$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
 						}
 					}
 				}
@@ -3068,7 +3068,7 @@ class NodeScopeResolver
 		foreach ($param->attrGroups as $attrGroup) {
 			foreach ($attrGroup->attrs as $attr) {
 				foreach ($attr->args as $arg) {
-					$nodeCallback($arg->value, $scope);
+					$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
 				}
 			}
 		}

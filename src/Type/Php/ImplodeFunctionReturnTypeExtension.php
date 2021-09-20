@@ -8,8 +8,10 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\UnionType;
 
 class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -59,6 +61,14 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
 			if ($arrayType->getIterableValueType()->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
 				$accessoryTypes[] = new AccessoryNonEmptyStringType();
+			}
+		}
+
+		if ($arrayType->getIterableValueType() instanceof UnionType) {
+			foreach ($arrayType->getIterableValueType()->getTypes() as $subType) {
+				if ($subType->isArray()->yes()) {
+					return new ErrorType();
+				}
 			}
 		}
 

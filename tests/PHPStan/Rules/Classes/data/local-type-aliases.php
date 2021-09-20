@@ -55,3 +55,10 @@ class Qux
 class Generic
 {
 }
+
+/**
+ * @phpstan-type InvalidTypeAlias invalid-type-definition
+ */
+class Invalid
+{
+}

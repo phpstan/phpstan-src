@@ -28,7 +28,7 @@ class TypeAlias
 	public static function invalid(): self
 	{
 		$self = new self(new IdentifierTypeNode('*ERROR*'), new NameScope(null, []));
-		$self->resolvedType = new ErrorType();
+		$self->resolvedType = new CircularTypeAliasErrorType();
 		return $self;
 	}
 

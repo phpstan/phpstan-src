@@ -429,7 +429,7 @@ class TypeNodeResolver
 	private function resolveArrayTypeNode(ArrayTypeNode $typeNode, NameScope $nameScope): Type
 	{
 		$itemType = $this->resolve($typeNode->type, $nameScope);
-		return new ArrayType(new MixedType(), $itemType);
+		return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $itemType);
 	}
 
 	private function resolveGenericTypeNode(GenericTypeNode $typeNode, NameScope $nameScope): Type
@@ -439,7 +439,7 @@ class TypeNodeResolver
 
 		if ($mainTypeName === 'array' || $mainTypeName === 'non-empty-array') {
 			if (count($genericTypes) === 1) { // array<ValueType>
-				$arrayType = new ArrayType(new MixedType(true), $genericTypes[0]);
+				$arrayType = new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $genericTypes[0]);
 			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
 				$keyType = TypeCombinator::intersect($genericTypes[0], new UnionType([
 					new IntegerType(),

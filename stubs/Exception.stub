@@ -60,7 +60,7 @@ class Exception implements Throwable
 	final public function getMessage(): string {}
 
 	/**
-	 * @return mixed
+	 * @return int
 	 * @throws void
 	 */
 	final public function getCode() {}
@@ -107,7 +107,7 @@ class Error implements Throwable
 	final public function getMessage(): string {}
 
 	/**
-	 * @return mixed
+	 * @return int
 	 * @throws void
 	 */
 	final public function getCode() {}

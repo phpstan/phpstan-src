@@ -48,6 +48,8 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 			$arrayType = $scope->getType($args[0]->value);
 		} elseif (count($args) === 2) {
 			$arrayType = $scope->getType($args[1]->value);
+		} else {
+			return [];
 		}
 
 		if ($arrayType->getIterableValueType()->isArray()->yes()) {

@@ -2,9 +2,6 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
-use const PHP_VERSION_ID;
-
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ImplodeFunctionRule>
  */

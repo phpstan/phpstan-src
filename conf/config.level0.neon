@@ -55,7 +55,6 @@ rules:
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Functions\FunctionAttributesRule
 	- PHPStan\Rules\Functions\InnerFunctionRule
-	- PHPStan\Rules\Functions\ImplodeFunctionRule
 	- PHPStan\Rules\Functions\ParamAttributesRule
 	- PHPStan\Rules\Functions\PrintfParametersRule
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule

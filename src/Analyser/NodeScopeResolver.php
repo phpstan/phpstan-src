@@ -56,6 +56,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Node\BooleanOrNode;
+use PHPStan\Node\BreaklessWhileLoopNode;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Node\ClassMethodsNode;
@@ -899,9 +900,13 @@ class NodeScopeResolver
 			$isIterableAtLeastOnce = $beforeCondBooleanType instanceof ConstantBooleanType && $beforeCondBooleanType->getValue();
 			$alwaysIterates = $condBooleanType instanceof ConstantBooleanType && $condBooleanType->getValue();
 			$neverIterates = $condBooleanType instanceof ConstantBooleanType && !$condBooleanType->getValue();
+			$breakCount = count($finalScopeResult->getExitPointsByType(Break_::class));
+			if ($breakCount === 0) {
+				$nodeCallback(new BreaklessWhileLoopNode($stmt), $bodyScopeMaybeRan);
+			}
 
 			if ($alwaysIterates) {
-				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
+				$isAlwaysTerminating = $breakCount === 0;
 			} elseif ($isIterableAtLeastOnce) {
 				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();
 			} else {

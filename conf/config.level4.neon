@@ -145,6 +145,13 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Comparison\WhileLoopAlwaysTrueConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule
 		arguments:
 			checkProtectedAndPublicMethods: %checkTooWideReturnTypesInProtectedAndPublicMethods%

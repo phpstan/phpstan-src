@@ -2623,7 +2623,7 @@ return [
 'Exception::__clone' => ['void'],
 'Exception::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'(?Throwable)|(?Exception)'],
 'Exception::__toString' => ['string'],
-'Exception::getCode' => ['mixed'],
+'Exception::getCode' => ['int'],
 'Exception::getFile' => ['string'],
 'Exception::getLine' => ['int'],
 'Exception::getMessage' => ['string'],

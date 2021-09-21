@@ -44,11 +44,12 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 		}
 
 		$args = $node->getArgs();
-		if (count($args) !== 2) {
-			return [];
+		if (count($args) === 1) {
+			$arrayType = $scope->getType($args[0]->value);
+		} elseif (count($args) === 2) {
+			$arrayType = $scope->getType($args[1]->value);
 		}
 
-		$arrayType = $scope->getType($args[1]->value);
 		if ($arrayType->getIterableValueType()->isArray()->yes()) {
 			return [
 				RuleErrorBuilder::message(

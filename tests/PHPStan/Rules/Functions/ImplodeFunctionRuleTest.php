@@ -26,11 +26,15 @@ class ImplodeFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Call to implode with invalid nested array argument.',
-				10,
+				11,
+			],
+			[
+				'Call to implode with invalid nested array argument.',
+				13,
 			],
 			[
 				'Call to join with invalid nested array argument.',
-				11,
+				14,
 			],
 		]);
 	}

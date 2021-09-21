@@ -9,7 +9,7 @@ interface Throwable
 	public function getMessage();
 
 	/**
-	 * @return mixed
+	 * @return int
 	 * @throws void
 	 */
 	public function getCode();

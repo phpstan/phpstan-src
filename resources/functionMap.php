@@ -12238,7 +12238,7 @@ return [
 'Threaded::synchronized' => ['mixed', 'block'=>'Closure', '...args='=>'mixed'],
 'Threaded::wait' => ['bool', 'timeout='=>'int'],
 'Throwable::__toString' => ['string'],
-'Throwable::getCode' => ['mixed'],
+'Throwable::getCode' => ['int'],
 'Throwable::getFile' => ['string'],
 'Throwable::getLine' => ['int'],
 'Throwable::getMessage' => ['string'],

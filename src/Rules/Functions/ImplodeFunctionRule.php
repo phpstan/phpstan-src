@@ -39,7 +39,7 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 		}
 
 		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
-		if (!in_array($functionName, ['implode', 'join'])) {
+		if (!in_array($functionName, ['implode', 'join'], true)) {
 			return [];
 		}
 

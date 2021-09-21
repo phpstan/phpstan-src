@@ -13,7 +13,8 @@ class ImplodeFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new ImplodeFunctionRule();
+		$reflectionProvider = $this->createReflectionProvider();
+		return new ImplodeFunctionRule($reflectionProvider);
 	}
 
 	public function testFile(): void
@@ -26,6 +27,10 @@ class ImplodeFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Call to implode with invalid nested array argument.',
 				10,
+			],
+			[
+				'Call to join with invalid nested array argument.',
+				11,
 			],
 		]);
 	}

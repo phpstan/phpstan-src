@@ -435,7 +435,6 @@ class MutatingScope implements Scope
 				'filetype',
 				'fileperms',
 			] as $functionName) {
-				// @phpstan-ignore-next-line
 				if (!Strings::startsWith((string) $exprString, $functionName . '(') && !Strings::startsWith((string) $exprString, '\\' . $functionName . '(')) {
 					continue;
 				}

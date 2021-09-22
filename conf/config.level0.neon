@@ -2,26 +2,18 @@ parameters:
 	customRulesetUsed: false
 
 conditionalTags:
-	PHPStan\Rules\Api\ApiInstantiationRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiClassExtendsRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiClassImplementsRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiInterfaceExtendsRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiMethodCallRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiStaticCallRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiTraitUseRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
 
 rules:
+	- PHPStan\Rules\Api\ApiInstantiationRule
+	- PHPStan\Rules\Api\ApiClassExtendsRule
+	- PHPStan\Rules\Api\ApiClassImplementsRule
+	- PHPStan\Rules\Api\ApiInterfaceExtendsRule
+	- PHPStan\Rules\Api\ApiMethodCallRule
+	- PHPStan\Rules\Api\ApiStaticCallRule
+	- PHPStan\Rules\Api\ApiTraitUseRule
+	- PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
 	- PHPStan\Rules\Arrays\EmptyArrayItemRule
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
@@ -66,30 +58,6 @@ rules:
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
 
 services:
-	-
-		class: PHPStan\Rules\Api\ApiInstantiationRule
-
-	-
-		class: PHPStan\Rules\Api\ApiClassExtendsRule
-
-	-
-		class: PHPStan\Rules\Api\ApiClassImplementsRule
-
-	-
-		class: PHPStan\Rules\Api\ApiInterfaceExtendsRule
-
-	-
-		class: PHPStan\Rules\Api\ApiMethodCallRule
-
-	-
-		class: PHPStan\Rules\Api\ApiStaticCallRule
-
-	-
-		class: PHPStan\Rules\Api\ApiTraitUseRule
-
-	-
-		class: PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
-
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
 		tags:

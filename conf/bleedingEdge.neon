@@ -2,4 +2,3 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		skipCheckGenericClasses: []
-		apiRules: true

@@ -27,7 +27,6 @@ parameters:
 		rememberFunctionValues: false
 		apiRules: false
 		finalByPhpDocTag: false
-		classConstants: false
 		privateStaticCall: false
 	fileExtensions:
 		- php
@@ -190,7 +189,6 @@ parametersSchema:
 		rememberFunctionValues: bool(),
 		apiRules: bool(),
 		finalByPhpDocTag: bool(),
-		classConstants: bool(),
 		privateStaticCall: bool(),
 	])
 	fileExtensions: listOf(string())

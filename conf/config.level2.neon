@@ -6,10 +6,6 @@ parameters:
 	checkThisOnly: false
 	checkPhpDocMissingReturn: true
 
-conditionalTags:
-	PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule:
-		phpstan.rules.rule: %featureToggles.classConstants%
-
 rules:
 	- PHPStan\Rules\Cast\EchoRule
 	- PHPStan\Rules\Cast\InvalidCastRule
@@ -31,6 +27,7 @@ rules:
 	- PHPStan\Rules\Operators\InvalidBinaryOperationRule
 	- PHPStan\Rules\Operators\InvalidUnaryOperationRule
 	- PHPStan\Rules\Operators\InvalidComparisonOperationRule
+	- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
@@ -56,8 +53,6 @@ services:
 		class: PHPStan\Rules\Generics\ClassAncestorsRule
 		tags:
 			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	-
 		class: PHPStan\Rules\Generics\InterfaceAncestorsRule
 		tags:

@@ -18,8 +18,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.apiRules%
 	PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule:
 		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Constants\OverridingConstantRule:
-		phpstan.rules.rule: %featureToggles.classConstants%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
 
@@ -140,6 +138,8 @@ services:
 		class: PHPStan\Rules\Constants\OverridingConstantRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Methods\OverridingMethodRule

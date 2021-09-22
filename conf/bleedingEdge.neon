@@ -7,4 +7,3 @@ parameters:
 		rememberFunctionValues: true
 		apiRules: true
 		finalByPhpDocTag: true
-		classConstants: true

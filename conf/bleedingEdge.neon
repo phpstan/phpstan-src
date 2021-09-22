@@ -2,7 +2,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		randomIntParameters: true
-		checkMissingTemplateTypeInParameter: true
 		arrayDestructuring: true
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true

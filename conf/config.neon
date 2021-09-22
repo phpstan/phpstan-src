@@ -22,7 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
-		checkMissingTemplateTypeInParameter: false
 		arrayDestructuring: false
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
@@ -188,7 +187,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
-		checkMissingTemplateTypeInParameter: bool(),
 		arrayDestructuring: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
@@ -779,7 +777,6 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
-			checkMissingTemplateTypeInParameter: %featureToggles.checkMissingTemplateTypeInParameter%
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck

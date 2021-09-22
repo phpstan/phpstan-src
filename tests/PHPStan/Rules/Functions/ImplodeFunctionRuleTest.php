@@ -18,20 +18,28 @@ class ImplodeFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/implode.php'], [
 			[
-				'Call to implode with invalid nested array argument in union type.',
+				'Call to implode with invalid non-string argument.',
 				9,
 			],
 			[
-				'Call to implode with invalid nested array argument.',
+				'Call to implode with invalid non-string argument.',
 				11,
 			],
 			[
-				'Call to implode with invalid nested array argument.',
+				'Call to implode with invalid non-string argument.',
+				12,
+			],
+			[
+				'Call to implode with invalid non-string argument.',
 				13,
 			],
 			[
-				'Call to join with invalid nested array argument.',
-				14,
+				'Call to implode with invalid non-string argument.',
+				15,
+			],
+			[
+				'Call to join with invalid non-string argument.',
+				16,
 			],
 		]);
 	}

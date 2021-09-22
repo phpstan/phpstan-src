@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\UnionType;
 
 /**
@@ -49,23 +50,12 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		if ($arrayType->getIterableValueType()->isArray()->yes()) {
+		if ($arrayType->getIterableValueType()->toString() instanceof ErrorType) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Call to %s with invalid nested array argument.', $functionName)
+					sprintf('Call to %s with invalid non-string argument.', $functionName)
 				)->build(),
 			];
-		}
-		if ($arrayType->getIterableValueType() instanceof UnionType) {
-			foreach ($arrayType->getIterableValueType()->getTypes() as $subType) {
-				if ($subType->isArray()->yes()) {
-					return [
-						RuleErrorBuilder::message(
-							sprintf('Call to %s with invalid nested array argument in union type.', $functionName)
-						)->build(),
-					];
-				}
-			}
 		}
 
 		return [];

@@ -64,6 +64,7 @@ use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\ClosureReturnStatementsNode;
+use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -972,6 +973,8 @@ class NodeScopeResolver
 			}
 			$condBooleanType = $bodyScope->getType($stmt->cond)->toBoolean();
 			$alwaysIterates = $condBooleanType instanceof ConstantBooleanType && $condBooleanType->getValue();
+
+			$nodeCallback(new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->getExitPoints()), $bodyScope);
 
 			if ($alwaysIterates) {
 				$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;

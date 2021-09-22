@@ -65,6 +65,13 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Comparison\DoWhileLoopConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Comparison\ElseIfConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%

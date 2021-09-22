@@ -136,6 +136,7 @@ class StatementResult
 		foreach ($this->exitPoints as $exitPoint) {
 			$statement = $exitPoint->getStatement();
 			if (!$statement instanceof Stmt\Continue_ && !$statement instanceof Stmt\Break_) {
+				$exitPoints[] = $exitPoint;
 				continue;
 			}
 			if ($statement->num === null) {

@@ -24,7 +24,6 @@ parameters:
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
-		privateStaticCall: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -183,7 +182,6 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		apiRules: bool(),
-		privateStaticCall: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

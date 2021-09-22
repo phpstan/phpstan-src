@@ -51,4 +51,13 @@ class Foo
 		}
 	}
 
+	public function doBar5(): void
+	{
+		while (true) {
+			if (rand(0, 1)) {
+				return;
+			}
+		}
+	}
+
 }

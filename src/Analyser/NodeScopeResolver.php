@@ -900,13 +900,12 @@ class NodeScopeResolver
 			$isIterableAtLeastOnce = $beforeCondBooleanType instanceof ConstantBooleanType && $beforeCondBooleanType->getValue();
 			$alwaysIterates = $condBooleanType instanceof ConstantBooleanType && $condBooleanType->getValue();
 			$neverIterates = $condBooleanType instanceof ConstantBooleanType && !$condBooleanType->getValue();
-			$breakCount = count($finalScopeResult->getExitPointsByType(Break_::class));
-			if ($breakCount === 0) {
+			if (count($finalScopeResult->getExitPoints()) === 0) {
 				$nodeCallback(new BreaklessWhileLoopNode($stmt), $bodyScopeMaybeRan);
 			}
 
 			if ($alwaysIterates) {
-				$isAlwaysTerminating = $breakCount === 0;
+				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
 			} elseif ($isIterableAtLeastOnce) {
 				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();
 			} else {

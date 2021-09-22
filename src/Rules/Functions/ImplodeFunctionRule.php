@@ -74,7 +74,7 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 
 		return [
 			RuleErrorBuilder::message(
-				sprintf('Parameter #%d $array of function %s expects array<string>, %s given.', $paramNo, $functionName, $typeResult->getType()->getIterableValueType()->describe(VerbosityLevel::typeOnly()))
+				sprintf('Parameter #%d $array of function %s expects array<string>, %s given.', $paramNo, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly()))
 			)->build(),
 		];
 	}

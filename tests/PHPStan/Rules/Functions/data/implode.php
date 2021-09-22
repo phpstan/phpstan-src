@@ -22,4 +22,14 @@ class Foo
 		implode('', ['12', '345']);
 		join('', ['12', '345']);
 	}
+
+	public function doFoo()
+	{
+		$parameters = [
+			array_map(
+				fn ($value) => $this->getFactory()->getParameterType()->toString($value),
+				$this->values,
+			),
+		];
+	}
 }

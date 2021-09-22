@@ -20,27 +20,27 @@ class ImplodeFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/implode.php'], [
 			[
-				'Parameter #2 $array of function implode expects array<string>, array<int, string>|string given.',
+				'Parameter #2 $array of function implode expects array<string>, array<int, array<int, string>|string> given.',
 				9,
 			],
 			[
-				'Parameter #1 $array of function implode expects array<string>, array<int, string> given.',
+				'Parameter #1 $array of function implode expects array<string>, array<int, array<int, string>> given.',
 				11,
 			],
 			[
-				'Parameter #1 $array of function implode expects array<string>, array<int, int> given.',
+				'Parameter #1 $array of function implode expects array<string>, array<int, array<int, int>> given.',
 				12,
 			],
 			[
-				'Parameter #1 $array of function implode expects array<string>, array<int, int|true> given.',
+				'Parameter #1 $array of function implode expects array<string>, array<int, array<int, int|true>> given.',
 				13,
 			],
 			[
-				'Parameter #2 $array of function implode expects array<string>, array<int, string> given.',
+				'Parameter #2 $array of function implode expects array<string>, array<int, array<int, string>> given.',
 				15,
 			],
 			[
-				'Parameter #2 $array of function join expects array<string>, array<int, string> given.',
+				'Parameter #2 $array of function join expects array<string>, array<int, array<int, string>> given.',
 				16,
 			],
 		]);

@@ -1978,6 +1978,9 @@ class MutatingScope implements Scope
 				if ($resolvedConstantName === '__COMPILER_HALT_OFFSET__') {
 					return new IntegerType();
 				}
+				if ($resolvedConstantName === 'PHP_INT_MAX') {
+					return new IntegerRangeType(1, PHP_INT_MAX);
+				}
 
 				$constantType = $this->reflectionProvider->getConstant($node->name, $this)->getValueType();
 

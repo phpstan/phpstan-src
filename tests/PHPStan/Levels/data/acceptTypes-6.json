@@ -65,88 +65,93 @@
         "ignorable": true
     },
     {
+        "message": "Method Levels\\AcceptTypes\\Foo::partlySupportedUnion() has no return type specified.",
+        "line": 186,
+        "ignorable": true
+    },
+    {
         "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doFoo() has no return type specified.",
-        "line": 208,
+        "line": 214,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doFooUnionClosures() has no return type specified.",
-        "line": 254,
+        "line": 260,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doBar() has no return type specified.",
-        "line": 332,
+        "line": 338,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doBaz() has no return type specified.",
-        "line": 342,
+        "line": 348,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::doFoo() has no return type specified.",
-        "line": 409,
+        "line": 415,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::doBar() has no return type specified.",
-        "line": 418,
+        "line": 424,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::doBaz() has no return type specified.",
-        "line": 423,
+        "line": 429,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::doLorem() has no return type specified.",
-        "line": 437,
+        "line": 443,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::doIpsum() has no return type specified.",
-        "line": 445,
+        "line": 451,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::doFooArray() has no return type specified.",
-        "line": 490,
+        "line": 496,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::doBarArray() has no return type specified.",
-        "line": 502,
+        "line": 508,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::testUnions() has no return type specified.",
-        "line": 524,
+        "line": 530,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::testUnions2() has no return type specified.",
-        "line": 535,
+        "line": 541,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::requireArray() has no return type specified.",
-        "line": 549,
+        "line": 555,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\Baz::requireFoo() has no return type specified.",
-        "line": 554,
+        "line": 560,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\ArrayShapes::doFoo() has no return type specified.",
-        "line": 570,
+        "line": 576,
         "ignorable": true
     },
     {
         "message": "Method Levels\\AcceptTypes\\ArrayShapes::doBar() has no return type specified.",
-        "line": 603,
+        "line": 609,
         "ignorable": true
     }
 ]

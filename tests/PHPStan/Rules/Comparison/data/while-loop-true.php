@@ -60,4 +60,35 @@ class Foo
 		}
 	}
 
+	public function doBar6(): void
+	{
+		while (true) {
+			if (rand(0, 1)) {
+				continue;
+			}
+		}
+	}
+
+	public function doBar7(array $a): void
+	{
+		foreach ($a as $v) {
+			while (true) {
+				if (rand(0, 1)) {
+					continue 2;
+				}
+			}
+		}
+	}
+
+	public function doBar8(array $a): void
+	{
+		foreach ($a as $v) {
+			while (true) {
+				if (rand(0, 1)) {
+					break 2;
+				}
+			}
+		}
+	}
+
 }

@@ -44,6 +44,10 @@ class WhileLoopAlwaysTrueConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 				20,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'While loop condition is always true.',
+				65,
+			],
 		]);
 	}
 

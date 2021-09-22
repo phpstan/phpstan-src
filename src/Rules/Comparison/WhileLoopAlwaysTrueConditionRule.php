@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Stmt\Break_;
+use PhpParser\Node\Stmt\Continue_;
 use PHPStan\Node\BreaklessWhileLoopNode;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -35,6 +38,29 @@ class WhileLoopAlwaysTrueConditionRule implements \PHPStan\Rules\Rule
 		\PHPStan\Analyser\Scope $scope
 	): array
 	{
+		foreach ($node->getExitPoints() as $exitPoint) {
+			$statement = $exitPoint->getStatement();
+			if ($statement instanceof Break_) {
+				return [];
+			}
+			if (!$statement instanceof Continue_) {
+				return [];
+			}
+			if ($statement->num === null) {
+				continue;
+			}
+			if (!$statement->num instanceof LNumber) {
+				continue;
+			}
+			$value = $statement->num->value;
+			if ($value === 1) {
+				continue;
+			}
+
+			if ($value > 1) {
+				return [];
+			}
+		}
 		$originalNode = $node->getOriginalNode();
 		$exprType = $this->helper->getBooleanType($scope, $originalNode->cond);
 		if ($exprType instanceof ConstantBooleanType && $exprType->getValue()) {

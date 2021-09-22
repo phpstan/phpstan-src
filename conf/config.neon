@@ -22,7 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
-		dateTimeInstantiation: false
 		checkLogicalAndConstantCondition: false
 		checkLogicalOrConstantCondition: false
 		checkMissingTemplateTypeInParameter: false
@@ -192,7 +191,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
-		dateTimeInstantiation: bool(),
 		checkLogicalAndConstantCondition: bool(),
 		checkLogicalOrConstantCondition: bool(),
 		checkMissingTemplateTypeInParameter: bool(),

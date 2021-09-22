@@ -10,7 +10,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 /**

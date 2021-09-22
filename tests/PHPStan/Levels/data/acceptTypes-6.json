@@ -70,6 +70,11 @@
         "ignorable": true
     },
     {
+        "message": "Method Levels\\AcceptTypes\\Foo::partlySupportedUnion() has parameter $union with no value type specified in iterable type array.",
+        "line": 186,
+        "ignorable": true
+    },
+    {
         "message": "Method Levels\\AcceptTypes\\ClosureAccepts::doFoo() has no return type specified.",
         "line": 214,
         "ignorable": true

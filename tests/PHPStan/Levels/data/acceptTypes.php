@@ -181,7 +181,7 @@ class Foo
 	}
 
 	/**
-	 * @param string|int|bool $union
+	 * @param string|int|array $union
 	 */
 	public function partlySupportedUnion($union) {
 		$imploded = implode('abc', $union);

@@ -8,4 +8,3 @@ parameters:
 		apiRules: true
 		finalByPhpDocTag: true
 		classConstants: true
-		privateStaticCall: true

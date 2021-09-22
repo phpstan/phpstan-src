@@ -7,20 +7,15 @@ parameters:
 	checkPhpDocMissingReturn: true
 
 conditionalTags:
-	PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule:
-		phpstan.rules.rule: %featureToggles.privateStaticCall%
 	PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule:
 		phpstan.rules.rule: %featureToggles.classConstants%
-	PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule:
-		phpstan.rules.rule: %featureToggles.privateStaticCall%
-	PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule:
-		phpstan.rules.rule: %featureToggles.privateStaticCall%
 
 rules:
 	- PHPStan\Rules\Cast\EchoRule
 	- PHPStan\Rules\Cast\InvalidCastRule
 	- PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
 	- PHPStan\Rules\Cast\PrintRule
+	- PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
 	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule
@@ -31,6 +26,7 @@ rules:
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
 	- PHPStan\Rules\Generics\TraitTemplateTypeRule
 	- PHPStan\Rules\Generics\UsedTraitsRule
+	- PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
 	- PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
 	- PHPStan\Rules\Operators\InvalidBinaryOperationRule
 	- PHPStan\Rules\Operators\InvalidUnaryOperationRule
@@ -41,10 +37,9 @@ rules:
 	- PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
 	- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+	- PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
 
 services:
-	-
-		class: PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
 	-
 		class: PHPStan\Rules\Classes\MixinRule
 		arguments:
@@ -62,11 +57,7 @@ services:
 		tags:
 			- phpstan.rules.rule
 	-
-		class: PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
-	-
 		class: PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
-	-
-		class: PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
 	-
 		class: PHPStan\Rules\Generics\InterfaceAncestorsRule
 		tags:

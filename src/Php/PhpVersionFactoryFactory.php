@@ -10,30 +10,25 @@ class PhpVersionFactoryFactory
 
 	private ?int $versionId;
 
-	private bool $readComposerPhpVersion;
-
 	/** @var string[] */
 	private array $composerAutoloaderProjectPaths;
 
 	/**
-	 * @param bool $readComposerPhpVersion
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
 		?int $versionId,
-		bool $readComposerPhpVersion,
 		array $composerAutoloaderProjectPaths
 	)
 	{
 		$this->versionId = $versionId;
-		$this->readComposerPhpVersion = $readComposerPhpVersion;
 		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
 
 	public function create(): PhpVersionFactory
 	{
 		$composerPhpVersion = null;
-		if ($this->readComposerPhpVersion && count($this->composerAutoloaderProjectPaths) > 0) {
+		if (count($this->composerAutoloaderProjectPaths) > 0) {
 			$composerJsonPath = end($this->composerAutoloaderProjectPaths) . '/composer.json';
 			if (is_file($composerJsonPath)) {
 				try {

@@ -66,7 +66,6 @@ parameters:
 			missingCheckedExceptionInThrows: true
 			tooWideThrowType: true
 	featureToggles:
-		readComposerPhpVersion: false
 		apiRules: false
 	ignoreErrors:
 		- '#^Dynamic call to static method PHPUnit\\Framework\\\S+\(\)\.$#'

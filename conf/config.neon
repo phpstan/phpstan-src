@@ -22,7 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
-		readComposerPhpVersion: false
 		dateTimeInstantiation: false
 		checkLogicalAndConstantCondition: false
 		checkLogicalOrConstantCondition: false
@@ -193,7 +192,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
-		readComposerPhpVersion: bool(),
 		dateTimeInstantiation: bool(),
 		checkLogicalAndConstantCondition: bool(),
 		checkLogicalOrConstantCondition: bool(),
@@ -370,7 +368,6 @@ services:
 		class: PHPStan\Php\PhpVersionFactoryFactory
 		arguments:
 			versionId: %phpVersion%
-			readComposerPhpVersion: %featureToggles.readComposerPhpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-

@@ -1934,6 +1934,23 @@ class NodeScopeResolver
 				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()));
 			}
 
+			if (
+				isset($functionReflection)
+				&& $functionReflection->getName() === 'array_splice'
+				&& count($expr->getArgs()) >= 1
+			) {
+				$arrayArg = $expr->getArgs()[0]->value;
+				$arrayArgType = $scope->getType($arrayArg);
+				$valueType = $arrayArgType->getIterableValueType();
+				if (count($expr->getArgs()) >= 4) {
+					$valueType = TypeCombinator::union($valueType, $scope->getType($expr->getArgs()[3]->value)->getIterableValueType());
+				}
+				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
+					$arrayArg,
+					new ArrayType($arrayArgType->getIterableKeyType(), $valueType)
+				);
+			}
+
 			if (isset($functionReflection) && $functionReflection->getName() === 'extract') {
 				$scope = $scope->afterExtractCall();
 			}

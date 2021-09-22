@@ -4,4 +4,3 @@ parameters:
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true
 		apiRules: true
-		finalByPhpDocTag: true

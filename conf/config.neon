@@ -24,7 +24,6 @@ parameters:
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
-		finalByPhpDocTag: false
 		privateStaticCall: false
 	fileExtensions:
 		- php
@@ -184,7 +183,6 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		apiRules: bool(),
-		finalByPhpDocTag: bool(),
 		privateStaticCall: bool(),
 	])
 	fileExtensions: listOf(string())

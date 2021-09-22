@@ -2,8 +2,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		randomIntParameters: true
-		checkLogicalAndConstantCondition: true
-		checkLogicalOrConstantCondition: true
 		checkMissingTemplateTypeInParameter: true
 		arrayDestructuring: true
 		skipCheckGenericClasses: []

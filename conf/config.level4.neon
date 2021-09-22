@@ -36,7 +36,6 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			checkLogicalAndConstantCondition: %featureToggles.checkLogicalAndConstantCondition%
 		tags:
 			- phpstan.rules.rule
 
@@ -44,7 +43,6 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			checkLogicalOrConstantCondition: %featureToggles.checkLogicalOrConstantCondition%
 		tags:
 			- phpstan.rules.rule
 

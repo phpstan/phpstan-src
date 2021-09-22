@@ -2,8 +2,6 @@
 
 namespace PHPStan\Rules\Comparison;
 
-use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
-use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -18,17 +16,13 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 
 	private bool $treatPhpDocTypesAsCertain;
 
-	private bool $checkLogicalAndConstantCondition;
-
 	public function __construct(
 		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain,
-		bool $checkLogicalAndConstantCondition
+		bool $treatPhpDocTypesAsCertain
 	)
 	{
 		$this->helper = $helper;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
-		$this->checkLogicalAndConstantCondition = $checkLogicalAndConstantCondition;
 	}
 
 	public function getNodeType(): string
@@ -42,13 +36,7 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 	): array
 	{
 		$errors = [];
-
-		/** @var BooleanAnd|LogicalAnd $originalNode */
 		$originalNode = $node->getOriginalNode();
-		if (!$originalNode instanceof BooleanAnd && !$this->checkLogicalAndConstantCondition) {
-			return [];
-		}
-
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		if ($leftType instanceof ConstantBooleanType) {

@@ -22,8 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
-		checkLogicalAndConstantCondition: false
-		checkLogicalOrConstantCondition: false
 		checkMissingTemplateTypeInParameter: false
 		arrayDestructuring: false
 		skipCheckGenericClasses: []
@@ -190,8 +188,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
-		checkLogicalAndConstantCondition: bool(),
-		checkLogicalOrConstantCondition: bool(),
 		checkMissingTemplateTypeInParameter: bool(),
 		arrayDestructuring: bool(),
 		skipCheckGenericClasses: listOf(string()),

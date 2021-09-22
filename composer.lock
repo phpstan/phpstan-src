@@ -4472,12 +4472,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "46cf4e8f72713a4c90cbf19c34205cba8cdde95e"
+                "reference": "17d7c7a10e2cb6317807996ce647f2f823ac97ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/46cf4e8f72713a4c90cbf19c34205cba8cdde95e",
-                "reference": "46cf4e8f72713a4c90cbf19c34205cba8cdde95e",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/17d7c7a10e2cb6317807996ce647f2f823ac97ff",
+                "reference": "17d7c7a10e2cb6317807996ce647f2f823ac97ff",
                 "shasum": ""
             },
             "require": {
@@ -4485,6 +4485,7 @@
                 "phpstan/phpstan": "^1.0"
             },
             "require-dev": {
+                "nikic/php-parser": "^4.13.0",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/phpstan-phpunit": "^1.0",
                 "phpunit/phpunit": "^9.5"
@@ -4515,7 +4516,7 @@
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
                 "source": "https://github.com/phpstan/phpstan-strict-rules/tree/master"
             },
-            "time": "2021-09-13T18:59:45+00:00"
+            "time": "2021-09-20T16:02:01+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

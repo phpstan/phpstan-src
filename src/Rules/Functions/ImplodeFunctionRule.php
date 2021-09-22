@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
@@ -53,7 +54,7 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 		if ($arrayType->getIterableValueType()->toString() instanceof ErrorType) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Call to %s with invalid non-string argument.', $functionName)
+					sprintf('Call to function %s() with invalid non-string argument type %s.', $functionName, $arrayType->getIterableValueType()->describe(VerbosityLevel::typeOnly()))
 				)->build(),
 			];
 		}

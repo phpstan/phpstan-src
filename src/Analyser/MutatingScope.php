@@ -435,7 +435,7 @@ class MutatingScope implements Scope
 				'filetype',
 				'fileperms',
 			] as $functionName) {
-				if (!Strings::startsWith((string) $exprString, $functionName . '(') && !Strings::startsWith((string) $exprString, '\\' . $functionName . '(')) {
+				if (!Strings::startsWith($exprString, $functionName . '(') && !Strings::startsWith($exprString, '\\' . $functionName . '(')) {
 					continue;
 				}
 
@@ -3900,7 +3900,7 @@ class MutatingScope implements Scope
 				|| !is_string($expr->name)
 				|| $specifiedTypes->shouldOverwrite()
 			) {
-				$match = \Nette\Utils\Strings::match((string) $typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				$match = \Nette\Utils\Strings::match($typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
 				if ($match !== null) {
 					$skipVariables[$match[1]] = true;
 				}

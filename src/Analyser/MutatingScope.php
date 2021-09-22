@@ -3869,7 +3869,7 @@ class MutatingScope implements Scope
 		}
 
 		usort($typeSpecifications, static function (array $a, array $b): int {
-			$length = strlen((string) $a['exprString']) - strlen((string) $b['exprString']);
+			$length = strlen($a['exprString']) - strlen($b['exprString']);
 			if ($length !== 0) {
 				return $length;
 			}

@@ -3,8 +3,8 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class SpecifiedTypes
 {

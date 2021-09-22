@@ -4301,12 +4301,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-nette.git",
-                "reference": "a265edd771369bbbaee0be78dded1c0a00972503"
+                "reference": "f4654b27b107241e052755ec187a0b1964541ba6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/a265edd771369bbbaee0be78dded1c0a00972503",
-                "reference": "a265edd771369bbbaee0be78dded1c0a00972503",
+                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/f4654b27b107241e052755ec187a0b1964541ba6",
+                "reference": "f4654b27b107241e052755ec187a0b1964541ba6",
                 "shasum": ""
             },
             "require": {
@@ -4324,6 +4324,7 @@
             "require-dev": {
                 "nette/forms": "^3.0",
                 "nette/utils": "^2.3.0 || ^3.0.0",
+                "nikic/php-parser": "^4.13.0",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/phpstan-php-parser": "^1.0",
                 "phpstan/phpstan-phpunit": "^1.0",
@@ -4357,7 +4358,7 @@
                 "issues": "https://github.com/phpstan/phpstan-nette/issues",
                 "source": "https://github.com/phpstan/phpstan-nette/tree/master"
             },
-            "time": "2021-09-14T13:09:34+00:00"
+            "time": "2021-09-20T16:12:57+00:00"
         },
         {
             "name": "phpstan/phpstan-php-parser",
@@ -4417,12 +4418,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "a316f5d59f620ef06f888f6fc95fead9d38e0377"
+                "reference": "234cb5563905c448083dcd9d315ed882494798ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/a316f5d59f620ef06f888f6fc95fead9d38e0377",
-                "reference": "a316f5d59f620ef06f888f6fc95fead9d38e0377",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/234cb5563905c448083dcd9d315ed882494798ab",
+                "reference": "234cb5563905c448083dcd9d315ed882494798ab",
                 "shasum": ""
             },
             "require": {
@@ -4433,6 +4434,7 @@
                 "phpunit/phpunit": "<7.0"
             },
             "require-dev": {
+                "nikic/php-parser": "^4.13.0",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/phpstan-strict-rules": "^1.0",
                 "phpunit/phpunit": "^9.5"
@@ -4464,7 +4466,7 @@
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
                 "source": "https://github.com/phpstan/phpstan-phpunit/tree/master"
             },
-            "time": "2021-09-12T21:47:21+00:00"
+            "time": "2021-09-20T15:59:00+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",
@@ -4472,12 +4474,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "17d7c7a10e2cb6317807996ce647f2f823ac97ff"
+                "reference": "6c7a9815bb3af49113a6f85d073e3e2fc01f7ffa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/17d7c7a10e2cb6317807996ce647f2f823ac97ff",
-                "reference": "17d7c7a10e2cb6317807996ce647f2f823ac97ff",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/6c7a9815bb3af49113a6f85d073e3e2fc01f7ffa",
+                "reference": "6c7a9815bb3af49113a6f85d073e3e2fc01f7ffa",
                 "shasum": ""
             },
             "require": {
@@ -4516,7 +4518,7 @@
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
                 "source": "https://github.com/phpstan/phpstan-strict-rules/tree/master"
             },
-            "time": "2021-09-20T16:02:01+00:00"
+            "time": "2021-09-22T16:41:47+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

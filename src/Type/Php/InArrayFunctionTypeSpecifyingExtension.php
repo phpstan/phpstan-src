@@ -11,6 +11,8 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\TypeUtils;
 
@@ -43,12 +45,7 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$needleType = $scope->getType($node->getArgs()[0]->value);
 		$arrayValueType = $scope->getType($node->getArgs()[1]->value)->getIterableValueType();
 
-		var_dump(get_class($needleType));
-		var_dump(get_class($arrayValueType));
-		echo "\n";
-		// var_dump(count(TypeUtils::getConstantScalars($arrayValueType)));
-
-		if ($needleType instanceof $arrayValueType) {
+		if ($needleType instanceof ConstantScalarType) {
 			return new SpecifiedTypes();
 		}
 

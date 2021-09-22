@@ -435,7 +435,8 @@ class MutatingScope implements Scope
 				'filetype',
 				'fileperms',
 			] as $functionName) {
-				if (!Strings::startsWith($exprString, $functionName . '(') && !Strings::startsWith($exprString, '\\' . $functionName . '(')) {
+				// @phpstan-ignore-next-line
+				if (!Strings::startsWith((string) $exprString, $functionName . '(') && !Strings::startsWith((string) $exprString, '\\' . $functionName . '(')) {
 					continue;
 				}
 
@@ -3869,7 +3870,8 @@ class MutatingScope implements Scope
 		}
 
 		usort($typeSpecifications, static function (array $a, array $b): int {
-			$length = strlen($a['exprString']) - strlen($b['exprString']);
+			// @phpstan-ignore-next-line
+			$length = strlen((string) $a['exprString']) - strlen((string) $b['exprString']);
 			if ($length !== 0) {
 				return $length;
 			}
@@ -3900,7 +3902,8 @@ class MutatingScope implements Scope
 				|| !is_string($expr->name)
 				|| $specifiedTypes->shouldOverwrite()
 			) {
-				$match = \Nette\Utils\Strings::match($typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				// @phpstan-ignore-next-line
+				$match = \Nette\Utils\Strings::match((string) $typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
 				if ($match !== null) {
 					$skipVariables[$match[1]] = true;
 				}

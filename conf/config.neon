@@ -22,7 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		skipCheckGenericClasses: []
-		rememberFunctionValues: false
 		apiRules: false
 	fileExtensions:
 		- php
@@ -180,7 +179,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
-		rememberFunctionValues: bool(),
 		apiRules: bool(),
 	])
 	fileExtensions: listOf(string())

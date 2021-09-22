@@ -2,5 +2,4 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		skipCheckGenericClasses: []
-		rememberFunctionValues: true
 		apiRules: true

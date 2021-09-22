@@ -50,8 +50,10 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 		$args = $node->getArgs();
 		if (count($args) === 1) {
 			$arrayArg = $args[0]->value;
+			$paramNo = 1;
 		} elseif (count($args) === 2) {
 			$arrayArg = $args[1]->value;
+			$paramNo = 2;
 		} else {
 			return [];
 		}
@@ -72,7 +74,7 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 
 		return [
 			RuleErrorBuilder::message(
-				sprintf('Call to function %s() with invalid non-string argument type %s.', $functionName, $typeResult->getType()->getIterableValueType()->describe(VerbosityLevel::typeOnly()))
+				sprintf('Parameter #%d $array of function %s expects array<string>, %s given.', $paramNo, $functionName, $typeResult->getType()->getIterableValueType()->describe(VerbosityLevel::typeOnly()))
 			)->build(),
 		];
 	}

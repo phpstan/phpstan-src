@@ -20,27 +20,27 @@ class ImplodeFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/implode.php'], [
 			[
-				'Call to function implode() with invalid non-string argument type array<int, string>|string.',
+				'Parameter #2 $array of function implode expects array<string>, array<int, string>|string given.',
 				9,
 			],
 			[
-				'Call to function implode() with invalid non-string argument type array<int, string>.',
+				'Parameter #1 $array of function implode expects array<string>, array<int, string> given.',
 				11,
 			],
 			[
-				'Call to function implode() with invalid non-string argument type array<int, int>.',
+				'Parameter #1 $array of function implode expects array<string>, array<int, int> given.',
 				12,
 			],
 			[
-				'Call to function implode() with invalid non-string argument type array<int, int|true>.',
+				'Parameter #1 $array of function implode expects array<string>, array<int, int|true> given.',
 				13,
 			],
 			[
-				'Call to function implode() with invalid non-string argument type array<int, string>.',
+				'Parameter #2 $array of function implode expects array<string>, array<int, string> given.',
 				15,
 			],
 			[
-				'Call to function join() with invalid non-string argument type array<int, string>.',
+				'Parameter #2 $array of function join expects array<string>, array<int, string> given.',
 				16,
 			],
 		]);

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -132,12 +133,13 @@ class TemplateTypeCheck
 				return $type;
 			});
 
+			$escapedTemplateTagName = SprintfHelper::escapeFormatString($templateTagName);
 			$genericObjectErrors = $this->genericObjectTypeCheck->check(
 				$boundType,
-				sprintf('PHPDoc tag @template %s bound contains generic type %%s but class %%s is not generic.', $templateTagName),
-				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of class %%s: %%s', $templateTagName),
-				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $templateTagName),
-				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $templateTagName)
+				sprintf('PHPDoc tag @template %s bound contains generic type %%s but class %%s is not generic.', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of class %%s: %%s', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $escapedTemplateTagName),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $escapedTemplateTagName)
 			);
 			foreach ($genericObjectErrors as $genericObjectError) {
 				$messages[] = $genericObjectError;

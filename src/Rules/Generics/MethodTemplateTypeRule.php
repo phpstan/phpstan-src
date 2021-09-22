@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
@@ -57,14 +58,16 @@ class MethodTemplateTypeRule implements Rule
 		);
 
 		$methodTemplateTags = $resolvedPhpDoc->getTemplateTags();
+		$escapedClassName = SprintfHelper::escapeFormatString($className);
+		$escapedMethodName = SprintfHelper::escapeFormatString($methodName);
 		$messages = $this->templateTypeCheck->check(
 			$node,
 			TemplateTypeScope::createWithMethod($className, $methodName),
 			$methodTemplateTags,
-			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing class %%s as its name.', $className, $methodName),
-			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing type alias %%s as its name.', $className, $methodName),
-			sprintf('PHPDoc tag @template %%s for method %s::%s() has invalid bound type %%s.', $className, $methodName),
-			sprintf('PHPDoc tag @template %%s for method %s::%s() with bound type %%s is not supported.', $className, $methodName)
+			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing class %%s as its name.', $escapedClassName, $escapedMethodName),
+			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing type alias %%s as its name.', $escapedClassName, $escapedMethodName),
+			sprintf('PHPDoc tag @template %%s for method %s::%s() has invalid bound type %%s.', $escapedClassName, $escapedMethodName),
+			sprintf('PHPDoc tag @template %%s for method %s::%s() with bound type %%s is not supported.', $escapedClassName, $escapedMethodName)
 		);
 
 		$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();

@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 
@@ -90,25 +91,27 @@ class AttributesCheck
 					$errors[] = RuleErrorBuilder::message(sprintf('Constructor of attribute class %s is not public.', $name))->line($attribute->getLine())->build();
 				}
 
+				$attributeClassName = SprintfHelper::escapeFormatString($attributeClass->getDisplayName());
+
 				$parameterErrors = $this->functionCallParametersCheck->check(
 					ParametersAcceptorSelector::selectSingle($attributeConstructor->getVariants()),
 					$scope,
 					$attributeConstructor->getDeclaringClass()->isBuiltin(),
 					new New_($attribute->name, $attribute->args, $attribute->getAttributes()),
 					[
-						'Attribute class ' . $attributeClass->getDisplayName() . ' constructor invoked with %d parameter, %d required.',
-						'Attribute class ' . $attributeClass->getDisplayName() . ' constructor invoked with %d parameters, %d required.',
-						'Attribute class ' . $attributeClass->getDisplayName() . ' constructor invoked with %d parameter, at least %d required.',
-						'Attribute class ' . $attributeClass->getDisplayName() . ' constructor invoked with %d parameters, at least %d required.',
-						'Attribute class ' . $attributeClass->getDisplayName() . ' constructor invoked with %d parameter, %d-%d required.',
-						'Attribute class ' . $attributeClass->getDisplayName() . ' constructor invoked with %d parameters, %d-%d required.',
-						'Parameter %s of attribute class ' . $attributeClass->getDisplayName() . ' constructor expects %s, %s given.',
+						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, %d required.',
+						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, %d required.',
+						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, at least %d required.',
+						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, at least %d required.',
+						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, %d-%d required.',
+						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, %d-%d required.',
+						'Parameter %s of attribute class ' . $attributeClassName . ' constructor expects %s, %s given.',
 						'', // constructor does not have a return type
-						'Parameter %s of attribute class ' . $attributeClass->getDisplayName() . ' constructor is passed by reference, so it expects variables only',
-						'Unable to resolve the template type %s in instantiation of attribute class ' . $attributeClass->getDisplayName(),
-						'Missing parameter $%s in call to ' . $attributeClass->getDisplayName() . ' constructor.',
-						'Unknown parameter $%s in call to ' . $attributeClass->getDisplayName() . ' constructor.',
-						'Return type of call to ' . $attributeClass->getDisplayName() . ' constructor contains unresolvable type.',
+						'Parameter %s of attribute class ' . $attributeClassName . ' constructor is passed by reference, so it expects variables only',
+						'Unable to resolve the template type %s in instantiation of attribute class ' . $attributeClassName,
+						'Missing parameter $%s in call to ' . $attributeClassName . ' constructor.',
+						'Unknown parameter $%s in call to ' . $attributeClassName . ' constructor.',
+						'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
 					]
 				);
 

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
@@ -104,7 +105,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 		if ($type instanceof ClosureType) {
 			$callableDescription = 'closure';
 		} else {
-			$callableDescription = sprintf('callable %s', $type->describe(VerbosityLevel::value()));
+			$callableDescription = sprintf('callable %s', SprintfHelper::escapeFormatString($type->describe(VerbosityLevel::value())));
 		}
 
 		return array_merge(

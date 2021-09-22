@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
@@ -96,23 +97,25 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 				}
 				$isParamSuperType = $nativeParamType->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocParamType));
 
+				$escapedParameterName = SprintfHelper::escapeFormatString($parameterName);
+
 				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 					$phpDocParamType,
 					sprintf(
 						'PHPDoc tag @param for parameter $%s contains generic type %%s but class %%s is not generic.',
-						$parameterName
+						$escapedParameterName
 					),
 					sprintf(
 						'Generic type %%s in PHPDoc tag @param for parameter $%s does not specify all template types of class %%s: %%s',
-						$parameterName
+						$escapedParameterName
 					),
 					sprintf(
 						'Generic type %%s in PHPDoc tag @param for parameter $%s specifies %%d template types, but class %%s supports only %%d: %%s',
-						$parameterName
+						$escapedParameterName
 					),
 					sprintf(
 						'Type %%s in generic type %%s in PHPDoc tag @param for parameter $%s is not subtype of template type %%s of class %%s.',
-						$parameterName
+						$escapedParameterName
 					)
 				));
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -175,6 +176,8 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			))->build();
 		}
 
+		$classDisplayName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
+
 		return array_merge($messages, $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
@@ -185,19 +188,19 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			$constructorReflection->getDeclaringClass()->isBuiltin(),
 			$node,
 			[
-				'Class ' . $classReflection->getDisplayName() . ' constructor invoked with %d parameter, %d required.',
-				'Class ' . $classReflection->getDisplayName() . ' constructor invoked with %d parameters, %d required.',
-				'Class ' . $classReflection->getDisplayName() . ' constructor invoked with %d parameter, at least %d required.',
-				'Class ' . $classReflection->getDisplayName() . ' constructor invoked with %d parameters, at least %d required.',
-				'Class ' . $classReflection->getDisplayName() . ' constructor invoked with %d parameter, %d-%d required.',
-				'Class ' . $classReflection->getDisplayName() . ' constructor invoked with %d parameters, %d-%d required.',
-				'Parameter %s of class ' . $classReflection->getDisplayName() . ' constructor expects %s, %s given.',
+				'Class ' . $classDisplayName . ' constructor invoked with %d parameter, %d required.',
+				'Class ' . $classDisplayName . ' constructor invoked with %d parameters, %d required.',
+				'Class ' . $classDisplayName . ' constructor invoked with %d parameter, at least %d required.',
+				'Class ' . $classDisplayName . ' constructor invoked with %d parameters, at least %d required.',
+				'Class ' . $classDisplayName . ' constructor invoked with %d parameter, %d-%d required.',
+				'Class ' . $classDisplayName . ' constructor invoked with %d parameters, %d-%d required.',
+				'Parameter %s of class ' . $classDisplayName . ' constructor expects %s, %s given.',
 				'', // constructor does not have a return type
-				'Parameter %s of class ' . $classReflection->getDisplayName() . ' constructor is passed by reference, so it expects variables only',
-				'Unable to resolve the template type %s in instantiation of class ' . $classReflection->getDisplayName(),
-				'Missing parameter $%s in call to ' . $classReflection->getDisplayName() . ' constructor.',
-				'Unknown parameter $%s in call to ' . $classReflection->getDisplayName() . ' constructor.',
-				'Return type of call to ' . $classReflection->getDisplayName() . ' constructor contains unresolvable type.',
+				'Parameter %s of class ' . $classDisplayName . ' constructor is passed by reference, so it expects variables only',
+				'Unable to resolve the template type %s in instantiation of class ' . $classDisplayName,
+				'Missing parameter $%s in call to ' . $classDisplayName . ' constructor.',
+				'Unknown parameter $%s in call to ' . $classDisplayName . ' constructor.',
+				'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
 			]
 		));
 	}

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -32,7 +33,7 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$functionName = $scope->getFunction()->getName();
+		$functionName = SprintfHelper::escapeFormatString($scope->getFunction()->getName());
 
 		return $this->check->checkFunction(
 			$node->getOriginalNode(),

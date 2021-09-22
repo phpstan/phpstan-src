@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -113,12 +114,13 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				}
 			}
 
+			$escapedIdentifier = SprintfHelper::escapeFormatString($identifier);
 			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 				$varTagType,
-				sprintf('%s contains generic type %%s but class %%s is not generic.', $identifier),
-				sprintf('Generic type %%s in %s does not specify all template types of class %%s: %%s', $identifier),
-				sprintf('Generic type %%s in %s specifies %%d template types, but class %%s supports only %%d: %%s', $identifier),
-				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of class %%s.', $identifier)
+				sprintf('%s contains generic type %%s but class %%s is not generic.', $escapedIdentifier),
+				sprintf('Generic type %%s in %s does not specify all template types of class %%s: %%s', $escapedIdentifier),
+				sprintf('Generic type %%s in %s specifies %%d template types, but class %%s supports only %%d: %%s', $escapedIdentifier),
+				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of class %%s.', $escapedIdentifier)
 			));
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {

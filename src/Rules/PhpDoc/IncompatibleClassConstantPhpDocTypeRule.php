@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
@@ -102,27 +103,30 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 			}
 		}
 
+		$className = SprintfHelper::escapeFormatString($constantReflection->getDeclaringClass()->getDisplayName());
+		$escapedConstantName = SprintfHelper::escapeFormatString($constantName);
+
 		return array_merge($errors, $this->genericObjectTypeCheck->check(
 			$phpDocType,
 			sprintf(
 				'PHPDoc tag @var for constant %s::%s contains generic type %%s but class %%s is not generic.',
-				$constantReflection->getDeclaringClass()->getDisplayName(),
-				$constantName
+				$className,
+				$escapedConstantName
 			),
 			sprintf(
 				'Generic type %%s in PHPDoc tag @var for constant %s::%s does not specify all template types of class %%s: %%s',
-				$constantReflection->getDeclaringClass()->getDisplayName(),
-				$constantName
+				$className,
+				$escapedConstantName
 			),
 			sprintf(
 				'Generic type %%s in PHPDoc tag @var for constant %s::%s specifies %%d template types, but class %%s supports only %%d: %%s',
-				$constantReflection->getDeclaringClass()->getDisplayName(),
-				$constantName
+				$className,
+				$escapedConstantName
 			),
 			sprintf(
 				'Type %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is not subtype of template type %%s of class %%s.',
-				$constantReflection->getDeclaringClass()->getDisplayName(),
-				$constantName
+				$className,
+				$escapedConstantName
 			)
 		));
 	}

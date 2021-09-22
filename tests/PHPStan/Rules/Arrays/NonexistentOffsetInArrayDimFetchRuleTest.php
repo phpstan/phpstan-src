@@ -303,4 +303,15 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		$this->analyse([__DIR__ . '/data/bug-4842.php'], []);
 	}
 
+	public function testBug5669(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5669.php'], [
+			[
+				'Access to offset \'%customer…\' on an unknown class Bug5669\arr.',
+				26,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

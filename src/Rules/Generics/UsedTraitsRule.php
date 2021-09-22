@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -57,10 +58,10 @@ class UsedTraitsRule implements Rule
 			$useTags = $resolvedPhpDoc->getUsesTags();
 		}
 
-		$description = sprintf('class %s', $className);
+		$description = sprintf('class %s', SprintfHelper::escapeFormatString($className));
 		$typeDescription = 'class';
 		if ($traitName !== null) {
-			$description = sprintf('trait %s', $traitName);
+			$description = sprintf('trait %s', SprintfHelper::escapeFormatString($traitName));
 			$typeDescription = 'trait';
 		}
 

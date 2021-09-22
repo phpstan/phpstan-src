@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -36,21 +37,24 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		$className = SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName());
+		$methodName = SprintfHelper::escapeFormatString($methodReflection->getName());
+
 		return $this->check->checkClassMethod(
 			$methodReflection,
 			$node->getOriginalNode(),
 			sprintf(
 				'Parameter $%%s of method %s::%s() has invalid type %%s.',
-				$scope->getClassReflection()->getDisplayName(),
-				$methodReflection->getName()
+				$className,
+				$methodName
 			),
 			sprintf(
 				'Method %s::%s() has invalid return type %%s.',
-				$scope->getClassReflection()->getDisplayName(),
-				$methodReflection->getName()
+				$className,
+				$methodName
 			),
-			sprintf('Method %s::%s() uses native union types but they\'re supported only on PHP 8.0 and later.', $scope->getClassReflection()->getDisplayName(), $methodReflection->getName()),
-			sprintf('Template type %%s of method %s::%s() is not referenced in a parameter.', $scope->getClassReflection()->getDisplayName(), $methodReflection->getName())
+			sprintf('Method %s::%s() uses native union types but they\'re supported only on PHP 8.0 and later.', $className, $methodName),
+			sprintf('Template type %%s of method %s::%s() is not referenced in a parameter.', $className, $methodName)
 		);
 	}
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
@@ -60,7 +61,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->var,
-			sprintf('Call to method %s() on an unknown class %%s.', $name),
+			sprintf('Call to method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 			static function (Type $type) use ($name): bool {
 				return $type->canCallMethods()->yes() && $type->hasMethod($name)->yes();
 			}
@@ -124,7 +125,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 
 		$methodReflection = $type->getMethod($name, $scope);
 		$declaringClass = $methodReflection->getDeclaringClass();
-		$messagesMethodName = $declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()';
+		$messagesMethodName = SprintfHelper::escapeFormatString($declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()');
 		$errors = [];
 		if (!$scope->canCallMethod($methodReflection)) {
 			$errors[] = RuleErrorBuilder::message(sprintf(

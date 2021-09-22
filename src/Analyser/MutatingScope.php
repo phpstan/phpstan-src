@@ -1979,7 +1979,7 @@ class MutatingScope implements Scope
 					return new IntegerType();
 				}
 				if ($resolvedConstantName === 'PHP_INT_MAX') {
-					return new IntegerRangeType(1, null);
+					return IntegerRangeType::fromInterval(1, null);
 				}
 
 				$constantType = $this->reflectionProvider->getConstant($node->name, $this)->getValueType();

@@ -7,7 +7,9 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -17,13 +19,17 @@ use PHPStan\Type\VerbosityLevel;
 class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private RuleLevelHelper $ruleLevelHelper;
+
+	private ReflectionProvider $reflectionProvider;
 
 	public function __construct(
-		ReflectionProvider $reflectionProvider
+		ReflectionProvider $reflectionProvider,
+		RuleLevelHelper $ruleLevelHelper
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
+		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -44,22 +50,32 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 
 		$args = $node->getArgs();
 		if (count($args) === 1) {
-			$arrayType = $scope->getType($args[0]->value);
+			$arrayArg = $args[0]->value;
 		} elseif (count($args) === 2) {
-			$arrayType = $scope->getType($args[1]->value);
+			$arrayArg = $args[1]->value;
 		} else {
 			return [];
 		}
 
-		if ($arrayType->getIterableValueType()->toString() instanceof ErrorType) {
-			return [
-				RuleErrorBuilder::message(
-					sprintf('Call to function %s() with invalid non-string argument type %s.', $functionName, $arrayType->getIterableValueType()->describe(VerbosityLevel::typeOnly()))
-				)->build(),
-			];
+		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$arrayArg,
+			'',
+			static function (Type $type): bool {
+				return !$type->getIterableValueType()->toString() instanceof ErrorType;
+			}
+		);
+
+		if ($typeResult->getType() instanceof ErrorType
+			|| !$typeResult->getType()->getIterableValueType()->toString() instanceof ErrorType) {
+			return [];
 		}
 
-		return [];
+		return [
+			RuleErrorBuilder::message(
+				sprintf('Call to function %s() with invalid non-string argument type %s.', $functionName, $typeResult->getType()->getIterableValueType()->describe(VerbosityLevel::typeOnly()))
+			)->build(),
+		];
 	}
 
 }

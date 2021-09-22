@@ -198,5 +198,10 @@
         "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects array&nonEmpty, array given.",
         "line": 735,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #2 $pieces of function implode expects array, int given.",
+        "line": 763,
+        "ignorable": true
     }
 ]

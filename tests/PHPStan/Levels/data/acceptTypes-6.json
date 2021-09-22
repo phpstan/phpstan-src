@@ -148,5 +148,20 @@
         "message": "Method Levels\\AcceptTypes\\ArrayShapes::doBar() has no return type specified.",
         "line": 603,
         "ignorable": true
+    },
+    {
+        "message": "Method Levels\\AcceptTypes\\Implode::partlySupportedUnion() has no return type specified.",
+        "line": 755,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\AcceptTypes\\Implode::partlySupportedUnion() has parameter $union with no value type specified in iterable type array.",
+        "line": 755,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\AcceptTypes\\Implode::invalidType() has no return type specified.",
+        "line": 762,
+        "ignorable": true
     }
 ]

@@ -153,5 +153,10 @@
         "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
         "line": 692,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #2 $pieces of function implode expects array, array|int|string given.",
+        "line": 756,
+        "ignorable": true
     }
 ]

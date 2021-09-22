@@ -21,7 +21,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
-		randomIntParameters: false
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
@@ -182,7 +181,6 @@ parametersSchema:
 	featureToggles: structure([
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
-		randomIntParameters: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		apiRules: bool(),

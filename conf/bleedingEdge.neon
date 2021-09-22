@@ -1,7 +1,6 @@
 parameters:
 	featureToggles:
 		bleedingEdge: true
-		randomIntParameters: true
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true
 		apiRules: true

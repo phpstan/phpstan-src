@@ -180,12 +180,6 @@ class Foo
 		}
 	}
 
-	/**
-	 * @param string|int|array $union
-	 */
-	public function partlySupportedUnion($union) {
-		$imploded = implode('abc', $union);
-	}
 }
 
 interface ParentFooInterface
@@ -752,4 +746,20 @@ class AcceptNonEmpty
 
 	}
 
+}
+
+class Implode {
+	/**
+	 * @param string|int|array $union
+	 */
+	public function partlySupportedUnion($union) {
+		$imploded = implode('abc', $union);
+	}
+
+	/**
+	 * @param int $invalid
+	 */
+	public function invalidType($invalid) {
+		$imploded = implode('abc', $invalid);
+	}
 }

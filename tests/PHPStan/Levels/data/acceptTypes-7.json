@@ -40,123 +40,123 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #2 $pieces of function implode expects array, array|int|string given.",
-        "line": 187,
-        "ignorable": true
-    },
-    {
         "message": "Parameter #1 $closure of method Levels\\AcceptTypes\\ClosureAccepts::doBar() expects Closure(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(Levels\\AcceptTypes\\FooInterface, mixed, mixed): Levels\\AcceptTypes\\FooImpl)|(Closure(): Levels\\AcceptTypes\\FooInterface) given.",
-        "line": 289,
+        "line": 283,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(Levels\\AcceptTypes\\FooInterface, mixed, mixed): Levels\\AcceptTypes\\FooImpl)|(Closure(): Levels\\AcceptTypes\\FooInterface) given.",
-        "line": 290,
+        "line": 284,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $closure of method Levels\\AcceptTypes\\ClosureAccepts::doBar() expects Closure(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(Levels\\AcceptTypes\\FooImpl): Levels\\AcceptTypes\\FooImpl)|(Closure(): Levels\\AcceptTypes\\FooInterface) given.",
-        "line": 307,
+        "line": 301,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(Levels\\AcceptTypes\\FooImpl): Levels\\AcceptTypes\\FooImpl)|(Closure(): Levels\\AcceptTypes\\FooInterface) given.",
-        "line": 308,
+        "line": 302,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Baz::doBar() expects int, float|int given.",
-        "line": 421,
+        "line": 415,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $a of method Levels\\AcceptTypes\\Baz::doIpsum() expects float, float|string given.",
-        "line": 435,
+        "line": 429,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $a of method Levels\\AcceptTypes\\Baz::doIpsum() expects float, float|string|null given.",
-        "line": 436,
+        "line": 430,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Baz::doBarArray() expects array<int>, array<float|int> given.",
-        "line": 502,
+        "line": 496,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $array of method Levels\\AcceptTypes\\Baz::requireArray() expects array, array|Levels\\AcceptTypes\\Foo given.",
-        "line": 537,
+        "line": 531,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array|Levels\\AcceptTypes\\Foo given.",
-        "line": 538,
+        "line": 532,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $array of method Levels\\AcceptTypes\\Baz::requireArray() expects array, array|Levels\\AcceptTypes\\Foo given.",
-        "line": 548,
+        "line": 542,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array|Levels\\AcceptTypes\\Foo given.",
-        "line": 549,
+        "line": 543,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array<callable(): mixed> given.",
-        "line": 583,
+        "line": 577,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array<string> given.",
-        "line": 584,
+        "line": 578,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array()|array('foo' => 'date') given.",
-        "line": 602,
+        "line": 596,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), iterable<callable(): mixed> given.",
-        "line": 603,
+        "line": 597,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireClassString() expects class-string, string given.",
-        "line": 623,
+        "line": 617,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireGenericClassString() expects class-string<stdClass>, string given.",
-        "line": 624,
+        "line": 618,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $stdClass of method Levels\\AcceptTypes\\RequireObjectWithoutClassType::requireStdClass() expects stdClass, object given.",
-        "line": 653,
+        "line": 647,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $static of method Levels\\AcceptTypes\\RequireObjectWithoutClassType::requireStatic() expects Levels\\AcceptTypes\\RequireObjectWithoutClassType, object given.",
-        "line": 654,
+        "line": 648,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<0, 1>).",
-        "line": 696,
+        "line": 690,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $min (int<-1, 0>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
-        "line": 697,
+        "line": 691,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
-        "line": 698,
+        "line": 692,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #2 $pieces of function implode expects array, array|int|string given.",
+        "line": 756,
         "ignorable": true
     }
 ]

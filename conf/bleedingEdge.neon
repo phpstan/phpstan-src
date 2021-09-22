@@ -6,7 +6,6 @@ parameters:
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true
 		apiRules: true
-		neverInGenericReturnType: true
 		finalByPhpDocTag: true
 		classConstants: true
 		privateStaticCall: true

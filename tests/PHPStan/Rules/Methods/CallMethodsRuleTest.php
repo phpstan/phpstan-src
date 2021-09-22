@@ -31,16 +31,13 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var int */
 	private $phpVersion = PHP_VERSION_ID;
 
-	/** @var bool */
-	private $checkNeverInGenericReturnType = false;
-
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), true, true, true, true, $this->checkNeverInGenericReturnType),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), true, true, true, true),
 			$ruleLevelHelper,
 			true,
 			true
@@ -1987,7 +1984,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkNeverInGenericReturnType = true;
 		$this->analyse([__DIR__ . '/data/generic-return-type-never.php'], [
 			[
 				'Return type of call to method GenericReturnTypeNever\Foo::doBar() contains unresolvable type.',

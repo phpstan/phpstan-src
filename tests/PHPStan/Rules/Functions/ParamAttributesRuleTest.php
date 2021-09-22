@@ -32,7 +32,6 @@ class ParamAttributesRuleTest extends RuleTestCase
 					true,
 					true,
 					true,
-					true,
 					true
 				),
 				new ClassCaseSensitivityCheck($reflectionProvider, false)

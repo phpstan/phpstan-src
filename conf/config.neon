@@ -26,7 +26,6 @@ parameters:
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
-		neverInGenericReturnType: false
 		finalByPhpDocTag: false
 		classConstants: false
 		privateStaticCall: false
@@ -191,7 +190,6 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		apiRules: bool(),
-		neverInGenericReturnType: bool(),
 		finalByPhpDocTag: bool(),
 		classConstants: bool(),
 		privateStaticCall: bool(),
@@ -770,7 +768,6 @@ services:
 			checkArgumentsPassedByReference: %checkArgumentsPassedByReference%
 			checkExtraArguments: %checkExtraArguments%
 			checkMissingTypehints: %checkMissingTypehints%
-			checkNeverInGenericReturnType: %featureToggles.neverInGenericReturnType%
 
 	-
 		class: PHPStan\Rules\FunctionDefinitionCheck

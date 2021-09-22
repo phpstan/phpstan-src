@@ -22,8 +22,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.classConstants%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
-	PHPStan\Rules\Properties\OverridingPropertyRule:
-		phpstan.rules.rule: %featureToggles.overridingProperty%
 
 rules:
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
@@ -204,6 +202,8 @@ services:
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 			reportMaybes: %reportMaybesInPropertyPhpDocTypes%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule

@@ -29,7 +29,6 @@ parameters:
 		finalByPhpDocTag: false
 		classConstants: false
 		privateStaticCall: false
-		overridingProperty: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -193,7 +192,6 @@ parametersSchema:
 		finalByPhpDocTag: bool(),
 		classConstants: bool(),
 		privateStaticCall: bool(),
-		overridingProperty: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

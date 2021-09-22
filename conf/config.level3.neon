@@ -3,6 +3,7 @@ includes:
 
 rules:
 	- PHPStan\Rules\Arrays\AppendedArrayItemTypeRule
+	- PHPStan\Rules\Arrays\ArrayDestructuringRule
 	- PHPStan\Rules\Arrays\IterableInForeachRule
 	- PHPStan\Rules\Arrays\OffsetAccessAssignmentRule
 	- PHPStan\Rules\Arrays\OffsetAccessAssignOpRule
@@ -17,10 +18,6 @@ rules:
 	- PHPStan\Rules\Variables\ThrowTypeRule
 	- PHPStan\Rules\Variables\VariableCloningRule
 
-conditionalTags:
-	PHPStan\Rules\Arrays\ArrayDestructuringRule:
-		phpstan.rules.rule: %featureToggles.arrayDestructuring%
-
 parameters:
 	checkPhpDocMethodSignatures: true
 
@@ -31,9 +28,6 @@ services:
 			checkUnionTypes: %checkUnionTypes%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Arrays\ArrayDestructuringRule
 
 	-
 		class: PHPStan\Rules\Arrays\InvalidKeyInArrayDimFetchRule

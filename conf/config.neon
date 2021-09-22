@@ -22,7 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
-		arrayDestructuring: false
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
 		apiRules: false
@@ -184,7 +183,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
-		arrayDestructuring: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),
 		apiRules: bool(),

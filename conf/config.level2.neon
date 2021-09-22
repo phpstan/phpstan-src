@@ -40,6 +40,7 @@ rules:
 	- PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
 	- PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
+	- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
 
 services:
 	-
@@ -75,11 +76,5 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkMissingVarTagTypehint: %checkMissingVarTagTypehint%
-		tags:
-			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
-		arguments:
-			checkWrongVarUsage: %featureToggles.wrongVarUsage%
 		tags:
 			- phpstan.rules.rule

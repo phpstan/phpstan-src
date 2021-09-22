@@ -22,15 +22,11 @@ class WrongVariableNameInVarTagRule implements Rule
 
 	private FileTypeMapper $fileTypeMapper;
 
-	private bool $checkWrongVarUsage;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		bool $checkWrongVarUsage = false
+		FileTypeMapper $fileTypeMapper
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
-		$this->checkWrongVarUsage = $checkWrongVarUsage;
 	}
 
 	public function getNodeType(): string
@@ -93,27 +89,24 @@ class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if ($node instanceof InClassNode || $node instanceof InClassMethodNode || $node instanceof InFunctionNode) {
-			if ($this->checkWrongVarUsage) {
-				$description = 'a function';
-				$originalNode = $node->getOriginalNode();
-				if ($originalNode instanceof Node\Stmt\Interface_) {
-					$description = 'an interface';
-				} elseif ($originalNode instanceof Node\Stmt\Class_) {
-					$description = 'a class';
-				} elseif ($originalNode instanceof Node\Stmt\Trait_) {
-					throw new \PHPStan\ShouldNotHappenException();
-				} elseif ($originalNode instanceof Node\Stmt\ClassMethod) {
-					$description = 'a method';
-				}
-				return [
-					RuleErrorBuilder::message(sprintf(
-						'PHPDoc tag @var above %s has no effect.',
-						$description
-					))->build(),
-				];
+			$description = 'a function';
+			$originalNode = $node->getOriginalNode();
+			if ($originalNode instanceof Node\Stmt\Interface_) {
+				$description = 'an interface';
+			} elseif ($originalNode instanceof Node\Stmt\Class_) {
+				$description = 'a class';
+			} elseif ($originalNode instanceof Node\Stmt\Trait_) {
+				throw new \PHPStan\ShouldNotHappenException();
+			} elseif ($originalNode instanceof Node\Stmt\ClassMethod) {
+				$description = 'a method';
 			}
 
-			return [];
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag @var above %s has no effect.',
+					$description
+				))->build(),
+			];
 		}
 
 		return $this->processStmt($scope, $varTags, null);

@@ -5,7 +5,6 @@ parameters:
 		checkLogicalAndConstantCondition: true
 		checkLogicalOrConstantCondition: true
 		checkMissingTemplateTypeInParameter: true
-		wrongVarUsage: true
 		arrayDestructuring: true
 		skipCheckGenericClasses: []
 		rememberFunctionValues: true

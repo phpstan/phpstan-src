@@ -15,8 +15,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new WrongVariableNameInVarTagRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
-			true
+			self::getContainer()->getByType(FileTypeMapper::class)
 		);
 	}
 

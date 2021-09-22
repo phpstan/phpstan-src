@@ -25,7 +25,6 @@ parameters:
 		checkLogicalAndConstantCondition: false
 		checkLogicalOrConstantCondition: false
 		checkMissingTemplateTypeInParameter: false
-		wrongVarUsage: false
 		arrayDestructuring: false
 		skipCheckGenericClasses: []
 		rememberFunctionValues: false
@@ -194,7 +193,6 @@ parametersSchema:
 		checkLogicalAndConstantCondition: bool(),
 		checkLogicalOrConstantCondition: bool(),
 		checkMissingTemplateTypeInParameter: bool(),
-		wrongVarUsage: bool(),
 		arrayDestructuring: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		rememberFunctionValues: bool(),

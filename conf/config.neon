@@ -22,7 +22,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		randomIntParameters: false
-		fileWhitespace: false
 		readComposerPhpVersion: false
 		dateTimeInstantiation: false
 		checkLogicalAndConstantCondition: false
@@ -194,7 +193,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		randomIntParameters: bool(),
-		fileWhitespace: bool(),
 		readComposerPhpVersion: bool(),
 		dateTimeInstantiation: bool(),
 		checkLogicalAndConstantCondition: bool(),

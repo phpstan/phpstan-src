@@ -2,7 +2,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		randomIntParameters: true
-		fileWhitespace: true
 		readComposerPhpVersion: true
 		dateTimeInstantiation: true
 		checkLogicalAndConstantCondition: true

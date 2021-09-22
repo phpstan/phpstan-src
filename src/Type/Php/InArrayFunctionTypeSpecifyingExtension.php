@@ -15,6 +15,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 
 class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -43,10 +44,22 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		$needleType = $scope->getType($node->getArgs()[0]->value);
-		$arrayValueType = $scope->getType($node->getArgs()[1]->value)->getIterableValueType();
+		$arrayType = $scope->getType($node->getArgs()[1]->value);
+		$arrayValueType = $arrayType->getIterableValueType();
 
-		if ($needleType instanceof ConstantScalarType) {
-			return new SpecifiedTypes();
+
+		if ($arrayValueType instanceof UnionType|| $arrayValueType instanceof ConstantScalarType) {
+			if ($arrayType->isIterableAtLeastOnce()->yes()) {
+				if ($arrayValueType instanceof ConstantScalarType && $needleType instanceof ConstantScalarType) {
+					if ($arrayValueType->getValue() !== $needleType->getValue()) {
+						return new SpecifiedTypes();
+					}
+				} else {
+					return new SpecifiedTypes();
+				}
+			} elseif ($needleType instanceof ConstantScalarType) {
+				return new SpecifiedTypes();
+			}
 		}
 
 		if (

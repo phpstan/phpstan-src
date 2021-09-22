@@ -37,6 +37,6 @@ class Foo
 	 */
 	function has4(array $in): void
 	{
-		// assertType('true', in_array('test', $in, true));
+		assertType('true', in_array('test', $in, true));
 	}
 }

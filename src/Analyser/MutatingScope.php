@@ -3736,7 +3736,10 @@ class MutatingScope implements Scope
 	public function assignExpression(Expr $expr, Type $type): self
 	{
 		$scope = $this;
-		if ($expr instanceof PropertyFetch || $expr instanceof Expr\StaticPropertyFetch) {
+		if ($expr instanceof PropertyFetch) {
+			$scope = $this->invalidateExpression($expr)
+				->invalidateMethodsOnExpression($expr->var);
+		} elseif ($expr instanceof Expr\StaticPropertyFetch) {
 			$scope = $this->invalidateExpression($expr);
 		}
 
@@ -3774,6 +3777,64 @@ class MutatingScope implements Scope
 			}
 
 			if ($requireMoreCharacters && $exprString === $exprStringToInvalidate) {
+				continue;
+			}
+
+			unset($moreSpecificTypeHolders[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$invalidated = true;
+		}
+
+		if (!$invalidated) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->getVariableTypes(),
+			$moreSpecificTypeHolders,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$nativeExpressionTypes,
+			[],
+			$this->afterExtractCall,
+			$this->parentScope
+		);
+	}
+
+	public function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
+	{
+		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
+		$moreSpecificTypeHolders = $this->moreSpecificTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$invalidated = false;
+		$nodeFinder = new NodeFinder();
+		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
+			$exprString = (string) $exprString;
+
+			try {
+				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
+			} catch (\PHPStan\Parser\ParserErrorsException $e) {
+				continue;
+			}
+			if (!$expr instanceof Node\Stmt\Expression) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($exprStringToInvalidate): bool {
+				if (!$node instanceof MethodCall) {
+					return false;
+				}
+
+				return $this->getNodeKey($node->var) === $exprStringToInvalidate;
+			});
+			if ($found === null) {
 				continue;
 			}
 

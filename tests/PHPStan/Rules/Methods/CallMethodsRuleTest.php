@@ -1996,14 +1996,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
-	public function testDoNotReportGenericReturnTypeResolvedToNever(): void
-	{
-		$this->checkThisOnly = false;
-		$this->checkNullables = true;
-		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/generic-return-type-never.php'], []);
-	}
-
 	public function testUnableToResolveCallbackParameterType(): void
 	{
 		$this->checkThisOnly = false;

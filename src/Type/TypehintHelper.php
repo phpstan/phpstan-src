@@ -43,7 +43,7 @@ class TypehintHelper
 				$broker = Broker::getInstance();
 				if ($selfClass !== null && $broker->hasClass($selfClass)) {
 					$classReflection = $broker->getClass($selfClass);
-					if ($classReflection->getParentClass() !== false) {
+					if ($classReflection->getParentClass() !== null) {
 						return new ObjectType($classReflection->getParentClass()->getName());
 					}
 				}

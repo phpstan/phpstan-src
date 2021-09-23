@@ -219,7 +219,7 @@ class PhpClassReflectionExtension
 		);
 		$stubPhpDocString = null;
 		if ($resolvedPhpDoc === null) {
-			if ($declaringClassReflection->getFileName() !== false) {
+			if ($declaringClassReflection->getFileName() !== null) {
 				$declaringTraitName = $this->findPropertyTrait($propertyReflection);
 				$constructorName = null;
 				if (method_exists($propertyReflection, 'isPromoted') && $propertyReflection->isPromoted()) {
@@ -262,7 +262,7 @@ class PhpClassReflectionExtension
 		}
 
 		if ($phpDocType === null) {
-			if (isset($constructorName) && $declaringClassReflection->getFileName() !== false) {
+			if (isset($constructorName) && $declaringClassReflection->getFileName() !== null) {
 				$constructorDocComment = $declaringClassReflection->getConstructor()->getDocComment();
 				$nativeClassReflection = $declaringClassReflection->getNativeReflection();
 				$positionalParameterNames = [];
@@ -302,7 +302,7 @@ class PhpClassReflectionExtension
 		if (
 			$phpDocType === null
 			&& $this->inferPrivatePropertyTypeFromConstructor
-			&& $declaringClassReflection->getFileName() !== false
+			&& $declaringClassReflection->getFileName() !== null
 			&& $propertyReflection->isPrivate()
 			&& (!method_exists($propertyReflection, 'hasType') || !$propertyReflection->hasType())
 			&& $declaringClassReflection->hasConstructor()
@@ -578,7 +578,7 @@ class PhpClassReflectionExtension
 		$stubPhpDocString = null;
 
 		if ($resolvedPhpDoc === null) {
-			if ($declaringClass->getFileName() !== false) {
+			if ($declaringClass->getFileName() !== null) {
 				$docComment = $methodReflection->getDocComment();
 				$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
 					return $parameter->getName();
@@ -618,7 +618,7 @@ class PhpClassReflectionExtension
 		if (
 			$methodReflection instanceof NativeBuiltinMethodReflection
 			&& $methodReflection->isConstructor()
-			&& $declaringClass->getFileName() !== false
+			&& $declaringClass->getFileName() !== null
 		) {
 			foreach ($methodReflection->getParameters() as $parameter) {
 				if (!method_exists($parameter, 'isPromoted') || !$parameter->isPromoted()) {
@@ -923,7 +923,7 @@ class PhpClassReflectionExtension
 		if (isset($this->propertyTypesCache[$declaringClass->getName()])) {
 			return $this->propertyTypesCache[$declaringClass->getName()];
 		}
-		if ($declaringClass->getFileName() === false) {
+		if ($declaringClass->getFileName() === null) {
 			return $this->propertyTypesCache[$declaringClass->getName()] = [];
 		}
 

@@ -123,7 +123,7 @@ class TypeSpecifier
 				} elseif ($lowercasedClassName === 'parent') {
 					if (
 						$scope->isInClass()
-						&& $scope->getClassReflection()->getParentClass() !== false
+						&& $scope->getClassReflection()->getParentClass() !== null
 					) {
 						$type = new ObjectType($scope->getClassReflection()->getParentClass()->getName());
 					} else {

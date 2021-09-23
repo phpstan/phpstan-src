@@ -103,7 +103,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))->build(),
 				];
 			}
-			if ($scope->getClassReflection()->getParentClass() === false) {
+			if ($scope->getClassReflection()->getParentClass() === null) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'%s::%s() calls new parent but %s does not extend any class.',

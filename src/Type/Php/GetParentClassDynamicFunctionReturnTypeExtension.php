@@ -92,7 +92,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\
 	): Type
 	{
 		$parentClass = $classReflection->getParentClass();
-		if ($parentClass === false) {
+		if ($parentClass === null) {
 			return new ConstantBooleanType(false);
 		}
 

@@ -101,7 +101,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 						))->build(),
 					];
 				}
-				if ($scope->getClassReflection()->getParentClass() === false) {
+				if ($scope->getClassReflection()->getParentClass() === null) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'%s::%s() accesses parent::$%s but %s does not extend any class.',

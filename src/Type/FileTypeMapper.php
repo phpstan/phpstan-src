@@ -462,7 +462,7 @@ class FileTypeMapper
 						if (!$traitReflection->isTrait()) {
 							continue;
 						}
-						if ($traitReflection->getFileName() === false) {
+						if ($traitReflection->getFileName() === null) {
 							continue;
 						}
 						if (!file_exists($traitReflection->getFileName())) {

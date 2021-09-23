@@ -99,7 +99,7 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 				$referencedClass = $directClassNames[0];
 				$methodClassReflection = $this->reflectionProvider->getClass($referencedClass);
 				$parentClassReflection = $methodClassReflection->getParentClass();
-				while ($parentClassReflection !== false) {
+				while ($parentClassReflection !== null) {
 					if ($parentClassReflection->hasMethod($name)) {
 						return [
 							RuleErrorBuilder::message(sprintf(

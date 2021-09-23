@@ -30,12 +30,9 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return null;
 	}
 
-	/**
-	 * @return string|false
-	 */
-	public function getFileName()
+	public function getFileName(): ?string
 	{
-		return false;
+		return null;
 	}
 
 	public function getDeclaringClass(): \ReflectionClass
@@ -43,20 +40,14 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->declaringClass;
 	}
 
-	/**
-	 * @return int|false
-	 */
-	public function getStartLine()
+	public function getStartLine(): ?int
 	{
-		return false;
+		return null;
 	}
 
-	/**
-	 * @return int|false
-	 */
-	public function getEndLine()
+	public function getEndLine(): ?int
 	{
-		return false;
+		return null;
 	}
 
 	public function getDocComment(): ?string

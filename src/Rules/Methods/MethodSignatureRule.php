@@ -129,7 +129,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 		$parentMethods = [];
 
 		$parentClass = $class->getParentClass();
-		if ($parentClass !== false && $parentClass->hasNativeMethod($methodName)) {
+		if ($parentClass !== null && $parentClass->hasNativeMethod($methodName)) {
 			$parentMethod = $parentClass->getNativeMethod($methodName);
 			if (!$parentMethod->isPrivate()) {
 				$parentMethods[] = $parentMethod;

@@ -310,7 +310,7 @@ class TypeNodeResolver
 				case 'parent':
 					if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
 						$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
-						if ($classReflection->getParentClass() !== false) {
+						if ($classReflection->getParentClass() !== null) {
 							return new ObjectType($classReflection->getParentClass()->getName());
 						}
 					}
@@ -681,7 +681,7 @@ class TypeNodeResolver
 					case 'parent':
 						if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
 							$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
-							if ($classReflection->getParentClass() === false) {
+							if ($classReflection->getParentClass() === null) {
 								return new ErrorType();
 
 							}

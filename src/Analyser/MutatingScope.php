@@ -292,7 +292,7 @@ class MutatingScope implements Scope
 		}
 
 		$traitReflection = $this->context->getTraitReflection();
-		if ($traitReflection->getFileName() === false) {
+		if ($traitReflection->getFileName() === null) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
@@ -2588,7 +2588,7 @@ class MutatingScope implements Scope
 					return null;
 				}
 				$currentClassReflection = $this->getClassReflection();
-				if ($currentClassReflection->getParentClass() !== false) {
+				if ($currentClassReflection->getParentClass() !== null) {
 					return $currentClassReflection->getParentClass()->getName();
 				}
 				return null;
@@ -2614,7 +2614,7 @@ class MutatingScope implements Scope
 				return $this->getClassReflection()->getName();
 			} elseif ($originalClass === 'parent') {
 				$currentClassReflection = $this->getClassReflection();
-				if ($currentClassReflection->getParentClass() !== false) {
+				if ($currentClassReflection->getParentClass() !== null) {
 					return $currentClassReflection->getParentClass()->getName();
 				}
 			}
@@ -3385,7 +3385,7 @@ class MutatingScope implements Scope
 			$className = (string) $type;
 			$lowercasedClassName = strtolower($className);
 			if ($lowercasedClassName === 'parent') {
-				if ($this->isInClass() && $this->getClassReflection()->getParentClass() !== false) {
+				if ($this->isInClass() && $this->getClassReflection()->getParentClass() !== null) {
 					return new ObjectType($this->getClassReflection()->getParentClass()->getName());
 				}
 

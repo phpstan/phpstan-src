@@ -141,7 +141,7 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame('GenericInheritance\\C', $reflection->getDisplayName());
 
 		$parent = $reflection->getParentClass();
-		$this->assertNotFalse($parent);
+		$this->assertNotNull($parent);
 
 		$this->assertSame('GenericInheritance\\C0<DateTime>', $parent->getDisplayName());
 

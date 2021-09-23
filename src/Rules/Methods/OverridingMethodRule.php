@@ -62,7 +62,7 @@ class OverridingMethodRule implements Rule
 		if ($prototype->getDeclaringClass()->getName() === $method->getDeclaringClass()->getName()) {
 			if (strtolower($method->getName()) === '__construct') {
 				$parent = $method->getDeclaringClass()->getParentClass();
-				if ($parent !== false && $parent->hasConstructor()) {
+				if ($parent !== null && $parent->hasConstructor()) {
 					$parentConstructor = $parent->getConstructor();
 					if ($parentConstructor->isFinal()->yes()) {
 						return $this->addErrors([

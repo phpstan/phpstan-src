@@ -527,7 +527,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 
 			$classReflection = $classReflection->getParentClass();
-		} while ($classReflection !== false);
+		} while ($classReflection !== null);
 
 		return new ConstantArrayType($arrayKeys, $arrayValues);
 	}
@@ -1092,7 +1092,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$parentReflection = $thisReflection->getParentClass();
-		if ($parentReflection === false) {
+		if ($parentReflection === null) {
 			return null;
 		}
 

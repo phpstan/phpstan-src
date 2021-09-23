@@ -3663,7 +3663,7 @@ class NodeScopeResolver
 			}
 			$traitReflection = $this->reflectionProvider->getClass($traitName);
 			$traitFileName = $traitReflection->getFileName();
-			if ($traitFileName === false) {
+			if ($traitFileName === null) {
 				continue; // trait from eval or from PHP itself
 			}
 			$fileName = $this->fileHelper->normalizePath($traitFileName);

@@ -108,7 +108,7 @@ class FileAnalyser
 							$metadata = [];
 							if ($scope->isInTrait()) {
 								$traitReflection = $scope->getTraitReflection();
-								if ($traitReflection->getFileName() !== false) {
+								if ($traitReflection->getFileName() !== null) {
 									$traitFilePath = $traitReflection->getFileName();
 								}
 							}

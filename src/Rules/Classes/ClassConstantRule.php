@@ -78,7 +78,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					];
 				}
 				$currentClassReflection = $scope->getClassReflection();
-				if ($currentClassReflection->getParentClass() === false) {
+				if ($currentClassReflection->getParentClass() === null) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Access to parent::%s but %s does not extend any class.',

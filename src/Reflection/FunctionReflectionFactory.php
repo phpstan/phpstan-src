@@ -19,7 +19,7 @@ interface FunctionReflectionFactory
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
-	 * @param string|false $filename
+	 * @param string|null $filename
 	 * @param bool|null $isPure
 	 * @return PhpFunctionReflection
 	 */
@@ -33,7 +33,7 @@ interface FunctionReflectionFactory
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		$filename,
+		?string $filename,
 		?bool $isPure = null
 	): PhpFunctionReflection;
 

@@ -11,22 +11,13 @@ interface BuiltinMethodReflection
 
 	public function getReflection(): ?\ReflectionMethod;
 
-	/**
-	 * @return string|false
-	 */
-	public function getFileName();
+	public function getFileName(): ?string;
 
 	public function getDeclaringClass(): \ReflectionClass;
 
-	/**
-	 * @return int|false
-	 */
-	public function getStartLine();
+	public function getStartLine(): ?int;
 
-	/**
-	 * @return int|false
-	 */
-	public function getEndLine();
+	public function getEndLine(): ?int;
 
 	public function getDocComment(): ?string;
 

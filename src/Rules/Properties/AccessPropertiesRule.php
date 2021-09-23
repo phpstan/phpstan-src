@@ -123,7 +123,7 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 				$referencedClass = $typeResult->getReferencedClasses()[0];
 				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
 				$parentClassReflection = $propertyClassReflection->getParentClass();
-				while ($parentClassReflection !== false) {
+				while ($parentClassReflection !== null) {
 					if ($parentClassReflection->hasProperty($name)) {
 						return [
 							RuleErrorBuilder::message(sprintf(

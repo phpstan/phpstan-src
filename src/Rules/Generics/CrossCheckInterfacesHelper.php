@@ -52,7 +52,7 @@ class CrossCheckInterfacesHelper
 
 			$parent = $classReflection->getParentClass();
 			$checkParents = true;
-			if ($first && $parent !== false) {
+			if ($first && $parent !== null) {
 				$extendsTags = $classReflection->getExtendsTags();
 				if (!array_key_exists($parent->getName(), $extendsTags)) {
 					$checkParents = false;
@@ -60,7 +60,7 @@ class CrossCheckInterfacesHelper
 			}
 
 			if ($checkParents) {
-				while ($parent !== false) {
+				while ($parent !== null) {
 					$check($parent, false);
 					$parent = $parent->getParentClass();
 				}

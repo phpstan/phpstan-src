@@ -49,8 +49,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 
 	private bool $isFinal;
 
-	/** @var string|false */
-	private $filename;
+	private ?string $filename;
 
 	private ?bool $isPure;
 
@@ -70,7 +69,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 	 * @param bool $isDeprecated
 	 * @param bool $isInternal
 	 * @param bool $isFinal
-	 * @param string|false $filename
+	 * @param string|null $filename
 	 * @param bool|null $isPure
 	 */
 	public function __construct(
@@ -86,7 +85,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		$filename,
+		?string $filename,
 		?bool $isPure = null
 	)
 	{
@@ -111,17 +110,14 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		return $this->reflection->getName();
 	}
 
-	/**
-	 * @return string|false
-	 */
-	public function getFileName()
+	public function getFileName(): ?string
 	{
-		if ($this->filename === false) {
-			return false;
+		if ($this->filename === null) {
+			return null;
 		}
 
 		if (!file_exists($this->filename)) {
-			return false;
+			return null;
 		}
 
 		return $this->filename;

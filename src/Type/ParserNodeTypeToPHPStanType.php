@@ -31,7 +31,7 @@ class ParserNodeTypeToPHPStanType
 			} elseif (
 				$lowercasedClassName === 'parent'
 				&& $classReflection !== null
-				&& $classReflection->getParentClass() !== false
+				&& $classReflection->getParentClass() !== null
 			) {
 				$typeClassName = $classReflection->getParentClass()->getName();
 			}

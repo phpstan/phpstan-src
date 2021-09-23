@@ -41,7 +41,7 @@ class NodeDependencies
 
 		foreach ($this->reflections as $dependencyReflection) {
 			$dependencyFile = $dependencyReflection->getFileName();
-			if ($dependencyFile === false) {
+			if ($dependencyFile === null) {
 				continue;
 			}
 			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);

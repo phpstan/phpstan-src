@@ -131,7 +131,7 @@ class OverridingConstantRule implements Rule
 		}
 
 		$parentClass = $classReflection->getParentClass();
-		if ($parentClass === false) {
+		if ($parentClass === null) {
 			return null;
 		}
 

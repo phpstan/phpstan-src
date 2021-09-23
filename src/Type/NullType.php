@@ -45,7 +45,7 @@ class NullType implements ConstantScalarType
 		return null;
 	}
 
-	public function generalize(?GeneralizePrecision $precision = null): Type
+	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return $this;
 	}

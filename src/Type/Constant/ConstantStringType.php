@@ -301,17 +301,17 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new self($this->getValue() . $otherString->getValue());
 	}
 
-	public function generalize(?GeneralizePrecision $precision = null): Type
+	public function generalize(GeneralizePrecision $precision): Type
 	{
 		if ($this->isClassString) {
-			if ($precision !== null && $precision->isMoreSpecific()) {
+			if ($precision->isMoreSpecific()) {
 				return new ClassStringType();
 			}
 
 			return new StringType();
 		}
 
-		if ($this->getValue() !== '' && $precision !== null && $precision->isMoreSpecific()) {
+		if ($this->getValue() !== '' && $precision->isMoreSpecific()) {
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
@@ -319,7 +319,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			]);
 		}
 
-		if ($precision !== null && $precision->isMoreSpecific()) {
+		if ($precision->isMoreSpecific()) {
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryLiteralStringType(),

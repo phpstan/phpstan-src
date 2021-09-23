@@ -269,7 +269,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	}
 
 
-	public function generalize(?GeneralizePrecision $precision = null): Type
+	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new parent();
 	}

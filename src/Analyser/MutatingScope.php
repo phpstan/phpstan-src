@@ -1118,7 +1118,7 @@ class MutatingScope implements Scope
 					foreach ($rightTypes as $rightType) {
 						$resultType = $this->calculateFromScalars($node, $leftType, $rightType);
 						if ($generalize) {
-							$resultType = TypeUtils::generalizeType($resultType);
+							$resultType = TypeUtils::generalizeType($resultType, GeneralizePrecision::lessSpecific());
 						}
 						$resultTypes[] = $resultType;
 					}

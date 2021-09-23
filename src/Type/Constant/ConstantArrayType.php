@@ -619,7 +619,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->toBoolean()->toFloat();
 	}
 
-	public function generalize(?GeneralizePrecision $precision = null): Type
+	public function generalize(GeneralizePrecision $precision): Type
 	{
 		if (count($this->keyTypes) === 0) {
 			return $this;

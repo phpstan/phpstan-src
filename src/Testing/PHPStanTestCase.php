@@ -86,6 +86,7 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @api
+	 * @deprecated Use createReflectionProvider() instead
 	 */
 	public function createBroker(): Broker
 	{

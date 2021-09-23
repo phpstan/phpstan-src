@@ -37,6 +37,9 @@ class Broker implements ReflectionProvider
 		self::$instance = $broker;
 	}
 
+	/**
+	 * @deprecated Use PHPStan\Reflection\ReflectionProviderStaticAccessor instead
+	 */
 	public static function getInstance(): Broker
 	{
 		if (self::$instance === null) {

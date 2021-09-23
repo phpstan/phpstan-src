@@ -91,6 +91,15 @@ parameters:
 			path: src/PhpDoc/ResolvedPhpDocBlock.php
 
 		-
+			message:
+				"""
+					#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+					Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
+				"""
+			count: 1
+			path: src/PhpDoc/StubValidator.php
+
+		-
 			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
 			count: 1
 			path: src/PhpDoc/Tag/ParamTag.php
@@ -244,6 +253,15 @@ parameters:
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
 			path: src/Testing/PHPStanTestCase.php
+
+		-
+			message:
+				"""
+					#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+					Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
+				"""
+			count: 1
+			path: src/Type/ObjectType.php
 
 		-
 			message:

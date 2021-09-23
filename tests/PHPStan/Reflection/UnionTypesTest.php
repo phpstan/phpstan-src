@@ -19,7 +19,7 @@ class UnionTypesTest extends PHPStanTestCase
 
 		require_once __DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php';
 
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Foo::class);
 		$propertyType = $class->getNativeProperty('fooProp')->getNativeType();
 		$this->assertInstanceOf(UnionType::class, $propertyType);

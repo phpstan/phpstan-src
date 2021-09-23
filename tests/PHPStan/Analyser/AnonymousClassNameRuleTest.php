@@ -10,8 +10,8 @@ class AnonymousClassNameRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		return new AnonymousClassNameRule($broker);
+		$reflectionProvider = $this->createReflectionProvider();
+		return new AnonymousClassNameRule($reflectionProvider);
 	}
 
 	public function testRule(): void

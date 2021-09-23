@@ -46,11 +46,11 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 
 	protected function setUp(): void
 	{
-		$broker = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$this->printer = new \PhpParser\PrettyPrinter\Standard();
 		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
-		$this->scope = $this->createScopeFactory($broker, $this->typeSpecifier)->create(ScopeContext::create(''));
-		$this->scope = $this->scope->enterClass($broker->getClass('DateTime'));
+		$this->scope = $this->createScopeFactory($reflectionProvider, $this->typeSpecifier)->create(ScopeContext::create(''));
+		$this->scope = $this->scope->enterClass($reflectionProvider->getClass('DateTime'));
 		$this->scope = $this->scope->assignVariable('bar', new ObjectType('Bar'));
 		$this->scope = $this->scope->assignVariable('stringOrNull', new UnionType([new StringType(), new NullType()]));
 		$this->scope = $this->scope->assignVariable('string', new StringType());

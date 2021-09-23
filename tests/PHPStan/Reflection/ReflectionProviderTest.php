@@ -86,7 +86,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 	 */
 	public function testMethodThrowType(string $className, string $methodName, ?Type $expectedThrowType): void
 	{
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$method = $class->getNativeMethod($methodName);
 		$throwType = $method->getThrowType();

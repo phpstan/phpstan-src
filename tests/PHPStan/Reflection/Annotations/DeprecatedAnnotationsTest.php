@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\Annotations;
 
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 
 class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 {
@@ -84,9 +83,8 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 	 */
 	public function testDeprecatedAnnotations(bool $deprecated, string $className, ?string $classDeprecation, array $deprecatedAnnotations): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
-		$class = $broker->getClass($className);
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
 		$scope->method('getClassReflection')->willReturn($class);
@@ -118,21 +116,19 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/annotations-deprecated.php';
 
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
+		$reflectionProvider = $this->createReflectionProvider();
 
-		$this->assertFalse($broker->getFunction(new Name\FullyQualified('DeprecatedAnnotations\foo'), null)->isDeprecated()->yes());
-		$this->assertTrue($broker->getFunction(new Name\FullyQualified('DeprecatedAnnotations\deprecatedFoo'), null)->isDeprecated()->yes());
+		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\foo'), null)->isDeprecated()->yes());
+		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\deprecatedFoo'), null)->isDeprecated()->yes());
 	}
 
 	public function testNonDeprecatedNativeFunctions(): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
+		$reflectionProvider = $this->createReflectionProvider();
 
-		$this->assertFalse($broker->getFunction(new Name('str_replace'), null)->isDeprecated()->yes());
-		$this->assertFalse($broker->getFunction(new Name('get_class'), null)->isDeprecated()->yes());
-		$this->assertFalse($broker->getFunction(new Name('function_exists'), null)->isDeprecated()->yes());
+		$this->assertFalse($reflectionProvider->getFunction(new Name('str_replace'), null)->isDeprecated()->yes());
+		$this->assertFalse($reflectionProvider->getFunction(new Name('get_class'), null)->isDeprecated()->yes());
+		$this->assertFalse($reflectionProvider->getFunction(new Name('function_exists'), null)->isDeprecated()->yes());
 	}
 
 }

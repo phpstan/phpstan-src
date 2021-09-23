@@ -47,7 +47,6 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 
 	public function testBug3406ReflectionCheck(): void
 	{
-		$this->createBroker();
 		$reflectionProvider = $this->createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(ClassFoo::class);
 		$this->assertSame(AbstractFoo::class, $reflection->getNativeMethod('myFoo')->getDeclaringClass()->getName());

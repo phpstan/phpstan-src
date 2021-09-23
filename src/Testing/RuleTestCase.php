@@ -44,10 +44,10 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 				$this->getRule(),
 			]);
 
-			$broker = $this->createBroker();
+			$reflectionProvider = $this->createReflectionProvider();
 			$typeSpecifier = $this->getTypeSpecifier();
 			$nodeScopeResolver = new NodeScopeResolver(
-				$broker,
+				$reflectionProvider,
 				self::getReflectors()[0],
 				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),
@@ -65,7 +65,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 				true
 			);
 			$fileAnalyser = new FileAnalyser(
-				$this->createScopeFactory($broker, $typeSpecifier),
+				$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 				$nodeScopeResolver,
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),

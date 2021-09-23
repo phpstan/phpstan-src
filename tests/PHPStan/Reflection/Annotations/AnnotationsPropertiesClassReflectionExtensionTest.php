@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Type\VerbosityLevel;
 
 class AnnotationsPropertiesClassReflectionExtensionTest extends \PHPStan\Testing\PHPStanTestCase
@@ -216,9 +215,8 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends \PHPStan\Testing
 	 */
 	public function testProperties(string $className, array $properties): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
-		$class = $broker->getClass($className);
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
 		$scope->method('getClassReflection')->willReturn($class);
@@ -255,8 +253,8 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends \PHPStan\Testing
 
 	public function testOverridingNativePropertiesWithAnnotationsDoesNotBreakGetNativeProperty(): void
 	{
-		$broker = self::getContainer()->getByType(Broker::class);
-		$class = $broker->getClass(\AnnotationsProperties\Bar::class);
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass(\AnnotationsProperties\Bar::class);
 		$this->assertTrue($class->hasNativeProperty('overridenPropertyWithAnnotation'));
 		$this->assertSame('AnnotationsProperties\Foo', $class->getNativeProperty('overridenPropertyWithAnnotation')->getReadableType()->describe(VerbosityLevel::precise()));
 	}

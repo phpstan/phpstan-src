@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\Annotations;
 
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 
 class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 {
@@ -111,9 +110,8 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 	 */
 	public function testInternalAnnotations(bool $internal, string $className, array $internalAnnotations): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
-		$class = $broker->getClass($className);
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
 		$scope->method('getClassReflection')->willReturn($class);
@@ -141,11 +139,10 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/annotations-internal.php';
 
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
+		$reflectionProvider = $this->createReflectionProvider();
 
-		$this->assertFalse($broker->getFunction(new Name\FullyQualified('InternalAnnotations\foo'), null)->isInternal()->yes());
-		$this->assertTrue($broker->getFunction(new Name\FullyQualified('InternalAnnotations\internalFoo'), null)->isInternal()->yes());
+		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\foo'), null)->isInternal()->yes());
+		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\internalFoo'), null)->isInternal()->yes());
 	}
 
 }

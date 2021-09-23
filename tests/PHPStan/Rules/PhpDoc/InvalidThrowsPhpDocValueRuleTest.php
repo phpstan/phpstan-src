@@ -105,7 +105,7 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 		string $expectedType
 	): void
 	{
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$reflection = $reflectionProvider->getClass($className);
 		$method = $reflection->getNativeMethod($method);
 		$throwsType = $method->getThrowType();

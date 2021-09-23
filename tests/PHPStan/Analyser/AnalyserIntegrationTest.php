@@ -4,7 +4,6 @@ namespace PHPStan\Analyser;
 
 use Bug4288\MyClass;
 use Bug4713\Service;
-use PHPStan\Broker\Broker;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
@@ -83,8 +82,8 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-known-class-with-check.php');
 		$this->assertCount(0, $errors);
 
-		$broker = self::getContainer()->getByType(Broker::class);
-		$this->assertTrue($broker->hasClass(\ExtendingKnownClassWithCheck\Foo::class));
+		$reflectionProvider = $this->createReflectionProvider();
+		$this->assertTrue($reflectionProvider->hasClass(\ExtendingKnownClassWithCheck\Foo::class));
 	}
 
 	public function testInfiniteRecursionWithCallable(): void
@@ -353,7 +352,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertCount(1, $errors);
 		$this->assertSame('Method Bug4713\Service::createInstance() should return Bug4713\Service but returns object.', $errors[0]->getMessage());
 
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Service::class);
 		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('createInstance')->getVariants())->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
@@ -366,7 +365,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288.php');
 		$this->assertCount(0, $errors);
 
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(MyClass::class);
 		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('paginate')->getVariants())->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();

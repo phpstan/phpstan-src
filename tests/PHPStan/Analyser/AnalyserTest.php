@@ -482,7 +482,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			new AlwaysFailRule(),
 		]);
 
-		$broker = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$printer = new \PhpParser\PrettyPrinter\Standard();
 		$fileHelper = $this->getFileHelper();
 
@@ -491,7 +491,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 
 		$nodeScopeResolver = new NodeScopeResolver(
-			$broker,
+			$reflectionProvider,
 			self::getReflectors()[0],
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
@@ -510,7 +510,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 		);
 		$lexer = new \PhpParser\Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(
-			$this->createScopeFactory($broker, $typeSpecifier),
+			$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 			$nodeScopeResolver,
 			new RichParser(
 				new \PhpParser\Parser\Php7($lexer),
@@ -518,7 +518,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 				new NodeConnectingVisitor(),
 				new StatementOrderVisitor()
 			),
-			new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
+			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, $printer)),
 			$reportUnmatchedIgnoredErrors
 		);
 

@@ -60,6 +60,7 @@ parameters:
 	parallel:
 		jobSize: 20
 		processTimeout: 600.0
+		minimumNumberOfProcesses: 1
 		maximumNumberOfProcesses: 32
 		minimumNumberOfJobsPerProcess: 2
 		buffer: 134217728 # 128 MB
@@ -215,6 +216,7 @@ parametersSchema:
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),
+		minimumNumberOfProcesses: int(),
 		maximumNumberOfProcesses: int(),
 		minimumNumberOfJobsPerProcess: int(),
 		buffer: int()
@@ -454,6 +456,7 @@ services:
 			analysedPaths: %analysedPaths%
 			currentWorkingDirectory: %currentWorkingDirectory%
 			fixerTmpDir: %fixerTmpDir%
+			minimumNumberOfProcesses: %parallel.minimumNumberOfProcesses%
 			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
 
 	-
@@ -571,6 +574,7 @@ services:
 		class: PHPStan\Parallel\Scheduler
 		arguments:
 			jobSize: %parallel.jobSize%
+			minimumNumberOfProcesses: %parallel.minimumNumberOfProcesses%
 			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
 			minimumNumberOfJobsPerProcess: %parallel.minimumNumberOfJobsPerProcess%
 

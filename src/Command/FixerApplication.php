@@ -73,6 +73,8 @@ class FixerApplication
 	/** @var string */
 	private $fixerTmpDir;
 
+	private int $minimumNumberOfProcesses;
+
 	private int $maximumNumberOfProcesses;
 
 	/** @var string|null */
@@ -93,6 +95,7 @@ class FixerApplication
 		array $analysedPaths,
 		string $currentWorkingDirectory,
 		string $fixerTmpDir,
+		int $minimumNumberOfProcesses,
 		int $maximumNumberOfProcesses
 	)
 	{
@@ -105,6 +108,7 @@ class FixerApplication
 		$this->analysedPaths = $analysedPaths;
 		$this->currentWorkingDirectory = $currentWorkingDirectory;
 		$this->fixerTmpDir = $fixerTmpDir;
+		$this->minimumNumberOfProcesses = $minimumNumberOfProcesses;
 		$this->maximumNumberOfProcesses = $maximumNumberOfProcesses;
 	}
 
@@ -141,7 +145,10 @@ class FixerApplication
 				}
 
 			},
-			min($this->cpuCoreCounter->getNumberOfCpuCores(), $this->maximumNumberOfProcesses)
+			max(
+				$this->minimumNumberOfProcesses,
+				min($this->cpuCoreCounter->getNumberOfCpuCores(), $this->maximumNumberOfProcesses)
+			)
 		);
 
 		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $reanalyseProcessQueue, $inceptionResult): void {

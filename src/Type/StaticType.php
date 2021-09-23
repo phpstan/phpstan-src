@@ -2,12 +2,12 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -388,9 +388,9 @@ class StaticType implements TypeWithClassName
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		$broker = Broker::getInstance();
-		if ($broker->hasClass($properties['baseClass'])) {
-			return new self($broker->getClass($properties['baseClass']));
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if ($reflectionProvider->hasClass($properties['baseClass'])) {
+			return new self($reflectionProvider->getClass($properties['baseClass']));
 		}
 
 		return new ErrorType();

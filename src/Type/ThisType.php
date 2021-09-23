@@ -2,8 +2,8 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 
 /** @api */
 class ThisType extends StaticType
@@ -33,9 +33,9 @@ class ThisType extends StaticType
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		$broker = Broker::getInstance();
-		if ($broker->hasClass($properties['baseClass'])) {
-			return new self($broker->getClass($properties['baseClass']));
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if ($reflectionProvider->hasClass($properties['baseClass'])) {
+			return new self($reflectionProvider->getClass($properties['baseClass']));
 		}
 
 		return new ErrorType();

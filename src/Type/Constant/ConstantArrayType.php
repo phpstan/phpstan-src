@@ -2,9 +2,9 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -368,11 +368,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		if ($classOrObject instanceof ConstantStringType) {
-			$broker = Broker::getInstance();
-			if (!$broker->hasClass($classOrObject->getValue())) {
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($classOrObject->getValue())) {
 				return ConstantArrayTypeAndMethod::createUnknown();
 			}
-			$type = new ObjectType($broker->getClass($classOrObject->getValue())->getName());
+			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 		} elseif ($classOrObject instanceof GenericClassStringType) {
 			$type = $classOrObject->getGenericType();
 		} elseif ((new \PHPStan\Type\ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {

@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 
@@ -28,8 +28,8 @@ class ClassStringType extends StringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			$broker = Broker::getInstance();
-			return TrinaryLogic::createFromBoolean($broker->hasClass($type->getValue()));
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			return TrinaryLogic::createFromBoolean($reflectionProvider->hasClass($type->getValue()));
 		}
 
 		if ($type instanceof self) {
@@ -46,8 +46,8 @@ class ClassStringType extends StringType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof ConstantStringType) {
-			$broker = Broker::getInstance();
-			return TrinaryLogic::createFromBoolean($broker->hasClass($type->getValue()));
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			return TrinaryLogic::createFromBoolean($reflectionProvider->hasClass($type->getValue()));
 		}
 
 		if ($type instanceof self) {

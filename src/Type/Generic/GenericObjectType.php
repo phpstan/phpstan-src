@@ -2,11 +2,11 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
@@ -182,12 +182,12 @@ class GenericObjectType extends ObjectType
 			return $this->classReflection;
 		}
 
-		$broker = Broker::getInstance();
-		if (!$broker->hasClass($this->getClassName())) {
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if (!$reflectionProvider->hasClass($this->getClassName())) {
 			return null;
 		}
 
-		return $this->classReflection = $broker->getClass($this->getClassName())->withTypes($this->types);
+		return $this->classReflection = $reflectionProvider->getClass($this->getClassName())->withTypes($this->types);
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection

@@ -246,6 +246,15 @@ parameters:
 			path: src/Testing/PHPStanTestCase.php
 
 		-
+			message:
+				"""
+					#^Call to deprecated method getUniversalObjectCratesClasses\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+					Inject %%universalObjectCratesClasses%% parameter instead\\.$#
+				"""
+			count: 1
+			path: src/Type/ObjectType.php
+
+		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"
 			count: 1
 			path: tests/PHPStan/Analyser/AnalyserTest.php
@@ -279,6 +288,33 @@ parameters:
 			message: "#^Method PHPStan\\\\Analyser\\\\EvaluationOrderTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
+
+		-
+			message:
+				"""
+					#^Call to deprecated method getClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+				"""
+			count: 1
+			path: tests/PHPStan/Broker/BrokerTest.php
+
+		-
+			message:
+				"""
+					#^Call to deprecated method getFunction\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+				"""
+			count: 1
+			path: tests/PHPStan/Broker/BrokerTest.php
+
+		-
+			message:
+				"""
+					#^Call to deprecated method hasClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+				"""
+			count: 1
+			path: tests/PHPStan/Broker/BrokerTest.php
 
 		-
 			message: "#^Constant SOME_CONSTANT_IN_AUTOLOAD_FILE not found\\.$#"

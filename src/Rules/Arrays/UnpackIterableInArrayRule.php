@@ -50,7 +50,8 @@ class UnpackIterableInArrayRule implements Rule
 				'',
 				static function (Type $type): bool {
 					return $type->isIterable()->yes();
-				}
+				},
+				false
 			);
 			$type = $typeResult->getType();
 			if ($type instanceof ErrorType) {

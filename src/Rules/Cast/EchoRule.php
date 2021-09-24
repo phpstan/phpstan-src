@@ -40,7 +40,8 @@ class EchoRule implements Rule
 				'',
 				static function (Type $type): bool {
 					return !$type->toString() instanceof ErrorType;
-				}
+				},
+				false
 			);
 
 			if ($typeResult->getType() instanceof ErrorType

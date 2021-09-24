@@ -122,7 +122,8 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				sprintf('Access to constant %s on an unknown class %%s.', SprintfHelper::escapeFormatString($constantName)),
 				static function (Type $type) use ($constantName): bool {
 					return $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes();
-				}
+				},
+				true
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {

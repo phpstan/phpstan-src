@@ -50,7 +50,8 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 			'',
 			static function (Type $type) use ($methodName): bool {
 				return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-			}
+			},
+			true
 		);
 		$calledOnType = $typeResult->getType();
 		if ($calledOnType instanceof ErrorType) {

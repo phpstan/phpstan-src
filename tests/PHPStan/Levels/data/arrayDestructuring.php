@@ -1,6 +1,6 @@
 <?php
 
-namespace ArrayDestructuring;
+namespace Levels\ArrayDestructuring;
 
 class Foo
 {

@@ -40,7 +40,8 @@ class ThrowTypeRule implements \PHPStan\Rules\Rule
 			'Throwing object of an unknown class %s.',
 			static function (Type $type) use ($throwableType): bool {
 				return $throwableType->isSuperTypeOf($type)->yes();
-			}
+			},
+			false
 		);
 
 		$foundType = $typeResult->getType();

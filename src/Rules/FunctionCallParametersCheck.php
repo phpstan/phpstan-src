@@ -234,7 +234,8 @@ class FunctionCallParametersCheck
 					'',
 					static function (Type $type): bool {
 						return $type->isIterable()->yes();
-					}
+					},
+					true
 				);
 				$iterableTypeResultType = $iterableTypeResult->getType();
 				if (

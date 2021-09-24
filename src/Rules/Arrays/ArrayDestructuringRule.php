@@ -66,7 +66,8 @@ class ArrayDestructuringRule implements Rule
 			'',
 			static function (Type $varType): bool {
 				return $varType->isArray()->yes();
-			}
+			},
+			false
 		);
 		$exprType = $exprTypeResult->getType();
 		if ($exprType instanceof ErrorType) {

@@ -150,7 +150,8 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 				static function (Type $type) use ($name): bool {
 					return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
-				}
+				},
+				true
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {

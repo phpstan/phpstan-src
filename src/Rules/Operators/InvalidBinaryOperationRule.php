@@ -77,7 +77,8 @@ class InvalidBinaryOperationRule implements \PHPStan\Rules\Rule
 				$scope,
 				$left,
 				'',
-				$callback
+				$callback,
+				false
 			)->getType();
 			if ($leftType instanceof ErrorType) {
 				return [];
@@ -87,7 +88,8 @@ class InvalidBinaryOperationRule implements \PHPStan\Rules\Rule
 				$scope,
 				$right,
 				'',
-				$callback
+				$callback,
+				false
 			)->getType();
 			if ($rightType instanceof ErrorType) {
 				return [];

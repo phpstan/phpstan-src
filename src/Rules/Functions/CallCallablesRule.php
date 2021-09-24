@@ -57,7 +57,8 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 			'Invoking callable on an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isCallable()->yes();
-			}
+			},
+			true
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

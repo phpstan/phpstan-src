@@ -54,7 +54,8 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 			$unknownClassPattern,
 			static function (Type $type): bool {
 				return $type->isOffsetAccessible()->yes();
-			}
+			},
+			true
 		);
 		$isOffsetAccessibleType = $isOffsetAccessibleTypeResult->getType();
 		if ($isOffsetAccessibleType instanceof ErrorType) {

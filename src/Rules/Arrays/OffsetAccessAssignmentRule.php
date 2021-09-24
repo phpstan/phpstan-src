@@ -46,7 +46,8 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 			static function (Type $varType) use ($potentialDimType): bool {
 				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType());
 				return !($arrayDimType instanceof ErrorType);
-			}
+			},
+			true
 		);
 		$varType = $varTypeResult->getType();
 		if ($varType instanceof ErrorType) {
@@ -64,7 +65,8 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 				static function (Type $dimType) use ($varType): bool {
 					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType());
 					return !($arrayDimType instanceof ErrorType);
-				}
+				},
+				true
 			);
 			$dimType = $dimTypeResult->getType();
 		} else {

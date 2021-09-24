@@ -38,7 +38,8 @@ class VariableCloningRule implements \PHPStan\Rules\Rule
 			'Cloning object of an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isCloneable()->yes();
-			}
+			},
+			false
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

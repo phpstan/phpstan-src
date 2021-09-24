@@ -74,7 +74,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 			return $acceptedType->accepts($type, true)->yes();
 		};
 
-		$type = $this->ruleLevelHelper->findTypeToCheck($scope, $expr, '', $onlyNumber)->getType();
+		$type = $this->ruleLevelHelper->findTypeToCheck($scope, $expr, '', $onlyNumber, false)->getType();
 
 		if (
 			$type instanceof ErrorType
@@ -96,7 +96,8 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 			'',
 			static function (Type $type) use ($acceptedType): bool {
 				return $acceptedType->isSuperTypeOf($type)->yes();
-			}
+			},
+			false
 		)->getType();
 
 		if ($type instanceof ErrorType) {
@@ -119,7 +120,8 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 			'',
 			static function (Type $type): bool {
 				return $type->isArray()->yes();
-			}
+			},
+			false
 		)->getType();
 
 		return !($type instanceof ErrorType) && $type->isArray()->yes();

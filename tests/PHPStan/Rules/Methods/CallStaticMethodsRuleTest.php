@@ -26,7 +26,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 			$broker,
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
 			$ruleLevelHelper,
-			new ClassCaseSensitivityCheck($broker),
+			new ClassCaseSensitivityCheck($broker, true),
 			true,
 			true
 		);

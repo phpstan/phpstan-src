@@ -21,7 +21,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		return new InstantiationRule(
 			$broker,
 			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
-			new ClassCaseSensitivityCheck($broker)
+			new ClassCaseSensitivityCheck($broker, true)
 		);
 	}
 

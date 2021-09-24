@@ -58,7 +58,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
 
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), __DIR__, [], DIRECTORY_SEPARATOR);
-		$errorFormatter = new TableErrorFormatter($relativePathHelper, false);
+		$errorFormatter = new TableErrorFormatter($relativePathHelper, false, null);
 		$analysisResult = $analyserApplication->analyse(
 			[$path],
 			true,

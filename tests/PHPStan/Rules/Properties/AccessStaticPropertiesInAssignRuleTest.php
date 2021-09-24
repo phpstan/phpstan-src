@@ -17,7 +17,7 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessStaticPropertiesInAssignRule(
-			new AccessStaticPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false), new ClassCaseSensitivityCheck($reflectionProvider))
+			new AccessStaticPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false), new ClassCaseSensitivityCheck($reflectionProvider, true))
 		);
 	}
 

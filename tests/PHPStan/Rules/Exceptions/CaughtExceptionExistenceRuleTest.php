@@ -15,7 +15,7 @@ class CaughtExceptionExistenceRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CaughtExceptionExistenceRule(
 			$broker,
-			new ClassCaseSensitivityCheck($broker),
+			new ClassCaseSensitivityCheck($broker, true),
 			true
 		);
 	}

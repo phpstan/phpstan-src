@@ -17,7 +17,7 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		return new AccessStaticPropertiesRule(
 			$reflectionProvider,
 			new RuleLevelHelper($reflectionProvider, true, false, true, false),
-			new ClassCaseSensitivityCheck($reflectionProvider)
+			new ClassCaseSensitivityCheck($reflectionProvider, true)
 		);
 	}
 

@@ -20,7 +20,8 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
-				true
+				true,
+				[]
 			),
 			new CrossCheckInterfacesHelper()
 		);

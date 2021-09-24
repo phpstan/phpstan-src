@@ -86,7 +86,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		bool $isInternal,
 		bool $isFinal,
 		?string $filename,
-		?bool $isPure = null
+		?bool $isPure
 	)
 	{
 		$this->reflection = $reflection;

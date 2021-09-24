@@ -15,7 +15,7 @@ class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTes
 	{
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInInterfaceExtendsRule(
-			new ClassCaseSensitivityCheck($broker),
+			new ClassCaseSensitivityCheck($broker, true),
 			$broker
 		);
 	}

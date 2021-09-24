@@ -796,7 +796,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->analyse([__DIR__ . '/data/array_map_multiple.php'], [
 			[
-				'Parameter #1 $callback of function array_map expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, int): void given.',
+				'Parameter #1 $callback of function array_map expects (callable(1|2, \'bar\'|\'foo\'): mixed)|null, Closure(int, int): void given.',
 				58,
 			],
 		]);
@@ -840,11 +840,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-5356.php'], [
 			[
-				'Parameter #1 $callback of function array_map expects callable(string): mixed, Closure(array): \'a\' given.',
+				'Parameter #1 $callback of function array_map expects (callable(string): mixed)|null, Closure(array): \'a\' given.',
 				13,
 			],
 			[
-				'Parameter #1 $callback of function array_map expects callable(string): mixed, Closure(array): \'a\' given.',
+				'Parameter #1 $callback of function array_map expects (callable(string): mixed)|null, Closure(array): \'a\' given.',
 				21,
 			],
 		]);
@@ -854,7 +854,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-1954.php'], [
 			[
-				'Parameter #1 $callback of function array_map expects callable(1|stdClass): mixed, Closure(string): string given.',
+				'Parameter #1 $callback of function array_map expects (callable(1|stdClass): mixed)|null, Closure(string): string given.',
 				7,
 			],
 		]);

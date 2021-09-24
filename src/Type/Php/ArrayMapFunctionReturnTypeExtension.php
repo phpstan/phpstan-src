@@ -9,9 +9,11 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -30,23 +32,35 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$valueType = new MixedType();
+		$singleArrayArgument = !isset($functionCall->getArgs()[2]);
 		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
+		$callableIsNull = (new NullType())->isSuperTypeOf($callableType)->yes();
+
 		if ($callableType->isCallable()->yes()) {
 			$valueType = new NeverType();
 			foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
 				$valueType = TypeCombinator::union($valueType, $parametersAcceptor->getReturnType());
 			}
+		} elseif ($callableIsNull) {
+			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
+				$arrayBuilder->setOffsetValueType(
+					new ConstantIntegerType($index),
+					$scope->getType($arg->value)->getIterableValueType()
+				);
+			}
+			$valueType = $arrayBuilder->getArray();
+		} else {
+			$valueType = new MixedType();
 		}
 
-		$mappedArrayType = new ArrayType(
-			new MixedType(),
-			$valueType
-		);
 		$arrayType = $scope->getType($functionCall->getArgs()[1]->value);
-		$constantArrays = TypeUtils::getConstantArrays($arrayType);
 
-		if (!isset($functionCall->getArgs()[2])) {
+		if ($singleArrayArgument) {
+			if ($callableIsNull) {
+				return $arrayType;
+			}
+			$constantArrays = TypeUtils::getConstantArrays($arrayType);
 			if (count($constantArrays) > 0) {
 				$arrayTypes = [];
 				foreach ($constantArrays as $constantArray) {
@@ -66,6 +80,11 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 					$arrayType->getIterableKeyType(),
 					$valueType
 				), ...TypeUtils::getAccessoryTypes($arrayType));
+			} else {
+				$mappedArrayType = new ArrayType(
+					new MixedType(),
+					$valueType
+				);
 			}
 		} else {
 			$mappedArrayType = TypeCombinator::intersect(new ArrayType(

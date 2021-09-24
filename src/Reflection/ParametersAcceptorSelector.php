@@ -12,7 +12,9 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 
 /** @api */
 class ParametersAcceptorSelector
@@ -80,7 +82,10 @@ class ParametersAcceptorSelector
 				$parameters[0] = new NativeParameterReflection(
 					$parameters[0]->getName(),
 					$parameters[0]->isOptional(),
-					new CallableType($callbackParameters, new MixedType(), false),
+					new UnionType([
+						new CallableType($callbackParameters, new MixedType(), false),
+						new NullType(),
+					]),
 					$parameters[0]->passedByReference(),
 					$parameters[0]->isVariadic(),
 					$parameters[0]->getDefaultValue()

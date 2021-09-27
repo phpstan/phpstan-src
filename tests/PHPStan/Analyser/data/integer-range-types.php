@@ -202,13 +202,14 @@ class X {
 	 * @param positive-int $pi
 	 * @param int<1, 10> $r1
 	 * @param int<5, 10> $r2
+	 * @param int<-9, 100> $r3
 	 * @param int<min, 5> $rMin
 	 * @param int<5, max> $rMax
 	 *
 	 * @param 20|40|60 $x
 	 * @param 2|4 $y
 	 */
-	public function math($i, $j, $z, $pi, $r1, $r2, $rMin, $rMax, $x, $y) {
+	public function math($i, $j, $z, $pi, $r1, $r2, $r3, $rMin, $rMax, $x, $y) {
 		assertType('int', $r1 + $i);
 		assertType('int', $r1 - $i);
 		assertType('int', $r1 * $i);
@@ -254,9 +255,11 @@ class X {
 		assertType('float|int<1, max>', $rMax / 4);
 
 		assertType('int<6, 20>', $r1 + $r2);
-		assertType('int<-4, 0>', $r1 - $r2);
+		assertType('int<-9, 5>', $r1 - $r2);
 		assertType('int<5, 100>', $r1 * $r2);
 		assertType('float|int<0, 1>', $r1 / $r2);
+
+		assertType('int<-99, 19>', $r1 - $r3);
 
 		assertType('int<min, 15>', $r1 + $rMin);
 		assertType('int<min, 5>', $r1 - $rMin);

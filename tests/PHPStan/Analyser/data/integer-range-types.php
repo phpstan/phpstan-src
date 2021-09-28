@@ -262,7 +262,7 @@ class X {
 		assertType('int<-99, 19>', $r1 - $r3);
 
 		assertType('int<min, 15>', $r1 + $rMin);
-		assertType('int<min, 5>', $r1 - $rMin);
+		assertType('int<-4, max>', $r1 - $rMin);
 		assertType('int<min, 50>', $r1 * $rMin);
 		assertType('float|int<min, 2>', $r1 / $rMin);
 		assertType('int<min, 15>', $rMin + $r1);

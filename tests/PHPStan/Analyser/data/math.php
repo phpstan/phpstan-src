@@ -58,7 +58,7 @@ class Foo
 		assertType('int', $rangeFiveBoth - $rangeFiveLeft);
 
 		assertType('int<min, 10>', $rangeFiveBoth + $rangeFiveRight);
-		assertType('int<min, 0>', $rangeFiveBoth - $rangeFiveRight);
+		assertType('int<-10, max>', $rangeFiveBoth - $rangeFiveRight);
 
 		assertType('int<-10, max>', $rangeFiveLeft + $rangeFiveBoth);
 		assertType('int<-10, max>', $rangeFiveLeft - $rangeFiveBoth);

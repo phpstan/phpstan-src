@@ -64,7 +64,7 @@ class Foo
 		assertType('int<-10, max>', $rangeFiveLeft - $rangeFiveBoth);
 
 		assertType('int<min, 10>', $rangeFiveRight + $rangeFiveBoth);
-		assertType('int<0, max>', $rangeFiveRight - $rangeFiveBoth);
+		assertType('int<min, 10>', $rangeFiveRight - $rangeFiveBoth);
 	}
 
 	public function doLorem($a, $b): void

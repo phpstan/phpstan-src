@@ -9690,7 +9690,7 @@ return [
 'ReflectionClass::newInstance' => ['object', 'args='=>'mixed', '...args='=>'mixed'],
 'ReflectionClass::newInstanceArgs' => ['object', 'args='=>'array'],
 'ReflectionClass::newInstanceWithoutConstructor' => ['object'],
-'ReflectionClass::setStaticPropertyValue' => ['void', 'name'=>'string', 'value'=>'string'],
+'ReflectionClass::setStaticPropertyValue' => ['void', 'name'=>'string', 'value'=>'mixed'],
 'ReflectionClassConstant::__construct' => ['void', 'class'=>'mixed', 'name'=>'string'],
 'ReflectionClassConstant::__toString' => ['string'],
 'ReflectionClassConstant::export' => ['string', 'class'=>'mixed', 'name'=>'string', 'return='=>'bool'],

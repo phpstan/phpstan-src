@@ -7352,7 +7352,7 @@ return [
 'mysqli_stmt_more_results' => ['bool', 'stmt'=>'mysqli_stmt'],
 'mysqli_stmt_next_result' => ['bool', 'stmt'=>'mysqli_stmt'],
 'mysqli_stmt_num_rows' => ['int', 'stmt'=>'mysqli_stmt'],
-'mysqli_stmt_param_count' => ['int', 'stmt'=>'mysqli_stmt'],
+'mysqli_stmt_param_count' => ['0|positive-int', 'stmt'=>'mysqli_stmt'],
 'mysqli_stmt_prepare' => ['bool', 'stmt'=>'mysqli_stmt', 'query'=>'string'],
 'mysqli_stmt_reset' => ['bool', 'stmt'=>'mysqli_stmt'],
 'mysqli_stmt_result_metadata' => ['mysqli_result|false', 'stmt'=>'mysqli_stmt'],

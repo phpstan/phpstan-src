@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_INT_SIZE;
 
 /**
  * @extends RuleTestCase<RandomIntParametersRule>
@@ -18,7 +19,7 @@ class RandomIntParametersRuleTest extends RuleTestCase
 
 	public function testFile(): void
 	{
-		$this->analyse([__DIR__ . '/data/random-int.php'], [
+		$expectedErrors = [
 			[
 				'Parameter #1 $min (1) of function random_int expects lower number than parameter #2 $max (0).',
 				8,
@@ -55,7 +56,16 @@ class RandomIntParametersRuleTest extends RuleTestCase
 				'Parameter #1 $min (int<0, 10>) of function random_int expects lower number than parameter #2 $max (int<0, 10>).',
 				31,
 			],
-		]);
+		];
+		if (PHP_INT_SIZE === 4) {
+			// TODO: should fail on 64-bit in a similar fashion, guess it does not because of the union type
+			$expectedErrors[] = [
+				'Parameter #1 $min (2147483647) of function random_int expects lower number than parameter #2 $max (-2147483648).',
+				33,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/random-int.php'], $expectedErrors);
 	}
 
 	public function testBug6361(): void

@@ -6,6 +6,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 use stdClass;
 use function define;
 use function extension_loaded;
+use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
 class NodeScopeResolverTest extends TypeInferenceTestCase
@@ -34,7 +35,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/date.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/instanceof.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/integer-range-types.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/random-int.php');
+		if (PHP_INT_SIZE === 8) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/random-int.php');
+		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type-extensions.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/intersection-static.php');
@@ -512,7 +515,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/div-by-zero.php');
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5072.php');
+		if (PHP_INT_SIZE === 8) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5072.php');
+		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5530.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1861.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4843.php');
@@ -597,6 +602,19 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6293.php');
 		}
+
+		if (PHP_VERSION_ID >= 70200) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants-php72.php');
+		}
+		if (PHP_VERSION_ID >= 70400) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants-php74.php');
+		}
+		if (PHP_INT_SIZE === 8) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants-64bit.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants-32bit.php');
+		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs-phpstanPropertyPrefix.php');
 

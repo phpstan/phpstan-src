@@ -10,7 +10,7 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -95,7 +95,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 				) {
 					$phpDocParamType = $phpDocParamType->getItemType();
 				}
-				$isParamSuperType = $nativeParamType->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocParamType));
+				$isParamSuperType = $nativeParamType->isSuperTypeOf($phpDocParamType);
 
 				$escapedParameterName = SprintfHelper::escapeFormatString($parameterName);
 
@@ -128,18 +128,23 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 					))->build();
 
 				} elseif ($isParamSuperType->maybe()) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @param for parameter $%s with type %s is not subtype of native type %s.',
 						$parameterName,
 						$phpDocParamType->describe(VerbosityLevel::typeOnly()),
 						$nativeParamType->describe(VerbosityLevel::typeOnly())
-					))->build();
+					));
+					if ($phpDocParamType instanceof TemplateType) {
+						$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocParamType->getName(), $nativeParamType->describe(VerbosityLevel::typeOnly())));
+					}
+
+					$errors[] = $errorBuilder->build();
 				}
 			}
 		}
 
 		if ($resolvedPhpDoc->getReturnTag() !== null) {
-			$phpDocReturnType = TemplateTypeHelper::resolveToBounds($resolvedPhpDoc->getReturnTag()->getType());
+			$phpDocReturnType = $resolvedPhpDoc->getReturnTag()->getType();
 
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($phpDocReturnType)
@@ -163,11 +168,16 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 					))->build();
 
 				} elseif ($isReturnSuperType->maybe()) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @return with type %s is not subtype of native type %s.',
 						$phpDocReturnType->describe(VerbosityLevel::typeOnly()),
 						$nativeReturnType->describe(VerbosityLevel::typeOnly())
-					))->build();
+					));
+					if ($phpDocReturnType instanceof TemplateType) {
+						$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocReturnType->getName(), $nativeReturnType->describe(VerbosityLevel::typeOnly())));
+					}
+
+					$errors[] = $errorBuilder->build();
 				}
 			}
 		}

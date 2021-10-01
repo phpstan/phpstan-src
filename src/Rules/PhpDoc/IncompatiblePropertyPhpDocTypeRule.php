@@ -9,6 +9,7 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -79,14 +80,20 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 			))->build();
 
 		} elseif ($isSuperType->maybe()) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'%s for property %s::$%s with type %s is not subtype of native type %s.',
 				$description,
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
 				$nativeType->describe(VerbosityLevel::typeOnly())
-			))->build();
+			));
+
+			if ($phpDocType instanceof TemplateType) {
+				$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocType->getName(), $nativeType->describe(VerbosityLevel::typeOnly())));
+			}
+
+			$messages[] = $errorBuilder->build();
 		}
 
 		$className = SprintfHelper::escapeFormatString($propertyReflection->getDeclaringClass()->getDisplayName());

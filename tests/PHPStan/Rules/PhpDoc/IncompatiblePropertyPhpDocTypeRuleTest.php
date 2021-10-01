@@ -76,6 +76,11 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCa
 				'PHPDoc tag @var for property IncompatiblePhpDocPropertyNativeType\Foo::$stringOrInt with type int|string is not subtype of native type string.',
 				21,
 			],
+			[
+				'PHPDoc tag @var for property IncompatiblePhpDocPropertyNativeType\Lorem::$string with type T is not subtype of native type string.',
+				45,
+				'Write @template T of string to fix this.',
+			],
 		]);
 	}
 

@@ -9,6 +9,8 @@ on:
     tags:
       - '1.*'
 
+concurrency: phar
+
 jobs:
   compile:
     name: "Compile PHAR"

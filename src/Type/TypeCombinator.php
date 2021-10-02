@@ -326,6 +326,14 @@ class TypeCombinator
 			$scalarTypes[$classType] = $scalarTypeItems;
 		}
 
+		if (count($types) > 16) {
+			$newTypes = [];
+			foreach ($types as $type) {
+				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
+			}
+			$types = array_values($newTypes);
+		}
+
 		// transform A | A to A
 		// transform A | never to A
 		$typesCount = count($types);

@@ -935,7 +935,7 @@ class PhpClassReflectionExtension
 		}
 
 		$methodNode = $this->findConstructorNode($constructor->getName(), $classNode->stmts);
-		if ($methodNode === null || $methodNode->stmts === null) {
+		if ($methodNode === null || $methodNode->stmts === null || count($methodNode->stmts) === 0) {
 			return $this->propertyTypesCache[$declaringClass->getName()] = [];
 		}
 

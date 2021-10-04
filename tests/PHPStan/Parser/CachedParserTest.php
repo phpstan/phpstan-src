@@ -3,6 +3,7 @@
 namespace PHPStan\Parser;
 
 use PhpParser\Node\Stmt\Namespace_;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
 
@@ -81,8 +82,15 @@ class CachedParserTest extends PHPStanTestCase
 
 	public function testParseTheSameFileWithDifferentMethod(): void
 	{
-		$parser = new CachedParser(self::getContainer()->getService('pathRoutingParser'), 500);
+		$pathRoutingParser = new PathRoutingParser(
+			self::getContainer()->getByType(FileHelper::class),
+			self::getContainer()->getService('currentPhpVersionRichParser'),
+			self::getContainer()->getService('currentPhpVersionSimpleParser'),
+			self::getContainer()->getService('php8Parser')
+		);
+		$parser = new CachedParser($pathRoutingParser, 500);
 		$path = __DIR__ . '/data/test.php';
+		$pathRoutingParser->setAnalysedFiles([$path]);
 		$contents = FileReader::read($path);
 		$stmts = $parser->parseString($contents);
 		$this->assertInstanceOf(Namespace_::class, $stmts[0]);

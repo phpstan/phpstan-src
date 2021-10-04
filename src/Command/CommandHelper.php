@@ -375,11 +375,16 @@ class CommandHelper
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getService('fileFinderAnalyse');
 
-		/** @var \Closure(): (array{string[], bool}) $filesCallback */
-		$filesCallback = static function () use ($fileFinder, $paths): array {
-			$fileFinderResult = $fileFinder->findFiles($paths);
+		$pathRoutingParser = $container->getService('pathRoutingParser');
 
-			return [$fileFinderResult->getFiles(), $fileFinderResult->isOnlyFiles()];
+		/** @var \Closure(): (array{string[], bool}) $filesCallback */
+		$filesCallback = static function () use ($fileFinder, $pathRoutingParser, $paths): array {
+			$fileFinderResult = $fileFinder->findFiles($paths);
+			$files = $fileFinderResult->getFiles();
+
+			$pathRoutingParser->setAnalysedFiles($files);
+
+			return [$files, $fileFinderResult->isOnlyFiles()];
 		};
 
 		return new InceptionResult(

@@ -1514,6 +1514,12 @@ services:
 		autowired: no
 
 	currentPhpVersionSimpleParser:
+		class: PHPStan\Parser\CleaningParser
+		arguments:
+			wrappedParser: @currentPhpVersionSimpleDirectParser
+		autowired: no
+
+	currentPhpVersionSimpleDirectParser:
 		class: PHPStan\Parser\SimpleParser
 		arguments:
 			parser: @currentPhpVersionPhpParser

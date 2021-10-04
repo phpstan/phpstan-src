@@ -15,6 +15,9 @@ class PathRoutingParser implements Parser
 
 	private Parser $php8Parser;
 
+	/** @var bool[] filePath(string) => bool(true) */
+	private array $analysedFiles = [];
+
 	public function __construct(
 		FileHelper $fileHelper,
 		Parser $currentPhpVersionRichParser,
@@ -28,11 +31,23 @@ class PathRoutingParser implements Parser
 		$this->php8Parser = $php8Parser;
 	}
 
+	/**
+	 * @param string[] $files
+	 */
+	public function setAnalysedFiles(array $files): void
+	{
+		$this->analysedFiles = array_fill_keys($files, true);
+	}
+
 	public function parseFile(string $file): array
 	{
 		$file = $this->fileHelper->normalizePath($file, '/');
 		if (strpos($file, 'vendor/jetbrains/phpstorm-stubs') !== false) {
 			return $this->php8Parser->parseFile($file);
+		}
+
+		if (!isset($this->analysedFiles[$file])) {
+			return $this->currentPhpVersionSimpleParser->parseFile($file);
 		}
 
 		return $this->currentPhpVersionRichParser->parseFile($file);

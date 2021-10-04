@@ -89,6 +89,9 @@ class StubValidator
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
 		$nodeScopeResolver->setAnalysedFiles($stubFiles);
 
+		$pathRoutingParser = $container->getService('pathRoutingParser');
+		$pathRoutingParser->setAnalysedFiles($stubFiles);
+
 		$analysedFiles = array_fill_keys($stubFiles, true);
 
 		$errors = [];

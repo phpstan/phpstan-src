@@ -1184,7 +1184,7 @@ class VarAnnotationAboveStmtReturn
 }
 
 /**
- * @template CollectionKey
+ * @template CollectionKey of array-key
  * @template CollectionValue
  * @implements \Iterator<CollectionKey, CollectionValue>
  */

@@ -1822,6 +1822,39 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				UnionType::class,
 				'(T of bool|float|int|string (function doFoo(), parameter))|null',
 			],
+			[
+				[
+					new UnionType([
+						new IntersectionType([new ArrayType(new MixedType(), new MixedType())]),
+						IntegerRangeType::fromInterval(null, -1),
+						IntegerRangeType::fromInterval(1, null),
+					]),
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'TCode',
+						new UnionType([new ArrayType(new IntegerType(), new IntegerType()), new IntegerType()]),
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+				UnionType::class,
+				'array|int<min, -1>|int<1, max>|(TCode of array<int, int>|int (class Foo, parameter))',
+			],
+			[
+				[
+					new UnionType([
+						new IntersectionType([new ArrayType(new MixedType(), new MixedType())]),
+						new CallableType(),
+					]),
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'TCode',
+						new UnionType([new ArrayType(new IntegerType(), new IntegerType()), new IntegerType()]),
+						TemplateTypeVariance::createInvariant()
+					),
+				],
+				UnionType::class,
+				'array|(callable(): mixed)|(TCode of array<int, int>|int (class Foo, parameter))',
+			],
 		];
 	}
 

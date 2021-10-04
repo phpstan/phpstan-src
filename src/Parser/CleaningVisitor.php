@@ -15,7 +15,7 @@ class CleaningVisitor extends NodeVisitorAbstract
 			return $node;
 		}
 
-		if ($node instanceof Node\Stmt\ClassMethod) {
+		if ($node instanceof Node\Stmt\ClassMethod && $node->stmts !== null) {
 			$node->stmts = [];
 			return $node;
 		}

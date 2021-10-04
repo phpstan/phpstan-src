@@ -85,7 +85,7 @@ class CachedParserTest extends PHPStanTestCase
 		$pathRoutingParser = new PathRoutingParser(
 			self::getContainer()->getByType(FileHelper::class),
 			self::getContainer()->getService('currentPhpVersionRichParser'),
-			self::getContainer()->getService('currentPhpVersionSimpleParser'),
+			self::getContainer()->getService('currentPhpVersionSimpleDirectParser'),
 			self::getContainer()->getService('php8Parser')
 		);
 		$parser = new CachedParser($pathRoutingParser, 500);

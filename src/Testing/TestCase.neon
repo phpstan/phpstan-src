@@ -4,5 +4,5 @@ services:
 	cacheStorage:
 		class: PHPStan\Cache\MemoryCacheStorage
 		arguments!: []
-	pathRoutingParser!:
+	currentPhpVersionSimpleParser!:
 		factory: @currentPhpVersionRichParser

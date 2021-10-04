@@ -32,9 +32,8 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @template T of object
-	 * @param class-string<T> $className
-	 * @return T
+	 * @param string $className
+	 * @return mixed
 	 */
 	public function getByType(string $className)
 	{

@@ -359,6 +359,8 @@ class NodeScopeResolver
 			!$stmt instanceof Static_
 			&& !$stmt instanceof Foreach_
 			&& !$stmt instanceof Node\Stmt\Global_
+			&& !$stmt instanceof Node\Stmt\Property
+			&& !$stmt instanceof Node\Stmt\PropertyProperty
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 		}

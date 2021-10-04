@@ -170,7 +170,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 				if ($modifiedTime === false) {
 					$modifiedTime = time();
 				}
-				$variableCacheKey = sprintf('%d-v2', $modifiedTime);
+				$variableCacheKey = sprintf('%d-v3', $modifiedTime);
 				$key = sprintf('variadic-function-%s-%s', $functionName, $fileName);
 				$cachedResult = $this->cache->load($key, $variableCacheKey);
 				if ($cachedResult === null) {

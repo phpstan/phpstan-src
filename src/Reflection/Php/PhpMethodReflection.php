@@ -274,7 +274,7 @@ class PhpMethodReflection implements MethodReflection
 				$modifiedTime = time();
 			}
 			$key = sprintf('variadic-method-%s-%s-%s', $declaringClass->getName(), $this->reflection->getName(), $filename);
-			$variableCacheKey = sprintf('%d-v3', $modifiedTime);
+			$variableCacheKey = sprintf('%d-v4', $modifiedTime);
 			$cachedResult = $this->cache->load($key, $variableCacheKey);
 			if ($cachedResult === null || !is_bool($cachedResult)) {
 				$nodes = $this->parser->parseFile($filename);

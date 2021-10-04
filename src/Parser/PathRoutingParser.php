@@ -41,11 +41,11 @@ class PathRoutingParser implements Parser
 
 	public function parseFile(string $file): array
 	{
-		$file = $this->fileHelper->normalizePath($file, '/');
-		if (strpos($file, 'vendor/jetbrains/phpstorm-stubs') !== false) {
+		if (strpos($this->fileHelper->normalizePath($file, '/'), 'vendor/jetbrains/phpstorm-stubs') !== false) {
 			return $this->php8Parser->parseFile($file);
 		}
 
+		$file = $this->fileHelper->normalizePath($file);
 		if (!isset($this->analysedFiles[$file])) {
 			return $this->currentPhpVersionSimpleParser->parseFile($file);
 		}

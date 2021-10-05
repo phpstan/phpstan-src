@@ -130,14 +130,19 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\|false given\\.$#"
+			message: "#^Only booleans are allowed in a negated boolean, int\\|false\\|null given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
+			message: "#^Only booleans are allowed in &&, int\\|false given on the right side\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/PhpFileCleaner.php
+
+		-
 			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
 			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
+			path: src/Reflection/BetterReflection/SourceLocator/PhpFileCleaner.php
 
 		-
 			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:__construct\\(\\) has parameter \\$reflection with generic class ReflectionClass but does not specify its types\\: T$#"

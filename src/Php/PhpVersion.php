@@ -142,4 +142,9 @@ class PhpVersion
 		return $this->versionId >= 80100;
 	}
 
+	public function supportsEnums(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
 }

@@ -82,14 +82,15 @@ class CachedParserTest extends PHPStanTestCase
 
 	public function testParseTheSameFileWithDifferentMethod(): void
 	{
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$pathRoutingParser = new PathRoutingParser(
-			self::getContainer()->getByType(FileHelper::class),
+			$fileHelper,
 			self::getContainer()->getService('currentPhpVersionRichParser'),
 			self::getContainer()->getService('currentPhpVersionSimpleDirectParser'),
 			self::getContainer()->getService('php8Parser')
 		);
 		$parser = new CachedParser($pathRoutingParser, 500);
-		$path = __DIR__ . '/data/test.php';
+		$path = $fileHelper->normalizePath(__DIR__ . '/data/test.php');
 		$pathRoutingParser->setAnalysedFiles([$path]);
 		$contents = FileReader::read($path);
 		$stmts = $parser->parseString($contents);

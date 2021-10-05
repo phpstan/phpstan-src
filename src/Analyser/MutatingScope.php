@@ -5241,7 +5241,11 @@ class MutatingScope implements Scope
 					if ($operand->getMin() === null) {
 						$min = null;
 					} elseif ($rangeMin !== null) {
-						$min = $rangeMin - $operand->getMin();
+						if ($operand->getMax() !== null) {
+							$min = $rangeMin - $operand->getMax();
+						} else {
+							$min = $rangeMin - $operand->getMin();
+						}
 					} else {
 						$min = null;
 					}
@@ -5250,7 +5254,14 @@ class MutatingScope implements Scope
 						$min = null;
 						$max = null;
 					} elseif ($rangeMax !== null) {
-						$max = $rangeMax - $operand->getMax();
+						if ($rangeMin !== null && $operand->getMin() === null) {
+							$min = $rangeMin - $operand->getMax();
+							$max = null;
+						} elseif ($operand->getMin() !== null) {
+							$max = $rangeMax - $operand->getMin();
+						} else {
+							$max = null;
+						}
 					} else {
 						$max = null;
 					}

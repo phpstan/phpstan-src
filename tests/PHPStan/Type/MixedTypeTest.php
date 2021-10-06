@@ -141,6 +141,11 @@ class MixedTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new UnionType([new StringType(), new IntegerType()]),
 				TrinaryLogic::createYes(),
 			],
+			26 => [
+				new MixedType(),
+				new StrictMixedType(),
+				TrinaryLogic::createYes(),
+			],
 		];
 	}
 

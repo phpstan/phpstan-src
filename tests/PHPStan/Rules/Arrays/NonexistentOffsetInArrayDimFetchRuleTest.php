@@ -10,9 +10,12 @@ use PHPStan\Rules\RuleLevelHelper;
 class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $checkExplicitMixed = false;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
@@ -310,6 +313,21 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				'Access to offset \'%customer…\' on an unknown class Bug5669\arr.',
 				26,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
+	public function testBug5744(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5744.php'], [
+			/*[
+				'Cannot access offset \'permission\' on mixed.',
+				16,
+			],*/
+			[
+				'Cannot access offset \'permission\' on mixed.',
+				29,
 			],
 		]);
 	}

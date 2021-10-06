@@ -1855,6 +1855,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				UnionType::class,
 				'array|(callable(): mixed)|(TCode of array<int, int>|int (class Foo, parameter))',
 			],
+			[
+				[
+					new MixedType(),
+					new StrictMixedType(),
+				],
+				MixedType::class,
+				'mixed=implicit',
+			],
 		];
 	}
 
@@ -3080,6 +3088,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				],
 				UnionType::class,
 				'T of int|string (function my_array_keys(), parameter)',
+			],
+			[
+				[
+					new MixedType(),
+					new StrictMixedType(),
+				],
+				StrictMixedType::class,
+				'mixed',
 			],
 		];
 	}

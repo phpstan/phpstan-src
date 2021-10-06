@@ -18,8 +18,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\Traits\MaybeIterableTypeTrait;
-use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
@@ -27,8 +25,6 @@ use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 class MixedType implements CompoundType, SubtractableType
 {
 
-	use MaybeIterableTypeTrait;
-	use MaybeOffsetAccessibleTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
@@ -118,7 +114,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return new MixedType();
+		return new self($this->isExplicitMixed);
 	}
 
 	public function isCallable(): TrinaryLogic
@@ -332,7 +328,44 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toArray(): Type
 	{
-		return new ArrayType(new MixedType(), new MixedType());
+		$mixed = new self($this->isExplicitMixed);
+
+		return new ArrayType($mixed, $mixed);
+	}
+
+	public function isIterable(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isIterableAtLeastOnce(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function getIterableKeyType(): Type
+	{
+		return new self($this->isExplicitMixed);
+	}
+
+	public function getIterableValueType(): Type
+	{
+		return new self($this->isExplicitMixed);
+	}
+
+	public function isOffsetAccessible(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function getOffsetValueType(Type $offsetType): Type
+	{
+		return new self($this->isExplicitMixed);
 	}
 
 	public function isExplicitMixed(): bool

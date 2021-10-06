@@ -163,12 +163,12 @@ class StrictMixedType implements CompoundType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		return $this;
+		return new ErrorType();
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this;
+		return new ErrorType();
 	}
 
 	public function isCallable(): TrinaryLogic
@@ -193,27 +193,27 @@ class StrictMixedType implements CompoundType
 
 	public function toNumber(): Type
 	{
-		return $this;
+		return new ErrorType();
 	}
 
 	public function toInteger(): Type
 	{
-		return $this;
+		return new ErrorType();
 	}
 
 	public function toFloat(): Type
 	{
-		return $this;
+		return new ErrorType();
 	}
 
 	public function toString(): Type
 	{
-		return $this;
+		return new ErrorType();
 	}
 
 	public function toArray(): Type
 	{
-		return $this;
+		return new ErrorType();
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

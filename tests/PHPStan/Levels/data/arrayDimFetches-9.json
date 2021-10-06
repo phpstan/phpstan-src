@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 15,
+        "ignorable": true
+    }
+]

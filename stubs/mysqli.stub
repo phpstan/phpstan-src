@@ -1,0 +1,51 @@
+<?php
+
+class mysqli_stmt
+{
+
+    /**
+     * @var int|string
+     */
+    public $affected_rows;
+
+    /**
+     * @var int
+     */
+    public $errno;
+
+    /**
+     * @var list<array{errno: int, sqlstate: string, error: string}>
+     */
+    public $error_list;
+
+    /**
+     * @var string
+     */
+    public $error;
+
+    /**
+     * @var 0|positive-int
+     */
+    public $field_count;
+
+    /**
+     * @var int|string
+     */
+    public $insert_id;
+
+    /**
+     * @var 0|positive-int
+     */
+    public $num_rows;
+
+    /**
+     * @var 0|positive-int
+     */
+    public $param_count;
+
+    /**
+     * @var non-empty-string
+     */
+    public $sqlstate;
+
+}

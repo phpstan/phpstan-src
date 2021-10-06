@@ -5,7 +5,17 @@
         "ignorable": true
     },
     {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 39,
+        "ignorable": true
+    },
+    {
         "message": "Cannot access offset 'foo' on mixed.",
+        "line": 43,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
         "line": 43,
         "ignorable": true
     },
@@ -15,7 +25,17 @@
         "ignorable": true
     },
     {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 47,
+        "ignorable": true
+    },
+    {
         "message": "Cannot access offset int|object on mixed.",
+        "line": 51,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
         "line": 51,
         "ignorable": true
     }

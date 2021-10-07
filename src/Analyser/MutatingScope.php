@@ -5300,8 +5300,13 @@ class MutatingScope implements Scope
 				$max = $rangeMax !== null && $operand->getMax() !== null && $operand->getMax() !== 0 ? $rangeMax / $operand->getMax() : null;
 			}
 
-			if ($range instanceof IntegerRangeType && $operand instanceof IntegerRangeType && $rangeMax === null && $operand->getMax() === null) {
-				$min = 0;
+			if ($range instanceof IntegerRangeType && $operand instanceof IntegerRangeType) {
+				if ($rangeMax === null && $operand->getMax() === null) {
+					$min = 0;
+				} elseif ($rangeMin === null && $operand->getMin() === null) {
+					$min = null;
+					$max = null;
+				}
 			}
 
 			if ($operand instanceof IntegerRangeType

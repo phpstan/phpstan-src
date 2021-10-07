@@ -38,7 +38,6 @@ return [
 		'date_time_set' => ['DateTime', 'object'=>'DateTime', 'hour'=>'int', 'minute'=>'int', 'second='=>'int', 'microseconds='=>'int'],
 		'date_timestamp_set' => ['DateTime', 'object'=>'DateTime', 'unixtimestamp'=>'int'],
 		'date_timezone_set' => ['DateTime', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
-		'define\'1' => ['bool', 'constant_name'=>'string', 'value'=>'mixed'],
 		'explode' => ['non-empty-array<int,string>', 'separator'=>'non-empty-string', 'str'=>'string', 'limit='=>'int'],
 		'fdiv' => ['float', 'dividend'=>'float', 'divisor'=>'float'],
 		'get_debug_type' => ['string', 'var'=>'mixed'],

@@ -135,7 +135,6 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 
 		$this->checkUnionTypes = true;
-		// TODO: Does not work as expected
 		$this->analyse([__DIR__ . '/data/offset-access-assignment-nullsafe.php'], [
 			[
 				'Cannot assign offset int|null to string.',

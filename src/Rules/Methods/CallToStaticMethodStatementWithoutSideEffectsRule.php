@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -60,12 +61,11 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 		} else {
 			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				$staticCall->class,
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($staticCall->class),
 				'',
 				static function (Type $type) use ($methodName): bool {
 					return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-				},
-				true
+				}
 			);
 			$calledOnType = $typeResult->getType();
 			if ($calledOnType instanceof ErrorType) {

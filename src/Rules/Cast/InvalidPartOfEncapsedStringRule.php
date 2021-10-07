@@ -48,8 +48,7 @@ class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 				'',
 				static function (Type $type): bool {
 					return !$type->toString() instanceof ErrorType;
-				},
-				false
+				}
 			);
 			$partType = $typeResult->getType();
 			if ($partType instanceof ErrorType) {

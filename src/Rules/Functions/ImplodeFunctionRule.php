@@ -65,20 +65,13 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 			'',
 			static function (Type $type): bool {
 				return !$type->getIterableValueType()->toString() instanceof ErrorType;
-			},
-			false
+			}
 		);
 
 		$type = $typeResult->getType();
 
-		// Unable to resolve type
-		if ($type instanceof ErrorType) {
-			return [];
-		}
-
-		$containsErrorTypeAfterConversion = $this->checkContainsErrorTypeAfterConversion($type);
-
-		if (!$containsErrorTypeAfterConversion) {
+		if ($typeResult->getType() instanceof ErrorType
+			|| !$typeResult->getType()->getIterableValueType()->toString() instanceof ErrorType) {
 			return [];
 		}
 

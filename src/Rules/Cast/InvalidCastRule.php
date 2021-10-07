@@ -62,8 +62,7 @@ class InvalidCastRule implements \PHPStan\Rules\Rule
 				}
 
 				return !$castType instanceof ErrorType;
-			},
-			false
+			}
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

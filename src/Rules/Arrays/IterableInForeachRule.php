@@ -36,8 +36,7 @@ class IterableInForeachRule implements \PHPStan\Rules\Rule
 			'Iterating over an object of an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isIterable()->yes();
-			},
-			false
+			}
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

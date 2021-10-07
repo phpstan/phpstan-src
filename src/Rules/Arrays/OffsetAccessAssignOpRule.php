@@ -50,7 +50,7 @@ class OffsetAccessAssignOpRule implements \PHPStan\Rules\Rule
 				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType());
 				return !($arrayDimType instanceof ErrorType);
 			},
-			true
+			true // Not really needed, can't use nullsafe operator in write context
 		);
 		$varType = $varTypeResult->getType();
 
@@ -63,7 +63,7 @@ class OffsetAccessAssignOpRule implements \PHPStan\Rules\Rule
 					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType());
 					return !($arrayDimType instanceof ErrorType);
 				},
-				true
+				false
 			);
 			$dimType = $dimTypeResult->getType();
 			if ($varType->hasOffsetValueType($dimType)->no()) {

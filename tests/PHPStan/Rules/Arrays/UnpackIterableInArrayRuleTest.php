@@ -38,4 +38,18 @@ class UnpackIterableInArrayRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/unpack-iterable-nullsafe.php'], [
+			[
+				'Only iterables can be unpacked, array<int>|null given.',
+				17,
+			],
+		]);
+	}
+
 }

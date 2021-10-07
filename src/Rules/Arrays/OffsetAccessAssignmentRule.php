@@ -66,7 +66,7 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType());
 					return !($arrayDimType instanceof ErrorType);
 				},
-				true
+				false
 			);
 			$dimType = $dimTypeResult->getType();
 		} else {

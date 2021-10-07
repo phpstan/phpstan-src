@@ -52,4 +52,19 @@ class IterableInForeachRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/foreach-iterable-nullsafe.php'], [
+			[
+				'Argument of an invalid type array<int>|null supplied for foreach, only iterables are supported.',
+				14,
+			],
+		]);
+	}
+
 }

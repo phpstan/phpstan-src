@@ -53,4 +53,18 @@ class PrintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/print-nullsafe.php'], [
+			[
+				'Parameter array<int>|null of print cannot be converted to string.',
+				15,
+			],
+		]);
+	}
+
 }

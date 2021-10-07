@@ -62,7 +62,7 @@ class OffsetAccessValueAssignmentRule implements \PHPStan\Rules\Rule
 				$result = $varType->setOffsetValueType(new MixedType(), $assignedValueType);
 				return !($result instanceof ErrorType);
 			},
-			true
+			true // Not really needed, can't use nullsafe operator in write context
 		);
 		$arrayType = $arrayTypeResult->getType();
 		if ($arrayType instanceof ErrorType) {

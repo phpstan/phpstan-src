@@ -138,9 +138,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 		$this->analyse([__DIR__ . '/data/call-to-define.php'], [
 			[
-				// @todo wrong error, but not sure where to set it? deprecated parameter.
-				// define(): Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported
-				'Function define invoked with 3 parameters, 2 required.',
+				'Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported',
 				3,
 			],
 		]);

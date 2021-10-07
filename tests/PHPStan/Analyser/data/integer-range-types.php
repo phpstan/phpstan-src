@@ -282,6 +282,7 @@ class X {
 		assertType('5|10|15|20|30', $x / $y);
 
 		assertType('float|int<0, max>', $rMax / $rMax);
+		assertType('(float|int)', $rMin / $rMin);
 	}
 
 	/**

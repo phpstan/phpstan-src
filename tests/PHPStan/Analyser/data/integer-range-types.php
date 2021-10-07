@@ -281,6 +281,15 @@ class X {
 
 		assertType('5|10|15|20|30', $x / $y);
 
+		assertType('float|int<0, max>', $rMax / $rMax);
+	}
+
+	/**
+	 * @param int<0, max> $a
+	 * @param int<0, max> $b
+	 */
+	function divisionLoosesInformation(int $a, int $b): void {
+		assertType('float|int<0, max>',$a/$b);
 	}
 
 	/**

@@ -1393,7 +1393,7 @@ class NodeScopeResolver
 			foreach ($stmt->consts as $const) {
 				$nodeCallback($const, $scope);
 				$this->processExprNode($const->value, $scope, $nodeCallback, ExpressionContext::createDeep());
-				if ($scope->getNamespace() !== null) {
+				if ($stmt instanceof Node\Stmt\Const_ && $scope->getNamespace() !== null) {
 					$constName = [$scope->getNamespace(), $const->name->toString()];
 				} else {
 					$constName = $const->name->toString();

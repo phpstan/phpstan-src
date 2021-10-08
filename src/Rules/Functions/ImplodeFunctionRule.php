@@ -67,8 +67,15 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 			}
 		);
 
-		if ($typeResult->getType() instanceof ErrorType
-			|| !$typeResult->getType()->getIterableValueType()->toString() instanceof ErrorType) {
+		$type = $typeResult->getType();
+
+		// Unable to resolve type at all
+		if ($type instanceof ErrorType) {
+			return [];
+		}
+
+		// Type is iterable and iterable item allows string conversion
+		if (!$type->getIterableValueType() instanceof ErrorType && !$type->getIterableValueType()->toString() instanceof ErrorType) {
 			return [];
 		}
 

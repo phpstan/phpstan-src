@@ -10,7 +10,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
@@ -68,8 +67,6 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 			}
 		);
 
-		$type = $typeResult->getType();
-
 		if ($typeResult->getType() instanceof ErrorType
 			|| !$typeResult->getType()->getIterableValueType()->toString() instanceof ErrorType) {
 			return [];
@@ -80,23 +77,6 @@ class ImplodeFunctionRule implements \PHPStan\Rules\Rule
 				sprintf('Parameter #%d $array of function %s expects array<string>, %s given.', $paramNo, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly()))
 			)->build(),
 		];
-	}
-
-	private function checkContainsErrorTypeAfterConversion(Type $type): bool
-	{
-		if ($type->getIterableValueType()->toString() instanceof ErrorType) {
-			return true;
-		}
-
-		if ($type instanceof UnionType) {
-			foreach ($type->getTypes() as $concreteType) {
-				if ($this->checkContainsErrorTypeAfterConversion($concreteType)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 }

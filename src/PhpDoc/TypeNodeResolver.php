@@ -286,10 +286,10 @@ class TypeNodeResolver
 				return new NeverType(true);
 
 			case 'list':
-				return new ArrayType(new IntegerType(), new MixedType());
+				return new ArrayType(IntegerRangeType::fromInterval(0, null), new MixedType());
 			case 'non-empty-list':
 				return TypeCombinator::intersect(
-					new ArrayType(new IntegerType(), new MixedType()),
+					new ArrayType(IntegerRangeType::fromInterval(0, null), new MixedType()),
 					new NonEmptyArrayType()
 				);
 		}
@@ -457,7 +457,7 @@ class TypeNodeResolver
 			return $arrayType;
 		} elseif ($mainTypeName === 'list' || $mainTypeName === 'non-empty-list') {
 			if (count($genericTypes) === 1) { // list<ValueType>
-				$listType = new ArrayType(new IntegerType(), $genericTypes[0]);
+				$listType = new ArrayType(IntegerRangeType::fromInterval(0, null), $genericTypes[0]);
 				if ($mainTypeName === 'non-empty-list') {
 					return TypeCombinator::intersect($listType, new NonEmptyArrayType());
 				}

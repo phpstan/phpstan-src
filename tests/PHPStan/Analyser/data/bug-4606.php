@@ -11,7 +11,7 @@ use function PHPStan\Testing\assertType;
  */
 
 assertType(Foo::class, $this);
-assertType('array<int, array(stdClass, int)>', $assigned);
+assertType('array<int<0, max>, array(stdClass, int)>', $assigned);
 
 
 /**

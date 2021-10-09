@@ -86,12 +86,12 @@ class Foo
 		$list[] = '1';
 		$list[] = '2';
 		unset($list[0]);//break list behaviour
-		assertType('array<<0, max>, mixed>', $list);
+		assertType('array<int<0, max>, mixed>', $list);
 
 		/** @var list $list2 */
 		$list2 = [];
 		$list2[2] = '1';//Most likely to create a gap in indexes
-		assertType('array<<0, max>, mixed>&nonEmpty', $list2);
+		assertType('array<int<0, max>, mixed>&nonEmpty', $list2);
 	}
 
 }

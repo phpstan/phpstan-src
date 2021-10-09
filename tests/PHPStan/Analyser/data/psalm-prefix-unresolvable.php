@@ -18,7 +18,7 @@ class Foo
 
 	public function doBar(): void
 	{
-		assertType('array<int, string>', $this->doFoo());
+		assertType('array<int<0, max>, string>', $this->doFoo());
 	}
 
 	/**

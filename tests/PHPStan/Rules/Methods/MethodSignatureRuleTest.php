@@ -308,7 +308,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-4707.php'], [
 			[
-				'Return type (array<int, Bug4707\Row2>) of method Bug4707\Block2::getChildren() should be compatible with return type (array<int, Bug4707\ChildNodeInterface<static(Bug4707\ParentNodeInterface)>>) of method Bug4707\ParentNodeInterface::getChildren()',
+				'Return type (array<int<0, max>, Bug4707\Row2>) of method Bug4707\Block2::getChildren() should be compatible with return type (array<int<0, max>, Bug4707\ChildNodeInterface<static(Bug4707\ParentNodeInterface)>>) of method Bug4707\ParentNodeInterface::getChildren()',
 				38,
 			],
 		]);
@@ -320,7 +320,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-4707-covariant.php'], [
 			[
-				'Return type (array<int, Bug4707Covariant\Row2>) of method Bug4707Covariant\Block2::getChildren() should be covariant with return type (array<int, Bug4707Covariant\ChildNodeInterface<static(Bug4707Covariant\ParentNodeInterface)>>) of method Bug4707Covariant\ParentNodeInterface::getChildren()',
+				'Return type (array<int<0, max>, Bug4707Covariant\Row2>) of method Bug4707Covariant\Block2::getChildren() should be covariant with return type (array<int<0, max>, Bug4707Covariant\ChildNodeInterface<static(Bug4707Covariant\ParentNodeInterface)>>) of method Bug4707Covariant\ParentNodeInterface::getChildren()',
 				38,
 			],
 		]);

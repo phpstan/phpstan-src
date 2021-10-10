@@ -34,6 +34,7 @@ class Foo
 	{
 		/** @var list $list */
 		$list = [];
+		assertType('array<int<0, max>, mixed>', $list);
 		$list[] = '1';
 		$list[] = true;
 		$list[] = new \stdClass();

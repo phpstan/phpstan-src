@@ -37,4 +37,14 @@ class OffsetAccessAssignOpRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/offset-access-assignop.php'], []);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkUnions = true;
+		$this->analyse([__DIR__ . '/data/offset-access-assignop-nullsafe.php'], []);
+	}
+
 }

@@ -48,4 +48,18 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/array-destructuring-nullsafe.php'], [
+			[
+				'Cannot use array destructuring on array|null.',
+				10,
+			],
+		]);
+	}
+
 }

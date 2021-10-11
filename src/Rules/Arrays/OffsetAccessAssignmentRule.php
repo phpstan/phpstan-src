@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -41,7 +42,7 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 
 		$varTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			$node->var,
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->var),
 			'',
 			static function (Type $varType) use ($potentialDimType): bool {
 				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType());

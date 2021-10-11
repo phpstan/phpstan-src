@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
@@ -146,7 +147,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				$node->class,
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->class),
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 				static function (Type $type) use ($name): bool {
 					return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();

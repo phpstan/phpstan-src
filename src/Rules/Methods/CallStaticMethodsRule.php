@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\MethodReflection;
@@ -150,7 +151,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				$class,
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($class),
 				sprintf('Call to static method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($methodName)),
 				static function (Type $type) use ($methodName): bool {
 					return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();

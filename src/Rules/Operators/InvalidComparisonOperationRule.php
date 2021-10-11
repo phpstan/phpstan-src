@@ -9,8 +9,10 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -48,10 +50,10 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 
 		if (
 			($this->isNumberType($scope, $node->left) && (
-				$this->isObjectType($scope, $node->right) || $this->isArrayType($scope, $node->right)
+				$this->isPossiblyNullableObjectType($scope, $node->right) || $this->isPossiblyNullableArrayType($scope, $node->right)
 			))
 			|| ($this->isNumberType($scope, $node->right) && (
-				$this->isObjectType($scope, $node->left) || $this->isArrayType($scope, $node->left)
+				$this->isPossiblyNullableObjectType($scope, $node->left) || $this->isPossiblyNullableArrayType($scope, $node->left)
 			))
 		) {
 			return [
@@ -86,7 +88,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 		return !$acceptedType->isSuperTypeOf($type)->no();
 	}
 
-	private function isObjectType(Scope $scope, Node\Expr $expr): bool
+	private function isPossiblyNullableObjectType(Scope $scope, Node\Expr $expr): bool
 	{
 		$acceptedType = new ObjectWithoutClassType();
 
@@ -103,6 +105,10 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 			return false;
 		}
 
+		if (TypeCombinator::containsNull($type) && !$type instanceof NullType) {
+			$type = TypeCombinator::removeNull($type);
+		}
+
 		$isSuperType = $acceptedType->isSuperTypeOf($type);
 		if ($type instanceof \PHPStan\Type\BenevolentUnionType) {
 			return !$isSuperType->no();
@@ -111,7 +117,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 		return $isSuperType->yes();
 	}
 
-	private function isArrayType(Scope $scope, Node\Expr $expr): bool
+	private function isPossiblyNullableArrayType(Scope $scope, Node\Expr $expr): bool
 	{
 		$type = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
@@ -121,6 +127,10 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 				return $type->isArray()->yes();
 			}
 		)->getType();
+
+		if (TypeCombinator::containsNull($type) && !$type instanceof NullType) {
+			$type = TypeCombinator::removeNull($type);
+		}
 
 		return !($type instanceof ErrorType) && $type->isArray()->yes();
 	}

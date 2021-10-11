@@ -143,4 +143,18 @@ class InvalidComparisonOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-comparison-nullsafe.php'], [
+			[
+				'Comparison operation "==" between stdClass|null and int results in an error.',
+				12,
+			],
+		]);
+	}
+
 }

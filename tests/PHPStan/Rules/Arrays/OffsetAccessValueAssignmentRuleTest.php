@@ -47,4 +47,18 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/offset-access-value-assignment-nullsafe.php'], [
+			[
+				'ArrayAccess<int, int> does not accept int|null.',
+				18,
+			],
+		]);
+	}
+
 }

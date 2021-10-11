@@ -122,4 +122,18 @@ class InvalidBinaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3515.php'], []);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-binary-nullsafe.php'], [
+			[
+				'Binary operation "+" between array|null and \'2\' results in an error.',
+				12,
+			],
+		]);
+	}
+
 }

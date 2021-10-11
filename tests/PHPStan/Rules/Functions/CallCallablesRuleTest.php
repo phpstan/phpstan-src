@@ -198,4 +198,19 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3566.php'], $errors);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/callables-nullsafe.php'], [
+			[
+				'Parameter #1 $val of closure expects int, int|null given.',
+				18,
+			],
+		]);
+	}
+
 }

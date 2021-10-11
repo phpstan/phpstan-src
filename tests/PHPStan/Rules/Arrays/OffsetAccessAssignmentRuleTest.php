@@ -127,4 +127,20 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/new-offset-stub.php'], []);
 	}
 
+
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/offset-access-assignment-nullsafe.php'], [
+			[
+				'Cannot assign offset int|null to string.',
+				14,
+			],
+		]);
+	}
+
 }

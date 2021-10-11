@@ -332,4 +332,18 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/nonexistent-offset-nullsafe.php'], [
+			[
+				'Offset 1 does not exist on array(\'a\' => int).',
+				18,
+			],
+		]);
+	}
+
 }

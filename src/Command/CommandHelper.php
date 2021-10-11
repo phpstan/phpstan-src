@@ -37,7 +37,6 @@ class CommandHelper
 		InputInterface $input,
 		OutputInterface $output,
 		array $paths,
-		?string $pathsFile,
 		?string $memoryLimit,
 		?string $autoloadFile,
 		array $composerAutoloaderProjectPaths,
@@ -117,30 +116,6 @@ class CommandHelper
 		$paths = array_map(static function (string $path) use ($currentWorkingDirectoryFileHelper): string {
 			return $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path));
 		}, $paths);
-
-		if (count($paths) === 0 && $pathsFile !== null) {
-			$pathsFile = $currentWorkingDirectoryFileHelper->absolutizePath($pathsFile);
-			if (!file_exists($pathsFile)) {
-				$errorOutput->writeLineFormatted(sprintf('Paths file %s does not exist.', $pathsFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
-
-			try {
-				$pathsString = FileReader::read($pathsFile);
-			} catch (\PHPStan\File\CouldNotReadFileException $e) {
-				$errorOutput->writeLineFormatted($e->getMessage());
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
-
-			$paths = array_values(array_filter(explode("\n", $pathsString), static function (string $path): bool {
-				return trim($path) !== '';
-			}));
-
-			$pathsFileFileHelper = new FileHelper(dirname($pathsFile));
-			$paths = array_map(static function (string $path) use ($pathsFileFileHelper): string {
-				return $pathsFileFileHelper->normalizePath($pathsFileFileHelper->absolutizePath($path));
-			}, $paths);
-		}
 
 		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);

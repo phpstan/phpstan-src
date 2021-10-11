@@ -38,7 +38,6 @@ class FixerWorkerCommand extends Command
 			->setDescription('(Internal) Support for PHPStan Pro.')
 			->setDefinition([
 				new InputArgument('paths', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Paths with source code to run analysis on'),
-				new InputOption('paths-file', null, InputOption::VALUE_REQUIRED, 'Path to a file with a list of paths to run analysis on'),
 				new InputOption('configuration', 'c', InputOption::VALUE_REQUIRED, 'Path to project configuration file'),
 				new InputOption(AnalyseCommand::OPTION_LEVEL, 'l', InputOption::VALUE_REQUIRED, 'Level of rule options - the higher the stricter'),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
@@ -59,7 +58,6 @@ class FixerWorkerCommand extends Command
 		$autoloadFile = $input->getOption('autoload-file');
 		$configuration = $input->getOption('configuration');
 		$level = $input->getOption(AnalyseCommand::OPTION_LEVEL);
-		$pathsFile = $input->getOption('paths-file');
 		$allowXdebug = $input->getOption('xdebug');
 		$allowParallel = $input->getOption('allow-parallel');
 
@@ -69,7 +67,6 @@ class FixerWorkerCommand extends Command
 			|| (!is_string($autoloadFile) && $autoloadFile !== null)
 			|| (!is_string($configuration) && $configuration !== null)
 			|| (!is_string($level) && $level !== null)
-			|| (!is_string($pathsFile) && $pathsFile !== null)
 			|| (!is_bool($allowXdebug))
 			|| (!is_bool($allowParallel))
 		) {
@@ -107,7 +104,6 @@ class FixerWorkerCommand extends Command
 				$input,
 				$output,
 				$paths,
-				$pathsFile,
 				$memoryLimit,
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,

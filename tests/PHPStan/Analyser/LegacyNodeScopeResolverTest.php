@@ -9129,7 +9129,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			[

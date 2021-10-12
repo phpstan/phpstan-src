@@ -33,7 +33,7 @@ class Foo
 			$decodedResponseBody = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
 		} catch (\Throwable $exception) {
 			assertType('string|null', $body);
-			assertType('array()', $decodedResponseBody);
+			assertType('array{}', $decodedResponseBody);
 		}
 	}
 

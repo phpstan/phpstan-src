@@ -390,15 +390,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				914,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'foo\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'foo\'} given.',
 				915,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'bar\'} given.',
 				916,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{object, \'bar\'} given.',
 				921,
 			],
 			[
@@ -475,11 +475,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array(\'foo\')|null given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array{\'foo\'}|null given.',
 				1533,
 			],
 			[
-				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
 			],
 			[
@@ -701,15 +701,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				867,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'foo\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'foo\'} given.',
 				915,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'bar\'} given.',
 				916,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{object, \'bar\'} given.',
 				921,
 			],
 			[
@@ -762,11 +762,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array(\'foo\')|null given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array{\'foo\'}|null given.',
 				1533,
 			],
 			[
-				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
 			],
 			[

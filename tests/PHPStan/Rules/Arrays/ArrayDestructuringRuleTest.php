@@ -30,7 +30,7 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 				11,
 			],
 			[
-				'Offset 0 does not exist on array().',
+				'Offset 0 does not exist on array{}.',
 				12,
 			],
 			[
@@ -38,11 +38,11 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Offset 2 does not exist on array(1, 2).',
+				'Offset 2 does not exist on array{1, 2}.',
 				15,
 			],
 			[
-				'Offset \'a\' does not exist on array(\'b\' => 1).',
+				'Offset \'a\' does not exist on array{b: 1}.',
 				22,
 			],
 		]);

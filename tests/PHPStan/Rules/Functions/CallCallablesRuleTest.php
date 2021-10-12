@@ -55,11 +55,11 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				25,
 			],
 			[
-				'Parameter #1 $i of callable array($this(CallCallables\Foo), \'doBar\') expects int, string given.',
+				'Parameter #1 $i of callable array{$this(CallCallables\\Foo}, \'doBar\') expects int, string given.',
 				33,
 			],
 			[
-				'Callable array(\'CallCallables\\\\Foo\', \'doStaticBaz\') invoked with 1 parameter, 0 required.',
+				'Callable array{\'CallCallables\\\\Foo\', \'doStaticBaz\'} invoked with 1 parameter, 0 required.',
 				39,
 			],
 			[
@@ -108,7 +108,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				113,
 			],
 			[
-				'Trying to invoke array(object, \'bar\') but it might not be a callable.',
+				'Trying to invoke array{object, \'bar\'} but it might not be a callable.',
 				131,
 			],
 			[
@@ -124,15 +124,15 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				148,
 			],
 			[
-				'Trying to invoke array(object, \'yo\') but it might not be a callable.',
+				'Trying to invoke array{object, \'yo\'} but it might not be a callable.',
 				163,
 			],
 			[
-				'Trying to invoke array(object, \'yo\') but it might not be a callable.',
+				'Trying to invoke array{object, \'yo\'} but it might not be a callable.',
 				167,
 			],
 			[
-				'Trying to invoke array(\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\') but it might not be a callable.',
+				'Trying to invoke array{\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\'} but it might not be a callable.',
 				179,
 			],
 		]);

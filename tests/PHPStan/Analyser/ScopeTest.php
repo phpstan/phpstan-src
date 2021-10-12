@@ -106,7 +106,7 @@ class ScopeTest extends PHPStanTestCase
 				], [
 					new ConstantIntegerType(1),
 				]),
-				'array(\'a\' => 1)',
+				'array{a: 1}',
 			],
 			[
 				new ConstantArrayType([
@@ -123,7 +123,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(2),
 					new ConstantIntegerType(1),
 				]),
-				'array(\'a\' => int, \'b\' => 1)',
+				'array{a: int, b: 1}',
 			],
 			[
 				new ConstantArrayType([

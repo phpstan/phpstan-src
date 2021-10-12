@@ -693,7 +693,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				ConstantArrayType::class,
-				'array(\'foo\' => DateTimeImmutable|null, \'bar\' => int|string)',
+				'array{foo: DateTimeImmutable|null, bar: int|string}',
 			],
 			[
 				[
@@ -711,7 +711,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				ConstantArrayType::class,
-				'array(\'foo\' => DateTimeImmutable|null, ?\'bar\' => int)',
+				'array{foo: DateTimeImmutable|null, bar?: int}',
 			],
 			[
 				[
@@ -733,7 +733,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				ConstantArrayType::class,
-				'array(\'foo\' => DateTimeImmutable|null, \'bar\' => int|string, ?\'baz\' => int)',
+				'array{foo: DateTimeImmutable|null, bar: int|string, baz?: int}',
 			],
 			[
 				[
@@ -902,7 +902,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				IntersectionType::class,
-				'array(object, \'foo\')&callable(): mixed',
+				'array{object, \'foo\'}&callable(): mixed',
 			],
 			[
 				[
@@ -1650,7 +1650,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				UnionType::class,
-				'array()|array(string)',
+				'array{}|array{string}',
 			],
 			[
 				[
@@ -1662,7 +1662,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					], 1, [0]),
 				],
 				UnionType::class,
-				'array()|array(?0 => string)',
+				'array{}|array{0?: string}',
 			],
 			[
 				[
@@ -1682,7 +1682,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				UnionType::class,
-				'array(\'a\' => int, \'b\' => int)|array(\'c\' => int, \'d\' => int)',
+				'array{a: int, b: int}|array{c: int, d: int}',
 			],
 			[
 				[
@@ -1700,7 +1700,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				ConstantArrayType::class,
-				'array(\'a\' => int, ?\'b\' => int)',
+				'array{a: int, b?: int}',
 			],
 			[
 				[
@@ -1720,7 +1720,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 				],
 				UnionType::class,
-				'array(\'a\' => int, \'b\' => int)|array(\'b\' => int, \'c\' => int)',
+				'array{a: int, b: int}|array{b: int, c: int}',
 			],
 			[
 				[
@@ -1744,7 +1744,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					StaticTypeFactory::falsey(),
 				],
 				UnionType::class,
-				'0|0.0|\'\'|\'0\'|array()|false|null',
+				'0|0.0|\'\'|\'0\'|array{}|false|null',
 			],
 			[
 				[
@@ -1752,7 +1752,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					StaticTypeFactory::truthy(),
 				],
 				MixedType::class,
-				'mixed~0|0.0|\'\'|\'0\'|array()|false|null=implicit',
+				'mixed~0|0.0|\'\'|\'0\'|array{}|false|null=implicit',
 			],
 			[
 				[
@@ -2396,7 +2396,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('a')),
 				],
 				ConstantArrayType::class,
-				'array(\'a\' => \'foo\')',
+				'array{a: \'foo\'}',
 			],
 			[
 				[
@@ -2432,7 +2432,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('b')),
 				],
 				ConstantArrayType::class,
-				'array(\'b\' => \'foo\')',
+				'array{b: \'foo\'}',
 			],
 			[
 				[
@@ -2446,7 +2446,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('a')),
 				],
 				ConstantArrayType::class,
-				'array(\'a\' => \'foo\')',
+				'array{a: \'foo\'}',
 			],
 			[
 				[
@@ -2523,7 +2523,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new NonEmptyArrayType(),
 				],
 				ConstantArrayType::class,
-				'array(string)',
+				'array{string}',
 			],
 			[
 				[
@@ -2989,7 +2989,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('a')),
 				],
 				ConstantArrayType::class,
-				'array(\'a\' => int, \'b\' => int)',
+				'array{a: int, b: int}',
 			],
 			[
 				[
@@ -3255,13 +3255,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				StaticTypeFactory::truthy(),
 				StaticTypeFactory::falsey(),
 				MixedType::class,
-				'mixed~0|0.0|\'\'|\'0\'|array()|false|null',
+				'mixed~0|0.0|\'\'|\'0\'|array{}|false|null',
 			],
 			[
 				StaticTypeFactory::falsey(),
 				StaticTypeFactory::truthy(),
 				UnionType::class,
-				'0|0.0|\'\'|\'0\'|array()|false|null',
+				'0|0.0|\'\'|\'0\'|array{}|false|null',
 			],
 			[
 				new BooleanType(),
@@ -3389,7 +3389,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				),
 				new ConstantArrayType([], []),
 				ConstantArrayType::class,
-				'array(string)',
+				'array{string}',
 			],
 			[
 				new IntersectionType([
@@ -3404,7 +3404,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				new ArrayType(new MixedType(), new MixedType()),
 				new NonEmptyArrayType(),
 				ConstantArrayType::class,
-				'array()',
+				'array{}',
 			],
 			[
 				new ArrayType(new MixedType(), new MixedType()),
@@ -3578,7 +3578,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				], 2, [1]),
 				new HasOffsetType(new ConstantIntegerType(1)),
 				ConstantArrayType::class,
-				'array(string)',
+				'array{string}',
 			],
 			[
 				new ConstantArrayType([
@@ -3648,7 +3648,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 		}
 		$resultType = TypeCombinator::union(...$arrays);
 		$this->assertInstanceOf(ConstantArrayType::class, $resultType);
-		$this->assertSame('array(0 => string, ?\'test\' => string, ?1 => string, ?2 => string, ?3 => string, ?4 => string)', $resultType->describe(VerbosityLevel::precise()));
+		$this->assertSame('array{0: string, test?: string, 1?: string, 2?: string, 3?: string, 4?: string}', $resultType->describe(VerbosityLevel::precise()));
 	}
 
 }

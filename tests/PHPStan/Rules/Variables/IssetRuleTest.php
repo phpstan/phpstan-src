@@ -45,11 +45,11 @@ class IssetRuleTest extends RuleTestCase
 				41,
 			],
 			[
-				'Offset \'string\' on array(1, 2, 3) in isset() does not exist.',
+				'Offset \'string\' on array{1, 2, 3} in isset() does not exist.',
 				45,
 			],
 			[
-				'Offset \'string\' on array(array(1), array(2), array(3)) in isset() does not exist.',
+				'Offset \'string\' on array{array{1}, array{2}, array{3}} in isset() does not exist.',
 				49,
 			],
 			[
@@ -57,15 +57,15 @@ class IssetRuleTest extends RuleTestCase
 				51,
 			],
 			[
-				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) in isset() always exists and is not nullable.',
+				'Offset \'dim\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} in isset() always exists and is not nullable.',
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) in isset() does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} in isset() does not exist.',
 				73,
 			],
 			[
-				'Offset \'b\' on array() in isset() does not exist.',
+				'Offset \'b\' on array{} in isset() does not exist.',
 				79,
 			],
 			[
@@ -109,11 +109,11 @@ class IssetRuleTest extends RuleTestCase
 				124,
 			],
 			[
-				"Offset 'foo' on array('foo' => string) in isset() always exists and is not nullable.",
+				'Offset \'foo\' on array{foo: string} in isset() always exists and is not nullable.',
 				170,
 			],
 			[
-				"Offset 'bar' on array('bar' => 1) in isset() always exists and is not nullable.",
+				'Offset \'bar\' on array{bar: 1} in isset() always exists and is not nullable.',
 				173,
 			],
 		]);
@@ -132,11 +132,11 @@ class IssetRuleTest extends RuleTestCase
 				41,
 			],
 			[
-				'Offset \'string\' on array(1, 2, 3) in isset() does not exist.',
+				'Offset \'string\' on array{1, 2, 3} in isset() does not exist.',
 				45,
 			],
 			[
-				'Offset \'string\' on array(array(1), array(2), array(3)) in isset() does not exist.',
+				'Offset \'string\' on array{array{1}, array{2}, array{3}} in isset() does not exist.',
 				49,
 			],
 			[
@@ -144,15 +144,15 @@ class IssetRuleTest extends RuleTestCase
 				51,
 			],
 			[
-				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) in isset() always exists and is not nullable.',
+				'Offset \'dim\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} in isset() always exists and is not nullable.',
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) in isset() does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} in isset() does not exist.',
 				73,
 			],
 			[
-				'Offset \'b\' on array() in isset() does not exist.',
+				'Offset \'b\' on array{} in isset() does not exist.',
 				79,
 			],
 			[

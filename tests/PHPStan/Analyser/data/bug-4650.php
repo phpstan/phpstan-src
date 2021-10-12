@@ -15,8 +15,8 @@ class Foo
 		assertType('non-empty-array<int|string>', $idx);
 		assertNativeType('array', $idx);
 
-		assertType('array()', []);
-		assertNativeType('array()', []);
+		assertType('array{}', []);
+		assertNativeType('array{}', []);
 
 		assertType('false', $idx === []);
 		assertNativeType('bool', $idx === []);

@@ -28,15 +28,15 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 	{
 		$this->analyse([__DIR__ . '/data/nonexistent-offset.php'], [
 			[
-				'Offset \'b\' does not exist on array(\'a\' => stdClass, 0 => 2).',
+				'Offset \'b\' does not exist on array{a: stdClass, 0: 2}.',
 				17,
 			],
 			[
-				'Offset 1 does not exist on array(\'a\' => stdClass, 0 => 2).',
+				'Offset 1 does not exist on array{a: stdClass, 0: 2}.',
 				18,
 			],
 			[
-				'Offset \'a\' does not exist on array(\'b\' => 1).',
+				'Offset \'a\' does not exist on array{b: 1}.',
 				55,
 			],
 			[
@@ -82,23 +82,23 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				145,
 			],
 			[
-				'Offset \'c\' does not exist on array(\'c\' => bool)|array(\'e\' => true).',
+				'Offset \'c\' does not exist on array{c: bool}|array{e: true}.',
 				171,
 			],
 			[
-				'Offset int does not exist on array()|array(1 => 1, 2 => 2)|array(3 => 3, 4 => 4).',
+				'Offset int does not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
 				190,
 			],
 			[
-				'Offset int does not exist on array()|array(1 => 1, 2 => 2)|array(3 => 3, 4 => 4).',
+				'Offset int does not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
 				193,
 			],
 			[
-				'Offset \'b\' does not exist on array(\'a\' => \'blabla\').',
+				'Offset \'b\' does not exist on array{a: \'blabla\'}.',
 				225,
 			],
 			[
-				'Offset \'b\' does not exist on array(\'a\' => \'blabla\').',
+				'Offset \'b\' does not exist on array{a: \'blabla\'}.',
 				228,
 			],
 			[
@@ -110,7 +110,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				253,
 			],
 			[
-				'Cannot access offset \'a\' on array(\'a\' => 1, \'b\' => 1)|(Closure(): void).',
+				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
 				258,
 			],
 			[
@@ -126,7 +126,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 				312,
 			],
 			[
-				'Offset \'baz\' does not exist on array(\'bar\' => 1, ?\'baz\' => 2).',
+				'Offset \'baz\' does not exist on array{bar: 1, baz?: 2}.',
 				344,
 			],
 			[
@@ -190,7 +190,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 	{
 		$this->analyse([__DIR__ . '/data/offset-access-assignop.php'], [
 			[
-				'Offset \'foo\' does not exist on array().',
+				'Offset \'foo\' does not exist on array{}.',
 				4,
 			],
 			[
@@ -340,7 +340,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTest
 
 		$this->analyse([__DIR__ . '/data/nonexistent-offset-nullsafe.php'], [
 			[
-				'Offset 1 does not exist on array(\'a\' => int).',
+				'Offset 1 does not exist on array{a: int}.',
 				18,
 			],
 		]);

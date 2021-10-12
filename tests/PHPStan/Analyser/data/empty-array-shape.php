@@ -10,7 +10,7 @@ class Foo
 	/** @param array{} $array */
 	public function doFoo(array $array): void
 	{
-		assertType('array()', $array);
+		assertType('array{}', $array);
 	}
 
 }

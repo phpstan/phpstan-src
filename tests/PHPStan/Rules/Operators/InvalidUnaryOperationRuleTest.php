@@ -33,7 +33,7 @@ class InvalidUnaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
 				20,
 			],
 			[
-				'Unary operation "~" on array() results in an error.',
+				'Unary operation "~" on array{} results in an error.',
 				24,
 			],
 		]);

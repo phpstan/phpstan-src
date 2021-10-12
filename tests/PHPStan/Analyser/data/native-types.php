@@ -121,10 +121,10 @@ class Foo
 	 */
 	public function doForeachArrayDestructuring(array $array)
 	{
-		assertType('array<string, array(int, string)>', $array);
+		assertType('array<string, array{int, string}>', $array);
 		assertNativeType('array', $array);
 		foreach ($array as $key => [$i, $s]) {
-			assertType('non-empty-array<string, array(int, string)>', $array);
+			assertType('non-empty-array<string, array{int, string}>', $array);
 			assertNativeType('non-empty-array', $array);
 
 			assertType('string', $key);

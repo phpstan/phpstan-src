@@ -35,7 +35,7 @@ class Foo
 	public function doBar2()
 	{
 		$items = [0, 1, 2, 3, 4];
-		assertType('array(0, 1, 2, 3, 4)', $items);
+		assertType('array{0, 1, 2, 3, 4}', $items);
 		$batch = array_splice($items, 0, 2);
 		assertType('array<0|1|2|3|4, 0|1|2|3|4>', $items);
 		assertType('array<0|1|2|3|4, 0|1|2|3|4>', $batch);

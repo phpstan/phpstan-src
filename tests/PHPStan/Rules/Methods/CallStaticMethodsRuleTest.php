@@ -433,7 +433,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
 			[
-				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array(class-string<static(Bug1971\HelloWorld)>, \'sayHello2\') given.',
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug1971\\HelloWorld)>, \'sayHello2\'} given.',
 				16,
 			],
 		]);

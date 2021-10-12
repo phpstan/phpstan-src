@@ -22,7 +22,7 @@ class Foo
 			assertType('array|stdClass|null', $config);
 			$config = new \stdClass();
 		} elseif (! (is_array($config) || $config instanceof \stdClass)) {
-			assertNativeType('mixed~0|0.0|\'\'|\'0\'|array()|stdClass|false|null', $config);
+			assertNativeType('mixed~0|0.0|\'\'|\'0\'|array{}|stdClass|false|null', $config);
 			assertType('*NEVER*', $config);
 		}
 

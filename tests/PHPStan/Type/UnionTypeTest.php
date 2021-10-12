@@ -592,7 +592,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 					new ConstantStringType('aaa')
 				),
-				'\'aaa\'|array(\'a\' => int|string, \'b\' => bool|float)',
+				'\'aaa\'|array{a: int|string, b: bool|float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -613,7 +613,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 					new ConstantStringType('aaa')
 				),
-				'\'aaa\'|array(\'a\' => string, \'b\' => bool)|array(\'b\' => int, \'c\' => float)',
+				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -634,7 +634,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					]),
 					new ConstantStringType('aaa')
 				),
-				'\'aaa\'|array(\'a\' => string, \'b\' => bool)|array(\'c\' => int, \'d\' => float)',
+				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -654,7 +654,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new FloatType(),
 					])
 				),
-				'array(0 => int|string, ?1 => bool, ?2 => float)',
+				'array{0: int|string, 1?: bool, 2?: float}',
 				'array<int, bool|float|int|string>',
 			],
 			[
@@ -666,7 +666,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new ConstantStringType('barrr'),
 					])
 				),
-				'array()|array(\'foooo\' => \'barrr\')',
+				'array{}|array{foooo: \'barrr\'}',
 				'array<string, string>',
 			],
 			[

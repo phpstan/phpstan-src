@@ -14,7 +14,7 @@ function (): void {
 	}
 
 	if(count($idGroups) > 0){
-		assertType('array(array(1, 2), array(1, 2), array(1, 2))', $idGroups);
+		assertType('array{array{1, 2}, array{1, 2}, array{1, 2}}', $idGroups);
 	}
 };
 
@@ -28,6 +28,6 @@ function (): void {
 	}
 
 	if(count($idGroups) > 1){
-		assertType('array(0 => 1, ?1 => array(1, 2), ?2 => array(1, 2), ?3 => array(1, 2))', $idGroups);
+		assertType('array{0: 1, 1?: array{1, 2}, 2?: array{1, 2}, 3?: array{1, 2}}', $idGroups);
 	}
 };

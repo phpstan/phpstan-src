@@ -31,7 +31,7 @@ class HelloWorld
 
 			// we might be out of suggested days, so load some more
 			if (count($this->suggestions) === 0) {
-				assertType('array()', $this->suggestions);
+				assertType('array{}', $this->suggestions);
 				assertType('0', count($this->suggestions));
 				$this->createSuggestions();
 			}

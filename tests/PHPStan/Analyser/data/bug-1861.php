@@ -15,7 +15,7 @@ class Tree
 	{
 		switch (count($this->children)) {
 			case 0:
-				assertType('array()', $this->children);
+				assertType('array{}', $this->children);
 				break;
 			case 1:
 				assertType('non-empty-array<' . self::class . '>', $this->children);

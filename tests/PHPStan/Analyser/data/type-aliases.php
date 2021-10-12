@@ -181,7 +181,7 @@ namespace TypeAliasesDataset {
 		/** @param Test $a */
 		public function doBar($a)
 		{
-			assertType('array(string, int)', $a);
+			assertType('array{string, int}', $a);
 			assertType(Test::class, $this->doFoo());
 		}
 

@@ -30,7 +30,7 @@ use PHPStan\Type\VerbosityLevel;
 class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
-	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array()|false|null';
+	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array{}|false|null';
 	private const TRUTHY_TYPE_DESCRIPTION = 'mixed~' . self::FALSEY_TYPE_DESCRIPTION;
 	private const SURE_NOT_FALSEY = '~' . self::FALSEY_TYPE_DESCRIPTION;
 	private const SURE_NOT_TRUTHY = '~' . self::TRUTHY_TYPE_DESCRIPTION;
@@ -533,7 +533,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BooleanNot(new Expr\Empty_(new Variable('stringOrNull'))),
 				[
-					'$stringOrNull' => '~0|0.0|\'\'|\'0\'|array()|false|null',
+					'$stringOrNull' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[],
 			],
@@ -552,13 +552,13 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\Empty_(new Variable('array')),
 				[],
 				[
-					'$array' => '~0|0.0|\'\'|\'0\'|array()|false|null',
+					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 			],
 			[
 				new BooleanNot(new Expr\Empty_(new Variable('array'))),
 				[
-					'$array' => '~0|0.0|\'\'|\'0\'|array()|false|null',
+					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[],
 			],

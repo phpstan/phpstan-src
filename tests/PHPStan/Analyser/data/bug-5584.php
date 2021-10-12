@@ -19,6 +19,6 @@ class Foo {
 			$b = ['b' => 6];
 		}
 
-		assertType("array()|array(?'b' => 6, ?'a' => 5)", $a + $b);
+		assertType('array{}|array{b?: 6, a?: 5}', $a + $b);
 	}
 }

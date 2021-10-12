@@ -43,11 +43,11 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				41,
 			],
 			[
-				'Offset \'string\' on array(1, 2, 3) on left side of ?? does not exist.',
+				'Offset \'string\' on array{1, 2, 3} on left side of ?? does not exist.',
 				45,
 			],
 			[
-				'Offset \'string\' on array(array(1), array(2), array(3)) on left side of ?? does not exist.',
+				'Offset \'string\' on array{array{1}, array{2}, array{3}} on left side of ?? does not exist.',
 				49,
 			],
 			[
@@ -55,15 +55,15 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				51,
 			],
 			[
-				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ?? always exists and is not nullable.',
+				'Offset \'dim\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ?? always exists and is not nullable.',
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ?? does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ?? does not exist.',
 				73,
 			],
 			[
-				'Offset \'b\' on array() on left side of ?? does not exist.',
+				'Offset \'b\' on array{} on left side of ?? does not exist.',
 				79,
 			],
 			[
@@ -150,11 +150,11 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				41,
 			],
 			[
-				'Offset \'string\' on array(1, 2, 3) on left side of ??= does not exist.',
+				'Offset \'string\' on array{1, 2, 3} on left side of ??= does not exist.',
 				45,
 			],
 			[
-				'Offset \'string\' on array(array(1), array(2), array(3)) on left side of ??= does not exist.',
+				'Offset \'string\' on array{array{1}, array{2}, array{3}} on left side of ??= does not exist.',
 				49,
 			],
 			[
@@ -162,15 +162,15 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				51,
 			],
 			[
-				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ??= always exists and is not nullable.',
+				'Offset \'dim\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ??= always exists and is not nullable.',
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 0|1, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ??= does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 0|1, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ??= does not exist.',
 				73,
 			],
 			[
-				'Offset \'b\' on array() on left side of ??= does not exist.',
+				'Offset \'b\' on array{} on left side of ??= does not exist.',
 				79,
 			],
 			[

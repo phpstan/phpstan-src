@@ -9,6 +9,8 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -33,6 +35,37 @@ class TypeDescriptionTest extends PHPStanTestCase
 		yield ['non-empty-array<int, string>', new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new NonEmptyArrayType()])];
 		yield ['class-string&literal-string', new IntersectionType([new ClassStringType(), new AccessoryLiteralStringType()])];
 		yield ['class-string<Foo>&literal-string', new IntersectionType([new GenericClassStringType(new ObjectType('Foo')), new AccessoryLiteralStringType()])];
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantStringType('foo'), new IntegerType());
+		yield ['array{foo: int}', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantStringType('foo'), new IntegerType(), true);
+		yield ['array{foo?: int}', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantStringType('foo'), new IntegerType(), true);
+		$builder->setOffsetValueType(new ConstantStringType('bar'), new StringType());
+		yield ['array{foo?: int, bar: string}', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(null, new IntegerType());
+		$builder->setOffsetValueType(null, new StringType());
+		yield ['array{int, string}', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(null, new IntegerType());
+		$builder->setOffsetValueType(null, new StringType(), true);
+		yield ['array{0: int, 1?: string}', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantStringType('\'foo\''), new IntegerType());
+		yield ['array{"\'foo\'": int}', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantStringType('"foo"'), new IntegerType());
+		yield ['array{\'"foo"\': int}', $builder->getArray()];
 	}
 
 	/**

@@ -165,7 +165,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'self::IPSUM_CONSTANT',
 			],
 			[
-				'array(1, 2, 3)',
+				'array{1, 2, 3}',
 				'parent::PARENT_CONSTANT',
 			],
 			[
@@ -252,19 +252,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'arrOne',
 				TrinaryLogic::createYes(),
-				'array(\'one\')',
+				'array{\'one\'}',
 			],
 			[
 				$testScope,
 				'arrTwo',
 				TrinaryLogic::createYes(),
-				'array(\'test\' => \'two\', 0 => Foo)',
+				'array{test: \'two\', 0: Foo}',
 			],
 			[
 				$testScope,
 				'arrThree',
 				TrinaryLogic::createYes(),
-				'array(\'three\')',
+				'array{\'three\'}',
 			],
 			[
 				$testScope,
@@ -300,7 +300,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'anotherArray',
 				TrinaryLogic::createYes(),
-				'array(\'test\' => array(\'another\'))',
+				'array{test: array{\'another\'}}',
 			],
 			[
 				$testScope,
@@ -485,13 +485,13 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'nullableIntegers',
 				TrinaryLogic::createYes(),
-				'array(1, 2, 3, null)',
+				'array{1, 2, 3, null}',
 			],
 			[
 				$testScope,
 				'union',
 				TrinaryLogic::createYes(),
-				'array(1, 2, 3, \'foo\')',
+				'array{1, 2, 3, \'foo\'}',
 				'1|2|3|\'foo\'',
 			],
 			[
@@ -659,7 +659,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'arrayOfIntegers',
 				TrinaryLogic::createYes(),
-				'array(1, 2, 3)',
+				'array{1, 2, 3}',
 			],
 			[
 				$testScope,
@@ -783,7 +783,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'literalArray',
-				'array(\'a\' => 2, \'b\' => 4, \'c\' => 2, \'d\' => 4)',
+				'array{a: 2, b: 4, c: 2, d: 4}',
 			],
 			[
 				$testScope,
@@ -823,7 +823,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'arrayOverwrittenInForLoop',
-				'array(\'a\' => int, \'b\' => \'bar\'|\'foo\')',
+				'array{a: int, b: \'bar\'|\'foo\'}',
 			],
 			[
 				$testScope,
@@ -1560,31 +1560,31 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'(float) $str',
 			],
 			[
-				'array(\'\' . "\0" . \'TypesNamespaceCasts\\\\Foo\' . "\0" . \'foo\' => TypesNamespaceCasts\Foo, \'\' . "\0" . \'TypesNamespaceCasts\\\\Foo\' . "\0" . \'int\' => int, \'\' . "\0" . \'*\' . "\0" . \'protectedInt\' => int, \'publicInt\' => int, \'\' . "\0" . \'TypesNamespaceCasts\\\\Bar\' . "\0" . \'barProperty\' => TypesNamespaceCasts\Bar)',
+				"array{\0TypesNamespaceCasts\\Foo\0foo: TypesNamespaceCasts\\Foo, \0TypesNamespaceCasts\\Foo\0int: int, \0*\0protectedInt: int, publicInt: int, \0TypesNamespaceCasts\\Bar\0barProperty: TypesNamespaceCasts\\Bar}",
 				'(array) $foo',
 			],
 			[
-				'array(1, 2, 3)',
+				'array{1, 2, 3}',
 				'(array) [1, 2, 3]',
 			],
 			[
-				'array(1)',
+				'array{1}',
 				'(array) 1',
 			],
 			[
-				'array(1.0)',
+				'array{1.0}',
 				'(array) 1.0',
 			],
 			[
-				'array(true)',
+				'array{true}',
 				'(array) true',
 			],
 			[
-				'array(\'blabla\')',
+				'array{\'blabla\'}',
 				'(array) "blabla"',
 			],
 			[
-				'array(int)',
+				'array{int}',
 				'(array) $castedInteger',
 			],
 			[
@@ -1691,7 +1691,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$newStatic',
 			],
 			[
-				'array()',
+				'array{}',
 				'$arrayLiteral',
 			],
 			[
@@ -1723,7 +1723,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'self::STRING_CONSTANT',
 			],
 			[
-				'array()',
+				'array{}',
 				'self::ARRAY_CONSTANT',
 			],
 			[
@@ -1747,7 +1747,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$foo::STRING_CONSTANT',
 			],
 			[
-				'array()',
+				'array{}',
 				'$foo::ARRAY_CONSTANT',
 			],
 			[
@@ -2382,7 +2382,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'min([1, 2, 3])',
 			],
 			[
-				'array(1, 2, 3)',
+				'array{1, 2, 3}',
 				'min([1, 2, 3], [4, 5, 5])',
 			],
 			[
@@ -2398,11 +2398,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'min(0, ...[1, 2, 3])',
 			],
 			[
-				'array(5, 6, 9)',
+				'array{5, 6, 9}',
 				'max([1, 10, 8], [5, 6, 9])',
 			],
 			[
-				'array(1, 1, 1, 1)',
+				'array{1, 1, 1, 1}',
 				'max(array(2, 2, 2), array(1, 1, 1, 1))',
 			],
 			[
@@ -2630,23 +2630,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'!empty($foo)',
 			],
 			[
-				'array(int, int, int)',
+				'array{int, int, int}',
 				'$arrayOfIntegers + $arrayOfIntegers',
 			],
 			[
-				'array(int, int, int)',
+				'array{int, int, int}',
 				'$arrayOfIntegers += $arrayOfIntegers',
 			],
 			[
-				'array(0 => 1, 1 => 1, 2 => 1, 3 => 1|2, 4 => 1|3, ?5 => 2|3, ?6 => 3)',
+				'array{0: 1, 1: 1, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}',
 				'$conditionalArray + $unshiftedConditionalArray',
 			],
 			[
-				'array(0 => \'lorem\', 1 => stdClass, 2 => 1, 3 => 1, 4 => 1, ?5 => 2|3, ?6 => 3)',
+				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1, 4: 1, 5?: 2|3, 6?: 3}',
 				'$unshiftedConditionalArray + $conditionalArray',
 			],
 			[
-				'array(int, int, int)',
+				'array{int, int, int}',
 				'$arrayOfIntegers += ["foo"]',
 			],
 			[
@@ -2658,7 +2658,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'@count($arrayOfIntegers)',
 			],
 			[
-				'array(int, int, int)',
+				'array{int, int, int}',
 				'$anotherArray = $arrayOfIntegers',
 			],
 			[
@@ -2758,15 +2758,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$preIncArray[3]',
 			],
 			[
-				'array(1 => 1, 2 => 2)',
+				'array{1: 1, 2: 2}',
 				'$preIncArray',
 			],
 			[
-				'array(0 => 1, 2 => 3)',
+				'array{0: 1, 2: 3}',
 				'$postIncArray',
 			],
 			[
-				'array(0 => array(1 => array(2 => 3)), 4 => array(5 => array(6 => 7)))',
+				'array{0: array{1: array{2: 3}}, 4: array{5: array{6: 7}}}',
 				'$anotherPostIncArray',
 			],
 			[
@@ -2826,7 +2826,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'1 + "blabla"',
 			],
 			[
-				'array(1, 2, 3)',
+				'array{1, 2, 3}',
 				'[1, 2, 3] + [4, 5, 6]',
 			],
 			[
@@ -2990,7 +2990,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrToPush2',
 			],
 			[
-				'array(0 => \'lorem\', 1 => 5, \'foo\' => stdClass, 2 => \'test\')',
+				'array{0: \'lorem\', 1: 5, foo: stdClass, 2: \'test\'}',
 				'$arrToUnshift',
 			],
 			[
@@ -2998,11 +2998,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrToUnshift2',
 			],
 			[
-				'array(0 => \'lorem\', 1 => stdClass, 2 => 1, 3 => 1, 4 => 1, ?5 => 2|3, ?6 => 3)',
+				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1, 4: 1, 5?: 2|3, 6?: 3}',
 				'$unshiftedConditionalArray',
 			],
 			[
-				'array(\'dirname\' => string, \'basename\' => string, \'filename\' => string, ?\'extension\' => string)',
+				'array{dirname: string, basename: string, filename: string, extension?: string}',
 				'pathinfo($string)',
 			],
 			[
@@ -3106,11 +3106,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'in_array(\'baz\', [\'foo\', \'bar\'], true)',
 			],
 			[
-				'array(2, 3)',
+				'array{2, 3}',
 				'$arrToShift',
 			],
 			[
-				'array(1, 2)',
+				'array{1, 2}',
 				'$arrToPop',
 			],
 			[
@@ -3158,7 +3158,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"sprintf('%s %s', 'foo', 'bar')",
 			],
 			[
-				'array()|array(0 => \'password\'|\'username\', ?1 => \'password\')',
+				'array{}|array{0: \'password\'|\'username\', 1?: \'password\'}',
 				'$coalesceArray',
 			],
 			[
@@ -3315,7 +3315,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integers[0] >= $integers[1] - 1',
 			],
 			[
-				'array(\'foo\' => array(\'foo\' => array(\'foo\' => \'bar\')), \'bar\' => array(), \'baz\' => array(\'lorem\' => array()))',
+				'array{foo: array{foo: array{foo: \'bar\'}}, bar: array{}, baz: array{lorem: array{}}}',
 				'$nestedArray',
 			],
 			[
@@ -4615,7 +4615,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integers[0]',
 			],
 			[
-				'array(string, string, string)',
+				'array{string, string, string}',
 				'$mappedStrings',
 			],
 			[
@@ -4667,7 +4667,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_combine($array, $array2)',
 			],
 			[
-				'array(1 => 2)',
+				'array{1: 2}',
 				'array_combine([1], [2])',
 			],
 			[
@@ -4675,7 +4675,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_combine([1, 2], [3])',
 			],
 			[
-				'array(\'a\' => \'d\', \'b\' => \'e\', \'c\' => \'f\')',
+				'array{a: \'d\', b: \'e\', c: \'f\'}',
 				'array_combine([\'a\', \'b\', \'c\'], [\'d\', \'e\', \'f\'])',
 			],
 			[
@@ -4767,15 +4767,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_uintersect($integers, [])',
 			],
 			[
-				'array(1, 1, 1, 1, 1)',
+				'array{1, 1, 1, 1, 1}',
 				'$filledIntegers',
 			],
 			[
-				'array()',
+				'array{}',
 				'$emptyFilled',
 			],
 			[
-				'array(1)',
+				'array{1}',
 				'$filledIntegersWithKeys',
 			],
 			[
@@ -4799,15 +4799,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$filledByPositiveRange',
 			],
 			[
-				'array(1, 2)',
+				'array{1, 2}',
 				'array_keys($integerKeys)',
 			],
 			[
-				'array(\'foo\', \'bar\')',
+				'array{\'foo\', \'bar\'}',
 				'array_keys($stringKeys)',
 			],
 			[
-				'array(\'foo\', 1)',
+				'array{\'foo\', 1}',
 				'array_keys($stringOrIntegerKeys)',
 			],
 			[
@@ -4815,7 +4815,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_keys($generalStringKeys)',
 			],
 			[
-				'array(\'foo\', stdClass)',
+				'array{\'foo\', stdClass}',
 				'array_values($integerKeys)',
 			],
 			[
@@ -4859,7 +4859,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mergedInts',
 			],
 			[
-				'array(5 => \'banana\', 6 => \'banana\', 7 => \'banana\', 8 => \'banana\', 9 => \'banana\', 10 => \'banana\')',
+				'array{5: \'banana\', 6: \'banana\', 7: \'banana\', 8: \'banana\', 9: \'banana\', 10: \'banana\'}',
 				'array_fill(5, 6, \'banana\')',
 			],
 			[
@@ -4867,7 +4867,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_fill(0, 101, \'apple\')',
 			],
 			[
-				'array(-2 => \'pear\', 0 => \'pear\', 1 => \'pear\', 2 => \'pear\')',
+				'array{-2: \'pear\', 0: \'pear\', 1: \'pear\', 2: \'pear\'}',
 				'array_fill(-2, 4, \'pear\')',
 			],
 			[
@@ -4883,7 +4883,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_fill_keys($generalStringKeys, new \stdClass())',
 			],
 			[
-				'array(\'foo\' => \'banana\', 5 => \'banana\', 10 => \'banana\', \'bar\' => \'banana\')',
+				'array{foo: \'banana\', 5: \'banana\', 10: \'banana\', bar: \'banana\'}',
 				'array_fill_keys([\'foo\', 5, 10, \'bar\'], \'banana\')',
 			],
 			[
@@ -4903,11 +4903,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$unknownArray',
 			],
 			[
-				'array(\'foo\' => \'banana\', \'bar\' => \'banana\', ?\'baz\' => \'banana\', ?\'lorem\' => \'banana\')',
+				'array{foo: \'banana\', bar: \'banana\', baz?: \'banana\', lorem?: \'banana\'}',
 				'array_fill_keys($conditionalArray, \'banana\')',
 			],
 			[
-				'array(\'foo\' => stdClass, \'bar\' => stdClass, ?\'baz\' => stdClass, ?\'lorem\' => stdClass)',
+				'array{foo: stdClass, bar: stdClass, baz?: stdClass, lorem?: stdClass}',
 				'array_map(function (): \stdClass {}, $conditionalKeysArray)',
 			],
 			[
@@ -4943,11 +4943,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_shift([])',
 			],
 			[
-				'array(null, \'\', 1)',
+				'array{null, \'\', 1}',
 				'$constantArrayWithFalseyValues',
 			],
 			[
-				'array(2 => 1)',
+				'array{2: 1}',
 				'$constantTruthyValues',
 			],
 			[
@@ -4955,7 +4955,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$falsey',
 			],
 			[
-				'array()',
+				'array{}',
 				'array_filter($falsey)',
 			],
 			[
@@ -4967,11 +4967,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_filter($withFalsey)',
 			],
 			[
-				'array(\'a\' => 1)',
+				'array{a: 1}',
 				'array_filter($union)',
 			],
 			[
-				'array(?0 => true, ?1 => int<min, -1>|int<1, max>)',
+				'array{0?: true, 1?: int<min, -1>|int<1, max>}',
 				'array_filter($withPossiblyFalsey)',
 			],
 			[
@@ -5159,55 +5159,55 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_slice($unknownArray, -2, 1, true)',
 			],
 			[
-				'array(0 => bool, 1 => int, 2 => \'\', \'a\' => 0)',
+				'array{0: bool, 1: int, 2: \'\', a: 0}',
 				'array_slice($withPossiblyFalsey, 0)',
 			],
 			[
-				'array(0 => int, 1 => \'\', \'a\' => 0)',
+				'array{0: int, 1: \'\', a: 0}',
 				'array_slice($withPossiblyFalsey, 1)',
 			],
 			[
-				'array(1 => int, 2 => \'\', \'a\' => 0)',
+				'array{1: int, 2: \'\', a: 0}',
 				'array_slice($withPossiblyFalsey, 1, null, true)',
 			],
 			[
-				'array(0 => \'\', \'a\' => 0)',
+				'array{0: \'\', a: 0}',
 				'array_slice($withPossiblyFalsey, 2, 3)',
 			],
 			[
-				'array(2 => \'\', \'a\' => 0)',
+				'array{2: \'\', a: 0}',
 				'array_slice($withPossiblyFalsey, 2, 3, true)',
 			],
 			[
-				'array(int, \'\')',
+				'array{int, \'\'}',
 				'array_slice($withPossiblyFalsey, 1, -1)',
 			],
 			[
-				'array(1 => int, 2 => \'\')',
+				'array{1: int, 2: \'\'}',
 				'array_slice($withPossiblyFalsey, 1, -1, true)',
 			],
 			[
-				'array(0 => \'\', \'a\' => 0)',
+				'array{0: \'\', a: 0}',
 				'array_slice($withPossiblyFalsey, -2, null)',
 			],
 			[
-				'array(2 => \'\', \'a\' => 0)',
+				'array{2: \'\', a: 0}',
 				'array_slice($withPossiblyFalsey, -2, null, true)',
 			],
 			[
-				'array(\'baz\' => \'qux\')|array(0 => \'\', \'a\' => 0)',
+				'array{0: \'\', a: 0}|array{baz: \'qux\'}',
 				'array_slice($unionArrays, 1)',
 			],
 			[
-				'array(\'a\' => 0)|array(\'baz\' => \'qux\')',
+				'array{a: 0}|array{baz: \'qux\'}',
 				'array_slice($unionArrays, -1, null, true)',
 			],
 			[
-				'array(0 => \'foo\', 1 => \'bar\', \'baz\' => \'qux\', 2 => \'quux\', \'quuz\' => \'corge\', 3 => \'grault\')',
+				'array{0: \'foo\', 1: \'bar\', baz: \'qux\', 2: \'quux\', quuz: \'corge\', 3: \'grault\'}',
 				'$slicedOffset',
 			],
 			[
-				'array(4 => \'foo\', 1 => \'bar\', \'baz\' => \'qux\', 0 => \'quux\', \'quuz\' => \'corge\', 5 => \'grault\')',
+				'array{4: \'foo\', 1: \'bar\', baz: \'qux\', 0: \'quux\', quuz: \'corge\', 5: \'grault\'}',
 				'$slicedOffsetWithKeys',
 			],
 			[
@@ -5530,11 +5530,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbOrdWithUnknownEncoding',
 			],
 			[
-				'array(\'sec\' => int, \'usec\' => int, \'minuteswest\' => int, \'dsttime\' => int)',
+				'array{sec: int, usec: int, minuteswest: int, dsttime: int}',
 				'$gettimeofdayArrayWithoutArg',
 			],
 			[
-				'array(\'sec\' => int, \'usec\' => int, \'minuteswest\' => int, \'dsttime\' => int)',
+				'array{sec: int, usec: int, minuteswest: int, dsttime: int}',
 				'$gettimeofdayArray',
 			],
 			[
@@ -5542,11 +5542,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$gettimeofdayFloat',
 			],
 			[
-				'array(\'sec\' => int, \'usec\' => int, \'minuteswest\' => int, \'dsttime\' => int)|float',
+				'array{sec: int, usec: int, minuteswest: int, dsttime: int}|float',
 				'$gettimeofdayDefault',
 			],
 			[
-				'(array(\'sec\' => int, \'usec\' => int, \'minuteswest\' => int, \'dsttime\' => int)|float)',
+				'(array{sec: int, usec: int, minuteswest: int, dsttime: int}|float)',
 				'$gettimeofdayBenevolent',
 			],
 			[
@@ -5554,7 +5554,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithoutDefinedParameters',
 			],
 			[
-				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				'array{\'a\', \'b\', \'c\', \'d\', \'e\', \'f\'}',
 				'$strSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
@@ -5562,11 +5562,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitStringWithoutDefinedSplitLength',
 			],
 			[
-				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				'array{\'a\', \'b\', \'c\', \'d\', \'e\', \'f\'}',
 				'$strSplitConstantStringWithOneSplitLength',
 			],
 			[
-				"array('abcdef')",
+				'array{\'abcdef\'}',
 				'$strSplitConstantStringWithGreaterSplitLengthThanStringLength',
 			],
 			[
@@ -5591,15 +5591,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$parseUrlWithoutParameters',
 			],
 			[
-				"array('scheme' => 'http', 'host' => 'abc.def')",
+				'array{scheme: \'http\', host: \'abc.def\'}',
 				'$parseUrlConstantUrlWithoutComponent1',
 			],
 			[
-				"array('scheme' => 'http', 'host' => 'def.abc')",
+				'array{scheme: \'http\', host: \'def.abc\'}',
 				'$parseUrlConstantUrlWithoutComponent2',
 			],
 			[
-				"array(?'scheme' => string, ?'host' => string, ?'port' => int, ?'user' => string, ?'pass' => string, ?'path' => string, ?'query' => string, ?'fragment' => string)|false",
+				'array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false',
 				'$parseUrlConstantUrlUnknownComponent',
 			],
 			[
@@ -5623,11 +5623,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$parseUrlStringUrlWithComponentPort',
 			],
 			[
-				"array(?'scheme' => string, ?'host' => string, ?'port' => int, ?'user' => string, ?'pass' => string, ?'path' => string, ?'query' => string, ?'fragment' => string)|false",
+				'array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false',
 				'$parseUrlStringUrlWithoutComponent',
 			],
 			[
-				"array('path' => 'abc.def')",
+				'array{path: \'abc.def\'}',
 				"parse_url('abc.def')",
 			],
 			[
@@ -5639,15 +5639,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"parse_url('http://abc.def', PHP_URL_SCHEME)",
 			],
 			[
-				'array(0 => int, 1 => int, 2 => int, 3 => int, 4 => int, 5 => int, 6 => int, 7 => int, 8 => int, 9 => int, 10 => int, 11 => int, 12 => int, \'dev\' => int, \'ino\' => int, \'mode\' => int, \'nlink\' => int, \'uid\' => int, \'gid\' => int, \'rdev\' => int, \'size\' => int, \'atime\' => int, \'mtime\' => int, \'ctime\' => int, \'blksize\' => int, \'blocks\' => int)|false',
+				'array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}|false',
 				'$stat',
 			],
 			[
-				'array(0 => int, 1 => int, 2 => int, 3 => int, 4 => int, 5 => int, 6 => int, 7 => int, 8 => int, 9 => int, 10 => int, 11 => int, 12 => int, \'dev\' => int, \'ino\' => int, \'mode\' => int, \'nlink\' => int, \'uid\' => int, \'gid\' => int, \'rdev\' => int, \'size\' => int, \'atime\' => int, \'mtime\' => int, \'ctime\' => int, \'blksize\' => int, \'blocks\' => int)|false',
+				'array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}|false',
 				'$lstat',
 			],
 			[
-				'array(0 => int, 1 => int, 2 => int, 3 => int, 4 => int, 5 => int, 6 => int, 7 => int, 8 => int, 9 => int, 10 => int, 11 => int, 12 => int, \'dev\' => int, \'ino\' => int, \'mode\' => int, \'nlink\' => int, \'uid\' => int, \'gid\' => int, \'rdev\' => int, \'size\' => int, \'atime\' => int, \'mtime\' => int, \'ctime\' => int, \'blksize\' => int, \'blocks\' => int)|false',
+				'array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}|false',
 				'$fstat',
 			],
 			[
@@ -5786,7 +5786,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array(\'device\' => int, \'inode\' => int, \'mode\' => int, \'nlink\' => int, \'uid\' => int, \'gid\' => int, \'device_type\' => int, \'size\' => int, \'blocksize\' => int, \'blocks\' => int, \'atime\' => int, \'mtime\' => int, \'ctime\' => int)|null',
+				'array{device: int, inode: int, mode: int, nlink: int, uid: int, gid: int, device_type: int, size: int, blocksize: int, blocks: int, atime: int, mtime: int, ctime: int}|null',
 				'$stat',
 			],
 		];
@@ -5816,7 +5816,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array(0 => int, 1 => int, 2 => int, 3 => int, 4 => int, 5 => int, 6 => int, 7 => int, 8 => int, 9 => int, 10 => int, 11 => int, 12 => int, \'dev\' => int, \'ino\' => int, \'mode\' => int, \'nlink\' => int, \'uid\' => int, \'gid\' => int, \'rdev\' => int, \'size\' => int, \'atime\' => int, \'mtime\' => int, \'ctime\' => int, \'blksize\' => int, \'blocks\' => int)|false',
+				'array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}|false',
 				'$ssh2SftpStat',
 			],
 		];
@@ -5843,19 +5843,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array(2, 3, 4, 5)',
+				'array{2, 3, 4, 5}',
 				'range(2, 5)',
 			],
 			[
-				'array(2, 4)',
+				'array{2, 4}',
 				'range(2, 5, 2)',
 			],
 			[
-				'array(2.0, 3.0, 4.0, 5.0)',
+				'array{2.0, 3.0, 4.0, 5.0}',
 				'range(2, 5, 1.0)',
 			],
 			[
-				'array(2.1, 3.1, 4.1)',
+				'array{2.1, 3.1, 4.1}',
 				'range(2.1, 5)',
 			],
 			[
@@ -5875,15 +5875,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range($integer, $mixed)',
 			],
 			[
-				'array(0 => 1, ?1 => 2)',
+				'array{0: 1, 1?: 2}',
 				'range(1, doFoo() ? 1 : 2)',
 			],
 			[
-				'array(0 => -1|1, ?1 => 0|2, ?2 => 1, ?3 => 2)',
+				'array{0: -1|1, 1?: 0|2, 2?: 1, 3?: 2}',
 				'range(doFoo() ? -1 : 1, doFoo() ? 1 : 2)',
 			],
 			[
-				'array(3, 2, 1, 0, -1)',
+				'array{3, 2, 1, 0, -1}',
 				'range(3, -1)',
 			],
 			[
@@ -7018,7 +7018,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'\ResolveStatic\Bar::create()',
 			],
 			[
-				'array(\'foo\' => ResolveStatic\Bar)',
+				'array{foo: ResolveStatic\\Bar}',
 				'$bar->returnConstantArray()',
 			],
 			[
@@ -7608,15 +7608,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherExpectedString',
 			],
 			[
-				'array(\'a\' => string, \'b\' => string)',
+				'array{a: string, b: string}',
 				'$expectedArray',
 			],
 			[
-				'array(\'a\' => string, \'b\' => string)|null',
+				'array{a: string, b: string}|null',
 				'$expectedArray2',
 			],
 			[
-				'array(\'a\' => string, \'b\' => string)|null',
+				'array{a: string, b: string}|null',
 				'$anotherExpectedArray',
 			],
 			[
@@ -7636,7 +7636,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherExpectedArrayOrString',
 			],
 			[
-				'array(\'a\' => string, \'b\' => string)|null',
+				'array{a: string, b: string}|null',
 				'preg_replace_callback_array($callbacks, $array)',
 			],
 			[
@@ -8193,7 +8193,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array(1, 2, 3)',
+				'array{1, 2, 3}',
 				'$arr',
 			],
 			[
@@ -8275,7 +8275,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array(\'i\' => int, \'j\' => int, \'k\' => int, \'key\' => DateTimeImmutable, \'l\' => 1, \'m\' => 5, ?\'n\' => \'str\')',
+				'array{i: int, j: int, k: int, key: DateTimeImmutable, l: 1, m: 5, n?: \'str\'}',
 				'$array',
 			],
 			[
@@ -8287,7 +8287,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$generalArray[\'key\']',
 			],
 			[
-				'array(0 => \'foo\', 1 => \'bar\', ?2 => \'baz\')',
+				'array{0: \'foo\', 1: \'bar\', 2?: \'baz\'}',
 				'$arrayAppendedInIf',
 			],
 			[
@@ -8680,15 +8680,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$array[\'b\']',
 			],
 			[
-				'array(\'a\' => 1|2|3, \'b\' => 2|3, ?\'c\' => 4)',
+				'array{a: 1|2|3, b: 2|3, c?: 4}',
 				'$array',
 			],
 			[
-				'array(\'a\' => 1|2|3, \'b\' => 2|3|null, ?\'c\' => 4)',
+				'array{a: 1|2|3, b: 2|3|null, c?: 4}',
 				'$arrayCopy',
 			],
 			[
-				'array(\'a\' => 1|2|3, ?\'c\' => 4)',
+				'array{a: 1|2|3, c?: 4}',
 				'$anotherArrayCopy',
 			],
 			[
@@ -8764,7 +8764,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'start'",
 			],
 			[
-				'array()',
+				'array{}',
 				'$this->property',
 				"'emptyArray'",
 			],
@@ -8774,7 +8774,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'emptyArray'",
 			],
 			[
-				'array(\'foo\' => 1)',
+				'array{foo: 1}',
 				'$this->property',
 				"'afterAssignment'",
 			],
@@ -9055,11 +9055,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_key_last($anotherLiteralArray)',
 			],
 			[
-				'array(int, int)',
+				'array{int, int}',
 				'$hrtime1',
 			],
 			[
-				'array(int, int)',
+				'array{int, int}',
 				'$hrtime2',
 			],
 			[
@@ -9067,7 +9067,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$hrtime3',
 			],
 			[
-				'array(int, int)|float|int',
+				'array{int, int}|float|int',
 				'$hrtime4',
 			],
 		];
@@ -9101,7 +9101,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithoutDefinedParameters',
 			],
 			[
-				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				'array{\'a\', \'b\', \'c\', \'d\', \'e\', \'f\'}',
 				'$mbStrSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
@@ -9109,11 +9109,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitStringWithoutDefinedSplitLength',
 			],
 			[
-				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				'array{\'a\', \'b\', \'c\', \'d\', \'e\', \'f\'}',
 				'$mbStrSplitConstantStringWithOneSplitLength',
 			],
 			[
-				"array('abcdef')",
+				'array{\'abcdef\'}',
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLength',
 			],
 			[
@@ -9133,7 +9133,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			[
-				"array('a', 'b', 'c', 'd', 'e', 'f')",
+				"array{'a', 'b', 'c', 'd', 'e', 'f'}",
 				'$mbStrSplitConstantStringWithOneSplitLengthAndValidEncoding',
 			],
 			[
@@ -9145,7 +9145,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithOneSplitLengthAndVariableEncoding',
 			],
 			[
-				"array('abcdef')",
+				"array{'abcdef'}",
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndValidEncoding',
 			],
 			[
@@ -9320,7 +9320,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				"array<array<int|string, array('hitCount' => int, 'loadCount' => int, 'removeCount' => int, 'saveCount' => int)>>",
+				'array<array<int|string, array{hitCount: int, loadCount: int, removeCount: int, saveCount: int}>>',
 				'$statistics',
 			],
 		];
@@ -9347,7 +9347,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array()|array(\'foo\' => array<array>)',
+				'array{}|array{foo: array<array>}',
 				'$data',
 			],
 		];
@@ -9374,15 +9374,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array(0 => string, 1 => ArrayShapesInPhpDoc\Foo, \'foo\' => ArrayShapesInPhpDoc\Bar, 2 => ArrayShapesInPhpDoc\Baz)',
+				'array{0: string, 1: ArrayShapesInPhpDoc\\Foo, foo: ArrayShapesInPhpDoc\\Bar, 2: ArrayShapesInPhpDoc\\Baz}',
 				'$one',
 			],
 			[
-				'array(0 => string, ?1 => ArrayShapesInPhpDoc\Foo, ?\'foo\' => ArrayShapesInPhpDoc\Bar)',
+				'array{0: string, 1?: ArrayShapesInPhpDoc\\Foo, foo?: ArrayShapesInPhpDoc\\Bar}',
 				'$two',
 			],
 			[
-				'array(?0 => string, ?1 => ArrayShapesInPhpDoc\Foo, ?\'foo\' => ArrayShapesInPhpDoc\Bar)',
+				'array{0?: string, 1?: ArrayShapesInPhpDoc\\Foo, foo?: ArrayShapesInPhpDoc\\Bar}',
 				'$three',
 			],
 		];
@@ -9510,7 +9510,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$x()',
 			],
 			[
-				'array(\'a\' => 1, \'b\' => 2)',
+				'array{a: 1, b: 2}',
 				'$y()',
 			],
 		];
@@ -9598,11 +9598,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayWithMaybeFoo[\'foo\'] ??= \'bar\'',
 			],
 			[
-				'array(\'foo\' => \'foo\')',
+				'array{foo: \'foo\'}',
 				'$arrayAfterAssignment',
 			],
 			[
-				'array(\'foo\' => \'foo\')',
+				'array{foo: \'foo\'}',
 				'$arrayWithFooAfterAssignment',
 			],
 			[
@@ -9648,7 +9648,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integersTwo',
 			],
 			[
-				'array(1, 2, 3, 4, 5, 6, 7)',
+				'array{1, 2, 3, 4, 5, 6, 7}',
 				'$integersThree',
 			],
 			[
@@ -9660,11 +9660,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integersFive',
 			],
 			[
-				'array(1, 2, 3, 4, 5, 6, 7)',
+				'array{1, 2, 3, 4, 5, 6, 7}',
 				'$integersSix',
 			],
 			[
-				'array(1, 2, 3, 4, 5, 6, 7)',
+				'array{1, 2, 3, 4, 5, 6, 7}',
 				'$integersSeven',
 			],
 		];

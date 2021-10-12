@@ -23,7 +23,7 @@ class PrintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/print.php'], [
 			[
-				'Parameter array() of print cannot be converted to string.',
+				'Parameter array{} of print cannot be converted to string.',
 				5,
 			],
 			[
@@ -35,7 +35,7 @@ class PrintRuleTest extends RuleTestCase
 				9,
 			],
 			[
-				'Parameter array() of print cannot be converted to string.',
+				'Parameter array{} of print cannot be converted to string.',
 				13,
 			],
 			[
@@ -47,7 +47,7 @@ class PrintRuleTest extends RuleTestCase
 				17,
 			],
 			[
-				'Parameter \'string\'|array(\'string\') of print cannot be converted to string.',
+				'Parameter \'string\'|array{\'string\'} of print cannot be converted to string.',
 				21,
 			],
 		]);

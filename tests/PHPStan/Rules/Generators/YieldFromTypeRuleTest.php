@@ -37,7 +37,7 @@ class YieldFromTypeRuleTest extends RuleTestCase
 				41,
 			],
 			[
-				'Generator expects value type array(DateTime, DateTime, stdClass, DateTimeImmutable), array(0 => DateTime, 1 => DateTime, 2 => stdClass, 4 => DateTimeImmutable) given.',
+				'Generator expects value type array{DateTime, DateTime, stdClass, DateTimeImmutable}, array{0: DateTime, 1: DateTime, 2: stdClass, 4: DateTimeImmutable} given.',
 				74,
 			],
 			[

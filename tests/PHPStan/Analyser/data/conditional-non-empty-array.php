@@ -22,7 +22,7 @@ class Foo
 			assertType('non-empty-array', $a);
 			assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 		} else {
-			assertType('array()', $a);
+			assertType('array{}', $a);
 			assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 		}
 	}

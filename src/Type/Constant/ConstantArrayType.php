@@ -728,7 +728,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					$exportValuesOnly = false;
 				}
 
-				$items[] = sprintf('%s%s => %s', $isOptional ? '?' : '', var_export($keyType->getValue(), true), $valueType->describe($level));
+				$keyDescription = $keyType->getValue();
+				if (is_string($keyDescription)) {
+					if (strpos($keyDescription, '"') !== false) {
+						$keyDescription = sprintf('\'%s\'', $keyDescription);
+					} elseif (strpos($keyDescription, '\'') !== false) {
+						$keyDescription = sprintf('"%s"', $keyDescription);
+					}
+				}
+
+				$items[] = sprintf('%s%s: %s', $keyDescription, $isOptional ? '?' : '', $valueType->describe($level));
 				$values[] = $valueType->describe($level);
 			}
 
@@ -740,7 +749,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 
 			return sprintf(
-				'array(%s%s)',
+				'array{%s%s}',
 				implode(', ', $exportValuesOnly ? $values : $items),
 				$append
 			);

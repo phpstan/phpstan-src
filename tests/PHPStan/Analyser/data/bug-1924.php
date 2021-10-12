@@ -18,7 +18,7 @@ class Bug1924
 			'a' => $this->getArrayOrNull(),
 			'b' => $this->getArrayOrNull(),
 		];
-		assertType('array(\'a\' => array|null, \'b\' => array|null)', $arr);
+		assertType('array{a: array|null, b: array|null}', $arr);
 
 		$cond = isset($arr['a']) && isset($arr['b']);
 		assertType('bool', $cond);

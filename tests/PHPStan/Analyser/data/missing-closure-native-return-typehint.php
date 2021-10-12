@@ -43,7 +43,7 @@ class Foo
 			}
 		})());
 
-		\PHPStan\Testing\assertType('array(\'foo\' => \'bar\')', (function () {
+		\PHPStan\Testing\assertType('array{foo: \'bar\'}', (function () {
 			$array = [
 				'foo' => 'bar',
 			];

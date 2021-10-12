@@ -23,7 +23,7 @@ class EchoRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/echo.php'], [
 			[
-				'Parameter #1 (array()) of echo cannot be converted to string.',
+				'Parameter #1 (array{}) of echo cannot be converted to string.',
 				7,
 			],
 			[
@@ -31,7 +31,7 @@ class EchoRuleTest extends RuleTestCase
 				9,
 			],
 			[
-				'Parameter #1 (array()) of echo cannot be converted to string.',
+				'Parameter #1 (array{}) of echo cannot be converted to string.',
 				11,
 			],
 			[
@@ -43,7 +43,7 @@ class EchoRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Parameter #1 (\'string\'|array(\'string\')) of echo cannot be converted to string.',
+				'Parameter #1 (\'string\'|array{\'string\'}) of echo cannot be converted to string.',
 				17,
 			],
 		]);

@@ -147,16 +147,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			TrinaryLogic::createNo(),
 		];
 
-		$intersectionTypeB = new IntersectionType([
-			new IntegerType(),
-		]);
-
-		yield [
-			$intersectionTypeB,
-			$intersectionTypeB,
-			TrinaryLogic::createYes(),
-		];
-
 		yield [
 			new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
@@ -333,16 +323,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			$intersectionTypeA,
 			new ArrayType(new MixedType(), new ObjectType('Item')),
 			TrinaryLogic::createNo(),
-		];
-
-		$intersectionTypeB = new IntersectionType([
-			new IntegerType(),
-		]);
-
-		yield [
-			$intersectionTypeB,
-			$intersectionTypeB,
-			TrinaryLogic::createYes(),
 		];
 
 		$intersectionTypeC = new IntersectionType([

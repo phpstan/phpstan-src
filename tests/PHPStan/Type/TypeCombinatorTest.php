@@ -1825,7 +1825,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new UnionType([
-						new IntersectionType([new ArrayType(new MixedType(), new MixedType())]),
+						new ArrayType(new MixedType(), new MixedType()),
 						IntegerRangeType::fromInterval(null, -1),
 						IntegerRangeType::fromInterval(1, null),
 					]),
@@ -1842,7 +1842,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new UnionType([
-						new IntersectionType([new ArrayType(new MixedType(), new MixedType())]),
+						new ArrayType(new MixedType(), new MixedType()),
 						new CallableType(),
 					]),
 					TemplateTypeFactory::create(

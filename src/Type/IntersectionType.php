@@ -33,6 +33,16 @@ class IntersectionType implements CompoundType
 	 */
 	public function __construct(array $types)
 	{
+		if (count($types) < 2) {
+			throw new \PHPStan\ShouldNotHappenException(sprintf(
+				'Cannot create %s with: %s',
+				self::class,
+				implode(', ', array_map(static function (Type $type): string {
+					return $type->describe(VerbosityLevel::value());
+				}, $types))
+			));
+		}
+
 		$this->types = UnionTypeHelper::sortTypes($types);
 	}
 

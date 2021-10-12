@@ -677,7 +677,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new AccessoryNumericStringType(),
 					])
 				),
-				'int|(string&numeric)',
+				'int|numeric-string',
 				'int|string',
 			],
 		];

@@ -2489,7 +2489,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new NonEmptyArrayType(),
 				],
 				IntersectionType::class,
-				'array&nonEmpty',
+				'non-empty-array',
 			],
 			[
 				[
@@ -2508,7 +2508,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new NonEmptyArrayType(),
 				],
 				IntersectionType::class,
-				'array&nonEmpty',
+				'non-empty-array',
 			],
 			[
 				[
@@ -3029,7 +3029,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					new AccessoryNumericStringType(),
 				],
 				IntersectionType::class,
-				'string&numeric',
+				'numeric-string',
 			],
 			[
 				[
@@ -3376,7 +3376,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				new ArrayType(new MixedType(), new MixedType()),
 				new ConstantArrayType([], []),
 				IntersectionType::class,
-				'array&nonEmpty',
+				'non-empty-array',
 			],
 			[
 				TypeCombinator::union(

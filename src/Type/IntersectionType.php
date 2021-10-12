@@ -149,45 +149,75 @@ class IntersectionType implements CompoundType
 				return implode('&', $typeNames);
 			},
 			function () use ($level): string {
-				$typeNames = [];
-				$accessoryTypes = [];
-				foreach ($this->types as $type) {
-					if ($type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType) {
-						$accessoryTypes[] = $type;
-					}
-					if ($type instanceof AccessoryType && !$type instanceof AccessoryNumericStringType && !$type instanceof NonEmptyArrayType && !$type instanceof AccessoryNonEmptyStringType) {
-						continue;
-					}
-					$typeNames[] = $type->describe($level);
-				}
-
-				if (count($accessoryTypes) > 0) {
-					return implode('&', array_map(static function (Type $type) use ($level): string {
-						return $type->describe($level);
-					}, $accessoryTypes));
-				}
-
-				return implode('&', $typeNames);
+				return $this->describeItself($level, true);
 			},
 			function () use ($level): string {
-				$typeNames = [];
-				$accessoryTypes = [];
-				foreach ($this->types as $type) {
-					if ($type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType) {
-						$accessoryTypes[] = $type;
-					}
-					$typeNames[] = $type->describe($level);
-				}
-
-				if (count($accessoryTypes) > 0) {
-					return implode('&', array_map(static function (Type $type) use ($level): string {
-						return $type->describe($level);
-					}, $accessoryTypes));
-				}
-
-				return implode('&', $typeNames);
+				return $this->describeItself($level, false);
 			}
 		);
+	}
+
+	private function describeItself(VerbosityLevel $level, bool $skipAccessoryTypes): string
+	{
+		$typesToDescribe = [];
+		$skipTypeNames = [];
+		foreach ($this->types as $type) {
+			if ($type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType || $type instanceof AccessoryNumericStringType) {
+				$typesToDescribe[] = $type;
+				$skipTypeNames[] = 'string';
+				continue;
+			}
+			if ($type instanceof NonEmptyArrayType) {
+				$typesToDescribe[] = $type;
+				$skipTypeNames[] = 'array';
+				continue;
+			}
+
+			if ($skipAccessoryTypes) {
+				continue;
+			}
+
+			if (!$type instanceof AccessoryType) {
+				continue;
+			}
+
+			$typesToDescribe[] = $type;
+		}
+
+		$describedTypes = [];
+		foreach ($this->types as $type) {
+			if ($type instanceof AccessoryType) {
+				continue;
+			}
+			$typeDescription = $type->describe($level);
+			if (
+				substr($typeDescription, 0, strlen('array<')) === 'array<'
+				&& in_array('array', $skipTypeNames, true)
+			) {
+				foreach ($typesToDescribe as $j => $typeToDescribe) {
+					if (!$typeToDescribe instanceof NonEmptyArrayType) {
+						continue;
+					}
+
+					unset($typesToDescribe[$j]);
+				}
+
+				$describedTypes[] = 'non-empty-array<' . substr($typeDescription, strlen('array<'));
+				continue;
+			}
+
+			if (in_array($typeDescription, $skipTypeNames, true)) {
+				continue;
+			}
+
+			$describedTypes[] = $type->describe($level);
+		}
+
+		foreach ($typesToDescribe as $typeToDescribe) {
+			$describedTypes[] = $typeToDescribe->describe($level);
+		}
+
+		return implode('&', $describedTypes);
 	}
 
 	public function canAccessProperties(): TrinaryLogic

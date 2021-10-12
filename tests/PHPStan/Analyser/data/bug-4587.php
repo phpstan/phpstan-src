@@ -27,11 +27,11 @@ class HelloWorld
 		$type = array_map(static function (array $result): array {
 			assertType('array(\'a\' => int)', $result);
 			$result['a'] = (string) $result['a'];
-			assertType('array(\'a\' => string&numeric)', $result);
+			assertType('array(\'a\' => numeric-string)', $result);
 
 			return $result;
 		}, $results);
 
-		assertType('array<int, array(\'a\' => string&numeric)>', $type);
+		assertType('array<int, array(\'a\' => numeric-string)>', $type);
 	}
 }

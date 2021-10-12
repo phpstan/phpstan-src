@@ -5,9 +5,15 @@ namespace PHPStan\PhpDoc;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -21,6 +27,12 @@ class TypeDescriptionTest extends PHPStanTestCase
 		yield ['array', new ArrayType(new MixedType(), new MixedType())];
 		yield ['literal-string', new IntersectionType([new StringType(), new AccessoryLiteralStringType()])];
 		yield ['non-empty-string', new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()])];
+		yield ['numeric-string', new IntersectionType([new StringType(), new AccessoryNumericStringType()])];
+		yield ['literal-string&non-empty-string', new IntersectionType([new StringType(), new AccessoryLiteralStringType(), new AccessoryNonEmptyStringType()])];
+		yield ['non-empty-array', new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType()])];
+		yield ['non-empty-array<int, string>', new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new NonEmptyArrayType()])];
+		yield ['class-string&literal-string', new IntersectionType([new ClassStringType(), new AccessoryLiteralStringType()])];
+		yield ['class-string<Foo>&literal-string', new IntersectionType([new GenericClassStringType(new ObjectType('Foo')), new AccessoryLiteralStringType()])];
 	}
 
 	/**

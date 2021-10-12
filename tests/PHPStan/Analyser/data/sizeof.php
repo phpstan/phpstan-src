@@ -32,7 +32,7 @@ class Sizeof
 	function doFoo3(array $arr): string
 	{
 		if (0 != count($arr)) {
-			assertType('array&nonEmpty', $arr);
+			assertType('non-empty-array', $arr);
 		}
 		return "";
 	}
@@ -40,7 +40,7 @@ class Sizeof
 	function doFoo4(array $arr): string
 	{
 		if (0 != sizeof($arr)) {
-			assertType('array&nonEmpty', $arr);
+			assertType('non-empty-array', $arr);
 		}
 		return "";
 	}
@@ -48,7 +48,7 @@ class Sizeof
 	function doFoo5(array $arr): void
 	{
 		if ([] != $arr) {
-			assertType('array&nonEmpty', $arr);
+			assertType('non-empty-array', $arr);
 		}
 		assertType('array', $arr);
 	}
@@ -56,7 +56,7 @@ class Sizeof
 	function doFoo6(array $arr): void
 	{
 		if ($arr != []) {
-			assertType('array&nonEmpty', $arr);
+			assertType('non-empty-array', $arr);
 		}
 		assertType('array', $arr);
 	}

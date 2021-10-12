@@ -483,11 +483,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				1589,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, 123 given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
 				1657,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, \'abc\' given.',
 				1658,
 			],
 			[
@@ -770,11 +770,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				1589,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, 123 given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
 				1657,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, \'abc\' given.',
 				1658,
 			],
 			[

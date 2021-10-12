@@ -12,7 +12,7 @@ class Foo
 	 * @phpstan-param non-empty-array<string|int> $idx
 	 */
 	function doFoo(array $idx): void {
-		assertType('array<int|string>&nonEmpty', $idx);
+		assertType('non-empty-array<int|string>', $idx);
 		assertNativeType('array', $idx);
 
 		assertType('array()', []);

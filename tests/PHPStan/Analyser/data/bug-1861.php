@@ -18,11 +18,11 @@ class Tree
 				assertType('array()', $this->children);
 				break;
 			case 1:
-				assertType('array<' . self::class . '>&nonEmpty', $this->children);
+				assertType('non-empty-array<' . self::class . '>', $this->children);
 				assertType(self::class, reset($this->children));
 				break;
 			default:
-				assertType('array<' . self::class . '>&nonEmpty', $this->children);
+				assertType('non-empty-array<' . self::class . '>', $this->children);
 				break;
 		}
 	}

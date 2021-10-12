@@ -180,22 +180,22 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects string&numeric, 'foo' given.",
+        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, 'foo' given.",
         "line": 707,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects string&numeric, string given.",
+        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, string given.",
         "line": 708,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects array&nonEmpty, array() given.",
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array, array() given.",
         "line": 733,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects array&nonEmpty, array given.",
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array, array given.",
         "line": 735,
         "ignorable": true
     },

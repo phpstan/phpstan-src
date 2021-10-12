@@ -13,7 +13,7 @@ class HelloWorld
 		foreach ([1] as $row) {
 			$lengths[] = self::getInt();
 		}
-		assertType('array<int, int>&nonEmpty', $lengths);
+		assertType('non-empty-array<int, int>', $lengths);
 	}
 
 	public static function getInt(): int

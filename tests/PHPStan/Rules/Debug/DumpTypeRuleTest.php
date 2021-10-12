@@ -20,7 +20,7 @@ class DumpTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/dump-type.php'], [
 			[
-				'Dumped type: array&nonEmpty',
+				'Dumped type: non-empty-array',
 				10,
 			],
 			[
@@ -34,7 +34,7 @@ class DumpTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/dump-type-ns.php'], [
 			[
-				'Dumped type: array&nonEmpty',
+				'Dumped type: non-empty-array',
 				10,
 			],
 		]);
@@ -44,11 +44,11 @@ class DumpTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/dump-type-use.php'], [
 			[
-				'Dumped type: array&nonEmpty',
+				'Dumped type: non-empty-array',
 				12,
 			],
 			[
-				'Dumped type: array&nonEmpty',
+				'Dumped type: non-empty-array',
 				13,
 			],
 		]);

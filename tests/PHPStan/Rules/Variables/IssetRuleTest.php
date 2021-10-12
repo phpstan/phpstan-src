@@ -229,7 +229,7 @@ class IssetRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-4671.php'], [[
-			'Offset string&numeric on array<string, string> in isset() does not exist.',
+			'Offset numeric-string on array<string, string> in isset() does not exist.',
 			13,
 		]]);
 	}

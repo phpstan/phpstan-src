@@ -11,7 +11,7 @@ class Foo
 	function thing(array $things) : void{
 		switch(count($things)){
 			case 1:
-				assertType('array<int, int>&nonEmpty', $things);
+				assertType('non-empty-array<int, int>', $things);
 				assertType('int', array_shift($things));
 		}
 	}

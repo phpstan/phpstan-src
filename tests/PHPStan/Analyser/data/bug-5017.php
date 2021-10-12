@@ -12,7 +12,7 @@ class Foo
 		$items = [0, 1, 2, 3, 4];
 
 		while ($items) {
-			assertType('array<0|1|2|3|4, 0|1|2|3|4>&nonEmpty', $items);
+			assertType('non-empty-array<0|1|2|3|4, 0|1|2|3|4>', $items);
 			$batch = array_splice($items, 0, 2);
 			assertType('array<0|1|2|3|4, 0|1|2|3|4>', $items);
 			assertType('array<0|1|2|3|4, 0|1|2|3|4>', $batch);
@@ -25,7 +25,7 @@ class Foo
 	public function doBar($items)
 	{
 		while ($items) {
-			assertType('array<int>&nonEmpty', $items);
+			assertType('non-empty-array<int>', $items);
 			$batch = array_splice($items, 0, 2);
 			assertType('array<int>', $items);
 			assertType('array<int>', $batch);

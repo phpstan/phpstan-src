@@ -147,7 +147,7 @@ function f($a, $b)
  */
 function testF($arrayOfInt, $callableOrNull)
 {
-	assertType('Closure(int): string&numeric', function (int $a): string {
+	assertType('Closure(int): numeric-string', function (int $a): string {
 		return (string)$a;
 	});
 	assertType('array<string>', f($arrayOfInt, function (int $a): string {
@@ -224,7 +224,7 @@ function testArrayMap(array $listOfIntegers)
 
 		return (string) $int;
 	}, $listOfIntegers);
-	assertType('array<string&numeric>', $strings);
+	assertType('array<numeric-string>', $strings);
 }
 
 /**

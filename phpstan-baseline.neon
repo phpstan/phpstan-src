@@ -260,6 +260,11 @@ parameters:
 			path: src/Testing/PHPStanTestCase.php
 
 		-
+			message: "#^Call to function in_array\\(\\) with arguments 'array', array\\<int, 'array'\\|'string'\\> and true will always evaluate to true\\.$#"
+			count: 1
+			path: src/Type/IntersectionType.php
+
+		-
 			message:
 				"""
 					#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:

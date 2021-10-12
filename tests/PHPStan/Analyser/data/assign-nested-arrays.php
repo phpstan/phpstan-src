@@ -14,7 +14,7 @@ class Foo
 		$array[$i]['bar'] = 1;
 		$array[$i]['baz'] = 2;
 
-		assertType('array<int, array(\'bar\' => 1, \'baz\' => 2)>&nonEmpty', $array);
+		assertType('non-empty-array<int, array(\'bar\' => 1, \'baz\' => 2)>', $array);
 	}
 
 	public function doBar(int $i, int $j)
@@ -27,7 +27,7 @@ class Foo
 		echo $array[$i][$j]['bar'];
 		echo $array[$i][$j]['baz'];
 
-		assertType('array<int, array<int, array(\'bar\' => 1, \'baz\' => 2)>&nonEmpty>&nonEmpty', $array);
+		assertType('non-empty-array<int, non-empty-array<int, array(\'bar\' => 1, \'baz\' => 2)>>', $array);
 	}
 
 }

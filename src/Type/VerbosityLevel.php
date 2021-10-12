@@ -69,11 +69,13 @@ class VerbosityLevel
 				$moreVerbose = true;
 				return $type;
 			}
-			if ($type instanceof AccessoryNumericStringType || $type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType) {
-				$moreVerbose = true;
-				return $type;
-			}
-			if ($type instanceof NonEmptyArrayType) {
+			if (
+				// synced with IntersectionType::describe()
+				$type instanceof AccessoryNonEmptyStringType
+				|| $type instanceof AccessoryLiteralStringType
+				|| $type instanceof AccessoryNumericStringType
+				|| $type instanceof NonEmptyArrayType
+			) {
 				$moreVerbose = true;
 				return $type;
 			}

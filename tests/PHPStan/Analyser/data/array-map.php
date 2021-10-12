@@ -30,7 +30,7 @@ function foo2(array $array): void {
 		$array
 	);
 
-	assertType('array<int, string>&nonEmpty', $mapped);
+	assertType('non-empty-array<int, string>', $mapped);
 }
 
 /**
@@ -58,5 +58,5 @@ function foo4(array $array): void {
 		$array
 	);
 
-	assertType('array<int, string>&nonEmpty', $mapped);
+	assertType('non-empty-array<int, string>', $mapped);
 }

@@ -2982,11 +2982,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'"$std bar"',
 			],
 			[
-				'array<\'foo\'|int|stdClass>&nonEmpty',
+				'non-empty-array<\'foo\'|int|stdClass>',
 				'$arrToPush',
 			],
 			[
-				'array<\'foo\'|int|stdClass>&nonEmpty',
+				'non-empty-array<\'foo\'|int|stdClass>',
 				'$arrToPush2',
 			],
 			[
@@ -2994,7 +2994,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrToUnshift',
 			],
 			[
-				'array<\'lorem\'|int|stdClass>&nonEmpty',
+				'non-empty-array<\'lorem\'|int|stdClass>',
 				'$arrToUnshift2',
 			],
 			[
@@ -3174,7 +3174,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$shiftedNonEmptyArray',
 			],
 			[
-				'array&nonEmpty',
+				'non-empty-array',
 				'$unshiftedArray',
 			],
 			[
@@ -3182,7 +3182,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$poppedNonEmptyArray',
 			],
 			[
-				'array&nonEmpty',
+				'non-empty-array',
 				'$pushedArray',
 			],
 			[
@@ -4453,7 +4453,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			[
 				__DIR__ . '/data/foreach/foreach-with-specified-key-type.php',
-				'array<string, float|int|string>&nonEmpty',
+				'non-empty-array<string, float|int|string>',
 				'$list',
 			],
 			[
@@ -4779,7 +4779,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$filledIntegersWithKeys',
 			],
 			[
-				'array<int, \'foo\'>&nonEmpty',
+				'non-empty-array<int, \'foo\'>',
 				'$filledNonEmptyArray',
 			],
 			[
@@ -4795,7 +4795,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$filledByMaybeNegativeRange',
 			],
 			[
-				'array<int, 1>&nonEmpty',
+				'non-empty-array<int, 1>',
 				'$filledByPositiveRange',
 			],
 			[
@@ -4823,7 +4823,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'array<int|(literal-string&non-empty-string), stdClass>&nonEmpty',
+				'non-empty-array<int|(literal-string&non-empty-string), stdClass>',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -4831,23 +4831,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
-				'array<int|string, int|stdClass>&nonEmpty',
+				'non-empty-array<int|string, int|stdClass>',
 				'array_merge($generalStringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'array<int|string, int|stdClass>&nonEmpty',
+				'non-empty-array<int|string, int|stdClass>',
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
-				'array<int|(literal-string&non-empty-string), \'foo\'|stdClass>&nonEmpty',
+				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
 				'array_merge($stringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'array<int|(literal-string&non-empty-string), \'foo\'|stdClass>&nonEmpty',
+				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
 			],
 			[
-				'array<int|(literal-string&non-empty-string), 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>&nonEmpty',
+				'non-empty-array<int|(literal-string&non-empty-string), 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[
@@ -4863,7 +4863,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_fill(5, 6, \'banana\')',
 			],
 			[
-				'array<int, \'apple\'>&nonEmpty',
+				'non-empty-array<int, \'apple\'>',
 				'array_fill(0, 101, \'apple\')',
 			],
 			[
@@ -4871,7 +4871,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_fill(-2, 4, \'pear\')',
 			],
 			[
-				'array<int, stdClass>&nonEmpty',
+				'non-empty-array<int, stdClass>',
 				'array_fill($integer, 2, new \stdClass())',
 			],
 			[
@@ -5550,7 +5550,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$gettimeofdayBenevolent',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? '(non-empty-array<int, string>)|false' : 'non-empty-array<int, string>',
 				'$strSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -5558,7 +5558,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				'array<int, string>&nonEmpty',
+				'non-empty-array<int, string>',
 				'$strSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -5574,15 +5574,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? '(non-empty-array<int, string>)|false' : 'non-empty-array<int, string>',
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'array<int, string>&nonEmpty',
+				'non-empty-array<int, string>',
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? '(non-empty-array<int, string>)|false' : 'non-empty-array<int, string>',
 				'$strSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			// parse_url
@@ -5887,7 +5887,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(3, -1)',
 			],
 			[
-				'array<int, int>&nonEmpty',
+				'non-empty-array<int, int>',
 				'range(0, 50)',
 			],
 		];
@@ -6141,7 +6141,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$unionBar',
 			],
 			[
-				'array&nonEmpty',
+				'non-empty-array',
 				'$mixedUnionIterableType',
 			],
 			[
@@ -7149,7 +7149,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'end'",
 			],
 			[
-				'array<int, 1|2|3>&nonEmpty',
+				'non-empty-array<int, 1|2|3>',
 				'$integers',
 				"'end'",
 			],
@@ -7164,7 +7164,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'begin'",
 			],
 			[
-				'array<string, 1|2|3>&nonEmpty',
+				'non-empty-array<string, 1|2|3>',
 				'$this->property',
 				"'end'",
 			],
@@ -7482,7 +7482,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<int, string>&nonEmpty',
+				'non-empty-array<int, string>',
 				'$sureArray',
 			],
 			[
@@ -7490,15 +7490,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$sureFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? '(non-empty-array<int, string>)|false' : 'non-empty-array<int, string>',
 				'$arrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? '(non-empty-array<int, string>)|false' : 'non-empty-array<int, string>',
 				'$anotherArrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '((array<int, string>&nonEmpty)|false)' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? '(non-empty-array<int, string>|false)' : 'non-empty-array<int, string>',
 				'$benevolentArrayOrFalse',
 			],
 		];
@@ -9097,7 +9097,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -9105,7 +9105,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				'array<int, string>&nonEmpty',
+				'non-empty-array<int, string>',
 				'$mbStrSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -9121,15 +9121,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'array<int, string>&nonEmpty',
+				'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			[
@@ -9141,7 +9141,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithOneSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithOneSplitLengthAndVariableEncoding',
 			],
 			[
@@ -9153,7 +9153,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndVariableEncoding',
 			],
 			[
@@ -9169,7 +9169,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndValidEncoding',
 			],
 			[
@@ -9177,11 +9177,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
 			],
 			[
-				'array<int, string>&nonEmpty',
+				'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndValidEncoding',
 			],
 			[
@@ -9189,11 +9189,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndValidEncoding',
 			],
 			[
@@ -9201,7 +9201,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array<int, string>&nonEmpty)|false' : 'array<int, string>&nonEmpty',
+				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndVariableEncoding',
 			],
 		];
@@ -9640,11 +9640,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<int, int>&nonEmpty',
+				'non-empty-array<int, int>',
 				'$integersOne',
 			],
 			[
-				'array<int, int>&nonEmpty',
+				'non-empty-array<int, int>',
 				'$integersTwo',
 			],
 			[
@@ -9652,11 +9652,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integersThree',
 			],
 			[
-				'array<int, int>&nonEmpty',
+				'non-empty-array<int, int>',
 				'$integersFour',
 			],
 			[
-				'array<int, int>&nonEmpty',
+				'non-empty-array<int, int>',
 				'$integersFive',
 			],
 			[

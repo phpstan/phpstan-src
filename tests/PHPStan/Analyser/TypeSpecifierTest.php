@@ -90,7 +90,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				$this->createFunctionCall('is_numeric'),
-				['$foo' => 'float|int|(string&numeric)'],
+				['$foo' => 'float|int|numeric-string'],
 				['$foo' => '~float|int'],
 			],
 			[
@@ -567,10 +567,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new Arg(new Variable('array')),
 				]),
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 			],
 			[
@@ -578,10 +578,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new Arg(new Variable('array')),
 				])),
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 			],
 			[
@@ -589,10 +589,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new Arg(new Variable('array')),
 				]),
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 			],
 			[
@@ -600,10 +600,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new Arg(new Variable('array')),
 				])),
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 			],
 			[

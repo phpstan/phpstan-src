@@ -11,7 +11,7 @@ parameters:
 			path: ../src/Type/Php/MbFunctionsReturnTypeExtension.php
 
 		-
-			message: "#^Strict comparison using \\=\\=\\= between array<int, string>&nonEmpty and false will always evaluate to false\\.$#"
+			message: "#^Strict comparison using \\=\\=\\= between non-empty-array<int, string> and false will always evaluate to false\\.$#"
 			count: 1
 			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php
 

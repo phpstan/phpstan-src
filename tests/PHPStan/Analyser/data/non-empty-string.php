@@ -103,7 +103,7 @@ class Foo
 	 */
 	public function doFoo4(string $s): void
 	{
-		assertType('array<int, string>&nonEmpty', explode($s, 'foo'));
+		assertType('non-empty-array<int, string>', explode($s, 'foo'));
 	}
 
 	/**
@@ -115,7 +115,7 @@ class Foo
 			return;
 		}
 
-		assertType('non-empty-string', $s);
+		assertType('non-empty-string&numeric-string', $s);
 	}
 
 	public function doEmpty(string $s): void
@@ -282,7 +282,7 @@ class GeneralizeConstantStringType
 		$a[$s] = 2;
 
 		// there might be non-empty-string that becomes a number instead
-		assertType('array<non-empty-string, int>&nonEmpty', $a);
+		assertType('non-empty-array<non-empty-string, int>', $a);
 	}
 
 	/**
@@ -292,7 +292,7 @@ class GeneralizeConstantStringType
 	public function doFoo2(array $a, string $s): void
 	{
 		$a[''] = 2;
-		assertType('array<string, int>&nonEmpty', $a);
+		assertType('non-empty-array<string, int>', $a);
 	}
 
 }

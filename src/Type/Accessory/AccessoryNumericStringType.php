@@ -84,7 +84,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function describe(\PHPStan\Type\VerbosityLevel $level): string
 	{
-		return 'numeric';
+		return 'numeric-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

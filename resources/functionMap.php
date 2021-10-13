@@ -2635,7 +2635,7 @@ return [
 'exif_read_data' => ['array|false', 'filename'=>'string|resource', 'sections_needed='=>'string', 'sub_arrays='=>'bool', 'read_thumbnail='=>'bool'],
 'exif_tagname' => ['string|false', 'index'=>'int'],
 'exif_thumbnail' => ['string|false', 'filename'=>'string', '&w_width='=>'int', '&w_height='=>'int', '&w_imagetype='=>'int'],
-'exit' => ['', 'status'=>'string|int'],
+'exit' => ['', 'status'=>'string|int<0,254>'],
 'exp' => ['float', 'number'=>'float'],
 'expect_expectl' => ['int', 'expect'=>'resource', 'cases'=>'array', 'match='=>'array'],
 'expect_popen' => ['resource|false', 'command'=>'string'],

@@ -118,6 +118,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
@@ -132,6 +133,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Throwable;
@@ -2065,17 +2067,15 @@ class NodeScopeResolver
 								if (count($directClassNames) === 1) {
 									$scopeClass = $directClassNames[0];
 									$thisType = new ObjectType($scopeClass);
-								} elseif (
-									$argValue instanceof Expr\ClassConstFetch
-									&& $argValue->name instanceof Node\Identifier
-									&& strtolower($argValue->name->name) === 'class'
-									&& $argValue->class instanceof Name
-								) {
-									$scopeClass = $scope->resolveName($argValue->class);
-									$thisType = new ObjectType($scopeClass);
 								} elseif ($argValueType instanceof ConstantStringType) {
 									$scopeClass = $argValueType->getValue();
 									$thisType = new ObjectType($scopeClass);
+								} elseif (
+									$argValueType instanceof GenericClassStringType
+									&& $argValueType->getGenericType() instanceof TypeWithClassName
+								) {
+									$scopeClass = $argValueType->getGenericType()->getClassName();
+									$thisType = $argValueType->getGenericType();
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $scopeClass);

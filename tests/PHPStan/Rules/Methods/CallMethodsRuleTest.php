@@ -873,7 +873,11 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 			[
 				'Call to an undefined method CallClosureBind\Foo::nonexistentMethod().',
-				39,
+				38,
+			],
+			[
+				'Call to an undefined method CallClosureBind\Foo::nonexistentMethod().',
+				44,
 			],
 		]);
 	}

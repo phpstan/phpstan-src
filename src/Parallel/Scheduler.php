@@ -11,6 +11,16 @@ use function min;
 class Scheduler
 {
 
+	/** @var positive-int */
+	private int $jobSize;
+
+	private int $maximumNumberOfProcesses;
+
+	private int $minimumNumberOfJobsPerProcess;
+
+	/**
+	 * @param positive-int $jobSize
+	 */
 	public function __construct(
 		private int $jobSize,
 		private int $maximumNumberOfProcesses,

@@ -946,7 +946,7 @@ return [
 'chown' => ['bool', 'filename'=>'string', 'user'=>'string|int'],
 'chr' => ['non-empty-string', 'ascii'=>'int'],
 'chroot' => ['bool', 'directory'=>'string'],
-'chunk_split' => ['string', 'str'=>'string', 'chunklen='=>'int', 'ending='=>'string'],
+'chunk_split' => ['string', 'str'=>'string', 'chunklen='=>'positive-int', 'ending='=>'string'],
 'class_alias' => ['bool', 'user_class_name'=>'string', 'alias_name'=>'string', 'autoload='=>'bool'],
 'class_exists' => ['bool', 'classname'=>'string', 'autoload='=>'bool'],
 'class_implements' => ['array<string,string>|false', 'what'=>'object|string', 'autoload='=>'bool'],

@@ -45,7 +45,7 @@ return [
 		'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'string|null', 'options='=>'array'],
 		'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
 		'preg_replace_callback_array' => ['string|array|null', 'pattern'=>'array<string,callable>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
-		'sapi_windows_set_ctrl_handler' => ['bool', 'callable'=>'callable', 'add='=>'bool'],
+		'sapi_windows_set_ctrl_handler' => ['bool', 'callable'=>'callable(int):void', 'add='=>'bool'],
 		'ReflectionProperty::getType' => ['?ReflectionType'],
 		'ReflectionProperty::hasType' => ['bool'],
 		'ReflectionProperty::isInitialized' => ['bool', 'object='=>'?object'],

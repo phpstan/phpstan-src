@@ -18,14 +18,15 @@ class DefineParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testFile(): void
 	{
 		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
+			$this->analyse([__DIR__ . '/data/call-to-define.php'], []);
+		} else {
+			$this->analyse([__DIR__ . '/data/call-to-define.php'], [
+				[
+					'Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported.',
+					3,
+				],
+			]);
 		}
-		$this->analyse([__DIR__ . '/data/call-to-define.php'], [
-			[
-				'Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported.',
-				3,
-			],
-		]);
 	}
 
 }

@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
@@ -30,7 +31,7 @@ class DefineParametersRule implements \PHPStan\Rules\Rule
 		if (!($node->name instanceof \PhpParser\Node\Name)) {
 			return [];
 		}
-		if ($this->phpVersion->getVersionId() < 80000) {
+		if ($this->phpVersion->supportsCaseInsensitiveConstantNames()) {
 			return [];
 		}
 		$name = strtolower((string) $node->name);
@@ -39,12 +40,14 @@ class DefineParametersRule implements \PHPStan\Rules\Rule
 		}
 		$args = $node->getArgs();
 		$argsCount = count($args);
-		// Expects 2, 1 arg is caught by CallToFunctionParametersRule
+		// Expects 2 or 3, 1 arg is caught by CallToFunctionParametersRule
 		if ($argsCount < 3) {
 			return [];
 		}
 		return [
-			'Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported.',
+			RuleErrorBuilder::message(
+				'Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported.'
+			)->line($node->getLine())->build(),
 		];
 	}
 

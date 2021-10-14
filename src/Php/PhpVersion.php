@@ -147,4 +147,9 @@ class PhpVersion
 		return $this->versionId >= 80100;
 	}
 
+	public function supportsCaseInsensitiveConstantNames(): bool
+	{
+		return $this->versionId < 80000;
+	}
+
 }

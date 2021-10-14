@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -60,6 +61,44 @@ class ReflectionProviderTest extends PHPStanTestCase
 			$expectedThrowType->describe(VerbosityLevel::precise()),
 			$throwType->describe(VerbosityLevel::precise())
 		);
+	}
+
+	public function dataFunctionDeprecated(): iterable
+	{
+		if (PHP_VERSION_ID < 80000) {
+			yield 'create_function' => [
+				'create_function',
+				PHP_VERSION_ID >= 70200,
+			];
+			yield 'each' => [
+				'each',
+				PHP_VERSION_ID >= 70200,
+			];
+		}
+
+		if (PHP_VERSION_ID < 90000) {
+			yield 'date_sunrise' => [
+				'date_sunrise',
+				PHP_VERSION_ID >= 80100,
+			];
+		}
+
+		yield 'strtolower' => [
+			'strtolower',
+			false,
+		];
+	}
+
+	/**
+	 * @dataProvider dataFunctionDeprecated
+	 * @param string $functionName
+	 * @param bool $isDeprecated
+	 */
+	public function testFunctionDeprecated(string $functionName, bool $isDeprecated): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$function = $reflectionProvider->getFunction(new Name($functionName), null);
+		$this->assertEquals(TrinaryLogic::createFromBoolean($isDeprecated), $function->isDeprecated());
 	}
 
 	public function dataMethodThrowType(): array

@@ -144,6 +144,7 @@ class NativeFunctionReflectionProvider
 		}
 
 		$throwType = null;
+		$isDeprecated = false;
 		try {
 			$reflectionFunction = $this->functionReflector->reflect($functionName);
 			if ($reflectionFunction->getFileName() !== null) {
@@ -154,6 +155,7 @@ class NativeFunctionReflectionProvider
 				if ($throwsTag !== null) {
 					$throwType = $throwsTag->getType();
 				}
+				$isDeprecated = $reflectionFunction->isDeprecated();
 			}
 		} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
 			// pass
@@ -165,7 +167,8 @@ class NativeFunctionReflectionProvider
 			$lowerCasedFunctionName,
 			$variants,
 			$throwType,
-			$hasSideEffects
+			$hasSideEffects,
+			$isDeprecated
 		);
 		self::$functionMap[$lowerCasedFunctionName] = $functionReflection;
 

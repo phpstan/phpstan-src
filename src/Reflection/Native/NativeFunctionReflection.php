@@ -18,6 +18,8 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 
 	private TrinaryLogic $hasSideEffects;
 
+	private bool $isDeprecated;
+
 	/**
 	 * @param string $name
 	 * @param \PHPStan\Reflection\ParametersAcceptor[] $variants
@@ -28,13 +30,15 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 		string $name,
 		array $variants,
 		?Type $throwType,
-		TrinaryLogic $hasSideEffects
+		TrinaryLogic $hasSideEffects,
+		bool $isDeprecated
 	)
 	{
 		$this->name = $name;
 		$this->variants = $variants;
 		$this->throwType = $throwType;
 		$this->hasSideEffects = $hasSideEffects;
+		$this->isDeprecated = $isDeprecated;
 	}
 
 	public function getName(): string
@@ -62,7 +66,7 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createFromBoolean($this->isDeprecated);
 	}
 
 	public function isInternal(): TrinaryLogic

@@ -55,7 +55,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				25,
 			],
 			[
-				'Parameter #1 $i of callable array{$this(CallCallables\\Foo}, \'doBar\') expects int, string given.',
+				'Parameter #1 $i of callable array{$this(CallCallables\\Foo), \'doBar\'} expects int, string given.',
 				33,
 			],
 			[

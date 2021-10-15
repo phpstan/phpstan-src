@@ -1060,7 +1060,7 @@ return [
 'componere\cast' => ['Type', 'arg1'=>'', 'object'=>''],
 'componere\cast_by_ref' => ['Type', 'arg1'=>'', 'object'=>''],
 'confirm_pdo_ibm_compiled' => [''],
-'connection_aborted' => ['int'],
+'connection_aborted' => ['0|1'],
 'connection_status' => ['int'],
 'connection_timeout' => ['int'],
 'constant' => ['mixed', 'const_name'=>'string'],

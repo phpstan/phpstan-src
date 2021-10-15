@@ -387,6 +387,7 @@ services:
 	-
 		class: PHPStan\Analyser\FileAnalyser
 		arguments:
+			parser: @defaultAnalysisParser
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
@@ -405,6 +406,7 @@ services:
 	-
 		class: PHPStan\Analyser\NodeScopeResolver
 		arguments:
+			parser: @defaultAnalysisParser
 			classReflector: @nodeScopeResolverClassReflector
 			polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
@@ -466,6 +468,8 @@ services:
 
 	-
 		class: PHPStan\Dependency\ExportedNodeFetcher
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Dependency\ExportedNodeResolver
@@ -575,12 +579,6 @@ services:
 			minimumNumberOfJobsPerProcess: %parallel.minimumNumberOfJobsPerProcess%
 
 	-
-		class: PHPStan\Parser\CachedParser
-		arguments:
-			originalParser: @pathRoutingParser
-			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
-
-	-
 		class: PHPStan\Parser\FunctionCallStatementFinder
 
 	-
@@ -588,6 +586,8 @@ services:
 
 	-
 		implement: PHPStan\Reflection\FunctionReflectionFactory
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension
@@ -600,6 +600,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
@@ -641,11 +643,14 @@ services:
 	-
 		class: PHPStan\Reflection\Php\PhpClassReflectionExtension
 		arguments:
+			parser: @defaultAnalysisParser
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	-
 		implement: PHPStan\Reflection\Php\PhpMethodReflectionFactory
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension
@@ -837,6 +842,8 @@ services:
 
 	-
 		class: PHPStan\Type\FileTypeMapper
+		arguments:
+			phpParser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Type\TypeAliasResolver
@@ -1511,7 +1518,8 @@ services:
 		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
-		autowired: no
+		autowired:
+			- PHPStan\Parser\Parser
 
 	currentPhpVersionSimpleParser:
 		class: PHPStan\Parser\CleaningParser
@@ -1525,10 +1533,17 @@ services:
 			parser: @currentPhpVersionPhpParser
 		autowired: no
 
+	defaultAnalysisParser:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @pathRoutingParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+		autowired: false
+
 	phpParserDecorator:
 		class: PHPStan\Parser\PhpParserDecorator
 		arguments:
-			wrappedParser: @PHPStan\Parser\Parser
+			wrappedParser: @defaultAnalysisParser
 		autowired:
 			- PhpParser\Parser
 
@@ -1550,6 +1565,7 @@ services:
 	stubPhpDocProvider:
 		class: PHPStan\PhpDoc\StubPhpDocProvider
 		arguments:
+			parser: @defaultAnalysisParser
 			stubFiles: %stubFiles%
 
 	# Reflection providers

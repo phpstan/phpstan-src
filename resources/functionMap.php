@@ -938,7 +938,7 @@ return [
 'chdb::get' => ['string', 'key'=>'string'],
 'chdb_create' => ['bool', 'pathname'=>'string', 'data'=>'array'],
 'chdir' => ['bool', 'directory'=>'string'],
-'checkdate' => ['bool', 'month'=>'int', 'day'=>'int', 'year'=>'int'],
+'checkdate' => ['bool', 'month'=>'int<1, 12>', 'day'=>'int<1, 31>', 'year'=>'int<1, 32767>'],
 'checkdnsrr' => ['bool', 'host'=>'string', 'type='=>'string'],
 'chgrp' => ['bool', 'filename'=>'string', 'group'=>'string|int'],
 'chmod' => ['bool', 'filename'=>'string', 'mode'=>'int'],

@@ -49,6 +49,11 @@ class Foo
 		assertType('non-empty-array', array_merge($array, []));
 		assertType('non-empty-array', array_merge($array, $array));
 
+		assertType('non-empty-array', array_replace($array));
+		assertType('non-empty-array', array_replace([], $array));
+		assertType('non-empty-array', array_replace($array, []));
+		assertType('non-empty-array', array_replace($array, $array));
+
 		assertType('non-empty-array<int|string, (int|string)>', array_flip($array));
 		assertType('non-empty-array<string, (int|string)>', array_flip($stringArray));
 	}

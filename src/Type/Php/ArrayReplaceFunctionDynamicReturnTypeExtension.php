@@ -16,6 +16,7 @@ use PHPStan\Type\UnionType;
 
 class ArrayReplaceFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
 {
+	private const MAX_SIZE_USE_CONSTANT_ARRAY = 100;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -28,22 +29,42 @@ class ArrayReplaceFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dy
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$keyTypes = [];
-		$valueTypes = [];
-		$nonEmpty = false;
+		$argumentTypes = [];
 		foreach ($functionCall->getArgs() as $arg) {
 			$argType = $scope->getType($arg->value);
 			if ($arg->unpack) {
-				$argType = $argType->getIterableValueType();
-				if ($argType instanceof UnionType) {
-					foreach ($argType->getTypes() as $innerType) {
-						$argType = $innerType;
+				$iterableValueType = $argType->getIterableValueType();
+				if ($iterableValueType instanceof UnionType) {
+					foreach ($iterableValueType->getTypes() as $innerType) {
+						$argumentTypes[] = $innerType;
 					}
+				} else {
+					$argumentTypes[] = $iterableValueType;
 				}
+				continue;
 			}
 
-			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
-			$valueTypes[] = $argType->getIterableValueType();
+			$argumentTypes[] = $argType;
+		}
+
+		$keyTypes = [];
+		$valueTypes = [];
+		$nonEmpty = false;
+		foreach ($argumentTypes as $argType) {
+
+			$arrays = TypeUtils::getConstantArrays($argType);
+			$arraysCount = count($arrays);
+			if ($arraysCount > 0 && $arraysCount <= self::MAX_SIZE_USE_CONSTANT_ARRAY) {
+				foreach ($arrays as $constantArray) {
+					foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+						$keyTypes[$keyType->getValue()] = $keyType;
+						$valueTypes[$keyType->getValue()] = $constantArray->getValueTypes()[$i];
+					}
+				}
+			} else {
+				$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
+				$valueTypes[] = $argType->getIterableValueType();
+			}
 
 			if (!$argType->isIterableAtLeastOnce()->yes()) {
 				continue;
@@ -53,8 +74,8 @@ class ArrayReplaceFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dy
 		}
 
 		$arrayType = new ArrayType(
-			TypeCombinator::union(...$keyTypes),
-			TypeCombinator::union(...$valueTypes)
+			TypeCombinator::union(...array_values($keyTypes)),
+			TypeCombinator::union(...array_values($valueTypes))
 		);
 
 		if ($nonEmpty) {

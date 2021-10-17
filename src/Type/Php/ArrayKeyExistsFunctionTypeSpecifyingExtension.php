@@ -14,6 +14,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 
 class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -46,6 +47,24 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			return new SpecifiedTypes();
 		}
 		$keyType = $scope->getType($node->getArgs()[0]->value);
+
+		if ($node->getArgs()[0]->value instanceof \PhpParser\Node\Expr\Variable) {
+
+			$arrayKeyType = $scope->getType($node->getArgs()[1]->value)->getIterableKeyType();
+
+			if (
+				$context->truthy()
+				&& count(TypeUtils::getConstantScalars($arrayKeyType)) > 0
+			) {
+				return $this->typeSpecifier->create(
+					$node->getArgs()[0]->value,
+					$arrayKeyType,
+					$context,
+					false,
+					$scope
+				);
+			}
+		}
 
 		if ($context->truthy()) {
 			$type = TypeCombinator::intersect(

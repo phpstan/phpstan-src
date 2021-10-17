@@ -132,7 +132,60 @@ class ImpossibleCheckTypeHelper
 							}
 						}
 					}
-				} elseif ($functionName === 'method_exists' && count($node->getArgs()) >= 2) {
+				} elseif (
+					$functionName === 'array_key_exists'
+					&& count($node->getArgs()) >= 2
+				) {
+					$arrayType = $scope->getType($node->getArgs()[1]->value);
+					if ($arrayType instanceof MixedType) {
+						return null;
+					}
+
+					if (!$arrayType->isArray()->yes()) {
+						return null;
+					}
+
+					if (!$arrayType instanceof ConstantArrayType || count($arrayType->getKeyTypes()) > 0) {
+						$keyType = $scope->getType($node->getArgs()[0]->value);
+
+						$arrayTypes = TypeUtils::getArrays($arrayType);
+						if (count($arrayTypes) === 1 && $arrayTypes[0]->getIterableKeyType() instanceof NeverType) {
+							return null;
+						}
+
+						$arrayType = $arrayType->getIterableKeyType();
+						$isKeySupertype = $keyType->isSuperTypeOf($arrayType);
+
+						if ($isKeySupertype->maybe() || $isKeySupertype->yes()) {
+							foreach ($arrayTypes as $arrayTypeInner) {
+								foreach (TypeUtils::getConstantScalars($arrayTypeInner->getIterableKeyType()) as $constantScalarType) {
+									if ($keyType->isSuperTypeOf($constantScalarType)->yes()) {
+										continue 2;
+									}
+								}
+
+								return null;
+							}
+						}
+
+						if ($isKeySupertype->yes()) {
+							$hasConstantKeyTypes = count(TypeUtils::getConstantScalars($keyType)) > 0;
+							$hasConstantArrayTypes = count(TypeUtils::getConstantScalars($arrayType)) > 0;
+							if (
+								(
+									!$hasConstantKeyTypes
+									&& !$hasConstantArrayTypes
+								)
+								|| $hasConstantKeyTypes !== $hasConstantArrayTypes
+							) {
+								return null;
+							}
+						}
+					}
+				} elseif (
+					$functionName === 'method_exists'
+					&& count($node->getArgs()) >= 2
+				) {
 					$objectType = $scope->getType($node->getArgs()[0]->value);
 					$methodType = $scope->getType($node->getArgs()[1]->value);
 

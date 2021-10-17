@@ -389,7 +389,15 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-1613.php'], []);
+		$this->analyse(
+			[__DIR__ . '/data/bug-1613.php'],
+			[
+				[
+					"Call to function array_key_exists() with string and array{123: 'test'} will always evaluate to false.",
+					12,
+				],
+			]
+		);
 	}
 
 	public function testBug2714(): void

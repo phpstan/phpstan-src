@@ -2,20 +2,17 @@
 
 namespace PHPStan\Type\Php;
 
-use NonEmptyString\LiteralString;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\UnionTypeHelper;
 
 class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -88,14 +85,15 @@ class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 		]);
 	}
 
-	private function buildNumericRangeType(int $min, int $max, bool $zeroPad): Type {
+	private function buildNumericRangeType(int $min, int $max, bool $zeroPad): Type
+	{
 		$types = [];
 
-		for($i = $min; $i <= $max; $i++) {
+		for ($i = $min; $i <= $max; $i++) {
 			$string = (string) $i;
 
 			if ($zeroPad) {
-				$string = sprintf("%02s", $string);
+				$string = sprintf('%02s', $string);
 			}
 
 			$types[] = new ConstantStringType($string);

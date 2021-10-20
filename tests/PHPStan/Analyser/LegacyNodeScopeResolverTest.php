@@ -1284,7 +1284,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$callable',
 			],
 			[
-				'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>' : 'array<int|string, string>',
 				'$variadicStrings',
 			],
 			[
@@ -4342,7 +4342,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$str',
 			],
 			[
-				'array<int, mixed>',
+				PHP_VERSION_ID < 80000 ? 'array<int, mixed>' : 'array<int|string, mixed>',
 				'$arr',
 			],
 			[

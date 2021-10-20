@@ -28,6 +28,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -132,6 +133,8 @@ class MutatingScope implements Scope
 
 	private \PHPStan\Analyser\ScopeContext $context;
 
+	private PhpVersion $phpVersion;
+
 	/** @var \PHPStan\Type\Type[] */
 	private array $resolvedTypes = [];
 
@@ -189,6 +192,7 @@ class MutatingScope implements Scope
 	 * @param Parser $parser
 	 * @param NodeScopeResolver $nodeScopeResolver
 	 * @param \PHPStan\Analyser\ScopeContext $context
+	 * @param PhpVersion $phpVersion
 	 * @param bool $declareStrictTypes
 	 * @param array<string, Type> $constantTypes
 	 * @param \PHPStan\Reflection\FunctionReflection|MethodReflection|null $function
@@ -218,6 +222,7 @@ class MutatingScope implements Scope
 		Parser $parser,
 		NodeScopeResolver $nodeScopeResolver,
 		ScopeContext $context,
+		PhpVersion $phpVersion,
 		bool $declareStrictTypes = false,
 		array $constantTypes = [],
 		$function = null,
@@ -251,6 +256,7 @@ class MutatingScope implements Scope
 		$this->parser = $parser;
 		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->context = $context;
+		$this->phpVersion = $phpVersion;
 		$this->declareStrictTypes = $declareStrictTypes;
 		$this->constantTypes = $constantTypes;
 		$this->function = $function;
@@ -2384,6 +2390,7 @@ class MutatingScope implements Scope
 			$this->parser,
 			$this->nodeScopeResolver,
 			$this->context,
+			$this->phpVersion,
 			$this->declareStrictTypes,
 			$this->constantTypes,
 			$this->function,
@@ -2954,7 +2961,11 @@ class MutatingScope implements Scope
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
 			if ($parameter->isVariadic()) {
-				$parameterType = new ArrayType(new IntegerType(), $parameterType);
+				if ($this->phpVersion->supportsNamedArguments()) {
+					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
+				} else {
+					$parameterType = new ArrayType(new IntegerType(), $parameterType);
+				}
 			}
 			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameterType);
 			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
@@ -3374,6 +3385,14 @@ class MutatingScope implements Scope
 			);
 		}
 		if ($isVariadic) {
+			if ($this->phpVersion->supportsNamedArguments()) {
+				return new ArrayType(new UnionType([new IntegerType(), new StringType()]), $this->getFunctionType(
+					$type,
+					false,
+					false
+				));
+			}
+
 			return new ArrayType(new IntegerType(), $this->getFunctionType(
 				$type,
 				false,

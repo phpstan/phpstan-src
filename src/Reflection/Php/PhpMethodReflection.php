@@ -268,7 +268,7 @@ class PhpMethodReflection implements MethodReflection
 			$filename = $this->declaringTrait->getFileName();
 		}
 
-		if (!$isNativelyVariadic && $filename !== null && file_exists($filename)) {
+		if (!$isNativelyVariadic && $filename !== null && is_file($filename)) {
 			$modifiedTime = filemtime($filename);
 			if ($modifiedTime === false) {
 				$modifiedTime = time();

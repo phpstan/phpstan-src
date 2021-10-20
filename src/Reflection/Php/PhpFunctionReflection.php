@@ -116,7 +116,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 			return null;
 		}
 
-		if (!file_exists($this->filename)) {
+		if (!is_file($this->filename)) {
 			return null;
 		}
 
@@ -164,7 +164,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		$isNativelyVariadic = $this->reflection->isVariadic();
 		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false) {
 			$fileName = $this->reflection->getFileName();
-			if (file_exists($fileName)) {
+			if (is_file($fileName)) {
 				$functionName = $this->reflection->getName();
 				$modifiedTime = filemtime($fileName);
 				if ($modifiedTime === false) {

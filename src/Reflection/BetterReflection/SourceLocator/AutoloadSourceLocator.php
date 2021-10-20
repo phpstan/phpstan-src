@@ -17,7 +17,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use ReflectionClass;
 use ReflectionFunction;
 use function array_key_exists;
-use function file_exists;
+use function is_file;
 use function restore_error_handler;
 
 /**
@@ -77,7 +77,7 @@ class AutoloadSourceLocator implements SourceLocator
 			if (!is_string($reflectionFileName)) {
 				return null;
 			}
-			if (!file_exists($reflectionFileName)) {
+			if (!is_file($reflectionFileName)) {
 				return null;
 			}
 
@@ -276,7 +276,7 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			if (!file_exists($filename)) {
+			if (!is_file($filename)) {
 				return null;
 			}
 

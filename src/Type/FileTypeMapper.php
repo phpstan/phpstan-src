@@ -22,7 +22,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function array_key_exists;
-use function file_exists;
+use function is_file;
 use function filemtime;
 
 class FileTypeMapper
@@ -465,7 +465,7 @@ class FileTypeMapper
 						if ($traitReflection->getFileName() === null) {
 							continue;
 						}
-						if (!file_exists($traitReflection->getFileName())) {
+						if (!is_file($traitReflection->getFileName())) {
 							continue;
 						}
 
@@ -674,7 +674,7 @@ class FileTypeMapper
 				$cachedFilename = $cachedFile['filename'];
 				$cachedTimestamp = $cachedFile['modifiedTime'];
 
-				if (!file_exists($cachedFilename)) {
+				if (!is_file($cachedFilename)) {
 					$useCached = false;
 					break;
 				}
@@ -757,7 +757,7 @@ class FileTypeMapper
 						if ($traitReflection->getFileName() === false) {
 							continue;
 						}
-						if (!file_exists($traitReflection->getFileName())) {
+						if (!is_file($traitReflection->getFileName())) {
 							continue;
 						}
 

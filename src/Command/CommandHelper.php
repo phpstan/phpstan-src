@@ -179,7 +179,7 @@ class CommandHelper
 					$includedFilePath = null;
 					if (isset($extensionConfig['relative_install_path'])) {
 						$includedFilePath = sprintf('%s/%s/%s', $generatedConfigDirectory, $extensionConfig['relative_install_path'], $includedFile);
-						if (!file_exists($includedFilePath) || !is_readable($includedFilePath)) {
+						if (!is_file($includedFilePath) || !is_readable($includedFilePath)) {
 							$includedFilePath = null;
 						}
 					}
@@ -187,7 +187,7 @@ class CommandHelper
 					if ($includedFilePath === null) {
 						$includedFilePath = sprintf('%s/%s', $extensionConfig['install_path'], $includedFile);
 					}
-					if (!file_exists($includedFilePath) || !is_readable($includedFilePath)) {
+					if (!is_file($includedFilePath) || !is_readable($includedFilePath)) {
 						$errorOutput->writeLineFormatted(sprintf('Config file %s does not exist or isn\'t readable', $includedFilePath));
 						throw new \PHPStan\Command\InceptionNotSuccessfulException();
 					}
@@ -243,7 +243,7 @@ class CommandHelper
 		}
 
 		$memoryLimitFile = $container->getParameter('memoryLimitFile');
-		if ($manageMemoryLimitFile && file_exists($memoryLimitFile)) {
+		if ($manageMemoryLimitFile && is_file($memoryLimitFile)) {
 			$memoryLimitFileContents = FileReader::read($memoryLimitFile);
 			$errorOutput->writeLineFormatted('PHPStan crashed in the previous run probably because of excessive memory consumption.');
 			$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
@@ -412,7 +412,7 @@ class CommandHelper
 
 		pcntl_async_signals(true);
 		pcntl_signal(SIGINT, static function () use ($output, $memoryLimitFile): void {
-			if ($memoryLimitFile !== null && file_exists($memoryLimitFile)) {
+			if ($memoryLimitFile !== null && is_file($memoryLimitFile)) {
 				@unlink($memoryLimitFile);
 			}
 			$output->writeLineFormatted('');

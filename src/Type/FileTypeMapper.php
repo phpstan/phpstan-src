@@ -22,8 +22,8 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function array_key_exists;
-use function is_file;
 use function filemtime;
+use function is_file;
 
 class FileTypeMapper
 {

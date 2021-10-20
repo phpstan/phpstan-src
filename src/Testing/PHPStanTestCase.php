@@ -18,6 +18,7 @@ use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
@@ -131,7 +132,8 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 			$this->getParser(),
 			self::getContainer()->getByType(NodeScopeResolver::class),
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			$container
+			$container,
+			$container->getByType(PhpVersion::class)
 		);
 	}
 

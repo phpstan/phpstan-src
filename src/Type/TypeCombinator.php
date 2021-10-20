@@ -704,6 +704,8 @@ class TypeCombinator
 
 	public static function intersect(Type ...$types): Type
 	{
+		$types = array_values($types);
+
 		$sortTypes = static function (Type $a, Type $b): int {
 			if (!$a instanceof UnionType || !$b instanceof UnionType) {
 				return 0;

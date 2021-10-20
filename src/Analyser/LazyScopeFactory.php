@@ -6,6 +6,7 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -89,6 +90,7 @@ class LazyScopeFactory implements ScopeFactory
 			$this->container->getService('currentPhpVersionSimpleParser'),
 			$this->container->getByType(NodeScopeResolver::class),
 			$context,
+			$this->container->getByType(PhpVersion::class),
 			$declareStrictTypes,
 			$constantTypes,
 			$function,

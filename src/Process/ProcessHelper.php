@@ -27,7 +27,7 @@ class ProcessHelper
 		$phpIni = php_ini_loaded_file();
 		$phpCmd = $phpIni === false ? escapeshellarg(PHP_BINARY) : sprintf('%s -c %s', escapeshellarg(PHP_BINARY), escapeshellarg($phpIni));
 		
-		if (array_key_exists("XDEBUG_HANDLER_SETTINGS", $_SERVER)) {
+		if (getenv("XDEBUG_HANDLER_SETTINGS") !== false) {
 			//indicates that phpstan was previously restarted by Composer\XdebugHandler\XdebugHandler
 			//that means we need to disable potential loading of ini files, like XdebugHandler does
 			$phpCmd.=" -n";

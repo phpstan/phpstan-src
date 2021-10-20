@@ -88,7 +88,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_open($path, $mode, $options, &$openedPath): bool
 	{
-		self::$autoloadLocatedFile = $path;
+		self::$autoloadLocatedFile = $openedPath;
 		$this->readFromFile = false;
 		$this->seekPosition = 0;
 

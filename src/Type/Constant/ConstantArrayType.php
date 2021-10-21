@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -385,6 +386,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		if (!$has->no()) {
 			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
 				$has = $has->and(TrinaryLogic::createMaybe());
+			}
+			if (
+				$classOrObject instanceof ConstantStringType &&
+				!$type->getMethod($method->getValue(), new OutOfClassScope())->isStatic()
+			) {
+				return null;
 			}
 
 			return ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);

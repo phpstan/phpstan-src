@@ -368,13 +368,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return ConstantArrayTypeAndMethod::createUnknown();
 		}
 
+		$isClassString = false;
 		if ($classOrObject instanceof ConstantStringType) {
+			$isClassString = true;
 			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 			if (!$reflectionProvider->hasClass($classOrObject->getValue())) {
 				return ConstantArrayTypeAndMethod::createUnknown();
 			}
 			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 		} elseif ($classOrObject instanceof GenericClassStringType) {
+			$isClassString = true;
 			$type = $classOrObject->getGenericType();
 		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
 			$type = $classOrObject;
@@ -388,7 +391,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 			if (
-				$classOrObject instanceof ConstantStringType &&
+				$isClassString &&
+				$has->yes() &&
 				!$type->getMethod($method->getValue(), new OutOfClassScope())->isStatic()
 			) {
 				return null;

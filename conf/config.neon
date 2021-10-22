@@ -1518,8 +1518,7 @@ services:
 		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
-		autowired:
-			- PHPStan\Parser\Parser
+		autowired: no
 
 	currentPhpVersionSimpleParser:
 		class: PHPStan\Parser\CleaningParser
@@ -1544,8 +1543,7 @@ services:
 		class: PHPStan\Parser\PhpParserDecorator
 		arguments:
 			wrappedParser: @defaultAnalysisParser
-		autowired:
-			- PhpParser\Parser
+		autowired: false
 
 	currentPhpVersionLexer:
 		class: PhpParser\Lexer

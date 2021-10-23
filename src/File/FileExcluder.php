@@ -12,6 +12,10 @@ class FileExcluder
 	 */
 	private array $literalAnalyseExcludes = [];
 
+	/**
+	 * fnmatch() patterns to use for excluding files and directories from analysing
+	 * @var string[]
+	 */
 	private array $fnmatchAnalyseExcludes = [];
 
 	private int $fnmatchFlags;

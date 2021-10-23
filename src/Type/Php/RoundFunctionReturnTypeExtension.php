@@ -22,7 +22,8 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 				'round',
 				'ceil',
 				'floor',
-			]
+			],
+			true
 		);
 	}
 

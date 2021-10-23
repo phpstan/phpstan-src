@@ -6,9 +6,9 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
 
 class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -36,7 +36,7 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
 		if ($firstArgType instanceof ArrayType) {
-			return new ConstantBooleanType( false );
+			return new ConstantBooleanType(false);
 		}
 
 		return $defaultReturnType;

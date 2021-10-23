@@ -43,12 +43,6 @@ class AnalyseApplication
 		InputInterface $input,
 	): AnalysisResult
 	{
-		$projectStubFiles = [];
-		if ($projectConfigArray !== null) {
-			$projectStubFiles = $projectConfigArray['parameters']['stubFiles'] ?? [];
-		}
-		$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
-
 		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
@@ -70,6 +64,22 @@ class AnalyseApplication
 				$errorOutput,
 				$input,
 			);
+
+			$projectStubFiles = [];
+			if ($projectConfigArray !== null) {
+				$projectStubFiles = $projectConfigArray['parameters']['stubFiles'] ?? [];
+			}
+			if ($resultCache->isFullAnalysis() && count($projectStubFiles) !== 0) {
+				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
+				$intermediateAnalyserResult = new AnalyserResult(
+					array_merge($intermediateAnalyserResult->getErrors(), $stubErrors),
+					$intermediateAnalyserResult->getInternalErrors(),
+					$intermediateAnalyserResult->getDependencies(),
+					$intermediateAnalyserResult->getExportedNodes(),
+					$intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
+				);
+			}
+
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
@@ -80,8 +90,6 @@ class AnalyseApplication
 			}
 			$errors = array_merge($errors, $internalErrors);
 		}
-
-		$errors = array_merge($stubErrors, $errors);
 
 		$fileSpecificErrors = [];
 		$notFileSpecificErrors = [];

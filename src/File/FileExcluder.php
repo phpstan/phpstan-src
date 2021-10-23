@@ -10,7 +10,11 @@ class FileExcluder
 	 *
 	 * @var string[]
 	 */
-	private array $analyseExcludes;
+	private array $literalAnalyseExcludes = [];
+
+	private array $fnmatchAnalyseExcludes = [];
+
+	private int $fnmatchFlags;
 
 	/**
 	 * @param FileHelper $fileHelper
@@ -23,7 +27,7 @@ class FileExcluder
 		array $stubFiles
 	)
 	{
-		$this->analyseExcludes = array_map(function (string $exclude) use ($fileHelper): string {
+		foreach (array_merge($analyseExcludes, $stubFiles) as $exclude) {
 			$len = strlen($exclude);
 			$trailingDirSeparator = ($len > 0 && in_array($exclude[$len - 1], ['\\', '/'], true));
 
@@ -34,28 +38,29 @@ class FileExcluder
 			}
 
 			if ($this->isFnmatchPattern($normalized)) {
-				return $normalized;
+				$this->fnmatchAnalyseExcludes[] = $normalized;
+			} else {
+				$this->literalAnalyseExcludes[] = $fileHelper->absolutizePath($normalized);
 			}
+		}
 
-			return $fileHelper->absolutizePath($normalized);
-		}, array_merge($analyseExcludes, $stubFiles));
+		$isWindows = DIRECTORY_SEPARATOR === '\\';
+		if ($isWindows) {
+			$this->fnmatchFlags = FNM_NOESCAPE | FNM_CASEFOLD;
+		} else {
+			$this->fnmatchFlags = 0;
+		}
 	}
 
 	public function isExcludedFromAnalysing(string $file): bool
 	{
-		foreach ($this->analyseExcludes as $exclude) {
+		foreach ($this->literalAnalyseExcludes as $exclude) {
 			if (strpos($file, $exclude) === 0) {
 				return true;
 			}
-
-			$isWindows = DIRECTORY_SEPARATOR === '\\';
-			if ($isWindows) {
-				$fnmatchFlags = FNM_NOESCAPE | FNM_CASEFOLD;
-			} else {
-				$fnmatchFlags = 0;
-			}
-
-			if ($this->isFnmatchPattern($exclude) && fnmatch($exclude, $file, $fnmatchFlags)) {
+		}
+		foreach ($this->fnmatchAnalyseExcludes as $exclude) {
+			if (fnmatch($exclude, $file, $this->fnmatchFlags)) {
 				return true;
 			}
 		}

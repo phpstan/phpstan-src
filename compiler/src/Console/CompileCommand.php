@@ -88,7 +88,7 @@ final class CompileCommand extends Command
 		}
 
 		$stubFinder = \Symfony\Component\Finder\Finder::create();
-		$stubsMapPath = $directory . '/PhpStormStubsMap.php';
+		$stubsMapPath = realpath($directory . '/PhpStormStubsMap.php');
 		foreach ($stubFinder->files()->name('*.php')->in($directory) as $stubFile) {
 			$path = $stubFile->getPathname();
 			if ($path === $stubsMapPath) {

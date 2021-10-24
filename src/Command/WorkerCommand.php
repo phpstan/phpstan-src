@@ -111,7 +111,9 @@ class WorkerCommand extends Command
 				$allowXdebug,
 				false,
 				false,
-				$singleReflectionFile
+				$singleReflectionFile,
+				null,
+				false
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;

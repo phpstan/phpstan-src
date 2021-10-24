@@ -17,6 +17,7 @@ assertType('*NEVER*', round(''));
 assertType('*NEVER*', round(array()));
 assertType('*NEVER*', round(array(123)));
 assertType('*NEVER*', round());
+assertType('(*NEVER*|float)', round($_GET['foo']));
 
 // Ceil
 assertType('float', ceil(123));
@@ -31,6 +32,7 @@ assertType('*NEVER*', ceil(''));
 assertType('*NEVER*', ceil(array()));
 assertType('*NEVER*', ceil(array(123)));
 assertType('*NEVER*', ceil());
+assertType('(*NEVER*|float)', ceil($_GET['foo']));
 
 // Floor
 assertType('float', floor(123));
@@ -45,3 +47,4 @@ assertType('*NEVER*', floor(''));
 assertType('*NEVER*', floor(array()));
 assertType('*NEVER*', floor(array(123)));
 assertType('*NEVER*', floor());
+assertType('(*NEVER*|float)', floor($_GET['foo']));

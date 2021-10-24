@@ -17,6 +17,7 @@ assertType('float', round(''));
 assertType('false', round(array()));
 assertType('false', round(array(123)));
 assertType('null', round());
+assertType('(float|false)', round($_GET['foo']));
 
 // Ceil
 assertType('float', ceil(123));
@@ -31,6 +32,7 @@ assertType('float', ceil(''));
 assertType('false', ceil(array()));
 assertType('false', ceil(array(123)));
 assertType('null', ceil());
+assertType('(float|false)', ceil($_GET['foo']));
 
 // Floor
 assertType('float', floor(123));
@@ -45,3 +47,4 @@ assertType('float', floor(''));
 assertType('false', floor(array()));
 assertType('false', floor(array(123)));
 assertType('null', floor());
+assertType('(float|false)', floor($_GET['foo']));

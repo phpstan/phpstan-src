@@ -146,10 +146,6 @@ class ContainerFactory
 		 * @var \SplFileInfo $containerFile
 		 */
 		foreach ($iterator as $fileName => $containerFile) {
-			$path = $containerFile->getRealPath();
-			if ($path === false) {
-				continue;
-			}
 			if(preg_match('/^Container_.+\.php(\.meta|\.lock)?$/', $fileName) !== 1){
 				continue;
 			}
@@ -160,6 +156,10 @@ class ContainerFactory
 				continue;
 			}
 
+			$path = $containerFile->getRealPath();
+			if ($path === false) {
+				continue;
+			}
 			@unlink($path);
 		}
 	}

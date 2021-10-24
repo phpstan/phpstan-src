@@ -138,13 +138,19 @@ class ContainerFactory
 		$configurator->setDebugMode(true);
 		$configurator->setTempDirectory($tempDirectory);
 
-		$finder = new Finder();
-		$finder->name('Container_*')->in($configurator->getContainerCacheDirectory());
+		$iterator = new \FilesystemIterator($configurator->getContainerCacheDirectory(), \FilesystemIterator::KEY_AS_FILENAME | \FilesystemIterator::SKIP_DOTS);
 		$twoDaysAgo = time() - 24 * 60 * 60 * 2;
 
-		foreach ($finder as $containerFile) {
+		/**
+		 * @var string $fileName
+		 * @var \SplFileInfo $containerFile
+		 */
+		foreach ($iterator as $fileName => $containerFile) {
 			$path = $containerFile->getRealPath();
 			if ($path === false) {
+				continue;
+			}
+			if(preg_match('/^Container_.+\.php(\.meta|\.lock)?$/', $fileName) !== 1){
 				continue;
 			}
 			if ($containerFile->getATime() > $twoDaysAgo) {

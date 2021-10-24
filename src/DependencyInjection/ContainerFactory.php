@@ -89,9 +89,7 @@ class ContainerFactory
 			'cliArgumentsVariablesRegistered' => ini_get('register_argc_argv') === '1',
 			'tmpDir' => $tempDirectory,
 			'additionalConfigFiles' => $additionalConfigFiles,
-			'analysedPaths' => $analysedPaths,
 			'composerAutoloaderProjectPaths' => $composerAutoloaderProjectPaths,
-			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 			'generateBaselineFile' => $generateBaselineFile,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
@@ -100,6 +98,8 @@ class ContainerFactory
 		$configurator->addDynamicParameters([
 			'singleReflectionFile' => $singleReflectionFile,
 			'singleReflectionInsteadOfFile' => $singleReflectionInsteadOfFile,
+			'analysedPaths' => $analysedPaths,
+			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {

@@ -15,6 +15,7 @@ assertType('float', round(false));
 assertType('float', round(new \stdClass));
 assertType('float', round(''));
 assertType('false', round(array()));
+assertType('false', round(array(123)));
 
 // Ceil
 assertType('float', ceil(123));
@@ -27,6 +28,7 @@ assertType('float', ceil(false));
 assertType('float', ceil(new \stdClass));
 assertType('float', ceil(''));
 assertType('false', ceil(array()));
+assertType('false', ceil(array(123)));
 
 // Floor
 assertType('float', floor(123));
@@ -39,3 +41,4 @@ assertType('float', floor(false));
 assertType('float', floor(new \stdClass));
 assertType('float', floor(''));
 assertType('false', floor(array()));
+assertType('false', floor(array(123)));

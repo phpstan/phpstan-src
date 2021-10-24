@@ -35,7 +35,7 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		}
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
-		if ($firstArgType instanceof ArrayType) {
+		if ($firstArgType->isArray()->yes()) {
 			return new ConstantBooleanType(false);
 		}
 

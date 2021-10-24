@@ -10,7 +10,6 @@ use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
-use Symfony\Component\Finder\Finder;
 use function sys_get_temp_dir;
 
 /** @api */
@@ -146,7 +145,7 @@ class ContainerFactory
 		 * @var \SplFileInfo $containerFile
 		 */
 		foreach ($iterator as $fileName => $containerFile) {
-			if(preg_match('/^Container_.+\.php(\.meta|\.lock)?$/', $fileName) !== 1){
+			if (preg_match('/^Container_.+\.php(\.meta|\.lock)?$/', $fileName) !== 1) {
 				continue;
 			}
 			if ($containerFile->getATime() > $twoDaysAgo) {

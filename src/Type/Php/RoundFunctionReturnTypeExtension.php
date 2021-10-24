@@ -5,10 +5,11 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -35,6 +36,13 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		}
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
+
+		if (PHP_VERSION_ID >= 80000) {
+			if (!($firstArgType instanceof IntegerType) && !($firstArgType instanceof FloatType)) {
+				return new NeverType(true);
+			}
+		}
+
 		if ($firstArgType->isArray()->yes()) {
 			return new ConstantBooleanType(false);
 		}

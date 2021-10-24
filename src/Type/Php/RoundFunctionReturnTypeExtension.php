@@ -10,6 +10,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -32,7 +33,11 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 	{
 		$defaultReturnType = new FloatType();
 		if (count($functionCall->getArgs()) < 1) {
-			return $defaultReturnType;
+			if (PHP_VERSION_ID >= 80000) {
+				return new NeverType(true);
+			} else {
+				return new NullType();
+			}
 		}
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);

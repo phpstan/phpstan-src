@@ -19,11 +19,11 @@ class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		return $scope->getType($functionCall->args[0]->value);
+		return $scope->getType($functionCall->getArgs()[0]->value);
 	}
 
 }

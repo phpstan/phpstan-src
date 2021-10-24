@@ -11,4 +11,9 @@ class ExtendsClassWithUnknownPropertyType extends ClassWithUnknownPropertyType
 		$this->foo->foo();
 	}
 
+	public function setFoo(self $foo): void
+	{
+		$this->foo = $foo;
+	}
+
 }

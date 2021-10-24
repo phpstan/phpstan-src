@@ -30,11 +30,11 @@ class IsIterableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		if (!isset($node->args[0])) {
+		if (!isset($node->getArgs()[0])) {
 			return new SpecifiedTypes();
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new IterableType(new MixedType(), new MixedType()), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new IterableType(new MixedType(), new MixedType()), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class ObjectTypeTest extends \PHPStan\Testing\TestCase
+class ObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsIterable(): array
@@ -65,6 +65,8 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 
 	public function dataIsSuperTypeOf(): array
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return [
 			0 => [
 				new ObjectType('UnknownClassA'),
@@ -139,48 +141,48 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 			],
 			13 => [
 				new ObjectType(\ArrayAccess::class),
-				new StaticType(\Traversable::class),
+				new StaticType($reflectionProvider->getClass(\Traversable::class)),
 				TrinaryLogic::createMaybe(),
 			],
 			14 => [
 				new ObjectType(\Countable::class),
-				new StaticType(\Countable::class),
+				new StaticType($reflectionProvider->getClass(\Countable::class)),
 				TrinaryLogic::createYes(),
 			],
 			15 => [
 				new ObjectType(\DateTimeImmutable::class),
-				new StaticType(\DateTimeImmutable::class),
+				new StaticType($reflectionProvider->getClass(\DateTimeImmutable::class)),
 				TrinaryLogic::createYes(),
 			],
 			16 => [
 				new ObjectType(\Traversable::class),
-				new StaticType(\ArrayObject::class),
+				new StaticType($reflectionProvider->getClass(\ArrayObject::class)),
 				TrinaryLogic::createYes(),
 			],
 			17 => [
 				new ObjectType(\Traversable::class),
-				new StaticType(\Iterator::class),
+				new StaticType($reflectionProvider->getClass(\Iterator::class)),
 				TrinaryLogic::createYes(),
 			],
 			18 => [
 				new ObjectType(\ArrayObject::class),
-				new StaticType(\Traversable::class),
+				new StaticType($reflectionProvider->getClass(\Traversable::class)),
 				TrinaryLogic::createMaybe(),
 			],
 			19 => [
 				new ObjectType(\Iterator::class),
-				new StaticType(\Traversable::class),
+				new StaticType($reflectionProvider->getClass(\Traversable::class)),
 				TrinaryLogic::createMaybe(),
 			],
 			20 => [
 				new ObjectType(\ArrayObject::class),
-				new StaticType(\DateTimeImmutable::class),
+				new StaticType($reflectionProvider->getClass(\DateTimeImmutable::class)),
 				TrinaryLogic::createNo(),
 			],
 			21 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new UnionType([
-					new StaticType(\DateTimeImmutable::class),
+					new StaticType($reflectionProvider->getClass(\DateTimeImmutable::class)),
 					new StringType(),
 				]),
 				TrinaryLogic::createMaybe(),
@@ -188,19 +190,19 @@ class ObjectTypeTest extends \PHPStan\Testing\TestCase
 			22 => [
 				new ObjectType(\DateTimeImmutable::class),
 				new UnionType([
-					new StaticType(\ArrayObject::class),
+					new StaticType($reflectionProvider->getClass(\ArrayObject::class)),
 					new StringType(),
 				]),
 				TrinaryLogic::createNo(),
 			],
 			23 => [
 				new ObjectType(\LogicException::class),
-				new StaticType(\InvalidArgumentException::class),
+				new StaticType($reflectionProvider->getClass(\InvalidArgumentException::class)),
 				TrinaryLogic::createYes(),
 			],
 			24 => [
 				new ObjectType(\InvalidArgumentException::class),
-				new StaticType(\LogicException::class),
+				new StaticType($reflectionProvider->getClass(\LogicException::class)),
 				TrinaryLogic::createMaybe(),
 			],
 			25 => [

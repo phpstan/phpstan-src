@@ -28,7 +28,7 @@ class SimpleXMLElementAsXMLMethodReturnTypeExtension implements DynamicMethodRet
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		if (count($methodCall->args) === 1) {
+		if (count($methodCall->getArgs()) === 1) {
 			return new BooleanType();
 		}
 		return new UnionType([new StringType(), new ConstantBooleanType(false)]);

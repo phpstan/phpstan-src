@@ -275,3 +275,12 @@ function genericNestedNonTemplateArgs()
 {
 
 }
+
+/**
+ * @template TFoo
+ * @param TFoo $i
+ */
+function genericWrongBound(int $i)
+{
+
+}

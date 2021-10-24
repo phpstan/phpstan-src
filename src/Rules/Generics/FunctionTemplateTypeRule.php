@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -52,14 +53,16 @@ class FunctionTemplateTypeRule implements Rule
 			$docComment->getText()
 		);
 
+		$escapedFunctionName = SprintfHelper::escapeFormatString($functionName);
+
 		return $this->templateTypeCheck->check(
 			$node,
 			TemplateTypeScope::createWithFunction($functionName),
 			$resolvedPhpDoc->getTemplateTags(),
-			sprintf('PHPDoc tag @template for function %s() cannot have existing class %%s as its name.', $functionName),
-			sprintf('PHPDoc tag @template for function %s() cannot have existing type alias %%s as its name.', $functionName),
-			sprintf('PHPDoc tag @template %%s for function %s() has invalid bound type %%s.', $functionName),
-			sprintf('PHPDoc tag @template %%s for function %s() with bound type %%s is not supported.', $functionName)
+			sprintf('PHPDoc tag @template for function %s() cannot have existing class %%s as its name.', $escapedFunctionName),
+			sprintf('PHPDoc tag @template for function %s() cannot have existing type alias %%s as its name.', $escapedFunctionName),
+			sprintf('PHPDoc tag @template %%s for function %s() has invalid bound type %%s.', $escapedFunctionName),
+			sprintf('PHPDoc tag @template %%s for function %s() with bound type %%s is not supported.', $escapedFunctionName)
 		);
 	}
 

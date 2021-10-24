@@ -12,13 +12,27 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new NullCoalesceRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
+		return new NullCoalesceRule(new IssetCheck(
+			new PropertyDescriptor(),
+			new PropertyReflectionFinder(),
+			true,
+			$this->treatPhpDocTypesAsCertain
+		));
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testCoalesceRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce.php'], [
 			[
 				'Property CoalesceRule\FooCoalesce::$string (string) on left side of ?? is not nullable.',
@@ -29,11 +43,11 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				41,
 			],
 			[
-				'Offset \'string\' on array(1, 2, 3) on left side of ?? does not exist.',
+				'Offset \'string\' on array{1, 2, 3} on left side of ?? does not exist.',
 				45,
 			],
 			[
-				'Offset \'string\' on array(array(1), array(2), array(3)) on left side of ?? does not exist.',
+				'Offset \'string\' on array{array{1}, array{2}, array{3}} on left side of ?? does not exist.',
 				49,
 			],
 			[
@@ -41,15 +55,15 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				51,
 			],
 			[
-				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ?? always exists and is not nullable.',
+				'Offset \'dim\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ?? always exists and is not nullable.',
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ?? does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ?? does not exist.',
 				73,
 			],
 			[
-				'Offset \'b\' on array() on left side of ?? does not exist.',
+				'Offset \'b\' on array{} on left side of ?? does not exist.',
 				79,
 			],
 			[
@@ -125,6 +139,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
 			[
 				'Property CoalesceAssignRule\FooCoalesce::$string (string) on left side of ??= is not nullable.',
@@ -135,11 +150,11 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				41,
 			],
 			[
-				'Offset \'string\' on array(1, 2, 3) on left side of ??= does not exist.',
+				'Offset \'string\' on array{1, 2, 3} on left side of ??= does not exist.',
 				45,
 			],
 			[
-				'Offset \'string\' on array(array(1), array(2), array(3)) on left side of ??= does not exist.',
+				'Offset \'string\' on array{array{1}, array{2}, array{3}} on left side of ??= does not exist.',
 				49,
 			],
 			[
@@ -147,15 +162,15 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				51,
 			],
 			[
-				'Offset \'dim\' on array(\'dim\' => 1, \'dim-null\' => 1|null, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ??= always exists and is not nullable.',
+				'Offset \'dim\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ??= always exists and is not nullable.',
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array(\'dim\' => 1, \'dim-null\' => 0|1, \'dim-null-offset\' => array(\'a\' => true|null), \'dim-empty\' => array()) on left side of ??= does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 0|1, dim-null-offset: array{a: true|null}, dim-empty: array{}} on left side of ??= does not exist.',
 				73,
 			],
 			[
-				'Offset \'b\' on array() on left side of ??= does not exist.',
+				'Offset \'b\' on array{} on left side of ??= does not exist.',
 				79,
 			],
 			[
@@ -191,11 +206,13 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-nullsafe.php'], []);
 	}
 
 	public function testVariableCertaintyInNullCoalesce(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null.php'], [
 			[
 				'Variable $scalar on left side of ?? always exists and is not nullable.',
@@ -218,6 +235,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[
 				'Variable $scalar on left side of ??= always exists and is not nullable.',
@@ -236,6 +254,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testNullCoalesceInGlobalScope(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-global-scope.php'], [
 			[
 				'Variable $bar on left side of ?? always exists and is not nullable.',

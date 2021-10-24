@@ -2,6 +2,8 @@
 
 namespace DynamicMethodReturnCompoundTypes;
 
+use function PHPStan\Testing\assertType;
+
 interface Collection extends \Traversable
 {
 
@@ -23,7 +25,8 @@ class Foo
 	 */
 	public function doFoo($collection, $collectionOrFoo)
 	{
-		die;
+		assertType('DynamicMethodReturnCompoundTypes\Collection', $collection->getSelf());
+		assertType('DynamicMethodReturnCompoundTypes\Collection|DynamicMethodReturnCompoundTypes\Foo', $collectionOrFoo->getSelf());
 	}
 
 }

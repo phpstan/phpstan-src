@@ -1,16 +1,16 @@
 [
     {
-        "message": "Method Levels\\ObjectTests\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\ObjectTests\\Foo::doFoo() has no return type specified.",
         "line": 11,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\ObjectTests\\Foo::doBar() has no return typehint specified.",
+        "message": "Method Levels\\ObjectTests\\Foo::doBar() has no return type specified.",
         "line": 23,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\ObjectTests\\Foo::doBaz() has no return typehint specified.",
+        "message": "Method Levels\\ObjectTests\\Foo::doBaz() has no return type specified.",
         "line": 35,
         "ignorable": true
     }

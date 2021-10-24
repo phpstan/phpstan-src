@@ -24,6 +24,7 @@ class TypeStringResolver
 		$this->typeNodeResolver = $typeNodeResolver;
 	}
 
+	/** @api */
 	public function resolve(string $typeString, ?NameScope $nameScope = null): Type
 	{
 		$tokens = new TokenIterator($this->typeLexer->tokenize($typeString));

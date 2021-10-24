@@ -29,7 +29,7 @@ use PhpParser\ParserFactory;
 					foreach ($attrGroup->attrs as $attr) {
 						if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
 							$this->functions[] = $node->namespacedName->toLowerString();
-							break;
+							break 2;
 						}
 					}
 				}
@@ -45,7 +45,7 @@ use PhpParser\ParserFactory;
 					foreach ($attrGroup->attrs as $attr) {
 						if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
 							$this->methods[] = sprintf('%s::%s', $className, $node->name->toString());
-							break;
+							break 2;
 						}
 					}
 				}
@@ -71,6 +71,14 @@ use PhpParser\ParserFactory;
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
 			if ($metadata[$functionName]['hasSideEffects']) {
+				if (in_array($functionName, [
+					'mt_rand',
+					'rand',
+					'random_bytes',
+					'random_int',
+				], true)) {
+					continue;
+				}
 				throw new \PHPStan\ShouldNotHappenException($functionName);
 			}
 		}

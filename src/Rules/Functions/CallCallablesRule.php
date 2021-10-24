@@ -2,7 +2,9 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
@@ -52,7 +54,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			$node->name,
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->name),
 			'Invoking callable on an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isCallable()->yes();
@@ -97,14 +99,14 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$node->args,
+			$node->getArgs(),
 			$parametersAcceptors
 		);
 
 		if ($type instanceof ClosureType) {
 			$callableDescription = 'closure';
 		} else {
-			$callableDescription = sprintf('callable %s', $type->describe(VerbosityLevel::value()));
+			$callableDescription = sprintf('callable %s', SprintfHelper::escapeFormatString($type->describe(VerbosityLevel::value())));
 		}
 
 		return array_merge(

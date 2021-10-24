@@ -8,7 +8,7 @@ use PHPStan\BetterReflection\Reflector\FunctionReflector;
 final class MemoizingFunctionReflector extends FunctionReflector
 {
 
-	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionFunction|\Throwable> */
+	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionFunction> */
 	private array $reflections = [];
 
 	/**
@@ -22,18 +22,10 @@ final class MemoizingFunctionReflector extends FunctionReflector
 	{
 		$lowerFunctionName = strtolower($functionName);
 		if (isset($this->reflections[$lowerFunctionName])) {
-			if ($this->reflections[$lowerFunctionName] instanceof \Throwable) {
-				throw $this->reflections[$lowerFunctionName];
-			}
 			return $this->reflections[$lowerFunctionName];
 		}
 
-		try {
-			return $this->reflections[$lowerFunctionName] = parent::reflect($functionName);
-		} catch (\Throwable $e) {
-			$this->reflections[$lowerFunctionName] = $e;
-			throw $e;
-		}
+		return $this->reflections[$lowerFunctionName] = parent::reflect($functionName);
 	}
 
 }

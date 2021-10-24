@@ -67,7 +67,7 @@ class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Call to function %s()%s will always evaluate to false.',
 					$functionName,
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
@@ -75,7 +75,7 @@ class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Call to function %s()%s will always evaluate to true.',
 					$functionName,
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
 				)))->build(),
 			];
 		}

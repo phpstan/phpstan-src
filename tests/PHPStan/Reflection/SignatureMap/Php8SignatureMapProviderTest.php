@@ -7,7 +7,7 @@ use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
@@ -26,7 +26,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 
-class Php8SignatureMapProviderTest extends TestCase
+class Php8SignatureMapProviderTest extends PHPStanTestCase
 {
 
 	public function dataFunctions(): array
@@ -220,7 +220,7 @@ class Php8SignatureMapProviderTest extends TestCase
 				'uasort',
 				[
 					[
-						'name' => 'cmp_function',
+						'name' => 'callback',
 						'optional' => false,
 						'type' => new CallableType([
 							new NativeParameterReflection('', false, new MixedType(true), PassedByReference::createNo(), false, null),

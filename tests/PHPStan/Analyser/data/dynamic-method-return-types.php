@@ -2,6 +2,8 @@
 
 namespace DynamicMethodReturnTypesNamespace;
 
+use function PHPStan\Testing\assertType;
+
 class EntityManager
 {
 
@@ -59,7 +61,30 @@ class Foo
 		$em = new EntityManager();
 		$iem = new InheritedEntityManager();
 		$container = new ComponentContainer();
-		die;
+
+		assertType('*ERROR*', $em->getByFoo($foo));
+		assertType('DynamicMethodReturnTypesNamespace\Entity', $em->getByPrimary());
+		assertType('DynamicMethodReturnTypesNamespace\Entity', $em->getByPrimary($foo));
+		assertType('DynamicMethodReturnTypesNamespace\Foo', $em->getByPrimary(\DynamicMethodReturnTypesNamespace\Foo::class));
+
+		assertType('*ERROR*', $iem->getByFoo($foo));
+		assertType('DynamicMethodReturnTypesNamespace\Entity', $iem->getByPrimary());
+		assertType('DynamicMethodReturnTypesNamespace\Entity', $iem->getByPrimary($foo));
+		assertType('DynamicMethodReturnTypesNamespace\Foo', $iem->getByPrimary(\DynamicMethodReturnTypesNamespace\Foo::class));
+
+		assertType('*ERROR*', EntityManager::getByFoo($foo));
+		assertType('DynamicMethodReturnTypesNamespace\EntityManager', \DynamicMethodReturnTypesNamespace\EntityManager::createManagerForEntity());
+		assertType('DynamicMethodReturnTypesNamespace\EntityManager', \DynamicMethodReturnTypesNamespace\EntityManager::createManagerForEntity($foo));
+		assertType('DynamicMethodReturnTypesNamespace\Foo', \DynamicMethodReturnTypesNamespace\EntityManager::createManagerForEntity(\DynamicMethodReturnTypesNamespace\Foo::class));
+
+		assertType('*ERROR*', InheritedEntityManager::getByFoo($foo));
+		assertType('DynamicMethodReturnTypesNamespace\EntityManager', \DynamicMethodReturnTypesNamespace\InheritedEntityManager::createManagerForEntity());
+		assertType('DynamicMethodReturnTypesNamespace\EntityManager', \DynamicMethodReturnTypesNamespace\InheritedEntityManager::createManagerForEntity($foo));
+		assertType('DynamicMethodReturnTypesNamespace\Foo', \DynamicMethodReturnTypesNamespace\InheritedEntityManager::createManagerForEntity(\DynamicMethodReturnTypesNamespace\Foo::class));
+
+		assertType('DynamicMethodReturnTypesNamespace\Foo', $container[\DynamicMethodReturnTypesNamespace\Foo::class]);
+		assertType('object', new \DynamicMethodReturnTypesNamespace\Foo());
+		assertType('object', new \DynamicMethodReturnTypesNamespace\FooWithoutConstructor());
 	}
 
 }

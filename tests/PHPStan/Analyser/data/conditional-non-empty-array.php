@@ -19,10 +19,10 @@ class Foo
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 
 		if (count($a) > 0) {
-			assertType('array&nonEmpty', $a);
+			assertType('non-empty-array', $a);
 			assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 		} else {
-			assertType('array()', $a);
+			assertType('array{}', $a);
 			assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 		}
 	}

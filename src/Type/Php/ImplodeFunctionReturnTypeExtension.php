@@ -28,7 +28,7 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		Scope $scope
 	): \PHPStan\Type\Type
 	{
-		$args = $functionCall->args;
+		$args = $functionCall->getArgs();
 		if (count($args) === 1) {
 			$argType = $scope->getType($args[0]->value);
 			if ($argType->isArray()->yes()) {

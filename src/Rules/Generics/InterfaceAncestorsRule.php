@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
@@ -23,19 +24,15 @@ class InterfaceAncestorsRule implements Rule
 
 	private CrossCheckInterfacesHelper $crossCheckInterfacesHelper;
 
-	private bool $crossCheckInterfaces;
-
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
 		GenericAncestorsCheck $genericAncestorsCheck,
-		CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
-		bool $crossCheckInterfaces = false
+		CrossCheckInterfacesHelper $crossCheckInterfacesHelper
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->genericAncestorsCheck = $genericAncestorsCheck;
 		$this->crossCheckInterfacesHelper = $crossCheckInterfacesHelper;
-		$this->crossCheckInterfaces = $crossCheckInterfaces;
 	}
 
 	public function getNodeType(): string
@@ -70,21 +67,23 @@ class InterfaceAncestorsRule implements Rule
 			$implementsTags = $resolvedPhpDoc->getImplementsTags();
 		}
 
+		$escapedInterfaceName = SprintfHelper::escapeFormatString($interfaceName);
+
 		$extendsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->extends,
 			array_map(static function (ExtendsTag $tag): Type {
 				return $tag->getType();
 			}, $extendsTags),
-			sprintf('Interface %s @extends tag contains incompatible type %%s.', $interfaceName),
-			sprintf('Interface %s has @extends tag, but does not extend any interface.', $interfaceName),
-			sprintf('The @extends tag of interface %s describes %%s but the interface extends: %%s', $interfaceName),
+			sprintf('Interface %s @extends tag contains incompatible type %%s.', $escapedInterfaceName),
+			sprintf('Interface %s has @extends tag, but does not extend any interface.', $escapedInterfaceName),
+			sprintf('The @extends tag of interface %s describes %%s but the interface extends: %%s', $escapedInterfaceName),
 			'PHPDoc tag @extends contains generic type %s but interface %s is not generic.',
 			'Generic type %s in PHPDoc tag @extends does not specify all template types of interface %s: %s',
 			'Generic type %s in PHPDoc tag @extends specifies %d template types, but interface %s supports only %d: %s',
 			'Type %s in generic type %s in PHPDoc tag @extends is not subtype of template type %s of interface %s.',
 			'PHPDoc tag @extends has invalid type %s.',
-			sprintf('Interface %s extends generic interface %%s but does not specify its types: %%s', $interfaceName),
-			sprintf('in extended type %%s of interface %s', $interfaceName)
+			sprintf('Interface %s extends generic interface %%s but does not specify its types: %%s', $escapedInterfaceName),
+			sprintf('in extended type %%s of interface %s', $escapedInterfaceName)
 		);
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
@@ -92,8 +91,8 @@ class InterfaceAncestorsRule implements Rule
 			array_map(static function (ImplementsTag $tag): Type {
 				return $tag->getType();
 			}, $implementsTags),
-			sprintf('Interface %s @implements tag contains incompatible type %%s.', $interfaceName),
-			sprintf('Interface %s has @implements tag, but can not implement any interface, must extend from it.', $interfaceName),
+			sprintf('Interface %s @implements tag contains incompatible type %%s.', $escapedInterfaceName),
+			sprintf('Interface %s has @implements tag, but can not implement any interface, must extend from it.', $escapedInterfaceName),
 			'',
 			'',
 			'',
@@ -104,10 +103,8 @@ class InterfaceAncestorsRule implements Rule
 			''
 		);
 
-		if ($this->crossCheckInterfaces) {
-			foreach ($this->crossCheckInterfacesHelper->check($classReflection) as $error) {
-				$implementsErrors[] = $error;
-			}
+		foreach ($this->crossCheckInterfacesHelper->check($classReflection) as $error) {
+			$implementsErrors[] = $error;
 		}
 
 		return array_merge($extendsErrors, $implementsErrors);

@@ -37,7 +37,6 @@ class CommandHelper
 		InputInterface $input,
 		OutputInterface $output,
 		array $paths,
-		?string $pathsFile,
 		?string $memoryLimit,
 		?string $autoloadFile,
 		array $composerAutoloaderProjectPaths,
@@ -119,30 +118,6 @@ class CommandHelper
 			return $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path));
 		}, $paths);
 
-		if (count($paths) === 0 && $pathsFile !== null) {
-			$pathsFile = $currentWorkingDirectoryFileHelper->absolutizePath($pathsFile);
-			if (!file_exists($pathsFile)) {
-				$errorOutput->writeLineFormatted(sprintf('Paths file %s does not exist.', $pathsFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
-
-			try {
-				$pathsString = FileReader::read($pathsFile);
-			} catch (\PHPStan\File\CouldNotReadFileException $e) {
-				$errorOutput->writeLineFormatted($e->getMessage());
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
-
-			$paths = array_values(array_filter(explode("\n", $pathsString), static function (string $path): bool {
-				return trim($path) !== '';
-			}));
-
-			$pathsFileFileHelper = new FileHelper(dirname($pathsFile));
-			$paths = array_map(static function (string $path) use ($pathsFileFileHelper): string {
-				return $pathsFileFileHelper->normalizePath($pathsFileFileHelper->absolutizePath($path));
-			}, $paths);
-		}
-
 		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);
 		$projectConfig = null;
@@ -222,7 +197,10 @@ class CommandHelper
 			}
 		}
 
-		if ($projectConfigFile !== null) {
+		if (
+			$projectConfigFile !== null
+			&& $currentWorkingDirectoryFileHelper->normalizePath($projectConfigFile, '/') !== $currentWorkingDirectoryFileHelper->normalizePath(__DIR__ . '/../../conf/config.stubFiles.neon', '/')
+		) {
 			$additionalConfigFiles[] = $projectConfigFile;
 		}
 
@@ -311,62 +289,6 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
-		$autoloadFiles = $container->getParameter('autoload_files');
-		if ($manageMemoryLimitFile && count($autoloadFiles) > 0) {
-			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_files</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('You might not need it anymore - try removing it from your');
-			$errorOutput->writeLineFormatted('configuration file and run PHPStan again.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('If the analysis fails, there are now two distinct options');
-			$errorOutput->writeLineFormatted('to choose from to replace <fg=cyan>autoload_files</>:');
-			$errorOutput->writeLineFormatted('1) <fg=cyan>scanFiles</> - PHPStan will scan those for classes and functions');
-			$errorOutput->writeLineFormatted('   definitions. PHPStan will not execute those files.');
-			$errorOutput->writeLineFormatted('2) <fg=cyan>bootstrapFiles</> - PHPStan will execute these files to prepare');
-			$errorOutput->writeLineFormatted('   the PHP runtime environment for the analysis.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('Read more about this in PHPStan\'s documentation:');
-			$errorOutput->writeLineFormatted('https://phpstan.org/user-guide/discovering-symbols');
-			$errorOutput->writeLineFormatted('');
-		}
-
-		$autoloadDirectories = $container->getParameter('autoload_directories');
-		if (count($autoloadDirectories) > 0 && $manageMemoryLimitFile) {
-			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>autoload_directories</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('You might not need it anymore - try removing it from your');
-			$errorOutput->writeLineFormatted('configuration file and run PHPStan again.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('If the analysis fails, replace it with <fg=cyan>scanDirectories</>.');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('Read more about this in PHPStan\'s documentation:');
-			$errorOutput->writeLineFormatted('https://phpstan.org/user-guide/discovering-symbols');
-			$errorOutput->writeLineFormatted('');
-		}
-
-		foreach ($autoloadFiles as $parameterAutoloadFile) {
-			if (!file_exists($parameterAutoloadFile)) {
-				$errorOutput->writeLineFormatted(sprintf('Autoload file %s does not exist.', $parameterAutoloadFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
-			}
-			(static function (string $file) use ($container): void {
-				require_once $file;
-			})($parameterAutoloadFile);
-		}
-
-		$bootstrapFile = $container->getParameter('bootstrap');
-		if ($bootstrapFile !== null) {
-			if ($manageMemoryLimitFile) {
-				$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>bootstrap</>. ⚠️️');
-				$errorOutput->writeLineFormatted('');
-				$errorOutput->writeLineFormatted('This option has been replaced with <fg=cyan>bootstrapFiles</> which accepts a list of files');
-				$errorOutput->writeLineFormatted('to execute before the analysis.');
-				$errorOutput->writeLineFormatted('');
-			}
-
-			self::executeBootstrapFile($bootstrapFile, $container, $errorOutput, $debugEnabled);
-		}
-
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
 			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
 		}
@@ -393,10 +315,7 @@ class CommandHelper
 
 		$alreadyAddedStubFiles = [];
 		foreach ($container->getParameter('stubFiles') as $stubFile) {
-			if (
-				$container->getParameter('featureToggles')['detectDuplicateStubFiles']
-				&& array_key_exists($stubFile, $alreadyAddedStubFiles)
-			) {
+			if (array_key_exists($stubFile, $alreadyAddedStubFiles)) {
 				$errorOutput->writeLineFormatted(sprintf('Stub file %s is added multiple times.', $stubFile));
 
 				throw new \PHPStan\Command\InceptionNotSuccessfulException();
@@ -422,6 +341,10 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('');
 
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		} elseif (count($excludesAnalyse) > 0) {
+			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>excludes_analyse</>. ⚠️️');
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted(sprintf('Parameter <fg=cyan>excludes_analyse</> has been deprecated so use <fg=cyan>excludePaths</> only from now on.'));
 		}
 
 		$tempResultCachePath = $container->getParameter('tempResultCachePath');
@@ -430,11 +353,16 @@ class CommandHelper
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getService('fileFinderAnalyse');
 
-		/** @var \Closure(): (array{string[], bool}) $filesCallback */
-		$filesCallback = static function () use ($fileFinder, $paths): array {
-			$fileFinderResult = $fileFinder->findFiles($paths);
+		$pathRoutingParser = $container->getService('pathRoutingParser');
 
-			return [$fileFinderResult->getFiles(), $fileFinderResult->isOnlyFiles()];
+		/** @var \Closure(): (array{string[], bool}) $filesCallback */
+		$filesCallback = static function () use ($fileFinder, $pathRoutingParser, $paths): array {
+			$fileFinderResult = $fileFinder->findFiles($paths);
+			$files = $fileFinderResult->getFiles();
+
+			$pathRoutingParser->setAnalysedFiles($files);
+
+			return [$files, $fileFinderResult->isOnlyFiles()];
 		};
 
 		return new InceptionResult(

@@ -24,11 +24,11 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$arrayType = $scope->getType($functionCall->args[0]->value);
+		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
 		$itemType = $arrayType->getIterableValueType();
 
 		if ($arrayType->isIterableAtLeastOnce()->no()) {

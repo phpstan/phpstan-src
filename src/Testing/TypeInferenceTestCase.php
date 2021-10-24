@@ -9,86 +9,56 @@ use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
-use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Broker\Broker;
-use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\PhpDoc\PhpDocNodeResolver;
-use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
-use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 
 /** @api */
-abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
+abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 {
-
-	/** @var bool */
-	protected $polluteCatchScopeWithTryAssignments = true;
 
 	/**
 	 * @param string $file
 	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
-	 * @param DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
-	 * @param DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
-	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
-	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 * @param string[] $dynamicConstantNames
 	 */
 	public function processFile(
 		string $file,
 		callable $callback,
-		array $dynamicMethodReturnTypeExtensions = [],
-		array $dynamicStaticMethodReturnTypeExtensions = [],
-		array $methodTypeSpecifyingExtensions = [],
-		array $staticMethodTypeSpecifyingExtensions = [],
 		array $dynamicConstantNames = []
 	): void
 	{
-		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
-
-		$printer = new \PhpParser\PrettyPrinter\Standard();
-		$broker = $this->createBroker($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions);
-		Broker::registerInstance($broker);
-		$typeSpecifier = $this->createTypeSpecifier($printer, $broker, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions);
-		$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-		$fileHelper = new FileHelper($currentWorkingDirectory);
-		$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($broker), $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, new SimpleRelativePathHelper($currentWorkingDirectory)));
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
+		$reflectionProvider = $this->createReflectionProvider();
+		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$resolver = new NodeScopeResolver(
-			$broker,
+			$reflectionProvider,
 			self::getReflectors()[0],
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
-			$fileTypeMapper,
+			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(StubPhpDocProvider::class),
 			self::getContainer()->getByType(PhpVersion::class),
-			$phpDocInheritanceResolver,
-			$fileHelper,
+			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
+			self::getContainer()->getByType(FileHelper::class),
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			true,
-			$this->polluteCatchScopeWithTryAssignments,
 			true,
 			$this->getEarlyTerminatingMethodCalls(),
 			$this->getEarlyTerminatingFunctionCalls(),
-			true,
 			true
 		);
 		$resolver->setAnalysedFiles(array_map(static function (string $file) use ($fileHelper): string {
 			return $fileHelper->normalizePath($file);
 		}, array_merge([$file], $this->getAdditionalAnalysedFiles())));
 
-		$scopeFactory = $this->createScopeFactory($broker, $typeSpecifier);
+		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier);
 		if (count($dynamicConstantNames) > 0) {
 			$reflectionProperty = new \ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
 			$reflectionProperty->setAccessible(true);
@@ -156,16 +126,16 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 
 			$functionName = $nameNode->toString();
 			if ($functionName === 'PHPStan\\Testing\\assertType') {
-				$expectedType = $scope->getType($node->args[0]->value);
-				$actualType = $scope->getType($node->args[1]->value);
+				$expectedType = $scope->getType($node->getArgs()[0]->value);
+				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
-				$expectedType = $nativeScope->getNativeType($node->args[0]->value);
-				$actualType = $nativeScope->getNativeType($node->args[1]->value);
+				$expectedType = $nativeScope->getNativeType($node->getArgs()[0]->value);
+				$actualType = $nativeScope->getNativeType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
-				$certainty = $node->args[0]->value;
+				$certainty = $node->getArgs()[0]->value;
 				if (!$certainty instanceof StaticCall) {
 					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
 				}
@@ -183,7 +153,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 
 				// @phpstan-ignore-next-line
 				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
-				$variable = $node->args[1]->value;
+				$variable = $node->getArgs()[1]->value;
 				if (!$variable instanceof Node\Expr\Variable) {
 					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
 				}
@@ -197,7 +167,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\TestCase
 				return;
 			}
 
-			if (count($node->args) !== 2) {
+			if (count($node->getArgs()) !== 2) {
 				$this->fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
 					$functionName,

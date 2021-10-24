@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -77,7 +79,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					];
 				}
 				$currentClassReflection = $scope->getClassReflection();
-				if ($currentClassReflection->getParentClass() === false) {
+				if ($currentClassReflection->getParentClass() === null) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Access to parent::%s but %s does not extend any class.',
@@ -117,8 +119,8 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				$class,
-				sprintf('Access to constant %s on an unknown class %%s.', $constantName),
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($class),
+				sprintf('Access to constant %s on an unknown class %%s.', SprintfHelper::escapeFormatString($constantName)),
 				static function (Type $type) use ($constantName): bool {
 					return $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes();
 				}

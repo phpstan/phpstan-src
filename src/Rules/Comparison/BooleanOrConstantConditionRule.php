@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Comparison;
 
-use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PHPStan\Node\BooleanOrNode;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -17,17 +16,13 @@ class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 
 	private bool $treatPhpDocTypesAsCertain;
 
-	private bool $checkLogicalOrConstantCondition;
-
 	public function __construct(
 		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain,
-		bool $checkLogicalOrConstantCondition
+		bool $treatPhpDocTypesAsCertain
 	)
 	{
 		$this->helper = $helper;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
-		$this->checkLogicalOrConstantCondition = $checkLogicalOrConstantCondition;
 	}
 
 	public function getNodeType(): string
@@ -41,10 +36,6 @@ class BooleanOrConstantConditionRule implements \PHPStan\Rules\Rule
 	): array
 	{
 		$originalNode = $node->getOriginalNode();
-		if (!$originalNode instanceof BooleanOr && !$this->checkLogicalOrConstantCondition) {
-			return [];
-		}
-
 		$messages = [];
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';

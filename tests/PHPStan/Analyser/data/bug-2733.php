@@ -18,7 +18,7 @@ class Foo
 			}
 		}
 
-		assertType('array(\'id\' => int, \'name\' => string)', $data);
+		assertType('array{id: int, name: string}', $data);
 	}
 
 }

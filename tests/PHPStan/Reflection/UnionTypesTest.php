@@ -4,11 +4,11 @@ namespace PHPStan\Reflection;
 
 use NativeUnionTypes\Foo;
 use PhpParser\Node\Name;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class UnionTypesTest extends TestCase
+class UnionTypesTest extends PHPStanTestCase
 {
 
 	public function testUnionTypes(): void
@@ -19,7 +19,7 @@ class UnionTypesTest extends TestCase
 
 		require_once __DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php';
 
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Foo::class);
 		$propertyType = $class->getNativeProperty('fooProp')->getNativeType();
 		$this->assertInstanceOf(UnionType::class, $propertyType);

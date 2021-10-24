@@ -11,15 +11,12 @@ use PHPStan\Type\FileTypeMapper;
 class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
-	/** @var bool */
-	private $deepInspectTypes = false;
-
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericObjectTypeCheck(),
-			new UnresolvableTypeHelper($this->deepInspectTypes)
+			new UnresolvableTypeHelper()
 		);
 	}
 
@@ -73,14 +70,17 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $a with type T is not subtype of native type int.',
 				154,
+				'Write @template T of int to fix this.',
 			],
 			[
 				'PHPDoc tag @param for parameter $b with type U of DateTimeInterface is not subtype of native type DateTime.',
 				154,
+				'Write @template U of DateTime to fix this.',
 			],
 			[
-				'PHPDoc tag @return with type DateTimeInterface is not subtype of native type DateTime.',
+				'PHPDoc tag @return with type U of DateTimeInterface is not subtype of native type DateTime.',
 				154,
+				'Write @template U of DateTime to fix this.',
 			],
 			[
 				'PHPDoc tag @param for parameter $foo contains generic type InvalidPhpDocDefinitions\Foo<stdClass> but class InvalidPhpDocDefinitions\Foo is not generic.',
@@ -146,6 +146,11 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'PHPDoc tag @return contains generic type InvalidPhpDocDefinitions\Foo<int, Exception> but class InvalidPhpDocDefinitions\Foo is not generic.',
 				274,
 			],
+			[
+				'PHPDoc tag @param for parameter $i with type TFoo is not subtype of native type int.',
+				283,
+				'Write @template TFoo of int to fix this.',
+			],
 		]);
 	}
 
@@ -156,7 +161,6 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testBug3753(): void
 	{
-		$this->deepInspectTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-3753.php'], [
 			[
 				'PHPDoc tag @param for parameter $foo contains unresolvable type.',
@@ -169,9 +173,18 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
-	public function testBug3753NotDeepInspectTypes(): void
+	public function testTemplateTypeNativeTypeObject(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-3753.php'], []);
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/template-type-native-type-object.php'], [
+			[
+				'PHPDoc tag @return with type T is not subtype of native type object.',
+				23,
+				'Write @template T of object to fix this.',
+			],
+		]);
 	}
 
 }

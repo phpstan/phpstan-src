@@ -13,7 +13,7 @@ class Foo
 	public function doFoo(array $settings): void
 	{
 		$settings['name'] ??= 'unknown';
-		assertType('array(\'name\' => string)', $settings);
+		assertType('array{name: string}', $settings);
 	}
 
 	/**
@@ -22,7 +22,7 @@ class Foo
 	public function doBar(array $settings): void
 	{
 		$settings['name'] = 'unknown';
-		assertType('array(\'name\' => \'unknown\')', $settings);
+		assertType('array{name: \'unknown\'}', $settings);
 	}
 
 }

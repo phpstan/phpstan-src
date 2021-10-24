@@ -14,9 +14,9 @@ class Foo
 	{
 		assertType('array<string>', $this->comments);
 		$this->comments = [];
-		assertType('array()', $this->comments);
+		assertType('array{}', $this->comments);
 		if ($this->comments === []) {
-			assertType('array()', $this->comments);
+			assertType('array{}', $this->comments);
 			return;
 		} else {
 			assertType('*NEVER*', $this->comments);
@@ -29,9 +29,9 @@ class Foo
 	{
 		assertType('array<string>', $this->comments);
 		$this->comments = [];
-		assertType('array()', $this->comments);
+		assertType('array{}', $this->comments);
 		if ([] === $this->comments) {
-			assertType('array()', $this->comments);
+			assertType('array{}', $this->comments);
 			return;
 		} else {
 			assertType('*NEVER*', $this->comments);

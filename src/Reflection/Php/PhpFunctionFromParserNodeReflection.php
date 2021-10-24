@@ -71,13 +71,13 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		array $phpDocParameterTypes,
 		array $realParameterDefaultValues,
 		Type $realReturnType,
-		?Type $phpDocReturnType = null,
-		?Type $throwType = null,
-		?string $deprecatedDescription = null,
-		bool $isDeprecated = false,
-		bool $isInternal = false,
-		bool $isFinal = false,
-		?bool $isPure = null
+		?Type $phpDocReturnType,
+		?Type $throwType,
+		?string $deprecatedDescription,
+		bool $isDeprecated,
+		bool $isInternal,
+		bool $isFinal,
+		?bool $isPure
 	)
 	{
 		$this->functionLike = $functionLike;

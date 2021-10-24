@@ -13,7 +13,7 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Type\FileTypeMapper;
 use WrongClassConstantFile\SecuredRouter;
 
-class ClassReflectionTest extends \PHPStan\Testing\TestCase
+class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataHasTraitUse(): array
@@ -124,9 +124,8 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 
 	public function testVariadicTraitMethod(): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
-		$fooReflection = $broker->getClass(\HasTraitUse\Foo::class);
+		$reflectionProvider = $this->createReflectionProvider();
+		$fooReflection = $reflectionProvider->getClass(\HasTraitUse\Foo::class);
 		$variadicMethod = $fooReflection->getNativeMethod('variadicMethod');
 		$methodVariant = ParametersAcceptorSelector::selectSingle($variadicMethod->getVariants());
 		$this->assertTrue($methodVariant->isVariadic());
@@ -134,14 +133,13 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 
 	public function testGenericInheritance(): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
-		$reflection = $broker->getClass(\GenericInheritance\C::class);
+		$reflectionProvider = $this->createReflectionProvider();
+		$reflection = $reflectionProvider->getClass(\GenericInheritance\C::class);
 
 		$this->assertSame('GenericInheritance\\C', $reflection->getDisplayName());
 
 		$parent = $reflection->getParentClass();
-		$this->assertNotFalse($parent);
+		$this->assertNotNull($parent);
 
 		$this->assertSame('GenericInheritance\\C0<DateTime>', $parent->getDisplayName());
 
@@ -156,9 +154,8 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 
 	public function testIsGenericWithStubPhpDoc(): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getService('broker');
-		$reflection = $broker->getClass(\ReflectionClass::class);
+		$reflectionProvider = $this->createReflectionProvider();
+		$reflection = $reflectionProvider->getClass(\ReflectionClass::class);
 		$this->assertTrue($reflection->isGeneric());
 	}
 
@@ -196,7 +193,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$reflection = $reflectionProvider->getClass($className);
 		$this->assertSame($expected, $reflection->isAttributeClass());
 		if (!$expected) {
@@ -207,7 +204,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 
 	public function testDeprecatedConstantFromAnotherFile(): void
 	{
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(SecuredRouter::class);
 		$constant = $reflection->getConstant('SECURED');
 		$this->assertTrue($constant->isDeprecated()->yes());
@@ -221,7 +218,7 @@ class ClassReflectionTest extends \PHPStan\Testing\TestCase
 	 */
 	public function testGetTraits(string $className, array $expected, bool $recursive): void
 	{
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 
 		$this->assertSame(
 			array_map(

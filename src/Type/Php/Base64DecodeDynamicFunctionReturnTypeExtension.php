@@ -26,11 +26,11 @@ class Base64DecodeDynamicFunctionReturnTypeExtension implements \PHPStan\Type\Dy
 		Scope $scope
 	): Type
 	{
-		if (!isset($functionCall->args[1])) {
+		if (!isset($functionCall->getArgs()[1])) {
 			return new StringType();
 		}
 
-		$argType = $scope->getType($functionCall->args[1]->value);
+		$argType = $scope->getType($functionCall->getArgs()[1]->value);
 
 		if ($argType instanceof MixedType) {
 			return new BenevolentUnionType([new StringType(), new ConstantBooleanType(false)]);

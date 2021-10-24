@@ -1,18 +1,16 @@
 includes:
 	- config.stubFiles.neon
 parameters:
-	bootstrap: null
 	bootstrapFiles:
 		- ../stubs/runtime/ReflectionUnionType.php
 		- ../stubs/runtime/ReflectionAttribute.php
 		- ../stubs/runtime/Attribute.php
 	excludes_analyse: []
 	excludePaths: null
-	autoload_directories: []
-	autoload_files: []
 	level: null
 	paths: []
 	exceptions:
+		implicitThrows: true
 		uncheckedExceptionRegexes: []
 		uncheckedExceptionClasses: []
 		checkedExceptionRegexes: []
@@ -23,36 +21,7 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
-		closureUsesThis: false
-		randomIntParameters: false
-		nullCoalesce: false
-		fileWhitespace: false
-		unusedClassElements: false
-		readComposerPhpVersion: false
-		dateTimeInstantiation: false
-		detectDuplicateStubFiles: false
-		checkLogicalAndConstantCondition: false
-		checkLogicalOrConstantCondition: false
-		checkMissingTemplateTypeInParameter: false
-		wrongVarUsage: false
-		arrayDestructuring: false
-		objectFromNewClass: false
-		skipCheckGenericClasses:
-			- RecursiveIterator
-			- RecursiveArrayIterator
-			- WeakMap
-		rememberFunctionValues: false
-		preciseExceptionTracking: false
-		apiRules: false
-		deepInspectTypes: false
-		neverInGenericReturnType: false
-		validateOverridingMethodsInStubs: false
-		crossCheckInterfaces: false
-		finalByPhpDocTag: false
-		classConstants: false
-		privateStaticCall: false
-		overridingProperty: false
-		throwsVoid: false
+		skipCheckGenericClasses: []
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -77,12 +46,10 @@ parameters:
 	checkPhpDocMissingReturn: false
 	checkPhpDocMethodSignatures: false
 	checkExtraArguments: false
-	checkMissingClosureNativeReturnTypehintRule: false
 	checkMissingTypehints: false
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
 	inferPrivatePropertyTypeFromConstructor: false
-	implicitThrows: true
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
 	reportMaybesInPropertyPhpDocTypes: false
@@ -99,7 +66,6 @@ parameters:
 	phpVersion: null
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
-	polluteCatchScopeWithTryAssignments: false
 	propertyAlwaysWrittenTags: []
 	propertyAlwaysReadTags: []
 	additionalConstructors: []
@@ -181,7 +147,6 @@ extensions:
 	parametersSchema: PHPStan\DependencyInjection\ParametersSchemaExtension
 
 parametersSchema:
-	bootstrap: schema(string(), nullable())
 	bootstrapFiles: listOf(string())
 	excludes_analyse: listOf(string())
 	excludePaths: schema(anyOf(
@@ -196,11 +161,10 @@ parametersSchema:
 			analyseAndScan: listOf(string())
 		])
 	), nullable())
-	autoload_directories: listOf(string())
-	autoload_files: listOf(string())
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	exceptions: structure([
+		implicitThrows: bool(),
 		uncheckedExceptionRegexes: listOf(string()),
 		uncheckedExceptionClasses: listOf(string()),
 		checkedExceptionRegexes: listOf(string()),
@@ -213,33 +177,7 @@ parametersSchema:
 	featureToggles: structure([
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
-		closureUsesThis: bool(),
-		randomIntParameters: bool(),
-		nullCoalesce: bool(),
-		fileWhitespace: bool(),
-		unusedClassElements: bool(),
-		readComposerPhpVersion: bool(),
-		dateTimeInstantiation: bool(),
-		detectDuplicateStubFiles: bool(),
-		checkLogicalAndConstantCondition: bool(),
-		checkLogicalOrConstantCondition: bool(),
-		checkMissingTemplateTypeInParameter: bool(),
-		wrongVarUsage: bool(),
-		arrayDestructuring: bool(),
-		objectFromNewClass: bool(),
 		skipCheckGenericClasses: listOf(string()),
-		rememberFunctionValues: bool(),
-		preciseExceptionTracking: bool(),
-		apiRules: bool(),
-		deepInspectTypes: bool(),
-		neverInGenericReturnType: bool(),
-		validateOverridingMethodsInStubs: bool(),
-		crossCheckInterfaces: bool(),
-		finalByPhpDocTag: bool(),
-		classConstants: bool(),
-		privateStaticCall: bool(),
-		overridingProperty: bool(),
-		throwsVoid: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -264,12 +202,11 @@ parametersSchema:
 	checkPhpDocMissingReturn: bool()
 	checkPhpDocMethodSignatures: bool()
 	checkExtraArguments: bool()
-	checkMissingClosureNativeReturnTypehintRule: bool()
 	checkMissingTypehints: bool()
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
-	implicitThrows: bool()
+
 	tipsOfTheDay: bool()
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()
@@ -285,7 +222,6 @@ parametersSchema:
 	phpVersion: schema(anyOf(schema(int(), min(70100), max(80099))), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
-	polluteCatchScopeWithTryAssignments: bool()
 	propertyAlwaysWrittenTags: listOf(string())
 	propertyAlwaysReadTags: listOf(string())
 	additionalConstructors: listOf(string())
@@ -404,7 +340,6 @@ services:
 		class: PHPStan\Php\PhpVersionFactoryFactory
 		arguments:
 			versionId: %phpVersion%
-			readComposerPhpVersion: %featureToggles.readComposerPhpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-
@@ -433,8 +368,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
-		arguments:
-			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolverExtensionRegistryProvider
@@ -445,9 +378,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\StubValidator
-		arguments:
-			validateOverridingMethods: %featureToggles.validateOverridingMethodsInStubs%
-			crossCheckInterfaces: %featureToggles.crossCheckInterfaces%
 
 	-
 		class: PHPStan\Analyser\Analyser
@@ -457,6 +387,7 @@ services:
 	-
 		class: PHPStan\Analyser\FileAnalyser
 		arguments:
+			parser: @defaultAnalysisParser
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
@@ -475,14 +406,13 @@ services:
 	-
 		class: PHPStan\Analyser\NodeScopeResolver
 		arguments:
+			parser: @defaultAnalysisParser
 			classReflector: @nodeScopeResolverClassReflector
 			polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
-			polluteCatchScopeWithTryAssignments: %polluteCatchScopeWithTryAssignments%
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
-			implicitThrows: %implicitThrows%
-			preciseExceptionTracking: %featureToggles.preciseExceptionTracking%
+			implicitThrows: %exceptions.implicitThrows%
 
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory
@@ -534,15 +464,12 @@ services:
 			parser: @regexParser
 
 	-
-		class: PHPStan\Dependency\DependencyDumper
-		arguments:
-			fileFinder: @fileFinderAnalyse
-
-	-
 		class: PHPStan\Dependency\DependencyResolver
 
 	-
 		class: PHPStan\Dependency\ExportedNodeFetcher
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Dependency\ExportedNodeResolver
@@ -652,12 +579,6 @@ services:
 			minimumNumberOfJobsPerProcess: %parallel.minimumNumberOfJobsPerProcess%
 
 	-
-		class: PHPStan\Parser\CachedParser
-		arguments:
-			originalParser: @pathRoutingParser
-			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
-
-	-
 		class: PHPStan\Parser\FunctionCallStatementFinder
 
 	-
@@ -665,6 +586,8 @@ services:
 
 	-
 		implement: PHPStan\Reflection\FunctionReflectionFactory
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension
@@ -677,6 +600,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
@@ -718,11 +643,14 @@ services:
 	-
 		class: PHPStan\Reflection\Php\PhpClassReflectionExtension
 		arguments:
+			parser: @defaultAnalysisParser
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	-
 		implement: PHPStan\Reflection\Php\PhpMethodReflectionFactory
+		arguments:
+			parser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension
@@ -829,14 +757,12 @@ services:
 			checkArgumentsPassedByReference: %checkArgumentsPassedByReference%
 			checkExtraArguments: %checkExtraArguments%
 			checkMissingTypehints: %checkMissingTypehints%
-			checkNeverInGenericReturnType: %featureToggles.neverInGenericReturnType%
 
 	-
 		class: PHPStan\Rules\FunctionDefinitionCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
-			checkMissingTemplateTypeInParameter: %featureToggles.checkMissingTemplateTypeInParameter%
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck
@@ -864,8 +790,8 @@ services:
 	-
 		class: PHPStan\Rules\IssetCheck
 		arguments:
-			bleedingEdge: %featureToggles.bleedingEdge%
 			checkAdvancedIsset: %checkAdvancedIsset%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
 		# checked as part of OverridingMethodRule
@@ -881,7 +807,6 @@ services:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			checkMissingCallableSignature: %checkMissingCallableSignature%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
-			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\Rules\NullsafeCheck
@@ -891,8 +816,6 @@ services:
 
 	-
 		class: PHPStan\Rules\PhpDoc\UnresolvableTypeHelper
-		arguments:
-			deepInspectTypes: %featureToggles.deepInspectTypes%
 
 	-
 		class: PHPStan\Rules\Properties\LazyReadWritePropertiesExtensionProvider
@@ -919,6 +842,8 @@ services:
 
 	-
 		class: PHPStan\Type\FileTypeMapper
+		arguments:
+			phpParser: @defaultAnalysisParser
 
 	-
 		class: PHPStan\Type\TypeAliasResolver
@@ -1027,6 +952,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\ArraySliceFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ArraySpliceFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
@@ -1456,6 +1386,7 @@ services:
 		class: PHPStan\Type\Php\TypeSpecifyingFunctionsDynamicReturnTypeExtension
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			universalObjectCratesClasses: %universalObjectCratesClasses%
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
@@ -1590,17 +1521,29 @@ services:
 		autowired: no
 
 	currentPhpVersionSimpleParser:
+		class: PHPStan\Parser\CleaningParser
+		arguments:
+			wrappedParser: @currentPhpVersionSimpleDirectParser
+		autowired: no
+
+	currentPhpVersionSimpleDirectParser:
 		class: PHPStan\Parser\SimpleParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
 		autowired: no
 
+	defaultAnalysisParser:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @pathRoutingParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+		autowired: false
+
 	phpParserDecorator:
 		class: PHPStan\Parser\PhpParserDecorator
 		arguments:
-			wrappedParser: @PHPStan\Parser\Parser
-		autowired:
-			- PhpParser\Parser
+			wrappedParser: @defaultAnalysisParser
+		autowired: false
 
 	currentPhpVersionLexer:
 		class: PhpParser\Lexer
@@ -1620,6 +1563,7 @@ services:
 	stubPhpDocProvider:
 		class: PHPStan\PhpDoc\StubPhpDocProvider
 		arguments:
+			parser: @defaultAnalysisParser
 			stubFiles: %stubFiles%
 
 	# Reflection providers
@@ -1698,8 +1642,6 @@ services:
 		arguments:
 			parser: @phpParserDecorator
 			php8Parser: @php8PhpParser
-			autoloadDirectories: %autoload_directories%
-			autoloadFiles: %autoload_files%
 			scanFiles: %scanFiles%
 			scanDirectories: %scanDirectories%
 			analysedPaths: %analysedPaths%
@@ -1752,11 +1694,6 @@ services:
 
 	errorFormatter.raw:
 		class: PHPStan\Command\ErrorFormatter\RawErrorFormatter
-
-	errorFormatter.baselineNeon:
-		class: PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter
-		arguments:
-			relativePathHelper: @simpleRelativePathHelper
 
 	errorFormatter.table:
 		class: PHPStan\Command\ErrorFormatter\TableErrorFormatter

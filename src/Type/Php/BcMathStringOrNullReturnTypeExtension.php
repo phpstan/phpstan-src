@@ -41,18 +41,18 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 
 		$defaultReturnType = new UnionType([$stringAndNumericStringType, new NullType()]);
 
-		if (isset($functionCall->args[1]) === false) {
+		if (isset($functionCall->getArgs()[1]) === false) {
 			return $stringAndNumericStringType;
 		}
 
-		$secondArgument = $scope->getType($functionCall->args[1]->value);
+		$secondArgument = $scope->getType($functionCall->getArgs()[1]->value);
 		$secondArgumentIsNumeric = ($secondArgument instanceof ConstantScalarType && is_numeric($secondArgument->getValue())) || $secondArgument instanceof IntegerType;
 
 		if ($secondArgument instanceof ConstantScalarType && ($this->isZero($secondArgument->getValue()) || !$secondArgumentIsNumeric)) {
 			return new NullType();
 		}
 
-		if (isset($functionCall->args[2]) === false) {
+		if (isset($functionCall->getArgs()[2]) === false) {
 			if ($secondArgument instanceof ConstantScalarType || $secondArgumentIsNumeric) {
 				return $stringAndNumericStringType;
 			}
@@ -60,7 +60,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			return $defaultReturnType;
 		}
 
-		$thirdArgument = $scope->getType($functionCall->args[2]->value);
+		$thirdArgument = $scope->getType($functionCall->getArgs()[2]->value);
 		$thirdArgumentIsNumeric = ($thirdArgument instanceof ConstantScalarType && is_numeric($thirdArgument->getValue())) || $thirdArgument instanceof IntegerType;
 
 		if ($thirdArgument instanceof ConstantScalarType && !is_numeric($thirdArgument->getValue())) {
@@ -88,11 +88,11 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
 		$defaultReturnType = new UnionType([$stringAndNumericStringType, new NullType()]);
 
-		if (isset($functionCall->args[0]) === false) {
+		if (isset($functionCall->getArgs()[0]) === false) {
 			return $defaultReturnType;
 		}
 
-		$firstArgument = $scope->getType($functionCall->args[0]->value);
+		$firstArgument = $scope->getType($functionCall->getArgs()[0]->value);
 
 		$firstArgumentIsPositive = $firstArgument instanceof ConstantScalarType && is_numeric($firstArgument->getValue()) && $firstArgument->getValue() >= 0;
 		$firstArgumentIsNegative = $firstArgument instanceof ConstantScalarType && is_numeric($firstArgument->getValue()) && $firstArgument->getValue() < 0;
@@ -102,7 +102,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			return new NullType();
 		}
 
-		if (isset($functionCall->args[1]) === false) {
+		if (isset($functionCall->getArgs()[1]) === false) {
 			if ($firstArgumentIsPositive) {
 				return $stringAndNumericStringType;
 			}
@@ -110,7 +110,7 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			return $defaultReturnType;
 		}
 
-		$secondArgument = $scope->getType($functionCall->args[1]->value);
+		$secondArgument = $scope->getType($functionCall->getArgs()[1]->value);
 		$secondArgumentIsValid = $secondArgument instanceof ConstantScalarType && is_numeric($secondArgument->getValue()) && !$this->isZero($secondArgument->getValue());
 		$secondArgumentIsNonNumeric = $secondArgument instanceof ConstantScalarType && !is_numeric($secondArgument->getValue());
 
@@ -137,11 +137,11 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	{
 		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
 
-		if (isset($functionCall->args[1]) === false) {
+		if (isset($functionCall->getArgs()[1]) === false) {
 			return new UnionType([$stringAndNumericStringType, new ConstantBooleanType(false)]);
 		}
 
-		$exponent = $scope->getType($functionCall->args[1]->value);
+		$exponent = $scope->getType($functionCall->getArgs()[1]->value);
 		$exponentIsNegative = IntegerRangeType::fromInterval(null, 0)->isSuperTypeOf($exponent)->yes();
 
 		if ($exponent instanceof ConstantScalarType) {
@@ -152,8 +152,8 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			return new ConstantBooleanType(false);
 		}
 
-		if (isset($functionCall->args[2])) {
-			$modulus = $scope->getType($functionCall->args[2]->value);
+		if (isset($functionCall->getArgs()[2])) {
+			$modulus = $scope->getType($functionCall->getArgs()[2]->value);
 			$modulusIsZero = $modulus instanceof ConstantScalarType && $this->isZero($modulus->getValue());
 			$modulusIsNonNumeric = $modulus instanceof ConstantScalarType && !is_numeric($modulus->getValue());
 

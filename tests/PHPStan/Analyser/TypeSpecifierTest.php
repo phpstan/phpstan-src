@@ -27,10 +27,10 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class TypeSpecifierTest extends \PHPStan\Testing\TestCase
+class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
-	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array()|false|null';
+	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array{}|false|null';
 	private const TRUTHY_TYPE_DESCRIPTION = 'mixed~' . self::FALSEY_TYPE_DESCRIPTION;
 	private const SURE_NOT_FALSEY = '~' . self::FALSEY_TYPE_DESCRIPTION;
 	private const SURE_NOT_TRUTHY = '~' . self::TRUTHY_TYPE_DESCRIPTION;
@@ -46,11 +46,11 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 
 	protected function setUp(): void
 	{
-		$broker = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$this->printer = new \PhpParser\PrettyPrinter\Standard();
-		$this->typeSpecifier = $this->createTypeSpecifier($this->printer, $broker);
-		$this->scope = $this->createScopeFactory($broker, $this->typeSpecifier)->create(ScopeContext::create(''));
-		$this->scope = $this->scope->enterClass($broker->getClass('DateTime'));
+		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
+		$this->scope = $this->createScopeFactory($reflectionProvider, $this->typeSpecifier)->create(ScopeContext::create(''));
+		$this->scope = $this->scope->enterClass($reflectionProvider->getClass('DateTime'));
 		$this->scope = $this->scope->assignVariable('bar', new ObjectType('Bar'));
 		$this->scope = $this->scope->assignVariable('stringOrNull', new UnionType([new StringType(), new NullType()]));
 		$this->scope = $this->scope->assignVariable('string', new StringType());
@@ -90,7 +90,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				$this->createFunctionCall('is_numeric'),
-				['$foo' => 'float|int|(string&numeric)'],
+				['$foo' => 'float|int|numeric-string'],
 				['$foo' => '~float|int'],
 			],
 			[
@@ -533,7 +533,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 			[
 				new Expr\BooleanNot(new Expr\Empty_(new Variable('stringOrNull'))),
 				[
-					'$stringOrNull' => '~0|0.0|\'\'|\'0\'|array()|false|null',
+					'$stringOrNull' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[],
 			],
@@ -552,13 +552,13 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 				new Expr\Empty_(new Variable('array')),
 				[],
 				[
-					'$array' => '~0|0.0|\'\'|\'0\'|array()|false|null',
+					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 			],
 			[
 				new BooleanNot(new Expr\Empty_(new Variable('array'))),
 				[
-					'$array' => '~0|0.0|\'\'|\'0\'|array()|false|null',
+					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[],
 			],
@@ -567,10 +567,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new Variable('array')),
 				]),
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 			],
 			[
@@ -578,10 +578,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new Variable('array')),
 				])),
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 			],
 			[
@@ -589,10 +589,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new Variable('array')),
 				]),
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 			],
 			[
@@ -600,10 +600,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\TestCase
 					new Arg(new Variable('array')),
 				])),
 				[
-					'$array' => '~nonEmpty',
+					'$array' => '~non-empty-array',
 				],
 				[
-					'$array' => 'nonEmpty',
+					'$array' => 'non-empty-array',
 				],
 			],
 			[

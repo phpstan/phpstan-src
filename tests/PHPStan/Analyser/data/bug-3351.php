@@ -12,7 +12,7 @@ class HelloWorld
 		$c = $this->combine($a, $b);
 		assertType('array<string, int>|false', $c);
 
-		assertType('array(\'a\' => 1, \'b\' => 2, \'c\' => 3)', array_combine($a, $b));
+		assertType('array{a: 1, b: 2, c: 3}', array_combine($a, $b));
 	}
 
 	/**

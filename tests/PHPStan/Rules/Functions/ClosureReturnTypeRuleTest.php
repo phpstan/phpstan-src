@@ -40,7 +40,7 @@ class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				46,
 			],
 			[
-				'Anonymous function should return array()|null but empty return statement found.',
+				'Anonymous function should return array{}|null but empty return statement found.',
 				88,
 			],
 			[

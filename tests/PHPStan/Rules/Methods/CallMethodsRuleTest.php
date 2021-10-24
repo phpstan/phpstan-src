@@ -31,16 +31,13 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var int */
 	private $phpVersion = PHP_VERSION_ID;
 
-	/** @var bool */
-	private $checkNeverInGenericReturnType = false;
-
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(true), true, true, true, true, $this->checkNeverInGenericReturnType),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), true, true, true, true),
 			$ruleLevelHelper,
 			true,
 			true
@@ -393,15 +390,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				914,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'foo\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'foo\'} given.',
 				915,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'bar\'} given.',
 				916,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{object, \'bar\'} given.',
 				921,
 			],
 			[
@@ -478,24 +475,33 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array(\'foo\')|null given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array{\'foo\'}|null given.',
 				1533,
 			],
 			[
-				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, 123 given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
 				1657,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, \'abc\' given.',
 				1658,
 			],
 			[
 				'Parameter #1 $date of method Test\HelloWorld3::sayHello() expects array<DateTime|DateTimeImmutable>|int, DateTimeInterface given.',
 				1732,
+			],
+			[
+				'Parameter #1 $a of method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar() expects array<string>, array<int, int> given.',
+				1751,
+			],
+			[
+				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()',
+				1751,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}
@@ -695,15 +701,15 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				867,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'foo\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'foo\'} given.',
 				915,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(class-string|object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'bar\'} given.',
 				916,
 			],
 			[
-				'Parameter #1 $callable of method Test\MethodExists::doBar() expects callable(): mixed, array(object, \'bar\') given.',
+				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{object, \'bar\'} given.',
 				921,
 			],
 			[
@@ -756,24 +762,33 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array(\'foo\')|null given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array{\'foo\'}|null given.',
 				1533,
 			],
 			[
-				'Parameter #1 $members of method Test\ParameterTypeCheckVerbosity::doBar() expects array<array(\'id\' => string, \'code\' => string)>, array<array(\'code\' => string)> given.',
+				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, 123 given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
 				1657,
 			],
 			[
-				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects string&numeric, \'abc\' given.',
+				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, \'abc\' given.',
 				1658,
 			],
 			[
 				'Parameter #1 $date of method Test\HelloWorld3::sayHello() expects array<DateTime|DateTimeImmutable>|int, DateTimeInterface given.',
 				1732,
+			],
+			[
+				'Parameter #1 $a of method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar() expects array<string>, array<int, int> given.',
+				1751,
+			],
+			[
+				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()',
+				1751,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}
@@ -1969,7 +1984,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->checkNeverInGenericReturnType = true;
 		$this->analyse([__DIR__ . '/data/generic-return-type-never.php'], [
 			[
 				'Return type of call to method GenericReturnTypeNever\Foo::doBar() contains unresolvable type.',
@@ -1980,14 +1994,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				73,
 			],
 		]);
-	}
-
-	public function testDoNotReportGenericReturnTypeResolvedToNever(): void
-	{
-		$this->checkThisOnly = false;
-		$this->checkNullables = true;
-		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/generic-return-type-never.php'], []);
 	}
 
 	public function testUnableToResolveCallbackParameterType(): void
@@ -2161,6 +2167,30 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-5562.php'], []);
+	}
+
+	public function testBug4211(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-4211.php'], []);
+	}
+
+	public function testBug3514(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3514.php'], []);
+	}
+
+	public function testBug3465(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3465.php'], []);
 	}
 
 }

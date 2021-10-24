@@ -11,6 +11,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection;
@@ -200,7 +201,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof StaticType) {
-			return $this->checkSubclassAcceptability($type->getBaseClass());
+			return $this->checkSubclassAcceptability($type->getClassName());
 		}
 
 		if ($type instanceof CompoundType) {
@@ -278,14 +279,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createYes();
 		}
 
-		$broker = Broker::getInstance();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-		if ($this->getClassReflection() === null || !$broker->hasClass($thatClassName)) {
+		if ($this->getClassReflection() === null || !$reflectionProvider->hasClass($thatClassName)) {
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}
 
 		$thisClassReflection = $this->getClassReflection();
-		$thatClassReflection = $broker->getClass($thatClassName);
+		$thatClassReflection = $reflectionProvider->getClass($thatClassName);
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createYes();
@@ -341,14 +342,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createYes();
 		}
 
-		$broker = Broker::getInstance();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-		if ($this->getClassReflection() === null || !$broker->hasClass($thatClass)) {
+		if ($this->getClassReflection() === null || !$reflectionProvider->hasClass($thatClass)) {
 			return TrinaryLogic::createNo();
 		}
 
 		$thisReflection = $this->getClassReflection();
-		$thatReflection = $broker->getClass($thatClass);
+		$thatReflection = $reflectionProvider->getClass($thatClass);
 
 		if ($thisReflection->getName() === $thatReflection->getName()) {
 			// class alias
@@ -369,12 +370,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function describe(VerbosityLevel $level): string
 	{
 		$preciseNameCallback = function (): string {
-			$broker = Broker::getInstance();
-			if (!$broker->hasClass($this->className)) {
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($this->className)) {
 				return $this->className;
 			}
 
-			return $broker->getClassName($this->className);
+			return $reflectionProvider->getClassName($this->className);
 		};
 
 		$preciseWithSubtracted = function () use ($level): string {
@@ -391,7 +392,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$preciseNameCallback,
 			$preciseWithSubtracted,
 			function () use ($preciseWithSubtracted): string {
-				return $preciseWithSubtracted() . '-' . static::class . '-' . $this->describeAdditionalCacheKey();
+				$reflection = $this->classReflection;
+				$line = '';
+				if ($reflection !== null) {
+					$line .= '-';
+					$line .= (string) $reflection->getNativeReflection()->getStartLine();
+					$line .= '-';
+				}
+
+				return $preciseWithSubtracted() . '-' . static::class . '-' . $line . $this->describeAdditionalCacheKey();
 			}
 		);
 	}
@@ -410,6 +419,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$description = $this->className;
 		if ($this->subtractedType !== null) {
 			$description .= sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
+		}
+
+		$reflection = $this->classReflection;
+		if ($reflection !== null) {
+			$description .= '-';
+			$description .= (string) $reflection->getNativeReflection()->getStartLine();
+			$description .= '-';
 		}
 
 		return $description;
@@ -469,13 +485,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return new ArrayType(new MixedType(), new MixedType());
 		}
 
-		$broker = Broker::getInstance();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		if (
 			!$classReflection->getNativeReflection()->isUserDefined()
 			|| UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-				$broker,
-				$broker->getUniversalObjectCratesClasses(),
+				$reflectionProvider,
+				Broker::getInstance()->getUniversalObjectCratesClasses(),
 				$classReflection
 			)
 		) {
@@ -490,7 +506,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 					continue;
 				}
 
-				$declaringClass = $broker->getClass($nativeProperty->getDeclaringClass()->getName());
+				$declaringClass = $reflectionProvider->getClass($nativeProperty->getDeclaringClass()->getName());
 				$property = $declaringClass->getNativeProperty($nativeProperty->getName());
 
 				$keyName = $nativeProperty->getName();
@@ -512,7 +528,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 
 			$classReflection = $classReflection->getParentClass();
-		} while ($classReflection !== false);
+		} while ($classReflection !== null);
 
 		return new ConstantArrayType($arrayKeys, $arrayValues);
 	}
@@ -990,12 +1006,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($this->classReflection !== null) {
 			return $this->classReflection;
 		}
-		$broker = Broker::getInstance();
-		if (!$broker->hasClass($this->className)) {
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if (!$reflectionProvider->hasClass($this->className)) {
 			return null;
 		}
 
-		$this->classReflection = $broker->getClass($this->className);
+		$this->classReflection = $reflectionProvider->getClass($this->className);
 
 		return $this->classReflection;
 	}
@@ -1005,12 +1021,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($this->classReflection !== null) {
 			return $this->classReflection;
 		}
-		$broker = Broker::getInstance();
-		if (!$broker->hasClass($this->className)) {
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if (!$reflectionProvider->hasClass($this->className)) {
 			return null;
 		}
 
-		$classReflection = $broker->getClass($this->className);
+		$classReflection = $reflectionProvider->getClass($this->className);
 		if ($classReflection->isGeneric()) {
 			return $this->classReflection = $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()));
 		}
@@ -1038,11 +1054,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$ancestors[$description][$className];
 		}
 
-		$broker = Broker::getInstance();
-		if (!$broker->hasClass($className)) {
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if (!$reflectionProvider->hasClass($className)) {
 			return null;
 		}
-		$theirReflection = $broker->getClass($className);
+		$theirReflection = $reflectionProvider->getClass($className);
 
 		if ($theirReflection->getName() === $thisReflection->getName()) {
 			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $this;
@@ -1077,7 +1093,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$parentReflection = $thisReflection->getParentClass();
-		if ($parentReflection === false) {
+		if ($parentReflection === null) {
 			return null;
 		}
 

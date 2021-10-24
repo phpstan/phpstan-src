@@ -116,7 +116,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	{
 		$mixedType = new MixedType();
 
-		$filterArg = $functionCall->args[1] ?? null;
+		$filterArg = $functionCall->getArgs()[1] ?? null;
 		if ($filterArg === null) {
 			$filterValue = $this->getConstant('FILTER_DEFAULT');
 		} else {
@@ -127,8 +127,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$filterValue = $filterType->getValue();
 		}
 
-		$flagsArg = $functionCall->args[2] ?? null;
-		$inputType = $scope->getType($functionCall->args[0]->value);
+		$flagsArg = $functionCall->getArgs()[2] ?? null;
+		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
 		$exactType = $this->determineExactType($inputType, $filterValue);
 		if ($exactType !== null) {
 			$type = $exactType;

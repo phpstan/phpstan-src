@@ -3,27 +3,20 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
-use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Cache\Cache;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
-use PHPStan\File\RelativePathHelper;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\PhpDoc\PhpDocNodeResolver;
-use PHPStan\PhpDoc\PhpDocStringResolver;
-
 use PHPStan\PhpDoc\StubPhpDocProvider;
-use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Type\FileTypeMapper;
 
-class AnalyserTest extends \PHPStan\Testing\TestCase
+class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testReturnErrorIfIgnoredMessagesDoesNotOccur(): void
@@ -479,7 +472,6 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 
 		return array_merge(
 			$errors,
-			$ignoredErrorHelperResult->getWarnings(),
 			$analyserResult->getInternalErrors()
 		);
 	}
@@ -490,20 +482,16 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			new AlwaysFailRule(),
 		]);
 
-		$broker = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$printer = new \PhpParser\PrettyPrinter\Standard();
 		$fileHelper = $this->getFileHelper();
 
-		/** @var RelativePathHelper $relativePathHelper */
-		$relativePathHelper = self::getContainer()->getService('simpleRelativePathHelper');
-		$phpDocStringResolver = self::getContainer()->getByType(PhpDocStringResolver::class);
-		$phpDocNodeResolver = self::getContainer()->getByType(PhpDocNodeResolver::class);
-		$typeSpecifier = $this->createTypeSpecifier($printer, $broker);
-		$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($broker), $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), new AnonymousClassNameHelper($fileHelper, $relativePathHelper));
+		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 
 		$nodeScopeResolver = new NodeScopeResolver(
-			$broker,
+			$reflectionProvider,
 			self::getReflectors()[0],
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
@@ -515,16 +503,14 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			false,
-			false,
 			true,
 			[],
 			[],
-			true,
 			true
 		);
 		$lexer = new \PhpParser\Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(
-			$this->createScopeFactory($broker, $typeSpecifier),
+			$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 			$nodeScopeResolver,
 			new RichParser(
 				new \PhpParser\Parser\Php7($lexer),
@@ -532,7 +518,7 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 				new NodeConnectingVisitor(),
 				new StatementOrderVisitor()
 			),
-			new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
+			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, $printer)),
 			$reportUnmatchedIgnoredErrors
 		);
 

@@ -24,14 +24,14 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyna
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
 		$keyTypes = [];
 		$valueTypes = [];
 		$nonEmpty = false;
-		foreach ($functionCall->args as $arg) {
+		foreach ($functionCall->getArgs() as $arg) {
 			$argType = $scope->getType($arg->value);
 			if ($arg->unpack) {
 				$argType = $argType->getIterableValueType();

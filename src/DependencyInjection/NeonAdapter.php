@@ -14,7 +14,7 @@ use PHPStan\File\FileReader;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v12-excludePaths-merge';
+	public const CACHE_KEY = 'v13-remove-deprecated';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -88,8 +88,6 @@ class NeonAdapter implements Adapter
 			}
 
 			if (in_array($keyToResolve, [
-				'[parameters][autoload_files][]',
-				'[parameters][autoload_directories][]',
 				'[parameters][paths][]',
 				'[parameters][excludes_analyse][]',
 				'[parameters][excludePaths][]',
@@ -97,7 +95,6 @@ class NeonAdapter implements Adapter
 				'[parameters][excludePaths][analyseAndScan][]',
 				'[parameters][ignoreErrors][][paths][]',
 				'[parameters][ignoreErrors][][path]',
-				'[parameters][bootstrap]',
 				'[parameters][bootstrapFiles][]',
 				'[parameters][scanFiles][]',
 				'[parameters][scanDirectories][]',

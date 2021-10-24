@@ -12,7 +12,7 @@ assertType('string', number_format(1002.7, 3, '', null));
 assertType('string', number_format(1002.7, 3, 'b', null));
 assertType('string', number_format(1002.7, 3, 'b', ''));
 
-assertType('string&numeric', number_format(1002.7, 3, '.', ''));
-assertType('string&numeric', number_format(1002.7, 3, null, ''));
-assertType('string&numeric', number_format(1002.7, 3, '', ''));
+assertType('numeric-string', number_format(1002.7, 3, '.', ''));
+assertType('numeric-string', number_format(1002.7, 3, null, ''));
+assertType('numeric-string', number_format(1002.7, 3, '', ''));
 

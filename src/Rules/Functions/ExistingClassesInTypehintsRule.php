@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -32,17 +33,17 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$functionName = $scope->getFunction()->getName();
+		$functionName = SprintfHelper::escapeFormatString($scope->getFunction()->getName());
 
 		return $this->check->checkFunction(
 			$node->getOriginalNode(),
 			$scope->getFunction(),
 			sprintf(
-				'Parameter $%%s of function %s() has invalid typehint type %%s.',
+				'Parameter $%%s of function %s() has invalid type %%s.',
 				$functionName
 			),
 			sprintf(
-				'Return typehint of function %s() has invalid type %%s.',
+				'Function %s() has invalid return type %%s.',
 				$functionName
 			),
 			sprintf('Function %s() uses native union types but they\'re supported only on PHP 8.0 and later.', $functionName),

@@ -13,36 +13,50 @@ use PHPStan\Testing\RuleTestCase;
 class EmptyRuleTest extends RuleTestCase
 {
 
+	/** @var bool */
+	private $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		return new EmptyRule(new IssetCheck(new PropertyDescriptor(), new PropertyReflectionFinder(), true, true));
+		return new EmptyRule(new IssetCheck(
+			new PropertyDescriptor(),
+			new PropertyReflectionFinder(),
+			true,
+			$this->treatPhpDocTypesAsCertain
+		));
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/empty-rule.php'], [
 			[
-				'Offset \'nonexistent\' on array(?0 => bool, ?1 => false, 2 => bool, 3 => false, 4 => true) in empty() does not exist.',
+				'Offset \'nonexistent\' on array{0?: bool, 1?: false, 2: bool, 3: false, 4: true} in empty() does not exist.',
 				22,
 			],
 			[
-				'Offset 3 on array(?0 => bool, ?1 => false, 2 => bool, 3 => false, 4 => true) in empty() always exists and is always falsy.',
+				'Offset 3 on array{0?: bool, 1?: false, 2: bool, 3: false, 4: true} in empty() always exists and is always falsy.',
 				24,
 			],
 			[
-				'Offset 4 on array(?0 => bool, ?1 => false, 2 => bool, 3 => false, 4 => true) in empty() always exists and is not falsy.',
+				'Offset 4 on array{0?: bool, 1?: false, 2: bool, 3: false, 4: true} in empty() always exists and is not falsy.',
 				25,
 			],
 			[
-				'Offset 0 on array(\'\', \'0\', \'foo\', \'\'|\'foo\') in empty() always exists and is always falsy.',
+				'Offset 0 on array{\'\', \'0\', \'foo\', \'\'|\'foo\'} in empty() always exists and is always falsy.',
 				36,
 			],
 			[
-				'Offset 1 on array(\'\', \'0\', \'foo\', \'\'|\'foo\') in empty() always exists and is always falsy.',
+				'Offset 1 on array{\'\', \'0\', \'foo\', \'\'|\'foo\'} in empty() always exists and is always falsy.',
 				37,
 			],
 			[
-				'Offset 2 on array(\'\', \'0\', \'foo\', \'\'|\'foo\') in empty() always exists and is not falsy.',
+				'Offset 2 on array{\'\', \'0\', \'foo\', \'\'|\'foo\'} in empty() always exists and is not falsy.',
 				38,
 			],
 			[
@@ -58,6 +72,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug970(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-970.php'], [
 			[
 				'Variable $ar in empty() is never defined.',

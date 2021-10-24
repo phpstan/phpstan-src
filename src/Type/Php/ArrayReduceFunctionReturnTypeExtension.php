@@ -21,28 +21,28 @@ class ArrayReduceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFun
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->args[1])) {
+		if (!isset($functionCall->getArgs()[1])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$callbackType = $scope->getType($functionCall->args[1]->value);
+		$callbackType = $scope->getType($functionCall->getArgs()[1]->value);
 		if ($callbackType->isCallable()->no()) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
 		$callbackReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->args,
+			$functionCall->getArgs(),
 			$callbackType->getCallableParametersAcceptors($scope)
 		)->getReturnType();
 
-		if (isset($functionCall->args[2])) {
-			$initialType = $scope->getType($functionCall->args[2]->value);
+		if (isset($functionCall->getArgs()[2])) {
+			$initialType = $scope->getType($functionCall->getArgs()[2]->value);
 		} else {
 			$initialType = new NullType();
 		}
 
-		$arraysType = $scope->getType($functionCall->args[0]->value);
+		$arraysType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantArrays = TypeUtils::getConstantArrays($arraysType);
 		if (count($constantArrays) > 0) {
 			$onlyEmpty = true;

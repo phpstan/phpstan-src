@@ -42,10 +42,10 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		if (count($node->args) < 2) {
+		if (count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
-		$keyType = $scope->getType($node->args[0]->value);
+		$keyType = $scope->getType($node->getArgs()[0]->value);
 
 		if ($context->truthy()) {
 			$type = TypeCombinator::intersect(
@@ -57,7 +57,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		}
 
 		return $this->typeSpecifier->create(
-			$node->args[1]->value,
+			$node->getArgs()[1]->value,
 			$type,
 			$context,
 			false,

@@ -38,11 +38,11 @@ class GettimeofdayDynamicFunctionReturnTypeExtension implements \PHPStan\Type\Dy
 		]);
 		$floatType = new FloatType();
 
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return $arrayType;
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isTrueType = (new ConstantBooleanType(true))->isSuperTypeOf($argType);
 		$isFalseType = (new ConstantBooleanType(false))->isSuperTypeOf($argType);
 		$compareTypes = $isTrueType->compareTo($isFalseType);

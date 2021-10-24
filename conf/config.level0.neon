@@ -1,41 +1,19 @@
 parameters:
 	customRulesetUsed: false
-	missingClosureNativeReturnCheckObjectTypehint: false
 
 conditionalTags:
-	PHPStan\Rules\Api\ApiInstantiationRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiClassExtendsRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiClassImplementsRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiInterfaceExtendsRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiMethodCallRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiStaticCallRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\ApiTraitUseRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule:
-		phpstan.rules.rule: %featureToggles.apiRules%
-	PHPStan\Rules\Constants\OverridingConstantRule:
-		phpstan.rules.rule: %featureToggles.classConstants%
-	PHPStan\Rules\Functions\ClosureUsesThisRule:
-		phpstan.rules.rule: %featureToggles.closureUsesThis%
-	PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule:
-		phpstan.rules.rule: %checkMissingClosureNativeReturnTypehintRule%
-	PHPStan\Rules\Whitespace\FileWhitespaceRule:
-		phpstan.rules.rule: %featureToggles.fileWhitespace%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
-	PHPStan\Rules\Properties\OverridingPropertyRule:
-		phpstan.rules.rule: %featureToggles.overridingProperty%
-
-parametersSchema:
-	missingClosureNativeReturnCheckObjectTypehint: bool()
 
 rules:
+	- PHPStan\Rules\Api\ApiInstantiationRule
+	- PHPStan\Rules\Api\ApiClassExtendsRule
+	- PHPStan\Rules\Api\ApiClassImplementsRule
+	- PHPStan\Rules\Api\ApiInterfaceExtendsRule
+	- PHPStan\Rules\Api\ApiMethodCallRule
+	- PHPStan\Rules\Api\ApiStaticCallRule
+	- PHPStan\Rules\Api\ApiTraitUseRule
+	- PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
 	- PHPStan\Rules\Arrays\EmptyArrayItemRule
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
@@ -58,6 +36,7 @@ rules:
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ClosureAttributesRule
+	- PHPStan\Rules\Functions\DefineParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
@@ -77,36 +56,11 @@ rules:
 	- PHPStan\Rules\Properties\PropertyAttributesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
 	- PHPStan\Rules\Variables\UnsetRule
+	- PHPStan\Rules\Whitespace\FileWhitespaceRule
 
 services:
 	-
-		class: PHPStan\Rules\Api\ApiInstantiationRule
-
-	-
-		class: PHPStan\Rules\Api\ApiClassExtendsRule
-
-	-
-		class: PHPStan\Rules\Api\ApiClassImplementsRule
-
-	-
-		class: PHPStan\Rules\Api\ApiInterfaceExtendsRule
-
-	-
-		class: PHPStan\Rules\Api\ApiMethodCallRule
-
-	-
-		class: PHPStan\Rules\Api\ApiStaticCallRule
-
-	-
-		class: PHPStan\Rules\Api\ApiTraitUseRule
-
-	-
-		class: PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
-
-	-
 		class: PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
-		arguments:
-			checkFinalByPhpDocTag: %featureToggles.finalByPhpDocTag%
 		tags:
 			- phpstan.rules.rule
 
@@ -132,9 +86,6 @@ services:
 			checkFunctionNameCase: %checkFunctionNameCase%
 
 	-
-		class: PHPStan\Rules\Functions\ClosureUsesThisRule
-
-	-
 		class: PHPStan\Rules\Methods\CallMethodsRule
 		tags:
 			- phpstan.rules.rule
@@ -154,6 +105,8 @@ services:
 		class: PHPStan\Rules\Constants\OverridingConstantRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Methods\OverridingMethodRule
@@ -163,16 +116,10 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\Missing\MissingClosureNativeReturnTypehintRule
-		arguments:
-			checkObjectTypehint: %missingClosureNativeReturnCheckObjectTypehint%
-
-	-
 		class: PHPStan\Rules\Missing\MissingReturnRule
 		arguments:
 			checkExplicitMixedMissingReturn: %checkExplicitMixedMissingReturn%
 			checkPhpDocMissingReturn: %checkPhpDocMissingReturn%
-			bleedingEdge: %featureToggles.bleedingEdge%
 		tags:
 			- phpstan.rules.rule
 
@@ -222,6 +169,8 @@ services:
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 			reportMaybes: %reportMaybesInPropertyPhpDocTypes%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule
@@ -261,9 +210,6 @@ services:
 		class: PHPStan\Rules\Regexp\RegularExpressionPatternRule
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Whitespace\FileWhitespaceRule
 
 	-
 		class: PHPStan\Rules\Classes\LocalTypeAliasesRule

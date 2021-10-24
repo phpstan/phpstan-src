@@ -1,26 +1,26 @@
 [
     {
-        "message": "Method Levels\\ArrayAccess\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\ArrayAccess\\Foo::doFoo() has no return type specified.",
         "line": 11,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\ArrayAccess\\Foo::doBar() has no return typehint specified.",
+        "message": "Method Levels\\ArrayAccess\\Foo::doBar() has no return type specified.",
         "line": 22,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\ArrayAccess\\Foo::doBaz() has no return typehint specified.",
+        "message": "Method Levels\\ArrayAccess\\Foo::doBaz() has no return type specified.",
         "line": 30,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\ArrayAccess\\Foo::doLorem() has no return typehint specified.",
+        "message": "Method Levels\\ArrayAccess\\Foo::doLorem() has no return type specified.",
         "line": 38,
         "ignorable": true
     },
     {
-        "message": "Method Levels\\ArrayAccess\\Foo::doLorem() has parameter $mixed with no typehint specified.",
+        "message": "Method Levels\\ArrayAccess\\Foo::doLorem() has parameter $mixed with no type specified.",
         "line": 38,
         "ignorable": true
     }

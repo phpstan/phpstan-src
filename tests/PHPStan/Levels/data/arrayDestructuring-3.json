@@ -5,7 +5,7 @@
         "ignorable": true
     },
     {
-        "message": "Offset 3 does not exist on array('a', 'b', 'c').",
+        "message": "Offset 3 does not exist on array{'a', 'b', 'c'}.",
         "line": 30,
         "ignorable": true
     }

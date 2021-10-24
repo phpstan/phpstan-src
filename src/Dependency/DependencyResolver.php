@@ -230,7 +230,7 @@ class DependencyResolver
 			}
 
 			$classReflection = $classReflection->getParentClass();
-		} while ($classReflection !== false);
+		} while ($classReflection !== null);
 	}
 
 	private function getFunctionReflection(\PhpParser\Node\Name $nameNode, ?Scope $scope): ReflectionWithFilename

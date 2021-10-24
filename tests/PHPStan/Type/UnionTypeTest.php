@@ -21,7 +21,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class UnionTypeTest extends \PHPStan\Testing\TestCase
+class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsCallable(): array
@@ -78,7 +78,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 
 	public function dataSelfCompare(): \Iterator
 	{
-		$broker = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 
 		$integerType = new IntegerType();
 		$stringType = new StringType();
@@ -123,14 +123,14 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 		yield [new ObjectType('Foo')];
 		yield [new ObjectWithoutClassType(new ObjectType('Foo'))];
 		yield [new ResourceType()];
-		yield [new StaticType('Foo')];
+		yield [new StaticType($reflectionProvider->getClass('Foo'))];
 		yield [new StrictMixedType()];
 		yield [new StringAlwaysAcceptingObjectWithToStringType()];
 		yield [$stringType];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', null, TemplateTypeVariance::createInvariant())];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectType('Foo'), TemplateTypeVariance::createInvariant())];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectWithoutClassType(), TemplateTypeVariance::createInvariant())];
-		yield [new ThisType($broker->getClass('Foo'))];
+		yield [new ThisType($reflectionProvider->getClass('Foo'))];
 		yield [new UnionType([$integerType, $stringType])];
 		yield [new VoidType()];
 	}
@@ -592,7 +592,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 					]),
 					new ConstantStringType('aaa')
 				),
-				'\'aaa\'|array(\'a\' => int|string, \'b\' => bool|float)',
+				'\'aaa\'|array{a: int|string, b: bool|float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -613,7 +613,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 					]),
 					new ConstantStringType('aaa')
 				),
-				'\'aaa\'|array(\'a\' => string, \'b\' => bool)|array(\'b\' => int, \'c\' => float)',
+				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -634,7 +634,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 					]),
 					new ConstantStringType('aaa')
 				),
-				'\'aaa\'|array(\'a\' => string, \'b\' => bool)|array(\'c\' => int, \'d\' => float)',
+				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -654,7 +654,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 						new FloatType(),
 					])
 				),
-				'array(0 => int|string, ?1 => bool, ?2 => float)',
+				'array{0: int|string, 1?: bool, 2?: float}',
 				'array<int, bool|float|int|string>',
 			],
 			[
@@ -666,7 +666,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 						new ConstantStringType('barrr'),
 					])
 				),
-				'array()|array(\'foooo\' => \'barrr\')',
+				'array{}|array{foooo: \'barrr\'}',
 				'array<string, string>',
 			],
 			[
@@ -677,7 +677,7 @@ class UnionTypeTest extends \PHPStan\Testing\TestCase
 						new AccessoryNumericStringType(),
 					])
 				),
-				'int|(string&numeric)',
+				'int|numeric-string',
 				'int|string',
 			],
 		];

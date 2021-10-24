@@ -27,7 +27,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		Scope $scope
 	): Type
 	{
-		$args = $functionCall->args;
+		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}

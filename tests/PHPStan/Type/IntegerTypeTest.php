@@ -7,7 +7,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 
-class IntegerTypeTest extends \PHPStan\Testing\TestCase
+class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataAccepts(): array

@@ -341,7 +341,7 @@ class PhpDocBlock
 		$result = [];
 
 		$parent = $classReflection->getParentClass();
-		if ($parent !== false) {
+		if ($parent !== null) {
 			$result[] = $parent;
 		}
 

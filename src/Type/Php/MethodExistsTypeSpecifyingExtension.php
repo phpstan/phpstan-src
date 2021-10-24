@@ -37,7 +37,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 	{
 		return $functionReflection->getName() === 'method_exists'
 			&& $context->truthy()
-			&& count($node->args) >= 2;
+			&& count($node->getArgs()) >= 2;
 	}
 
 	public function specifyTypes(
@@ -47,20 +47,20 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		$objectType = $scope->getType($node->args[0]->value);
+		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if (!$objectType instanceof ObjectType) {
 			if ((new StringType())->isSuperTypeOf($objectType)->yes()) {
 				return new SpecifiedTypes([], []);
 			}
 		}
 
-		$methodNameType = $scope->getType($node->args[1]->value);
+		$methodNameType = $scope->getType($node->getArgs()[1]->value);
 		if (!$methodNameType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
 		}
 
 		return $this->typeSpecifier->create(
-			$node->args[0]->value,
+			$node->getArgs()[0]->value,
 			new UnionType([
 				new IntersectionType([
 					new ObjectWithoutClassType(),

@@ -1,21 +1,18 @@
 includes:
 	- config.level4.neon
 
-conditionalTags:
-	PHPStan\Rules\Functions\RandomIntParametersRule:
-		phpstan.rules.rule: %featureToggles.randomIntParameters%
-	PHPStan\Rules\DateTimeInstantiationRule:
-		phpstan.rules.rule: %featureToggles.dateTimeInstantiation%
-
 parameters:
 	checkFunctionArgumentTypes: true
 	checkArgumentsPassedByReference: true
 
+rules:
+	- PHPStan\Rules\DateTimeInstantiationRule
+	- PHPStan\Rules\Functions\ImplodeFunctionRule
 
 services:
 	-
 		class: PHPStan\Rules\Functions\RandomIntParametersRule
 		arguments:
 			reportMaybes: %reportMaybes%
-	-
-		class: PHPStan\Rules\DateTimeInstantiationRule
+		tags:
+			- phpstan.rules.rule

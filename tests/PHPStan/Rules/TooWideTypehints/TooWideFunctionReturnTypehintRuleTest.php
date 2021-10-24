@@ -21,27 +21,27 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 		require_once __DIR__ . '/data/tooWideFunctionReturnType.php';
 		$this->analyse([__DIR__ . '/data/tooWideFunctionReturnType.php'], [
 			[
-				'Function TooWideFunctionReturnType\bar() never returns string so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\bar() never returns string so it can be removed from the return type.',
 				11,
 			],
 			[
-				'Function TooWideFunctionReturnType\baz() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\baz() never returns null so it can be removed from the return type.',
 				15,
 			],
 			[
-				'Function TooWideFunctionReturnType\ipsum() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\ipsum() never returns null so it can be removed from the return type.',
 				27,
 			],
 			[
-				'Function TooWideFunctionReturnType\dolor2() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\dolor2() never returns null so it can be removed from the return type.',
 				41,
 			],
 			[
-				'Function TooWideFunctionReturnType\dolor4() never returns int so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\dolor4() never returns int so it can be removed from the return type.',
 				59,
 			],
 			[
-				'Function TooWideFunctionReturnType\dolor6() never returns null so it can be removed from the return typehint.',
+				'Function TooWideFunctionReturnType\dolor6() never returns null so it can be removed from the return type.',
 				79,
 			],
 		]);

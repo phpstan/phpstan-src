@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -71,8 +73,8 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			$node->var,
-			sprintf('Access to property $%s on an unknown class %%s.', $name),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->var),
+			sprintf('Access to property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 			static function (Type $type) use ($name): bool {
 				return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
 			}
@@ -122,7 +124,7 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 				$referencedClass = $typeResult->getReferencedClasses()[0];
 				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
 				$parentClassReflection = $propertyClassReflection->getParentClass();
-				while ($parentClassReflection !== false) {
+				while ($parentClassReflection !== null) {
 					if ($parentClassReflection->hasProperty($name)) {
 						return [
 							RuleErrorBuilder::message(sprintf(

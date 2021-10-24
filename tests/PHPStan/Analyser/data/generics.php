@@ -96,8 +96,8 @@ function testD($int, $float, $intFloat)
 	assertType('float|int', d($int, $float));
 	assertType('DateTime|int', d($int, new \DateTime()));
 	assertType('DateTime|float|int', d($intFloat, new \DateTime()));
-	assertType('array()|DateTime', d([], new \DateTime()));
-	assertType('array(\'blabla\' => string)|DateTime', d(['blabla' => 'barrrr'], new \DateTime()));
+	assertType('array{}|DateTime', d([], new \DateTime()));
+	assertType('array{blabla: string}|DateTime', d(['blabla' => 'barrrr'], new \DateTime()));
 }
 
 /**
@@ -147,7 +147,7 @@ function f($a, $b)
  */
 function testF($arrayOfInt, $callableOrNull)
 {
-	assertType('Closure(int): string&numeric', function (int $a): string {
+	assertType('Closure(int): numeric-string', function (int $a): string {
 		return (string)$a;
 	});
 	assertType('array<string>', f($arrayOfInt, function (int $a): string {
@@ -224,7 +224,7 @@ function testArrayMap(array $listOfIntegers)
 
 		return (string) $int;
 	}, $listOfIntegers);
-	assertType('array<string&numeric>', $strings);
+	assertType('array<numeric-string>', $strings);
 }
 
 /**
@@ -763,7 +763,7 @@ function testClasses()
 
 	$factory = new Factory(new \DateTime(), new A(1));
 	assertType(
-		'array(DateTime, PHPStan\Generics\FunctionsAssertType\A<int>, string, PHPStan\Generics\FunctionsAssertType\A<DateTime>)',
+		'array{DateTime, PHPStan\\Generics\\FunctionsAssertType\\A<int>, string, PHPStan\\Generics\\FunctionsAssertType\\A<DateTime>}',
 		$factory->create(new \DateTime(), '', new A(new \DateTime()))
 	);
 }
@@ -1299,7 +1299,7 @@ function arrayOfGenericClassStrings(array $a): void
 function getClassOnTemplateType($a, $b, $c, $d, $object, $mixed, $tObject)
 {
 	assertType(
-		'class-string<T (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>',
+		'class-string<T (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>|false',
 		get_class($a)
 	);
 	assertType(
@@ -1324,7 +1324,7 @@ function getClassOnTemplateType($a, $b, $c, $d, $object, $mixed, $tObject)
 	);
 
 	assertType('class-string', get_class($object));
-	assertType('class-string', get_class($mixed));
+	assertType('class-string|false', get_class($mixed));
 	assertType('class-string<W of object (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>', get_class($tObject));
 }
 
@@ -1403,7 +1403,7 @@ function (\Throwable $e): void {
 
 function (): void {
 	$array = ['a' => 1, 'b' => 2];
-	assertType('array(\'a\' => int, \'b\' => int)', a($array));
+	assertType('array{a: int, b: int}', a($array));
 };
 
 
@@ -1462,3 +1462,101 @@ function foooo(UnionT $foo): void
 {
 	assertType('string|null', $foo->doFoo('a'));
 }
+
+/**
+ * @template T1 of object
+ * @param T1 $type
+ * @return T1
+ */
+function newObject($type): void
+{
+	assertType('T1 of object (function PHPStan\Generics\FunctionsAssertType\newObject(), argument)', new $type);
+}
+
+function newStdClass(\stdClass $std): void
+{
+	assertType('stdClass', new $std);
+}
+
+/**
+ * @template T1 of object
+ * @param class-string<T1> $type
+ * @return T1
+ */
+function newClassString($type): void
+{
+	assertType('T1 of object (function PHPStan\Generics\FunctionsAssertType\newClassString(), argument)', new $type);
+}
+
+/**
+ * @template T of array<int, bool>
+ * @param T $a
+ * @return T
+ */
+function arrayBound1(array $a): array
+{
+   return $a;
+}
+
+/**
+ * @template T of array<string>
+ * @param T $a
+ * @return T
+ */
+function arrayBound2(array $a): array
+{
+	return $a;
+}
+
+/**
+ * @template T of list<bool>
+ * @param T $a
+ * @return T
+ */
+function arrayBound3(array $a): array
+{
+	return $a;
+}
+
+/**
+ * @template T of list<array<string, string>>
+ * @param T $a
+ * @return T
+ */
+function arrayBound4(array $a): array
+{
+	return $a;
+}
+
+/**
+ * @template T of array<string>
+ * @param T $a
+ * @return array<string>
+ */
+function arrayBound5(array $a): array
+{
+	return $a;
+}
+
+function (): void {
+	assertType('array{1: true}', arrayBound1([1 => true]));
+	assertType('array{\'a\', \'b\', \'c\'}', arrayBound2(range('a', 'c')));
+	assertType('array<string>', arrayBound2([1, 2, 3]));
+	assertType('array{true, false, true}', arrayBound3([true, false, true]));
+	assertType('array{array{a: \'a\'}, array{b: \'b\'}, array{c: \'c\'}}', arrayBound4([['a' => 'a'], ['b' => 'b'], ['c' => 'c']]));
+	assertType('array<string>', arrayBound5(range('a', 'c')));
+};
+
+/**
+ * @template T of array{0: string, 1: bool}
+ * @param T $a
+ * @return T
+ */
+function constantArrayBound(array $a): array
+{
+	return $a;
+}
+
+function (): void {
+	assertType('array{\'string\', true}', constantArrayBound(['string', true]));
+};

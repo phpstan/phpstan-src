@@ -52,11 +52,11 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 	): ?Type
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];
-		if (!isset($functionCall->args[$argumentPosition])) {
+		if (!isset($functionCall->getArgs()[$argumentPosition])) {
 			return null;
 		}
 
-		$optionsExpr = $functionCall->args[$argumentPosition]->value;
+		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
 		if ($this->isBitwiseOrWithJsonThrowOnError($optionsExpr, $scope)) {
 			return new ObjectType('JsonException');
 		}

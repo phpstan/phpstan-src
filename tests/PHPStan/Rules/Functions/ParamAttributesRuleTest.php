@@ -25,11 +25,10 @@ class ParamAttributesRuleTest extends RuleTestCase
 			new AttributesCheck(
 				$reflectionProvider,
 				new FunctionCallParametersCheck(
-					new RuleLevelHelper($reflectionProvider, true, false, true),
+					new RuleLevelHelper($reflectionProvider, true, false, true, false),
 					new NullsafeCheck(),
 					new PhpVersion(80000),
-					new UnresolvableTypeHelper(true),
-					true,
+					new UnresolvableTypeHelper(),
 					true,
 					true,
 					true,

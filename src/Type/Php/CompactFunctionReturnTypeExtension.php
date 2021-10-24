@@ -34,7 +34,7 @@ class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		if (count($functionCall->args) === 0) {
+		if (count($functionCall->getArgs()) === 0) {
 			return $defaultReturnType;
 		}
 
@@ -43,7 +43,7 @@ class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		}
 
 		$array = ConstantArrayTypeBuilder::createEmpty();
-		foreach ($functionCall->args as $arg) {
+		foreach ($functionCall->getArgs() as $arg) {
 			$type = $scope->getType($arg->value);
 			$constantStrings = $this->findConstantStrings($type);
 			if ($constantStrings === null) {

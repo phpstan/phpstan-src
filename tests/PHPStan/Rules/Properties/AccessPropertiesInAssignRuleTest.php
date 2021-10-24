@@ -14,9 +14,9 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
-			new AccessPropertiesRule($broker, new RuleLevelHelper($broker, true, false, true, false), true)
+			new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false), true)
 		);
 	}
 

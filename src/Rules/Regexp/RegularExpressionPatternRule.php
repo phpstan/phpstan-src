@@ -52,10 +52,10 @@ class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return [];
 		}
-		$patternNode = $functionCall->args[0]->value;
+		$patternNode = $functionCall->getArgs()[0]->value;
 		$patternType = $scope->getType($patternNode);
 
 		$patternStrings = [];

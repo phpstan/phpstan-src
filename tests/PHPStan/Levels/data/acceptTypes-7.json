@@ -100,22 +100,22 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array<callable(): mixed> given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array<callable(): mixed> given.",
         "line": 577,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array<string> given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array<string> given.",
         "line": 578,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array()|array('foo' => 'date') given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{}|array{foo: 'date'} given.",
         "line": 596,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), iterable<callable(): mixed> given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, iterable<callable(): mixed> given.",
         "line": 597,
         "ignorable": true
     },
@@ -152,6 +152,11 @@
     {
         "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
         "line": 692,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #2 $pieces of function implode expects array, array|int|string given.",
+        "line": 756,
         "ignorable": true
     }
 ]

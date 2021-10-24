@@ -30,7 +30,7 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	): bool
 	{
 		return $functionReflection->getName() === 'defined'
-			&& count($node->args) >= 1
+			&& count($node->getArgs()) >= 1
 			&& !$context->null();
 	}
 
@@ -41,7 +41,7 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		$constantName = $scope->getType($node->args[0]->value);
+		$constantName = $scope->getType($node->getArgs()[0]->value);
 		if (
 			!$constantName instanceof ConstantStringType
 			|| $constantName->getValue() === ''

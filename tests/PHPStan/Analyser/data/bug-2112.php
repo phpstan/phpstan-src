@@ -19,7 +19,7 @@ class Foo
 		$foos[0] = null;
 
 		assertType('null', $foos[0]);
-		assertType('array&nonEmpty', $foos);
+		assertType('non-empty-array', $foos);
 	}
 
 	/** @return self[] */
@@ -35,7 +35,7 @@ class Foo
 		$foos[0] = null;
 
 		assertType('null', $foos[0]);
-		assertType('array<Bug2112\Foo|null>&nonEmpty', $foos);
+		assertType('non-empty-array<Bug2112\Foo|null>', $foos);
 	}
 
 }

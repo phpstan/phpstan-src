@@ -36,12 +36,12 @@ class ArrayCombineFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$firstArg = $functionCall->args[0]->value;
-		$secondArg = $functionCall->args[1]->value;
+		$firstArg = $functionCall->getArgs()[0]->value;
+		$secondArg = $functionCall->getArgs()[1]->value;
 
 		$keysParamType = $scope->getType($firstArg);
 		$valuesParamType = $scope->getType($secondArg);

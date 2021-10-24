@@ -30,11 +30,11 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 	{
 		$returnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$methodCall->args,
+			$methodCall->getArgs(),
 			$methodReflection->getVariants()
 		)->getReturnType();
 
-		if (count($methodCall->args) > 1) {
+		if (count($methodCall->getArgs()) > 1) {
 			return $returnType;
 		}
 

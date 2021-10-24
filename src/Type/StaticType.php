@@ -2,12 +2,12 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -25,7 +25,7 @@ class StaticType implements TypeWithClassName
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private ?ClassReflection $classReflection;
+	private ClassReflection $classReflection;
 
 	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
 
@@ -33,24 +33,9 @@ class StaticType implements TypeWithClassName
 
 	/**
 	 * @api
-	 * @param string|ClassReflection $classReflection
 	 */
-	public function __construct($classReflection)
+	public function __construct(ClassReflection $classReflection)
 	{
-		if (is_string($classReflection)) {
-			$broker = Broker::getInstance();
-			if ($broker->hasClass($classReflection)) {
-				$classReflection = $broker->getClass($classReflection);
-				$this->classReflection = $classReflection;
-				$this->baseClass = $classReflection->getName();
-				return;
-			}
-
-			$this->classReflection = null;
-			$this->baseClass = $classReflection;
-			return;
-		}
-
 		$this->classReflection = $classReflection;
 		$this->baseClass = $classReflection->getName();
 	}
@@ -72,13 +57,18 @@ class StaticType implements TypeWithClassName
 			return null;
 		}
 
-		return $this->changeBaseClass($ancestor->getClassReflection() ?? $ancestor->getClassName());
+		$classReflection = $ancestor->getClassReflection();
+		if ($classReflection !== null) {
+			return $this->changeBaseClass($classReflection);
+		}
+
+		return null;
 	}
 
 	public function getStaticObjectType(): ObjectType
 	{
 		if ($this->staticObjectType === null) {
-			if ($this->classReflection !== null && $this->classReflection->isGeneric()) {
+			if ($this->classReflection->isGeneric()) {
 				$typeMap = $this->classReflection->getActiveTemplateTypeMap()->map(static function (string $name, Type $type): Type {
 					return TemplateTypeHelper::toArgument($type);
 				});
@@ -88,7 +78,7 @@ class StaticType implements TypeWithClassName
 				);
 			}
 
-			return $this->staticObjectType = new ObjectType($this->baseClass, null, $this->classReflection);
+			return $this->staticObjectType = new ObjectType($this->classReflection->getName(), null, $this->classReflection);
 		}
 
 		return $this->staticObjectType;
@@ -100,11 +90,6 @@ class StaticType implements TypeWithClassName
 	public function getReferencedClasses(): array
 	{
 		return $this->getStaticObjectType()->getReferencedClasses();
-	}
-
-	public function getBaseClass(): string
-	{
-		return $this->baseClass;
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -247,9 +232,7 @@ class StaticType implements TypeWithClassName
 			if ($type instanceof StaticType) {
 				$classReflection = $this->classReflection;
 				$isFinal = false;
-				if ($classReflection === null) {
-					$classReflection = $this->baseClass;
-				} elseif ($scope->isInClass()) {
+				if ($scope->isInClass()) {
 					$classReflection = $scope->getClassReflection();
 					$isFinal = $classReflection->isFinal();
 				}
@@ -280,11 +263,7 @@ class StaticType implements TypeWithClassName
 		return $this->getStaticObjectType()->getConstant($constantName);
 	}
 
-	/**
-	 * @param ClassReflection|string $classReflection
-	 * @return self
-	 */
-	public function changeBaseClass($classReflection): self
+	public function changeBaseClass(ClassReflection $classReflection): self
 	{
 		return new self($classReflection);
 	}
@@ -409,7 +388,12 @@ class StaticType implements TypeWithClassName
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		return new self($properties['baseClass']);
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if ($reflectionProvider->hasClass($properties['baseClass'])) {
+			return new self($reflectionProvider->getClass($properties['baseClass']));
+		}
+
+		return new ErrorType();
 	}
 
 }

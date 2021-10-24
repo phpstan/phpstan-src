@@ -6,34 +6,38 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
-use PHPStan\Broker\Broker;
-use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 
-class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension, BrokerAwareExtension
+class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension
 {
 
 	private bool $treatPhpDocTypesAsCertain;
 
-	private \PHPStan\Broker\Broker $broker;
+	private ReflectionProvider $reflectionProvider;
 
 	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
 
 	private ?\PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $helper = null;
 
-	public function __construct(bool $treatPhpDocTypesAsCertain)
-	{
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
-	}
+	/** @var string[] */
+	private array $universalObjectCratesClasses;
 
-	public function setBroker(Broker $broker): void
+	/**
+	 * @param ReflectionProvider $reflectionProvider
+	 * @param bool $treatPhpDocTypesAsCertain
+	 * @param string[] $universalObjectCratesClasses
+	 */
+	public function __construct(ReflectionProvider $reflectionProvider, bool $treatPhpDocTypesAsCertain, array $universalObjectCratesClasses)
 	{
-		$this->broker = $broker;
+		$this->reflectionProvider = $reflectionProvider;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
@@ -71,7 +75,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 		Scope $scope
 	): Type
 	{
-		if (count($functionCall->args) === 0) {
+		if (count($functionCall->getArgs()) === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
@@ -89,7 +93,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 	private function getHelper(): ImpossibleCheckTypeHelper
 	{
 		if ($this->helper === null) {
-			$this->helper = new ImpossibleCheckTypeHelper($this->broker, $this->typeSpecifier, $this->broker->getUniversalObjectCratesClasses(), $this->treatPhpDocTypesAsCertain);
+			$this->helper = new ImpossibleCheckTypeHelper($this->reflectionProvider, $this->typeSpecifier, $this->universalObjectCratesClasses, $this->treatPhpDocTypesAsCertain);
 		}
 
 		return $this->helper;

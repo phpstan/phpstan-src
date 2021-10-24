@@ -75,17 +75,13 @@ class TypeNodeResolver
 
 	private Container $container;
 
-	private bool $deepInspectTypes;
-
 	public function __construct(
 		TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
-		Container $container,
-		bool $deepInspectTypes = false
+		Container $container
 	)
 	{
 		$this->extensionRegistryProvider = $extensionRegistryProvider;
 		$this->container = $container;
-		$this->deepInspectTypes = $deepInspectTypes;
 	}
 
 	/** @api */
@@ -151,6 +147,8 @@ class TypeNodeResolver
 				return new IntersectionType([new StringType(), new AccessoryLiteralStringType()]);
 
 			case 'class-string':
+			case 'interface-string':
+			case 'trait-string':
 				return new ClassStringType();
 
 			case 'callable-string':
@@ -302,12 +300,17 @@ class TypeNodeResolver
 					return new ObjectType($nameScope->getClassName());
 
 				case 'static':
-					return new StaticType($nameScope->getClassName());
+					if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
+						$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
 
+						return new StaticType($classReflection);
+					}
+
+					return new ErrorType();
 				case 'parent':
 					if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
 						$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
-						if ($classReflection->getParentClass() !== false) {
+						if ($classReflection->getParentClass() !== null) {
 							return new ObjectType($classReflection->getParentClass()->getName());
 						}
 					}
@@ -426,7 +429,7 @@ class TypeNodeResolver
 	private function resolveArrayTypeNode(ArrayTypeNode $typeNode, NameScope $nameScope): Type
 	{
 		$itemType = $this->resolve($typeNode->type, $nameScope);
-		return new ArrayType(new MixedType(), $itemType);
+		return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $itemType);
 	}
 
 	private function resolveGenericTypeNode(GenericTypeNode $typeNode, NameScope $nameScope): Type
@@ -436,15 +439,12 @@ class TypeNodeResolver
 
 		if ($mainTypeName === 'array' || $mainTypeName === 'non-empty-array') {
 			if (count($genericTypes) === 1) { // array<ValueType>
-				$arrayType = new ArrayType(new MixedType(true), $genericTypes[0]);
+				$arrayType = new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $genericTypes[0]);
 			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
-				$keyType = $genericTypes[0];
-				if ($this->deepInspectTypes) {
-					$keyType = TypeCombinator::intersect($keyType, new UnionType([
-						new IntegerType(),
-						new StringType(),
-					]));
-				}
+				$keyType = TypeCombinator::intersect($genericTypes[0], new UnionType([
+					new IntegerType(),
+					new StringType(),
+				]));
 				$arrayType = new ArrayType($keyType, $genericTypes[1]);
 			} else {
 				return new ErrorType();
@@ -475,7 +475,7 @@ class TypeNodeResolver
 			if (count($genericTypes) === 2) { // iterable<KeyType, ValueType>
 				return new IterableType($genericTypes[0], $genericTypes[1]);
 			}
-		} elseif ($mainTypeName === 'class-string') {
+		} elseif (in_array($mainTypeName, ['class-string', 'interface-string'], true)) {
 			if (count($genericTypes) === 1) {
 				$genericType = $genericTypes[0];
 				if ((new ObjectWithoutClassType())->isSuperTypeOf($genericType)->yes() || $genericType instanceof MixedType) {
@@ -681,7 +681,7 @@ class TypeNodeResolver
 					case 'parent':
 						if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
 							$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
-							if ($classReflection->getParentClass() === false) {
+							if ($classReflection->getParentClass() === null) {
 								return new ErrorType();
 
 							}

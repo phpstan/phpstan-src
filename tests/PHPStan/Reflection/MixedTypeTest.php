@@ -4,10 +4,10 @@ namespace PHPStan\Reflection;
 
 use NativeMixedType\Foo;
 use PhpParser\Node\Name;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\MixedType;
 
-class MixedTypeTest extends TestCase
+class MixedTypeTest extends PHPStanTestCase
 {
 
 	public function testMixedType(): void
@@ -16,7 +16,7 @@ class MixedTypeTest extends TestCase
 			$this->markTestSkipped('Test requires PHP 8.0');
 		}
 
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Foo::class);
 		$propertyType = $class->getNativeProperty('fooProp')->getNativeType();
 		$this->assertInstanceOf(MixedType::class, $propertyType);

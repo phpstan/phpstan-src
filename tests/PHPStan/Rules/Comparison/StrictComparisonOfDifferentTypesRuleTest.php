@@ -83,7 +83,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					130,
 				],
 				[
-					'Strict comparison using === between array&nonEmpty and null will always evaluate to false.',
+					'Strict comparison using === between non-empty-array and null will always evaluate to false.',
 					140,
 				],
 				[
@@ -91,7 +91,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					154,
 				],
 				[
-					'Strict comparison using === between array&nonEmpty and null will always evaluate to false.',
+					'Strict comparison using === between non-empty-array and null will always evaluate to false.',
 					164,
 				],
 				[
@@ -111,11 +111,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					284,
 				],
 				[
-					'Strict comparison using === between array(\'X\' => 1) and array(\'X\' => 2) will always evaluate to false.',
+					'Strict comparison using === between array{X: 1} and array{X: 2} will always evaluate to false.',
 					292,
 				],
 				[
-					'Strict comparison using === between array(\'X\' => 1, \'Y\' => 2) and array(\'X\' => 2, \'Y\' => 1) will always evaluate to false.',
+					'Strict comparison using === between array{X: 1, Y: 2} and array{X: 2, Y: 1} will always evaluate to false.',
 					300,
 				],
 				[
@@ -281,11 +281,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					98,
 				],
 				[
-					'Strict comparison using === between array&nonEmpty and null will always evaluate to false.',
+					'Strict comparison using === between non-empty-array and null will always evaluate to false.',
 					140,
 				],
 				[
-					'Strict comparison using === between array&nonEmpty and null will always evaluate to false.',
+					'Strict comparison using === between non-empty-array and null will always evaluate to false.',
 					164,
 				],
 				[
@@ -293,11 +293,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					284,
 				],
 				[
-					'Strict comparison using === between array(\'X\' => 1) and array(\'X\' => 2) will always evaluate to false.',
+					'Strict comparison using === between array{X: 1} and array{X: 2} will always evaluate to false.',
 					292,
 				],
 				[
-					'Strict comparison using === between array(\'X\' => 1, \'Y\' => 2) and array(\'X\' => 2, \'Y\' => 1) will always evaluate to false.',
+					'Strict comparison using === between array{X: 1, Y: 2} and array{X: 2, Y: 1} will always evaluate to false.',
 					300,
 				],
 				[

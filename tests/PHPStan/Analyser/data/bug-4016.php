@@ -14,7 +14,7 @@ class Foo
 	{
 		assertType('array<int, int>', $a);
 		$a[] = 2;
-		assertType('array<int, int>&nonEmpty', $a);
+		assertType('non-empty-array<int, int>', $a);
 
 		unset($a[0]);
 		assertType('array<int, int>', $a);
@@ -27,7 +27,7 @@ class Foo
 	{
 		assertType('array<int, int>', $a);
 		$a[1] = 2;
-		assertType('array<int, int>&nonEmpty', $a);
+		assertType('non-empty-array<int, int>', $a);
 
 		unset($a[1]);
 		assertType('array<int, int>', $a);

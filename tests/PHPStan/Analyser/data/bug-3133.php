@@ -17,7 +17,7 @@ class Foo
 			return;
 		}
 
-		assertType('string&numeric', $arg);
+		assertType('numeric-string', $arg);
 	}
 
 	/**
@@ -26,7 +26,7 @@ class Foo
 	public function doBar($arg): void
 	{
 		if (\is_numeric($arg)) {
-			assertType('float|int|(string&numeric)', $arg);
+			assertType('float|int|numeric-string', $arg);
 		}
 	}
 
@@ -39,8 +39,8 @@ class Foo
 		string $numericString
 	)
 	{
-		assertType('float|int|(string&numeric)', $numeric);
-		assertType('string&numeric', $numericString);
+		assertType('float|int|numeric-string', $numeric);
+		assertType('numeric-string', $numericString);
 	}
 
 	/**
@@ -52,7 +52,7 @@ class Foo
 	{
 		$a = [];
 		$a[$numericString] = 'foo';
-		assertType('array<int, \'foo\'>&nonEmpty', $a);
+		assertType('non-empty-array<int, \'foo\'>', $a);
 	}
 
 }

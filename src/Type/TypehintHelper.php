@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionNamedType;
@@ -40,16 +40,21 @@ class TypehintHelper
 			case 'self':
 				return $selfClass !== null ? new ObjectType($selfClass) : new ErrorType();
 			case 'parent':
-				$broker = Broker::getInstance();
-				if ($selfClass !== null && $broker->hasClass($selfClass)) {
-					$classReflection = $broker->getClass($selfClass);
-					if ($classReflection->getParentClass() !== false) {
+				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+				if ($selfClass !== null && $reflectionProvider->hasClass($selfClass)) {
+					$classReflection = $reflectionProvider->getClass($selfClass);
+					if ($classReflection->getParentClass() !== null) {
 						return new ObjectType($classReflection->getParentClass()->getName());
 					}
 				}
 				return new NonexistentParentClassType();
 			case 'static':
-				return $selfClass !== null ? new StaticType($selfClass) : new ErrorType();
+				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+				if ($selfClass !== null && $reflectionProvider->hasClass($selfClass)) {
+					return new StaticType($reflectionProvider->getClass($selfClass));
+				}
+
+				return new ErrorType();
 			case 'null':
 				return new NullType();
 			default:

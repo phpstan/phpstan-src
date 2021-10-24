@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -36,10 +37,10 @@ class DirectScopeFactory implements ScopeFactory
 
 	private bool $treatPhpDocTypesAsCertain;
 
-	private bool $objectFromNewClass;
-
 	/** @var string[] */
 	private array $dynamicConstantNames;
+
+	private PhpVersion $phpVersion;
 
 	public function __construct(
 		string $scopeClass,
@@ -52,8 +53,8 @@ class DirectScopeFactory implements ScopeFactory
 		\PHPStan\Parser\Parser $parser,
 		NodeScopeResolver $nodeScopeResolver,
 		bool $treatPhpDocTypesAsCertain,
-		bool $objectFromNewClass,
-		Container $container
+		Container $container,
+		PhpVersion $phpVersion
 	)
 	{
 		$this->scopeClass = $scopeClass;
@@ -66,8 +67,8 @@ class DirectScopeFactory implements ScopeFactory
 		$this->parser = $parser;
 		$this->nodeScopeResolver = $nodeScopeResolver;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
-		$this->objectFromNewClass = $objectFromNewClass;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
+		$this->phpVersion = $phpVersion;
 	}
 
 	/**
@@ -125,6 +126,7 @@ class DirectScopeFactory implements ScopeFactory
 			$this->parser,
 			$this->nodeScopeResolver,
 			$context,
+			$this->phpVersion,
 			$declareStrictTypes,
 			$constantTypes,
 			$function,
@@ -140,7 +142,6 @@ class DirectScopeFactory implements ScopeFactory
 			$inFunctionCallsStack,
 			$this->dynamicConstantNames,
 			$this->treatPhpDocTypesAsCertain,
-			$this->objectFromNewClass,
 			$afterExtractCall,
 			$parentScope
 		);

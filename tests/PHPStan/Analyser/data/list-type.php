@@ -37,7 +37,7 @@ class Foo
 		$list[] = '1';
 		$list[] = true;
 		$list[] = new \stdClass();
-		assertType('array<int, mixed>&nonEmpty', $list);
+		assertType('non-empty-array<int, mixed>', $list);
 	}
 
 
@@ -48,7 +48,7 @@ class Foo
 		$list[] = '1';
 		$list[] = true;
 		$list[] = new \stdClass();
-		assertType('array<int, mixed>&nonEmpty', $list);
+		assertType('non-empty-array<int, mixed>', $list);
 	}
 
 	public function withObjectType(): void
@@ -56,7 +56,7 @@ class Foo
 		/** @var list<\DateTime> $list */
 		$list = [];
 		$list[] = new \DateTime();
-		assertType('array<int, DateTime>&nonEmpty', $list);
+		assertType('non-empty-array<int, DateTime>', $list);
 	}
 
 	/** @return list<scalar> */
@@ -66,7 +66,7 @@ class Foo
 		$list = [];
 		$list[] = '1';
 		$list[] = true;
-		assertType('array<int, bool|float|int|string>&nonEmpty', $list);
+		assertType('non-empty-array<int, bool|float|int|string>', $list);
 	}
 
 	public function withNumericKey(): void
@@ -75,7 +75,7 @@ class Foo
 		$list = [];
 		$list[] = '1';
 		$list['1'] = true;
-		assertType('array<int, mixed>&nonEmpty', $list);
+		assertType('non-empty-array<int, mixed>', $list);
 	}
 
 	public function withFullListFunctionality(): void
@@ -91,7 +91,7 @@ class Foo
 		/** @var list $list2 */
 		$list2 = [];
 		$list2[2] = '1';//Most likely to create a gap in indexes
-		assertType('array<int, mixed>&nonEmpty', $list2);
+		assertType('non-empty-array<int, mixed>', $list2);
 	}
 
 }

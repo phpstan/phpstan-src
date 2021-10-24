@@ -13,7 +13,7 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingFunctionParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true));
+		return new MissingFunctionParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));
 	}
 
 	public function testRule(): void
@@ -21,15 +21,15 @@ class MissingFunctionParameterTypehintRuleTest extends \PHPStan\Testing\RuleTest
 		require_once __DIR__ . '/data/missing-function-parameter-typehint.php';
 		$this->analyse([__DIR__ . '/data/missing-function-parameter-typehint.php'], [
 			[
-				'Function globalFunction() has parameter $b with no typehint specified.',
+				'Function globalFunction() has parameter $b with no type specified.',
 				9,
 			],
 			[
-				'Function globalFunction() has parameter $c with no typehint specified.',
+				'Function globalFunction() has parameter $c with no type specified.',
 				9,
 			],
 			[
-				'Function MissingFunctionParameterTypehint\namespacedFunction() has parameter $d with no typehint specified.',
+				'Function MissingFunctionParameterTypehint\namespacedFunction() has parameter $d with no type specified.',
 				24,
 			],
 			[

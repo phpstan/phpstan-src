@@ -59,12 +59,12 @@ class ImpossibleCheckTypeHelper
 	{
 		if (
 			$node instanceof FuncCall
-			&& count($node->args) > 0
+			&& count($node->getArgs()) > 0
 		) {
 			if ($node->name instanceof \PhpParser\Node\Name) {
 				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert') {
-					$assertValue = $scope->getType($node->args[0]->value)->toBoolean();
+					$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
 					if (!$assertValue instanceof ConstantBooleanType) {
 						return null;
 					}
@@ -84,9 +84,9 @@ class ImpossibleCheckTypeHelper
 					return null;
 				} elseif (
 					$functionName === 'in_array'
-					&& count($node->args) >= 3
+					&& count($node->getArgs()) >= 3
 				) {
-					$haystackType = $scope->getType($node->args[1]->value);
+					$haystackType = $scope->getType($node->getArgs()[1]->value);
 					if ($haystackType instanceof MixedType) {
 						return null;
 					}
@@ -96,7 +96,7 @@ class ImpossibleCheckTypeHelper
 					}
 
 					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
-						$needleType = $scope->getType($node->args[0]->value);
+						$needleType = $scope->getType($node->getArgs()[0]->value);
 
 						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
 						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
@@ -132,9 +132,9 @@ class ImpossibleCheckTypeHelper
 							}
 						}
 					}
-				} elseif ($functionName === 'method_exists' && count($node->args) >= 2) {
-					$objectType = $scope->getType($node->args[0]->value);
-					$methodType = $scope->getType($node->args[1]->value);
+				} elseif ($functionName === 'method_exists' && count($node->getArgs()) >= 2) {
+					$objectType = $scope->getType($node->getArgs()[0]->value);
+					$methodType = $scope->getType($node->getArgs()[1]->value);
 
 					if ($objectType instanceof ConstantStringType
 						&& !$this->reflectionProvider->hasClass($objectType->getValue())

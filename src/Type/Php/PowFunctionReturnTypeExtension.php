@@ -28,12 +28,12 @@ class PowFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 			new FloatType(),
 			new IntegerType(),
 		]);
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return $defaultReturnType;
 		}
 
-		$firstArgType = $scope->getType($functionCall->args[0]->value);
-		$secondArgType = $scope->getType($functionCall->args[1]->value);
+		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
+		$secondArgType = $scope->getType($functionCall->getArgs()[1]->value);
 		if ($firstArgType instanceof MixedType || $secondArgType instanceof MixedType) {
 			return $defaultReturnType;
 		}

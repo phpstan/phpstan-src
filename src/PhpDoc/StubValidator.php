@@ -12,6 +12,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule;
 use PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule;
@@ -56,19 +57,11 @@ class StubValidator
 
 	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
 
-	private bool $validateOverridingMethods;
-
-	private bool $crossCheckInterfaces;
-
 	public function __construct(
-		DerivativeContainerFactory $derivativeContainerFactory,
-		bool $validateOverridingMethods,
-		bool $crossCheckInterfaces
+		DerivativeContainerFactory $derivativeContainerFactory
 	)
 	{
 		$this->derivativeContainerFactory = $derivativeContainerFactory;
-		$this->validateOverridingMethods = $validateOverridingMethods;
-		$this->crossCheckInterfaces = $crossCheckInterfaces;
 	}
 
 	/**
@@ -82,6 +75,7 @@ class StubValidator
 		}
 
 		$originalBroker = Broker::getInstance();
+		$originalReflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		$container = $this->derivativeContainerFactory->create([
 			__DIR__ . '/../../conf/config.stubValidator.neon',
 		]);
@@ -94,6 +88,9 @@ class StubValidator
 		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
 		$nodeScopeResolver->setAnalysedFiles($stubFiles);
+
+		$pathRoutingParser = $container->getService('pathRoutingParser');
+		$pathRoutingParser->setAnalysedFiles($stubFiles);
 
 		$analysedFiles = array_fill_keys($stubFiles, true);
 
@@ -121,6 +118,7 @@ class StubValidator
 		}
 
 		Broker::registerInstance($originalBroker);
+		ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
 		ObjectType::resetCaches();
 
 		return $errors;
@@ -149,13 +147,14 @@ class StubValidator
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, true, false),
+			new OverridingMethodRule($container->getByType(PhpVersion::class), new MethodSignatureRule(true, true), true),
 
 			// level 2
-			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper, $this->crossCheckInterfaces),
+			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new ClassTemplateTypeRule($templateTypeCheck),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
-			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper, $this->crossCheckInterfaces),
+			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new InterfaceTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),
@@ -179,14 +178,6 @@ class StubValidator
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 		];
-
-		if ($this->validateOverridingMethods) {
-			$rules[] = new OverridingMethodRule(
-				$container->getByType(PhpVersion::class),
-				new MethodSignatureRule(true, true),
-				true
-			);
-		}
 
 		return new Registry($rules);
 	}

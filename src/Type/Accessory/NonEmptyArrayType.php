@@ -83,7 +83,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function describe(\PHPStan\Type\VerbosityLevel $level): string
 	{
-		return 'nonEmpty';
+		return 'non-empty-array';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

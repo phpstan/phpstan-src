@@ -1,6 +1,6 @@
 [
     {
-        "message": "Function PHPStan\\Generics\\Pick\\test() has no return typehint specified.",
+        "message": "Function PHPStan\\Generics\\Pick\\test() has no return type specified.",
         "line": 22,
         "ignorable": true
     }

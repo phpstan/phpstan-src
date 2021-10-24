@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class ArrayTypeTest extends \PHPStan\Testing\TestCase
+class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -83,7 +83,7 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 
 	public function dataAccepts(): array
 	{
-		$reflectionProvider = Broker::getInstance();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		return [
 			[

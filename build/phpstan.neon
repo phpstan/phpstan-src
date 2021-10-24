@@ -18,7 +18,7 @@ parameters:
 		- ../tests/phpstan-bootstrap.php
 	checkUninitializedProperties: true
 	checkMissingCallableSignature: true
-	excludes_analyse:
+	excludePaths:
 		- ../src/Reflection/SignatureMap/functionMap.php
 		- ../src/Reflection/SignatureMap/functionMetadata.php
 		- ../tests/*/data/*
@@ -65,9 +65,6 @@ parameters:
 		check:
 			missingCheckedExceptionInThrows: true
 			tooWideThrowType: true
-	featureToggles:
-		readComposerPhpVersion: false
-		apiRules: false
 	ignoreErrors:
 		- '#^Dynamic call to static method PHPUnit\\Framework\\\S+\(\)\.$#'
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'

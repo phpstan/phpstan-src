@@ -40,7 +40,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle(
 			$functionReflection->getVariants()
 		)->getReturnType();
-		if (count($functionCall->args) === 0) {
+		if (count($functionCall->getArgs()) === 0) {
 			if ($scope->isInTrait()) {
 				return $defaultReturnType;
 			}
@@ -53,7 +53,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\
 			return new ConstantBooleanType(false);
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		if ($scope->isInTrait() && TypeUtils::findThisType($argType) !== null) {
 			return $defaultReturnType;
 		}
@@ -92,7 +92,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\
 	): Type
 	{
 		$parentClass = $classReflection->getParentClass();
-		if ($parentClass === false) {
+		if ($parentClass === null) {
 			return new ConstantBooleanType(false);
 		}
 

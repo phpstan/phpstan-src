@@ -64,7 +64,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 		if ($parameterType instanceof MixedType && !$parameterType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Function %s() has parameter $%s with no typehint specified.',
+					'Function %s() has parameter $%s with no type specified.',
 					$functionReflection->getName(),
 					$parameterReflection->getName()
 				))->build(),

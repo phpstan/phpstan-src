@@ -23,7 +23,7 @@ class EchoRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/echo.php'], [
 			[
-				'Parameter #1 (array()) of echo cannot be converted to string.',
+				'Parameter #1 (array{}) of echo cannot be converted to string.',
 				7,
 			],
 			[
@@ -31,7 +31,7 @@ class EchoRuleTest extends RuleTestCase
 				9,
 			],
 			[
-				'Parameter #1 (array()) of echo cannot be converted to string.',
+				'Parameter #1 (array{}) of echo cannot be converted to string.',
 				11,
 			],
 			[
@@ -43,8 +43,22 @@ class EchoRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Parameter #1 (\'string\'|array(\'string\')) of echo cannot be converted to string.',
+				'Parameter #1 (\'string\'|array{\'string\'}) of echo cannot be converted to string.',
 				17,
+			],
+		]);
+	}
+
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/echo-nullsafe.php'], [
+			[
+				'Parameter #1 (array<int>|null) of echo cannot be converted to string.',
+				15,
 			],
 		]);
 	}

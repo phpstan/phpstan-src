@@ -3,9 +3,9 @@
 namespace PHPStan\Type\Constant;
 
 use PhpParser\Node\Name;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -118,9 +118,9 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return TrinaryLogic::createNo();
 		}
 		if ($type instanceof ClassStringType) {
-			$broker = Broker::getInstance();
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-			return $broker->hasClass($this->getValue()) ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
+			return $reflectionProvider->hasClass($this->getValue()) ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
 		}
 
 		if ($type instanceof self) {
@@ -144,21 +144,21 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return TrinaryLogic::createNo();
 		}
 
-		$broker = Broker::getInstance();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		// 'my_function'
-		if ($broker->hasFunction(new Name($this->value), null)) {
+		if ($reflectionProvider->hasFunction(new Name($this->value), null)) {
 			return TrinaryLogic::createYes();
 		}
 
 		// 'MyClass::myStaticFunction'
 		$matches = \Nette\Utils\Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
 		if ($matches !== null) {
-			if (!$broker->hasClass($matches[1])) {
+			if (!$reflectionProvider->hasClass($matches[1])) {
 				return TrinaryLogic::createMaybe();
 			}
 
-			$classRef = $broker->getClass($matches[1]);
+			$classRef = $reflectionProvider->getClass($matches[1]);
 			if ($classRef->hasMethod($matches[2])) {
 				return TrinaryLogic::createYes();
 			}
@@ -179,22 +179,22 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
-		$broker = Broker::getInstance();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		// 'my_function'
 		$functionName = new Name($this->value);
-		if ($broker->hasFunction($functionName, null)) {
-			return $broker->getFunction($functionName, null)->getVariants();
+		if ($reflectionProvider->hasFunction($functionName, null)) {
+			return $reflectionProvider->getFunction($functionName, null)->getVariants();
 		}
 
 		// 'MyClass::myStaticFunction'
 		$matches = \Nette\Utils\Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
 		if ($matches !== null) {
-			if (!$broker->hasClass($matches[1])) {
+			if (!$reflectionProvider->hasClass($matches[1])) {
 				return [new TrivialParametersAcceptor()];
 			}
 
-			$classReflection = $broker->getClass($matches[1]);
+			$classReflection = $reflectionProvider->getClass($matches[1]);
 			if ($classReflection->hasMethod($matches[2])) {
 				$method = $classReflection->getMethod($matches[2], $scope);
 				if (!$scope->canCallMethod($method)) {
@@ -301,17 +301,17 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new self($this->getValue() . $otherString->getValue());
 	}
 
-	public function generalize(?GeneralizePrecision $precision = null): Type
+	public function generalize(GeneralizePrecision $precision): Type
 	{
 		if ($this->isClassString) {
-			if ($precision !== null && $precision->isMoreSpecific()) {
+			if ($precision->isMoreSpecific()) {
 				return new ClassStringType();
 			}
 
 			return new StringType();
 		}
 
-		if ($this->getValue() !== '' && $precision !== null && $precision->isMoreSpecific()) {
+		if ($this->getValue() !== '' && $precision->isMoreSpecific()) {
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
@@ -319,7 +319,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			]);
 		}
 
-		if ($precision !== null && $precision->isMoreSpecific()) {
+		if ($precision->isMoreSpecific()) {
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryLiteralStringType(),

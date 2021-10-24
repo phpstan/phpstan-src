@@ -39,15 +39,12 @@ class FunctionDefinitionCheck
 
 	private bool $checkThisOnly;
 
-	private bool $checkMissingTemplateTypeInParameter;
-
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		PhpVersion $phpVersion,
 		bool $checkClassCaseSensitivity,
-		bool $checkThisOnly,
-		bool $checkMissingTemplateTypeInParameter
+		bool $checkThisOnly
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -55,7 +52,6 @@ class FunctionDefinitionCheck
 		$this->phpVersion = $phpVersion;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkThisOnly = $checkThisOnly;
-		$this->checkMissingTemplateTypeInParameter = $checkMissingTemplateTypeInParameter;
 	}
 
 	/**
@@ -90,7 +86,7 @@ class FunctionDefinitionCheck
 	/**
 	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Param[] $parameters
-	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\NullableType|\PhpParser\Node\UnionType|null $returnTypeNode
+	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\ComplexType|null $returnTypeNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
 	 * @param string $unionTypesMessage
@@ -316,24 +312,22 @@ class FunctionDefinitionCheck
 			$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $parametersAcceptor->getReturnType()->describe(VerbosityLevel::typeOnly())))->line($returnTypeNode->getLine())->build();
 		}
 
-		if ($this->checkMissingTemplateTypeInParameter) {
-			$templateTypeMap = $parametersAcceptor->getTemplateTypeMap();
-			$templateTypes = $templateTypeMap->getTypes();
-			if (count($templateTypes) > 0) {
-				foreach ($parametersAcceptor->getParameters() as $parameter) {
-					TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
-						if ($type instanceof TemplateType) {
-							unset($templateTypes[$type->getName()]);
-							return $traverse($type);
-						}
-
+		$templateTypeMap = $parametersAcceptor->getTemplateTypeMap();
+		$templateTypes = $templateTypeMap->getTypes();
+		if (count($templateTypes) > 0) {
+			foreach ($parametersAcceptor->getParameters() as $parameter) {
+				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+					if ($type instanceof TemplateType) {
+						unset($templateTypes[$type->getName()]);
 						return $traverse($type);
-					});
-				}
+					}
 
-				foreach (array_keys($templateTypes) as $templateTypeName) {
-					$errors[] = RuleErrorBuilder::message(sprintf($templateTypeMissingInParameterMessage, $templateTypeName))->build();
-				}
+					return $traverse($type);
+				});
+			}
+
+			foreach (array_keys($templateTypes) as $templateTypeName) {
+				$errors[] = RuleErrorBuilder::message(sprintf($templateTypeMissingInParameterMessage, $templateTypeName))->build();
 			}
 		}
 

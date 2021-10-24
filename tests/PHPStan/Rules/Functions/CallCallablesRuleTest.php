@@ -25,8 +25,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				$ruleLevelHelper,
 				new NullsafeCheck(),
 				new PhpVersion(80000),
-				new UnresolvableTypeHelper(true),
-				true,
+				new UnresolvableTypeHelper(),
 				true,
 				true,
 				true,
@@ -56,11 +55,11 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				25,
 			],
 			[
-				'Parameter #1 $i of callable array($this(CallCallables\Foo), \'doBar\') expects int, string given.',
+				'Parameter #1 $i of callable array{$this(CallCallables\\Foo), \'doBar\'} expects int, string given.',
 				33,
 			],
 			[
-				'Callable array(\'CallCallables\\\\Foo\', \'doStaticBaz\') invoked with 1 parameter, 0 required.',
+				'Callable array{\'CallCallables\\\\Foo\', \'doStaticBaz\'} invoked with 1 parameter, 0 required.',
 				39,
 			],
 			[
@@ -109,7 +108,7 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				113,
 			],
 			[
-				'Trying to invoke array(object, \'bar\') but it might not be a callable.',
+				'Trying to invoke array{object, \'bar\'} but it might not be a callable.',
 				131,
 			],
 			[
@@ -125,15 +124,15 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				148,
 			],
 			[
-				'Trying to invoke array(object, \'yo\') but it might not be a callable.',
+				'Trying to invoke array{object, \'yo\'} but it might not be a callable.',
 				163,
 			],
 			[
-				'Trying to invoke array(object, \'yo\') but it might not be a callable.',
+				'Trying to invoke array{object, \'yo\'} but it might not be a callable.',
 				167,
 			],
 			[
-				'Trying to invoke array(\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\') but it might not be a callable.',
+				'Trying to invoke array{\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\'} but it might not be a callable.',
 				179,
 			],
 		]);
@@ -197,6 +196,21 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->analyse([__DIR__ . '/data/bug-3566.php'], $errors);
+	}
+
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/callables-nullsafe.php'], [
+			[
+				'Parameter #1 $val of closure expects int, int|null given.',
+				18,
+			],
+		]);
 	}
 
 }

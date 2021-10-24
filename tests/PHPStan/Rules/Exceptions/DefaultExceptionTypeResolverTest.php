@@ -4,9 +4,9 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 
-class DefaultExceptionTypeResolverTest extends TestCase
+class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 {
 
 	public function dataIsCheckedException(): array
@@ -141,7 +141,7 @@ class DefaultExceptionTypeResolverTest extends TestCase
 		bool $expectedResult
 	): void
 	{
-		$resolver = new DefaultExceptionTypeResolver($this->createBroker(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
+		$resolver = new DefaultExceptionTypeResolver($this->createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
 		$this->assertSame($expectedResult, $resolver->isCheckedException($className, self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create(__DIR__))));
 	}
 

@@ -50,7 +50,7 @@ class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodT
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		return new SpecifiedTypes(['$bar' => [$node->args[0]->value, new IntegerType()]]);
+		return new SpecifiedTypes(['$bar' => [$node->getArgs()[0]->value, new IntegerType()]]);
 	}
 
 }

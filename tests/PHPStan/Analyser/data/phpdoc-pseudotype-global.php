@@ -22,7 +22,7 @@ function () {
 	$double = doFoo();
 
 	assertType('float|int', $number);
-	assertType('float|int|(string&numeric)', $numeric);
+	assertType('float|int|numeric-string', $numeric);
 	assertType('bool', $boolean);
 	assertType('resource', $resource);
 	assertType('*NEVER*', $never);

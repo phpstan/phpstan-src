@@ -36,3 +36,12 @@ class Baz
 	private string $stringProp;
 
 }
+
+/** @template T */
+class Lorem
+{
+
+	/** @var T */
+	private string $string;
+
+}

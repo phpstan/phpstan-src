@@ -23,7 +23,7 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dyn
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$arrayArg = $functionCall->args[0]->value ?? null;
+		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
 		if ($arrayArg !== null) {
 			$valueType = $scope->getType($arrayArg);
 			if ($valueType->isArray()->yes()) {

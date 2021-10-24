@@ -32,7 +32,7 @@ class GenericAncestorsCheck
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		VarianceCheck $varianceCheck,
 		bool $checkGenericClassInNonGenericObjectType,
-		array $skipCheckGenericClasses = []
+		array $skipCheckGenericClasses
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

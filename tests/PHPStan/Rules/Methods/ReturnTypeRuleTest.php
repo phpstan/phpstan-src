@@ -270,6 +270,10 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Method ReturnTypes\NeverReturn::doFoo() should never return but return statement found.',
 				1238,
 			],
+			[
+				'Method ReturnTypes\NeverReturn::doBaz3() should never return but return statement found.',
+				1251,
+			],
 		]);
 	}
 
@@ -425,15 +429,15 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4590.php'], [
 			[
-				'Method Bug4590\Controller::test1() should return Bug4590\OkResponse<array<string, string>> but returns Bug4590\OkResponse<array(\'ok\' => string)>.',
+				'Method Bug4590\\Controller::test1() should return Bug4590\\OkResponse<array<string, string>> but returns Bug4590\\OkResponse<array{ok: string}>.',
 				39,
 			],
 			[
-				'Method Bug4590\Controller::test2() should return Bug4590\OkResponse<array<int, string>> but returns Bug4590\OkResponse<array(string)>.',
+				'Method Bug4590\\Controller::test2() should return Bug4590\\OkResponse<array<int, string>> but returns Bug4590\\OkResponse<array{string}>.',
 				47,
 			],
 			[
-				'Method Bug4590\Controller::test3() should return Bug4590\OkResponse<array<string>> but returns Bug4590\OkResponse<array(string)>.',
+				'Method Bug4590\\Controller::test3() should return Bug4590\\OkResponse<array<string>> but returns Bug4590\\OkResponse<array{string}>.',
 				55,
 			],
 		]);

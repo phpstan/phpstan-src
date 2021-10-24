@@ -84,6 +84,10 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				'Circular definition detected in type alias CircularTypeAliasImport1.',
 				47,
 			],
+			[
+				'Invalid type definition detected in type alias InvalidTypeAlias.',
+				62,
+			],
 		]);
 	}
 

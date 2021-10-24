@@ -23,10 +23,10 @@ class MixinRuleTest extends RuleTestCase
 		return new MixinRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			$reflectionProvider,
-			new ClassCaseSensitivityCheck($reflectionProvider),
+			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			new GenericObjectTypeCheck(),
-			new MissingTypehintCheck($reflectionProvider, true, true, true),
-			new UnresolvableTypeHelper(true),
+			new MissingTypehintCheck($reflectionProvider, true, true, true, []),
+			new UnresolvableTypeHelper(),
 			true
 		);
 	}

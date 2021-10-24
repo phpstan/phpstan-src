@@ -308,7 +308,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$reflectionFunction->getFileName(),
+			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure
 		);
 		$this->customFunctionReflections[$lowerCasedFunctionName] = $functionReflection;

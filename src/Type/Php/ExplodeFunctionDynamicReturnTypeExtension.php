@@ -41,11 +41,11 @@ class ExplodeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynamic
 		Scope $scope
 	): Type
 	{
-		if (count($functionCall->args) < 2) {
+		if (count($functionCall->getArgs()) < 2) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$delimiterType = $scope->getType($functionCall->args[0]->value);
+		$delimiterType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isSuperset = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
 		if ($isSuperset->yes()) {
 			if ($this->phpVersion->getVersionId() >= 80000) {
@@ -55,8 +55,8 @@ class ExplodeFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynamic
 		} elseif ($isSuperset->no()) {
 			$arrayType = new ArrayType(new IntegerType(), new StringType());
 			if (
-				!isset($functionCall->args[2])
-				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->args[2]->value))->yes()
+				!isset($functionCall->getArgs()[2])
+				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes()
 			) {
 				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 			}

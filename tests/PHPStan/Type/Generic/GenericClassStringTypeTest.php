@@ -15,11 +15,13 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
+class GenericClassStringTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return [
 			0 => [
 				new GenericClassStringType(new ObjectType(\Exception::class)),
@@ -122,17 +124,17 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				TrinaryLogic::createNo(),
 			],
 			15 => [
-				new GenericClassStringType(new StaticType(\Exception::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
 			16 => [
-				new GenericClassStringType(new StaticType(\InvalidArgumentException::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\InvalidArgumentException::class))),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createNo(),
 			],
 			17 => [
-				new GenericClassStringType(new StaticType(\Throwable::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Throwable::class))),
 				new ConstantStringType(\Exception::class),
 				TrinaryLogic::createYes(),
 			],
@@ -275,6 +277,8 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 
 	public function dataEquals(): array
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return [
 			[
 				new GenericClassStringType(new ObjectType(\Exception::class)),
@@ -287,13 +291,13 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\TestCase
 				false,
 			],
 			[
-				new GenericClassStringType(new StaticType(\Exception::class)),
-				new GenericClassStringType(new StaticType(\Exception::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
 				true,
 			],
 			[
-				new GenericClassStringType(new StaticType(\Exception::class)),
-				new GenericClassStringType(new StaticType(\stdClass::class)),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\stdClass::class))),
 				false,
 			],
 		];

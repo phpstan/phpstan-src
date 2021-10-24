@@ -25,7 +25,7 @@ class PathinfoFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 		Scope $scope
 	): Type
 	{
-		$argsCount = count($functionCall->args);
+		$argsCount = count($functionCall->getArgs());
 		if ($argsCount === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		} elseif ($argsCount === 1) {

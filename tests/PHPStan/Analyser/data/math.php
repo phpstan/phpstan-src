@@ -52,19 +52,19 @@ class Foo
 		assertType('int', $rangeFiveRight - $rangeFiveLeft);
 
 		assertType('int<-10, 10>', $rangeFiveBoth + $rangeFiveBoth);
-		assertType('0', $rangeFiveBoth - $rangeFiveBoth);
+		assertType('int<-10, 10>', $rangeFiveBoth - $rangeFiveBoth);
 
 		assertType('int<-10, max>', $rangeFiveBoth + $rangeFiveLeft);
 		assertType('int', $rangeFiveBoth - $rangeFiveLeft);
 
 		assertType('int<min, 10>', $rangeFiveBoth + $rangeFiveRight);
-		assertType('int<min, 0>', $rangeFiveBoth - $rangeFiveRight);
+		assertType('int<-10, max>', $rangeFiveBoth - $rangeFiveRight);
 
 		assertType('int<-10, max>', $rangeFiveLeft + $rangeFiveBoth);
-		assertType('int<0, max>', $rangeFiveLeft - $rangeFiveBoth);
+		assertType('int<-10, max>', $rangeFiveLeft - $rangeFiveBoth);
 
 		assertType('int<min, 10>', $rangeFiveRight + $rangeFiveBoth);
-		assertType('int<min, 0>', $rangeFiveRight - $rangeFiveBoth);
+		assertType('int<min, 10>', $rangeFiveRight - $rangeFiveBoth);
 	}
 
 	public function doLorem($a, $b): void

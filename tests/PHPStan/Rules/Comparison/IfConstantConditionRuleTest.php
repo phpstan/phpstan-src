@@ -2,13 +2,6 @@
 
 namespace PHPStan\Rules\Comparison;
 
-use PhpParser\Node\Expr\FuncCall;
-use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\Type;
-
 /**
  * @extends \PHPStan\Testing\RuleTestCase<IfConstantConditionRule>
  */
@@ -37,28 +30,6 @@ class IfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
 	{
 		return $this->treatPhpDocTypesAsCertain;
-	}
-
-	/**
-	 * @return DynamicFunctionReturnTypeExtension[]
-	 */
-	public function getDynamicFunctionReturnTypeExtensions(): array
-	{
-		return [
-			new class implements DynamicFunctionReturnTypeExtension {
-
-				public function isFunctionSupported(FunctionReflection $functionReflection): bool
-				{
-					return $functionReflection->getName() === 'always_true';
-				}
-
-				public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
-				{
-					return new ConstantBooleanType(true);
-				}
-
-			},
-		];
 	}
 
 	public function testRule(): void

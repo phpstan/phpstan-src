@@ -112,7 +112,7 @@ class PhpMethodReflection implements MethodReflection
 		bool $isInternal,
 		bool $isFinal,
 		?string $stubPhpDocString,
-		?bool $isPure = null
+		?bool $isPure
 	)
 	{
 		$this->declaringClass = $declaringClass;
@@ -268,13 +268,13 @@ class PhpMethodReflection implements MethodReflection
 			$filename = $this->declaringTrait->getFileName();
 		}
 
-		if (!$isNativelyVariadic && $filename !== false && file_exists($filename)) {
+		if (!$isNativelyVariadic && $filename !== null && file_exists($filename)) {
 			$modifiedTime = filemtime($filename);
 			if ($modifiedTime === false) {
 				$modifiedTime = time();
 			}
 			$key = sprintf('variadic-method-%s-%s-%s', $declaringClass->getName(), $this->reflection->getName(), $filename);
-			$variableCacheKey = sprintf('%d-v2', $modifiedTime);
+			$variableCacheKey = sprintf('%d-v4', $modifiedTime);
 			$cachedResult = $this->cache->load($key, $variableCacheKey);
 			if ($cachedResult === null || !is_bool($cachedResult)) {
 				$nodes = $this->parser->parseFile($filename);

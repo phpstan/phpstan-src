@@ -1,6 +1,6 @@
 [
     {
-        "message": "Method Levels\\ThrowValues\\Foo::doFoo() has no return typehint specified.",
+        "message": "Method Levels\\ThrowValues\\Foo::doFoo() has no return type specified.",
         "line": 30,
         "ignorable": true
     }

@@ -10,36 +10,33 @@ use PHPStan\Rules\MissingTypehintCheck;
 class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
-	/** @var bool */
-	private $deepInspectTypes = false;
-
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true, [], $this->deepInspectTypes));
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));
 	}
 
 	public function testRule(): void
 	{
 		$errors = [
 			[
-				'Method MissingMethodParameterTypehint\FooInterface::getFoo() has parameter $p1 with no typehint specified.',
+				'Method MissingMethodParameterTypehint\FooInterface::getFoo() has parameter $p1 with no type specified.',
 				8,
 			],
 			[
-				'Method MissingMethodParameterTypehint\FooParent::getBar() has parameter $p2 with no typehint specified.',
+				'Method MissingMethodParameterTypehint\FooParent::getBar() has parameter $p2 with no type specified.',
 				15,
 			],
 			[
-				'Method MissingMethodParameterTypehint\Foo::getFoo() has parameter $p1 with no typehint specified.',
+				'Method MissingMethodParameterTypehint\Foo::getFoo() has parameter $p1 with no type specified.',
 				25,
 			],
 			[
-				'Method MissingMethodParameterTypehint\Foo::getBar() has parameter $p2 with no typehint specified.',
+				'Method MissingMethodParameterTypehint\Foo::getBar() has parameter $p2 with no type specified.',
 				33,
 			],
 			[
-				'Method MissingMethodParameterTypehint\Foo::getBaz() has parameter $p3 with no typehint specified.',
+				'Method MissingMethodParameterTypehint\Foo::getBaz() has parameter $p3 with no type specified.',
 				42,
 			],
 			[
@@ -95,20 +92,8 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 		]);
 	}
 
-	public function testDoNotDeepInspectTypes(): void
-	{
-		$this->analyse([__DIR__ . '/data/deep-inspect-types.php'], [
-			[
-				'Method DeepInspectTypes\Foo::doBar() has parameter $bars with generic class DeepInspectTypes\Bar but does not specify its types: T',
-				17,
-				MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP,
-			],
-		]);
-	}
-
 	public function testDeepInspectTypes(): void
 	{
-		$this->deepInspectTypes = true;
 		$this->analyse([__DIR__ . '/data/deep-inspect-types.php'], [
 			[
 				'Method DeepInspectTypes\Foo::doFoo() has parameter $foo with no value type specified in iterable type iterable.',
@@ -125,7 +110,6 @@ class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCa
 
 	public function testBug3723(): void
 	{
-		$this->deepInspectTypes = false;
 		$this->analyse([__DIR__ . '/data/bug-3723.php'], []);
 	}
 

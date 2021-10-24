@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -14,7 +15,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-class CallableTypeTest extends \PHPStan\Testing\TestCase
+class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -99,17 +100,12 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 			],
 			[
 				new CallableType(),
-				new IntersectionType([new CallableType()]),
-				TrinaryLogic::createYes(),
-			],
-			[
-				new CallableType(),
-				new IntersectionType([new StringType()]),
+				new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 				TrinaryLogic::createMaybe(),
 			],
 			[
 				new CallableType(),
-				new IntersectionType([new IntegerType()]),
+				new IntegerType(),
 				TrinaryLogic::createNo(),
 			],
 			[

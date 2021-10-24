@@ -46,7 +46,6 @@ class ProcessHelper
 		}
 
 		$options = [
-			'paths-file',
 			AnalyseCommand::OPTION_LEVEL,
 			'autoload-file',
 			'memory-limit',

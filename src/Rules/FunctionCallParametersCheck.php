@@ -37,8 +37,6 @@ class FunctionCallParametersCheck
 
 	private bool $checkMissingTypehints;
 
-	private bool $checkNeverInGenericReturnType;
-
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
 		NullsafeCheck $nullsafeCheck,
@@ -47,8 +45,7 @@ class FunctionCallParametersCheck
 		bool $checkArgumentTypes,
 		bool $checkArgumentsPassedByReference,
 		bool $checkExtraArguments,
-		bool $checkMissingTypehints,
-		bool $checkNeverInGenericReturnType
+		bool $checkMissingTypehints
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;
@@ -59,7 +56,6 @@ class FunctionCallParametersCheck
 		$this->checkArgumentsPassedByReference = $checkArgumentsPassedByReference;
 		$this->checkExtraArguments = $checkExtraArguments;
 		$this->checkMissingTypehints = $checkMissingTypehints;
-		$this->checkNeverInGenericReturnType = $checkNeverInGenericReturnType;
 	}
 
 	/**
@@ -94,7 +90,7 @@ class FunctionCallParametersCheck
 		/** @var array<int, array{Expr, Type, bool, string|null, int}> $arguments */
 		$arguments = [];
 		/** @var array<int, \PhpParser\Node\Arg> $args */
-		$args = $funcCall->args;
+		$args = $funcCall->getArgs();
 		$hasNamedArguments = false;
 		$hasUnpackedArgument = false;
 		$errors = [];
@@ -357,8 +353,7 @@ class FunctionCallParametersCheck
 			}
 
 			if (
-				$this->checkNeverInGenericReturnType
-				&& !$this->unresolvableTypeHelper->containsUnresolvableType($originalParametersAcceptor->getReturnType())
+				!$this->unresolvableTypeHelper->containsUnresolvableType($originalParametersAcceptor->getReturnType())
 				&& $this->unresolvableTypeHelper->containsUnresolvableType($parametersAcceptor->getReturnType())
 			) {
 				$errors[] = RuleErrorBuilder::message($messages[12])->line($funcCall->getLine())->build();

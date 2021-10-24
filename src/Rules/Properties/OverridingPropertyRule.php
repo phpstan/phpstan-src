@@ -208,7 +208,7 @@ class OverridingPropertyRule implements Rule
 	private function findPrototype(ClassReflection $classReflection, string $propertyName): ?PhpPropertyReflection
 	{
 		$parentClass = $classReflection->getParentClass();
-		if ($parentClass === false) {
+		if ($parentClass === null) {
 			return null;
 		}
 

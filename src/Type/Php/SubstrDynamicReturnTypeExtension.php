@@ -27,7 +27,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		Scope $scope
 	): \PHPStan\Type\Type
 	{
-		$args = $functionCall->args;
+		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}

@@ -210,7 +210,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$scopeFile = $scope->getFile();
 		} else {
 			$scopeFile = $scope->getTraitReflection()->getFileName();
-			if ($scopeFile === false) {
+			if ($scopeFile === null) {
 				$scopeFile = $scope->getFile();
 			}
 		}
@@ -297,9 +297,8 @@ class BetterReflectionProvider implements ReflectionProvider
 			return $parameter->getName();
 		}, $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
-			$fileName = $reflectionFunction->getFileName();
 			$docComment = $reflectionFunction->getDocComment();
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, $reflectionFunction->getName(), $docComment);
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($reflectionFunction->getFileName(), null, null, $reflectionFunction->getName(), $docComment);
 		}
 
 		if ($resolvedPhpDoc !== null) {
@@ -326,7 +325,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$reflectionFunction->getFileName(),
+			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure
 		);
 	}

@@ -10,7 +10,7 @@ class Foo
 	function doFoo1(array $arr): void
 	{
 		if (count($arr) > 0) {
-			assertType('array&nonEmpty', $arr);
+			assertType('non-empty-array', $arr);
 		}
 	}
 
@@ -20,7 +20,7 @@ class Foo
 	function doFoo2(array $arr): void
 	{
 		if (count($arr) != 0) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 
@@ -30,7 +30,7 @@ class Foo
 	function doFoo3(array $arr): void
 	{
 		if (count($arr) == 1) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 
@@ -40,7 +40,7 @@ class Foo
 	function doFoo4(array $arr): void
 	{
 		if ($arr != []) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 
@@ -50,7 +50,7 @@ class Foo
 	function doFoo5(array $arr): void
 	{
 		if (sizeof($arr) !== 0) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 
@@ -60,7 +60,7 @@ class Foo
 	function doFoo6(array $arr): void
 	{
 		if (count($arr) !== 0) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 
@@ -71,7 +71,7 @@ class Foo
 	function doFoo7(array $arr): void
 	{
 		if (!empty($arr)) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 
@@ -81,7 +81,7 @@ class Foo
 	function doFoo8(array $arr): void
 	{
 		if (count($arr) === 1) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 
@@ -92,7 +92,7 @@ class Foo
 	function doFoo9(array $arr): void
 	{
 		if ($arr !== []) {
-			assertType('array<string>&nonEmpty', $arr);
+			assertType('non-empty-array<string>', $arr);
 		}
 	}
 

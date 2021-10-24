@@ -20,7 +20,7 @@ class TooWideClosureReturnTypehintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/tooWideClosureReturnType.php'], [
 			[
-				'Anonymous function never returns null so it can be removed from the return typehint.',
+				'Anonymous function never returns null so it can be removed from the return type.',
 				20,
 			],
 		]);

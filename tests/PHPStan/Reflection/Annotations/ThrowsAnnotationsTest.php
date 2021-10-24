@@ -4,10 +4,9 @@ namespace PHPStan\Reflection\Annotations;
 
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Type\VerbosityLevel;
 
-class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
+class ThrowsAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataThrowsAnnotations(): array
@@ -68,9 +67,8 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 	 */
 	public function testThrowsAnnotations(string $className, array $throwsAnnotations): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
-		$class = $broker->getClass($className);
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 
 		foreach ($throwsAnnotations as $methodName => $type) {
@@ -84,12 +82,11 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 	{
 		require_once __DIR__ . '/data/annotations-throws.php';
 
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
+		$reflectionProvider = $this->createReflectionProvider();
 
-		$this->assertNull($broker->getFunction(new Name\FullyQualified('ThrowsAnnotations\withoutThrows'), null)->getThrowType());
+		$this->assertNull($reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\withoutThrows'), null)->getThrowType());
 
-		$throwType = $broker->getFunction(new Name\FullyQualified('ThrowsAnnotations\throwsRuntime'), null)->getThrowType();
+		$throwType = $reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\throwsRuntime'), null)->getThrowType();
 		$this->assertNotNull($throwType);
 		$this->assertSame(\RuntimeException::class, $throwType->describe(VerbosityLevel::typeOnly()));
 	}

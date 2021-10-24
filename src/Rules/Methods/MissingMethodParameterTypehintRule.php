@@ -61,7 +61,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 		if ($parameterType instanceof MixedType && !$parameterType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Method %s::%s() has parameter $%s with no typehint specified.',
+					'Method %s::%s() has parameter $%s with no type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
 					$parameterReflection->getName()

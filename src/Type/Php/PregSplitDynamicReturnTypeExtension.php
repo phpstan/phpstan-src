@@ -38,7 +38,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$flagsArg = $functionCall->args[3] ?? null;
+		$flagsArg = $functionCall->getArgs()[3] ?? null;
 
 		if ($this->hasFlag($this->getConstant('PREG_SPLIT_OFFSET_CAPTURE'), $flagsArg, $scope)) {
 			$type = new ArrayType(

@@ -56,11 +56,11 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 	): Type
 	{
 		$argumentPosition = $this->functions[$functionReflection->getName()];
-		if (count($functionCall->args) <= $argumentPosition) {
+		if (count($functionCall->getArgs()) <= $argumentPosition) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$subjectArgumentType = $scope->getType($functionCall->args[$argumentPosition]->value);
+		$subjectArgumentType = $scope->getType($functionCall->getArgs()[$argumentPosition]->value);
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		if ($subjectArgumentType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);

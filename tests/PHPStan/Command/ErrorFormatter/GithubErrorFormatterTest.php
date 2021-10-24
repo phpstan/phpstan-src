@@ -165,7 +165,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 		$formatter = new GithubErrorFormatter(
 			$relativePathHelper,
-			new TableErrorFormatter($relativePathHelper, false)
+			new TableErrorFormatter($relativePathHelper, false, null)
 		);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(

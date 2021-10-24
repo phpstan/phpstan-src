@@ -1732,3 +1732,23 @@ class HelloWorld3
 		$this->sayHello($d);
 	}
 }
+
+class InvalidReturnTypeUsingArrayTemplateTypeBound
+{
+
+	/**
+	 * @template T of array<string>
+	 * @param T $a
+	 * @return T
+	 */
+	function bar(array $a): array
+	{
+		return $a;
+	}
+
+	public function doBar()
+	{
+		$this->bar(range(1, 3));
+	}
+
+}

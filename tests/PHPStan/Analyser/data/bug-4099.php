@@ -13,7 +13,7 @@ class Foo
 	 */
 	function arrayHint(array $arr): void
 	{
-		assertType('array(\'key\' => array(\'inner\' => mixed))', $arr);
+		assertType('array{key: array{inner: mixed}}', $arr);
 		assertNativeType('array', $arr);
 
 		if (!array_key_exists('key', $arr)) {
@@ -21,21 +21,21 @@ class Foo
 			assertNativeType('array', $arr);
 			throw new \Exception('no key "key" found.');
 		}
-		assertType('array(\'key\' => array(\'inner\' => mixed))', $arr);
+		assertType('array{key: array{inner: mixed}}', $arr);
 		assertNativeType('array&hasOffset(\'key\')', $arr);
-		assertType('array(\'inner\' => mixed)', $arr['key']);
+		assertType('array{inner: mixed}', $arr['key']);
 		assertNativeType('mixed', $arr['key']);
 
 		if (!array_key_exists('inner', $arr['key'])) {
-			assertType('array(\'key\' => *NEVER*)', $arr);
+			assertType('array{key: *NEVER*}', $arr);
 			//assertNativeType('array(\'key\' => mixed)', $arr);
 			assertType('*NEVER*', $arr['key']);
 			//assertNativeType('mixed', $arr['key']);
 			throw new \Exception('need key.inner');
 		}
 
-		assertType('array(\'key\' => array(\'inner\' => mixed))', $arr);
-		assertNativeType('array(\'key\' => array(\'inner\' => mixed))', $arr);
+		assertType('array{key: array{inner: mixed}}', $arr);
+		assertNativeType('array{key: array{inner: mixed}}', $arr);
 	}
 
 }

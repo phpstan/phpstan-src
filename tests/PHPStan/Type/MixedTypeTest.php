@@ -5,7 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
-class MixedTypeTest extends \PHPStan\Testing\TestCase
+class MixedTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -139,6 +139,11 @@ class MixedTypeTest extends \PHPStan\Testing\TestCase
 			25 => [
 				new MixedType(false, new NullType()),
 				new UnionType([new StringType(), new IntegerType()]),
+				TrinaryLogic::createYes(),
+			],
+			26 => [
+				new MixedType(),
+				new StrictMixedType(),
 				TrinaryLogic::createYes(),
 			],
 		];

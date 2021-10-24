@@ -58,7 +58,7 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 					68,
 				],
 				[
-					'Cannot assign offset array(1, 2, 3) to SplObjectStorage<object, mixed>.',
+					'Cannot assign offset array{1, 2, 3} to SplObjectStorage<object, mixed>.',
 					72,
 				],
 				[
@@ -100,7 +100,7 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 					68,
 				],
 				[
-					'Cannot assign offset array(1, 2, 3) to SplObjectStorage<object, mixed>.',
+					'Cannot assign offset array{1, 2, 3} to SplObjectStorage<object, mixed>.',
 					72,
 				],
 				[
@@ -125,6 +125,22 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/new-offset-stub.php'], []);
+	}
+
+
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/offset-access-assignment-nullsafe.php'], [
+			[
+				'Cannot assign offset int|null to string.',
+				14,
+			],
+		]);
 	}
 
 }

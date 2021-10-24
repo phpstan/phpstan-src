@@ -534,4 +534,13 @@ class ExceptionGetMessage
 		}
 	}
 
+	public function doBar(string $s)
+	{
+		try {
+			$this->{'doFoo' . $s}();
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
 }

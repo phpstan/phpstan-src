@@ -3,13 +3,12 @@
 namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Analyser\Scope;
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Type\VerbosityLevel;
 
-class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\TestCase
+class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataMethods(): array
@@ -957,9 +956,8 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\Te
 	 */
 	public function testMethods(string $className, array $methods): void
 	{
-		/** @var Broker $broker */
-		$broker = self::getContainer()->getByType(Broker::class);
-		$class = $broker->getClass($className);
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
 		$scope->method('getClassReflection')->willReturn($class);
@@ -1020,8 +1018,8 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\Te
 
 	public function testOverridingNativeMethodsWithAnnotationsDoesNotBreakGetNativeMethod(): void
 	{
-		$broker = self::getContainer()->getByType(Broker::class);
-		$class = $broker->getClass(\AnnotationsMethods\Bar::class);
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass(\AnnotationsMethods\Bar::class);
 		$this->assertTrue($class->hasNativeMethod('overridenMethodWithAnnotation'));
 		$this->assertInstanceOf(PhpMethodReflection::class, $class->getNativeMethod('overridenMethodWithAnnotation'));
 	}

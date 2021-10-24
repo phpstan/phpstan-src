@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
@@ -50,7 +51,7 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 
 		$message = sprintf(
 			'Constructor of class %s has an unused parameter $%%s.',
-			$scope->getClassReflection()->getDisplayName()
+			SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName())
 		);
 		if ($scope->getClassReflection()->isAnonymous()) {
 			$message = 'Constructor of an anonymous class has an unused parameter $%s.';

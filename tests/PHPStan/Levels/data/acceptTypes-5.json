@@ -140,27 +140,27 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array<int> given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array<int> given.",
         "line": 579,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array() given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{} given.",
         "line": 580,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array('foo' => 1) given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{foo: 1} given.",
         "line": 582,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array('foo' => 'nonexistent') given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{foo: 'nonexistent'} given.",
         "line": 584,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array('foo' => callable(): mixed), array('bar' => 'date') given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{bar: 'date'} given.",
         "line": 585,
         "ignorable": true
     },
@@ -180,23 +180,28 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects string&numeric, 'foo' given.",
+        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, 'foo' given.",
         "line": 707,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects string&numeric, string given.",
+        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, string given.",
         "line": 708,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects array&nonEmpty, array() given.",
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array, array{} given.",
         "line": 733,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects array&nonEmpty, array given.",
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array, array given.",
         "line": 735,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #2 $pieces of function implode expects array, int given.",
+        "line": 763,
         "ignorable": true
     }
 ]

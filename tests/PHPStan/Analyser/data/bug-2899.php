@@ -9,7 +9,7 @@ class Foo
 
 	public function doFoo(string $s, $mixed)
 	{
-		assertType('string&numeric', date('Y'));
+		assertType('numeric-string', date('Y'));
 		assertType('string', date('Y.m.d'));
 		assertType('string', date($s));
 		assertType('string', date($mixed));

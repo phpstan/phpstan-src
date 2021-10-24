@@ -1,15 +1,6 @@
 parameters:
-	bootstrap: here.php
 	bootstrapFiles:
 		- here.php
-	autoload_files:
-		- here.php
-		- test/there.php
-		- ../up.php
-	autoload_directories:
-		- src
-		- .
-		- %rootDir%/conf
 	scanFiles:
 		- here.php
 		- test/there.php
@@ -21,7 +12,7 @@ parameters:
 	paths:
 		- src
 	memoryLimitFile: .memory_limit
-	excludes_analyse:
+	excludePaths:
 		- src
 		- src/*/data
 		- */src/*/data

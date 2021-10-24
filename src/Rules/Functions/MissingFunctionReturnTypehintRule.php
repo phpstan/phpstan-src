@@ -44,7 +44,7 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 		if ($returnType instanceof MixedType && !$returnType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Function %s() has no return typehint specified.',
+					'Function %s() has no return type specified.',
 					$functionReflection->getName()
 				))->build(),
 			];

@@ -5,7 +5,6 @@ namespace PHPStan\Reflection;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
@@ -13,7 +12,9 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 
 /** @api */
 class ParametersAcceptorSelector
@@ -50,8 +51,7 @@ class ParametersAcceptorSelector
 		$types = [];
 		$unpack = false;
 		if (
-			BleedingEdgeToggle::isBleedingEdge()
-			&& count($args) > 0
+			count($args) > 0
 			&& count($parametersAcceptors) > 0
 		) {
 			$functionName = null;
@@ -82,7 +82,10 @@ class ParametersAcceptorSelector
 				$parameters[0] = new NativeParameterReflection(
 					$parameters[0]->getName(),
 					$parameters[0]->isOptional(),
-					new CallableType($callbackParameters, new MixedType(), false),
+					new UnionType([
+						new CallableType($callbackParameters, new MixedType(), false),
+						new NullType(),
+					]),
 					$parameters[0]->passedByReference(),
 					$parameters[0]->isVariadic(),
 					$parameters[0]->getDefaultValue()

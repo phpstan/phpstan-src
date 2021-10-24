@@ -1184,7 +1184,7 @@ class VarAnnotationAboveStmtReturn
 }
 
 /**
- * @template CollectionKey
+ * @template CollectionKey of array-key
  * @template CollectionValue
  * @implements \Iterator<CollectionKey, CollectionValue>
  */
@@ -1236,6 +1236,20 @@ class NeverReturn
 	public function doFoo(): void
 	{
 		return;
+	}
+
+	/**
+	 * @return never
+	 */
+	public function doBaz3(): string
+	{
+		try {
+			throw new \Exception('try');
+		} catch (\Exception $e) {
+			throw new \Exception('catch');
+		} finally {
+			return 'finally';
+		}
 	}
 
 }

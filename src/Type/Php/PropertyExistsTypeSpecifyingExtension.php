@@ -43,7 +43,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 	{
 		return $functionReflection->getName() === 'property_exists'
 			&& $context->truthy()
-			&& count($node->args) >= 2;
+			&& count($node->getArgs()) >= 2;
 	}
 
 	public function specifyTypes(
@@ -53,17 +53,17 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		$propertyNameType = $scope->getType($node->args[1]->value);
+		$propertyNameType = $scope->getType($node->getArgs()[1]->value);
 		if (!$propertyNameType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
 		}
 
-		$objectType = $scope->getType($node->args[0]->value);
+		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if ($objectType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
 		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($objectType)->yes()) {
 			$propertyNode = new PropertyFetch(
-				$node->args[0]->value,
+				$node->getArgs()[0]->value,
 				new Identifier($propertyNameType->getValue())
 			);
 		} else {
@@ -78,7 +78,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		}
 
 		return $this->typeSpecifier->create(
-			$node->args[0]->value,
+			$node->getArgs()[0]->value,
 			new IntersectionType([
 				new ObjectWithoutClassType(),
 				new HasPropertyType($propertyNameType->getValue()),

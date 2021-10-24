@@ -26,19 +26,19 @@ class CountFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 		Scope $scope
 	): Type
 	{
-		if (count($functionCall->args) < 1) {
+		if (count($functionCall->getArgs()) < 1) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		if (count($functionCall->args) > 1) {
-			$mode = $scope->getType($functionCall->args[1]->value);
+		if (count($functionCall->getArgs()) > 1) {
+			$mode = $scope->getType($functionCall->getArgs()[1]->value);
 			if ($mode->isSuperTypeOf(new ConstantIntegerType(\COUNT_RECURSIVE))->yes()) {
 				return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 			}
 		}
 
-		$argType = $scope->getType($functionCall->args[0]->value);
-		$constantArrays = TypeUtils::getConstantArrays($scope->getType($functionCall->args[0]->value));
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$constantArrays = TypeUtils::getConstantArrays($scope->getType($functionCall->getArgs()[0]->value));
 		if (count($constantArrays) === 0) {
 			if ($argType->isIterableAtLeastOnce()->yes()) {
 				return IntegerRangeType::fromInterval(1, null);

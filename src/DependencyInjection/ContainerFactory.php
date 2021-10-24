@@ -10,6 +10,8 @@ use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use function sys_get_temp_dir;
 
 /** @api */
@@ -86,9 +88,7 @@ class ContainerFactory
 			'cliArgumentsVariablesRegistered' => ini_get('register_argc_argv') === '1',
 			'tmpDir' => $tempDirectory,
 			'additionalConfigFiles' => $additionalConfigFiles,
-			'analysedPaths' => $analysedPaths,
 			'composerAutoloaderProjectPaths' => $composerAutoloaderProjectPaths,
-			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 			'generateBaselineFile' => $generateBaselineFile,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
@@ -97,6 +97,8 @@ class ContainerFactory
 		$configurator->addDynamicParameters([
 			'singleReflectionFile' => $singleReflectionFile,
 			'singleReflectionInsteadOfFile' => $singleReflectionInsteadOfFile,
+			'analysedPaths' => $analysedPaths,
+			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {
@@ -119,6 +121,7 @@ class ContainerFactory
 		/** @var Broker $broker */
 		$broker = $container->getByType(Broker::class);
 		Broker::registerInstance($broker);
+		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->parameters['featureToggles']['bleedingEdge']);

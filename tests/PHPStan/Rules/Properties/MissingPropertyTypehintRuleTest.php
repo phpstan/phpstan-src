@@ -13,22 +13,22 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true, true));
+		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));
 	}
 
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/missing-property-typehint.php'], [
 			[
-				'Property MissingPropertyTypehint\MyClass::$prop1 has no typehint specified.',
+				'Property MissingPropertyTypehint\MyClass::$prop1 has no type specified.',
 				7,
 			],
 			[
-				'Property MissingPropertyTypehint\MyClass::$prop2 has no typehint specified.',
+				'Property MissingPropertyTypehint\MyClass::$prop2 has no type specified.',
 				9,
 			],
 			[
-				'Property MissingPropertyTypehint\MyClass::$prop3 has no typehint specified.',
+				'Property MissingPropertyTypehint\MyClass::$prop3 has no type specified.',
 				14,
 			],
 			[
@@ -65,7 +65,7 @@ class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 		$this->analyse([__DIR__ . '/data/promoted-properties-missing-typehint.php'], [
 			[
-				'Property PromotedPropertiesMissingTypehint\Foo::$lorem has no typehint specified.',
+				'Property PromotedPropertiesMissingTypehint\Foo::$lorem has no type specified.',
 				15,
 			],
 			[

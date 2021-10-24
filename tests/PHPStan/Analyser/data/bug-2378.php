@@ -14,8 +14,8 @@ class Foo
 		float $f
 	): void
 	{
-		assertType('array(\'a\', \'b\', \'c\', \'d\')', range('a', 'd'));
-		assertType('array(\'a\', \'c\', \'e\', \'g\', \'i\')', range('a', 'i', 2));
+		assertType('array{\'a\', \'b\', \'c\', \'d\'}', range('a', 'd'));
+		assertType('array{\'a\', \'c\', \'e\', \'g\', \'i\'}', range('a', 'i', 2));
 
 		assertType('array<int, string>', range($s, $s));
 	}

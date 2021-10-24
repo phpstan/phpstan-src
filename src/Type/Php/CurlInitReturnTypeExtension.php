@@ -23,7 +23,7 @@ class CurlInitReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturn
 		Scope $scope
 	): Type
 	{
-		$argsCount = count($functionCall->args);
+		$argsCount = count($functionCall->getArgs());
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		if ($argsCount === 0) {
 			return TypeCombinator::remove($returnType, new ConstantBooleanType(false));

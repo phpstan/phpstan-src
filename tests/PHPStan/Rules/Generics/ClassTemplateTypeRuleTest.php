@@ -20,7 +20,7 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 		return new ClassTemplateTypeRule(
 			new TemplateTypeCheck(
 				$broker,
-				new ClassCaseSensitivityCheck($broker),
+				new ClassCaseSensitivityCheck($broker, true),
 				new GenericObjectTypeCheck(),
 				$typeAliasResolver,
 				true

@@ -5,7 +5,6 @@ namespace PHPStan\Command\ErrorFormatter;
 use Nette\Utils\Json;
 use PHPUnit\Framework\TestCase;
 use function chdir;
-use function file_put_contents;
 use function getcwd;
 
 /**
@@ -24,9 +23,8 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 
 	public function testGenerateBaselineAndRunAgainWithIt(): void
 	{
-		$output = $this->runPhpStan(__DIR__ . '/data/', __DIR__ . '/empty.neon', 'baselineNeon');
 		$baselineFile = __DIR__ . '/../../../../baseline.neon';
-		file_put_contents($baselineFile, $output);
+		$output = $this->runPhpStan(__DIR__ . '/data/', __DIR__ . '/empty.neon', 'json', $baselineFile);
 
 		$output = $this->runPhpStan(__DIR__ . '/data/', $baselineFile);
 		@unlink($baselineFile);
@@ -54,7 +52,8 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 	private function runPhpStan(
 		string $analysedPath,
 		?string $configFile,
-		string $errorFormatter = 'json'
+		string $errorFormatter = 'json',
+		?string $baselineFile = null
 	): string
 	{
 		$originalDir = getcwd();
@@ -67,7 +66,7 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 			throw new \PHPStan\ShouldNotHappenException('Could not clear result cache.');
 		}
 
-		exec(sprintf('%s %s analyse --no-progress --error-format=%s --level=7 %s %s', escapeshellarg(PHP_BINARY), 'bin/phpstan', $errorFormatter, $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : '', escapeshellarg($analysedPath)), $outputLines);
+		exec(sprintf('%s %s analyse --no-progress --error-format=%s --level=7 %s %s%s', escapeshellarg(PHP_BINARY), 'bin/phpstan', $errorFormatter, $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : '', escapeshellarg($analysedPath), $baselineFile !== null ? ' --generate-baseline ' . escapeshellarg($baselineFile) : ''), $outputLines);
 		chdir($originalDir);
 
 		return implode("\n", $outputLines);

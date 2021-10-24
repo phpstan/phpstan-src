@@ -97,16 +97,16 @@ class ClassReflection implements ReflectionWithFilename
 	private array $subclasses = [];
 
 	/** @var string|false|null */
-	private $filename;
+	private $filename = false;
 
 	/** @var string|false|null */
-	private $reflectionDocComment;
+	private $reflectionDocComment = false;
 
 	/** @var \PHPStan\Reflection\ClassReflection[]|null */
 	private ?array $cachedInterfaces = null;
 
 	/** @var \PHPStan\Reflection\ClassReflection|false|null */
-	private $cachedParentClass = null;
+	private $cachedParentClass = false;
 
 	/** @var array<string, TypeAlias>|null */
 	private ?array $typeAliases = null;
@@ -161,12 +161,9 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->reflection;
 	}
 
-	/**
-	 * @return string|false
-	 */
-	public function getFileName()
+	public function getFileName(): ?string
 	{
-		if (isset($this->filename)) {
+		if ($this->filename !== false) {
 			return $this->filename;
 		}
 
@@ -175,11 +172,11 @@ class ClassReflection implements ReflectionWithFilename
 		}
 		$fileName = $this->reflection->getFileName();
 		if ($fileName === false) {
-			return $this->filename = false;
+			return $this->filename = null;
 		}
 
 		if (!file_exists($fileName)) {
-			return $this->filename = false;
+			return $this->filename = null;
 		}
 
 		return $this->filename = $fileName;
@@ -191,27 +188,19 @@ class ClassReflection implements ReflectionWithFilename
 			return $this->stubPhpDocBlock->getFilename();
 		}
 
-		$filename = $this->getFileName();
-		if ($filename === false) {
-			return null;
-		}
-
-		return $filename;
+		return $this->getFileName();
 	}
 
-	/**
-	 * @return false|\PHPStan\Reflection\ClassReflection
-	 */
-	public function getParentClass()
+	public function getParentClass(): ?ClassReflection
 	{
-		if ($this->cachedParentClass !== null) {
+		if ($this->cachedParentClass !== false) {
 			return $this->cachedParentClass;
 		}
 
 		$parentClass = $this->reflection->getParentClass();
 
 		if ($parentClass === false) {
-			return $this->cachedParentClass = false;
+			return $this->cachedParentClass = null;
 		}
 
 		$extendsTag = $this->getFirstExtendsTag();
@@ -434,20 +423,6 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->getPhpExtension()->getNativeMethod($this, $methodName);
 	}
 
-	/**
-	 * @deprecated Use ClassReflection::getNativeReflection() instead.
-	 * @return MethodReflection[]
-	 */
-	public function getNativeMethods(): array
-	{
-		$methods = [];
-		foreach ($this->reflection->getMethods() as $method) {
-			$methods[] = $this->getNativeMethod($method->getName());
-		}
-
-		return $methods;
-	}
-
 	public function hasConstructor(): bool
 	{
 		return $this->findConstructor() !== null;
@@ -589,7 +564,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$parents = [];
 		$parent = $this->getParentClass();
-		while ($parent !== false) {
+		while ($parent !== null) {
 			$parents[] = $parent;
 			$parent = $parent->getParentClass();
 		}
@@ -609,7 +584,7 @@ class ClassReflection implements ReflectionWithFilename
 		$interfaces = $this->getImmediateInterfaces();
 		$immediateInterfaces = $interfaces;
 		$parent = $this->getParentClass();
-		while ($parent !== false) {
+		while ($parent !== null) {
 			foreach ($parent->getImmediateInterfaces() as $parentInterface) {
 				$interfaces[$parentInterface->getName()] = $parentInterface;
 				foreach ($this->collectInterfaces($parentInterface) as $parentInterfaceInterface) {
@@ -654,7 +629,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$indirectInterfaceNames = [];
 		$parent = $this->getParentClass();
-		while ($parent !== false) {
+		while ($parent !== null) {
 			foreach ($parent->getNativeReflection()->getInterfaceNames() as $parentInterfaceName) {
 				$indirectInterfaceNames[] = $parentInterfaceName;
 			}
@@ -754,7 +729,7 @@ class ClassReflection implements ReflectionWithFilename
 	{
 		$parentNames = [];
 		$currentClassReflection = $this;
-		while ($currentClassReflection->getParentClass() !== false) {
+		while ($currentClassReflection->getParentClass() !== null) {
 			$parentNames[] = $currentClassReflection->getParentClass()->getName();
 			$currentClassReflection = $currentClassReflection->getParentClass();
 		}
@@ -794,7 +769,7 @@ class ClassReflection implements ReflectionWithFilename
 				$declaringClass->getName(),
 				$name
 			);
-			if ($resolvedPhpDoc === null && $fileName !== false) {
+			if ($resolvedPhpDoc === null && $fileName !== null) {
 				$docComment = null;
 				if ($reflectionConstant->getDocComment() !== false) {
 					$docComment = $reflectionConstant->getDocComment();
@@ -1111,15 +1086,16 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		$fileName = $this->getFileName();
-		if ($fileName === false) {
+		if ($fileName === null) {
 			return null;
 		}
 
-		if ($this->reflectionDocComment === null) {
-			$this->reflectionDocComment = $this->reflection->getDocComment();
+		if ($this->reflectionDocComment === false) {
+			$docComment = $this->reflection->getDocComment();
+			$this->reflectionDocComment = $docComment !== false ? $docComment : null;
 		}
 
-		if ($this->reflectionDocComment === false) {
+		if ($this->reflectionDocComment === null) {
 			return null;
 		}
 
@@ -1203,7 +1179,7 @@ class ClassReflection implements ReflectionWithFilename
 			}
 
 			$parent = $this->getParentClass();
-			if ($parent !== false) {
+			if ($parent !== null) {
 				$addToAncestors($parent->getName(), $parent);
 				foreach ($parent->getAncestors() as $name => $ancestor) {
 					$addToAncestors($name, $ancestor);

@@ -2,10 +2,10 @@
 
 namespace PHPStan\Reflection\Dummy;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -22,9 +22,9 @@ class DummyMethodReflection implements MethodReflection
 
 	public function getDeclaringClass(): ClassReflection
 	{
-		$broker = Broker::getInstance();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-		return $broker->getClass(\stdClass::class);
+		return $reflectionProvider->getClass(\stdClass::class);
 	}
 
 	public function isStatic(): bool

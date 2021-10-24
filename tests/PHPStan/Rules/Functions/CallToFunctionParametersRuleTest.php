@@ -23,7 +23,7 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(true), true, true, true, true, true)
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true)
 		);
 	}
 
@@ -630,16 +630,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testUasortCallback(): void
 	{
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/uasort.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
 				7,
 			],
 		]);
@@ -650,16 +643,10 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
 
 		$this->analyse([__DIR__ . '/data/uasort_arrow.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
 				7,
 			],
 		]);
@@ -667,16 +654,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testUsortCallback(): void
 	{
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/usort.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
 				14,
 			],
 		]);
@@ -688,16 +668,9 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/usort_arrow.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
 				14,
 			],
 		]);
@@ -705,20 +678,13 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testUksortCallback(): void
 	{
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/uksort.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
 				14,
 			],
 			[
-				sprintf('Parameter #2 $%s of function uksort expects callable(int, int): int, Closure(string, string): 1 given.', $paramTwoName),
+				'Parameter #2 $callback of function uksort expects callable(int, int): int, Closure(string, string): 1 given.',
 				50,
 			],
 		]);
@@ -730,20 +696,13 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
-		$paramTwoName = PHP_VERSION_ID >= 80000
-			? 'callback'
-			: 'cmp_function';
-
 		$this->analyse([__DIR__ . '/data/uksort_arrow.php'], [
 			[
-				sprintf(
-					'Parameter #2 $%s of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
-					$paramTwoName
-				),
+				'Parameter #2 $callback of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
 				14,
 			],
 			[
-				sprintf('Parameter #2 $%s of function uksort expects callable(int, int): int, Closure(string, string): 1 given.', $paramTwoName),
+				'Parameter #2 $callback of function uksort expects callable(int, int): int, Closure(string, string): 1 given.',
 				44,
 			],
 		]);
@@ -837,10 +796,40 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->analyse([__DIR__ . '/data/array_map_multiple.php'], [
 			[
-				'Parameter #1 $callback of function array_map expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, int): void given.',
+				'Parameter #1 $callback of function array_map expects (callable(1|2, \'bar\'|\'foo\'): mixed)|null, Closure(int, int): void given.',
 				58,
 			],
 		]);
+	}
+
+	public function dataArrayFilterCallback(): array
+	{
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	/**
+	 * @dataProvider dataArrayFilterCallback
+	 * @param bool $checkExplicitMixed
+	 */
+	public function testArrayFilterCallback(bool $checkExplicitMixed): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$errors = [
+			[
+				'Parameter #2 $callback of function array_filter expects callable(int): mixed, Closure(string): true given.',
+				17,
+			],
+		];
+		if ($checkExplicitMixed) {
+			$errors[] = [
+				'Parameter #2 $callback of function array_filter expects callable(mixed): mixed, Closure(int): true given.',
+				20,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);
 	}
 
 	public function testBug5356(): void
@@ -851,11 +840,11 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-5356.php'], [
 			[
-				'Parameter #1 $callback of function array_map expects callable(string): mixed, Closure(array): \'a\' given.',
+				'Parameter #1 $callback of function array_map expects (callable(string): mixed)|null, Closure(array): \'a\' given.',
 				13,
 			],
 			[
-				'Parameter #1 $callback of function array_map expects callable(string): mixed, Closure(array): \'a\' given.',
+				'Parameter #1 $callback of function array_map expects (callable(string): mixed)|null, Closure(array): \'a\' given.',
 				21,
 			],
 		]);
@@ -865,10 +854,26 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-1954.php'], [
 			[
-				'Parameter #1 $callback of function array_map expects callable(1|stdClass): mixed, Closure(string): string given.',
+				'Parameter #1 $callback of function array_map expects (callable(1|stdClass): mixed)|null, Closure(string): string given.',
 				7,
 			],
 		]);
+	}
+
+	public function testBug2782(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2782.php'], [
+			[
+				'Parameter #2 $callback of function usort expects callable(stdClass, stdClass): int, Closure(int, int): -1|1 given.',
+				13,
+			],
+		]);
+	}
+
+	public function testBug5661(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5661.php'], []);
 	}
 
 }

@@ -2,9 +2,9 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -368,11 +368,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		if ($classOrObject instanceof ConstantStringType) {
-			$broker = Broker::getInstance();
-			if (!$broker->hasClass($classOrObject->getValue())) {
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($classOrObject->getValue())) {
 				return ConstantArrayTypeAndMethod::createUnknown();
 			}
-			$type = new ObjectType($broker->getClass($classOrObject->getValue())->getName());
+			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 		} elseif ($classOrObject instanceof GenericClassStringType) {
 			$type = $classOrObject->getGenericType();
 		} elseif ((new \PHPStan\Type\ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
@@ -619,7 +619,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->toBoolean()->toFloat();
 	}
 
-	public function generalize(?GeneralizePrecision $precision = null): Type
+	public function generalize(GeneralizePrecision $precision): Type
 	{
 		if (count($this->keyTypes) === 0) {
 			return $this;
@@ -728,7 +728,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					$exportValuesOnly = false;
 				}
 
-				$items[] = sprintf('%s%s => %s', $isOptional ? '?' : '', var_export($keyType->getValue(), true), $valueType->describe($level));
+				$keyDescription = $keyType->getValue();
+				if (is_string($keyDescription)) {
+					if (strpos($keyDescription, '"') !== false) {
+						$keyDescription = sprintf('\'%s\'', $keyDescription);
+					} elseif (strpos($keyDescription, '\'') !== false) {
+						$keyDescription = sprintf('"%s"', $keyDescription);
+					}
+				}
+
+				$items[] = sprintf('%s%s: %s', $keyDescription, $isOptional ? '?' : '', $valueType->describe($level));
 				$values[] = $valueType->describe($level);
 			}
 
@@ -740,7 +749,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 
 			return sprintf(
-				'array(%s%s)',
+				'array{%s%s}',
 				implode(', ', $exportValuesOnly ? $values : $items),
 				$append
 			);

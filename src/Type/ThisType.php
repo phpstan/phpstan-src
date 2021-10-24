@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 
 /** @api */
 class ThisType extends StaticType
@@ -10,18 +11,13 @@ class ThisType extends StaticType
 
 	/**
 	 * @api
-	 * @param string|ClassReflection $classReflection
 	 */
-	public function __construct($classReflection)
+	public function __construct(ClassReflection $classReflection)
 	{
 		parent::__construct($classReflection);
 	}
 
-	/**
-	 * @param ClassReflection|string $classReflection
-	 * @return self
-	 */
-	public function changeBaseClass($classReflection): StaticType
+	public function changeBaseClass(ClassReflection $classReflection): StaticType
 	{
 		return new self($classReflection);
 	}
@@ -29,6 +25,20 @@ class ThisType extends StaticType
 	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('$this(%s)', $this->getClassName());
+	}
+
+	/**
+	 * @param mixed[] $properties
+	 * @return Type
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if ($reflectionProvider->hasClass($properties['baseClass'])) {
+			return new self($reflectionProvider->getClass($properties['baseClass']));
+		}
+
+		return new ErrorType();
 	}
 
 }

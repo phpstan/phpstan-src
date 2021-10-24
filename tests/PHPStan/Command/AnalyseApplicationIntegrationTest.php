@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
+class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testExecuteOnAFile(): void
@@ -58,7 +58,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\TestCase
 		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
 
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), __DIR__, [], DIRECTORY_SEPARATOR);
-		$errorFormatter = new TableErrorFormatter($relativePathHelper, false);
+		$errorFormatter = new TableErrorFormatter($relativePathHelper, false, null);
 		$analysisResult = $analyserApplication->analyse(
 			[$path],
 			true,

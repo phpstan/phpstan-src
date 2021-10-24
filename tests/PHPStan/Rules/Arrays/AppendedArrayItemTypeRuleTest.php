@@ -29,15 +29,15 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 					18,
 				],
 				[
-					'Array (array<callable(): mixed>) does not accept array(1, 2, 3).',
+					'Array (array<callable(): mixed>) does not accept array{1, 2, 3}.',
 					20,
 				],
 				[
-					'Array (array<callable(): mixed>) does not accept array(\'AppendedArrayItem\\\\Foo\', \'classMethod\').',
+					'Array (array<callable(): mixed>) does not accept array{\'AppendedArrayItem\\\\Foo\', \'classMethod\'}.',
 					23,
 				],
 				[
-					'Array (array<callable(): mixed>) does not accept array(\'Foo\', \'Hello world\').',
+					'Array (array<callable(): mixed>) does not accept array{\'Foo\', \'Hello world\'}.',
 					25,
 				],
 				[

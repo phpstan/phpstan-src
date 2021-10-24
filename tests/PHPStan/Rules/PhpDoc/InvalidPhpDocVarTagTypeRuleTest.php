@@ -21,10 +21,10 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		return new InvalidPhpDocVarTagTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			$broker,
-			new ClassCaseSensitivityCheck($broker),
+			new ClassCaseSensitivityCheck($broker, true),
 			new GenericObjectTypeCheck(),
-			new MissingTypehintCheck($broker, true, true, true),
-			new UnresolvableTypeHelper(true),
+			new MissingTypehintCheck($broker, true, true, true, []),
+			new UnresolvableTypeHelper(),
 			true,
 			true
 		);

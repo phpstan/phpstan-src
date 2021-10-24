@@ -60,4 +60,9 @@ class Foo
 		}, [1, 2], ['foo', 'bar']);
 	}
 
+	public function arrayMapNull(): void
+	{
+		array_map(null, [1, 2], [3, 4]);
+	}
+
 }

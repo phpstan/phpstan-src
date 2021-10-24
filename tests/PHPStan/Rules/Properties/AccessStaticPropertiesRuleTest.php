@@ -13,11 +13,11 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessStaticPropertiesRule(
-			$broker,
-			new RuleLevelHelper($broker, true, false, true, false),
-			new ClassCaseSensitivityCheck($broker)
+			$reflectionProvider,
+			new RuleLevelHelper($reflectionProvider, true, false, true, false),
+			new ClassCaseSensitivityCheck($reflectionProvider, true)
 		);
 	}
 

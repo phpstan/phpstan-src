@@ -33,11 +33,11 @@ class IsScalarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		if (!isset($node->args[0])) {
+		if (!isset($node->getArgs()[0])) {
 			return new SpecifiedTypes();
 		}
 
-		return $this->typeSpecifier->create($node->args[0]->value, new UnionType([
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new UnionType([
 			new StringType(),
 			new IntegerType(),
 			new FloatType(),

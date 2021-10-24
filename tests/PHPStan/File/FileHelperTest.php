@@ -2,7 +2,7 @@
 
 namespace PHPStan\File;
 
-class FileHelperTest extends \PHPStan\Testing\TestCase
+class FileHelperTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	/**

@@ -4,7 +4,6 @@
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\ClearResultCacheCommand;
 use PHPStan\Command\FixerWorkerCommand;
-use PHPStan\Command\DumpDependenciesCommand;
 use PHPStan\Command\WorkerCommand;
 use Symfony\Component\Console\Helper\ProgressBar;
 
@@ -95,7 +94,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	$reversedComposerAutoloaderProjectPaths = array_reverse($composerAutoloaderProjectPaths);
 	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths));
-	$application->add(new DumpDependenciesCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new WorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new FixerWorkerCommand($reversedComposerAutoloaderProjectPaths));

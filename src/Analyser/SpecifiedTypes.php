@@ -2,15 +2,17 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 class SpecifiedTypes
 {
 
-	/** @var mixed[] */
+	/** @var array<string, array{Expr, Type}> */
 	private array $sureTypes;
 
-	/** @var mixed[] */
+	/** @var array<string, array{Expr, Type}> */
 	private array $sureNotTypes;
 
 	private bool $overwrite;
@@ -20,8 +22,8 @@ class SpecifiedTypes
 
 	/**
 	 * @api
-	 * @param mixed[] $sureTypes
-	 * @param mixed[] $sureNotTypes
+	 * @param array<string, array{Expr, Type}> $sureTypes
+	 * @param array<string, array{Expr, Type}> $sureNotTypes
 	 * @param bool $overwrite
 	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressionHolders
 	 */
@@ -40,7 +42,7 @@ class SpecifiedTypes
 
 	/**
 	 * @api
-	 * @return mixed[]
+	 * @return array<string, array{Expr, Type}>
 	 */
 	public function getSureTypes(): array
 	{
@@ -49,7 +51,7 @@ class SpecifiedTypes
 
 	/**
 	 * @api
-	 * @return mixed[]
+	 * @return array<string, array{Expr, Type}>
 	 */
 	public function getSureNotTypes(): array
 	{

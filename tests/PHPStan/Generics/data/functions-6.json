@@ -1,6 +1,6 @@
 [
     {
-        "message": "Function PHPStan\\Generics\\Functions\\testF() has no return typehint specified.",
+        "message": "Function PHPStan\\Generics\\Functions\\testF() has no return type specified.",
         "line": 27,
         "ignorable": true
     },

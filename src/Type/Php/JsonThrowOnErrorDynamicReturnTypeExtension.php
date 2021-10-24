@@ -54,11 +54,11 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		if (!isset($functionCall->args[$argumentPosition])) {
+		if (!isset($functionCall->getArgs()[$argumentPosition])) {
 			return $defaultReturnType;
 		}
 
-		$optionsExpr = $functionCall->args[$argumentPosition]->value;
+		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
 		$constrictedReturnType = TypeCombinator::remove($defaultReturnType, new ConstantBooleanType(false));
 		if ($this->isBitwiseOrWithJsonThrowOnError($optionsExpr, $scope)) {
 			return $constrictedReturnType;

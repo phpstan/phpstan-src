@@ -12,9 +12,6 @@ class IgnoredErrorHelperResult
 	/** @var string[] */
 	private array $errors;
 
-	/** @var string[] */
-	private array $warnings;
-
 	/** @var array<array<mixed>> */
 	private array $otherIgnoreErrors;
 
@@ -29,7 +26,6 @@ class IgnoredErrorHelperResult
 	/**
 	 * @param FileHelper $fileHelper
 	 * @param string[] $errors
-	 * @param string[] $warnings
 	 * @param array<array<mixed>> $otherIgnoreErrors
 	 * @param array<string, array<array<mixed>>> $ignoreErrorsByFile
 	 * @param (string|mixed[])[] $ignoreErrors
@@ -38,7 +34,6 @@ class IgnoredErrorHelperResult
 	public function __construct(
 		FileHelper $fileHelper,
 		array $errors,
-		array $warnings,
 		array $otherIgnoreErrors,
 		array $ignoreErrorsByFile,
 		array $ignoreErrors,
@@ -47,7 +42,6 @@ class IgnoredErrorHelperResult
 	{
 		$this->fileHelper = $fileHelper;
 		$this->errors = $errors;
-		$this->warnings = $warnings;
 		$this->otherIgnoreErrors = $otherIgnoreErrors;
 		$this->ignoreErrorsByFile = $ignoreErrorsByFile;
 		$this->ignoreErrors = $ignoreErrors;
@@ -60,14 +54,6 @@ class IgnoredErrorHelperResult
 	public function getErrors(): array
 	{
 		return $this->errors;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	public function getWarnings(): array
-	{
-		return $this->warnings;
 	}
 
 	/**

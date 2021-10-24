@@ -24,7 +24,7 @@ class Foo
 	 */
 	public function doBar(array $a): void
 	{
-		assertType('array<int>&nonEmpty', $a);
+		assertType('non-empty-array<int>', $a);
 		assertNativeType('array', $a);
 
 		assertType('false', $a === []);

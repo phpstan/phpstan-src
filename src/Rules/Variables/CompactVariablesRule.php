@@ -40,7 +40,7 @@ final class CompactVariablesRule implements Rule
 			return [];
 		}
 
-		$functionArguments = $node->args;
+		$functionArguments = $node->getArgs();
 		$messages = [];
 
 		foreach ($functionArguments as $argument) {

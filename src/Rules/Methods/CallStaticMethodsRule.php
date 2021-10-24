@@ -5,7 +5,9 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -102,7 +104,7 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 					];
 				}
 				$currentClassReflection = $scope->getClassReflection();
-				if ($currentClassReflection->getParentClass() === false) {
+				if ($currentClassReflection->getParentClass() === null) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'%s::%s() calls parent::%s() but %s does not extend any class.',
@@ -149,8 +151,8 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				$class,
-				sprintf('Call to static method %s() on an unknown class %%s.', $methodName),
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($class),
+				sprintf('Call to static method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($methodName)),
 				static function (Type $type) use ($methodName): bool {
 					return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
 				}
@@ -256,21 +258,21 @@ class CallStaticMethodsRule implements \PHPStan\Rules\Rule
 			];
 		}
 
-		$lowercasedMethodName = sprintf(
+		$lowercasedMethodName = SprintfHelper::escapeFormatString(sprintf(
 			'%s %s',
 			$method->isStatic() ? 'static method' : 'method',
 			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()'
-		);
-		$displayMethodName = sprintf(
+		));
+		$displayMethodName = SprintfHelper::escapeFormatString(sprintf(
 			'%s %s',
 			$method->isStatic() ? 'Static method' : 'Method',
 			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()'
-		);
+		));
 
 		$errors = array_merge($errors, $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
-				$node->args,
+				$node->getArgs(),
 				$method->getVariants()
 			),
 			$scope,

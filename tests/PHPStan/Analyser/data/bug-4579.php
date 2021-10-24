@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 function (string $class): void {
 	$foo = new $class();
-	assertType('mixed~string', $foo);
+	assertType('object', $foo);
 	if (method_exists($foo, 'doFoo')) {
 		assertType('object&hasMethod(doFoo)', $foo);
 	}

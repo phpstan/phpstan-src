@@ -42,4 +42,18 @@ class VariableCloningRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/variable-cloning-nullsafe.php'], [
+			[
+				'Cannot clone stdClass|null.',
+				11,
+			],
+		]);
+	}
+
 }

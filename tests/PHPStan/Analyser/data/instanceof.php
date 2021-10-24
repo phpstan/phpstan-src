@@ -133,7 +133,7 @@ class Foo extends BarParent
 			assertType('bool', $subject instanceof $objectT);
 		} else {
 			assertType('mixed~ObjectT of InstanceOfNamespace\BarInterface (method InstanceOfNamespace\Foo::testExprInstanceof(), argument)', $subject);
-			assertType('false', $subject instanceof $objectT);
+			assertType('bool', $subject instanceof $objectT); // can be false
 		}
 
 		if ($subject instanceof $objectTString) {
@@ -141,7 +141,7 @@ class Foo extends BarParent
 			assertType('bool', $subject instanceof $objectTString);
 		} else {
 			assertType('mixed~ObjectT of InstanceOfNamespace\BarInterface (method InstanceOfNamespace\Foo::testExprInstanceof(), argument)', $subject);
-			assertType('false', $subject instanceof $objectTString);
+			assertType('bool', $subject instanceof $objectTString); // can be false
 		}
 
 		if ($subject instanceof $mixedTString) {
@@ -149,7 +149,7 @@ class Foo extends BarParent
 			assertType('bool', $subject instanceof $mixedTString);
 		} else {
 			assertType('mixed~MixedT (method InstanceOfNamespace\Foo::testExprInstanceof(), argument)', $subject);
-			assertType('false', $subject instanceof $mixedTString);
+			assertType('bool', $subject instanceof $mixedTString); // can be false
 		}
 
 		if ($subject instanceof $string) {

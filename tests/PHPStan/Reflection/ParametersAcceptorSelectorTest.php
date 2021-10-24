@@ -22,15 +22,15 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
+class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataSelectFromTypes(): \Generator
 	{
 		require_once __DIR__ . '/data/function-definitions.php';
-		$broker = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 
-		$arrayRandVariants = $broker->getFunction(new Name('array_rand'), null)->getVariants();
+		$arrayRandVariants = $reflectionProvider->getFunction(new Name('array_rand'), null)->getVariants();
 		yield [
 			[
 				new ArrayType(new MixedType(), new MixedType()),
@@ -50,7 +50,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$arrayRandVariants[1],
 		];
 
-		$datePeriodConstructorVariants = $broker->getClass('DatePeriod')->getNativeMethod('__construct')->getVariants();
+		$datePeriodConstructorVariants = $reflectionProvider->getClass('DatePeriod')->getNativeMethod('__construct')->getVariants();
 		yield [
 			[
 				new ObjectType(\DateTimeInterface::class),
@@ -83,7 +83,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$datePeriodConstructorVariants[2],
 		];
 
-		$ibaseWaitEventVariants = $broker->getFunction(new Name('ibase_wait_event'), null)->getVariants();
+		$ibaseWaitEventVariants = $reflectionProvider->getFunction(new Name('ibase_wait_event'), null)->getVariants();
 		yield [
 			[
 				new ResourceType(),
@@ -136,7 +136,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			),
 		];
 
-		$absVariants = $broker->getFunction(new Name('abs'), null)->getVariants();
+		$absVariants = $reflectionProvider->getFunction(new Name('abs'), null)->getVariants();
 		yield [
 			[
 				new FloatType(),
@@ -165,7 +165,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$absVariants[2],
 		];
 
-		$strtokVariants = $broker->getFunction(new Name('strtok'), null)->getVariants();
+		$strtokVariants = $reflectionProvider->getFunction(new Name('strtok'), null)->getVariants();
 		yield [
 			[],
 			$strtokVariants,

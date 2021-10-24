@@ -21,7 +21,7 @@ function (array $levels): void {
 				throw new \UnexpectedValueException(sprintf('Unsupported level `%s`', $level));
 		}
 
-		assertType('array(0 => 1, ?1 => 3)', $allowedElements);
+		assertType('array{0: 1, 1?: 3}', $allowedElements);
 		assertVariableCertainty(TrinaryLogic::createYes(), $allowedElements);
 	}
 };

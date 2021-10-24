@@ -20,7 +20,8 @@ class UsedTraitsRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
-				true
+				true,
+				[]
 			)
 		);
 	}

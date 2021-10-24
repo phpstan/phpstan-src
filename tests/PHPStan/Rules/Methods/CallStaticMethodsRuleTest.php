@@ -24,9 +24,9 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($broker, true, $this->checkThisOnly, true, false);
 		return new CallStaticMethodsRule(
 			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(true), true, true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
 			$ruleLevelHelper,
-			new ClassCaseSensitivityCheck($broker),
+			new ClassCaseSensitivityCheck($broker, true),
 			true,
 			true
 		);
@@ -433,7 +433,7 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
 			[
-				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array(class-string<static(Bug1971\HelloWorld)>, \'sayHello2\') given.',
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug1971\\HelloWorld)>, \'sayHello2\'} given.',
 				16,
 			],
 		]);
@@ -449,6 +449,12 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-5536.php'], []);
+	}
+
+	public function testBug4886(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-4886.php'], []);
 	}
 
 }

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -52,14 +53,16 @@ class TraitTemplateTypeRule implements Rule
 			$docComment->getText()
 		);
 
+		$escapedTraitName = SprintfHelper::escapeFormatString($traitName);
+
 		return $this->templateTypeCheck->check(
 			$node,
 			TemplateTypeScope::createWithClass($traitName),
 			$resolvedPhpDoc->getTemplateTags(),
-			sprintf('PHPDoc tag @template for trait %s cannot have existing class %%s as its name.', $traitName),
-			sprintf('PHPDoc tag @template for trait %s cannot have existing type alias %%s as its name.', $traitName),
-			sprintf('PHPDoc tag @template %%s for trait %s has invalid bound type %%s.', $traitName),
-			sprintf('PHPDoc tag @template %%s for trait %s with bound type %%s is not supported.', $traitName)
+			sprintf('PHPDoc tag @template for trait %s cannot have existing class %%s as its name.', $escapedTraitName),
+			sprintf('PHPDoc tag @template for trait %s cannot have existing type alias %%s as its name.', $escapedTraitName),
+			sprintf('PHPDoc tag @template %%s for trait %s has invalid bound type %%s.', $escapedTraitName),
+			sprintf('PHPDoc tag @template %%s for trait %s with bound type %%s is not supported.', $escapedTraitName)
 		);
 	}
 

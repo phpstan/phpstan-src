@@ -1,0 +1,29 @@
+services:
+	-
+		class: PHPStan\Tests\GetByPrimaryDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\OffsetGetDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\CreateManagerForEntityDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\ConstructDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\ConstructWithoutConstructor
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\GetSelfDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\FooGetSelf
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension

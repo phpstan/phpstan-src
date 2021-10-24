@@ -1,0 +1,19 @@
+services:
+	-
+		class: PHPStan\Tests\AssertionClassMethodTypeSpecifyingExtension
+		arguments:
+			nullContext: null
+		tags:
+			- phpstan.typeSpecifier.methodTypeSpecifyingExtension
+	-
+		class: PHPStan\Rules\Comparison\AssertNotInt
+		tags:
+			- phpstan.typeSpecifier.methodTypeSpecifyingExtension
+	-
+		class: PHPStan\Rules\Comparison\FooIsSame
+		tags:
+			- phpstan.typeSpecifier.methodTypeSpecifyingExtension
+	-
+		class: PHPStan\Rules\Comparison\FooIsNotSame
+		tags:
+			- phpstan.typeSpecifier.methodTypeSpecifyingExtension

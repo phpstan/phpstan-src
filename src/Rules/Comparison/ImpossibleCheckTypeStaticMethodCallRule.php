@@ -68,7 +68,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 					'Call to static method %s::%s()%s will always evaluate to false.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
@@ -79,7 +79,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 					'Call to static method %s::%s()%s will always evaluate to true.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->args)
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
 				)))->build(),
 			];
 		}

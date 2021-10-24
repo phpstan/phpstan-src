@@ -42,7 +42,7 @@ class DumpTypeRule implements Rule
 			return [];
 		}
 
-		if (count($node->args) === 0) {
+		if (count($node->getArgs()) === 0) {
 			return [
 				RuleErrorBuilder::message(sprintf('Missing argument for %s() function call.', $functionName))
 					->nonIgnorable()
@@ -54,7 +54,7 @@ class DumpTypeRule implements Rule
 			RuleErrorBuilder::message(
 				sprintf(
 					'Dumped type: %s',
-					$scope->getType($node->args[0]->value)->describe(VerbosityLevel::precise())
+					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise())
 				)
 			)->nonIgnorable()->build(),
 		];

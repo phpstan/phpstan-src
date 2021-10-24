@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -38,7 +39,7 @@ class ClassTemplateTypeRule implements Rule
 		if ($classReflection->isAnonymous()) {
 			$displayName = 'anonymous class';
 		} else {
-			$displayName = 'class ' . $classReflection->getDisplayName();
+			$displayName = 'class ' . SprintfHelper::escapeFormatString($classReflection->getDisplayName());
 		}
 
 		return $this->templateTypeCheck->check(

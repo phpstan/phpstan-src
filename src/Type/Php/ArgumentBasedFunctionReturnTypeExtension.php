@@ -46,11 +46,11 @@ class ArgumentBasedFunctionReturnTypeExtension implements \PHPStan\Type\DynamicF
 	{
 		$argumentPosition = $this->functionNames[$functionReflection->getName()];
 
-		if (!isset($functionCall->args[$argumentPosition])) {
+		if (!isset($functionCall->getArgs()[$argumentPosition])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$argument = $functionCall->args[$argumentPosition];
+		$argument = $functionCall->getArgs()[$argumentPosition];
 		$argumentType = $scope->getType($argument->value);
 		$argumentKeyType = $argumentType->getIterableKeyType();
 		$argumentValueType = $argumentType->getIterableValueType();

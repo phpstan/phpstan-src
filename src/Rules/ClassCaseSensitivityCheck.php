@@ -12,7 +12,7 @@ class ClassCaseSensitivityCheck
 
 	private bool $checkInternalClassCaseSensitivity;
 
-	public function __construct(ReflectionProvider $reflectionProvider, bool $checkInternalClassCaseSensitivity = false)
+	public function __construct(ReflectionProvider $reflectionProvider, bool $checkInternalClassCaseSensitivity)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->checkInternalClassCaseSensitivity = $checkInternalClassCaseSensitivity;

@@ -15,6 +15,22 @@ class Foo
 	 * @var bool
 	 */
 	private $httpMethodParameterOverride2 = true;
+
+	/**
+	 * @return bool
+	 */
+	public static function isHttpMethodParameterOverride(): bool
+	{
+		return self::$httpMethodParameterOverride;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isHttpMethodParameterOverride2(): bool
+	{
+		return $this->httpMethodParameterOverride2;
+	}
 }
 
 class Bar

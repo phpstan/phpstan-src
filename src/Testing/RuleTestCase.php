@@ -7,19 +7,12 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifier;
-use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Cache\Cache;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\PhpDoc\PhpDocNodeResolver;
-use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
-use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -28,7 +21,7 @@ use PHPStan\Type\FileTypeMapper;
  * @api
  * @template TRule of \PHPStan\Rules\Rule
  */
-abstract class RuleTestCase extends \PHPStan\Testing\TestCase
+abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	private ?\PHPStan\Analyser\Analyser $analyser = null;
@@ -41,12 +34,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 
 	protected function getTypeSpecifier(): TypeSpecifier
 	{
-		return $this->createTypeSpecifier(
-			new \PhpParser\PrettyPrinter\Standard(),
-			$this->createReflectionProvider(),
-			$this->getMethodTypeSpecifyingExtensions(),
-			$this->getStaticMethodTypeSpecifyingExtensions()
-		);
+		return self::getContainer()->getService('typeSpecifier');
 	}
 
 	private function getAnalyser(): Analyser
@@ -56,47 +44,31 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 				$this->getRule(),
 			]);
 
-			$broker = $this->createBroker();
-			$printer = new \PhpParser\PrettyPrinter\Standard();
-			$typeSpecifier = $this->createTypeSpecifier(
-				$printer,
-				$broker,
-				$this->getMethodTypeSpecifyingExtensions(),
-				$this->getStaticMethodTypeSpecifyingExtensions()
-			);
-			$currentWorkingDirectory = $this->getCurrentWorkingDirectory();
-			$fileHelper = new FileHelper($currentWorkingDirectory);
-			$currentWorkingDirectory = $fileHelper->normalizePath($currentWorkingDirectory, '/');
-			$fileHelper = new FileHelper($currentWorkingDirectory);
-			$relativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
-			$anonymousClassNameHelper = new AnonymousClassNameHelper($fileHelper, $relativePathHelper);
-			$fileTypeMapper = new FileTypeMapper(new DirectReflectionProviderProvider($broker), $this->getParser(), self::getContainer()->getByType(PhpDocStringResolver::class), self::getContainer()->getByType(PhpDocNodeResolver::class), $this->createMock(Cache::class), $anonymousClassNameHelper);
-			$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
+			$reflectionProvider = $this->createReflectionProvider();
+			$typeSpecifier = $this->getTypeSpecifier();
 			$nodeScopeResolver = new NodeScopeResolver(
-				$broker,
+				$reflectionProvider,
 				self::getReflectors()[0],
 				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),
-				$fileTypeMapper,
+				self::getContainer()->getByType(FileTypeMapper::class),
 				self::getContainer()->getByType(StubPhpDocProvider::class),
 				self::getContainer()->getByType(PhpVersion::class),
-				$phpDocInheritanceResolver,
-				$fileHelper,
+				self::getContainer()->getByType(PhpDocInheritanceResolver::class),
+				self::getContainer()->getByType(FileHelper::class),
 				$typeSpecifier,
 				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
-				$this->shouldPolluteCatchScopeWithTryAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],
 				[],
-				true,
 				true
 			);
 			$fileAnalyser = new FileAnalyser(
-				$this->createScopeFactory($broker, $typeSpecifier),
+				$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 				$nodeScopeResolver,
 				$this->getParser(),
-				new DependencyResolver($fileHelper, $broker, new ExportedNodeResolver($fileTypeMapper, $printer)),
+				self::getContainer()->getByType(DependencyResolver::class),
 				true
 			);
 			$this->analyser = new Analyser(
@@ -108,22 +80,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 		}
 
 		return $this->analyser;
-	}
-
-	/**
-	 * @return \PHPStan\Type\MethodTypeSpecifyingExtension[]
-	 */
-	protected function getMethodTypeSpecifyingExtensions(): array
-	{
-		return [];
-	}
-
-	/**
-	 * @return \PHPStan\Type\StaticMethodTypeSpecifyingExtension[]
-	 */
-	protected function getStaticMethodTypeSpecifyingExtensions(): array
-	{
-		return [];
 	}
 
 	/**
@@ -181,11 +137,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\TestCase
 	}
 
 	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool
-	{
-		return false;
-	}
-
-	protected function shouldPolluteCatchScopeWithTryAssignments(): bool
 	{
 		return false;
 	}

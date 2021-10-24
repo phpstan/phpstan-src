@@ -1,11 +1,11 @@
 [
     {
-        "message": "Parameter $lorem of method Levels\\Typehints\\Foo::doBar() has invalid typehint type Levels\\Typehints\\Lorem.",
+        "message": "Method Levels\\Typehints\\Foo::doBar() has invalid return type Levels\\Typehints\\Ipsum.",
         "line": 17,
         "ignorable": true
     },
     {
-        "message": "Return typehint of method Levels\\Typehints\\Foo::doBar() has invalid type Levels\\Typehints\\Ipsum.",
+        "message": "Parameter $lorem of method Levels\\Typehints\\Foo::doBar() has invalid type Levels\\Typehints\\Lorem.",
         "line": 17,
         "ignorable": true
     }

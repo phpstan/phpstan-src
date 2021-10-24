@@ -8,7 +8,7 @@ use PHPStan\BetterReflection\Reflector\ClassReflector;
 final class MemoizingClassReflector extends ClassReflector
 {
 
-	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionClass|\Throwable> */
+	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionClass> */
 	private array $reflections = [];
 
 	/**
@@ -22,18 +22,10 @@ final class MemoizingClassReflector extends ClassReflector
 	{
 		$lowerClassName = strtolower($className);
 		if (isset($this->reflections[$lowerClassName])) {
-			if ($this->reflections[$lowerClassName] instanceof \Throwable) {
-				throw $this->reflections[$lowerClassName];
-			}
 			return $this->reflections[$lowerClassName];
 		}
 
-		try {
-			return $this->reflections[$lowerClassName] = parent::reflect($className);
-		} catch (\Throwable $e) {
-			$this->reflections[$lowerClassName] = $e;
-			throw $e;
-		}
+		return $this->reflections[$lowerClassName] = parent::reflect($className);
 	}
 
 }

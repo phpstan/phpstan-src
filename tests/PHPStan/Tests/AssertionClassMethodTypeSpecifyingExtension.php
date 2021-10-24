@@ -50,7 +50,7 @@ class AssertionClassMethodTypeSpecifyingExtension implements MethodTypeSpecifyin
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		return new SpecifiedTypes(['$foo' => [$node->args[0]->value, new StringType()]]);
+		return new SpecifiedTypes(['$foo' => [$node->getArgs()[0]->value, new StringType()]]);
 	}
 
 }

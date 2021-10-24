@@ -11,7 +11,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use Test\ClassWithToString;
 
-class IntersectionTypeTest extends \PHPStan\Testing\TestCase
+class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function dataAccepts(): \Iterator
@@ -145,16 +145,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\TestCase
 			$intersectionTypeA,
 			new ArrayType(new MixedType(), new ObjectType('Item')),
 			TrinaryLogic::createNo(),
-		];
-
-		$intersectionTypeB = new IntersectionType([
-			new IntegerType(),
-		]);
-
-		yield [
-			$intersectionTypeB,
-			$intersectionTypeB,
-			TrinaryLogic::createYes(),
 		];
 
 		yield [
@@ -333,16 +323,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\TestCase
 			$intersectionTypeA,
 			new ArrayType(new MixedType(), new ObjectType('Item')),
 			TrinaryLogic::createNo(),
-		];
-
-		$intersectionTypeB = new IntersectionType([
-			new IntegerType(),
-		]);
-
-		yield [
-			$intersectionTypeB,
-			$intersectionTypeB,
-			TrinaryLogic::createYes(),
 		];
 
 		$intersectionTypeC = new IntersectionType([

@@ -2,9 +2,6 @@
 
 namespace PHPStan\Rules\Comparison;
 
-use PHPStan\Tests\AssertionClassStaticMethodTypeSpecifyingExtension;
-use PHPStan\Type\PHPUnit\Assert\AssertStaticMethodTypeSpecifyingExtension;
-
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ImpossibleCheckTypeStaticMethodCallRule>
  */
@@ -31,17 +28,6 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends \PHPStan\Testing\RuleT
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
 	{
 		return $this->treatPhpDocTypesAsCertain;
-	}
-
-	/**
-	 * @return \PHPStan\Type\StaticMethodTypeSpecifyingExtension[]
-	 */
-	protected function getStaticMethodTypeSpecifyingExtensions(): array
-	{
-		return [
-			new AssertionClassStaticMethodTypeSpecifyingExtension(null),
-			new AssertStaticMethodTypeSpecifyingExtension(),
-		];
 	}
 
 	public function testRule(): void
@@ -108,6 +94,13 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends \PHPStan\Testing\RuleT
 				18,
 			],
 		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [
+			__DIR__ . '/impossible-check-type-static-method-call.neon',
+		];
 	}
 
 }

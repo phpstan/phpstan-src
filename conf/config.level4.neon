@@ -6,27 +6,19 @@ rules:
 	- PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
 	- PHPStan\Rules\DeadCode\NoopRule
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
-	- PHPStan\Rules\Functions\CallToFunctionStamentWithoutSideEffectsRule
+	- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
+	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
+	- PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
+	- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
+	- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
-	- PHPStan\Rules\Methods\CallToMethodStamentWithoutSideEffectsRule
-	- PHPStan\Rules\Methods\CallToStaticMethodStamentWithoutSideEffectsRule
+	- PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
+	- PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\NullsafeMethodCallRule
 	- PHPStan\Rules\Properties\NullsafePropertyFetchRule
 	- PHPStan\Rules\TooWideTypehints\TooWideArrowFunctionReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
-
-conditionalTags:
-	PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule:
-		phpstan.rules.rule: %featureToggles.preciseExceptionTracking%
-	PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule:
-		phpstan.rules.rule: %featureToggles.preciseExceptionTracking%
-	PHPStan\Rules\DeadCode\UnusedPrivateConstantRule:
-		phpstan.rules.rule: %featureToggles.unusedClassElements%
-	PHPStan\Rules\DeadCode\UnusedPrivateMethodRule:
-		phpstan.rules.rule: %featureToggles.unusedClassElements%
-	PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule:
-		phpstan.rules.rule: %featureToggles.unusedClassElements%
 
 parameters:
 	checkAdvancedIsset: true
@@ -44,7 +36,6 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			checkLogicalAndConstantCondition: %featureToggles.checkLogicalAndConstantCondition%
 		tags:
 			- phpstan.rules.rule
 
@@ -52,7 +43,6 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			checkLogicalOrConstantCondition: %featureToggles.checkLogicalOrConstantCondition%
 		tags:
 			- phpstan.rules.rule
 
@@ -64,17 +54,20 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
-
-	-
-		class: PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
-
-	-
 		class: PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule
 		arguments:
 			alwaysWrittenTags: %propertyAlwaysWrittenTags%
 			alwaysReadTags: %propertyAlwaysReadTags%
 			checkUninitializedProperties: %checkUninitializedProperties%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\DoWhileLoopConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Comparison\ElseIfConstantConditionRule
@@ -150,17 +143,18 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
-
-	-
-		class: PHPStan\Rules\Exceptions\DeadCatchRule
+		class: PHPStan\Rules\Comparison\WhileLoopAlwaysFalseConditionRule
 		arguments:
-			bleedingEdge: %featureToggles.bleedingEdge%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
+		class: PHPStan\Rules\Comparison\WhileLoopAlwaysTrueConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule

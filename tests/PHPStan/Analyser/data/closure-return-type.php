@@ -27,7 +27,7 @@ class Foo
 		$f = function (): array {
 			return ['foo' => 'bar'];
 		};
-		assertType('array(\'foo\' => \'bar\')', $f());
+		assertType('array{foo: \'bar\'}', $f());
 
 		$f = function (string $s) {
 			return $s;

@@ -16,7 +16,7 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInPropertiesRule(
 			$broker,
-			new ClassCaseSensitivityCheck($broker),
+			new ClassCaseSensitivityCheck($broker, true),
 			true,
 			false
 		);
@@ -66,6 +66,10 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				[
 					'Property PropertiesTypes\Foo::$withTrait has invalid type PropertiesTypes\SomeTrait.',
 					27,
+				],
+				[
+					'Class DateTime referenced with incorrect case: Datetime.',
+					30,
 				],
 				[
 					'Property PropertiesTypes\Foo::$nonexistentClassInGenericObjectType has unknown class PropertiesTypes\Foooo as its type.',

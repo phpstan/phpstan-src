@@ -12,6 +12,7 @@ class TypeSpecifierContext
 	public const CONTEXT_FALSE = 0b0100;
 	public const CONTEXT_FALSEY_BUT_NOT_FALSE = 0b1000;
 	public const CONTEXT_FALSEY = self::CONTEXT_FALSE | self::CONTEXT_FALSEY_BUT_NOT_FALSE;
+	public const CONTEXT_BITMASK = 0b1111;
 
 	private ?int $value;
 
@@ -59,7 +60,7 @@ class TypeSpecifierContext
 		if ($this->value === null) {
 			throw new \PHPStan\ShouldNotHappenException();
 		}
-		return self::create(~$this->value);
+		return self::create(~$this->value & self::CONTEXT_BITMASK);
 	}
 
 	public function true(): bool

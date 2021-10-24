@@ -40,11 +40,11 @@ class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		if (!isset($node->args[0])) {
+		if (!isset($node->getArgs()[0])) {
 			return new SpecifiedTypes();
 		}
 
-		$value = $node->args[0]->value;
+		$value = $node->getArgs()[0]->value;
 		$valueType = $scope->getType($value);
 		if (
 			$value instanceof Array_

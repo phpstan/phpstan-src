@@ -79,7 +79,7 @@ class UnusedFunctionParametersCheck
 				&& $node->name instanceof Node\Name
 				&& (string) $node->name === 'compact'
 			) {
-				foreach ($node->args as $arg) {
+				foreach ($node->getArgs() as $arg) {
 					$argType = $scope->getType($arg->value);
 					if (!($argType instanceof ConstantStringType)) {
 						continue;

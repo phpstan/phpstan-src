@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
 
+/** @api */
 class AnalysisResult
 {
 

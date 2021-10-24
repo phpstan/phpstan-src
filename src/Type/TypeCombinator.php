@@ -272,14 +272,16 @@ class TypeCombinator
 		);
 
 		// simplify string[] | int[] to (string|int)[]
-		for ($i = 0; $i < count($types); $i++) {
-			for ($j = $i + 1; $j < count($types); $j++) {
+		$typesCount = count($types);
+		for ($i = 0; $i < $typesCount; $i++) {
+			for ($j = $i + 1; $j < $typesCount; $j++) {
 				if ($types[$i] instanceof IterableType && $types[$j] instanceof IterableType) {
 					$types[$i] = new IterableType(
 						self::union($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType()),
 						self::union($types[$i]->getIterableValueType(), $types[$j]->getIterableValueType())
 					);
 					array_splice($types, $j, 1);
+					$typesCount--;
 					continue 2;
 				}
 			}
@@ -296,8 +298,10 @@ class TypeCombinator
 				continue;
 			}
 
-			for ($i = 0; $i < count($types); $i++) {
-				for ($j = 0; $j < count($scalarTypeItems); $j++) {
+			$typesCount = count($types);
+			$scalarTypeItemsCount = count($scalarTypeItems);
+			for ($i = 0; $i < $typesCount; $i++) {
+				for ($j = 0; $j < $scalarTypeItemsCount; $j++) {
 					$compareResult = self::compareTypesInUnion($types[$i], $scalarTypeItems[$j]);
 					if ($compareResult === null) {
 						continue;
@@ -307,11 +311,13 @@ class TypeCombinator
 					if ($a !== null) {
 						$types[$i] = $a;
 						array_splice($scalarTypeItems, $j--, 1);
+						$scalarTypeItemsCount--;
 						continue 1;
 					}
 					if ($b !== null) {
 						$scalarTypeItems[$j] = $b;
 						array_splice($types, $i--, 1);
+						$typesCount--;
 						continue 2;
 					}
 				}
@@ -320,10 +326,19 @@ class TypeCombinator
 			$scalarTypes[$classType] = $scalarTypeItems;
 		}
 
+		if (count($types) > 16) {
+			$newTypes = [];
+			foreach ($types as $type) {
+				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
+			}
+			$types = array_values($newTypes);
+		}
+
 		// transform A | A to A
 		// transform A | never to A
-		for ($i = 0; $i < count($types); $i++) {
-			for ($j = $i + 1; $j < count($types); $j++) {
+		$typesCount = count($types);
+		for ($i = 0; $i < $typesCount; $i++) {
+			for ($j = $i + 1; $j < $typesCount; $j++) {
 				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
 				if ($compareResult === null) {
 					continue;
@@ -333,11 +348,13 @@ class TypeCombinator
 				if ($a !== null) {
 					$types[$i] = $a;
 					array_splice($types, $j--, 1);
+					$typesCount--;
 					continue 1;
 				}
 				if ($b !== null) {
 					$types[$j] = $b;
 					array_splice($types, $i--, 1);
+					$typesCount--;
 					continue 2;
 				}
 			}
@@ -349,10 +366,11 @@ class TypeCombinator
 			}
 		}
 
-		if (count($types) === 0) {
+		$typesCount = count($types);
+		if ($typesCount === 0) {
 			return new NeverType();
-
-		} elseif (count($types) === 1) {
+		}
+		if ($typesCount === 1) {
 			return $types[0];
 		}
 
@@ -686,6 +704,8 @@ class TypeCombinator
 
 	public static function intersect(Type ...$types): Type
 	{
+		$types = array_values($types);
+
 		$sortTypes = static function (Type $a, Type $b): int {
 			if (!$a instanceof UnionType || !$b instanceof UnionType) {
 				return 0;

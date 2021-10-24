@@ -25,11 +25,11 @@ class Foo
 		$invalidList2
 	): void
 	{
-		assertType('array&nonEmpty', $array);
-		assertType('array<int, mixed>&nonEmpty', $list);
-		assertType('array<int, string>&nonEmpty', $arrayOfStrings);
-		assertType('array<int, stdClass>&nonEmpty', $listOfStd);
-		assertType('array<int, stdClass>&nonEmpty', $listOfStd2);
+		assertType('non-empty-array', $array);
+		assertType('non-empty-array<int, mixed>', $list);
+		assertType('non-empty-array<int, string>', $arrayOfStrings);
+		assertType('non-empty-array<int, stdClass>', $listOfStd);
+		assertType('non-empty-array<int, stdClass>', $listOfStd2);
 		assertType('array', $invalidList);
 		assertType('mixed', $invalidList2);
 	}
@@ -41,15 +41,15 @@ class Foo
 	 */
 	public function arrayFunctions($array, $list, $stringArray): void
 	{
-		assertType('array&nonEmpty', array_combine($array, $array));
-		assertType('array&nonEmpty', array_combine($list, $list));
+		assertType('non-empty-array', array_combine($array, $array));
+		assertType('non-empty-array', array_combine($list, $list));
 
-		assertType('array&nonEmpty', array_merge($array));
-		assertType('array&nonEmpty', array_merge([], $array));
-		assertType('array&nonEmpty', array_merge($array, []));
-		assertType('array&nonEmpty', array_merge($array, $array));
+		assertType('non-empty-array', array_merge($array));
+		assertType('non-empty-array', array_merge([], $array));
+		assertType('non-empty-array', array_merge($array, []));
+		assertType('non-empty-array', array_merge($array, $array));
 
-		assertType('array<int|string, (int|string)>&nonEmpty', array_flip($array));
-		assertType('array<string, (int|string)>&nonEmpty', array_flip($stringArray));
+		assertType('non-empty-array<int|string, (int|string)>', array_flip($array));
+		assertType('non-empty-array<string, (int|string)>', array_flip($stringArray));
 	}
 }

@@ -74,12 +74,12 @@ class CachingVisitor extends NodeVisitorAbstract
 			}
 
 			/** @var \PhpParser\Node\Scalar\String_ $nameNode */
-			$nameNode = $node->args[0]->value;
+			$nameNode = $node->getArgs()[0]->value;
 			$constantName = $nameNode->value;
 
 			if (defined($constantName)) {
 				$constantValue = constant($constantName);
-				$node->args[1]->value = BuilderHelpers::normalizeValue($constantValue);
+				$node->getArgs()[1]->value = BuilderHelpers::normalizeValue($constantValue);
 			}
 
 			$constantNode = new FetchedNode(

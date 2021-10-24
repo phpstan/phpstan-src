@@ -633,7 +633,7 @@ php;
 
 					$classReflection = $this->reflectionProvider->getClass($class);
 					$fileName = $classReflection->getFileName();
-					if ($fileName === false) {
+					if ($fileName === null) {
 						continue;
 					}
 

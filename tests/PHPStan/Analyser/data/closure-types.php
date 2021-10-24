@@ -13,14 +13,14 @@ class Foo
 	public function doFoo(): void
 	{
 		$a = array_map(function (array $a): array {
-			assertType('array(\'foo\' => string, \'bar\' => int)', $a);
+			assertType('array{foo: string, bar: int}', $a);
 
 			return $a;
 		}, $this->arrayShapes);
-		assertType('array<int, array(\'foo\' => string, \'bar\' => int)>', $a);
+		assertType('array<int, array{foo: string, bar: int}>', $a);
 
 		$b = array_map(function ($b) {
-			assertType('array(\'foo\' => string, \'bar\' => int)', $b);
+			assertType('array{foo: string, bar: int}', $b);
 
 			return $b['foo'];
 		}, $this->arrayShapes);
@@ -30,8 +30,8 @@ class Foo
 	public function doBar(): void
 	{
 		usort($this->arrayShapes, function (array $a, array $b): int {
-			assertType('array(\'foo\' => string, \'bar\' => int)', $a);
-			assertType('array(\'foo\' => string, \'bar\' => int)', $b);
+			assertType('array{foo: string, bar: int}', $a);
+			assertType('array{foo: string, bar: int}', $b);
 
 			return 1;
 		});
@@ -40,8 +40,8 @@ class Foo
 	public function doBaz(): void
 	{
 		usort($this->arrayShapes, function ($a, $b): int {
-			assertType('array(\'foo\' => string, \'bar\' => int)', $a);
-			assertType('array(\'foo\' => string, \'bar\' => int)', $b);
+			assertType('array{foo: string, bar: int}', $a);
+			assertType('array{foo: string, bar: int}', $b);
 
 			return 1;
 		});

@@ -37,7 +37,7 @@ final class Entity {
 
 function (): void {
 	assertType('Bug4213\Enum', Enum::get('test'));
-	assertType('array(Bug4213\Enum)', array_map([Enum::class, 'get'], ['test']));
+	assertType('array{Bug4213\\Enum}', array_map([Enum::class, 'get'], ['test']));
 };
 
 

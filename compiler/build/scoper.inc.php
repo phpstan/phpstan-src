@@ -80,7 +80,7 @@ return [
 			return $content;
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'src/Testing/TestCase.php') {
+			if ($filePath !== 'src/Testing/PHPStanTestCase.php') {
 				return $content;
 			}
 			return str_replace(sprintf('\\%s\\PHPUnit\\Framework\\TestCase', $prefix), '\\PHPUnit\\Framework\\TestCase', $content);
@@ -160,7 +160,7 @@ return [
 		function (string $filePath, string $prefix, string $content): string {
 			if (!in_array($filePath, [
 				'src/Testing/TestCaseSourceLocatorFactory.php',
-				'src/Testing/TestCase.php',
+				'src/Testing/PHPStanTestCase.php',
 			], true)) {
 				return $content;
 			}

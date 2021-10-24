@@ -28,11 +28,11 @@ class SimpleXMLElementXpathMethodReturnTypeExtension implements \PHPStan\Type\Dy
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		if (!isset($methodCall->args[0])) {
+		if (!isset($methodCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 		}
 
-		$argType = $scope->getType($methodCall->args[0]->value);
+		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 
 		$xmlElement = new \SimpleXMLElement('<foo />');
 

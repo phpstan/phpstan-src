@@ -24,12 +24,14 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection;
 	}
 
-	/**
-	 * @return string|false
-	 */
-	public function getFileName()
+	public function getFileName(): ?string
 	{
-		return $this->reflection->getFileName();
+		$fileName = $this->reflection->getFileName();
+		if ($fileName === false) {
+			return null;
+		}
+
+		return $fileName;
 	}
 
 	public function getDeclaringClass(): \ReflectionClass
@@ -37,20 +39,24 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->getDeclaringClass();
 	}
 
-	/**
-	 * @return int|false
-	 */
-	public function getStartLine()
+	public function getStartLine(): ?int
 	{
-		return $this->reflection->getStartLine();
+		$line = $this->reflection->getStartLine();
+		if ($line === false) {
+			return null;
+		}
+
+		return $line;
 	}
 
-	/**
-	 * @return int|false
-	 */
-	public function getEndLine()
+	public function getEndLine(): ?int
 	{
-		return $this->reflection->getEndLine();
+		$line = $this->reflection->getEndLine();
+		if ($line === false) {
+			return null;
+		}
+
+		return $line;
 	}
 
 	public function getDocComment(): ?string

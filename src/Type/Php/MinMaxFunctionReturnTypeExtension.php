@@ -33,12 +33,12 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->args[0])) {
+		if (!isset($functionCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		if (count($functionCall->args) === 1) {
-			$argType = $scope->getType($functionCall->args[0]->value);
+		if (count($functionCall->getArgs()) === 1) {
+			$argType = $scope->getType($functionCall->getArgs()[0]->value);
 			if ($argType->isArray()->yes()) {
 				$isIterable = $argType->isIterableAtLeastOnce();
 				if ($isIterable->no()) {
@@ -69,8 +69,8 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		// rewrite min($x, $y) as $x < $y ? $x : $y
 		// we don't handle arrays, which have different semantics
 		$functionName = $functionReflection->getName();
-		$args = $functionCall->args;
-		if (count($functionCall->args) === 2) {
+		$args = $functionCall->getArgs();
+		if (count($functionCall->getArgs()) === 2) {
 			$argType0 = $scope->getType($args[0]->value);
 			$argType1 = $scope->getType($args[1]->value);
 
@@ -92,7 +92,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 		}
 
 		$argumentTypes = [];
-		foreach ($functionCall->args as $arg) {
+		foreach ($functionCall->getArgs() as $arg) {
 			$argType = $scope->getType($arg->value);
 			if ($arg->unpack) {
 				$iterableValueType = $argType->getIterableValueType();

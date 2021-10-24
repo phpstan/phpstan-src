@@ -47,4 +47,18 @@ class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5162.php'], []);
 	}
 
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-cast-nullsafe.php'], [
+			[
+				'Cannot cast stdClass|null to string.',
+				13,
+			],
+		]);
+	}
+
 }

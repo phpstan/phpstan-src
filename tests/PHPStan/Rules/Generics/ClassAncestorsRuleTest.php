@@ -20,10 +20,10 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
-				true
+				true,
+				[]
 			),
-			new CrossCheckInterfacesHelper(),
-			true
+			new CrossCheckInterfacesHelper()
 		);
 	}
 

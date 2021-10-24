@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
+class TemplateTypeFactoryTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	/** @return array<array{?Type, Type}> */

@@ -4,7 +4,6 @@ namespace PHPStan\Analyser;
 
 use Bug4288\MyClass;
 use Bug4713\Service;
-use PHPStan\Broker\Broker;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
@@ -13,7 +12,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use const PHP_VERSION_ID;
 use function array_reverse;
 
-class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
+class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testUndefinedVariableFromAssignErrorHasLine(): void
@@ -83,8 +82,8 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-known-class-with-check.php');
 		$this->assertCount(0, $errors);
 
-		$broker = self::getContainer()->getByType(Broker::class);
-		$this->assertTrue($broker->hasClass(\ExtendingKnownClassWithCheck\Foo::class));
+		$reflectionProvider = $this->createReflectionProvider();
+		$this->assertTrue($reflectionProvider->hasClass(\ExtendingKnownClassWithCheck\Foo::class));
 	}
 
 	public function testInfiniteRecursionWithCallable(): void
@@ -134,9 +133,11 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/anonymous-class-wrong-filename-regression.php');
 		$this->assertCount(5, $errors);
-		$this->assertStringContainsString('Return typehint of method', $errors[0]->getMessage());
+		$this->assertStringContainsString('Method', $errors[0]->getMessage());
+		$this->assertStringContainsString('has invalid return type', $errors[0]->getMessage());
 		$this->assertSame(16, $errors[0]->getLine());
-		$this->assertStringContainsString('Return typehint of method', $errors[1]->getMessage());
+		$this->assertStringContainsString('Method', $errors[1]->getMessage());
+		$this->assertStringContainsString('has invalid return type', $errors[1]->getMessage());
 		$this->assertSame(16, $errors[1]->getLine());
 		$this->assertSame('Instantiated class AnonymousClassWrongFilename\Bar not found.', $errors[2]->getMessage());
 		$this->assertSame(18, $errors[2]->getLine());
@@ -168,7 +169,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$this->assertCount(2, $errors);
 		$this->assertSame('Property y\x::$baz has unknown class x\baz as its type.', $errors[0]->getMessage());
 		$this->assertSame(15, $errors[0]->getLine());
-		$this->assertSame('Parameter $baz of method y\x::__construct() has invalid typehint type x\baz.', $errors[1]->getMessage());
+		$this->assertSame('Parameter $baz of method y\x::__construct() has invalid type x\baz.', $errors[1]->getMessage());
 		$this->assertSame(16, $errors[1]->getLine());
 	}
 
@@ -231,15 +232,15 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 
 		$error = $errors[2];
 		$this->assertSame('If condition is always false.', $error->getMessage());
-		$this->assertSame(18, $error->getLine());
+		$this->assertSame(26, $error->getLine());
 
 		$error = $errors[3];
 		$this->assertSame('Property TwoSame\Foo::$prop (int) does not accept default value of type string.', $error->getMessage());
-		$this->assertSame(25, $error->getLine());
+		$this->assertSame(33, $error->getLine());
 
 		$error = $errors[4];
 		$this->assertSame('Property TwoSame\Foo::$prop2 (int) does not accept default value of type string.', $error->getMessage());
-		$this->assertSame(28, $error->getLine());
+		$this->assertSame(36, $error->getLine());
 	}
 
 	public function testBug3405(): void
@@ -348,9 +349,10 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testBug4713(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4713.php');
-		$this->assertCount(0, $errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Method Bug4713\Service::createInstance() should return Bug4713\Service but returns object.', $errors[0]->getMessage());
 
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Service::class);
 		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('createInstance')->getVariants())->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
@@ -363,7 +365,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288.php');
 		$this->assertCount(0, $errors);
 
-		$reflectionProvider = $this->createBroker();
+		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(MyClass::class);
 		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('paginate')->getVariants())->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
@@ -408,10 +410,11 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testBug4734(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4734.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(3, $errors);
 
-		$this->assertSame('Access to an undefined static property static(Bug4734\Foo)::$httpMethodParameterOverride3.', $errors[0]->getMessage());
-		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[1]->getMessage());
+		$this->assertSame('Unsafe access to private property Bug4734\Foo::$httpMethodParameterOverride through static::.', $errors[0]->getMessage());
+		$this->assertSame('Access to an undefined static property static(Bug4734\Foo)::$httpMethodParameterOverride3.', $errors[1]->getMessage());
+		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[2]->getMessage());
 	}
 
 	public function testBug5231(): void
@@ -435,6 +438,18 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\TestCase
 	public function testBug5527(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5527.php');
+		$this->assertCount(0, $errors);
+	}
+
+	public function testBug5639(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5639.php');
+		$this->assertCount(0, $errors);
+	}
+
+	public function testBug5657(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5657.php');
 		$this->assertCount(0, $errors);
 	}
 

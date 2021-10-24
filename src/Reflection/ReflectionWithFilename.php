@@ -6,9 +6,6 @@ namespace PHPStan\Reflection;
 interface ReflectionWithFilename
 {
 
-	/**
-	 * @return string|false
-	 */
-	public function getFileName();
+	public function getFileName(): ?string;
 
 }

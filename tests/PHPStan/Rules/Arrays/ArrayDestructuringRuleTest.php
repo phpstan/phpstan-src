@@ -30,7 +30,7 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 				11,
 			],
 			[
-				'Offset 0 does not exist on array().',
+				'Offset 0 does not exist on array{}.',
 				12,
 			],
 			[
@@ -38,12 +38,26 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Offset 2 does not exist on array(1, 2).',
+				'Offset 2 does not exist on array{1, 2}.',
 				15,
 			],
 			[
-				'Offset \'a\' does not exist on array(\'b\' => 1).',
+				'Offset \'a\' does not exist on array{b: 1}.',
 				22,
+			],
+		]);
+	}
+
+	public function testRuleWithNullsafeVariant(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/array-destructuring-nullsafe.php'], [
+			[
+				'Cannot use array destructuring on array|null.',
+				10,
 			],
 		]);
 	}

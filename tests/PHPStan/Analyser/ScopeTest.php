@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name\FullyQualified;
-use PHPStan\Testing\TestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class ScopeTest extends TestCase
+class ScopeTest extends PHPStanTestCase
 {
 
 	public function dataGeneralize(): array
@@ -106,7 +106,7 @@ class ScopeTest extends TestCase
 				], [
 					new ConstantIntegerType(1),
 				]),
-				'array(\'a\' => 1)',
+				'array{a: 1}',
 			],
 			[
 				new ConstantArrayType([
@@ -123,7 +123,7 @@ class ScopeTest extends TestCase
 					new ConstantIntegerType(2),
 					new ConstantIntegerType(1),
 				]),
-				'array(\'a\' => int, \'b\' => 1)',
+				'array{a: int, b: 1}',
 			],
 			[
 				new ConstantArrayType([

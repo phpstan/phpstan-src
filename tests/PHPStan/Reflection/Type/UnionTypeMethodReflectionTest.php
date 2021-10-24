@@ -5,7 +5,7 @@ namespace PHPStan\Reflection\Type;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\TrinaryLogic;
 
-class UnionTypeMethodReflectionTest extends \PHPStan\Testing\TestCase
+class UnionTypeMethodReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	public function testCollectsDeprecatedMessages(): void

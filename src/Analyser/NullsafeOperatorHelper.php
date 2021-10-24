@@ -19,7 +19,7 @@ class NullsafeOperatorHelper
 				return $expr;
 			}
 
-			return new Expr\MethodCall($var, $expr->name, $expr->args);
+			return new Expr\MethodCall($var, $expr->name, $expr->getArgs());
 		}
 
 		if ($expr instanceof Expr\StaticCall && $expr->class instanceof Expr) {
@@ -28,7 +28,7 @@ class NullsafeOperatorHelper
 				return $expr;
 			}
 
-			return new Expr\StaticCall($class, $expr->name, $expr->args);
+			return new Expr\StaticCall($class, $expr->name, $expr->getArgs());
 		}
 
 		if ($expr instanceof Expr\ArrayDimFetch) {

@@ -10,9 +10,9 @@ function (array $meters): void {
 		throw new \Exception('NO_METERS_FOUND');
 	}
 
-	assertType('array&nonEmpty', $meters);
+	assertType('non-empty-array', $meters);
 	assertType('array', array_reverse());
-	assertType('array&nonEmpty', array_reverse($meters));
-	assertType('array<int, (int|string)>&nonEmpty', array_keys($meters));
-	assertType('array<int, mixed>&nonEmpty', array_values($meters));
+	assertType('non-empty-array', array_reverse($meters));
+	assertType('non-empty-array<int, (int|string)>', array_keys($meters));
+	assertType('non-empty-array<int, mixed>', array_values($meters));
 };

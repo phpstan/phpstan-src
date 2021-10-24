@@ -2,6 +2,7 @@
 
 namespace Ds;
 
+use ArrayAccess;
 use Countable;
 use JsonSerializable;
 use OutOfBoundsException;
@@ -19,7 +20,7 @@ interface Collection extends Traversable, Countable, JsonSerializable
 	/**
 	 * @return Collection<TKey, TValue>
 	 */
-	public function copy(): Collection;
+	public function copy();
 
 	/**
 	 * @return array<TKey, TValue>
@@ -43,7 +44,7 @@ final class Deque implements Sequence
 	/**
 	 * @return Deque<TValue>
 	 */
-	public function copy(): Deque
+	public function copy()
 	{
 	}
 
@@ -92,8 +93,9 @@ final class Deque implements Sequence
  * @template TKey
  * @template TValue
  * @implements Collection<TKey, TValue>
+ * @implements ArrayAccess<TKey, TValue>
  */
-final class Map implements Collection
+final class Map implements Collection, ArrayAccess
 {
 	/**
 	 * @param iterable<TKey, TValue> $values
@@ -380,14 +382,20 @@ final class Pair implements JsonSerializable
 /**
  * @template TValue
  * @extends Collection<int, TValue>
+ * @extends ArrayAccess<int, TValue>
  */
-interface Sequence extends Collection
+interface Sequence extends Collection, ArrayAccess
 {
 	/**
 	 * @param callable(TValue): TValue $callback
 	 * @return void
 	 */
 	public function apply(callable $callback);
+
+	/**
+	 * @return Sequence<TValue>
+	 */
+	public function copy();
 
 	/**
 	 * @param TValue ...$values
@@ -398,7 +406,7 @@ interface Sequence extends Collection
 	 * @param (callable(TValue): bool)|null $callback
 	 * @return Sequence<TValue>
 	 */
-	public function filter(callable $callback = null): Sequence;
+	public function filter(callable $callback = null);
 
 	/**
 	 * @param TValue $value
@@ -442,14 +450,14 @@ interface Sequence extends Collection
 	 * @param callable(TValue): TNewValue $callback
 	 * @return Sequence<TNewValue>
 	 */
-	public function map(callable $callback): Sequence;
+	public function map(callable $callback);
 
 	/**
 	 * @template TValue2
 	 * @param iterable<TValue2> $values
 	 * @return Sequence<TValue|TValue2>
 	 */
-	public function merge(iterable $values): Sequence;
+	public function merge(iterable $values);
 
 	/**
 	 * @return TValue
@@ -480,7 +488,7 @@ interface Sequence extends Collection
 	/**
 	 * @return Sequence<TValue>
 	 */
-	public function reversed(): Sequence;
+	public function reversed();
 
 	/**
 	 * @param TValue $value
@@ -498,7 +506,7 @@ interface Sequence extends Collection
 	/**
 	 * @return Sequence<TValue>
 	 */
-	public function slice(int $index, ?int $length = null): Sequence;
+	public function slice(int $index, ?int $length = null);
 
 	/**
 	 * @param (callable(TValue, TValue): int)|null $comparator
@@ -510,7 +518,7 @@ interface Sequence extends Collection
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return Sequence<TValue>
 	 */
-	public function sorted(callable $comparator = null): Sequence;
+	public function sorted(callable $comparator = null);
 
 	/**
 	 * @param TValue ...$values
@@ -536,7 +544,7 @@ final class Vector implements Sequence
 	/**
 	 * @return Vector<TValue>
 	 */
-	public function copy(): Vector
+	public function copy()
 	{
 	}
 
@@ -592,8 +600,9 @@ final class Vector implements Sequence
 /**
  * @template TValue
  * @implements Collection<int, TValue>
+ * @implements ArrayAccess<int, TValue>
  */
-final class Set implements Collection
+final class Set implements Collection, ArrayAccess
 {
 	/**
 	 * @param iterable<TValue> $values
@@ -747,8 +756,9 @@ final class Set implements Collection
 /**
  * @template TValue
  * @implements Collection<int, TValue>
+ * @implements ArrayAccess<int, TValue>
  */
-final class Stack implements Collection
+final class Stack implements Collection, ArrayAccess
 {
 	/**
 	 * @param iterable<TValue> $values
@@ -799,8 +809,9 @@ final class Stack implements Collection
 /**
  * @template TValue
  * @implements Collection<int, TValue>
+ * @implements ArrayAccess<int, TValue>
  */
-final class Queue implements Collection
+final class Queue implements Collection, ArrayAccess
 {
 	/**
 	 * @param iterable<TValue> $values

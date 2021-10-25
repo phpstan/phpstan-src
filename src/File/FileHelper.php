@@ -46,7 +46,6 @@ class FileHelper
 			$isLocalPath = $originalPath[0] === '/';
 		}
 
-
 		$matches = null;
 		if (!$isLocalPath) {
 			$matches = \Nette\Utils\Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');

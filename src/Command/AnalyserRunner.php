@@ -66,7 +66,7 @@ class AnalyserRunner
 
 		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
 		$mainScript = null;
-		if (isset($_SERVER['argv'][0]) && file_exists($_SERVER['argv'][0])) {
+		if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
 			$mainScript = $_SERVER['argv'][0];
 		}
 

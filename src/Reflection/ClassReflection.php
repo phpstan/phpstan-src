@@ -175,7 +175,7 @@ class ClassReflection implements ReflectionWithFilename
 			return $this->filename = null;
 		}
 
-		if (!file_exists($fileName)) {
+		if (!is_file($fileName)) {
 			return $this->filename = null;
 		}
 

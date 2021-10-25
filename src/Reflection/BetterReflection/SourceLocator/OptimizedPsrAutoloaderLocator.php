@@ -28,7 +28,7 @@ class OptimizedPsrAutoloaderLocator implements SourceLocator
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		foreach ($this->mapping->resolvePossibleFilePaths($identifier) as $file) {
-			if (!file_exists($file)) {
+			if (!is_file($file)) {
 				continue;
 			}
 

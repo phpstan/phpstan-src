@@ -93,7 +93,7 @@ class FileCacheStorage implements CacheStorage
 		}
 
 		@unlink($tmpPath);
-		if (DIRECTORY_SEPARATOR === '/' || !file_exists($path)) {
+		if (DIRECTORY_SEPARATOR === '/' || !is_file($path)) {
 			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
 		}
 	}

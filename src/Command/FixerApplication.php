@@ -37,7 +37,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use const PHP_BINARY;
 use function Clue\React\Block\await;
 use function escapeshellarg;
-use function file_exists;
+use function is_file;
 use function React\Promise\resolve;
 
 class FixerApplication
@@ -284,7 +284,7 @@ class FixerApplication
 		try {
 			$this->downloadPhar($output, $pharPath, $infoPath);
 		} catch (\RuntimeException $e) {
-			if (!file_exists($pharPath)) {
+			if (!is_file($pharPath)) {
 				$output->writeln('<fg=red>Could not download the PHPStan Pro executable.</>');
 				$output->writeln($e->getMessage());
 
@@ -356,7 +356,7 @@ class FixerApplication
 	): void
 	{
 		$currentVersion = null;
-		if (file_exists($pharPath) && file_exists($infoPath)) {
+		if (is_file($pharPath) && is_file($infoPath)) {
 			/** @var array{version: string, date: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
 			$currentVersion = $currentInfo['version'];

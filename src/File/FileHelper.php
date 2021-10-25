@@ -2,8 +2,6 @@
 
 namespace PHPStan\File;
 
-use Nette\Utils\Strings;
-
 class FileHelper
 {
 
@@ -41,7 +39,13 @@ class FileHelper
 	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
-		$matches = \Nette\Utils\Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');
+		$isLocalPath = $originalPath !== '' && $originalPath[0] === '/';
+
+		$matches = null;
+		if (!$isLocalPath) {
+			$matches = \Nette\Utils\Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');
+		}
+
 		if ($matches !== null) {
 			[, $scheme, $path] = $matches;
 		} else {
@@ -49,8 +53,7 @@ class FileHelper
 			$path = $originalPath;
 		}
 
-		$path = str_replace('\\', '/', $path);
-		$path = Strings::replace($path, '~/{2,}~', '/');
+		$path = str_replace(['\\', '//', '///', '////'], '/', $path);
 
 		$pathRoot = strpos($path, '/') === 0 ? $directorySeparator : '';
 		$pathParts = explode('/', trim($path, '/'));

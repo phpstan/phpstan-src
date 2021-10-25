@@ -48,12 +48,20 @@ class IgnoredError
 		?string $path
 	): bool
 	{
-		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
 		$errorMessage = $error->getMessage();
+		$ignoreMessage = ltrim($ignoredErrorPattern, '#^');
+
+		// fast exit in case the first char of the error is different while making sure its not a regex meta char (wildcard or similar)
+		if ($ignoreMessage[0] !== $errorMessage[0] && preg_quote($ignoreMessage[0]) === $ignoreMessage[0]) {
+			return false;
+		}
+
+		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
 		$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);
 		$ignoredErrorPattern = str_replace([preg_quote('\r\n'), preg_quote('\r')], preg_quote('\n'), $ignoredErrorPattern);
 
 		if ($path !== null) {
+
 			if (\Nette\Utils\Strings::match($errorMessage, $ignoredErrorPattern) === null) {
 				return false;
 			}

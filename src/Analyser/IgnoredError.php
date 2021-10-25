@@ -54,12 +54,11 @@ class IgnoredError
 		$ignoredErrorPattern = str_replace([preg_quote('\r\n'), preg_quote('\r')], preg_quote('\n'), $ignoredErrorPattern);
 
 		if ($path !== null) {
-			$fileExcluder = new FileExcluder($fileHelper, [$path], []);
-
 			if (\Nette\Utils\Strings::match($errorMessage, $ignoredErrorPattern) === null) {
 				return false;
 			}
 
+			$fileExcluder = new FileExcluder($fileHelper, [$path], []);
 			$isExcluded = $fileExcluder->isExcludedFromAnalysing($error->getFilePath());
 			if (!$isExcluded && $error->getTraitFilePath() !== null) {
 				return $fileExcluder->isExcludedFromAnalysing($error->getTraitFilePath());

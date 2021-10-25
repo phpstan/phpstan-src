@@ -41,10 +41,7 @@ class FileHelper
 	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
-		$isLocalPath = true;
-		if ($originalPath) {
-			$isLocalPath = $originalPath[0] === '/';
-		}
+		$isLocalPath = $originalPath !== '' && $originalPath[0] === '/';;
 
 		$matches = null;
 		if (!$isLocalPath) {

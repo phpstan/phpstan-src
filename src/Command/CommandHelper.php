@@ -47,7 +47,8 @@ class CommandHelper
 		bool $manageMemoryLimitFile = true,
 		bool $debugEnabled = false,
 		?string $singleReflectionFile = null,
-		?string $singleReflectionInsteadOfFile = null
+		?string $singleReflectionInsteadOfFile = null,
+		bool $cleanupContainerCache = true
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
@@ -235,7 +236,9 @@ class CommandHelper
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
-		$containerFactory->clearOldContainers($tmpDir);
+		if ($cleanupContainerCache) {
+			$containerFactory->clearOldContainers($tmpDir);
+		}
 
 		if (count($paths) === 0) {
 			$errorOutput->writeLineFormatted('At least one path must be specified to analyse.');

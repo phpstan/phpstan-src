@@ -2,8 +2,6 @@
 
 namespace PHPStan\File;
 
-use Nette\Utils\Strings;
-
 class FileHelper
 {
 
@@ -41,7 +39,7 @@ class FileHelper
 	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
-		$isLocalPath = $originalPath !== '' && $originalPath[0] === '/';;
+		$isLocalPath = $originalPath !== '' && $originalPath[0] === '/';
 
 		$matches = null;
 		if (!$isLocalPath) {

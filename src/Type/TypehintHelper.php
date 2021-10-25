@@ -62,6 +62,7 @@ class TypehintHelper
 		}
 	}
 
+	/** @api */
 	public static function decideTypeFromReflection(
 		?\ReflectionType $reflectionType,
 		?Type $phpDocType = null,

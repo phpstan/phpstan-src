@@ -52,7 +52,7 @@ class IgnoredError
 		$ignoredMessage = ltrim($ignoredErrorPattern, '#^');
 
 		// fast exit in case the first char of the error is different while making sure its not a regex meta char (wildcard or similar)
-		if ($ignoredMessage[0] !== $ignoredMessage[0] && preg_quote($ignoredMessage[0]) === $ignoredMessage[0]) {
+		if ($ignoredMessage[0] !== $errorMessage[0] && preg_quote($ignoredMessage[0]) === $ignoredMessage[0]) {
 			return false;
 		}
 

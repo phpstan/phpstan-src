@@ -417,6 +417,9 @@ class TypeCombinator
 				return [null, $b];
 			}
 		}
+		if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
+			return null;
+		}
 
 		if ($a instanceof SubtractableType) {
 			$typeWithoutSubtractedTypeA = $a->getTypeWithoutSubtractedType();

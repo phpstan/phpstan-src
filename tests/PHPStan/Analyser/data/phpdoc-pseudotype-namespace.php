@@ -8,7 +8,6 @@ class Number {}
 class Numeric {}
 class Boolean {}
 class Resource {}
-class Never {}
 class Double {}
 
 function () {
@@ -21,9 +20,6 @@ function () {
 	/** @var Numeric $numeric */
 	$numeric = doFoo();
 
-	/** @var Never $never */
-	$never = doFoo();
-
 	/** @var Resource $resource */
 	$resource = doFoo();
 
@@ -34,6 +30,5 @@ function () {
 	assertType('PhpdocPseudoTypesNamespace\Numeric', $numeric);
 	assertType('PhpdocPseudoTypesNamespace\Boolean', $boolean);
 	assertType('PhpdocPseudoTypesNamespace\Resource', $resource);
-	assertType('PhpdocPseudoTypesNamespace\Never', $never);
 	assertType('PhpdocPseudoTypesNamespace\Double', $double);
 };

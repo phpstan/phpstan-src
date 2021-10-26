@@ -508,8 +508,8 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new NeverType();
 		}
 
-		if ($typeToRemove instanceof IntegerRangeType || $typeToRemove instanceof ConstantIntegerType) {
-			if ($typeToRemove instanceof IntegerRangeType) {
+		if ($typeToRemove instanceof self || $typeToRemove instanceof ConstantIntegerType) {
+			if ($typeToRemove instanceof self) {
 				$removeMin = $typeToRemove->min;
 				$removeMax = $typeToRemove->max;
 			} else {

@@ -1,0 +1,12 @@
+@package symfony/process
+
+--- Process.php	2021-01-27 11:15:41.000000000 +0100
++++ Process.php	2021-10-26 16:38:05.000000000 +0200
+@@ -617,7 +617,7 @@
+      *
+      * @return \Generator
+      */
+-    public function getIterator(int $flags = 0)
++    public function getIterator(int $flags = 0): \Traversable
+     {
+         $this->readPipesForOutput(__FUNCTION__, false);

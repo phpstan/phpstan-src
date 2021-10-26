@@ -21,6 +21,7 @@
 		<exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
 		<exclude name="Squiz.Commenting.FunctionComment.ParamNameNoMatch"/>
 		<exclude name="Squiz.PHP.Heredoc.NotAllowed"/>
+		<exclude name="Squiz.WhiteSpace.FunctionSpacing.Before"/>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">
 		<properties>

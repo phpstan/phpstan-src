@@ -27,6 +27,9 @@ class SkipClassAliasSourceLocator implements SourceLocator
 			}
 
 			$reflection = new \ReflectionClass($className);
+			if ($reflection->getName() === 'ReturnTypeWillChange') {
+				return $this->sourceLocator->locateIdentifier($reflector, $identifier);
+			}
 			if ($reflection->getFileName() === false) {
 				return $this->sourceLocator->locateIdentifier($reflector, $identifier);
 			}

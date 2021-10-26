@@ -50,6 +50,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -1290,6 +1291,7 @@ class MutatingScope implements Scope
 
 					return TypeCombinator::union(...$resultTypes);
 				}
+
 				$arrayType = new ArrayType(new MixedType(), new MixedType());
 
 				if ($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->yes()) {
@@ -1306,10 +1308,16 @@ class MutatingScope implements Scope
 						}
 						$keyType = TypeCombinator::union(...$keyTypes);
 					}
-					return new ArrayType(
+
+					$arrayType = new ArrayType(
 						$keyType,
 						TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType())
 					);
+
+					if ($leftType->isIterableAtLeastOnce() || $rightType->isIterableAtLeastOnce()) {
+						return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+					}
+					return $arrayType;
 				}
 
 				if ($leftType instanceof MixedType && $rightType instanceof MixedType) {

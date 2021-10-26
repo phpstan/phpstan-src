@@ -27,6 +27,7 @@ class InheritedEntityManager extends EntityManager
 class ComponentContainer implements \ArrayAccess
 {
 
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 
@@ -37,11 +38,13 @@ class ComponentContainer implements \ArrayAccess
 
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 

@@ -180,99 +180,99 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 			],
 			[
 				'Method ReturnTypes\ReturnTernary::returnTernary() should return ReturnTypes\Foo but returns false.',
-				625,
+				627,
 			],
 			[
 				'Method ReturnTypes\TrickyVoid::returnVoidOrInt() should return int|void but returns string.',
-				656,
+				658,
 			],
 			[
 				'Method ReturnTypes\TernaryWithJsonEncode::toJson() should return string but returns string|false.',
-				687,
+				689,
 			],
 			[
 				'Method ReturnTypes\AppendedArrayReturnType::foo() should return array<int> but returns array<int, stdClass>.',
-				700,
+				702,
 			],
 			[
 				'Method ReturnTypes\AppendedArrayReturnType::bar() should return array<int> but returns array<int|stdClass>.',
-				710,
+				712,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__toString() should return string but returns true.',
-				720,
+				722,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__isset() should return bool but returns int.',
-				725,
+				727,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__destruct() with return type void returns int but should not return anything.',
-				730,
+				732,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__unset() with return type void returns int but should not return anything.',
-				735,
+				737,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__sleep() should return array<int, string> but returns array<int, stdClass>.',
-				740,
+				742,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__wakeup() with return type void returns int but should not return anything.',
-				747,
+				749,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__set_state() should return object but returns array<string, string>.',
-				752,
+				754,
 			],
 			[
 				'Method ReturnTypes\WrongMagicMethods::__clone() with return type void returns int but should not return anything.',
-				757,
+				759,
 			],
 			[
 				'Method ReturnTypes\ArrayFillKeysIssue::getIPs2() should return array<string, array<ReturnTypes\Foo>> but returns array<string, array<int, ReturnTypes\Bar>>.',
-				815,
+				817,
 			],
 			[
 				'Method ReturnTypes\AssertThisInstanceOf::doBar() should return $this(ReturnTypes\AssertThisInstanceOf) but returns ReturnTypes\AssertThisInstanceOf&ReturnTypes\FooInterface.',
-				838,
+				840,
 			],
 			[
 				'Method ReturnTypes\NestedArrayCheck::doFoo() should return array<string, bool> but returns array<string, array<int, string>>.',
-				858,
+				860,
 			],
 			[
 				'Method ReturnTypes\NestedArrayCheck::doBar() should return array<string, bool> but returns array<string, array<string, string>>.',
-				873,
+				875,
 			],
 			[
 				'Method ReturnTypes\Foo2::returnIntFromParent() should return int but returns string.',
-				948,
+				950,
 			],
 			[
 				'Method ReturnTypes\Foo2::returnIntFromParent() should return int but returns ReturnTypes\integer.',
-				951,
+				953,
 			],
 			[
 				'Method ReturnTypes\VariableOverwrittenInForeach::doFoo() should return int but returns int|string.',
-				1009,
+				1011,
 			],
 			[
 				'Method ReturnTypes\VariableOverwrittenInForeach::doBar() should return int but returns int|string.',
-				1024,
+				1026,
 			],
 			[
 				'Method ReturnTypes\ReturnStaticGeneric::instanceReturnsStatic() should return static(ReturnTypes\ReturnStaticGeneric) but returns ReturnTypes\ReturnStaticGeneric.',
-				1064,
+				1066,
 			],
 			[
 				'Method ReturnTypes\NeverReturn::doFoo() should never return but return statement found.',
-				1238,
+				1241,
 			],
 			[
 				'Method ReturnTypes\NeverReturn::doBaz3() should never return but return statement found.',
-				1251,
+				1254,
 			],
 		]);
 	}

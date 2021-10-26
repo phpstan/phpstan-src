@@ -9,6 +9,7 @@ use function PHPStan\Testing\assertType;
 class Foo implements ArrayAccess
 {
 
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		return true;
@@ -19,16 +20,19 @@ class Foo implements ArrayAccess
 	 * @param class-string<T> $offset
 	 * @return T
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 

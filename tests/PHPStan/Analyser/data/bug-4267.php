@@ -10,6 +10,7 @@ use function PHPStan\Testing\assertType;
 class Model1 implements \IteratorAggregate
 {
 
+	#[\ReturnTypeWillChange]
 	public function getIterator(): iterable
 	{
 		throw new \Exception('not implemented');
@@ -33,6 +34,7 @@ class Model2 implements \IteratorAggregate
 	/**
 	 * @return iterable<static>
 	 */
+	#[\ReturnTypeWillChange]
 	public function getIterator(): iterable
 	{
 		throw new \Exception('not implemented');

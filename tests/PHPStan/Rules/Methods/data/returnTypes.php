@@ -571,6 +571,7 @@ class WeirdReturnFormat
 class Collection implements \IteratorAggregate
 {
 
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		return new \ArrayIterator([]);
@@ -581,6 +582,7 @@ class Collection implements \IteratorAggregate
 class AnotherCollection implements \IteratorAggregate
 {
 
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		return new \ArrayIterator([]);
@@ -1206,6 +1208,7 @@ abstract class CollectionWithArrayKey implements \Iterator
 	/**
 	 * @return CollectionKey|null
 	 */
+	#[\ReturnTypeWillChange]
 	public function key()
 	{
 		return key($this->data);

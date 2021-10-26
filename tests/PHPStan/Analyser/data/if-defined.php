@@ -15,6 +15,7 @@ class Foo implements \ArrayAccess
 
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 

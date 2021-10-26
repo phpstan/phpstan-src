@@ -1108,6 +1108,7 @@ function () {
 class GenericReflectionClass extends \ReflectionClass
 {
 
+	#[\ReturnTypeWillChange]
 	public function newInstanceWithoutConstructor()
 	{
 		return parent::newInstanceWithoutConstructor();
@@ -1121,6 +1122,7 @@ class GenericReflectionClass extends \ReflectionClass
 class SpecificReflectionClass extends \ReflectionClass
 {
 
+	#[\ReturnTypeWillChange]
 	public function newInstanceWithoutConstructor()
 	{
 		return parent::newInstanceWithoutConstructor();

@@ -5,11 +5,13 @@ namespace ObjectWithArrayAccess;
 class Foo implements \ArrayAccess
 {
 
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 
@@ -21,6 +23,7 @@ class Foo implements \ArrayAccess
 
 	}
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 

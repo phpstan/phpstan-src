@@ -2164,7 +2164,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integer ** $integer',
 			],
 			[
-				$typeCallback(3.2 % 2),
+				'1',
 				'3.2 % 2',
 			],
 			[

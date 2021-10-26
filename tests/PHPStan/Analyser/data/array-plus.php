@@ -14,5 +14,7 @@ class Foo
 		assertType('non-empty-array', $s1 + $s2);
 		assertType('non-empty-array', $s2 + $s1);
 		assertType('non-empty-array', $s2 + $s2);
+
+		assertType('array', $s1 + $s1);
 	}
 }

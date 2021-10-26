@@ -80,7 +80,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			if (!class_exists($className, false)) {
 				return true;
 			}
-			if (in_array(strtolower($className), ['reflectionuniontype', 'attribute'], true)) {
+			if (in_array(strtolower($className), ['reflectionuniontype', 'attribute', 'returntypewillchange'], true)) {
 				return true;
 			}
 			$reflection = new \ReflectionClass($className);

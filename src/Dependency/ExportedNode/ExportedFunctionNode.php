@@ -93,6 +93,7 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

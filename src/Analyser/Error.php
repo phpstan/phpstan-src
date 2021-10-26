@@ -203,6 +203,7 @@ class Error implements \JsonSerializable
 	/**
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

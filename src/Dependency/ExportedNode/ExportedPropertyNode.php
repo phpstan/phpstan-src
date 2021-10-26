@@ -104,6 +104,7 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 	/**
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

@@ -64,6 +64,7 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

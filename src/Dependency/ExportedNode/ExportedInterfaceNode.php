@@ -65,6 +65,7 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

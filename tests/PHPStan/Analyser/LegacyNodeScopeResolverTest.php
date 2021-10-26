@@ -2830,7 +2830,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'[1, 2, 3] + [4, 5, 6]',
 			],
 			[
-				'array<int>',
+				'non-empty-array<int>',
 				'$arrayOfUnknownIntegers + [1, 2, 3]',
 			],
 			[

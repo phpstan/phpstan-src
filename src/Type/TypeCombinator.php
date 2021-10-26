@@ -168,18 +168,24 @@ class TypeCombinator
 
 	public static function union(Type ...$types): Type
 	{
+		$typesCount = count($types);
+
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
 		// transform A | (B | C) to A | B | C
-		for ($i = 0; $i < count($types); $i++) {
+		for ($i = 0; $i < $typesCount; $i++) {
 			if ($types[$i] instanceof BenevolentUnionType) {
 				if ($types[$i] instanceof TemplateBenevolentUnionType && $benevolentUnionObject === null) {
 					$benevolentUnionObject = $types[$i];
 				}
-				foreach ($types[$i]->getTypes() as $benevolentInnerType) {
+				$benevolentTypesCount = 0;
+				$typesInner = $types[$i]->getTypes();
+				foreach ($typesInner as $benevolentInnerType) {
+					$benevolentTypesCount++;
 					$benevolentTypes[$benevolentInnerType->describe(VerbosityLevel::value())] = $benevolentInnerType;
 				}
-				array_splice($types, $i, 1, $types[$i]->getTypes());
+				array_splice($types, $i, 1, $typesInner);
+				$typesCount += $benevolentTypesCount - 1;
 				continue;
 			}
 			if (!($types[$i] instanceof UnionType)) {
@@ -189,10 +195,11 @@ class TypeCombinator
 				continue;
 			}
 
-			array_splice($types, $i, 1, $types[$i]->getTypes());
+			$typesInner = $types[$i]->getTypes();
+			array_splice($types, $i, 1, $typesInner);
+			$typesCount += count($typesInner) - 1;
 		}
 
-		$typesCount = count($types);
 		$arrayTypes = [];
 		$arrayAccessoryTypes = [];
 		$scalarTypes = [];

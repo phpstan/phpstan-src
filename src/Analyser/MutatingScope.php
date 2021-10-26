@@ -1314,7 +1314,7 @@ class MutatingScope implements Scope
 						TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType())
 					);
 
-					if ($leftType->isIterableAtLeastOnce() || $rightType->isIterableAtLeastOnce()) {
+					if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
 						return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 					}
 					return $arrayType;

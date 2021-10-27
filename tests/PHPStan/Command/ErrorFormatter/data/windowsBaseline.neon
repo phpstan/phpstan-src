@@ -1,17 +1,17 @@
 parameters:
 	ignoreErrors:
 		-
-			rawMessage: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has no return type specified\\.$#"
+			message: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: UnixNewlines.php
 
 		-
-			rawMessage: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has parameter \\$object with no type specified\\.$#"
+			message: "#^Method BaselineIntegration\\\\UnixNewlines\\:\\:phpdocWithNewlines\\(\\) has parameter \\$object with no type specified\\.$#"
 			count: 1
 			path: UnixNewlines.php
 
 		-
-			rawMessage: "#^PHPDoc tag @param has invalid value \\(\\)\\: Unexpected token \"\\\\r\\\\n\\\\t \\* \", expected type at offset 110$#"
+			message: "#^PHPDoc tag @param has invalid value \\(\\)\\: Unexpected token \"\\\\r\\\\n\\\\t \\* \", expected type at offset 110$#"
 			count: 1
 			path: UnixNewlines.php
 

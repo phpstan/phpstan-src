@@ -69,7 +69,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 	}
 
 	/**
-	 * @return array{message: string, count: int, path: string}
+	 * @return array<string, scalar>
 	 */
 	protected function formatError(string $message, int $count, string $file): array
 	{

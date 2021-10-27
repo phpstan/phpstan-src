@@ -34,15 +34,18 @@ class IgnoredErrorHelper
 	public function initialize(): IgnoredErrorHelperResult
 	{
 		$otherIgnoreErrors = [];
+		/**
+		 * @var array<string, list<array{index: int, ignoreError: }>>
+		 */
 		$ignoreErrorsByFile = [];
 		$errors = [];
 		foreach ($this->ignoreErrors as $i => $ignoreError) {
 			try {
 				if (is_array($ignoreError)) {
-					if (!isset($ignoreError['message'])) {
+					if (!isset($ignoreError['message']) && !isset($ignoreError['rawMessage'])) {
 						$errors[] = sprintf(
-							'Ignored error %s is missing a message.',
-							Json::encode($ignoreError),
+							'Ignored error %s is missing either message or rawMessage.',
+							Json::encode($ignoreError)
 						);
 						continue;
 					}
@@ -74,24 +77,28 @@ class IgnoredErrorHelper
 						];
 					}
 
-					$ignoreMessage = $ignoreError['message'];
-					Strings::match('', $ignoreMessage);
-					if (isset($ignoreError['count'])) {
-						continue; // ignoreError coming from baseline will be correct
-					}
-					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
-					$ignoredTypes = $validationResult->getIgnoredTypes();
-					if (count($ignoredTypes) > 0) {
-						$errors[] = $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
+					// validate regex based errors
+					if (isset($ignoreError['message'])) {
+						$ignoreMessage = $ignoreError['message'];
+						Strings::match('', $ignoreMessage);
+						if (isset($ignoreError['count'])) {
+							continue; // ignoreError coming from baseline will be correct
+						}
+						$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
+						$ignoredTypes = $validationResult->getIgnoredTypes();
+						if (count($ignoredTypes) > 0) {
+							$errors[] = $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
+						}
+
+						if ($validationResult->hasAnchorsInTheMiddle()) {
+							$errors[] = $this->createAnchorInTheMiddleError($ignoreMessage);
+						}
+
+						if ($validationResult->areAllErrorsIgnored()) {
+							$errors[] = sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
+						}
 					}
 
-					if ($validationResult->hasAnchorsInTheMiddle()) {
-						$errors[] = $this->createAnchorInTheMiddleError($ignoreMessage);
-					}
-
-					if ($validationResult->areAllErrorsIgnored()) {
-						$errors[] = sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
-					}
 				} else {
 					$otherIgnoreErrors[] = [
 						'index' => $i,

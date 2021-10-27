@@ -66,7 +66,12 @@ class IgnoredErrorHelperResult
 				}
 			} else {
 				if (isset($ignore['path'])) {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['path']);
+					if (isset($ignore['rawMessage'])) {
+						$shouldBeIgnored = IgnoredError::shouldIgnoreRawMessage($this->fileHelper, $error, $ignore['rawMessage'], $ignore['path']);
+					} else {
+						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['path']);
+					}
+
 					if ($shouldBeIgnored) {
 						if (isset($ignore['count'])) {
 							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;

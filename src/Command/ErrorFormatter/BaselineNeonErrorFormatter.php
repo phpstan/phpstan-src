@@ -56,7 +56,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 
 			foreach ($fileErrorsCounts as $message => $count) {
 				$errorsToOutput[] = [
-					'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
+					'rawMessage' => Helpers::escape($message),
 					'count' => $count,
 					'path' => Helpers::escape($file),
 				];

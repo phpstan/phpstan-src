@@ -71,4 +71,41 @@ class IgnoredError
 		return Strings::match($errorMessage, $ignoredErrorPattern) !== null;
 	}
 
+	/**
+	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
+	 * @param FileHelper $fileHelper
+	 * @param Error $error
+	 * @param string $ignoredErrorPattern
+	 * @param string|null $path
+	 * @return bool To ignore or not to ignore?
+	 */
+	public static function shouldIgnoreRawMessage(
+		FileHelper $fileHelper,
+		Error $error,
+		string $rawIgnoreMessage,
+		?string $path
+	): bool
+	{
+		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
+		$errorMessage = $error->getMessage();
+		$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);
+		$rawIgnoreMessage = str_replace(['\r\n', '\r'], '\n', $rawIgnoreMessage);
+
+		if ($path !== null) {
+			if ($errorMessage !== $rawIgnoreMessage) {
+				return false;
+			}
+
+			$fileExcluder = new FileExcluder($fileHelper, [$path], []);
+			$isExcluded = $fileExcluder->isExcludedFromAnalysing($error->getFilePath());
+			if (!$isExcluded && $error->getTraitFilePath() !== null) {
+				return $fileExcluder->isExcludedFromAnalysing($error->getTraitFilePath());
+			}
+
+			return $isExcluded;
+		}
+
+		return $errorMessage !== $rawIgnoreMessage;
+	}
+
 }

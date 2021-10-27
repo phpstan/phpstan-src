@@ -43,7 +43,7 @@ use const PHP_VERSION_ID;
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v9-project-extensions';
+	private const CACHE_VERSION = 'v10-raw-baseline-messages';
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];

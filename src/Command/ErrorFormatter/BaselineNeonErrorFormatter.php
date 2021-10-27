@@ -71,7 +71,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 	/**
 	 * @return array{message: string, count: int, path: string}
 	 */
-	protected function formatError(string $message, int $count, string $file)
+	protected function formatError(string $message, int $count, string $file): array
 	{
 		return [
 			'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),

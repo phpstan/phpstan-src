@@ -6,7 +6,7 @@ use Nette\DI\Helpers;
 
 /**
  * A speed optimized version of BaselineNeonErrorFormatter
- * which does not regular expressions and therefore reduces the PCRE overhead.
+ * which does not use regular expressions and therefore prevents the PCRE overhead.
  */
 class BaselineNeonV2ErrorFormatter extends BaselineNeonErrorFormatter
 {

@@ -117,7 +117,7 @@ class AnalyseCommand extends Command
 		$debugEnabled = (bool) $input->getOption('debug');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 
-		/** @var string|false|null $generateBaselineFile */
+		/** @var string|null $generateBaselineFile */
 		$generateBaselineFile = null;
 		foreach (['generate-baseline-v2', 'generate-baseline'] as $baselineOption) {
 			$generateBaselineOption = $input->getOption($baselineOption);

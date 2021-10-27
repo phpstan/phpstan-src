@@ -10,7 +10,9 @@ use Nette\DI\Helpers;
  */
 class BaselineNeonV2ErrorFormatter extends BaselineNeonErrorFormatter
 {
-
+	/**
+	 * @return array{rawMessage: string, count: int, path: string}
+	 */
 	protected function formatError(string $message, int $count, string $file)
 	{
 		return [

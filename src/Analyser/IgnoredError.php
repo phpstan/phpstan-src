@@ -75,7 +75,7 @@ class IgnoredError
 	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
 	 * @param FileHelper $fileHelper
 	 * @param Error $error
-	 * @param string $ignoredErrorPattern
+	 * @param string $rawIgnoreMessage
 	 * @param string|null $path
 	 * @return bool To ignore or not to ignore?
 	 */

@@ -68,7 +68,8 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 		return 1;
 	}
 
-	protected function formatError(string $message, int $count, string $file) {
+	protected function formatError(string $message, int $count, string $file)
+	{
 		return [
 			'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
 			'count' => $count,

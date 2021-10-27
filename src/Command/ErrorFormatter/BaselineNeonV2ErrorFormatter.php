@@ -10,11 +10,14 @@ use Nette\DI\Helpers;
  */
 class BaselineNeonV2ErrorFormatter extends BaselineNeonErrorFormatter
 {
-	protected function formatError(string $message, int $count, string $file) {
+
+	protected function formatError(string $message, int $count, string $file)
+	{
 		return [
 			'rawMessage' => Helpers::escape($message),
 			'count' => $count,
 			'path' => Helpers::escape($file),
 		];
 	}
+
 }

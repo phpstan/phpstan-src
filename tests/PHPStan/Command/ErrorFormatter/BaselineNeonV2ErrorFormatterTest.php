@@ -3,12 +3,8 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use Nette\Neon\Neon;
-use PHPStan\Analyser\Error;
-use PHPStan\Command\AnalysisResult;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
-use function mt_srand;
-use function shuffle;
 use function trim;
 
 class BaselineNeonV2ErrorFormatterTest extends ErrorFormatterTestCase

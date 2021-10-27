@@ -34,9 +34,6 @@ class IgnoredErrorHelper
 	public function initialize(): IgnoredErrorHelperResult
 	{
 		$otherIgnoreErrors = [];
-		/**
-		 * @var array<string, list<array{index: int, ignoreError: }>>
-		 */
 		$ignoreErrorsByFile = [];
 		$errors = [];
 		foreach ($this->ignoreErrors as $i => $ignoreError) {

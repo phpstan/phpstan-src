@@ -795,8 +795,9 @@ class TypeCombinator
 		// transform callable & int to never
 		// transform A & ~A to never
 		// transform int & string to never
-		for ($i = 0; $i < count($types); $i++) {
-			for ($j = $i + 1; $j < count($types); $j++) {
+		$typesCount = count($types);
+		for ($i = 0; $i < $typesCount; $i++) {
+			for ($j = $i + 1; $j < $typesCount; $j++) {
 				if ($types[$j] instanceof SubtractableType) {
 					$typeWithoutSubtractedTypeA = $types[$j]->getTypeWithoutSubtractedType();
 
@@ -808,6 +809,7 @@ class TypeCombinator
 					if ($isSuperTypeSubtractableA->yes()) {
 						$types[$i] = self::unionWithSubtractedType($types[$i], $types[$j]->getSubtractedType());
 						array_splice($types, $j--, 1);
+						$typesCount--;
 						continue 1;
 					}
 				}
@@ -823,6 +825,7 @@ class TypeCombinator
 					if ($isSuperTypeSubtractableB->yes()) {
 						$types[$j] = self::unionWithSubtractedType($types[$j], $types[$i]->getSubtractedType());
 						array_splice($types, $i--, 1);
+						$typesCount--;
 						continue 2;
 					}
 				}
@@ -832,6 +835,7 @@ class TypeCombinator
 					if ($intersectionType !== null) {
 						$types[$j] = $intersectionType;
 						array_splice($types, $i--, 1);
+						$typesCount--;
 						continue 2;
 					}
 				}
@@ -844,6 +848,7 @@ class TypeCombinator
 
 				if ($isSuperTypeA->yes()) {
 					array_splice($types, $j--, 1);
+					$typesCount--;
 					continue;
 				}
 
@@ -857,12 +862,14 @@ class TypeCombinator
 					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof HasOffsetType) {
 						$types[$i] = $types[$i]->makeOffsetRequired($types[$j]->getOffsetType());
 						array_splice($types, $j--, 1);
+						$typesCount--;
 						continue;
 					}
 
 					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetType) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$i]->getOffsetType());
 						array_splice($types, $i--, 1);
+						$typesCount--;
 						continue 2;
 					}
 
@@ -878,6 +885,7 @@ class TypeCombinator
 							$types[$j] = new ArrayType($keyType, $itemType);
 						}
 						array_splice($types, $i--, 1);
+						$typesCount--;
 						continue 2;
 					}
 
@@ -886,6 +894,7 @@ class TypeCombinator
 
 				if ($isSuperTypeB->yes()) {
 					array_splice($types, $i--, 1);
+					$typesCount--;
 					continue 2;
 				}
 
@@ -895,7 +904,7 @@ class TypeCombinator
 			}
 		}
 
-		if (count($types) === 1) {
+		if ($typesCount === 1) {
 			return $types[0];
 		}
 

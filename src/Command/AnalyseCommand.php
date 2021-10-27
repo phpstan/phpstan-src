@@ -6,6 +6,7 @@ use OndraM\CiDetector\CiDetector;
 use OndraM\CiDetector\Exception\CiNotDetectedException;
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
+use PHPStan\Command\ErrorFormatter\BaselineNeonV2ErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
@@ -75,6 +76,7 @@ class AnalyseCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('error-format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result of the analysis', null),
 				new InputOption('generate-baseline', 'b', InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
+				new InputOption('generate-baseline-v2', null, InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved (version 2)', false),
 				new InputOption('allow-empty-baseline', null, InputOption::VALUE_NONE, 'Do not error out when the generated baseline is empty'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
@@ -116,11 +118,18 @@ class AnalyseCommand extends Command
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 
 		/** @var string|false|null $generateBaselineFile */
-		$generateBaselineFile = $input->getOption('generate-baseline');
-		if ($generateBaselineFile === false) {
-			$generateBaselineFile = null;
-		} elseif ($generateBaselineFile === null) {
-			$generateBaselineFile = 'phpstan-baseline.neon';
+		$generateBaselineFile = null;
+		foreach(['generate-baseline-v2', 'generate-baseline'] as $baselineOption) {
+			$generateBaselineOption = $input->getOption($baselineOption);
+
+			if ($generateBaselineOption === false) {
+				// option was not given
+				continue;
+			}
+
+			if ($generateBaselineOption === null) {
+				$generateBaselineFile = 'phpstan-baseline.neon';
+			}
 		}
 
 		$allowEmptyBaseline = (bool) $input->getOption('allow-empty-baseline');
@@ -276,8 +285,13 @@ class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1);
 			}
 
-			$baselineFileDirectory = dirname($generateBaselineFile);
-			$baselineErrorFormatter = new BaselineNeonErrorFormatter(new ParentDirectoryRelativePathHelper($baselineFileDirectory));
+			if ($input->getOption('generate-baseline-v2') !== false) {
+				$baselineFileDirectory = dirname($generateBaselineFile);
+				$baselineErrorFormatter = new BaselineNeonV2ErrorFormatter(new ParentDirectoryRelativePathHelper($baselineFileDirectory));
+			} else {
+				$baselineFileDirectory = dirname($generateBaselineFile);
+				$baselineErrorFormatter = new BaselineNeonErrorFormatter(new ParentDirectoryRelativePathHelper($baselineFileDirectory));
+			}
 
 			$streamOutput = $this->createStreamOutput();
 			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);

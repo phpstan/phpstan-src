@@ -55,11 +55,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 			ksort($fileErrorsCounts, SORT_STRING);
 
 			foreach ($fileErrorsCounts as $message => $count) {
-				$errorsToOutput[] = [
-					'rawMessage' => Helpers::escape($message),
-					'count' => $count,
-					'path' => Helpers::escape($file),
-				];
+				$errorsToOutput[] = $this->formatError($message, $count, $file);
 			}
 		}
 
@@ -70,6 +66,14 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 		], Neon::BLOCK));
 
 		return 1;
+	}
+
+	protected function formatError(string $message, int $count, string $file) {
+		return [
+			'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
+			'count' => $count,
+			'path' => Helpers::escape($file),
+		];
 	}
 
 }

@@ -296,7 +296,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
 		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message.', $result[0]);
+		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing either message or rawMessage.', $result[0]);
 	}
 
 	public function testIgnoredErrorMissingPath(): void

@@ -277,9 +277,9 @@ class TypeCombinator
 				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess)
 			)
 		);
+		$typesCount = count($types);
 
 		// simplify string[] | int[] to (string|int)[]
-		$typesCount = count($types);
 		for ($i = 0; $i < $typesCount; $i++) {
 			for ($j = $i + 1; $j < $typesCount; $j++) {
 				if ($types[$i] instanceof IterableType && $types[$j] instanceof IterableType) {
@@ -301,11 +301,11 @@ class TypeCombinator
 			}
 			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
 				$types[] = new BooleanType();
+				$typesCount++;
 				unset($scalarTypes[$classType]);
 				continue;
 			}
 
-			$typesCount = count($types);
 			$scalarTypeItemsCount = count($scalarTypeItems);
 			for ($i = 0; $i < $typesCount; $i++) {
 				for ($j = 0; $j < $scalarTypeItemsCount; $j++) {
@@ -339,11 +339,11 @@ class TypeCombinator
 				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
 			}
 			$types = array_values($newTypes);
+			$typesCount = count($types);
 		}
 
 		// transform A | A to A
 		// transform A | never to A
-		$typesCount = count($types);
 		for ($i = 0; $i < $typesCount; $i++) {
 			for ($j = $i + 1; $j < $typesCount; $j++) {
 				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
@@ -370,10 +370,10 @@ class TypeCombinator
 		foreach ($scalarTypes as $scalarTypeItems) {
 			foreach ($scalarTypeItems as $scalarType) {
 				$types[] = $scalarType;
+				$typesCount++;
 			}
 		}
 
-		$typesCount = count($types);
 		if ($typesCount === 0) {
 			return new NeverType();
 		}
@@ -381,7 +381,7 @@ class TypeCombinator
 			return $types[0];
 		}
 
-		if (count($benevolentTypes) > 0) {
+		if ($benevolentTypes !== []) {
 			$tempTypes = $types;
 			foreach ($tempTypes as $i => $type) {
 				if (!isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
@@ -391,7 +391,7 @@ class TypeCombinator
 				unset($tempTypes[$i]);
 			}
 
-			if (count($tempTypes) === 0) {
+			if ($tempTypes === []) {
 				if ($benevolentUnionObject instanceof TemplateBenevolentUnionType) {
 					return $benevolentUnionObject->withTypes($types);
 				}
@@ -575,9 +575,11 @@ class TypeCombinator
 				break 2;
 			}
 		}
-		if (count($arrayTypes) === 0) {
+
+		if ($arrayTypes === []) {
 			return [];
-		} elseif (count($arrayTypes) === 1) {
+		}
+		if (count($arrayTypes) === 1) {
 			return [
 				self::intersect($arrayTypes[0], ...$accessoryTypes),
 			];
@@ -895,7 +897,6 @@ class TypeCombinator
 
 		if (count($types) === 1) {
 			return $types[0];
-
 		}
 
 		return new IntersectionType($types);

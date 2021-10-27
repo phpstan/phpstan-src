@@ -95,7 +95,7 @@ class TypeCombinator
 				$lowerPart = $removeValueMin !== null ? IntegerRangeType::fromInterval(null, $removeValueMin, -1) : null;
 				$upperPart = $removeValueMax !== null ? IntegerRangeType::fromInterval($removeValueMax, null, +1) : null;
 				if ($lowerPart !== null && $upperPart !== null) {
-					return self::union($lowerPart, $upperPart);
+					return new UnionType([$lowerPart, $upperPart]);
 				}
 				return $lowerPart ?? $upperPart ?? new NeverType();
 			}

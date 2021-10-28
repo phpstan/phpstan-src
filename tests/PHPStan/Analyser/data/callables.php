@@ -12,12 +12,17 @@ class Foo
 		};
 		$foo = $this;
 		$arrayWithStaticMethod = ['Callables\\Foo', 'doBar'];
-		$stringWithStaticMethod = 'Callables\\Foo::doFoo';
+		$stringWithStaticMethod = 'Callables\\Foo::doBaz';
 		$arrayWithInstanceMethod = [$this, 'doFoo'];
 		die;
 	}
 
-	public function doBar(): Bar
+	public static function doBar(): Bar
+	{
+
+	}
+
+	public static function doBaz(): float
 	{
 
 	}

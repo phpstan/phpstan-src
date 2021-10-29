@@ -151,8 +151,10 @@ class CommandHelper
 			if ($level === null && isset($projectConfig['parameters']['level'])) {
 				$level = (string) $projectConfig['parameters']['level'];
 			}
-			if (count($paths) === 0 && isset($projectConfig['parameters']['paths'])) {
+			if (isset($projectConfig['parameters']['paths'])) {
 				$analysedPathsFromConfig = Helpers::expand($projectConfig['parameters']['paths'], $defaultParameters);
+			}
+			if (count($paths) === 0) {
 				$paths = $analysedPathsFromConfig;
 			}
 		}

@@ -316,6 +316,9 @@ services:
 
 	-
 		class: PhpParser\NodeVisitor\NameResolver
+		arguments:
+			options:
+				preserveOriginalNames: true
 
 	-
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor

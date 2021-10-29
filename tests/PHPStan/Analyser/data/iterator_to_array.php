@@ -9,10 +9,26 @@ use function PHPStan\Testing\assertType;
 class Foo
 {
 	/**
-	 * @param Traversable<string, int> $ints
+	 * @param Traversable<string, int> $foo
 	 */
-	public function doFoo(Traversable $ints)
+	public function testDefaultBehavior(Traversable $foo)
 	{
-		assertType('array<string, int>', iterator_to_array($ints));
+		assertType('array<string, int>', iterator_to_array($foo));
+	}
+
+	/**
+	 * @param Traversable<string, string> $foo
+	 */
+	public function testExplicitlyPreserveKeys(Traversable $foo)
+	{
+		assertType('array<string, string>', iterator_to_array($foo, true));
+	}
+
+	/**
+	 * @param Traversable<string, string> $foo
+	 */
+	public function testNotPreservingKeys(Traversable $foo)
+	{
+		assertType('array<int, string>', iterator_to_array($foo, false));
 	}
 }

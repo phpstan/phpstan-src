@@ -211,7 +211,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3997.php'], [
 			[
 				'Return type (string) of method Bug3997\Ipsum::count() should be compatible with return type (int) of method Countable::count()',
-				63,
+				64,
 			],
 		]);
 	}

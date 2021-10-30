@@ -16,6 +16,7 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	'../../stubs',
 	'../../vendor/jetbrains/phpstorm-stubs',
 	'../../vendor/phpstan/php-8-stubs/stubs',
+	'../../vendor/symfony/polyfill-php80',
 ]) as $file) {
 	if ($file->getPathName() === '../../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 		continue;

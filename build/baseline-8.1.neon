@@ -1,0 +1,12 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to function method_exists\\(\\) with ReflectionClassConstant and 'isFinal' will always evaluate to true\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassConstantReflection.php
+
+		-
+			message: "#^Call to function method_exists\\(\\) with ReflectionProperty and 'isReadOnly' will always evaluate to true\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/PhpPropertyReflection.php
+

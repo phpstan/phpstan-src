@@ -131,6 +131,10 @@ class Analyser
 				return true;
 			}
 
+			if ($errno === E_DEPRECATED) {
+				return true;
+			}
+
 			if (!in_array($errfile, $analysedFiles, true)) {
 				return true;
 			}

@@ -205,20 +205,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 		return [
 			[
 				70400,
-				PHP_VERSION_ID < 80000 || self::$useStaticReflectionProvider ? [] : [
-					[
-						'Required parameter $bar follows optional parameter $foo',
-						8,
-					],
-					[
-						'Required parameter $bar follows optional parameter $foo',
-						17,
-					],
-					[
-						'Required parameter $bar follows optional parameter $foo',
-						21,
-					],
-				],
+				[],
 			],
 			[
 				80000,

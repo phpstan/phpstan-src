@@ -1,0 +1,56 @@
+@package hoa/iterator
+
+--- Buffer.php	2017-01-10 11:34:47.000000000 +0100
++++ Buffer.php	2021-10-30 16:36:22.000000000 +0200
+@@ -103,7 +103,7 @@
+      *
+      * @return  \Iterator
+      */
+-    public function getInnerIterator()
++    public function getInnerIterator(): ?\Iterator
+     {
+         return $this->_iterator;
+     }
+@@ -133,6 +133,7 @@
+      *
+      * @return  mixed
+      */
++	#[\ReturnTypeWillChange]
+     public function current()
+     {
+         return $this->getBuffer()->current()[self::BUFFER_VALUE];
+@@ -143,6 +144,7 @@
+      *
+      * @return  mixed
+      */
++	#[\ReturnTypeWillChange]
+     public function key()
+     {
+         return $this->getBuffer()->current()[self::BUFFER_KEY];
+@@ -153,7 +155,7 @@
+      *
+      * @return  void
+      */
+-    public function next()
++    public function next(): void
+     {
+         $innerIterator = $this->getInnerIterator();
+         $buffer        = $this->getBuffer();
+@@ -204,7 +206,7 @@
+      *
+      * @return  void
+      */
+-    public function rewind()
++    public function rewind(): void
+     {
+         $innerIterator = $this->getInnerIterator();
+         $buffer        = $this->getBuffer();
+@@ -228,7 +230,7 @@
+      *
+      * @return  bool
+      */
+-    public function valid()
++    public function valid(): bool
+     {
+         return
+             $this->getBuffer()->valid() &&

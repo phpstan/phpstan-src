@@ -1,0 +1,54 @@
+@package hoa/iterator
+
+--- Lookahead.php	2017-01-10 11:34:47.000000000 +0100
++++ Lookahead.php	2021-10-30 16:35:30.000000000 +0200
+@@ -93,7 +93,7 @@
+      *
+      * @return  \Iterator
+      */
+-    public function getInnerIterator()
++    public function getInnerIterator(): ?\Iterator
+     {
+         return $this->_iterator;
+     }
+@@ -103,6 +103,7 @@
+      *
+      * @return  mixed
+      */
++	#[\ReturnTypeWillChange]
+     public function current()
+     {
+         return $this->_current;
+@@ -113,6 +114,7 @@
+      *
+      * @return  mixed
+      */
++	#[\ReturnTypeWillChange]
+     public function key()
+     {
+         return $this->_key;
+@@ -123,6 +125,7 @@
+      *
+      * @return  void
+      */
++	#[\ReturnTypeWillChange]
+     public function next()
+     {
+         $innerIterator = $this->getInnerIterator();
+@@ -143,6 +146,7 @@
+      *
+      * @return  void
+      */
++	#[\ReturnTypeWillChange]
+     public function rewind()
+     {
+         $out = $this->getInnerIterator()->rewind();
+@@ -156,7 +160,7 @@
+      *
+      * @return  bool
+      */
+-    public function valid()
++    public function valid(): bool
+     {
+         return $this->_valid;
+     }

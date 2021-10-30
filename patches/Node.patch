@@ -1,0 +1,48 @@
+@package hoa/protocol
+
+--- Node/Node.php	2017-01-14 13:26:10.000000000 +0100
++++ Node/Node.php	2021-10-30 16:32:43.000000000 +0200
+@@ -108,7 +108,7 @@
+      * @return  \Hoa\Protocol\Protocol
+      * @throws  \Hoa\Protocol\Exception
+      */
+-    public function offsetSet($name, $node)
++    public function offsetSet($name, $node): void
+     {
+         if (!($node instanceof self)) {
+             throw new Protocol\Exception(
+@@ -141,6 +141,7 @@
+      * @return  \Hoa\Protocol\Protocol
+      * @throws  \Hoa\Protocol\Exception
+      */
++	#[\ReturnTypeWillChange]
+     public function offsetGet($name)
+     {
+         if (!isset($this[$name])) {
+@@ -160,7 +161,7 @@
+      * @param   string  $name    Node's name.
+      * @return  bool
+      */
+-    public function offsetExists($name)
++    public function offsetExists($name): bool
+     {
+         return true === array_key_exists($name, $this->_children);
+     }
+@@ -171,7 +172,7 @@
+      * @param   string  $name    Node's name to remove.
+      * @return  void
+      */
+-    public function offsetUnset($name)
++    public function offsetUnset($name): void
+     {
+         unset($this->_children[$name]);
+
+@@ -365,7 +366,7 @@
+      *
+      * @return  \ArrayIterator
+      */
+-    public function getIterator()
++    public function getIterator(): \Traversable
+     {
+         return new \ArrayIterator($this->_children);
+     }

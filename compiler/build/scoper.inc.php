@@ -208,6 +208,7 @@ return [
 		'PHPStan\*',
 		'PhpParser\*',
 		'Hoa\*',
+		'Symfony\Polyfill\Php80\*',
 	],
 	'whitelist-global-functions' => false,
 	'whitelist-global-classes' => false,

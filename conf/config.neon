@@ -93,6 +93,7 @@ parameters:
 		- '#^PhpParser\\#'
 		- '#^PHPStan\\#'
 		- '#^Hoa\\#'
+		- '#^Symfony\\Polyfill\\Php80\\#'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION

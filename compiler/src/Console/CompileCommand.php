@@ -207,8 +207,6 @@ php;
 			$output .= 'require_once __DIR__ . ' . var_export($path, true) . ';' . "\n";
 		}
 
-		$output .= 'require_once __DIR__ . ' . var_export('/vendor/symfony/polyfill-php80/Php80.php', true) . ';' . "\n";
-
 		file_put_contents($preloadScript, sprintf($template, $output));
 	}
 

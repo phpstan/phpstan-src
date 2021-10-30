@@ -27,6 +27,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	if (
 		!array_key_exists('e88992873b7765f9b5710cab95ba5dd7', $composerAutoloadFiles)
 		|| !array_key_exists('3e76f7f02b41af8cea96018933f6b7e3', $composerAutoloadFiles)
+		|| !array_key_exists('a4a119a56e50fbb293281d9a48007e0e', $composerAutoloadFiles)
 	) {
 		echo "Composer autoloader changed\n";
 		exit(1);
@@ -37,6 +38,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		// fix unprefixed Hoa namespace - files already loaded
 		'e88992873b7765f9b5710cab95ba5dd7' => true,
 		'3e76f7f02b41af8cea96018933f6b7e3' => true,
+
+		// vendor/symfony/polyfill-php80/bootstrap.php
+		'a4a119a56e50fbb293281d9a48007e0e' => true,
 	];
 
 	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';

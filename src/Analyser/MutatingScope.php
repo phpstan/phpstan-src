@@ -2562,7 +2562,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Mod || $node instanceof Node\Expr\AssignOp\Mod) {
-			return $this->getTypeFromValue($leftNumberValue % $rightNumberValue);
+			return $this->getTypeFromValue(((int) $leftNumberValue) % ((int) $rightNumberValue));
 		}
 
 		if ($node instanceof Expr\BinaryOp\ShiftLeft || $node instanceof Expr\AssignOp\ShiftLeft) {

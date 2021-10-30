@@ -18,7 +18,7 @@ interface ItemListInterface extends \Traversable
  */
 final class ItemList implements \IteratorAggregate, ItemListInterface
 {
-	public function getIterator()
+	public function getIterator(): \Traversable
 	{
 		return new \ArrayIterator([]);
 	}
@@ -29,7 +29,7 @@ final class ItemList implements \IteratorAggregate, ItemListInterface
  */
 final class ItemList2 implements \IteratorAggregate, ItemListInterface
 {
-	public function getIterator()
+	public function getIterator(): \Traversable
 	{
 		return new \ArrayIterator([]);
 	}

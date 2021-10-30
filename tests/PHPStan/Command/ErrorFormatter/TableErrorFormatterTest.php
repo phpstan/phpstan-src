@@ -150,6 +150,9 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected
 	): void
 	{
+		if (PHP_VERSION_ID >= 80100) {
+			self::markTestSkipped('Skipped on PHP 8.1 because of different result');
+		}
 		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, null);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(

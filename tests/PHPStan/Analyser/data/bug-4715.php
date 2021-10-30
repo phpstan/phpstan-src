@@ -19,7 +19,7 @@ class ArrayCollection implements Collection
 	/**
 	 * {@inheritDoc}
 	 */
-	public function getIterator()
+	public function getIterator(): \Traversable
 	{
 		return new \ArrayIterator([]);
 	}

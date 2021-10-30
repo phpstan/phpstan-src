@@ -90,7 +90,7 @@ class ObjectWithOffsetAccess implements \ArrayAccess
 	 * @param string $offset
 	 * @return bool
 	 */
-	public function offsetExists($offset)
+	public function offsetExists($offset): bool
 	{
 		return true;
 	}
@@ -99,6 +99,7 @@ class ObjectWithOffsetAccess implements \ArrayAccess
 	 * @param string $offset
 	 * @return int
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		return 0;
@@ -109,7 +110,7 @@ class ObjectWithOffsetAccess implements \ArrayAccess
 	 * @param int $value
 	 * @return void
 	 */
-	public function offsetSet($offset, $value)
+	public function offsetSet($offset, $value): void
 	{
 	}
 
@@ -117,7 +118,7 @@ class ObjectWithOffsetAccess implements \ArrayAccess
 	 * @param string $offset
 	 * @return void
 	 */
-	public function offsetUnset($offset)
+	public function offsetUnset($offset): void
 	{
 	}
 

@@ -308,7 +308,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			$unionTypeB,
-			new ObjectType('Foo'),
+			new ObjectType(\stdClass::class),
 			TrinaryLogic::createNo(),
 		];
 
@@ -503,7 +503,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			$unionTypeB,
-			new ObjectType('Foo'),
+			new ObjectType(\stdClass::class),
 			TrinaryLogic::createNo(),
 		];
 	}

@@ -7,7 +7,7 @@ abstract class Message implements \ArrayAccess
 	/**
 	 * @param string $value
 	 */
-	abstract public function offsetSet($key, $value);
+	abstract public function offsetSet($key, $value): void;
 }
 
 

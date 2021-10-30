@@ -350,7 +350,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,
-			ConstantTypeHelper::getTypeFromValue(constant($constantName)),
+			ConstantTypeHelper::getTypeFromValue(@constant($constantName)),
 			null
 		);
 	}

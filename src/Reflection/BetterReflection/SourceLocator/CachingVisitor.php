@@ -78,7 +78,7 @@ class CachingVisitor extends NodeVisitorAbstract
 			$constantName = $nameNode->value;
 
 			if (defined($constantName)) {
-				$constantValue = constant($constantName);
+				$constantValue = @constant($constantName);
 				$node->getArgs()[1]->value = BuilderHelpers::normalizeValue($constantValue);
 			}
 

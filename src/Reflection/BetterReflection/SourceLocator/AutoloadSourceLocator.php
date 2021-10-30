@@ -144,7 +144,7 @@ class AutoloadSourceLocator implements SourceLocator
 				null,
 				null
 			);
-			$reflection->populateValue(constant($constantName));
+			$reflection->populateValue(@constant($constantName));
 
 			return $reflection;
 		}

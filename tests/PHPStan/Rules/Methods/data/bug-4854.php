@@ -23,7 +23,7 @@ abstract class AbstractDomainsAvailability implements DomainsAvailabilityInterfa
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getIterator()
+	public function getIterator(): \Traversable
 	{
 		return new \ArrayIterator($this->domains);
 	}
@@ -43,7 +43,7 @@ abstract class AbstractDomainsAvailability implements DomainsAvailabilityInterfa
 	/**
 	 * {@inheritdoc}
 	 */
-	public function offsetExists($offset)
+	public function offsetExists($offset): bool
 	{
 		return isset($this->domains[$offset]);
 	}

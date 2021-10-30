@@ -15,7 +15,7 @@ class HelloWorld implements \IteratorAggregate
 	/**
 	 * @return \ArrayIterator<int, array{name: string, value: string}>
 	 */
-	public function getIterator()
+	public function getIterator(): \Traversable
 	{
 		return new \ArrayIterator($this->list);
 	}

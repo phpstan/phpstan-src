@@ -8,5 +8,5 @@ interface Foo extends \IteratorAggregate
 	public function addPages($pages);
 
 	/** non-empty */
-	public function getIterator();
+	public function getIterator(): \Traversable;
 }

@@ -135,9 +135,9 @@ function (TestArrayObject2 $arrayObject2): void {
 class TestArrayObject3 extends \ArrayObject
 {
 
-	public function append($someValue)
+	public function append($someValue): void
 	{
-		return parent::append($someValue);
+		parent::append($someValue);
 	}
 
 }

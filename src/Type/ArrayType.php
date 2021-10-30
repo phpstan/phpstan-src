@@ -309,8 +309,12 @@ class ArrayType implements Type
 			}
 
 			if ($offsetType instanceof ConstantScalarType) {
+				$keyValue = $offsetType->getValue();
+				if (is_float($keyValue)) {
+					$keyValue = (int) $keyValue;
+				}
 				/** @var int|string $offsetValue */
-				$offsetValue = key([$offsetType->getValue() => null]);
+				$offsetValue = key([$keyValue => null]);
 				return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
 			}
 

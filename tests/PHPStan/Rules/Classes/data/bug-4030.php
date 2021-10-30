@@ -9,7 +9,7 @@ class Foo extends \FilterIterator
 
 	}
 
-	public function accept()
+	public function accept(): bool
 	{
 		return true;
 	}

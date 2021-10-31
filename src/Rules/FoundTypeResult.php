@@ -16,6 +16,8 @@ class FoundTypeResult
 	/** @var RuleError[] */
 	private array $unknownClassErrors;
 
+	private ?string $tip;
+
 	/**
 	 * @param \PHPStan\Type\Type $type
 	 * @param string[] $referencedClasses
@@ -24,12 +26,14 @@ class FoundTypeResult
 	public function __construct(
 		Type $type,
 		array $referencedClasses,
-		array $unknownClassErrors
+		array $unknownClassErrors,
+		?string $tip
 	)
 	{
 		$this->type = $type;
 		$this->referencedClasses = $referencedClasses;
 		$this->unknownClassErrors = $unknownClassErrors;
+		$this->tip = $tip;
 	}
 
 	public function getType(): Type
@@ -51,6 +55,11 @@ class FoundTypeResult
 	public function getUnknownClassErrors(): array
 	{
 		return $this->unknownClassErrors;
+	}
+
+	public function getTip(): ?string
+	{
+		return $this->tip;
 	}
 
 }

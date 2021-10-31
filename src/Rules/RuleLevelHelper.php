@@ -20,6 +20,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 
 class RuleLevelHelper
 {
@@ -135,7 +136,7 @@ class RuleLevelHelper
 	): FoundTypeResult
 	{
 		if ($this->checkThisOnly && !$this->isThis($var)) {
-			return new FoundTypeResult(new ErrorType(), [], []);
+			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 		$type = $scope->getType($var);
 		if (!$this->checkNullables && !$type instanceof NullType) {
@@ -148,11 +149,11 @@ class RuleLevelHelper
 			&& !$type instanceof TemplateMixedType
 			&& $type->isExplicitMixed()
 		) {
-			return new FoundTypeResult(new StrictMixedType(), [], []);
+			return new FoundTypeResult(new StrictMixedType(), [], [], null);
 		}
 
 		if ($type instanceof MixedType || $type instanceof NeverType) {
-			return new FoundTypeResult(new ErrorType(), [], []);
+			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 		if ($type instanceof StaticType) {
 			$type = $type->getStaticObjectType();
@@ -178,12 +179,12 @@ class RuleLevelHelper
 		}
 
 		if (count($errors) > 0 || $hasClassExistsClass) {
-			return new FoundTypeResult(new ErrorType(), [], $errors);
+			return new FoundTypeResult(new ErrorType(), [], $errors, null);
 		}
 
 		if (!$this->checkUnionTypes) {
 			if ($type instanceof ObjectWithoutClassType) {
-				return new FoundTypeResult(new ErrorType(), [], []);
+				return new FoundTypeResult(new ErrorType(), [], [], null);
 			}
 			if ($type instanceof UnionType) {
 				$newTypes = [];
@@ -196,12 +197,17 @@ class RuleLevelHelper
 				}
 
 				if (count($newTypes) > 0) {
-					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, []);
+					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
 				}
 			}
 		}
 
-		return new FoundTypeResult($type, $directClassNames, []);
+		$tip = null;
+		if (strpos($type->describe(VerbosityLevel::typeOnly()), 'PhpParser\\Node\\Arg|PhpParser\\Node\\VariadicPlaceholder') !== false && !$unionTypeCriteriaCallback($type)) {
+			$tip = 'Use <fg=cyan>->getArgs()</> instead of <fg=cyan>->args</>.';
+		}
+
+		return new FoundTypeResult($type, $directClassNames, [], $tip);
 	}
 
 }

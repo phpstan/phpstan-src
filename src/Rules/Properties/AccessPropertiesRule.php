@@ -139,12 +139,17 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 				}
 			}
 
+			$ruleErrorBuilder = RuleErrorBuilder::message(sprintf(
+				'Access to an undefined property %s::$%s.',
+				$type->describe(VerbosityLevel::typeOnly()),
+				$name
+			));
+			if ($typeResult->getTip() !== null) {
+				$ruleErrorBuilder->tip($typeResult->getTip());
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf(
-					'Access to an undefined property %s::$%s.',
-					$type->describe(VerbosityLevel::typeOnly()),
-					$name
-				))->build(),
+				$ruleErrorBuilder->build(),
 			];
 		}
 

@@ -19,6 +19,8 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 	private \PhpParser\Node\FunctionLike $functionLike;
 
+	private string $fileName;
+
 	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
 
 	/** @var \PHPStan\Type\Type[] */
@@ -66,6 +68,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
+		string $fileName,
 		TemplateTypeMap $templateTypeMap,
 		array $realParameterTypes,
 		array $phpDocParameterTypes,
@@ -81,6 +84,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	)
 	{
 		$this->functionLike = $functionLike;
+		$this->fileName = $fileName;
 		$this->templateTypeMap = $templateTypeMap;
 		$this->realParameterTypes = $realParameterTypes;
 		$this->phpDocParameterTypes = $phpDocParameterTypes;
@@ -98,6 +102,11 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	protected function getFunctionLike(): FunctionLike
 	{
 		return $this->functionLike;
+	}
+
+	public function getFileName(): string
+	{
+		return $this->fileName;
 	}
 
 	public function getName(): string

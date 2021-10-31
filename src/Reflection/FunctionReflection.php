@@ -11,6 +11,8 @@ interface FunctionReflection
 
 	public function getName(): string;
 
+	public function getFileName(): ?string;
+
 	/**
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */

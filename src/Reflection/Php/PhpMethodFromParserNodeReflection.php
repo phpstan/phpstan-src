@@ -40,6 +40,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	public function __construct(
 		ClassReflection $declaringClass,
 		ClassMethod $classMethod,
+		string $fileName,
 		TemplateTypeMap $templateTypeMap,
 		array $realParameterTypes,
 		array $phpDocParameterTypes,
@@ -79,6 +80,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 
 		parent::__construct(
 			$classMethod,
+			$fileName,
 			$templateTypeMap,
 			$realParameterTypes,
 			$phpDocParameterTypes,

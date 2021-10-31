@@ -2831,6 +2831,7 @@ class MutatingScope implements Scope
 			new PhpMethodFromParserNodeReflection(
 				$this->getClassReflection(),
 				$classMethod,
+				$this->getFile(),
 				$templateTypeMap,
 				$this->getRealParameterTypes($classMethod),
 				array_map(static function (Type $type): Type {
@@ -2940,6 +2941,7 @@ class MutatingScope implements Scope
 		return $this->enterFunctionLike(
 			new PhpFunctionFromParserNodeReflection(
 				$function,
+				$this->getFile(),
 				$templateTypeMap,
 				$this->getRealParameterTypes($function),
 				array_map(static function (Type $type): Type {

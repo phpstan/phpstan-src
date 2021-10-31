@@ -46,6 +46,11 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 		return $this->name;
 	}
 
+	public function getFileName(): ?string
+	{
+		return null;
+	}
+
 	/**
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */

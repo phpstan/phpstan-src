@@ -236,6 +236,37 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());
 			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		} catch (\Nette\DI\ServiceCreationException $e) {
+			$matches = Strings::match($e->getMessage(), '#Service of type (?<serviceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]): Service of type (?<parserServiceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]) needed by \$(?<parameterName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*) in (?<methodName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)\(\)#');
+			if ($matches === null) {
+				throw $e;
+			}
+
+			if ($matches['parserServiceType'] !== 'PHPStan\\Parser\\Parser') {
+				throw $e;
+			}
+
+			if ($matches['methodName'] !== '__construct') {
+				throw $e;
+			}
+
+			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
+			$errorOutput->writeLineFormatted(sprintf("Service of type <fg=cyan>%s</> is no longer autowired.\n", $matches['parserServiceType']));
+			$errorOutput->writeLineFormatted('You need to choose one of the following services');
+			$errorOutput->writeLineFormatted(sprintf('and use it in the %s argument of your service <fg=cyan>%s</>:', $matches['parameterName'], $matches['serviceType']));
+			$errorOutput->writeLineFormatted('* <fg=cyan>defaultAnalysisParser</> (if you\'re parsing files from analysed paths)');
+			$errorOutput->writeLineFormatted('* <fg=cyan>currentPhpVersionSimpleDirectParser</> (in most other situations)');
+
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted('After fixing this problem, your configuration will look something like this:');
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted('-');
+			$errorOutput->writeLineFormatted(sprintf("\tclass: %s", $matches['serviceType']));
+			$errorOutput->writeLineFormatted(sprintf("\targuments:"));
+			$errorOutput->writeLineFormatted(sprintf("\t\t%s: @defaultAnalysisParser", $matches['parameterName']));
+			$errorOutput->writeLineFormatted('');
+
+			throw new \PHPStan\Command\InceptionNotSuccessfulException();
 		}
 
 		if ($cleanupContainerCache) {

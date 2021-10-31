@@ -9,7 +9,6 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Reflection\ReflectionWithFilename;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
@@ -138,9 +137,6 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		}
 
 		$functionReflection = $this->reflectionProvider->getFunction($nameNode, $scope);
-		if (!$functionReflection instanceof ReflectionWithFilename) {
-			return true;
-		}
 
 		return $functionReflection->getFileName() !== $this->singleReflectionInsteadOfFile;
 	}

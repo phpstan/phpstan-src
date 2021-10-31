@@ -11,10 +11,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InFunctionNode;
+use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Reflection\ReflectionWithFilename;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
@@ -208,7 +209,7 @@ class DependencyResolver
 
 	/**
 	 * @param string $className
-	 * @param array<int, ReflectionWithFilename> $dependenciesReflections
+	 * @param array<int, ClassReflection|FunctionReflection> $dependenciesReflections
 	 */
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
 	{
@@ -233,19 +234,14 @@ class DependencyResolver
 		} while ($classReflection !== null);
 	}
 
-	private function getFunctionReflection(\PhpParser\Node\Name $nameNode, ?Scope $scope): ReflectionWithFilename
+	private function getFunctionReflection(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection
 	{
-		$reflection = $this->reflectionProvider->getFunction($nameNode, $scope);
-		if (!$reflection instanceof ReflectionWithFilename) {
-			throw new \PHPStan\Broker\FunctionNotFoundException((string) $nameNode);
-		}
-
-		return $reflection;
+		return $this->reflectionProvider->getFunction($nameNode, $scope);
 	}
 
 	/**
 	 * @param ParametersAcceptorWithPhpDocs $parametersAcceptor
-	 * @param ReflectionWithFilename[] $dependenciesReflections
+	 * @param array<ClassReflection|FunctionReflection> $dependenciesReflections
 	 */
 	private function extractFromParametersAcceptor(
 		ParametersAcceptorWithPhpDocs $parametersAcceptor,
@@ -274,7 +270,7 @@ class DependencyResolver
 
 	/**
 	 * @param Type|null $throwType
-	 * @param ReflectionWithFilename[] $dependenciesReflections
+	 * @param array<ClassReflection|FunctionReflection> $dependenciesReflections
 	 */
 	private function extractThrowType(
 		?Type $throwType,

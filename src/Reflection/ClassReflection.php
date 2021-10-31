@@ -31,7 +31,7 @@ use PHPStan\Type\VerbosityLevel;
 use ReflectionMethod;
 
 /** @api */
-class ClassReflection implements ReflectionWithFilename
+class ClassReflection
 {
 
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;

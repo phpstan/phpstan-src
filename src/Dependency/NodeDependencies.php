@@ -3,21 +3,22 @@
 namespace PHPStan\Dependency;
 
 use PHPStan\File\FileHelper;
-use PHPStan\Reflection\ReflectionWithFilename;
+use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\FunctionReflection;
 
 class NodeDependencies
 {
 
 	private FileHelper $fileHelper;
 
-	/** @var array<int, ReflectionWithFilename> */
+	/** @var array<int, ClassReflection|FunctionReflection> */
 	private array $reflections;
 
 	private ?ExportedNode $exportedNode;
 
 	/**
 	 * @param FileHelper $fileHelper
-	 * @param array<int, ReflectionWithFilename> $reflections
+	 * @param array<int, ClassReflection|FunctionReflection> $reflections
 	 */
 	public function __construct(
 		FileHelper $fileHelper,

@@ -13,7 +13,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\ReflectionWithFilename;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -21,7 +20,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 
-class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilename
+class PhpFunctionReflection implements FunctionReflection
 {
 
 	private \ReflectionFunction $reflection;

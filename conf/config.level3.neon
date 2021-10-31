@@ -23,13 +23,6 @@ parameters:
 
 services:
 	-
-		class: PHPStan\Rules\Arrays\AppendedArrayKeyTypeRule
-		arguments:
-			checkUnionTypes: %checkUnionTypes%
-		tags:
-			- phpstan.rules.rule
-
-	-
 		class: PHPStan\Rules\Arrays\InvalidKeyInArrayDimFetchRule
 		arguments:
 			reportMaybes: %reportMaybes%

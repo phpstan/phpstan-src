@@ -7,6 +7,8 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\AssignRef;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\ArrayDimFetchAssignNode;
+use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -14,72 +16,59 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @implements \PHPStan\Rules\Rule<ArrayDimFetchAssignNode>
  */
 class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 {
 
 	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
 
+	private PropertyDescriptor $propertyDescriptor;
+
 	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
 		PropertyReflectionFinder $propertyReflectionFinder,
+		PropertyDescriptor $propertyDescriptor,
 		RuleLevelHelper $ruleLevelHelper
 	)
 	{
 		$this->propertyReflectionFinder = $propertyReflectionFinder;
+		$this->propertyDescriptor = $propertyDescriptor;
 		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr::class;
+		return ArrayDimFetchAssignNode::class;
 	}
 
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
+		$var = $node->getVar();
 		if (
-			!$node instanceof Assign
-			&& !$node instanceof AssignOp
-			&& !$node instanceof AssignRef
+			!$var instanceof \PhpParser\Node\Expr\PropertyFetch
+			&& !$var instanceof \PhpParser\Node\Expr\StaticPropertyFetch
 		) {
 			return [];
 		}
 
-		if (!($node->var instanceof ArrayDimFetch)) {
-			return [];
-		}
-
-		if (
-			!$node->var->var instanceof \PhpParser\Node\Expr\PropertyFetch
-			&& !$node->var->var instanceof \PhpParser\Node\Expr\StaticPropertyFetch
-		) {
-			return [];
-		}
-
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->var->var, $scope);
+		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($var, $scope);
 		if ($propertyReflection === null) {
 			return [];
 		}
 
 		$assignedToType = $propertyReflection->getWritableType();
-		if (!($assignedToType instanceof ArrayType)) {
-			return [];
-		}
+		$assignedValueType = $node->getAssignedType();
 
-		if ($node instanceof Assign || $node instanceof AssignRef) {
-			$assignedValueType = $scope->getType($node->expr);
-		} else {
-			$assignedValueType = $scope->getType($node);
-		}
+		if (!$this->ruleLevelHelper->accepts($assignedToType, $assignedValueType, $scope->isDeclareStrictTypes())) {
+			$propertyDescription = $this->propertyDescriptor->describePropertyByName($propertyReflection, $propertyReflection->getName());
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($assignedToType, $assignedValueType);
 
-		$itemType = $assignedToType->getItemType();
-		if (!$this->ruleLevelHelper->accepts($itemType, $assignedValueType, $scope->isDeclareStrictTypes())) {
-			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($itemType, $assignedValueType);
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Array (%s) does not accept %s.',
+					'%s (%s) does not accept %s.',
+					$propertyDescription,
 					$assignedToType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel)
 				))->build(),

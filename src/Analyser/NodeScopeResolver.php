@@ -54,6 +54,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Node\ArrayDimFetchAssignNode;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Node\BooleanOrNode;
 use PHPStan\Node\BreaklessWhileLoopNode;
@@ -3290,35 +3291,41 @@ class NodeScopeResolver
 
 			$varType = $scope->getType($var);
 			if (!(new ObjectType(\ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
-				// 4. compose types
-				if ($varType instanceof ErrorType) {
-					$varType = new ConstantArrayType([], []);
-				}
-				$offsetValueType = $varType;
-				$offsetValueTypeStack = [$offsetValueType];
-				foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
-					if ($offsetType === null) {
-						$offsetValueType = new ConstantArrayType([], []);
-
-					} else {
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-						if ($offsetValueType instanceof ErrorType) {
+				$getValueToWrite = static function (Type $initialType) use ($offsetTypes, $valueToWrite): Type {
+					// 4. compose types
+					if ($initialType instanceof ErrorType) {
+						$initialType = new ConstantArrayType([], []);
+					}
+					$offsetValueType = $initialType;
+					$offsetValueTypeStack = [$offsetValueType];
+					foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+						if ($offsetType === null) {
 							$offsetValueType = new ConstantArrayType([], []);
+
+						} else {
+							$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+							if ($offsetValueType instanceof ErrorType) {
+								$offsetValueType = new ConstantArrayType([], []);
+							}
 						}
+
+						$offsetValueTypeStack[] = $offsetValueType;
 					}
 
-					$offsetValueTypeStack[] = $offsetValueType;
-				}
+					foreach (array_reverse($offsetTypes) as $i => $offsetType) {
+						/** @var Type $offsetValueType */
+						$offsetValueType = array_pop($offsetValueTypeStack);
+						$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+					}
 
-				foreach (array_reverse($offsetTypes) as $i => $offsetType) {
-					/** @var Type $offsetValueType */
-					$offsetValueType = array_pop($offsetValueTypeStack);
-					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
-				}
+					return $valueToWrite;
+				};
 
+				$valueToWrite = $getValueToWrite($varType);
 				if ($var instanceof Variable && is_string($var->name)) {
 					$scope = $scope->assignVariable($var->name, $valueToWrite);
 				} else {
+					$nodeCallback(new ArrayDimFetchAssignNode($var, $getValueToWrite(new ErrorType())), $scope);
 					$scope = $scope->assignExpression(
 						$var,
 						$valueToWrite

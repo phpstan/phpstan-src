@@ -10,6 +10,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -56,7 +57,19 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 			return null;
 		}
 
-		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
+		$optionsExpr = null;
+		$args = $functionCall->getArgs();
+		foreach ($args as $i => $arg) {
+			if ($i === $argumentPosition || $arg->name && $arg->name->toString() === "flags") {
+				$optionsExpr = $arg->value;
+				break;
+			}
+		}
+
+		if (!$optionsExpr) {
+			return null;
+		}
+
 		if ($this->isBitwiseOrWithJsonThrowOnError($optionsExpr, $scope)) {
 			return new ObjectType('JsonException');
 		}

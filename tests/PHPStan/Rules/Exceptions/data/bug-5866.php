@@ -24,7 +24,7 @@ class Foo
 	 */
 	public function decode2($contents) {
 		try {
-			$parsed = json_decode($contents, depth: 123, flags: JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR);
+			$parsed = json_decode($contents, flags: JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR, depth: 123, associative: true);
 		} catch (JsonException $exception) {
 			throw new InvalidArgumentException('Unable to decode contents');
 		}

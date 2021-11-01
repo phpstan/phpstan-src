@@ -11,11 +11,22 @@ class Foo
 	/**
 	 * @param string $contents
 	 */
-	public function read($contents) : Response {
+	public function decode($contents) {
 		try {
 			$parsed = json_decode($contents, true, flags: JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR);
 		} catch (JsonException $exception) {
 			throw new InvalidArgumentException('Unable to decode contents');
+		}
+	}
+
+	/**
+	 * @param string $contents
+	 */
+	public function encode($contents) {
+		try {
+			$encoded = json_encode($contents, flags: JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR);
+		} catch (JsonException $exception) {
+			throw new InvalidArgumentException('Unable to encode contents');
 		}
 	}
 

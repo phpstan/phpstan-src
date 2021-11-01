@@ -10,7 +10,6 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -57,7 +56,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		$optionsExpr = null;
 		$args = $functionCall->getArgs();
 		foreach ($args as $i => $arg) {
-			if ($i === $argumentPosition || $arg->name !== null && $arg->name->toString() === "flags") {
+			if ($i === $argumentPosition || $arg->name !== null && $arg->name->toString() === 'flags') {
 				$optionsExpr = $arg->value;
 				break;
 			}

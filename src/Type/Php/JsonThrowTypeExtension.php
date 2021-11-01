@@ -53,9 +53,6 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 	): ?Type
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];
-		if (!isset($functionCall->getArgs()[$argumentPosition])) {
-			return null;
-		}
 
 		$optionsExpr = null;
 		$args = $functionCall->getArgs();

@@ -62,7 +62,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 			}
 		}
 
-		if (!$optionsExpr) {
+		if ($optionsExpr === null) {
 			return null;
 		}
 

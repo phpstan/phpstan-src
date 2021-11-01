@@ -15,16 +15,21 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 	/** @var string[] */
 	private array $extends;
 
+	/** @var ExportedNode[] */
+	private array $statements;
+
 	/**
 	 * @param string $name
 	 * @param ExportedPhpDocNode|null $phpDoc
 	 * @param string[] $extends
+	 * @param ExportedNode[] $statements
 	 */
-	public function __construct(string $name, ?ExportedPhpDocNode $phpDoc, array $extends)
+	public function __construct(string $name, ?ExportedPhpDocNode $phpDoc, array $extends, array $statements)
 	{
 		$this->name = $name;
 		$this->phpDoc = $phpDoc;
 		$this->extends = $extends;
+		$this->statements = $statements;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -45,6 +50,18 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 			return false;
 		}
 
+		if (count($this->statements) !== count($node->statements)) {
+			return false;
+		}
+
+		foreach ($this->statements as $i => $statement) {
+			if ($statement->equals($node->statements[$i])) {
+				continue;
+			}
+
+			return false;
+		}
+
 		return $this->name === $node->name
 			&& $this->extends === $node->extends;
 	}
@@ -58,7 +75,8 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 		return new self(
 			$properties['name'],
 			$properties['phpDoc'],
-			$properties['extends']
+			$properties['extends'],
+			$properties['statements']
 		);
 	}
 
@@ -74,6 +92,7 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 				'name' => $this->name,
 				'phpDoc' => $this->phpDoc,
 				'extends' => $this->extends,
+				'statements' => $this->statements,
 			],
 		];
 	}
@@ -87,7 +106,12 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 		return new self(
 			$data['name'],
 			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
-			$data['extends']
+			$data['extends'],
+			array_map(static function (array $node): ExportedNode {
+				$nodeType = $node['type'];
+
+				return $nodeType::decode($node['data']);
+			}, $data['statements']),
 		);
 	}
 

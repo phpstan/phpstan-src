@@ -27,6 +27,9 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 	/** @var ExportedTraitUseAdaptation[] */
 	private array $traitUseAdaptations;
 
+	/** @var ExportedNode[] */
+	private array $statements;
+
 	/**
 	 * @param string $name
 	 * @param ExportedPhpDocNode|null $phpDoc
@@ -36,6 +39,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 	 * @param string[] $implements
 	 * @param string[] $usedTraits
 	 * @param ExportedTraitUseAdaptation[] $traitUseAdaptations
+	 * @param ExportedNode[] $statements
 	 */
 	public function __construct(
 		string $name,
@@ -45,7 +49,8 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 		?string $extends,
 		array $implements,
 		array $usedTraits,
-		array $traitUseAdaptations
+		array $traitUseAdaptations,
+		array $statements
 	)
 	{
 		$this->name = $name;
@@ -56,6 +61,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 		$this->implements = $implements;
 		$this->usedTraits = $usedTraits;
 		$this->traitUseAdaptations = $traitUseAdaptations;
+		$this->statements = $statements;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -87,6 +93,18 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 			}
 		}
 
+		if (count($this->statements) !== count($node->statements)) {
+			return false;
+		}
+
+		foreach ($this->statements as $i => $statement) {
+			if ($statement->equals($node->statements[$i])) {
+				continue;
+			}
+
+			return false;
+		}
+
 		return $this->name === $node->name
 			&& $this->abstract === $node->abstract
 			&& $this->final === $node->final
@@ -109,7 +127,8 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 			$properties['extends'],
 			$properties['implements'],
 			$properties['usedTraits'],
-			$properties['traitUseAdaptations']
+			$properties['traitUseAdaptations'],
+			$properties['statements']
 		);
 	}
 
@@ -130,6 +149,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 				'implements' => $this->implements,
 				'usedTraits' => $this->usedTraits,
 				'traitUseAdaptations' => $this->traitUseAdaptations,
+				'statements' => $this->statements,
 			],
 		];
 	}
@@ -153,7 +173,12 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 					throw new \PHPStan\ShouldNotHappenException();
 				}
 				return ExportedTraitUseAdaptation::decode($traitUseAdaptationData['data']);
-			}, $data['traitUseAdaptations'])
+			}, $data['traitUseAdaptations']),
+			array_map(static function (array $node): ExportedNode {
+				$nodeType = $node['type'];
+
+				return $nodeType::decode($node['data']);
+			}, $data['statements']),
 		);
 	}
 

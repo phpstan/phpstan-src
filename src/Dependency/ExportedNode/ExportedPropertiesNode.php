@@ -5,10 +5,11 @@ namespace PHPStan\Dependency\ExportedNode;
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
 
-class ExportedPropertyNode implements JsonSerializable, ExportedNode
+class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 {
 
-	private string $name;
+	/** @var string[] */
+	private array $names;
 
 	private ?ExportedPhpDocNode $phpDoc;
 
@@ -22,8 +23,11 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 
 	private bool $readonly;
 
+	/**
+	 * @param string[] $names
+	 */
 	public function __construct(
-		string $name,
+		array $names,
 		?ExportedPhpDocNode $phpDoc,
 		?string $type,
 		bool $public,
@@ -32,7 +36,7 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 		bool $readonly
 	)
 	{
-		$this->name = $name;
+		$this->names = $names;
 		$this->phpDoc = $phpDoc;
 		$this->type = $type;
 		$this->public = $public;
@@ -59,8 +63,17 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 			return false;
 		}
 
-		return $this->name === $node->name
-			&& $this->type === $node->type
+		if (count($this->names) !== count($node->names)) {
+			return false;
+		}
+
+		foreach ($this->names as $i => $name) {
+			if ($name !== $node->names[$i]) {
+				return false;
+			}
+		}
+
+		return $this->type === $node->type
 			&& $this->public === $node->public
 			&& $this->private === $node->private
 			&& $this->static === $node->static
@@ -74,7 +87,7 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 	public static function __set_state(array $properties): ExportedNode
 	{
 		return new self(
-			$properties['name'],
+			$properties['names'],
 			$properties['phpDoc'],
 			$properties['type'],
 			$properties['public'],
@@ -91,7 +104,7 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 	public static function decode(array $data): ExportedNode
 	{
 		return new self(
-			$data['name'],
+			$data['names'],
 			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
 			$data['type'],
 			$data['public'],
@@ -110,7 +123,7 @@ class ExportedPropertyNode implements JsonSerializable, ExportedNode
 		return [
 			'type' => self::class,
 			'data' => [
-				'name' => $this->name,
+				'names' => $this->names,
 				'phpDoc' => $this->phpDoc,
 				'type' => $this->type,
 				'public' => $this->public,

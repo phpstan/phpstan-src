@@ -7,16 +7,16 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\Node\Stmt\Property;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantNode;
+use PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassNode;
 use PHPStan\Dependency\ExportedNode\ExportedFunctionNode;
 use PHPStan\Dependency\ExportedNode\ExportedInterfaceNode;
 use PHPStan\Dependency\ExportedNode\ExportedMethodNode;
 use PHPStan\Dependency\ExportedNode\ExportedParameterNode;
 use PHPStan\Dependency\ExportedNode\ExportedPhpDocNode;
-use PHPStan\Dependency\ExportedNode\ExportedPropertyNode;
+use PHPStan\Dependency\ExportedNode\ExportedPropertiesNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitUseAdaptation;
 use PHPStan\Type\FileTypeMapper;
@@ -95,7 +95,8 @@ class ExportedNodeResolver
 					}
 
 					throw new \PHPStan\ShouldNotHappenException();
-				}, $adaptations)
+				}, $adaptations),
+				$this->exportClassStatements($node->stmts, $fileName, $node, $className)
 			);
 		}
 
@@ -115,106 +116,13 @@ class ExportedNodeResolver
 					null,
 					$docComment !== null ? $docComment->getText() : null
 				),
-				$extendsNames
+				$extendsNames,
+				$this->exportClassStatements($node->stmts, $fileName, $node, $interfaceName)
 			);
 		}
 
 		if ($node instanceof Node\Stmt\Trait_ && isset($node->namespacedName)) {
 			return new ExportedTraitNode($node->namespacedName->toString());
-		}
-
-		if ($node instanceof ClassMethod) {
-			if ($node->isAbstract() || $node->isFinal() || !$node->isPrivate()) {
-				$methodName = $node->name->toString();
-				$docComment = $node->getDocComment();
-				$parentNode = $node->getAttribute('parent');
-				$continue = ($parentNode instanceof Class_ || $parentNode instanceof Node\Stmt\Interface_) && isset($parentNode->namespacedName);
-				if (!$continue) {
-					return null;
-				}
-
-				return new ExportedMethodNode(
-					$methodName,
-					$this->exportPhpDocNode(
-						$fileName,
-						$parentNode->namespacedName->toString(),
-						$methodName,
-						$docComment !== null ? $docComment->getText() : null
-					),
-					$node->byRef,
-					$node->isPublic(),
-					$node->isPrivate(),
-					$node->isAbstract(),
-					$node->isFinal(),
-					$node->isStatic(),
-					$this->printType($node->returnType),
-					$this->exportParameterNodes($node->params)
-				);
-			}
-		}
-
-		if ($node instanceof Node\Stmt\PropertyProperty) {
-			$parentNode = $node->getAttribute('parent');
-			if (!$parentNode instanceof Property) {
-				throw new \PHPStan\ShouldNotHappenException(sprintf('Expected node type %s, %s occurred.', Property::class, is_object($parentNode) ? get_class($parentNode) : gettype($parentNode)));
-			}
-			if ($parentNode->isPrivate()) {
-				return null;
-			}
-
-			$classNode = $parentNode->getAttribute('parent');
-			if (!$classNode instanceof Class_ || !isset($classNode->namespacedName)) {
-				return null;
-			}
-
-			$docComment = $parentNode->getDocComment();
-
-			return new ExportedPropertyNode(
-				$node->name->toString(),
-				$this->exportPhpDocNode(
-					$fileName,
-					$classNode->namespacedName->toString(),
-					null,
-					$docComment !== null ? $docComment->getText() : null
-				),
-				$this->printType($parentNode->type),
-				$parentNode->isPublic(),
-				$parentNode->isPrivate(),
-				$parentNode->isStatic(),
-				$parentNode->isReadonly()
-			);
-		}
-
-		if ($node instanceof Node\Const_) {
-			$parentNode = $node->getAttribute('parent');
-			if (!$parentNode instanceof Node\Stmt\ClassConst) {
-				return null;
-			}
-
-			if ($parentNode->isPrivate()) {
-				return null;
-			}
-
-			$classNode = $parentNode->getAttribute('parent');
-			if (!$classNode instanceof Class_ || !isset($classNode->namespacedName)) {
-				return null;
-			}
-
-			$docComment = $parentNode->getDocComment();
-
-			return new ExportedClassConstantNode(
-				$node->name->toString(),
-				$this->printer->prettyPrintExpr($node->value),
-				$parentNode->isPublic(),
-				$parentNode->isPrivate(),
-				$parentNode->isFinal(),
-				$this->exportPhpDocNode(
-					$fileName,
-					$classNode->namespacedName->toString(),
-					null,
-					$docComment !== null ? $docComment->getText() : null
-				)
-			);
 		}
 
 		if ($node instanceof Function_) {
@@ -347,6 +255,117 @@ class ExportedNodeResolver
 		}
 
 		return new ExportedPhpDocNode($text, $nameScope->getNamespace(), $nameScope->getUses());
+	}
+
+	/**
+	 * @param Node\Stmt[] $statements
+	 * @return ExportedNode[]
+	 */
+	private function exportClassStatements(array $statements, string $fileName, Node\Stmt\ClassLike $classNode, string $namespacedName): array
+	{
+		$exportedNodes = [];
+		foreach ($statements as $statement) {
+			$exportedNode = $this->exportClassStatement($statement, $fileName, $classNode, $namespacedName);
+			if ($exportedNode === null) {
+				continue;
+			}
+
+			$exportedNodes[] = $exportedNode;
+		}
+
+		return $exportedNodes;
+	}
+
+	private function exportClassStatement(Node\Stmt $node, string $fileName, Node\Stmt\ClassLike $classNode, string $namespacedName): ?ExportedNode
+	{
+		if ($node instanceof ClassMethod) {
+			if ($node->isAbstract() || $node->isFinal() || !$node->isPrivate()) {
+				$methodName = $node->name->toString();
+				$docComment = $node->getDocComment();
+
+				return new ExportedMethodNode(
+					$methodName,
+					$this->exportPhpDocNode(
+						$fileName,
+						$namespacedName,
+						$methodName,
+						$docComment !== null ? $docComment->getText() : null
+					),
+					$node->byRef,
+					$node->isPublic(),
+					$node->isPrivate(),
+					$node->isAbstract(),
+					$node->isFinal(),
+					$node->isStatic(),
+					$this->printType($node->returnType),
+					$this->exportParameterNodes($node->params)
+				);
+			}
+		}
+
+		if ($node instanceof Node\Stmt\Property) {
+			if ($node->isPrivate()) {
+				return null;
+			}
+
+			if (!$classNode instanceof Class_) {
+				return null;
+			}
+
+			$docComment = $node->getDocComment();
+
+			return new ExportedPropertiesNode(
+				array_map(static function (Node\Stmt\PropertyProperty $prop): string {
+					return $prop->name->toString();
+				}, $node->props),
+				$this->exportPhpDocNode(
+					$fileName,
+					$namespacedName,
+					null,
+					$docComment !== null ? $docComment->getText() : null
+				),
+				$this->printType($node->type),
+				$node->isPublic(),
+				$node->isPrivate(),
+				$node->isStatic(),
+				$node->isReadonly()
+			);
+		}
+
+		if ($node instanceof Node\Stmt\ClassConst) {
+			if ($node->isPrivate()) {
+				return null;
+			}
+
+			if (!$classNode instanceof Class_) {
+				return null;
+			}
+
+			$docComment = $node->getDocComment();
+
+			$constants = [];
+			foreach ($node->consts as $const) {
+				$constants[] = new ExportedClassConstantNode(
+					$const->name->toString(),
+					$this->printer->prettyPrintExpr($const->value)
+				);
+			}
+
+			return new ExportedClassConstantsNode(
+				$constants,
+				$node->isPublic(),
+				$node->isPrivate(),
+				$node->isFinal(),
+				$this->exportPhpDocNode(
+					$fileName,
+					$namespacedName,
+					null,
+					$docComment !== null ? $docComment->getText() : null
+				)
+			);
+		}
+
+		return null;
 	}
 
 }

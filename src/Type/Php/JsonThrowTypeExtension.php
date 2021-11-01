@@ -56,7 +56,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		$optionsExpr = null;
 		$args = $functionCall->getArgs();
 		foreach ($args as $i => $arg) {
-			if ($i === $argumentPosition || $arg->name !== null && $arg->name->toString() === 'flags') {
+			if ($arg->name === null && $i === $argumentPosition || $arg->name !== null && $arg->name->toString() === 'flags') {
 				$optionsExpr = $arg->value;
 				break;
 			}

@@ -503,6 +503,9 @@ services:
 			analysedPathsFromConfig: %analysedPathsFromConfig%
 			usedLevel: %usedLevel%
 			generateBaselineFile: %generateBaselineFile%
+			cliAutoloadFile: %cliAutoloadFile%
+			singleReflectionFile: %singleReflectionFile%
+			singleReflectionInsteadOfFile: %singleReflectionInsteadOfFile%
 
 	-
 		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider

@@ -25,6 +25,12 @@ class DerivativeContainerFactory
 
 	private ?string $generateBaselineFile;
 
+	private ?string $cliAutoloadFile;
+
+	private ?string $singleReflectionFile;
+
+	private ?string $singleReflectionInsteadOfFile;
+
 	/**
 	 * @param string $currentWorkingDirectory
 	 * @param string $tempDirectory
@@ -42,7 +48,10 @@ class DerivativeContainerFactory
 		array $composerAutoloaderProjectPaths,
 		array $analysedPathsFromConfig,
 		string $usedLevel,
-		?string $generateBaselineFile
+		?string $generateBaselineFile,
+		?string $cliAutoloadFile,
+		?string $singleReflectionFile,
+		?string $singleReflectionInsteadOfFile
 	)
 	{
 		$this->currentWorkingDirectory = $currentWorkingDirectory;
@@ -53,6 +62,9 @@ class DerivativeContainerFactory
 		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
 		$this->usedLevel = $usedLevel;
 		$this->generateBaselineFile = $generateBaselineFile;
+		$this->cliAutoloadFile = $cliAutoloadFile;
+		$this->singleReflectionFile = $singleReflectionFile;
+		$this->singleReflectionInsteadOfFile = $singleReflectionInsteadOfFile;
 	}
 
 	/**
@@ -72,7 +84,10 @@ class DerivativeContainerFactory
 			$this->composerAutoloaderProjectPaths,
 			$this->analysedPathsFromConfig,
 			$this->usedLevel,
-			$this->generateBaselineFile
+			$this->generateBaselineFile,
+			$this->cliAutoloadFile,
+			$this->singleReflectionFile,
+			$this->singleReflectionInsteadOfFile
 		);
 	}
 

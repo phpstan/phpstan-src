@@ -65,7 +65,12 @@ class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 
 		$composerJsonPath = $fromDirectory . '/composer.json';
 		if (!is_file($composerJsonPath)) {
-			return $this->findComposerJsonContents(dirname($fromDirectory));
+			$dirName = dirname($fromDirectory);
+			if ($dirName !== $fromDirectory) {
+				return $this->findComposerJsonContents($dirName);
+			}
+
+			return null;
 		}
 
 		try {

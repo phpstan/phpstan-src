@@ -111,7 +111,7 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data']);
-			}, $data['statements']),
+			}, $data['statements'])
 		);
 	}
 

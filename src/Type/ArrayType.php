@@ -176,6 +176,9 @@ class ArrayType implements Type
 		if ($keyType instanceof MixedType && !$keyType instanceof TemplateMixedType) {
 			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
+		if ($keyType instanceof StrictMixedType) {
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+		}
 
 		return $keyType;
 	}

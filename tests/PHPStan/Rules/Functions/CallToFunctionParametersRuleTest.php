@@ -876,4 +876,15 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5661.php'], []);
 	}
 
+	public function testBug5872(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5872.php'], [
+			[
+				'Parameter #2 $array of function array_map expects array, mixed given.',
+				12,
+			],
+		]);
+	}
+
 }

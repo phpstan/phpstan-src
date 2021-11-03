@@ -887,4 +887,22 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug5834(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5834.php'], []);
+	}
+
+	public function testBug5881(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5881.php'], []);
+	}
+
+	public function testBug5861(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5861.php'], []);
+	}
+
 }

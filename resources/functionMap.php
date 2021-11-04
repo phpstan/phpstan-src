@@ -3316,7 +3316,7 @@ return [
 'get_html_translation_table' => ['array', 'table='=>'int', 'flags='=>'int', 'encoding='=>'string'],
 'get_include_path' => ['string|false'],
 'get_included_files' => ['array'],
-'get_loaded_extensions' => ['array', 'zend_extensions='=>'bool'],
+'get_loaded_extensions' => ['list<string>', 'zend_extensions='=>'bool'],
 'get_magic_quotes_gpc' => ['bool'],
 'get_magic_quotes_runtime' => ['bool'],
 'get_meta_tags' => ['array|false', 'filename'=>'string', 'use_include_path='=>'bool'],

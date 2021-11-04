@@ -5,6 +5,7 @@ parameters:
 		- ../stubs/runtime/ReflectionUnionType.php
 		- ../stubs/runtime/ReflectionAttribute.php
 		- ../stubs/runtime/Attribute.php
+		- ../stubs/runtime/ReflectionIntersectionType.php
 	excludes_analyse: []
 	excludePaths: null
 	level: null

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "caf3eedd59908a05f4cec1078128e6c7",
+    "content-hash": "03cdc019b10c39fb2268fbf1321e0e9d",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2074,16 +2074,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.74",
+            "version": "4.3.75",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "c1e75769a4901b18546b239fefaa58ad9f854859"
+                "reference": "23524f006346313e0371b3a7d938b1a40a50c6b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/c1e75769a4901b18546b239fefaa58ad9f854859",
-                "reference": "c1e75769a4901b18546b239fefaa58ad9f854859",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/23524f006346313e0371b3a7d938b1a40a50c6b0",
+                "reference": "23524f006346313e0371b3a7d938b1a40a50c6b0",
                 "shasum": ""
             },
             "require": {
@@ -2138,9 +2138,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.74"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.75"
             },
-            "time": "2021-10-26T20:17:23+00:00"
+            "time": "2021-11-04T15:58:23+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

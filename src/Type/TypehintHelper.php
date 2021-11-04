@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
@@ -81,6 +82,14 @@ class TypehintHelper
 
 		if ($reflectionType instanceof ReflectionUnionType) {
 			$type = TypeCombinator::union(...array_map(static function (ReflectionType $type) use ($selfClass): Type {
+				return self::decideTypeFromReflection($type, null, $selfClass, false);
+			}, $reflectionType->getTypes()));
+
+			return self::decideType($type, $phpDocType);
+		}
+
+		if ($reflectionType instanceof ReflectionIntersectionType) {
+			$type = TypeCombinator::intersect(...array_map(static function (ReflectionType $type) use ($selfClass): Type {
 				return self::decideTypeFromReflection($type, null, $selfClass, false);
 			}, $reflectionType->getTypes()));
 

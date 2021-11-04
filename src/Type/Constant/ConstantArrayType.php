@@ -391,9 +391,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 			if (
-				$isClassString &&
-				$has->yes() &&
-				!$type->getMethod($method->getValue(), new OutOfClassScope())->isStatic()
+				$isClassString
+				&& $has->yes()
+				&& !$type->getMethod($method->getValue(), new OutOfClassScope())->isStatic()
 			) {
 				return null;
 			}

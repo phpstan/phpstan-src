@@ -1,10 +1,10 @@
 <?php
 
-namespace Bug1971;
+namespace Bug727;
 
 class HelloWorld
 {
-	public function sayHello(): void
+	public static function sayHello(): void
 	{
 		echo 'Hello';
 	}

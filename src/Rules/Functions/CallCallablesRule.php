@@ -54,7 +54,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->name),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->name),
 			'Invoking callable on an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isCallable()->yes();

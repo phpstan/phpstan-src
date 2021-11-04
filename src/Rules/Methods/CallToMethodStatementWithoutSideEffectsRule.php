@@ -47,7 +47,7 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($methodCall->var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $methodCall->var),
 			'',
 			static function (Type $type) use ($methodName): bool {
 				return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();

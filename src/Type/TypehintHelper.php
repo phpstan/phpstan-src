@@ -57,6 +57,8 @@ class TypehintHelper
 				return new ErrorType();
 			case 'null':
 				return new NullType();
+			case 'never':
+				return new NeverType(true);
 			default:
 				return new ObjectType($typeString);
 		}
@@ -101,6 +103,9 @@ class TypehintHelper
 		}
 		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\null')) {
 			$reflectionTypeString = 'null';
+		}
+		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\never')) {
+			$reflectionTypeString = 'never';
 		}
 
 		$type = self::getTypeObjectFromTypehint($reflectionTypeString, $selfClass);

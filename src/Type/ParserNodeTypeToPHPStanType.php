@@ -82,6 +82,8 @@ class ParserNodeTypeToPHPStanType
 			return new NullType();
 		} elseif ($type === 'mixed') {
 			return new MixedType(true);
+		} elseif ($type === 'never') {
+			return new NeverType(true);
 		}
 
 		return new MixedType();

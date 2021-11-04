@@ -197,6 +197,16 @@ return [
 			return str_replace(sprintf('%s\\ReflectionUnionType', $prefix), 'ReflectionUnionType', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
+			if (!in_array($filePath, [
+				'src/Type/TypehintHelper.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionIntersectionType.php',
+			], true)) {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\ReflectionIntersectionType', $prefix), 'ReflectionIntersectionType', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
 			if (strpos($filePath, 'src/') !== 0) {
 				return $content;
 			}

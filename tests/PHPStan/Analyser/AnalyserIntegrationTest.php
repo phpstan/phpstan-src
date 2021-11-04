@@ -417,16 +417,6 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[2]->getMessage());
 	}
 
-	public function testBug4896(): void
-	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped();
-		}
-
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4896.php');
-		$this->assertCount(0, $errors);
-	}
-
 	public function testBug5231(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5231.php');
@@ -460,16 +450,6 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testBug5657(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5657.php');
-		$this->assertCount(0, $errors);
-	}
-
-	public function testBug5843(): void
-	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped();
-		}
-
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5843.php');
 		$this->assertCount(0, $errors);
 	}
 

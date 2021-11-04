@@ -905,4 +905,19 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5861.php'], []);
 	}
 
+	public function testCallUserFuncArray(): void
+	{
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = [];
+		} else {
+			$errors = [
+				[
+					'Parameter #2 $parameters of function call_user_func_array expects array<int, mixed>, array<string, array<string, int>> given.',
+					3,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/call-user-func-array.php'], $errors);
+	}
+
 }

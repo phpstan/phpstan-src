@@ -25,6 +25,7 @@ return [
 		'bcdiv' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],
+		'call_user_func_array' => ['mixed', 'function'=>'callable', 'parameters'=>'array<int|string,mixed>'],
 		'com_load_typelib' => ['bool', 'typelib_name'=>'string', 'case_insensitive='=>'true'],
 		'count_chars' => ['array<int,int>|string', 'input'=>'string', 'mode='=>'int'],
 		'date_add' => ['DateTime', 'object'=>'DateTime', 'interval'=>'DateInterval'],

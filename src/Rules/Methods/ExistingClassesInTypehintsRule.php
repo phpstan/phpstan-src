@@ -64,7 +64,7 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 				'Method %s::%s() has unresolvable native return type.',
 				$className,
 				$methodName
-			),
+			)
 		);
 	}
 

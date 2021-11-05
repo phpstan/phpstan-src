@@ -55,7 +55,7 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 			sprintf(
 				'Function %s() has unresolvable native return type.',
 				$functionName
-			),
+			)
 		);
 	}
 

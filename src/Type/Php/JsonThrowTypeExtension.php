@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
@@ -45,31 +46,47 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		);
 	}
 
+	private function reorderNamedArguments(
+		FunctionReflection $functionReflection,
+		FuncCall $functionCall
+	): FuncCall {
+		$signatureParameters = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters();
+		$callArgs = $functionCall->getArgs();
+
+		$argumentPositions = [];
+		foreach($signatureParameters as $i => $parameter) {
+			$argumentPositions[$parameter->getName()] = $i;
+		}
+
+		$reorderedArgs = [];
+		foreach($callArgs as $i => $arg) {
+			// add regular args as is
+			if ($arg->name === null) {
+				$reorderedArgs[$i] = $arg;
+			}
+			// order named args into the position the signature expects them
+			if ($arg->name !== null) {
+				array_splice($reorderedArgs, $argumentPositions[$arg->name], 0, $arg);
+			}
+		}
+
+		return new FuncCall($functionCall->name, $reorderedArgs, $functionCall->getAttributes());
+	}
+
 	public function getThrowTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope
 	): ?Type
 	{
+		$functionCall = $this->reorderNamedArguments($functionReflection, $functionCall);
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];
 
-		$optionsExpr = null;
-		$args = $functionCall->getArgs();
-		foreach ($args as $i => $arg) {
-			if ($arg->name === null && $i === $argumentPosition) {
-				$optionsExpr = $arg->value;
-				break;
-			}
-			if ($arg->name !== null && $arg->name->toString() === 'flags') {
-				$optionsExpr = $arg->value;
-				break;
-			}
-		}
-
-		if ($optionsExpr === null) {
+		if (!isset($functionCall->getArgs()[$argumentPosition])) {
 			return null;
 		}
 
+		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
 		if ($this->isBitwiseOrWithJsonThrowOnError($optionsExpr, $scope)) {
 			return new ObjectType('JsonException');
 		}

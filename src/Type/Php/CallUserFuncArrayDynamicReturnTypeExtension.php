@@ -12,12 +12,12 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
-class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+class CallUserFuncArrayDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'call_user_func';
+		return $functionReflection->getName() === 'call_user_func_array';
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
@@ -25,9 +25,13 @@ class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		$args = $functionCall->getArgs();
 		$defaultReturn = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
+		if (count($args) <= 1) {
+			return new NeverType();
+		}
+
 		$callbackType = $scope->getType($args[0]->value);
 		if ($callbackType->isCallable()->yes()) {
-			return $scope->getType(new FuncCall($args[0]->value));
+			return $scope->getType(new FuncCall($args[0]->value, array_slice($args, 1)));
 		}
 
 		return $defaultReturn;

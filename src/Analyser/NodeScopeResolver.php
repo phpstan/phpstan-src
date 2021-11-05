@@ -2724,7 +2724,6 @@ class NodeScopeResolver
 
 	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?ThrowPoint
 	{
-
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
 			if (!$extension->isMethodSupported($methodReflection)) {
 				continue;

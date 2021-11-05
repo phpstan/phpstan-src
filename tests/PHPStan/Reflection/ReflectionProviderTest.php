@@ -26,10 +26,17 @@ class ReflectionProviderTest extends PHPStanTestCase
 			];
 		}
 
-		yield [
-			'bcdiv',
-			new ObjectType('DivisionByZeroError'),
-		];
+		if (PHP_VERSION_ID >= 80000) {
+			yield [
+				'bcdiv',
+				new ObjectType('DivisionByZeroError'),
+			];
+		} else {
+			yield [
+				'bcdiv',
+				null,
+			];
+		}
 
 		yield [
 			'GEOSRelateMatch',

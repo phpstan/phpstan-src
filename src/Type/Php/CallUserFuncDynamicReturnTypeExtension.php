@@ -33,10 +33,6 @@ class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		if ($callbackType->isCallable()->yes()) {
 			$returnType = $scope->getType(new FuncCall($args[0]->value));
 
-			if ($functionReflection->getName() === 'call_user_func_array') {
-				return new UnionType([$returnType, new ConstantBooleanType(false)]);
-			}
-
 			return $returnType;
 		}
 

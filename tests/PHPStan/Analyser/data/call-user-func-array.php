@@ -33,10 +33,10 @@ class Foo {
 	}
 
 	function doFunc() {
-		assertType('int|false', call_user_func('CallUserFuncArray\fun'));
+		assertType('int', call_user_func('CallUserFuncArray\fun'));
 
-		assertType('int|false', call_user_func('CallUserFuncArray\fun3', 1 ,2 ,3));
+		assertType('int', call_user_func('CallUserFuncArray\fun3', 1 ,2 ,3));
 
-		assertType('string|false', call_user_func(['CallUserFuncArray\c', 'm']));
+		assertType('string', call_user_func(['CallUserFuncArray\c', 'm']));
 	}
 }

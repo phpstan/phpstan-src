@@ -24,7 +24,7 @@ class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 {
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'call_user_func_array';
+		return in_array($functionReflection->getName(), ['call_user_func_array', 'call_user_func'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
@@ -32,7 +32,7 @@ class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		$args = $functionCall->getArgs();
 		$defaultReturn = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
-		if (count($args) <= 1) {
+		if ($functionReflection->getName() === 'call_user_func_array' && count($args) <= 1) {
 			return new NeverType();
 		}
 

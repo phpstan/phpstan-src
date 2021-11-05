@@ -22,22 +22,21 @@ class c {
 }
 
 class Foo {
-	function doFoo() {
+	function doArray() {
 		assertType('*NEVER*', call_user_func_array('single-arg-only'));
 
 		assertType('int|false', call_user_func_array('CallUserFuncArray\fun', []));
 
 		assertType('int|false', call_user_func_array('CallUserFuncArray\fun3', [1 ,2 ,3]));
 
+		assertType('string|false', call_user_func_array(['CallUserFuncArray\c', 'm'], []));
+	}
 
-		$ret = call_user_func_array(['CallUserFuncArray\c', 'm'], [1 ,2 ,3]);
-		assertType('string|false', $ret);
+	function doFunc() {
+		assertType('int|false', call_user_func('CallUserFuncArray\fun'));
 
-		/*
+		assertType('int|false', call_user_func('CallUserFuncArray\fun3', 1 ,2 ,3));
 
-		$ret = call_user_func_array([new CallUserFuncArray\c(), 'm'], [1 ,2 ,3]);
-		assertType('string|false', $ret);
-		*/
-
+		assertType('string|false', call_user_func(['CallUserFuncArray\c', 'm']));
 	}
 }

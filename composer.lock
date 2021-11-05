@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "03cdc019b10c39fb2268fbf1321e0e9d",
+    "content-hash": "cce39014acc6ed91f935ff1d09084570",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2074,21 +2074,21 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.75",
+            "version": "4.3.76",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "23524f006346313e0371b3a7d938b1a40a50c6b0"
+                "reference": "4710a2da24f67fde925a454a57036abacc9bbfa3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/23524f006346313e0371b3a7d938b1a40a50c6b0",
-                "reference": "23524f006346313e0371b3a7d938b1a40a50c6b0",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/4710a2da24f67fde925a454a57036abacc9bbfa3",
+                "reference": "4710a2da24f67fde925a454a57036abacc9bbfa3",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "jetbrains/phpstorm-stubs": "dev-master#0a73df114cdea7f30c8b5f6fbfbf8e6839a89e88",
+                "jetbrains/phpstorm-stubs": "dev-master#fdcc30312221ce08f3a4413588e2df4b77f843fc",
                 "nikic/php-parser": "^4.13.0",
                 "php": ">=7.1.0"
             },
@@ -2138,9 +2138,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.75"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.76"
             },
-            "time": "2021-11-04T15:58:23+00:00"
+            "time": "2021-11-05T10:21:18+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

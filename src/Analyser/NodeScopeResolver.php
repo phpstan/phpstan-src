@@ -2661,7 +2661,7 @@ class NodeScopeResolver
 		MutatingScope $scope
 	): ?ThrowPoint
 	{
-		if ($parametersAcceptor) {
+		if ($parametersAcceptor !== null) {
 			$funcCall = $this->reorderNamedArguments($parametersAcceptor, $funcCall);
 		}
 

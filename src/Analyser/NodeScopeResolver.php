@@ -2662,7 +2662,7 @@ class NodeScopeResolver
 	): ?ThrowPoint
 	{
 		if ($parametersAcceptor !== null) {
-			$funcCall = $this->reorderNamedArguments($parametersAcceptor, $funcCall);
+			$funcCall = NamedArgumentsHelper::reorderArguments($parametersAcceptor, $funcCall);
 		}
 
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
@@ -2848,32 +2848,6 @@ class NodeScopeResolver
 		return [];
 	}
 
-	private function reorderNamedArguments(
-		ParametersAcceptor $parametersAcceptor,
-		FuncCall $functionCall
-	): FuncCall
-	{
-		$signatureParameters = $parametersAcceptor->getParameters();
-		$callArgs = $functionCall->getArgs();
-
-		$argumentPositions = [];
-		foreach ($signatureParameters as $i => $parameter) {
-			$argumentPositions[$parameter->getName()] = $i;
-		}
-
-		$reorderedArgs = [];
-		foreach ($callArgs as $i => $arg) {
-			if ($arg->name === null) {
-				// add regular args as is
-				$reorderedArgs[$i] = $arg;
-			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
-				// order named args into the position the signature expects them
-				$reorderedArgs[$argumentPositions[$arg->name->toString()]] = $arg;
-			}
-		}
-
-		return new FuncCall($functionCall->name, $reorderedArgs, $functionCall->getAttributes());
-	}
 
 	/**
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback

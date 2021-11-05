@@ -8,9 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
 
 class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

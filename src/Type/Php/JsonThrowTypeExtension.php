@@ -66,7 +66,11 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 			}
 			// order named args into the position the signature expects them
 			if ($arg->name !== null) {
-				array_splice($reorderedArgs, $argumentPositions[$arg->name->toString()], 0, [$arg]);
+				if (array_key_exists($arg->name->toString(), $argumentPositions)) {
+					array_splice($reorderedArgs, $argumentPositions[$arg->name->toString()], 0, [$arg]);
+				} else {
+					$reorderedArgs[] = $arg;
+				}
 			}
 		}
 

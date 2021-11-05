@@ -49,26 +49,24 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 	private function reorderNamedArguments(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall
-	): FuncCall {
+	): FuncCall
+	{
 		$signatureParameters = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters();
 		$callArgs = $functionCall->getArgs();
 
 		$argumentPositions = [];
-		foreach($signatureParameters as $i => $parameter) {
+		foreach ($signatureParameters as $i => $parameter) {
 			$argumentPositions[$parameter->getName()] = $i;
 		}
 
 		$reorderedArgs = [];
-		foreach($callArgs as $i => $arg) {
-			// add regular args as is
+		foreach ($callArgs as $i => $arg) {
 			if ($arg->name === null) {
+				// add regular args as is
 				$reorderedArgs[$i] = $arg;
-			}
-			// order named args into the position the signature expects them
-			if ($arg->name !== null) {
-				if (array_key_exists($arg->name->toString(), $argumentPositions)) {
-					$reorderedArgs[$argumentPositions[$arg->name->toString()]] = $arg;
-				}
+			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
+				// order named args into the position the signature expects them
+				$reorderedArgs[$argumentPositions[$arg->name->toString()]] = $arg;
 			}
 		}
 

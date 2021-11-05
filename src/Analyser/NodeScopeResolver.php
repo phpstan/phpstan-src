@@ -2661,7 +2661,9 @@ class NodeScopeResolver
 		MutatingScope $scope
 	): ?ThrowPoint
 	{
-		$funcCall = $this->reorderNamedArguments($functionReflection, $funcCall);
+		if ($parametersAcceptor) {
+			$funcCall = $this->reorderNamedArguments($parametersAcceptor, $funcCall);
+		}
 
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
 			if (!$extension->isFunctionSupported($functionReflection)) {
@@ -2847,11 +2849,11 @@ class NodeScopeResolver
 	}
 
 	private function reorderNamedArguments(
-		FunctionReflection $functionReflection,
+		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall
 	): FuncCall
 	{
-		$signatureParameters = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters();
+		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $functionCall->getArgs();
 
 		$argumentPositions = [];

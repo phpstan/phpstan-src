@@ -2001,6 +2001,8 @@ class NodeScopeResolver
 						$expr->getArgs(),
 						$methodReflection->getVariants()
 					);
+
+					$expr = NamedArgumentsHelper::reorderMethodArguments($parametersAcceptor, $expr);
 					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
 					if ($methodThrowPoint !== null) {
 						$throwPoints[] = $methodThrowPoint;
@@ -2085,6 +2087,8 @@ class NodeScopeResolver
 							$expr->getArgs(),
 							$methodReflection->getVariants()
 						);
+
+						$expr = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $expr);
 						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $expr, $scope);
 						if ($methodThrowPoint !== null) {
 							$throwPoints[] = $methodThrowPoint;
@@ -2720,6 +2724,7 @@ class NodeScopeResolver
 
 	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?ThrowPoint
 	{
+
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
 			if (!$extension->isMethodSupported($methodReflection)) {
 				continue;

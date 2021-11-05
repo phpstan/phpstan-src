@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Reflection\ParametersAcceptor;
 
 final class NamedArgumentsHelper {
@@ -30,6 +31,19 @@ final class NamedArgumentsHelper {
 			$methodCall->name,
 			self::reorderArgs($parametersAcceptor, $methodCall),
 			$methodCall->getAttributes()
+		);
+	}
+
+	public static function reorderStaticCallArguments(
+		ParametersAcceptor $parametersAcceptor,
+		StaticCall $staticCall
+	): StaticCall
+	{
+		return new StaticCall(
+			$staticCall->class,
+			$staticCall->name,
+			self::reorderArgs($parametersAcceptor, $staticCall),
+			$staticCall->getAttributes()
 		);
 	}
 

@@ -11,9 +11,11 @@ class DynamicMethodThrowTypeExtensionTest extends TypeInferenceTestCase
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension.php');
 
-		if (PHP_VERSION_ID >= 80000) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension-named-args.php');
+		if (PHP_VERSION_ID < 80000) {
+			return;
 		}
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension-named-args.php');
 	}
 
 	/**

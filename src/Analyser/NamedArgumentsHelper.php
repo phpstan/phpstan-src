@@ -9,7 +9,9 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Reflection\ParametersAcceptor;
 
-final class NamedArgumentsHelper {
+final class NamedArgumentsHelper
+{
+
 	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall
@@ -51,7 +53,8 @@ final class NamedArgumentsHelper {
 	/**
 	 * @return array<int, Arg>
 	 */
-	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike) {
+	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike): array
+	{
 		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $callLike->getArgs();
 

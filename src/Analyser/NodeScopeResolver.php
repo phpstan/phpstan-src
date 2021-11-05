@@ -2848,7 +2848,6 @@ class NodeScopeResolver
 		return [];
 	}
 
-
 	/**
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 * @param Expr $expr

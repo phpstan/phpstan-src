@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use const PHP_VERSION_ID;
 
 /**
@@ -19,7 +20,7 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ExistingClassesInTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new PhpVersion($this->phpVersionId), true, false));
+		return new ExistingClassesInTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new UnresolvableTypeHelper(), new PhpVersion($this->phpVersionId), true, false));
 	}
 
 	public function testExistingClassInTypehint(): void
@@ -239,6 +240,50 @@ class ExistingClassesInTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional.php'], $errors);
+	}
+
+	public function dataIntersectionTypes(): array
+	{
+		return [
+			[80000, []],
+			[
+				80100,
+				[
+					[
+						'Parameter $a of function FunctionIntersectionTypes\doBar() has unresolvable native type.',
+						30,
+					],
+					[
+						'Function FunctionIntersectionTypes\doBar() has unresolvable native return type.',
+						30,
+					],
+					[
+						'Parameter $a of function FunctionIntersectionTypes\doBaz() has unresolvable native type.',
+						35,
+					],
+					[
+						'Function FunctionIntersectionTypes\doBaz() has unresolvable native return type.',
+						35,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIntersectionTypes
+	 * @param int $phpVersion
+	 * @param mixed[] $errors
+	 */
+	public function testIntersectionTypes(int $phpVersion, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->phpVersionId = $phpVersion;
+
+		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);
 	}
 
 }

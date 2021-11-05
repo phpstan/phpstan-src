@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInClosureTypehintsRule>
@@ -18,7 +19,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ExistingClassesInClosureTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new PhpVersion($this->phpVersionId), true, false));
+		return new ExistingClassesInClosureTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new UnresolvableTypeHelper(), new PhpVersion($this->phpVersionId), true, false));
 	}
 
 	public function testExistingClassInTypehint(): void
@@ -160,6 +161,50 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 	{
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional-closures.php'], $errors);
+	}
+
+	public function dataIntersectionTypes(): array
+	{
+		return [
+			[80000, []],
+			[
+				80100,
+				[
+					[
+						'Parameter $a of anonymous function has unresolvable native type.',
+						30,
+					],
+					[
+						'Anonymous function has unresolvable native return type.',
+						30,
+					],
+					[
+						'Parameter $a of anonymous function has unresolvable native type.',
+						35,
+					],
+					[
+						'Anonymous function has unresolvable native return type.',
+						35,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIntersectionTypes
+	 * @param int $phpVersion
+	 * @param mixed[] $errors
+	 */
+	public function testIntersectionTypes(int $phpVersion, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->phpVersionId = $phpVersion;
+
+		$this->analyse([__DIR__ . '/data/closure-intersection-types.php'], $errors);
 	}
 
 }

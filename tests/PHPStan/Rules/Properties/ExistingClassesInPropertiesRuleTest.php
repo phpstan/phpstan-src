@@ -2,8 +2,11 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
+use const PHP_VERSION_ID;
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInPropertiesRule>
@@ -11,12 +14,17 @@ use PHPStan\Rules\Rule;
 class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 {
 
+	/** @var int */
+	private $phpVersion = PHP_VERSION_ID;
+
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInPropertiesRule(
 			$broker,
 			new ClassCaseSensitivityCheck($broker, true),
+			new UnresolvableTypeHelper(),
+			new PhpVersion($this->phpVersion),
 			true,
 			false
 		);
@@ -136,6 +144,42 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
+	}
+
+	public function dataIntersectionTypes(): array
+	{
+		return [
+			[80000, []],
+			[
+				80100,
+				[
+					[
+						'Property PropertyIntersectionTypes\Test::$prop2 has unresolvable native type.',
+						30,
+					],
+					[
+						'Property PropertyIntersectionTypes\Test::$prop3 has unresolvable native type.',
+						32,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIntersectionTypes
+	 * @param int $phpVersion
+	 * @param mixed[] $errors
+	 */
+	public function testIntersectionTypes(int $phpVersion, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->phpVersion = $phpVersion;
+
+		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);
 	}
 
 }

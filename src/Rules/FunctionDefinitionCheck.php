@@ -19,8 +19,10 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NonexistentParentClassType;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -33,6 +35,8 @@ class FunctionDefinitionCheck
 
 	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
+	private UnresolvableTypeHelper $unresolvableTypeHelper;
+
 	private PhpVersion $phpVersion;
 
 	private bool $checkClassCaseSensitivity;
@@ -42,6 +46,7 @@ class FunctionDefinitionCheck
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		UnresolvableTypeHelper $unresolvableTypeHelper,
 		PhpVersion $phpVersion,
 		bool $checkClassCaseSensitivity,
 		bool $checkThisOnly
@@ -49,6 +54,7 @@ class FunctionDefinitionCheck
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
+		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 		$this->phpVersion = $phpVersion;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkThisOnly = $checkThisOnly;
@@ -68,7 +74,9 @@ class FunctionDefinitionCheck
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
-		string $templateTypeMissingInParameterMessage
+		string $templateTypeMissingInParameterMessage,
+		string $unresolvableParameterTypeMessage,
+		string $unresolvableReturnTypeMessage
 	): array
 	{
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
@@ -79,7 +87,9 @@ class FunctionDefinitionCheck
 			$parameterMessage,
 			$returnMessage,
 			$unionTypesMessage,
-			$templateTypeMissingInParameterMessage
+			$templateTypeMissingInParameterMessage,
+			$unresolvableParameterTypeMessage,
+			$unresolvableReturnTypeMessage
 		);
 	}
 
@@ -98,7 +108,9 @@ class FunctionDefinitionCheck
 		$returnTypeNode,
 		string $parameterMessage,
 		string $returnMessage,
-		string $unionTypesMessage
+		string $unionTypesMessage,
+		string $unresolvableParameterTypeMessage,
+		string $unresolvableReturnTypeMessage
 	): array
 	{
 		$errors = [];
@@ -123,6 +135,13 @@ class FunctionDefinitionCheck
 			if ($type instanceof VoidType) {
 				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, 'void'))->line($param->type->getLine())->nonIgnorable()->build();
 			}
+			if (
+				$this->phpVersion->supportsPureIntersectionTypes()
+				&& $this->unresolvableTypeHelper->containsUnresolvableType($type)
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $param->var->name))->line($param->type->getLine())->nonIgnorable()->build();
+			}
+
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class) || $this->reflectionProvider->getClass($class)->isTrait()) {
 					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, $class))->line($param->type->getLine())->build();
@@ -154,6 +173,13 @@ class FunctionDefinitionCheck
 		}
 
 		$returnType = $scope->getFunctionType($returnTypeNode, false, false);
+		if (
+			$this->phpVersion->supportsPureIntersectionTypes()
+			&& $this->unresolvableTypeHelper->containsUnresolvableType($returnType)
+		) {
+			$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)->line($returnTypeNode->getLine())->nonIgnorable()->build();
+		}
+
 		foreach ($returnType->getReferencedClasses() as $returnTypeClass) {
 			if (!$this->reflectionProvider->hasClass($returnTypeClass) || $this->reflectionProvider->getClass($returnTypeClass)->isTrait()) {
 				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $returnTypeClass))->line($returnTypeNode->getLine())->build();
@@ -185,7 +211,9 @@ class FunctionDefinitionCheck
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
-		string $templateTypeMissingInParameterMessage
+		string $templateTypeMissingInParameterMessage,
+		string $unresolvableParameterTypeMessage,
+		string $unresolvableReturnTypeMessage
 	): array
 	{
 		/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
@@ -197,7 +225,9 @@ class FunctionDefinitionCheck
 			$parameterMessage,
 			$returnMessage,
 			$unionTypesMessage,
-			$templateTypeMissingInParameterMessage
+			$templateTypeMissingInParameterMessage,
+			$unresolvableParameterTypeMessage,
+			$unresolvableReturnTypeMessage
 		);
 	}
 
@@ -216,7 +246,9 @@ class FunctionDefinitionCheck
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
-		string $templateTypeMissingInParameterMessage
+		string $templateTypeMissingInParameterMessage,
+		string $unresolvableParameterTypeMessage,
+		string $unresolvableReturnTypeMessage
 	): array
 	{
 		$errors = [];
@@ -253,15 +285,20 @@ class FunctionDefinitionCheck
 
 				return $parameterNode;
 			};
-			if (
-				$parameter instanceof ParameterReflectionWithPhpDocs
-				&& $parameter->getNativeType() instanceof VoidType
-			) {
+			if ($parameter instanceof ParameterReflectionWithPhpDocs) {
 				$parameterVar = $parameterNodeCallback()->var;
 				if (!$parameterVar instanceof Variable || !is_string($parameterVar->name)) {
 					throw new \PHPStan\ShouldNotHappenException();
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameterVar->name, 'void'))->line($parameterNodeCallback()->getLine())->nonIgnorable()->build();
+				if ($parameter->getNativeType() instanceof VoidType) {
+					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameterVar->name, 'void'))->line($parameterNodeCallback()->getLine())->nonIgnorable()->build();
+				}
+				if (
+					$this->phpVersion->supportsPureIntersectionTypes()
+					&& $this->unresolvableTypeHelper->containsUnresolvableType($parameter->getNativeType())
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $parameterVar->name))->line($parameterNodeCallback()->getLine())->nonIgnorable()->build();
+				}
 			}
 			foreach ($referencedClasses as $class) {
 				if ($this->reflectionProvider->hasClass($class) && !$this->reflectionProvider->getClass($class)->isTrait()) {
@@ -288,6 +325,13 @@ class FunctionDefinitionCheck
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly())))->line($parameterNodeCallback()->getLine())->build();
+		}
+
+		if ($this->phpVersion->supportsPureIntersectionTypes() && $functionNode->getReturnType() !== null) {
+			$nativeReturnType = ParserNodeTypeToPHPStanType::resolve($functionNode->getReturnType(), null);
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($nativeReturnType)) {
+				$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)->nonIgnorable()->line($returnTypeNode->getLine())->build();
+			}
 		}
 
 		$returnTypeReferencedClasses = $this->getReturnTypeReferencedClasses($parametersAcceptor);

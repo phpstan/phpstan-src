@@ -89,11 +89,17 @@ class TypehintHelper
 		}
 
 		if ($reflectionType instanceof ReflectionIntersectionType) {
-			$type = TypeCombinator::intersect(...array_map(static function (ReflectionType $type) use ($selfClass): Type {
-				return self::decideTypeFromReflection($type, null, $selfClass, false);
-			}, $reflectionType->getTypes()));
+			$types = [];
+			foreach ($reflectionType->getTypes() as $innerReflectionType) {
+				$innerType = self::decideTypeFromReflection($innerReflectionType, null, $selfClass, false);
+				if (!$innerType instanceof ObjectType) {
+					return new NeverType();
+				}
 
-			return self::decideType($type, $phpDocType);
+				$types[] = $innerType;
+			}
+
+			return self::decideType(TypeCombinator::intersect(...$types), $phpDocType);
 		}
 
 		if (!$reflectionType instanceof ReflectionNamedType) {

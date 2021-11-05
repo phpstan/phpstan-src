@@ -5,9 +5,11 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -20,6 +22,10 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 
 	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
+	private UnresolvableTypeHelper $unresolvableTypeHelper;
+
+	private PhpVersion $phpVersion;
+
 	private bool $checkClassCaseSensitivity;
 
 	private bool $checkThisOnly;
@@ -27,12 +33,16 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		UnresolvableTypeHelper $unresolvableTypeHelper,
+		PhpVersion $phpVersion,
 		bool $checkClassCaseSensitivity,
 		bool $checkThisOnly
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
+		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
+		$this->phpVersion = $phpVersion;
 		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 		$this->checkThisOnly = $checkThisOnly;
 	}
@@ -87,6 +97,17 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 					return new ClassNameNodePair($class, $node);
 				}, $referencedClasses))
 			);
+		}
+
+		if (
+			$this->phpVersion->supportsPureIntersectionTypes()
+			&& $this->unresolvableTypeHelper->containsUnresolvableType($propertyReflection->getNativeType())
+		) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Property %s::$%s has unresolvable native type.',
+				$propertyReflection->getDeclaringClass()->getDisplayName(),
+				$node->getName()
+			))->build();
 		}
 
 		return $errors;

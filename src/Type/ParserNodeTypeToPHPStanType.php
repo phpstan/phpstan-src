@@ -49,7 +49,12 @@ class ParserNodeTypeToPHPStanType
 		} elseif ($type instanceof \PhpParser\Node\IntersectionType) {
 			$types = [];
 			foreach ($type->types as $intersectionTypeType) {
-				$types[] = self::resolve($intersectionTypeType, $classReflection);
+				$innerType = self::resolve($intersectionTypeType, $classReflection);
+				if (!$innerType instanceof ObjectType) {
+					return new NeverType();
+				}
+
+				$types[] = $innerType;
 			}
 
 			return TypeCombinator::intersect(...$types);

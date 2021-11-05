@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 
 /**
  * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInArrowFunctionTypehintsRule>
@@ -18,7 +19,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ExistingClassesInArrowFunctionTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new PhpVersion($this->phpVersionId), true, false));
+		return new ExistingClassesInArrowFunctionTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new UnresolvableTypeHelper(), new PhpVersion($this->phpVersionId), true, false));
 	}
 
 	public function testRule(): void
@@ -116,6 +117,50 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional-arrow.php'], $errors);
+	}
+
+	public function dataIntersectionTypes(): array
+	{
+		return [
+			[80000, []],
+			[
+				80100,
+				[
+					[
+						'Parameter $a of anonymous function has unresolvable native type.',
+						27,
+					],
+					[
+						'Anonymous function has unresolvable native return type.',
+						27,
+					],
+					[
+						'Parameter $a of anonymous function has unresolvable native type.',
+						29,
+					],
+					[
+						'Anonymous function has unresolvable native return type.',
+						29,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIntersectionTypes
+	 * @param int $phpVersion
+	 * @param mixed[] $errors
+	 */
+	public function testIntersectionTypes(int $phpVersion, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->phpVersionId = $phpVersion;
+
+		$this->analyse([__DIR__ . '/data/arrow-function-intersection-types.php'], $errors);
 	}
 
 }

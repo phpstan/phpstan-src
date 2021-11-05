@@ -137,6 +137,7 @@ class StubValidator
 		$missingTypehintCheck = $container->getByType(MissingTypehintCheck::class);
 		$unresolvableTypeHelper = $container->getByType(UnresolvableTypeHelper::class);
 		$crossCheckInterfacesHelper = $container->getByType(CrossCheckInterfacesHelper::class);
+		$phpVersion = $container->getByType(PhpVersion::class);
 
 		$rules = [
 			// level 0
@@ -146,8 +147,8 @@ class StubValidator
 			new ExistingClassInTraitUseRule($classCaseSensitivityCheck, $reflectionProvider),
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
-			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, true, false),
-			new OverridingMethodRule($container->getByType(PhpVersion::class), new MethodSignatureRule(true, true), true),
+			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
+			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true),
 
 			// level 2
 			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),

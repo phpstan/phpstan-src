@@ -33,7 +33,9 @@ class ExistingClassesInClosureTypehintsRule implements \PHPStan\Rules\Rule
 			$node->getReturnType(),
 			'Parameter $%s of anonymous function has invalid type %s.',
 			'Anonymous function has invalid return type %s.',
-			'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.'
+			'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
+			'Parameter $%s of anonymous function has unresolvable native type.',
+			'Anonymous function has unresolvable native return type.'
 		);
 	}
 

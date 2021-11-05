@@ -35,6 +35,8 @@ interface BuiltinMethodReflection
 
 	public function getReturnType(): ?\ReflectionType;
 
+	public function getTentativeReturnType(): ?\ReflectionType;
+
 	/**
 	 * @return \ReflectionParameter[]
 	 */

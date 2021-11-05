@@ -124,6 +124,15 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->getReturnType();
 	}
 
+	public function getTentativeReturnType(): ?\ReflectionType
+	{
+		if (method_exists($this->reflection, 'getTentativeReturnType')) {
+			return $this->reflection->getTentativeReturnType();
+		}
+
+		return null;
+	}
+
 	/**
 	 * @return \ReflectionParameter[]
 	 */

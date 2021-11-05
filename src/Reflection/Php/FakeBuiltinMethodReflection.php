@@ -105,6 +105,11 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return null;
 	}
 
+	public function getTentativeReturnType(): ?\ReflectionType
+	{
+		return null;
+	}
+
 	/**
 	 * @return \ReflectionParameter[]
 	 */

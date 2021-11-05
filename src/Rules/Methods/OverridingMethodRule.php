@@ -145,7 +145,27 @@ class OverridingMethodRule implements Rule
 		$prototypeVariant = $prototypeVariants[0];
 
 		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
+		$methodReturnType = $methodVariant->getNativeReturnType();
 		$methodParameters = $methodVariant->getParameters();
+
+		if (
+			$this->phpVersion->hasTentativeReturnTypes()
+			&& $prototype->getTentativeReturnType() !== null
+			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
+		) {
+
+			if (!$this->isTypeCompatible($prototype->getTentativeReturnType(), $methodVariant->getNativeReturnType(), true)) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Return type %s of method %s::%s() is not covariant with tentative return type %s of method %s::%s().',
+					$methodReturnType->describe(VerbosityLevel::typeOnly()),
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$prototype->getTentativeReturnType()->describe(VerbosityLevel::typeOnly()),
+					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getName()
+				))->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')->nonIgnorable()->build();
+			}
+		}
 
 		$prototypeAfterVariadic = false;
 		foreach ($prototypeVariant->getParameters() as $i => $prototypeParameter) {
@@ -380,8 +400,6 @@ class OverridingMethodRule implements Rule
 			}
 		}
 
-		$methodReturnType = $methodVariant->getNativeReturnType();
-
 		if (!$prototypeVariant instanceof FunctionVariantWithPhpDocs) {
 			return $this->addErrors($messages, $node, $scope);
 		}
@@ -464,6 +482,19 @@ class OverridingMethodRule implements Rule
 		}
 
 		return $this->methodSignatureRule->processNode($classMethod, $scope);
+	}
+
+	private function hasReturnTypeWillChangeAttribute(Node\Stmt\ClassMethod $method): bool
+	{
+		foreach ($method->attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				if ($attr->name->toLowerString() === 'returntypewillchange') {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 }

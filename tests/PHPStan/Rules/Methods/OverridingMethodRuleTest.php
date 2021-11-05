@@ -516,4 +516,42 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4516.php'], []);
 	}
 
+	public function dataTentativeReturnTypes(): array
+	{
+		return [
+			[70400, []],
+			[80000, []],
+			[
+				80100,
+				[
+					[
+						'Return type mixed of method TentativeReturnTypes\Foo::getIterator() is not covariant with tentative return type Traversable of method IteratorAggregate::getIterator().',
+						8,
+						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
+					],
+					[
+						'Return type string of method TentativeReturnTypes\Lorem::getIterator() is not covariant with tentative return type Traversable of method IteratorAggregate::getIterator().',
+						40,
+						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataTentativeReturnTypes
+	 * @param int $phpVersionId
+	 * @param mixed[] $errors
+	 */
+	public function testTentativeReturnTypes(int $phpVersionId, array $errors): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], $errors);
+	}
+
 }

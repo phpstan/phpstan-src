@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Type\Type;
+
 class MethodPrototypeReflection implements ClassMemberReflection
 {
 
@@ -22,6 +24,8 @@ class MethodPrototypeReflection implements ClassMemberReflection
 	/** @var ParametersAcceptor[] */
 	private array $variants;
 
+	private ?Type $tentativeReturnType;
+
 	/**
 	 * @param string $name
 	 * @param ClassReflection $declaringClass
@@ -31,6 +35,7 @@ class MethodPrototypeReflection implements ClassMemberReflection
 	 * @param bool $isAbstract
 	 * @param bool $isFinal
 	 * @param ParametersAcceptor[] $variants
+	 * @param ?Type $tentativeReturnType
 	 */
 	public function __construct(
 		string $name,
@@ -40,7 +45,8 @@ class MethodPrototypeReflection implements ClassMemberReflection
 		bool $isPublic,
 		bool $isAbstract,
 		bool $isFinal,
-		array $variants
+		array $variants,
+		?Type $tentativeReturnType
 	)
 	{
 		$this->name = $name;
@@ -51,6 +57,7 @@ class MethodPrototypeReflection implements ClassMemberReflection
 		$this->isAbstract = $isAbstract;
 		$this->isFinal = $isFinal;
 		$this->variants = $variants;
+		$this->tentativeReturnType = $tentativeReturnType;
 	}
 
 	public function getName(): string
@@ -99,6 +106,11 @@ class MethodPrototypeReflection implements ClassMemberReflection
 	public function getVariants(): array
 	{
 		return $this->variants;
+	}
+
+	public function getTentativeReturnType(): ?Type
+	{
+		return $this->tentativeReturnType;
 	}
 
 }

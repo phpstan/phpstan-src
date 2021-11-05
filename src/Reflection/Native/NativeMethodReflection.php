@@ -10,6 +10,7 @@ use PHPStan\Reflection\Php\BuiltinMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 
 class NativeMethodReflection implements MethodReflection
@@ -89,6 +90,11 @@ class NativeMethodReflection implements MethodReflection
 			$prototypeMethod = $this->reflection->getPrototype();
 			$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
 
+			$tentativeReturnType = null;
+			if ($prototypeMethod->getTentativeReturnType() !== null) {
+				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType());
+			}
+
 			return new MethodPrototypeReflection(
 				$prototypeMethod->getName(),
 				$prototypeDeclaringClass,
@@ -97,7 +103,8 @@ class NativeMethodReflection implements MethodReflection
 				$prototypeMethod->isPublic(),
 				$prototypeMethod->isAbstract(),
 				$prototypeMethod->isFinal(),
-				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants()
+				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
+				$tentativeReturnType
 			);
 		} catch (\ReflectionException $e) {
 			return $this;

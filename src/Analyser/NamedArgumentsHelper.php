@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
@@ -47,6 +48,9 @@ final class NamedArgumentsHelper {
 		);
 	}
 
+	/**
+	 * @return array<int, Arg>
+	 */
 	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike) {
 		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $callLike->getArgs();

@@ -1,23 +1,23 @@
 @package jetbrains/phpstorm-stubs
 @version dev-master
 
---- session/SessionHandler.php	2021-09-09 18:57:58.000000000 +0200
-+++ session/SessionHandler.php	2021-09-12 19:00:13.000000000 +0200
-@@ -137,7 +137,7 @@
-      * Note this value is returned internally to PHP for processing.
+--- session/SessionHandler.php	2021-11-04 14:27:30.000000000 +0100
++++ session/SessionHandler.php	2021-11-05 11:26:14.000000000 +0100
+@@ -147,7 +147,7 @@
       * </p>
       */
--    public function validateId(string $id);
-+    public function validateId($id);
+     #[TentativeType]
+-    public function validateId(string $id): bool;
++    public function validateId($id): bool;
 
      /**
       * Update timestamp of a session
-@@ -152,7 +152,7 @@
-      * </p>
+@@ -163,7 +163,7 @@
       * @return bool
       */
--    public function updateTimestamp(string $id, string $data);
-+    public function updateTimestamp($id, $data);
+     #[TentativeType]
+-    public function updateTimestamp(string $id, string $data): bool;
++    public function updateTimestamp($id, $data): bool;
  }
 
  /**

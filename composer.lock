@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cce39014acc6ed91f935ff1d09084570",
+    "content-hash": "cb4eb6b4504a6c36ea81c50ccb02b59c",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1335,16 +1335,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "82595d7a426c4b3d1e3a7d604ad3f99534784599"
+                "reference": "fdcc30312221ce08f3a4413588e2df4b77f843fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/82595d7a426c4b3d1e3a7d604ad3f99534784599",
-                "reference": "82595d7a426c4b3d1e3a7d604ad3f99534784599",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/fdcc30312221ce08f3a4413588e2df4b77f843fc",
+                "reference": "fdcc30312221ce08f3a4413588e2df4b77f843fc",
                 "shasum": ""
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "@stable",
+                "friendsofphp/php-cs-fixer": "dev-master",
                 "nikic/php-parser": "@stable",
                 "php": "^8.0",
                 "phpdocumentor/reflection-docblock": "@stable",
@@ -1376,7 +1376,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2021-09-09T16:57:58+00:00"
+            "time": "2021-11-04T13:27:30+00:00"
         },
         {
             "name": "nette/bootstrap",

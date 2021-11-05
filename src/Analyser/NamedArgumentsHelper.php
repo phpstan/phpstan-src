@@ -2,17 +2,40 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Reflection\ParametersAcceptor;
 
 final class NamedArgumentsHelper {
-	public static function reorderArguments(
+	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall
 	): FuncCall
 	{
+		return new FuncCall(
+			$functionCall->name,
+			self::reorderArgs($parametersAcceptor, $functionCall),
+			$functionCall->getAttributes()
+		);
+	}
+
+	public static function reorderMethodArguments(
+		ParametersAcceptor $parametersAcceptor,
+		MethodCall $methodCall
+	): MethodCall
+	{
+		return new MethodCall(
+			$methodCall->var,
+			$methodCall->name,
+			self::reorderArgs($parametersAcceptor, $methodCall),
+			$methodCall->getAttributes()
+		);
+	}
+
+	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike) {
 		$signatureParameters = $parametersAcceptor->getParameters();
-		$callArgs = $functionCall->getArgs();
+		$callArgs = $callLike->getArgs();
 
 		$argumentPositions = [];
 		foreach ($signatureParameters as $i => $parameter) {
@@ -30,7 +53,7 @@ final class NamedArgumentsHelper {
 			}
 		}
 
-		return new FuncCall($functionCall->name, $reorderedArgs, $functionCall->getAttributes());
+		return $reorderedArgs;
 	}
 
 }

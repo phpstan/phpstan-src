@@ -2662,7 +2662,7 @@ class NodeScopeResolver
 	): ?ThrowPoint
 	{
 		if ($parametersAcceptor !== null) {
-			$funcCall = NamedArgumentsHelper::reorderArguments($parametersAcceptor, $funcCall);
+			$funcCall = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $funcCall);
 		}
 
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {

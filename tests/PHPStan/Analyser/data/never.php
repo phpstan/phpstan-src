@@ -17,4 +17,13 @@ class Foo
 		assertType('*NEVER*', $this->doFoo());
 	}
 
+	public function doBaz(?int $i)
+	{
+		if ($i === null) {
+			$this->doFoo();
+		}
+
+		assertType('int', $i);
+	}
+
 }

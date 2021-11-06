@@ -8833,7 +8833,7 @@ return [
 'preg_match_all' => ['0|positive-int|false|null', 'pattern'=>'string', 'subject'=>'string', '&w_subpatterns='=>'array', 'flags='=>'int', 'offset='=>'int'],
 'preg_quote' => ['string', 'str'=>'string', 'delim_char='=>'string'],
 'preg_replace' => ['string|array|null', 'regex'=>'string|array', 'replace'=>'string|array', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
-'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
+'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable(array<int|string, string>):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
 'preg_replace_callback_array' => ['string|array|null', 'pattern'=>'array<string,callable>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
 'preg_split' => ['array<int, string>|false', 'pattern'=>'string', 'subject'=>'string', 'limit='=>'?int', 'flags='=>'int'],
 'prev' => ['mixed', '&rw_array_arg'=>'array|object'],

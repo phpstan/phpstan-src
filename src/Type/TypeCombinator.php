@@ -709,16 +709,18 @@ class TypeCombinator
 			$arraysToProcess[] = $constantArray;
 		}
 
-		for ($i = 0; $i < count($arraysToProcess); $i++) {
-			for ($j = $i + 1; $j < count($arraysToProcess); $j++) {
+		for ($i = 0, $arraysToProcessCount = count($arraysToProcess); $i < $arraysToProcessCount; $i++) {
+			for ($j = $i + 1; $j < $arraysToProcessCount; $j++) {
 				if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
 					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
 					array_splice($arraysToProcess, $i--, 1);
+					$arraysToProcessCount--;
 					continue 2;
 
 				} elseif ($arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
 					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
 					array_splice($arraysToProcess, $j--, 1);
+					$arraysToProcessCount--;
 					continue 1;
 				}
 			}
@@ -789,15 +791,17 @@ class TypeCombinator
 
 			return $union;
 		}
+		$typesCount = count($types);
 
 		// transform A & (B & C) to A & B & C
-		for ($i = 0; $i < count($types); $i++) {
+		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
 			if (!($type instanceof IntersectionType)) {
 				continue;
 			}
 
 			array_splice($types, $i--, 1, $type->getTypes());
+			$typesCount = count($types);
 		}
 
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
@@ -808,7 +812,6 @@ class TypeCombinator
 		// transform callable & int to never
 		// transform A & ~A to never
 		// transform int & string to never
-		$typesCount = count($types);
 		for ($i = 0; $i < $typesCount; $i++) {
 			for ($j = $i + 1; $j < $typesCount; $j++) {
 				if ($types[$j] instanceof SubtractableType) {

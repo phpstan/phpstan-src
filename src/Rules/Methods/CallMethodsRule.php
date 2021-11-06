@@ -62,12 +62,13 @@ class CallMethodsRule implements \PHPStan\Rules\Rule
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			sprintf('Call to method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 			static function (Type $type) use ($name): bool {
 				return $type->canCallMethods()->yes() && $type->hasMethod($name)->yes();
 			}
 		);
+
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
 			return $typeResult->getUnknownClassErrors();

@@ -491,4 +491,32 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
 	}
 
+
+	public function testBug5868(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5868.php'], [
+			[
+				'Cannot access property $child on Bug5868PropertyFetch\Foo|null.',
+				31,
+			],
+			[
+				'Cannot access property $child on Bug5868PropertyFetch\Child|null.',
+				32,
+			],
+			[
+				'Cannot access property $existingChild on Bug5868PropertyFetch\Child|null.',
+				33,
+			],
+			[
+				'Cannot access property $existingChild on Bug5868PropertyFetch\Child|null.',
+				34,
+			],
+		]);
+	}
+
 }

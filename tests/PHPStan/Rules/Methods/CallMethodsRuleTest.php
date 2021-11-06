@@ -2193,4 +2193,29 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3465.php'], []);
 	}
 
+	public function testBug5868(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5868.php'], [
+			[
+				'Cannot call method nullable1() on Bug5868\HelloWorld|null.',
+				14,
+			],
+			[
+				'Cannot call method nullable2() on Bug5868\HelloWorld|null.',
+				15,
+			],
+			[
+				'Cannot call method nullable3() on Bug5868\HelloWorld|null.',
+				16,
+			],
+		]);
+	}
+
 }

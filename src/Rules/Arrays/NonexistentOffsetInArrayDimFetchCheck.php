@@ -44,7 +44,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $var),
 			$unknownClassPattern,
 			static function (Type $type) use ($dimType): bool {
 				return $type->hasOffsetValueType($dimType)->yes();

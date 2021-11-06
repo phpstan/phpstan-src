@@ -3,10 +3,25 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Type\TypeCombinator;
 
 class NullsafeOperatorHelper
 {
 
+	public static function getNullsafeShortcircuitedExprRespectingScope(Scope $scope, Expr $expr): Expr
+	{
+		if (!TypeCombinator::containsNull($scope->getType($expr))) {
+			// We're in most likely in context of a null-safe operator ($scope->moreSpecificType is defined for $expr)
+			// Modifying the expression would not bring any value or worse ruin the context information
+			return $expr;
+		}
+
+		return self::getNullsafeShortcircuitedExpr($expr);
+	}
+
+	/**
+	 * @internal Use NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope
+	 */
 	public static function getNullsafeShortcircuitedExpr(Expr $expr): Expr
 	{
 		if ($expr instanceof Expr\NullsafeMethodCall) {

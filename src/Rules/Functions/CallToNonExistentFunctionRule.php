@@ -39,6 +39,10 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 		}
 
 		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+			if ($scope->isInFunctionExists($node->name->toString())) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->discoveringSymbolsTip()->build(),
 			];

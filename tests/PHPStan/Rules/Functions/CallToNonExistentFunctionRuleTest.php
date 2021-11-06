@@ -121,4 +121,40 @@ class CallToNonExistentFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/create_function.php'], []);
 	}
 
+	public function testBug3576(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3576.php'], [
+			[
+				'Function bug3576 not found.',
+				14,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function bug3576 not found.',
+				17,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function bug3576 not found.',
+				26,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function bug3576 not found.',
+				29,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function bug3576 not found.',
+				38,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function bug3576 not found.',
+				41,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

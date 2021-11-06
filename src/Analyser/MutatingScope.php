@@ -2766,6 +2766,16 @@ class MutatingScope implements Scope
 	}
 
 	/** @api */
+	public function isInFunctionExists(string $functionName): bool
+	{
+		$expr = new FuncCall(new FullyQualified('function_exists'), [
+			new Arg(new String_(ltrim($functionName, '\\'))),
+		]);
+
+		return (new ConstantBooleanType(true))->isSuperTypeOf($this->getType($expr))->yes();
+	}
+
+	/** @api */
 	public function enterClass(ClassReflection $classReflection): self
 	{
 		return $this->scopeFactory->create(

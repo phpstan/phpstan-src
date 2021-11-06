@@ -89,6 +89,8 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function isInClassExists(string $className): bool;
 
+	public function isInFunctionExists(string $functionName): bool;
+
 	public function isInClosureBind(): bool;
 
 	public function isParameterValueNullable(Param $parameter): bool;

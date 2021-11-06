@@ -12,6 +12,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -45,7 +46,13 @@ class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			);
 		}
 
-		return new SpecifiedTypes();
+		return $this->typeSpecifier->create(
+			$node->getArgs()[0]->value,
+			new CallableType(),
+			$context,
+			false,
+			$scope
+		);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

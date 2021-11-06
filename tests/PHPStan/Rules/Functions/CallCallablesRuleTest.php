@@ -213,4 +213,9 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug1849(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1849.php'], []);
+	}
+
 }

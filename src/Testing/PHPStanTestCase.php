@@ -65,6 +65,14 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 					require_once $file;
 				})($bootstrapFile);
 			}
+
+			if (PHP_VERSION_ID >= 80000) {
+				require_once __DIR__ . '/../../stubs/runtime/Enum/UnitEnum.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/BackedEnum.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnum.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnumUnitCase.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnumBackedCase.php';
+			}
 		}
 
 		return self::$containers[$cacheKey];

@@ -3,6 +3,7 @@
 namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
+use PhpParser\Lexer;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
@@ -14,6 +15,8 @@ class RichParser implements Parser
 
 	private \PhpParser\Parser $parser;
 
+	private Lexer $lexer;
+
 	private NameResolver $nameResolver;
 
 	private NodeConnectingVisitor $nodeConnectingVisitor;
@@ -22,12 +25,14 @@ class RichParser implements Parser
 
 	public function __construct(
 		\PhpParser\Parser $parser,
+		Lexer $lexer,
 		NameResolver $nameResolver,
 		NodeConnectingVisitor $nodeConnectingVisitor,
 		StatementOrderVisitor $statementOrderVisitor
 	)
 	{
 		$this->parser = $parser;
+		$this->lexer = $lexer;
 		$this->nameResolver = $nameResolver;
 		$this->nodeConnectingVisitor = $nodeConnectingVisitor;
 		$this->statementOrderVisitor = $statementOrderVisitor;
@@ -54,6 +59,7 @@ class RichParser implements Parser
 	{
 		$errorHandler = new Collecting();
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
+		$tokens = $this->lexer->getTokens();
 		if ($errorHandler->hasErrors()) {
 			throw new \PHPStan\Parser\ParserErrorsException($errorHandler->getErrors(), null);
 		}
@@ -67,7 +73,45 @@ class RichParser implements Parser
 		$nodeTraverser->addVisitor($this->statementOrderVisitor);
 
 		/** @var array<\PhpParser\Node\Stmt> */
-		return $nodeTraverser->traverse($nodes);
+		$nodes = $nodeTraverser->traverse($nodes);
+		if (isset($nodes[0])) {
+			$nodes[0]->setAttribute('linesToIgnore', $this->getLinesToIgnore($tokens));
+		}
+
+		return $nodes;
+	}
+
+	/**
+	 * @param mixed[] $tokens
+	 * @return int[]
+	 */
+	private function getLinesToIgnore(array $tokens): array
+	{
+		$lines = [];
+		foreach ($tokens as $token) {
+			if (is_string($token)) {
+				continue;
+			}
+
+			$type = $token[0];
+			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
+				continue;
+			}
+
+			$text = $token[1];
+			$line = $token[2];
+			if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+				$line++;
+			} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+				continue;
+			}
+
+			$line += substr_count($token[1], "\n");
+
+			$lines[] = $line;
+		}
+
+		return $lines;
 	}
 
 }

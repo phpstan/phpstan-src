@@ -514,6 +514,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			$nodeScopeResolver,
 			new RichParser(
 				new \PhpParser\Parser\Php7($lexer),
+				$lexer,
 				new \PhpParser\NodeVisitor\NameResolver(),
 				new NodeConnectingVisitor(),
 				new StatementOrderVisitor()

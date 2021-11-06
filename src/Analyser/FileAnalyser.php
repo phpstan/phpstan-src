@@ -69,9 +69,18 @@ class FileAnalyser
 		if (is_file($file)) {
 			try {
 				$parserNodes = $this->parser->parseFile($file);
-				$linesToIgnore = [];
+				$linesToIgnore = $this->getLinesToIgnoreFromTokens($file, $parserNodes);
 				$temporaryFileErrors = [];
 				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
+					if ($node instanceof Node\Stmt\Trait_) {
+						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
+							if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
+								continue;
+							}
+
+							unset($linesToIgnore[$file][$lineToIgnore]);
+						}
+					}
 					if ($outerNodeCallback !== null) {
 						$outerNodeCallback($node, $scope);
 					}
@@ -163,8 +172,16 @@ class FileAnalyser
 						}
 					}
 
-					foreach ($this->getLinesToIgnore($node) as $lineToIgnore) {
-						$linesToIgnore[$scope->getFileDescription()][$lineToIgnore] = true;
+					if ($scope->isInTrait()) {
+						$sameTraitFile = $file === $scope->getTraitReflection()->getFileName();
+						foreach ($this->getLinesToIgnore($node) as $lineToIgnore) {
+							$linesToIgnore[$scope->getFileDescription()][$lineToIgnore] = true;
+							if (!$sameTraitFile) {
+								continue;
+							}
+
+							unset($linesToIgnore[$file][$lineToIgnore]);
+						}
 					}
 
 					try {
@@ -272,6 +289,27 @@ class FileAnalyser
 			}
 
 			$lines[] = $line;
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * @param string $file
+	 * @param \PhpParser\Node[] $nodes
+	 * @return array<string, array<int, true>>
+	 */
+	private function getLinesToIgnoreFromTokens(string $file, array $nodes): array
+	{
+		if (!isset($nodes[0])) {
+			return [];
+		}
+
+		/** @var int[] $tokenLines */
+		$tokenLines = $nodes[0]->getAttribute('linesToIgnore', []);
+		$lines = [];
+		foreach ($tokenLines as $tokenLine) {
+			$lines[$file][$tokenLine] = true;
 		}
 
 		return $lines;

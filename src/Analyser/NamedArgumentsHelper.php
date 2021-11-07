@@ -58,12 +58,18 @@ final class NamedArgumentsHelper
 		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $callLike->getArgs();
 
+		$reorderedArgs = [];
 		$argumentPositions = [];
 		foreach ($signatureParameters as $i => $parameter) {
 			$argumentPositions[$parameter->getName()] = $i;
+
+			if ($parameter->isOptional()) {
+				$reorderedArgs[$i] = new Arg(
+					$parameter->getDefaultValue(),
+				);
+			}
 		}
 
-		$reorderedArgs = [];
 		foreach ($callArgs as $i => $arg) {
 			if ($arg->name === null) {
 				// add regular args as is
@@ -73,6 +79,8 @@ final class NamedArgumentsHelper
 				$reorderedArgs[$argumentPositions[$arg->name->toString()]] = $arg;
 			}
 		}
+
+		ksort($reorderedArgs);
 
 		return $reorderedArgs;
 	}

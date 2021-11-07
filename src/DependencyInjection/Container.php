@@ -15,13 +15,14 @@ interface Container
 	public function getService(string $serviceName);
 
 	/**
-	 * @param string $className
-	 * @return mixed
+	 * @template T
+	 * @param class-string<T> $className
+	 * @return T
 	 */
 	public function getByType(string $className);
 
 	/**
-	 * @param string $className
+	 * @param class-string $className
 	 * @return string[]
 	 */
 	public function findServiceNamesByType(string $className): array;

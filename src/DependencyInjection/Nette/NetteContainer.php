@@ -32,7 +32,9 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $className
+	 * @phpstan-template T of object
+	 * @phpstan-param class-string<T> $className
+	 * @phpstan-return T
 	 * @return mixed
 	 */
 	public function getByType(string $className)
@@ -41,7 +43,7 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $className
+	 * @param class-string $className
 	 * @return string[]
 	 */
 	public function findServiceNamesByType(string $className): array

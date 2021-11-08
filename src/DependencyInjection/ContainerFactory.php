@@ -141,8 +141,13 @@ class ContainerFactory
 		$configurator->setDebugMode(true);
 		$configurator->setTempDirectory($tempDirectory);
 
+		$containerDirectory = $configurator->getContainerCacheDirectory();
+		if (!is_dir($containerDirectory)) {
+			return;
+		}
+
 		$finder = new Finder();
-		$finder->name('Container_*')->in($configurator->getContainerCacheDirectory());
+		$finder->name('Container_*')->in($containerDirectory);
 		$twoDaysAgo = time() - 24 * 60 * 60 * 2;
 
 		foreach ($finder as $containerFile) {

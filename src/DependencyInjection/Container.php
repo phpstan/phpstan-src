@@ -15,7 +15,7 @@ interface Container
 	public function getService(string $serviceName);
 
 	/**
-	 * @template T
+	 * @template T of object
 	 * @param class-string<T> $className
 	 * @return T
 	 */

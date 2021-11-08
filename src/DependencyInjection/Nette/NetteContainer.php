@@ -3,6 +3,7 @@
 namespace PHPStan\DependencyInjection\Nette;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\ShouldNotHappenException;
 
 /**
  * @internal
@@ -33,7 +34,11 @@ class NetteContainer implements Container
 
 	public function getByType(string $className)
 	{
-		return $this->container->getByType($className);
+		$service = $this->container->getByType($className);
+		if ($service === null) {
+			throw new ShouldNotHappenException(sprintf('Service for class %s not found.', $className));
+		}
+		return $service;
 	}
 
 	/**

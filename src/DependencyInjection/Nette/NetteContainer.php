@@ -31,10 +31,6 @@ class NetteContainer implements Container
 		return $this->container->getService($serviceName);
 	}
 
-	/**
-	 * @param string $className
-	 * @return mixed
-	 */
 	public function getByType(string $className)
 	{
 		return $this->container->getByType($className);

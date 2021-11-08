@@ -29,10 +29,6 @@ class MemoizingContainer implements Container
 		return $this->originalContainer->getService($serviceName);
 	}
 
-	/**
-	 * @param string $className
-	 * @return mixed
-	 */
 	public function getByType(string $className)
 	{
 		if (array_key_exists($className, $this->servicesByType)) {

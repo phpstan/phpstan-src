@@ -1,0 +1,16 @@
+<?php
+
+namespace PHPStan\DependencyInjection\Nette;
+
+class NetteContainer implements Container
+{
+	/**
+	 * @phpstan-template T of object
+	 * @phpstan-param class-string<T> $className
+	 * @phpstan-return T|null
+	 * @return mixed
+	 */
+	public function getByType(string $className)
+	{
+    }
+}

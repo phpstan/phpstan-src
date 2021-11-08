@@ -1,16 +1,25 @@
 <?php
 
-namespace PHPStan\DependencyInjection\Nette;
+namespace Nette\DI;
 
-class NetteContainer implements Container
+/**
+ * The dependency injection container default implementation.
+ */
+class Container
 {
 	/**
+	 * Resolves service by type.
+	 *
 	 * @phpstan-template T of object
-	 * @phpstan-param class-string<T> $className
+	 * @phpstan-param class-string<T> $type
 	 * @phpstan-return T|null
-	 * @return mixed
+	 *
+	 * @param  bool  $throw  exception if service doesn't exist?
+	 * @return object|null  service
+	 *
+	 * @throws MissingServiceException
 	 */
-	public function getByType(string $className)
+	public function getByType(string $type, bool $throw = true)
 	{
-    }
+	}
 }

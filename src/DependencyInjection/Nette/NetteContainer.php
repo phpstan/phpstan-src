@@ -32,8 +32,16 @@ class NetteContainer implements Container
 		return $this->container->getService($serviceName);
 	}
 
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T
+	 */
 	public function getByType(string $className)
 	{
+		/**
+		 * @var T|null $service
+		 */
 		$service = $this->container->getByType($className);
 		if ($service === null) {
 			throw new ShouldNotHappenException(sprintf('Service for class %s not found.', $className));

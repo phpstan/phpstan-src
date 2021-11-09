@@ -29,12 +29,21 @@ class MemoizingContainer implements Container
 		return $this->originalContainer->getService($serviceName);
 	}
 
+	/**
+	 * @phpstan-template T of object
+	 * @phpstan-param class-string<T> $className
+	 * @phpstan-return T
+	 * @return mixed
+	 */
 	public function getByType(string $className)
 	{
 		if (array_key_exists($className, $this->servicesByType)) {
 			return $this->servicesByType[$className];
 		}
 
+		/**
+		 * @var T $service
+		 */
 		$service = $this->originalContainer->getByType($className);
 		$this->servicesByType[$className] = $service;
 

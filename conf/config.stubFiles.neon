@@ -13,7 +13,6 @@ parameters:
 		- ../stubs/PDOStatement.stub
 		- ../stubs/date.stub
 		- ../stubs/mysqli.stub
-		- ../stubs/nette-di.stub
 		- ../stubs/zip.stub
 		- ../stubs/dom.stub
 		- ../stubs/spl.stub

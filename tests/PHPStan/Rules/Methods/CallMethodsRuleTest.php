@@ -2218,4 +2218,16 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		]);
 	}
 
+	public function testBug5460(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5460.php'], []);
+	}
+
 }

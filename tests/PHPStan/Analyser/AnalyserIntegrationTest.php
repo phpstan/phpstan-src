@@ -453,6 +453,15 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertCount(0, $errors);
 	}
 
+	public function testBug5951(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5951.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]

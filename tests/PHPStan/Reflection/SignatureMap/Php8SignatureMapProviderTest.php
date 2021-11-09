@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use FilesystemIterator;
+use PDO;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
@@ -13,8 +15,10 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -28,6 +32,7 @@ use PHPStan\Type\VoidType;
 use function array_map;
 use function array_merge;
 use function count;
+use function sprintf;
 
 class Php8SignatureMapProviderTest extends PHPStanTestCase
 {
@@ -51,6 +56,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						]),
 						'passedByReference' => PassedByReference::createNo(),
 						'variadic' => false,
+						'defaultValue' => new NullType(),
 					],
 				],
 				new UnionType([
@@ -73,6 +79,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'nativeType' => new ObjectType('CurlHandle'),
 						'passedByReference' => PassedByReference::createNo(),
 						'variadic' => false,
+						'defaultValue' => null,
 					],
 				],
 				new UnionType([new StringType(), new BooleanType()]),
@@ -112,10 +119,62 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'nativeType' => new UnionType([new ArrayType(new MixedType(), new MixedType()), new ObjectWithoutClassType()]),
 						'passedByReference' => PassedByReference::createReadsArgument(),
 						'variadic' => false,
+						'defaultValue' => null,
 					],
 				],
 				new MixedType(true),
 				new MixedType(true),
+				false,
+			],
+			[
+				'microtime',
+				[
+					[
+						'name' => 'as_float',
+						'optional' => true,
+						'type' => new BooleanType(),
+						'nativeType' => new BooleanType(),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => new ConstantBooleanType(false),
+					],
+				],
+				new UnionType([new StringType(), new FloatType()]),
+				new UnionType([new StringType(), new FloatType()]),
+				false,
+			],
+			[
+				'session_start',
+				[
+					[
+						'name' => 'options',
+						'optional' => true,
+						'type' => new ArrayType(new MixedType(), new MixedType()),
+						'nativeType' => new ArrayType(new MixedType(), new MixedType()),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => new ConstantArrayType([], []),
+					],
+				],
+				new BooleanType(),
+				new BooleanType(),
+				false,
+			],
+			[
+				'cal_info',
+				[
+					[
+						'name' => 'calendar',
+						'optional' => true,
+						'type' => new IntegerType(),
+						'nativeType' => new IntegerType(),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => new ConstantIntegerType(-1),
+					],
+				],
+				new ArrayType(new MixedType(), new MixedType()),
+				new ArrayType(new MixedType(), new MixedType()),
 				false,
 			],
 		];
@@ -170,6 +229,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						]),
 						'passedByReference' => PassedByReference::createNo(),
 						'variadic' => false,
+						'defaultValue' => null,
 					],
 					[
 						'name' => 'newScope',
@@ -186,6 +246,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						]),
 						'passedByReference' => PassedByReference::createNo(),
 						'variadic' => false,
+						'defaultValue' => new ConstantStringType('static'),
 					],
 				],
 				new UnionType([
@@ -212,6 +273,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'nativeType' => new CallableType(),
 						'passedByReference' => PassedByReference::createNo(),
 						'variadic' => false,
+						'defaultValue' => null,
 					],
 				],
 				new VoidType(),
@@ -232,10 +294,83 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'nativeType' => new MixedType(), // todo - because uasort is not found in file with RecursiveArrayIterator
 						'passedByReference' => PassedByReference::createNo(),
 						'variadic' => false,
+						'defaultValue' => null,
 					],
 				],
 				new VoidType(),
 				new MixedType(), // todo - because uasort is not found in file with RecursiveArrayIterator
+				false,
+			],
+			[
+				'mysqli',
+				'store_result',
+				[
+					[
+						'name' => 'mode',
+						'optional' => true,
+						'type' => new IntegerType(),
+						'nativeType' => new IntegerType(),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => new ConstantIntegerType(0),
+					],
+				],
+				new UnionType([new ObjectType('mysqli_result'), new ConstantBooleanType(false)]),
+				new MixedType(),
+				false,
+			],
+			[
+				'RecursiveDirectoryIterator',
+				'__construct',
+				[
+					[
+						'name' => 'directory',
+						'optional' => false,
+						'type' => new StringType(),
+						'nativeType' => new StringType(),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => null,
+					],
+					[
+						'name' => 'flags',
+						'optional' => true,
+						'type' => new IntegerType(),
+						'nativeType' => new IntegerType(),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => new ConstantIntegerType(FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO),
+					],
+				],
+				new VoidType(),
+				new MixedType(),
+				false,
+			],
+			[
+				'PDO',
+				'quote',
+				[
+					[
+						'name' => 'string',
+						'optional' => false,
+						'type' => new StringType(),
+						'nativeType' => new StringType(),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => null,
+					],
+					[
+						'name' => 'type',
+						'optional' => true,
+						'type' => new IntegerType(),
+						'nativeType' => new IntegerType(),
+						'passedByReference' => PassedByReference::createNo(),
+						'variadic' => false,
+						'defaultValue' => new ConstantIntegerType(PDO::PARAM_STR),
+					],
+				],
+				new StringType(),
+				new MixedType(),
 				false,
 			],
 		];
@@ -279,6 +414,17 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 			$this->assertSame($expectedParameter['nativeType']->describe(VerbosityLevel::precise()), $actualParameter->getNativeType()->describe(VerbosityLevel::precise()));
 			$this->assertTrue($expectedParameter['passedByReference']->equals($actualParameter->passedByReference()));
 			$this->assertSame($expectedParameter['variadic'], $actualParameter->isVariadic());
+
+			if ($expectedParameter['defaultValue'] !== null) {
+				$this->assertInstanceOf(
+					Type::class,
+					$actualParameter->getDefaultValue(),
+					sprintf("Mismatch for parameter '%s'.", $actualParameter->getName()),
+				);
+				$this->assertSame($expectedParameter['defaultValue']->describe(VerbosityLevel::precise()), $actualParameter->getDefaultValue()->describe(VerbosityLevel::precise()));
+			} else {
+				$this->assertNull($actualParameter->getDefaultValue());
+			}
 		}
 
 		$this->assertSame($expectedReturnType->describe(VerbosityLevel::precise()), $actualSignature->getReturnType()->describe(VerbosityLevel::precise()));

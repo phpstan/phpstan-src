@@ -71,6 +71,7 @@ class SignatureMapParser
 				new MixedType(),
 				$passedByReference,
 				$isVariadic,
+				null, // the functionMap does not provide default values
 			);
 		}
 

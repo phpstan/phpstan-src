@@ -3,18 +3,120 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\BinaryOp\BitwiseAnd;
+use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\UnaryMinus;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
+use PhpParser\Node\Scalar\DNumber;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use function get_class;
 use function in_array;
+use function is_numeric;
 use function strtolower;
 
 class ParserNodeTypeToPHPStanType
 {
+
+	public static function resolveParameterDefaultType(?Expr $type): Type
+	{
+		if ($type instanceof ConstFetch) {
+			$constName = (string) $type->name;
+			$loweredConstName = strtolower($constName);
+			if ($loweredConstName === 'true') {
+				return new ConstantBooleanType(true);
+			} elseif ($loweredConstName === 'false') {
+				return new ConstantBooleanType(false);
+			} elseif ($loweredConstName === 'null') {
+				return new NullType();
+			}
+
+			return self::resolve(new Identifier($type->name->toString()), null);
+		} elseif ($type instanceof ClassConstFetch) {
+			if ($type->name instanceof Identifier) {
+				$constantName = $type->name->name;
+				if (!($type->class instanceof Name)) {
+					throw new \PHPStan\ShouldNotHappenException();
+				}
+
+				$constantClass = (string) $type->class;
+				$constantClassType = new ObjectType($constantClass);
+
+				if (!$constantClassType->hasConstant($constantName)->yes()) {
+					return new ErrorType();
+				}
+
+				return $constantClassType->getConstant($constantName)->getValueType();
+			}
+
+			throw new \PHPStan\ShouldNotHappenException();
+		} elseif ($type instanceof String_ || $type instanceof LNumber || $type instanceof DNumber) {
+			return ConstantTypeHelper::getTypeFromValue($type->value);
+		} elseif ($type instanceof Array_) {
+			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			foreach ($type->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+
+				$keyType = null;
+				if ($item->key !== null) {
+					$keyType = self::resolveParameterDefaultType($item->key);
+				}
+				$arrayBuilder->setOffsetValueType(
+					$keyType,
+					self::resolveParameterDefaultType($item->value),
+				);
+			}
+
+			return $arrayBuilder->getArray();
+		} elseif ($type instanceof UnaryMinus) {
+			$expr = $type->expr;
+
+			if (!($expr instanceof LNumber || $expr instanceof DNumber)) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			$type = self::resolveParameterDefaultType($expr);
+
+			if ($type instanceof ConstantScalarType) {
+				$value = $type->getValue();
+
+				if (is_numeric($value)) {
+					return ConstantTypeHelper::getTypeFromValue($value * -1);
+				}
+			}
+
+			throw new \PHPStan\ShouldNotHappenException();
+		} elseif ($type instanceof BitwiseOr || $type instanceof BitwiseAnd) {
+
+			if ($type->left instanceof ClassConstFetch && $type->right instanceof ClassConstFetch) {
+				$left = self::resolveParameterDefaultType($type->left);
+				$right = self::resolveParameterDefaultType($type->right);
+
+				if ($left instanceof ConstantIntegerType && $right instanceof ConstantIntegerType) {
+					if ($type instanceof BitwiseOr) {
+						return new ConstantIntegerType($left->getValue() | $right->getValue());
+					}
+					return new ConstantIntegerType($left->getValue() & $right->getValue());
+				}
+			}
+
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		throw new \PHPStan\ShouldNotHappenException();
+	}
 
 	/**
 	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
@@ -61,6 +163,7 @@ class ParserNodeTypeToPHPStanType
 			}
 
 			return TypeCombinator::intersect(...$types);
+
 		} elseif (!$type instanceof Identifier) {
 			throw new ShouldNotHappenException(get_class($type));
 		}

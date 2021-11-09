@@ -64,6 +64,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 				TypehintHelper::decideTypeFromReflection($nativeParameters[$i]->getType()),
 				$parameter->passedByReference(),
 				$parameter->isVariadic(),
+				$parameter->getDefaultValue(),
 			);
 		}
 

@@ -15,6 +15,7 @@ class ParameterSignature
 		private Type $nativeType,
 		private PassedByReference $passedByReference,
 		private bool $variadic,
+		private ?Type $defaultValue,
 	)
 	{
 	}
@@ -47,6 +48,11 @@ class ParameterSignature
 	public function isVariadic(): bool
 	{
 		return $this->variadic;
+	}
+
+	public function getDefaultValue(): ?Type
+	{
+		return $this->defaultValue;
 	}
 
 }

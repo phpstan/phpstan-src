@@ -48,6 +48,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'fields',
@@ -56,6 +57,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'delimiter',
@@ -64,6 +66,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'enclosure',
@@ -72,6 +75,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'escape_char',
@@ -80,6 +84,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 					],
 					new IntegerType(),
@@ -99,6 +104,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 					],
 					new BooleanType(),
@@ -118,6 +124,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createReadsArgument(),
 							false,
+							null,
 						),
 					],
 					new BooleanType(),
@@ -140,6 +147,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'out',
@@ -148,6 +156,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createCreatesNewVariable(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'notext',
@@ -156,6 +165,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 					],
 					new BooleanType(),
@@ -199,6 +209,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'arr2',
@@ -207,6 +218,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'...',
@@ -215,6 +227,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							true,
+							null,
 						),
 					],
 					new ArrayType(new MixedType(), new MixedType()),
@@ -234,6 +247,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'event',
@@ -242,6 +256,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'...',
@@ -250,6 +265,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							true,
+							null,
 						),
 					],
 					new ResourceType(),
@@ -269,6 +285,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'args',
@@ -277,6 +294,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							true,
+							null,
 						),
 					],
 					new StringType(),
@@ -296,6 +314,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'args',
@@ -304,6 +323,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							true,
+							null,
 						),
 					],
 					new StringType(),
@@ -333,6 +353,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createNo(),
 							false,
+							null,
 						),
 					],
 					new StaticType($reflectionProvider->getClass(DateTime::class)),
@@ -352,6 +373,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createReadsArgument(),
 							false,
+							null,
 						),
 						new ParameterSignature(
 							'strings',
@@ -360,6 +382,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 							new MixedType(),
 							PassedByReference::createReadsArgument(),
 							true,
+							null,
 						),
 					],
 					new BooleanType(),

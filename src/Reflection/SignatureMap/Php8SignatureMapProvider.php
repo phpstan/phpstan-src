@@ -199,6 +199,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$nativeParameterType,
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
 				$nativeParameter->isVariadic(),
+				$nativeParameter->getDefaultValue(),
 			);
 		}
 
@@ -288,6 +289,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				throw new ShouldNotHappenException();
 			}
 			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, null);
+
+			$defaultType = null;
+			if ($param->default !== null) {
+				$defaultType = ParserNodeTypeToPHPStanType::resolveParameterDefaultType($param->default);
+			}
+
 			$parameters[] = new ParameterSignature(
 				$name->name,
 				$param->default !== null || $param->variadic,
@@ -295,6 +302,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 				$param->variadic,
+				$defaultType,
 			);
 
 			$variadic = $variadic || $param->variadic;

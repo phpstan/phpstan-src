@@ -155,6 +155,10 @@ class ClassStatementsGatherer
 			$this->gatherNodes($node->var, $scope);
 			return;
 		}
+		if ($node instanceof Expr\AssignRef) {
+			$this->gatherNodes($node->expr, $scope);
+			return;
+		}
 		if ($node instanceof \PhpParser\Node\Scalar\EncapsedStringPart) {
 			return;
 		}

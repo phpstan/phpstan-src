@@ -41,9 +41,6 @@ class MemoizingContainer implements Container
 			return $this->servicesByType[$className];
 		}
 
-		/**
-		 * @var T $service
-		 */
 		$service = $this->originalContainer->getByType($className);
 		$this->servicesByType[$className] = $service;
 

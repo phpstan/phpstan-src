@@ -78,12 +78,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				}
 
 				return var_export(
-					$truncatedValue,
+					str_replace(["\r", "\n"], ['\r', '\n'], $truncatedValue),
 					true
 				);
 			},
 			function (): string {
-				return var_export($this->value, true);
+				return var_export(
+					str_replace(["\r", "\n"], ['\r', '\n'], $this->value),
+					true
+				);
 			}
 		);
 	}

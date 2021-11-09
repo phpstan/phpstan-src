@@ -41,7 +41,7 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $className
+	 * @param class-string $className
 	 * @return string[]
 	 */
 	public function findServiceNamesByType(string $className): array

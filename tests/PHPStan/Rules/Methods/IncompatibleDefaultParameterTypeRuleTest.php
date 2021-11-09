@@ -45,4 +45,18 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2573.php'], []);
 	}
 
+	public function testNewInInitializers(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/new-in-initializers.php'], [
+			[
+				'Default value of the parameter #1 $i (stdClass) of method MethodNewInInitializers\Foo::doFoo() is incompatible with type int.',
+				11,
+			],
+		]);
+	}
+
 }

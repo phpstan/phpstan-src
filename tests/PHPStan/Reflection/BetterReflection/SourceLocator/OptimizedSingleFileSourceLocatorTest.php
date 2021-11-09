@@ -114,6 +114,10 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 				'const_with_dir_const',
 				str_replace('\\', '/', __DIR__ . '/data'),
 			],
+			[
+				'OPTIMIZED_SFSL_OBJECT_CONSTANT',
+				new \stdClass(),
+			],
 		];
 	}
 
@@ -130,7 +134,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$constantReflector = new ConstantReflector($locator, $classReflector);
 		$constant = $constantReflector->reflect($constantName);
 		$this->assertSame($constantName, $constant->getName());
-		$this->assertSame($value, $constant->getValue());
+		$this->assertEquals($value, $constant->getValue());
 	}
 
 	public function dataConstUnknown(): array

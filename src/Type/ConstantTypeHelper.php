@@ -39,6 +39,8 @@ class ConstantTypeHelper
 				$arrayBuilder->setOffsetValueType(self::getTypeFromValue($k), self::getTypeFromValue($v));
 			}
 			return $arrayBuilder->getArray();
+		} elseif (is_object($value)) {
+			return new ObjectType(get_class($value));
 		}
 
 		return new MixedType();

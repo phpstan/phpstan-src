@@ -33,11 +33,7 @@ class NetteContainer implements Container
 
 	public function getByType(string $className)
 	{
-		$service = $this->container->getByType($className);
-		if ($service === null) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Service for class %s not found.', $className));
-		}
-		return $service;
+		return $this->container->getByType($className);
 	}
 
 	/**

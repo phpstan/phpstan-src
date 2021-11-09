@@ -34,7 +34,7 @@ class ServiceLocatorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicM
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
 		if (count($methodCall->getArgs()) === 0) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->args, $methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->getArgs(), $methodReflection->getVariants())->getReturnType();
 		}
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		if ($argType instanceof ConstantStringType) {
@@ -44,7 +44,7 @@ class ServiceLocatorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicM
 		} elseif ($argType instanceof ClassStringType) {
 			$type = new ObjectWithoutClassType();
 		} else {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->args, $methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->getArgs(), $methodReflection->getVariants())->getReturnType();
 		}
 
 		if ($methodReflection->getName() === 'getByType' && count($methodCall->getArgs()) >= 2) {

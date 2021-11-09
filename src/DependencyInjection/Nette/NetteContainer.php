@@ -31,17 +31,8 @@ class NetteContainer implements Container
 		return $this->container->getService($serviceName);
 	}
 
-	/**
-	 * @phpstan-template T of object
-	 * @phpstan-param class-string<T> $className
-	 * @phpstan-return T
-	 * @return mixed
-	 */
 	public function getByType(string $className)
 	{
-		/**
-		 * @var T|null $service
-		 */
 		$service = $this->container->getByType($className);
 		if ($service === null) {
 			throw new \PHPStan\ShouldNotHappenException(sprintf('Service for class %s not found.', $className));

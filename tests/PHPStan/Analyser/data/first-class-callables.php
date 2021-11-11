@@ -17,7 +17,6 @@ class Foo
 		assertType('Closure(string): int<0, max>', strlen(...));
 		assertType('Closure(string): int<0, max>', 'strlen'(...));
 		assertType('Closure', 'nonexistent'(...));
-		assertType('*ERROR*', new self(...));
 	}
 
 	public static function doBar(): void

@@ -45,6 +45,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/overriding-property.php \
 		--exclude tests/PHPStan/Rules/Constants/data/overriding-final-constant.php \
 		--exclude tests/PHPStan/Rules/Properties/data/intersection-types.php \
+		--exclude tests/PHPStan/Rules/Classes/data/first-class-instantiation-callable.php \
 		src tests compiler/src
 
 cs:

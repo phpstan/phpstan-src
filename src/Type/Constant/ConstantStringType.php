@@ -57,7 +57,13 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function isClassString(): bool
 	{
-		return $this->isClassString;
+		if ($this->isClassString) {
+			return true;
+		}
+
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+
+		return $reflectionProvider->hasClass($this->value);
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -118,9 +124,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return TrinaryLogic::createNo();
 		}
 		if ($type instanceof ClassStringType) {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-
-			return $reflectionProvider->hasClass($this->getValue()) ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
+			return $this->isClassString() ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
 		}
 
 		if ($type instanceof self) {

@@ -67,19 +67,23 @@ use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FinallyExitPointsNode;
+use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InClosureNode;
 use PHPStan\Node\InFunctionNode;
+use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\MatchExpressionArm;
 use PHPStan\Node\MatchExpressionArmCondition;
 use PHPStan\Node\MatchExpressionNode;
+use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\ReturnStatement;
+use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -1683,6 +1687,22 @@ class NodeScopeResolver
 	 */
 	private function processExprNode(Expr $expr, MutatingScope $scope, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
+			if ($expr instanceof FuncCall) {
+				$newExpr = new FunctionCallableNode($expr->name, $expr->getAttributes());
+			} elseif ($expr instanceof MethodCall) {
+				$newExpr = new MethodCallableNode($expr->var, $expr->name, $expr->getAttributes());
+			} elseif ($expr instanceof StaticCall) {
+				$newExpr = new StaticMethodCallableNode($expr->class, $expr->name, $expr->getAttributes());
+			} elseif ($expr instanceof New_ && !$expr->class instanceof Class_) {
+				$newExpr = new InstantiationCallableNode($expr->class, $expr->getAttributes());
+			} else {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+
+			return $this->processExprNode($newExpr, $scope, $nodeCallback, $context);
+		}
+
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $context);
 
 		if ($expr instanceof Variable) {

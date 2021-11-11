@@ -111,6 +111,10 @@ class TypeSpecifier
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
+		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
+			return new SpecifiedTypes();
+		}
+
 		if ($expr instanceof Instanceof_) {
 			$exprNode = $expr->expr;
 			if ($expr->class instanceof Name) {

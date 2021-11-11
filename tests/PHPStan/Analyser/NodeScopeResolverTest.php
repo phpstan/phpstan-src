@@ -551,6 +551,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			}
 		}
 
+		if (PHP_VERSION_ID >= 80100 || self::$useStaticReflectionProvider) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/first-class-callables.php');
+		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/filesystem-functions.php');
 	}
 

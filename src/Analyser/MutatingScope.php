@@ -1474,6 +1474,65 @@ class MutatingScope implements Scope
 			return $constantString;
 		} elseif ($node instanceof DNumber) {
 			return new ConstantFloatType($node->value);
+		} elseif ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
+			if ($node instanceof FuncCall) {
+				if ($node->name instanceof Name) {
+					if ($this->reflectionProvider->hasFunction($node->name, $this)) {
+						return $this->createFirstClassCallable(
+							$this->reflectionProvider->getFunction($node->name, $this)->getVariants()
+						);
+					}
+
+					return new ObjectType(\Closure::class);
+				}
+
+				$callableType = $this->getType($node->name);
+				if (!$callableType->isCallable()->yes()) {
+					return new ObjectType(\Closure::class);
+				}
+
+				return $this->createFirstClassCallable(
+					$callableType->getCallableParametersAcceptors($this)
+				);
+			}
+
+			if ($node instanceof MethodCall) {
+				if (!$node->name instanceof Node\Identifier) {
+					return new ObjectType(\Closure::class);
+				}
+
+				$varType = $this->getType($node->var);
+				$method = $this->getMethodReflection($varType, $node->name->toString());
+				if ($method === null) {
+					return new ObjectType(\Closure::class);
+				}
+
+				return $this->createFirstClassCallable($method->getVariants());
+			}
+
+			if ($node instanceof Expr\StaticCall) {
+				if (!$node->class instanceof Name) {
+					return new ObjectType(\Closure::class);
+				}
+
+				$classType = $this->resolveTypeByName($node->class);
+				if (!$node->name instanceof Node\Identifier) {
+					return new ObjectType(\Closure::class);
+				}
+
+				$methodName = $node->name->toString();
+				if (!$classType->hasMethod($methodName)->yes()) {
+					return new ObjectType(\Closure::class);
+				}
+
+				return $this->createFirstClassCallable($classType->getMethod($methodName, $this)->getVariants());
+			}
+
+			if ($node instanceof New_) {
+				return new ErrorType();
+			}
+
+			throw new \PHPStan\ShouldNotHappenException();
 		} elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
 			$parameters = [];
 			$isVariadic = false;
@@ -2346,6 +2405,25 @@ class MutatingScope implements Scope
 		}
 
 		return $type;
+	}
+
+	/**
+	 * @param ParametersAcceptor[] $variants
+	 * @return Type
+	 */
+	private function createFirstClassCallable(array $variants): Type
+	{
+		$closureTypes = [];
+		foreach ($variants as $variant) {
+			$parameters = $variant->getParameters();
+			$closureTypes[] = new ClosureType(
+				$parameters,
+				$variant->getReturnType(),
+				$variant->isVariadic()
+			);
+		}
+
+		return TypeCombinator::union(...$closureTypes);
 	}
 
 	private function resolveConstantType(string $constantName, Type $constantType): Type

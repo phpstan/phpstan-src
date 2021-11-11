@@ -920,4 +920,14 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-user-func-array.php'], $errors);
 	}
 
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-callables.php'], []);
+	}
+
 }

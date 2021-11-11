@@ -457,4 +457,16 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4886.php'], []);
 	}
 
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-static-method-callable.php'], []);
+	}
+
 }

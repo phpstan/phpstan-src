@@ -2230,4 +2230,18 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5460.php'], []);
 	}
 
+	public function testFirstClassCallable(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-method-callable.php'], []);
+	}
+
 }

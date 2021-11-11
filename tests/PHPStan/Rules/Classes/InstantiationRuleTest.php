@@ -348,4 +348,14 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4681.php'], []);
 	}
 
+	public function testFirstClassCallable(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-instantiation-callable.php'], []);
+	}
+
 }

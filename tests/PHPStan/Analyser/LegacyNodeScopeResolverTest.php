@@ -8032,8 +8032,16 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayWithStaticMethod()',
 			],
 			[
+				'Callables\\Bar',
+				'$arrayWithStaticMethodActual()',
+			],
+			[
 				'mixed',
 				'$stringWithStaticMethod()',
+			],
+			[
+				'float',
+				'$stringWithStaticMethodActual()',
 			],
 			[
 				'float',

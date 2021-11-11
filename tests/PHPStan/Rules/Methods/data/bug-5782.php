@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug727;
+namespace Bug5782;
 
 class HelloWorld
 {

@@ -446,18 +446,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug727(): void
+	public function testBug5782(): void
 	{
-		// \PHPStan\Type\Constant\ConstantArrayType::findTypeAndMethodName fails
-		// to find class in reflection since it has not been discovered, which
-		// prevents discovering the method properly. Only fix was to run a
-		// require on the file.
-		// Always was ConstantArrayTypeAndMethod::createUnknown()
-		require __DIR__ . '/data/bug-727.php';
 		$this->checkThisOnly = false;
-		$this->analyse([__DIR__ . '/data/bug-727.php'], [
+		$this->analyse([__DIR__ . '/data/bug-5782.php'], [
 			[
-				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug727\\HelloWorld)>, \'sayHello2\'} given.',
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug5782\\HelloWorld)>, \'sayHello2\'} given.',
 				16,
 			],
 		]);

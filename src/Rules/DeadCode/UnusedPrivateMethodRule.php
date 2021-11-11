@@ -117,7 +117,7 @@ class UnusedPrivateMethodRule implements Rule
 				if (!$arrayType instanceof ConstantArrayType) {
 					continue;
 				}
-				$typeAndMethod = $arrayType->findTypeAndMethodName();
+				$typeAndMethod = $arrayType->findTypeAndMethodName($scope);
 				if ($typeAndMethod === null) {
 					continue;
 				}

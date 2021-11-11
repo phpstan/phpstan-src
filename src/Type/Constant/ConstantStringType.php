@@ -202,7 +202,17 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				if (!$scope->canCallMethod($method)) {
 					return [new InaccessibleMethod($method)];
 				}
-				if (!$method->isStatic()) {
+
+				if (!$scope->isInClass() && !$method->isStatic()) {
+					return [new InaccessibleMethod($method)];
+				}
+
+				if (
+					!$method->isStatic()
+					&& $scope->isInClass()
+					&& $scope->getClassReflection()->getName() !== $classReflection->getName()
+					&& !$scope->getClassReflection()->isSubclassOf($classReflection->getName())
+				) {
 					return [new InaccessibleMethod($method)];
 				}
 

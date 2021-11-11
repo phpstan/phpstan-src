@@ -316,7 +316,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isCallable(): TrinaryLogic
 	{
-		$typeAndMethod = $this->findTypeAndMethodName();
+		$typeAndMethod = $this->findTypeAndMethodName(new OutOfClassScope());
 		if ($typeAndMethod === null) {
 			return TrinaryLogic::createNo();
 		}
@@ -329,7 +329,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
-		$typeAndMethodName = $this->findTypeAndMethodName();
+		$typeAndMethodName = $this->findTypeAndMethodName($scope);
 		if ($typeAndMethodName === null) {
 			throw new ShouldNotHappenException();
 		}
@@ -348,7 +348,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $method->getVariants();
 	}
 
-	public function findTypeAndMethodName(): ?ConstantArrayTypeAndMethod
+	public function findTypeAndMethodName(?ClassMemberAccessAnswerer $scope = null): ?ConstantArrayTypeAndMethod
 	{
 		if (count($this->keyTypes) !== 2) {
 			return null;
@@ -390,12 +390,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
+			if ($scope === null) {
+				$scope = new OutOfClassScope();
+			}
 			if (
 				$isClassString
 				&& $has->yes()
-				&& !$type->getMethod($method->getValue(), new OutOfClassScope())->isStatic()
+				&& !$scope->isInClass()
+				&& !$type->getMethod($method->getValue(), $scope)->isStatic()
 			) {
-				return null;
+				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 
 			return ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);

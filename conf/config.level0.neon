@@ -26,6 +26,7 @@ rules:
 	- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
 	- PHPStan\Rules\Classes\InstantiationRule
+	- PHPStan\Rules\Classes\InstantiationCallableRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
@@ -163,6 +164,14 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+
+	-
+		class: PHPStan\Rules\Functions\FunctionCallableRule
+		arguments:
+			checkFunctionNameCase: %checkFunctionNameCase%
+			reportMaybes: %reportMaybes%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Properties\OverridingPropertyRule

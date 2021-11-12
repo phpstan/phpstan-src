@@ -75,11 +75,14 @@ class SarifErrorFormatter implements ErrorFormatter
 	 * Returns path to resource (file) scanned.
 	 *
 	 * @param string $path
-	 * @return false|string
+	 * @return string
 	 */
-	protected function pathToArtifactLocation(string $path)
+	protected function pathToArtifactLocation(string $path): string
 	{
 		$workingDir = getcwd();
+		if ($workingDir === false) {
+			$workingDir = '.';
+		}
 		if (substr($path, 0, strlen($workingDir)) === $workingDir) {
 			// relative path
 			return substr($path, strlen($workingDir) + 1);

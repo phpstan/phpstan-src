@@ -2,7 +2,6 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\ErrorFormatterTestCase;
 
 /**
@@ -107,7 +106,6 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 	 * @param int $numFileErrors
 	 * @param int $numGenericErrors
 	 * @param string $expected
-	 * @throws ShouldNotHappenException
 	 */
 	public function testPrettyFormatErrors(
 		string $message,

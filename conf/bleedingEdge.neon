@@ -2,3 +2,7 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		skipCheckGenericClasses: []
+
+services:
+	errorFormatter.sarif:
+		class: PHPStan\Command\ErrorFormatter\SarifErrorFormatter

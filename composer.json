@@ -6,6 +6,7 @@
 	],
 	"require": {
 		"php": "^7.4 || ^8.0",
+		"bartlett/sarif-php-sdk": "^1.0",
 		"clue/block-react": "^1.4",
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",

@@ -4,8 +4,56 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "893316fb27939a9490338d747bf26445",
+    "content-hash": "4af488efc8084bc6d7c9593f8bc7d9ae",
     "packages": [
+        {
+            "name": "bartlett/sarif-php-sdk",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/llaville/sarif-php-sdk.git",
+                "reference": "7f5324fa6bd2a257eacfbd30cb661f9f93abade5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/llaville/sarif-php-sdk/zipball/7f5324fa6bd2a257eacfbd30cb661f9f93abade5",
+                "reference": "7f5324fa6bd2a257eacfbd30cb661f9f93abade5",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-pcre": "*",
+                "ext-spl": "*",
+                "php": "^7.1|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bartlett\\Sarif\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Laurent Laville",
+                    "email": "pear@laurent-laville.org",
+                    "homepage": "https://github.com/llaville",
+                    "role": "Lead"
+                }
+            ],
+            "description": "PHP library to create and manipulate SARIF logs",
+            "keywords": [
+                "sarif"
+            ],
+            "support": {
+                "issues": "https://github.com/llaville/sarif-php-sdk/issues",
+                "source": "https://github.com/llaville/sarif-php-sdk"
+            },
+            "time": "2021-11-09T13:36:06+00:00"
+        },
         {
             "name": "clue/block-react",
             "version": "v1.4.0",

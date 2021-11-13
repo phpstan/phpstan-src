@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 
 final class NamedArgumentsHelper
 {
@@ -64,8 +65,13 @@ final class NamedArgumentsHelper
 			$argumentPositions[$parameter->getName()] = $i;
 
 			if ($parameter->isOptional()) {
+				$defaultValue = $parameter->getDefaultValue();
+				if ($defaultValue  === null) {
+					// a possible "null"-default value is indicated by NullType
+					throw new ShouldNotHappenException('A optional parameter must have a default value');
+				}
 				$reorderedArgs[$i] = new Arg(
-					$parameter->getDefaultValue(),
+					$defaultValue
 				);
 			}
 		}

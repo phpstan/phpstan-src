@@ -1459,13 +1459,26 @@ class MutatingScope implements Scope
 					continue;
 				}
 
+				$isNonEmpty = false;
+				$isLiteralString = true;
 				foreach ($parts as $partType) {
 					if ($partType->isNonEmptyString()->yes()) {
-						return new IntersectionType([
-							new StringType(),
-							new AccessoryNonEmptyStringType(),
-						]);
+						$isNonEmpty = true;
 					}
+					if (!$partType->isLiteralString()->yes()) {
+						$isLiteralString = false;
+					}
+				}
+
+				$accessoryTypes = [];
+				if ($isNonEmpty === true) {
+					$accessoryTypes[] = new AccessoryNonEmptyStringType();
+				}
+				if ($isLiteralString === true) {
+					$accessoryTypes[] = new AccessoryLiteralStringType();
+				}
+				if (count($accessoryTypes) > 0) {
+					return new IntersectionType([new StringType(), ...$accessoryTypes]);
 				}
 
 				return new StringType();

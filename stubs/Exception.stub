@@ -9,7 +9,7 @@ interface Throwable
 	public function getMessage();
 
 	/**
-	 * @return mixed
+	 * @return int|string
 	 * @throws void
 	 */
 	public function getCode();
@@ -60,7 +60,7 @@ class Exception implements Throwable
 	final public function getMessage(): string {}
 
 	/**
-	 * @return mixed
+	 * @return int|string
 	 * @throws void
 	 */
 	final public function getCode() {}
@@ -107,7 +107,7 @@ class Error implements Throwable
 	final public function getMessage(): string {}
 
 	/**
-	 * @return mixed
+	 * @return int|string
 	 * @throws void
 	 */
 	final public function getCode() {}

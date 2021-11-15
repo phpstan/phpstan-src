@@ -238,6 +238,14 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					786,
 				],
+				[
+					'Call to function array_is_list() with array<string, int> will always evaluate to false.',
+					857,
+				],
+				[
+					"Call to function array_is_list() with array{foo: 'bar', bar: 'baz'} will always evaluate to false.",
+					884,
+				],
 			]
 		);
 	}
@@ -337,6 +345,14 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				[
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
 					693,
+				],
+				[
+					'Call to function array_is_list() with array<string, int> will always evaluate to false.',
+					857,
+				],
+				[
+					"Call to function array_is_list() with array{foo: 'bar', bar: 'baz'} will always evaluate to false.",
+					884,
 				],
 			]
 		);

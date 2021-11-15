@@ -177,7 +177,7 @@ class ArrayType implements Type
 			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 		if ($keyType instanceof StrictMixedType) {
-			return new UnionType([new IntegerType(), new StringType()]);
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 		if ($keyType instanceof StringType) {
 			return new UnionType([new IntegerType, $keyType]);

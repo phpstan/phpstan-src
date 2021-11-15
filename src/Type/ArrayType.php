@@ -179,7 +179,7 @@ class ArrayType implements Type
 		if ($keyType instanceof StrictMixedType) {
 			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
-		if ($keyType instanceof StringType) {
+		if (!$keyType->isNumericString()->no()) {
 			return new UnionType([new IntegerType, $keyType]);
 		}
 

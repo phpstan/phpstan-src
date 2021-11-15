@@ -180,7 +180,7 @@ class ArrayType implements Type
 			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 		if (!$keyType->isNumericString()->no()) {
-			return TypeCombinator::union(new IntegerType, $keyType);
+			return TypeCombinator::union(new IntegerType(), $keyType);
 		}
 
 		return $keyType;

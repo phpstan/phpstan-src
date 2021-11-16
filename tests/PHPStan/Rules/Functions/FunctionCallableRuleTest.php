@@ -55,11 +55,11 @@ class FunctionCallableRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Trying to create callable from string but it might not be a callable.',
+				'Creating callable from string but it might not be a callable.',
 				19,
 			],
 			[
-				'Trying to create callable from 1 but it\'s not a callable.',
+				'Creating callable from 1 but it\'s not a callable.',
 				33,
 			],
 			[
@@ -67,7 +67,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 				38,
 			],
 			[
-				'Trying to create callable from 1|(callable(): mixed) but it might not be a callable.',
+				'Creating callable from 1|(callable(): mixed) but it might not be a callable.',
 				47,
 			],
 			[

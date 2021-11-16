@@ -107,14 +107,14 @@ class FunctionCallableRule implements \PHPStan\Rules\Rule
 		if ($isCallable->no()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Trying to create callable from %s but it\'s not a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Creating callable from %s but it\'s not a callable.', $type->describe(VerbosityLevel::value()))
 				)->build(),
 			];
 		}
 		if ($this->reportMaybes && $isCallable->maybe()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Trying to create callable from %s but it might not be a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Creating callable from %s but it might not be a callable.', $type->describe(VerbosityLevel::value()))
 				)->build(),
 			];
 		}

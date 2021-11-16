@@ -193,6 +193,10 @@ class PhpMethodReflection implements MethodReflection
 		$name = $this->reflection->getName();
 		$lowercaseName = strtolower($name);
 		if ($lowercaseName === $name) {
+			if (PHP_VERSION_ID >= 80000) {
+				return $name;
+			}
+
 			// fix for https://bugs.php.net/bug.php?id=74939
 			foreach ($this->getDeclaringClass()->getNativeReflection()->getTraitAliases() as $traitTarget) {
 				$correctName = $this->getMethodNameWithCorrectCase($name, $traitTarget);

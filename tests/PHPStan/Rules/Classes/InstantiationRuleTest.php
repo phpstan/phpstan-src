@@ -350,8 +350,8 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	public function testFirstClassCallable(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
+		if (PHP_VERSION_ID < 80100 || !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1 and static reflection.');
 		}
 
 		// handled by a different rule

@@ -238,6 +238,19 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					786,
 				],
+				[
+					'Call to function array_is_list() with array<string, int> will always evaluate to false.',
+					857,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
+				[
+					"Call to function array_is_list() with array{foo: 'bar', bar: 'baz'} will always evaluate to false.",
+					884,
+				],
+				[
+					'Call to function array_is_list() with array{0: \'foo\', foo: \'bar\', bar: \'baz\'} will always evaluate to false.',
+					888,
+				],
 			]
 		);
 	}
@@ -337,6 +350,19 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 				[
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
 					693,
+				],
+				[
+					'Call to function array_is_list() with array<string, int> will always evaluate to false.',
+					857,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
+				[
+					"Call to function array_is_list() with array{foo: 'bar', bar: 'baz'} will always evaluate to false.",
+					884,
+				],
+				[
+					'Call to function array_is_list() with array{0: \'foo\', foo: \'bar\', bar: \'baz\'} will always evaluate to false.',
+					888,
 				],
 			]
 		);

@@ -1465,9 +1465,10 @@ class MutatingScope implements Scope
 					if ($partType->isNonEmptyString()->yes()) {
 						$isNonEmpty = true;
 					}
-					if (!$partType->isLiteralString()->yes()) {
-						$isLiteralString = false;
+					if ($partType->isLiteralString()->yes()) {
+						continue;
 					}
+					$isLiteralString = false;
 				}
 
 				$accessoryTypes = [];

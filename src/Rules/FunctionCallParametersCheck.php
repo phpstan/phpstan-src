@@ -169,7 +169,7 @@ class FunctionCallParametersCheck
 			];
 		}
 
-		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments() && !$funcCall->getAttribute('isAttribute', false)) {
+		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->line($funcCall->getLine())->nonIgnorable()->build();
 		}
 

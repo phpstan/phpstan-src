@@ -1691,9 +1691,9 @@ class NodeScopeResolver
 			if ($expr instanceof FuncCall) {
 				$newExpr = new FunctionCallableNode($expr->name, $expr->getAttributes());
 			} elseif ($expr instanceof MethodCall) {
-				$newExpr = new MethodCallableNode($expr->var, $expr->name, $expr->getAttributes());
+				$newExpr = new MethodCallableNode($expr->var, $expr->name, $expr);
 			} elseif ($expr instanceof StaticCall) {
-				$newExpr = new StaticMethodCallableNode($expr->class, $expr->name, $expr->getAttributes());
+				$newExpr = new StaticMethodCallableNode($expr->class, $expr->name, $expr);
 			} elseif ($expr instanceof New_ && !$expr->class instanceof Class_) {
 				$newExpr = new InstantiationCallableNode($expr->class, $expr->getAttributes());
 			} else {

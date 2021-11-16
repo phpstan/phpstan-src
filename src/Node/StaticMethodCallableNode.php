@@ -13,18 +13,20 @@ class StaticMethodCallableNode extends Expr implements VirtualNode
 	private $class;
 
 	/** @var Identifier|Expr */
-	public $name;
+	private $name;
+
+	private Expr\StaticCall $originalNode;
 
 	/**
 	 * @param Name|Expr $class
 	 * @param Identifier|Expr $name
-	 * @param mixed[] $attributes
 	 */
-	public function __construct($class, $name, array $attributes = [])
+	public function __construct($class, $name, Expr\StaticCall $originalNode)
 	{
-		parent::__construct($attributes);
+		parent::__construct($originalNode->getAttributes());
 		$this->class = $class;
 		$this->name = $name;
+		$this->originalNode = $originalNode;
 	}
 
 	/**
@@ -41,6 +43,11 @@ class StaticMethodCallableNode extends Expr implements VirtualNode
 	public function getName()
 	{
 		return $this->name;
+	}
+
+	public function getOriginalNode(): Expr\StaticCall
+	{
+		return $this->originalNode;
 	}
 
 	public function getType(): string

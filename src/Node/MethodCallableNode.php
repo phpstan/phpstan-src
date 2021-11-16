@@ -11,17 +11,19 @@ class MethodCallableNode extends Expr implements VirtualNode
 	private Expr $var;
 
 	/** @var Identifier|Expr */
-	public $name;
+	private $name;
+
+	private Expr\MethodCall $originalNode;
 
 	/**
 	 * @param Expr|Identifier $name
-	 * @param mixed[] $attributes
 	 */
-	public function __construct(Expr $var, $name, array $attributes = [])
+	public function __construct(Expr $var, $name, Expr\MethodCall $originalNode)
 	{
-		parent::__construct($attributes);
+		parent::__construct($originalNode->getAttributes());
 		$this->var = $var;
 		$this->name = $name;
+		$this->originalNode = $originalNode;
 	}
 
 	public function getVar(): Expr
@@ -35,6 +37,11 @@ class MethodCallableNode extends Expr implements VirtualNode
 	public function getName()
 	{
 		return $this->name;
+	}
+
+	public function getOriginalNode(): Expr\MethodCall
+	{
+		return $this->originalNode;
 	}
 
 	public function getType(): string

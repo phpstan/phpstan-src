@@ -140,6 +140,10 @@ class ClassStatementsGatherer
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
 			return;
 		}
+		if ($node instanceof MethodCallableNode || $node instanceof StaticMethodCallableNode) {
+			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node->getOriginalNode(), $scope);
+			return;
+		}
 		if ($node instanceof Array_ && count($node->items) === 2) {
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
 			return;

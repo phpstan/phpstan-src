@@ -31,3 +31,14 @@ class Baz
         \func_get_args();
     }
 }
+class InlineVars
+{
+    public function doFoo()
+    {
+        /** @var Test */
+        /** @var Test2 */
+        /** @var Test3 */
+        yield;
+        \func_get_args();
+    }
+}

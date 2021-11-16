@@ -54,3 +54,25 @@ class Baz
 	}
 
 }
+
+class InlineVars
+{
+	public function doFoo()
+	{
+		/** @var Test */
+		$foo = doFoo();
+
+		/** @var Test2 */
+		$foo = doFoo();
+
+		/** @var Test3 */
+		$foo = doFoo();
+
+		if (rand(0, 1)) {
+			yield;
+		}
+		if (rand(0, 1)) {
+			func_get_args();
+		}
+	}
+}

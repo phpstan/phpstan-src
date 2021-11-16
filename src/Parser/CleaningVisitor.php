@@ -20,17 +20,17 @@ class CleaningVisitor extends NodeVisitorAbstract
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Stmt\Function_) {
-			$node->stmts = $this->keepVariadicsAndYields($node->stmts);
+			$node->stmts = $this->keepVariadicsAndYieldsAndInlineVars($node->stmts);
 			return $node;
 		}
 
 		if ($node instanceof Node\Stmt\ClassMethod && $node->stmts !== null) {
-			$node->stmts = $this->keepVariadicsAndYields($node->stmts);
+			$node->stmts = $this->keepVariadicsAndYieldsAndInlineVars($node->stmts);
 			return $node;
 		}
 
 		if ($node instanceof Node\Expr\Closure) {
-			$node->stmts = $this->keepVariadicsAndYields($node->stmts);
+			$node->stmts = $this->keepVariadicsAndYieldsAndInlineVars($node->stmts);
 			return $node;
 		}
 
@@ -41,7 +41,7 @@ class CleaningVisitor extends NodeVisitorAbstract
 	 * @param Node\Stmt[] $stmts
 	 * @return Node\Stmt[]
 	 */
-	private function keepVariadicsAndYields(array $stmts): array
+	private function keepVariadicsAndYieldsAndInlineVars(array $stmts): array
 	{
 		$results = $this->nodeFinder->find($stmts, static function (Node $node): bool {
 			if ($node instanceof Node\Expr\YieldFrom || $node instanceof Node\Expr\Yield_) {
@@ -49,6 +49,9 @@ class CleaningVisitor extends NodeVisitorAbstract
 			}
 			if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
 				return in_array($node->name->toLowerString(), ParametersAcceptor::VARIADIC_FUNCTIONS, true);
+			}
+			if ($node instanceof Node\Stmt && $node->getDocComment() !== null) {
+				return strpos($node->getDocComment()->getText(), '@var') !== false;
 			}
 
 			return false;
@@ -59,11 +62,12 @@ class CleaningVisitor extends NodeVisitorAbstract
 				$newStmts[] = new Node\Stmt\Expression($result);
 				continue;
 			}
-			if (!$result instanceof Node\Expr\FuncCall) {
+			if ($result instanceof Node\Expr\FuncCall && $result->name instanceof Node\Name) {
+				$newStmts[] = new Node\Stmt\Expression(new Node\Expr\FuncCall(new Node\Name\FullyQualified($result->name), [], $result->getAttributes()));
 				continue;
 			}
 
-			$newStmts[] = new Node\Stmt\Expression(new Node\Expr\FuncCall(new Node\Name\FullyQualified('func_get_args')));
+			$newStmts[] = new Node\Stmt\Nop($result->getAttributes());
 		}
 
 		return $newStmts;

@@ -93,11 +93,14 @@ class AttributesCheck
 
 				$attributeClassName = SprintfHelper::escapeFormatString($attributeClass->getDisplayName());
 
+				$nodeAttributes = $attribute->getAttributes();
+				$nodeAttributes['isAttribute'] = true;
+
 				$parameterErrors = $this->functionCallParametersCheck->check(
 					ParametersAcceptorSelector::selectSingle($attributeConstructor->getVariants()),
 					$scope,
 					$attributeConstructor->getDeclaringClass()->isBuiltin(),
-					new New_($attribute->name, $attribute->args, $attribute->getAttributes()),
+					new New_($attribute->name, $attribute->args, $nodeAttributes),
 					[
 						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, %d required.',
 						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, %d required.',

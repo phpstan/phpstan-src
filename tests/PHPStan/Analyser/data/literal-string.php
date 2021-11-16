@@ -15,6 +15,8 @@ class Foo
 		assertType('literal-string', '' . $literalString);
 		assertType('literal-string&non-empty-string', $literalString . 'foo');
 		assertType('literal-string&non-empty-string', 'foo' . $literalString);
+		assertType('literal-string&non-empty-string', "foo ${literalString}");
+		assertType('literal-string&non-empty-string', "${literalString} foo");
 		assertType('string', $string . '');
 		assertType('string', '' . $string);
 		assertType('string', $literalString . $string);

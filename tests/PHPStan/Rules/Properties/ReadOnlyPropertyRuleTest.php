@@ -46,6 +46,10 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 						'Readonly property cannot have a default value.',
 						10,
 					],
+					[
+						'Readonly properties are supported only on PHP 8.1 and later.',
+						16,
+					],
 				],
 			],
 			[

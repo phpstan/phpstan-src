@@ -59,4 +59,22 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDefaultValueForPromotedProperty(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->analyse([__DIR__ . '/data/default-value-for-promoted-property.php'], [
+			[
+				'Default value of the parameter #1 $foo (string) of method DefaultValueForPromotedProperty\Foo::__construct() is incompatible with type int.',
+				9,
+			],
+			[
+				'Default value of the parameter #2 $foo (string) of method DefaultValueForPromotedProperty\Foo::__construct() is incompatible with type int.',
+				10,
+			],
+		]);
+	}
+
 }

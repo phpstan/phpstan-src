@@ -47,22 +47,4 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\Rul
 		]);
 	}
 
-	public function testDefaultValueForPromotedProperty(): void
-	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
-		$this->analyse([__DIR__ . '/data/default-value-for-promoted-property.php'], [
-			[
-				'Property DefaultValueForPromotedProperty\Foo::$foo (int) does not accept default value of type string.',
-				9,
-			],
-			[
-				'Property DefaultValueForPromotedProperty\Foo::$foo (int) does not accept default value of type string.',
-				10,
-			],
-		]);
-	}
-
 }

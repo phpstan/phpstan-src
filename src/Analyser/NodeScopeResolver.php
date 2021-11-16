@@ -521,7 +521,7 @@ class NodeScopeResolver
 						$param->var->name,
 						$param->flags,
 						$param->type,
-						$param->default,
+						null,
 						$phpDoc,
 						true,
 						$param

@@ -25,3 +25,41 @@ class Foo
 	}
 
 }
+
+class GenericFoo
+{
+
+	/**
+	 * @template T
+	 * @param T $a
+	 * @return T
+	 */
+	public function doFoo($a)
+	{
+		return $a;
+	}
+
+	public function doBar()
+	{
+		$f = $this->doFoo(...);
+		assertType('int', $f(1));
+		assertType('string', $f('foo'));
+
+		$g = \Closure::fromCallable([$this, 'doFoo']);
+		assertType('int', $g(1));
+		assertType('string', $g('foo'));
+	}
+
+	public function doBaz()
+	{
+		$ref = new \ReflectionClass(\stdClass::class);
+		assertType('class-string<stdClass>', $ref->getName());
+
+		$f = $ref->getName(...);
+		assertType('class-string<stdClass>', $f());
+
+		$g = \Closure::fromCallable([$ref, 'getName']);
+		assertType('class-string<stdClass>', $g());
+	}
+
+}

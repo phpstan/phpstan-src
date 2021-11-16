@@ -45,7 +45,9 @@ class ClosureFromCallableDynamicReturnTypeExtension implements \PHPStan\Type\Dyn
 			$closureTypes[] = new ClosureType(
 				$parameters,
 				$variant->getReturnType(),
-				$variant->isVariadic()
+				$variant->isVariadic(),
+				$variant->getTemplateTypeMap(),
+				$variant->getResolvedTemplateTypeMap()
 			);
 		}
 

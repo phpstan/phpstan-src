@@ -40,6 +40,10 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	private bool $variadic;
 
+	private TemplateTypeMap $templateTypeMap;
+
+	private TemplateTypeMap $resolvedTemplateTypeMap;
+
 	/**
 	 * @api
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
@@ -49,13 +53,17 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function __construct(
 		array $parameters,
 		Type $returnType,
-		bool $variadic
+		bool $variadic,
+		?TemplateTypeMap $templateTypeMap = null,
+		?TemplateTypeMap $resolvedTemplateTypeMap = null
 	)
 	{
 		$this->objectType = new ObjectType(\Closure::class);
 		$this->parameters = $parameters;
 		$this->returnType = $returnType;
 		$this->variadic = $variadic;
+		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
+		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 	}
 
 	public function getClassName(): string
@@ -308,12 +316,12 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
-		return TemplateTypeMap::createEmpty();
+		return $this->templateTypeMap;
 	}
 
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap
 	{
-		return TemplateTypeMap::createEmpty();
+		return $this->resolvedTemplateTypeMap;
 	}
 
 	/**
@@ -392,7 +400,9 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 				);
 			}, $this->getParameters()),
 			$cb($this->getReturnType()),
-			$this->isVariadic()
+			$this->isVariadic(),
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap
 		);
 	}
 
@@ -425,7 +435,9 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return new self(
 			$properties['parameters'],
 			$properties['returnType'],
-			$properties['variadic']
+			$properties['variadic'],
+			$properties['templateTypeMap'],
+			$properties['resolvedTemplateTypeMap']
 		);
 	}
 

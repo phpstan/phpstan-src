@@ -73,6 +73,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 			[
 				'Creating callable from an unknown class FunctionCallable\Nonexistent.',
 				52,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

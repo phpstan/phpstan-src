@@ -803,6 +803,12 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
+		class: PHPStan\Rules\Methods\MethodCallCheck
+		arguments:
+			checkFunctionNameCase: %checkFunctionNameCase%
+			reportMagicMethods: %reportMagicMethods%
+
+	-
 		# checked as part of OverridingMethodRule
 		class: PHPStan\Rules\Methods\MethodSignatureRule
 		arguments:

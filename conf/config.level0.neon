@@ -90,9 +90,6 @@ services:
 		class: PHPStan\Rules\Methods\CallMethodsRule
 		tags:
 			- phpstan.rules.rule
-		arguments:
-			checkFunctionNameCase: %checkFunctionNameCase%
-			reportMagicMethods: %reportMagicMethods%
 
 	-
 		class: PHPStan\Rules\Methods\CallStaticMethodsRule
@@ -108,6 +105,12 @@ services:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Methods\MethodCallCheck
+		arguments:
+			checkFunctionNameCase: %checkFunctionNameCase%
+			reportMagicMethods: %reportMagicMethods%
 
 	-
 		class: PHPStan\Rules\Methods\OverridingMethodRule

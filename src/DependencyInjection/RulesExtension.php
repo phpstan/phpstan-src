@@ -22,7 +22,7 @@ class RulesExtension extends \Nette\DI\CompilerExtension
 		foreach ($config as $key => $rule) {
 			$builder->addDefinition($this->prefix((string) $key))
 				->setFactory($rule)
-				->setAutowired(false)
+				->setAutowired($rule)
 				->addTag(RegistryFactory::RULE_TAG);
 		}
 	}

@@ -67,60 +67,75 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
+
 		$this->analyse([__DIR__ . '/data/unused-private-property.php'], [
 			[
 				'Property UnusedPrivateProperty\Foo::$bar is never read, only written.',
 				10,
+				$tip,
 			],
 			[
 				'Property UnusedPrivateProperty\Foo::$baz is unused.',
 				12,
+				$tip,
 			],
 			[
 				'Property UnusedPrivateProperty\Foo::$lorem is never written, only read.',
 				14,
+				$tip,
 			],
 			[
 				'Property UnusedPrivateProperty\Bar::$baz is never written, only read.',
 				57,
+				$tip,
 			],
 			[
 				'Static property UnusedPrivateProperty\Baz::$bar is never read, only written.',
 				86,
+				$tip,
 			],
 			[
 				'Static property UnusedPrivateProperty\Baz::$baz is unused.',
 				88,
+				$tip,
 			],
 			[
 				'Static property UnusedPrivateProperty\Baz::$lorem is never written, only read.',
 				90,
+				$tip,
 			],
 			[
 				'Property UnusedPrivateProperty\Lorem::$baz is never read, only written.',
 				117,
+				$tip,
 			],
 			[
 				'Property class@anonymous/tests/PHPStan/Rules/DeadCode/data/unused-private-property.php:152::$bar is unused.',
 				153,
+				$tip,
 			],
 			[
 				'Property UnusedPrivateProperty\DolorWithAnonymous::$foo is unused.',
 				148,
+				$tip,
 			],
 		]);
 		$this->analyse([__DIR__ . '/data/TestExtension.php'], [
 			[
 				'Property UnusedPrivateProperty\TestExtension::$unused is unused.',
 				8,
+				$tip,
 			],
 			[
 				'Property UnusedPrivateProperty\TestExtension::$read is never written, only read.',
 				10,
+				$tip,
 			],
 			[
 				'Property UnusedPrivateProperty\TestExtension::$written is never read, only written.',
 				12,
+				$tip,
 			],
 		]);
 	}
@@ -129,14 +144,17 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	{
 		$this->alwaysWrittenTags = ['@ORM\Column'];
 		$this->alwaysReadTags = ['@get'];
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
 		$this->analyse([__DIR__ . '/data/private-property-with-tags.php'], [
 			[
 				'Property PrivatePropertyWithTags\Foo::$title is never read, only written.',
 				13,
+				$tip,
 			],
 			[
 				'Property PrivatePropertyWithTags\Foo::$text is never written, only read.',
 				18,
+				$tip,
 			],
 		]);
 	}
@@ -155,10 +173,12 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		}
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
 		$this->analyse([__DIR__ . '/data/bug-3636.php'], [
 			[
 				'Property Bug3636\Bar::$date is never written, only read.',
 				22,
+				$tip,
 			],
 		]);
 	}
@@ -171,10 +191,12 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = ['@get'];
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
 		$this->analyse([__DIR__ . '/data/unused-private-promoted-property.php'], [
 			[
 				'Property UnusedPrivatePromotedProperty\Foo::$lorem is never read, only written.',
 				12,
+				$tip,
 			],
 		]);
 	}

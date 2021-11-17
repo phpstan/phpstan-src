@@ -85,6 +85,7 @@ class UnusedPrivateConstantRule implements Rule
 					'classStartLine' => $node->getClass()->getStartLine(),
 					'constantName' => $constantName,
 				])
+				->tip(sprintf('See: %s', 'https://phpstan.org/developing-extensions/always-used-class-constants'))
 				->build();
 		}
 

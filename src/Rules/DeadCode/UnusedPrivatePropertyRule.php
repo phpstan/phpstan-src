@@ -185,6 +185,7 @@ class UnusedPrivatePropertyRule implements Rule
 			} else {
 				$propertyName = sprintf('Property %s::$%s', $scope->getClassReflection()->getDisplayName(), $name);
 			}
+			$tip = sprintf('See: %s', 'https://phpstan.org/developing-extensions/always-read-written-properties');
 			if (!$data['read']) {
 				if (!$data['written']) {
 					$errors[] = RuleErrorBuilder::message(sprintf('%s is unused.', $propertyName))
@@ -196,12 +197,13 @@ class UnusedPrivatePropertyRule implements Rule
 							'classStartLine' => $node->getClass()->getStartLine(),
 							'propertyName' => $name,
 						])
+						->tip($tip)
 						->build();
 				} else {
-					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))->line($propertyNode->getStartLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))->line($propertyNode->getStartLine())->tip($tip)->build();
 				}
 			} elseif (!$data['written'] && (!array_key_exists($name, $uninitializedProperties) || !$this->checkUninitializedProperties)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))->line($propertyNode->getStartLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))->line($propertyNode->getStartLine())->tip($tip)->build();
 			}
 		}
 

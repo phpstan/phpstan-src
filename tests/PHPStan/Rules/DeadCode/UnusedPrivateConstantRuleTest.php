@@ -38,10 +38,12 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 			[
 				'Constant UnusedPrivateConstant\Foo::BAR_CONST is unused.',
 				10,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
 			],
 			[
 				'Constant UnusedPrivateConstant\TestExtension::UNUSED is unused.',
 				23,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
 			],
 		]);
 	}

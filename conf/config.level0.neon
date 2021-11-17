@@ -48,7 +48,9 @@ rules:
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
 	- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
+	- PHPStan\Rules\Methods\CallMethodsRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+	- PHPStan\Rules\Methods\MethodCallableRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Methods\MethodAttributesRule
 	- PHPStan\Rules\Operators\InvalidAssignVarRule
@@ -85,11 +87,6 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
-
-	-
-		class: PHPStan\Rules\Methods\CallMethodsRule
-		tags:
-			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Methods\CallStaticMethodsRule

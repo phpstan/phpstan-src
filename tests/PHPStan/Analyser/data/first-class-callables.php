@@ -2,7 +2,9 @@
 
 namespace FirstClassCallables;
 
+use PHPStan\TrinaryLogic;
 use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertVariableCertainty;
 
 class Foo
 {
@@ -60,6 +62,55 @@ class GenericFoo
 
 		$g = \Closure::fromCallable([$ref, 'getName']);
 		assertType('class-string<stdClass>', $g());
+	}
+
+}
+
+class NeverCallable
+{
+
+	public function doFoo()
+	{
+		$n = function (): never {
+			throw new \Exception();
+		};
+
+		if (rand(0, 1)) {
+			$n();
+		} else {
+			$foo = 1;
+		}
+
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+	}
+
+	public function doBar()
+	{
+		$n = function (): never {
+			throw new \Exception();
+		};
+
+		if (rand(0, 1)) {
+			$n(...);
+		} else {
+			$foo = 1;
+		}
+
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	}
+
+	/**
+	 * @param callable(): never $n
+	 */
+	public function doBaz(callable $n): void
+	{
+		if (rand(0, 1)) {
+			$n();
+		} else {
+			$foo = 1;
+		}
+
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 	}
 
 }

@@ -438,6 +438,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5259(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-5259.php'], []);
+	}
+
 	public function testBug5782(): void
 	{
 		if (PHP_VERSION_ID >= 80000) {

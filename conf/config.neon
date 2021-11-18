@@ -809,6 +809,12 @@ services:
 			reportMagicMethods: %reportMagicMethods%
 
 	-
+		class: PHPStan\Rules\Methods\StaticMethodCallCheck
+		arguments:
+			checkFunctionNameCase: %checkFunctionNameCase%
+			reportMagicMethods: %reportMagicMethods%
+
+	-
 		# checked as part of OverridingMethodRule
 		class: PHPStan\Rules\Methods\MethodSignatureRule
 		arguments:

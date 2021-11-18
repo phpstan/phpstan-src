@@ -49,6 +49,7 @@ rules:
 	- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\CallMethodsRule
+	- PHPStan\Rules\Methods\CallStaticMethodsRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Methods\MethodCallableRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
@@ -87,14 +88,6 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
-
-	-
-		class: PHPStan\Rules\Methods\CallStaticMethodsRule
-		tags:
-			- phpstan.rules.rule
-		arguments:
-			checkFunctionNameCase: %checkFunctionNameCase%
-			reportMagicMethods: %reportMagicMethods%
 
 	-
 		class: PHPStan\Rules\Constants\OverridingConstantRule

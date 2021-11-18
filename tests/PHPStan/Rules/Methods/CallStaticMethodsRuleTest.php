@@ -20,15 +20,11 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		$broker = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($broker, true, $this->checkThisOnly, true, false);
+		$reflectionProvider = $this->createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, false);
 		return new CallStaticMethodsRule(
-			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
-			$ruleLevelHelper,
-			new ClassCaseSensitivityCheck($broker, true),
-			true,
-			true
+			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true)
 		);
 	}
 

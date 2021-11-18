@@ -36,6 +36,7 @@ class MethodCallCheck
 		$this->checkFunctionNameCase = $checkFunctionNameCase;
 		$this->reportMagicMethods = $reportMagicMethods;
 	}
+
 	/**
 	 * @return array{RuleError[], MethodReflection|null}
 	 */

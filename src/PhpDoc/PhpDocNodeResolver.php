@@ -97,37 +97,43 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach ($phpDocNode->getPropertyTagValues() as $tagValue) {
-			$propertyName = substr($tagValue->propertyName, 1);
-			$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+		foreach (['@property', '@phpstan-property'] as $tagName) {
+			foreach ($phpDocNode->getPropertyTagValues($tagName) as $tagValue) {
+				$propertyName = substr($tagValue->propertyName, 1);
+				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-			$resolved[$propertyName] = new PropertyTag(
-				$propertyType,
-				true,
-				true
-			);
+				$resolved[$propertyName] = new PropertyTag(
+					$propertyType,
+					true,
+					true
+				);
+			}
 		}
 
-		foreach ($phpDocNode->getPropertyReadTagValues() as $tagValue) {
-			$propertyName = substr($tagValue->propertyName, 1);
-			$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+		foreach (['@property-read', '@phpstan-property-read'] as $tagName) {
+			foreach ($phpDocNode->getPropertyReadTagValues($tagName) as $tagValue) {
+				$propertyName = substr($tagValue->propertyName, 1);
+				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-			$resolved[$propertyName] = new PropertyTag(
-				$propertyType,
-				true,
-				false
-			);
+				$resolved[$propertyName] = new PropertyTag(
+					$propertyType,
+					true,
+					false
+				);
+			}
 		}
 
-		foreach ($phpDocNode->getPropertyWriteTagValues() as $tagValue) {
-			$propertyName = substr($tagValue->propertyName, 1);
-			$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+		foreach (['@property-write', '@phpstan-property-write'] as $tagName) {
+			foreach ($phpDocNode->getPropertyWriteTagValues($tagName) as $tagValue) {
+				$propertyName = substr($tagValue->propertyName, 1);
+				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-			$resolved[$propertyName] = new PropertyTag(
-				$propertyType,
-				false,
-				true
-			);
+				$resolved[$propertyName] = new PropertyTag(
+					$propertyType,
+					false,
+					true
+				);
+			}
 		}
 
 		return $resolved;

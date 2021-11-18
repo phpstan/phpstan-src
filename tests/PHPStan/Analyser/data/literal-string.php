@@ -51,4 +51,24 @@ class Foo
 		assertType('string', $string);
 	}
 
+	/**
+	 * @param string $s
+	 * @param literal-string $ls
+	 * @param numeric-string $ns
+	 * @param int $i
+	 * @param float $f
+	 * @param bool $b
+	 */
+	public function scalarConcat($s, $ls, $ns, $i, $f, $b): void
+	{
+		$literal = "hello";
+
+		assertType("non-empty-string", $literal . $s);
+		assertType("literal-string&non-empty-string", $literal . $ls);
+		assertType("literal-string&non-empty-string", $literal . $ns);
+
+		assertType("literal-string&non-empty-string", $literal . $i);
+		assertType("literal-string&non-empty-string", $literal . $f);
+		assertType("literal-string&non-empty-string", $literal . $b);
+	}
 }

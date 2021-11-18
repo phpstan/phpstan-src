@@ -818,4 +818,42 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3283.php'], []);
 	}
 
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/first-class-callables.php'], [
+			[
+				'Undefined variable: $foo',
+				10,
+			],
+			[
+				'Undefined variable: $foo',
+				11,
+			],
+			[
+				'Undefined variable: $foo',
+				29,
+			],
+			[
+				'Undefined variable: $foo',
+				30,
+			],
+			[
+				'Undefined variable: $foo',
+				48,
+			],
+			[
+				'Undefined variable: $foo',
+				49,
+			],
+		]);
+	}
+
 }

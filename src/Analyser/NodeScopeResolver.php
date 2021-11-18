@@ -2656,6 +2656,50 @@ class NodeScopeResolver
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$throwPoints = $result->getThrowPoints();
 			$throwPoints[] = ThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false);
+		} elseif ($expr instanceof FunctionCallableNode) {
+			$throwPoints = [];
+			$hasYield = false;
+			if ($expr->getName() instanceof Expr) {
+				$result = $this->processExprNode($expr->getName(), $scope, $nodeCallback, ExpressionContext::createDeep());
+				$scope = $result->getScope();
+				$hasYield = $result->hasYield();
+				$throwPoints = $result->getThrowPoints();
+			}
+		} elseif ($expr instanceof MethodCallableNode) {
+			$result = $this->processExprNode($expr->getVar(), $scope, $nodeCallback, ExpressionContext::createDeep());
+			$scope = $result->getScope();
+			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
+			if ($expr->getName() instanceof Expr) {
+				$nameResult = $this->processExprNode($expr->getVar(), $scope, $nodeCallback, ExpressionContext::createDeep());
+				$scope = $nameResult->getScope();
+				$hasYield = $hasYield || $nameResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
+			}
+		} elseif ($expr instanceof StaticMethodCallableNode) {
+			$throwPoints = [];
+			$hasYield = false;
+			if ($expr->getClass() instanceof Expr) {
+				$classResult = $this->processExprNode($expr->getClass(), $scope, $nodeCallback, ExpressionContext::createDeep());
+				$scope = $classResult->getScope();
+				$hasYield = $classResult->hasYield();
+				$throwPoints = $classResult->getThrowPoints();
+			}
+			if ($expr->getName() instanceof Expr) {
+				$nameResult = $this->processExprNode($expr->getName(), $scope, $nodeCallback, ExpressionContext::createDeep());
+				$scope = $nameResult->getScope();
+				$hasYield = $hasYield || $nameResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
+			}
+		} elseif ($expr instanceof InstantiationCallableNode) {
+			$throwPoints = [];
+			$hasYield = false;
+			if ($expr->getClass() instanceof Expr) {
+				$classResult = $this->processExprNode($expr->getClass(), $scope, $nodeCallback, ExpressionContext::createDeep());
+				$scope = $classResult->getScope();
+				$hasYield = $classResult->hasYield();
+				$throwPoints = $classResult->getThrowPoints();
+			}
 		} else {
 			$hasYield = false;
 			$throwPoints = [];

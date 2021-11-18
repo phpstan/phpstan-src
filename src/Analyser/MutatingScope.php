@@ -1040,6 +1040,7 @@ class MutatingScope implements Scope
 
 			$leftStringType = $this->getType($left)->toString();
 			$rightStringType = $this->getType($right)->toString();
+
 			if (TypeCombinator::union(
 				$leftStringType,
 				$rightStringType
@@ -1059,12 +1060,27 @@ class MutatingScope implements Scope
 				return $leftStringType->append($rightStringType);
 			}
 
-			$accessoryTypes = [];
+			$isLiteralString = false;
+			$isNonEmpty = false;
 			if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
-				$accessoryTypes[] = new AccessoryNonEmptyStringType();
+				$isNonEmpty = true;
+			}
+			if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
+				$isLiteralString = true;
 			}
 
-			if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
+			if ($leftStringType->isLiteralString()->yes() && $rightStringType->isNumericString()->yes()) {
+				$isLiteralString = true;
+			}
+			if ($rightStringType->isLiteralString()->yes() && $leftStringType->isNumericString()->yes()) {
+				$isLiteralString = true;
+			}
+
+			$accessoryTypes = [];
+			if ($isNonEmpty) {
+				$accessoryTypes[] = new AccessoryNonEmptyStringType();
+			}
+			if ($isLiteralString) {
 				$accessoryTypes[] = new AccessoryLiteralStringType();
 			}
 

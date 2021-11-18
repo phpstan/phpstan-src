@@ -91,10 +91,12 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 			return [];
 		}
 
-		if ($method->hasSideEffects()->no()) {
-			$throwsType = $method->getThrowType();
-			if ($throwsType !== null && !$throwsType instanceof VoidType) {
-				return [];
+		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+			if (!$node->expr->isFirstClassCallable()) {
+				$throwsType = $method->getThrowType();
+				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+					return [];
+				}
 			}
 
 			$methodResult = $scope->getType($staticCall);

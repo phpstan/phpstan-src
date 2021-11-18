@@ -44,10 +44,12 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
-		if ($function->hasSideEffects()->no()) {
-			$throwsType = $function->getThrowType();
-			if ($throwsType !== null && !$throwsType instanceof VoidType) {
-				return [];
+		if ($function->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+			if (!$node->expr->isFirstClassCallable()) {
+				$throwsType = $function->getThrowType();
+				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+					return [];
+				}
 			}
 
 			$functionResult = $scope->getType($funcCall);

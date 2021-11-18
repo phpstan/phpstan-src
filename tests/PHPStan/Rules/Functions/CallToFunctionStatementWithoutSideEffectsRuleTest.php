@@ -55,4 +55,30 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4455.php'], []);
 	}
 
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/first-class-callable-function-without-side-effect.php'], [
+			[
+				'Call to function mkdir() on a separate line has no effect.',
+				12,
+			],
+			[
+				'Call to function strlen() on a separate line has no effect.',
+				24,
+			],
+			[
+				'Call to function FirstClassCallableFunctionWithoutSideEffect\foo() on a separate line has no effect.',
+				36,
+			],
+			[
+				'Call to function FirstClassCallableFunctionWithoutSideEffect\bar() on a separate line has no effect.',
+				49,
+			],
+		]);
+	}
+
 }

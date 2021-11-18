@@ -2232,7 +2232,6 @@ return [
 'each' => ['array', '&rw_arr'=>'array'],
 'easter_date' => ['int', 'year='=>'int'],
 'easter_days' => ['int', 'year='=>'int', 'method='=>'int'],
-'echo' => ['void', 'arg1'=>'string', '...args='=>'string'],
 'eio_busy' => ['resource', 'delay'=>'int', 'pri='=>'int', 'callback='=>'callable', 'data='=>'mixed'],
 'eio_cancel' => ['void', 'req'=>'resource'],
 'eio_chmod' => ['resource', 'path'=>'string', 'mode'=>'int', 'pri='=>'int', 'callback='=>'callable', 'data='=>'mixed'],

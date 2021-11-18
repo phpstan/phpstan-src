@@ -433,7 +433,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
 			[
 				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug1971\\HelloWorld)>, \'sayHello2\'} given.',
-				18,
+				16,
 			],
 		]);
 	}
@@ -446,9 +446,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug5782(): void
 	{
-		if (PHP_VERSION_ID >= 80000) {
-			$this->markTestSkipped('Fatal error in PHP 8.0');
-		}
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-5782.php'], [
 			[
@@ -457,7 +454,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{\'Bug5782\\\HelloWorld\', \'sayGoodbye\'} given.',
-				23,
+				26,
 			],
 		]);
 	}

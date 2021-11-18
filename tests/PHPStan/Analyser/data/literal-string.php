@@ -66,9 +66,15 @@ class Foo
 		assertType("non-empty-string", $literal . $s);
 		assertType("literal-string&non-empty-string", $literal . $ls);
 		assertType("literal-string&non-empty-string", $literal . $ns);
+		assertType("non-empty-string", $s . $literal);
+		assertType("literal-string&non-empty-string", $ls . $literal);
+		assertType("literal-string&non-empty-string", $ns . $literal);
 
 		assertType("literal-string&non-empty-string", $literal . $i);
 		assertType("literal-string&non-empty-string", $literal . $f);
 		assertType("literal-string&non-empty-string", $literal . $b);
+		assertType("literal-string&non-empty-string", $i . $literal);
+		assertType("literal-string&non-empty-string", $f . $literal);
+		assertType("literal-string&non-empty-string", $b . $literal);
 	}
 }

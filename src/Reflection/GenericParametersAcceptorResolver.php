@@ -27,8 +27,6 @@ class GenericParametersAcceptorResolver
 			}
 
 			$paramType = $param->getType();
-
-			// todo zde "doaplikovat" typy, ktere se dosud nevyskytly - typicky callable(T) - parametr callable
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 		}
 

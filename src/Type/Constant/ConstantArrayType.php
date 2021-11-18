@@ -316,6 +316,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isCallable(): TrinaryLogic
 	{
+		// @todo is there a way to fetch the full scope here.
+		// An OutOfClassScope causes frivolous errors when checking if a
+		// non-static method was invoked statically in its own class, which
+		// is allowed per: https://3v4l.org/mTa9S.
+		// Should add an optional scope parameter to isCallable and if null,
+		// create a new OutOfClassScope instance.
 		$typeAndMethod = $this->findTypeAndMethodName(new OutOfClassScope());
 		if ($typeAndMethod === null) {
 			return TrinaryLogic::createNo();

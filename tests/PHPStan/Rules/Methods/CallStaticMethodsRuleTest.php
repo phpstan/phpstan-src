@@ -450,11 +450,18 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5782.php'], [
 			[
 				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{\'Bug5782\\\HelloWorld\', \'sayGoodbye\'} given.',
-				22,
+				23,
 			],
 			[
 				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{\'Bug5782\\\HelloWorld\', \'sayGoodbye\'} given.',
-				26,
+				30,
+			],
+			// @todo this should also error on mixed type, but doesn't?
+			// ConstantStringType::getCallableParametersAcceptors returns a
+			// MixedType but that doesn't cause an error like ConstantArrayType.
+			[
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{\'Bug5782\\\HelloWorld\', \'sayGoodbye\'} given.',
+				31,
 			],
 		]);
 	}

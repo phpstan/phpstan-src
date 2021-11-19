@@ -31,20 +31,28 @@ class c {
 }
 
 class Foo {
-	function doArray() {
+	/**
+	 * @param string[] $strings
+	 */
+	function doArray($strings) {
 		assertType('*NEVER*', call_user_func_array('single-arg-only'));
 
 		assertType('bool', call_user_func_array('CallUserFuncArray\generic', [true]));
 		assertType('string', call_user_func_array('CallUserFuncArray\generic', ['hello']));
+		assertType('string', call_user_func_array('CallUserFuncArray\generic', $strings));
 
 		assertType('int', call_user_func_array('CallUserFuncArray\fun', []));
 		assertType('int', call_user_func_array('CallUserFuncArray\fun3', [1 ,2 ,3]));
 		assertType('string', call_user_func_array(['CallUserFuncArray\c', 'm'], []));
 	}
 
-	function doFunc() {
+	/**
+	 * @param string[] $strings
+	 */
+	function doFunc($strings) {
 		assertType('bool', call_user_func('CallUserFuncArray\generic', true));
 		assertType('string', call_user_func('CallUserFuncArray\generic', 'hello'));
+		assertType('array<string>', call_user_func('CallUserFuncArray\generic', $strings));
 
 		assertType('int', call_user_func('CallUserFuncArray\fun'));
 		assertType('int', call_user_func('CallUserFuncArray\fun3', 1 ,2 ,3));

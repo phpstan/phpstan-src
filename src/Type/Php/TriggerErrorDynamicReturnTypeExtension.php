@@ -27,7 +27,7 @@ class TriggerErrorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFun
 		$errorType = $scope->getType($functionCall->getArgs()[1]->value);
 		if ($errorType instanceof ConstantScalarType) {
 			if ($errorType->getValue() === E_USER_ERROR) {
-				return new NeverType();
+				return new NeverType(true);
 			}
 		}
 

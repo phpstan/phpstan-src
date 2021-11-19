@@ -2,10 +2,13 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -28,8 +31,16 @@ class CallUserFuncArrayDynamicReturnTypeExtension implements DynamicFunctionRetu
 		}
 
 		$callbackType = $scope->getType($args[0]->value);
-		if ($callbackType->isCallable()->yes()) {
-			return $scope->getType(new FuncCall($args[0]->value, array_slice($args, 1)));
+		$callbackArgsType = $scope->getType($args[1]->value);
+		if ($callbackType->isCallable()->yes() && $callbackArgsType->isArray()->yes()) {
+			$callbackArgs = [];
+			foreach($args[1]->value->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+				$callbackArgs[] = new Arg($item);
+			}
+			return $scope->getType(new FuncCall($args[0]->value, $callbackArgs));
 		}
 
 		return $defaultReturn;

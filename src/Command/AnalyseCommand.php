@@ -135,6 +135,11 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			return 1;
 		}
 
+		if ($generateBaselineFile === null && $allowEmptyBaseline) {
+			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --allow-empty-baseline.');
+			return $inceptionResult->handleReturn(1);
+		}
+
 		$errorOutput = $inceptionResult->getErrorOutput();
 		$obsoleteDockerImage = $_SERVER['PHPSTAN_OBSOLETE_DOCKER_IMAGE'] ?? 'false';
 		if ($obsoleteDockerImage === 'true') {

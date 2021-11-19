@@ -130,7 +130,7 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\|false\\|null given\\.$#"
+			message: "#^Only booleans are allowed in a negated boolean, int\\|false given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 

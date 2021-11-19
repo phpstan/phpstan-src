@@ -244,6 +244,25 @@ class TypeSpecifier
 				}
 			}
 
+			$rightType = $scope->getType($expr->right);
+			if (
+				$expr->left instanceof ClassConstFetch &&
+				$expr->left->class instanceof Expr &&
+				$expr->left->name instanceof Node\Identifier &&
+				$expr->right instanceof ClassConstFetch &&
+				$rightType instanceof ConstantStringType &&
+				strtolower($expr->left->name->toString()) === 'class'
+			) {
+				return $this->specifyTypesInCondition(
+					$scope,
+					new Instanceof_(
+						$expr->left->class,
+						new Name($rightType->getValue())
+					),
+					$context
+				);
+			}
+
 			if ($context->true()) {
 				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
 				$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
@@ -362,10 +381,7 @@ class TypeSpecifier
 			) {
 				return $this->specifyTypesInCondition(
 					$scope,
-					new Instanceof_(
-						$expr->left->class,
-						new Name($rightType->getValue())
-					),
+					new Expr\BinaryOp\Identical($expr->left, $expr->right),
 					$context
 				);
 			}

@@ -14,9 +14,9 @@ jobs:
       - name: 'Wait for status checks'
         if: github.event.pull_request.user.login == 'phpstan-bot'
         id: waitforstatuschecks
-        uses: "WyriHaximus/github-action-wait-for-status@v2"
+        uses: "WyriHaximus/github-action-wait-for-status@v1"
         with:
-          ignoreActions: Automerge PRs
+          ignoreActions: automerge
           checkInterval: 13
         env:
           GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"

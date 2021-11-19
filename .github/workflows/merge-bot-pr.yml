@@ -1,0 +1,28 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+# https://github.com/WyriHaximus/github-action-wait-for-status
+
+name: Merge bot PR
+on:
+  pull_request:
+    types:
+      - opened
+jobs:
+  automerge:
+    name: Automerge PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Wait for status checks'
+        if: github.event.pull_request.user.login == 'phpstan-bot'
+        id: waitforstatuschecks
+        uses: "WyriHaximus/github-action-wait-for-status@v2"
+        with:
+          ignoreActions: Automerge PRs
+          checkInterval: 13
+        env:
+          GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
+      - name: 'Merge'
+        uses: "pascalgn/automerge-action@v0.4.0"
+        if: steps.waitforstatuschecks.outputs.status == 'success'
+        env:
+          GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
+          MERGE_METHOD: "rebase"

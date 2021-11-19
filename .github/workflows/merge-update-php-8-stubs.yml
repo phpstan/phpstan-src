@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Merge
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        if: ${{ github.event.check_suite.conclusion == 'success' }}
         uses: ridedott/merge-me-action@v2
         with:
           GITHUB_LOGIN: phpstan-bot

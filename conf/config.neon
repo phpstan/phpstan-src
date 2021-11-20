@@ -23,6 +23,7 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		skipCheckGenericClasses:
+			- CallbackFilterIterator
 			- FilterIterator
 	fileExtensions:
 		- php

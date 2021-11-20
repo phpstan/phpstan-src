@@ -26,4 +26,3 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
           MERGE_METHOD: "rebase"
-          MERGE_LABELS: ""

@@ -20,9 +20,10 @@ jobs:
           checkInterval: 13
         env:
           GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
-      - name: 'Merge'
-        uses: "pascalgn/automerge-action@v0.4.0"
+      - name: Merge Pull Request
+        uses: juliangruber/merge-pull-request-action@v1
         if: steps.waitforstatuschecks.outputs.status == 'success'
-        env:
-          GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
-          MERGE_METHOD: "rebase"
+        with:
+          github-token: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
+          number: "${{ github.event.number }}"
+          method: rebase

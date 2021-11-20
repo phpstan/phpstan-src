@@ -24,6 +24,7 @@ parameters:
 		disableRuntimeReflectionProvider: false
 		skipCheckGenericClasses:
 			- DatePeriod
+			- FilterIterator
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

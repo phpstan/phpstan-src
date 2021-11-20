@@ -25,6 +25,7 @@ parameters:
 		skipCheckGenericClasses:
 			- CallbackFilterIterator
 			- FilterIterator
+			- RecursiveCallbackFilterIterator
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

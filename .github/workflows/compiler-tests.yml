@@ -45,5 +45,11 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: phpstan.phar
+          name: phar-file
           path: tmp/phpstan.phar
+
+  integration-tests:
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@master
+    with:
+      ref: master

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
@@ -52,7 +53,8 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			if (!$type->isClassString()) {
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($type->getValue())) {
 				return TrinaryLogic::createNo();
 			}
 

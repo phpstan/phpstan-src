@@ -26,6 +26,7 @@ parameters:
 			- DatePeriod
 			- CallbackFilterIterator
 			- FilterIterator
+			- RecursiveCallbackFilterIterator
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

@@ -217,6 +217,29 @@ class CallbackFilterIterator extends FilterIterator
 
 }
 
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @extends CallbackFilterIterator<TKey, TValue, TIterator>
+ * @implements RecursiveIterator<TKey, TValue>
+ */
+class RecursiveCallbackFilterIterator extends CallbackFilterIterator implements RecursiveIterator
+{
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return RecursiveCallbackFilterIterator<TKey, TValue, TIterator>
+     */
+    public function getChildren() {}
+
+}
+
 /**
  * @template TKey of array-key
  * @template TValue

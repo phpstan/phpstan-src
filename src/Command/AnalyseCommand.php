@@ -249,6 +249,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		if ($generateBaselineFile !== null) {
 			if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
 				$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
+				$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
 
 				return $inceptionResult->handleReturn(1);
 			}

@@ -32,11 +32,12 @@ class c {
 
 class Foo {
 	/**
-	 * @param string[] ...$params
+	 * @param string $params,...
 	 */
 	function doVariadics(...$params) {
 		assertType('string', call_user_func_array('CallUserFuncArray\generic', $params));
-		assertType('array<string>', call_user_func('CallUserFuncArray\generic', $params));
+		assertType('string', call_user_func('CallUserFuncArray\generic', ...$params));
+		assertType('array<int|string, string>', call_user_func('CallUserFuncArray\generic', $params));
 	}
 
 	/**

@@ -55,6 +55,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('error-format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result of the analysis', null),
 				new InputOption('generate-baseline', null, InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
+				new InputOption('allow-empty-baseline', null, InputOption::VALUE_NONE, 'Do not error out when the generated baseline is empty'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
 				new InputOption('fix', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
@@ -102,6 +103,8 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			$generateBaselineFile = 'phpstan-baseline.neon';
 		}
 
+		$allowEmptyBaseline = (bool) $input->getOption('allow-empty-baseline');
+
 		if (
 			!is_array($paths)
 			|| (!is_string($memoryLimit) && $memoryLimit !== null)
@@ -130,6 +133,11 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			);
 		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
 			return 1;
+		}
+
+		if ($generateBaselineFile === null && $allowEmptyBaseline) {
+			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --allow-empty-baseline.');
+			return $inceptionResult->handleReturn(1);
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
@@ -239,7 +247,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		}
 
 		if ($generateBaselineFile !== null) {
-			if (!$analysisResult->hasErrors()) {
+			if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
 				$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
 
 				return $inceptionResult->handleReturn(1);

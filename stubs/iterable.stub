@@ -206,6 +206,18 @@ class FilterIterator extends IteratorIterator
 }
 
 /**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @extends FilterIterator<TKey, TValue, TIterator>
+ */
+class CallbackFilterIterator extends FilterIterator
+{
+
+}
+
+/**
  * @template TKey of array-key
  * @template TValue
  *

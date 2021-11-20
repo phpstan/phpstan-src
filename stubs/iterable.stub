@@ -194,6 +194,18 @@ class IteratorIterator implements OuterIterator {
 }
 
 /**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @template-extends IteratorIterator<TKey, TValue, TIterator>
+ */
+class FilterIterator extends IteratorIterator
+{
+
+}
+
+/**
  * @template TKey of array-key
  * @template TValue
  *

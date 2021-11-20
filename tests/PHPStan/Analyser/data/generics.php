@@ -1400,7 +1400,7 @@ class CarFactoryProcessor {
 }
 
 function (\Throwable $e): void {
-	assertType('mixed', $e->getCode());
+	assertType('(int|string)', $e->getCode());
 };
 
 function (): void {

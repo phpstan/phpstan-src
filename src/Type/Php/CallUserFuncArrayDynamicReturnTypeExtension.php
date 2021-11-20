@@ -26,6 +26,10 @@ class CallUserFuncArrayDynamicReturnTypeExtension implements DynamicFunctionRetu
 		$args = $functionCall->getArgs();
 		$defaultReturn = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
+		if (count($args) === 1 && $args[0]->unpack) {
+			 // hmm ..?
+		}
+
 		if (count($args) <= 1) {
 			return new NeverType();
 		}

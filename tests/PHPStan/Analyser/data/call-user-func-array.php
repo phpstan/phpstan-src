@@ -32,6 +32,28 @@ class c {
 
 class Foo {
 	/**
+	 * see https://3v4l.org/aOYWW
+	 */
+	function proxy() {
+		$params = [
+			'CallUserFuncArray\generic',
+			[123]
+		];
+
+		assertType('int', call_user_func_array(...$params));
+
+		$params = [
+			'CallUserFuncArray\generic',
+			123,
+			456
+		];
+
+		// cufa expect max 2 args
+		assertType('*NEVER*', call_user_func_array(...$params));
+		assertType('int', call_user_func(...$params));
+	}
+	
+	/**
 	 * @param string $params,...
 	 */
 	function doVariadics(...$params) {

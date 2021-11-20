@@ -12,6 +12,7 @@ use PHPStan\Type\Type;
 
 final class ThrowableReturnTypeExtension implements \PHPStan\Type\DynamicMethodReturnTypeExtension
 {
+
 	public function getClass(): string
 	{
 		return \Throwable::class;
@@ -26,4 +27,5 @@ final class ThrowableReturnTypeExtension implements \PHPStan\Type\DynamicMethodR
 	{
 		return new BenevolentUnionType([new IntegerType(), new StringType()]);
 	}
+
 }

@@ -31,9 +31,6 @@ class c {
 }
 
 class Foo {
-	/**
-	 * see https://3v4l.org/aOYWW
-	 */
 	function proxy() {
 		$params = [
 			'CallUserFuncArray\generic',

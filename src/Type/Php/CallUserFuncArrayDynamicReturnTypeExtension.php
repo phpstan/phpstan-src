@@ -9,6 +9,9 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -27,7 +30,16 @@ class CallUserFuncArrayDynamicReturnTypeExtension implements DynamicFunctionRetu
 		$defaultReturn = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
 		if (count($args) === 1 && $args[0]->unpack) {
-			 // hmm ..?
+			$array = $scope->getType($args[0]->value);
+			if ($array instanceof ConstantArrayType) {
+				$count = $array->count();
+
+				if ($count instanceof ConstantIntegerType && $count->getValue() > 2) {
+					return new NeverType();
+				}
+			}
+
+			return $defaultReturn;
 		}
 
 		if (count($args) <= 1) {

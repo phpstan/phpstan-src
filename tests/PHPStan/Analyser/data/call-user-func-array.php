@@ -40,7 +40,7 @@ class Foo {
 			[123]
 		];
 
-		assertType('int', call_user_func_array(...$params));
+		assertType('mixed', call_user_func_array(...$params));
 
 		$params = [
 			'CallUserFuncArray\generic',
@@ -50,9 +50,9 @@ class Foo {
 
 		// cufa expect max 2 args
 		assertType('*NEVER*', call_user_func_array(...$params));
-		assertType('int', call_user_func(...$params));
+		assertType('mixed', call_user_func(...$params));
 	}
-	
+
 	/**
 	 * @param string $params,...
 	 */

@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
@@ -189,7 +190,7 @@ class ResolvedPhpDocBlock
 		$result->mixinTags = $this->getMixinTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
-		$result->deprecatedTag = $this->getDeprecatedTag();
+		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $parents);
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
@@ -631,6 +632,25 @@ class ResolvedPhpDocBlock
 		}
 
 		return self::resolveTemplateTypeInTag($parentReturnTag->toImplicit(), $phpDocBlock);
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 */
+	private static function mergeDeprecatedTags(?DeprecatedTag $deprecatedTag, array $parents): ?DeprecatedTag
+	{
+		if ($deprecatedTag !== null) {
+			return $deprecatedTag;
+		}
+		foreach ($parents as $parent) {
+			$result = $parent->getDeprecatedTag();
+			if ($result === null) {
+				continue;
+			}
+			return $result;
+		}
+
+		return null;
 	}
 
 	/**

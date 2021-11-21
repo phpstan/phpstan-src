@@ -131,4 +131,11 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertFalse($reflectionProvider->getFunction(new Name('function_exists'), null)->isDeprecated()->yes());
 	}
 
+	public function testDeprecatedMethodsFromInterface(): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass(\DeprecatedAnnotations\DeprecatedBar::class);
+		$this->assertTrue($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
+	}
+
 }

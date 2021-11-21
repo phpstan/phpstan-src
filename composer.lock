@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e029f492264882311cc63606a4e76b6b",
+    "content-hash": "726c160e140e8440885ca68bce24d3ec",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2094,16 +2094,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.80",
+            "version": "4.3.81",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "56f215f08c4421f69e2d0e82096601b0b4fbaa2c"
+                "reference": "9c0125e45ecb730c34136bcc45eb725158d44ca6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/56f215f08c4421f69e2d0e82096601b0b4fbaa2c",
-                "reference": "56f215f08c4421f69e2d0e82096601b0b4fbaa2c",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/9c0125e45ecb730c34136bcc45eb725158d44ca6",
+                "reference": "9c0125e45ecb730c34136bcc45eb725158d44ca6",
                 "shasum": ""
             },
             "require": {
@@ -2113,7 +2113,7 @@
                 "php": ">=7.1.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.49",
+                "phpstan/phpstan": "^1.2.0",
                 "phpunit/phpunit": "^7.5.18"
             },
             "suggest": {
@@ -2158,9 +2158,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.80"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.81"
             },
-            "time": "2021-11-11T09:24:16+00:00"
+            "time": "2021-11-21T06:43:54+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

@@ -187,3 +187,31 @@ class DeprecatedWithMultipleTags
 	}
 
 }
+
+/**
+ * @deprecated This is totally deprecated.
+ */
+interface BarInterface
+{
+
+	/**
+	 * @deprecated This is totally deprecated.
+	 */
+	public function superDeprecated();
+
+}
+
+/**
+ * {@inheritdoc}
+ */
+class DeprecatedBar implements BarInterface
+{
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function superDeprecated()
+	{
+	}
+
+}

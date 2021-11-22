@@ -33,6 +33,9 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 		'@phpstan-impure',
 		'@phpstan-type',
 		'@phpstan-import-type',
+		'@phpstan-property',
+		'@phpstan-property-read',
+		'@phpstan-property-write',
 	];
 
 	private Lexer $phpDocLexer;

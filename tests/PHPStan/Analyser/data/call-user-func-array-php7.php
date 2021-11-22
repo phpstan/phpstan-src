@@ -56,7 +56,7 @@ class Foo {
 	function doVariadics(...$params) {
 		assertType('string', call_user_func_array('CallUserFuncArray\generic', $params));
 		assertType('string', call_user_func('CallUserFuncArray\generic', ...$params));
-		assertType('array<int|string, string>', call_user_func('CallUserFuncArray\generic', $params));
+		assertType('array<int, string>', call_user_func('CallUserFuncArray\generic', $params));
 	}
 
 	/**

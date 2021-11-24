@@ -117,11 +117,12 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_read($count)
 	{
-		if ($this->file === null) {
+		$file = $this->file;
+		if ($file === null) {
 			return false;
 		}
-		return $this->runUnwrapped(function () use ($count) {
-			return fread($this->file, $count);
+		return $this->runUnwrapped(static function () use ($file, $count) {
+			return fread($file, $count);
 		});
 	}
 
@@ -150,11 +151,12 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_stat()
 	{
-		if ($this->file === null) {
+		$file = $this->file;
+		if ($file === null) {
 			return false;
 		}
-		return $this->runUnwrapped(function () {
-			return fstat($this->file);
+		return $this->runUnwrapped(static function () use ($file) {
+			return fstat($file);
 		});
 	}
 
@@ -212,11 +214,12 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_seek($offset, $whence): bool
 	{
-		if ($this->file === null) {
+		$file = $this->file;
+		if ($file === null) {
 			return false;
 		}
-		return $this->runUnwrapped(function () use ($offset, $whence): bool {
-			return fseek($this->file, $offset, $whence) === 0;
+		return $this->runUnwrapped(static function () use ($file, $offset, $whence): bool {
+			return fseek($file, $offset, $whence) === 0;
 		});
 	}
 

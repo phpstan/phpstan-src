@@ -219,11 +219,11 @@ final class FileReadTrapStreamWrapper
 	}
 
 	/**
-	 * @template TReturn
-	 * @param callable() : TReturn $c
-	 * @return TReturn
+	 * @phpstan-template TReturn
+	 * @phpstan-param callable() : TReturn $c
+	 * @phpstan-return TReturn
 	 */
-	private function runUnwrapped(callable $c): TReturn
+	private function runUnwrapped(callable $c)
 	{
 		if (self::$registeredStreamWrapperProtocols === null) {
 			throw new \PHPStan\ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');

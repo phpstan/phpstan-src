@@ -31,9 +31,8 @@ final class FileReadTrapStreamWrapper
 
 	public static ?string $autoloadLocatedFile = null;
 
-	private bool $readFromFile = false;
-
-	private int $seekPosition = 0;
+	/** @var resource|null */
+	private $file = null;
 
 	/**
 	 * @param string[] $streamWrapperProtocols
@@ -89,10 +88,19 @@ final class FileReadTrapStreamWrapper
 	public function stream_open($path, $mode, $options, &$openedPath): bool
 	{
 		self::$autoloadLocatedFile = $path;
-		$this->readFromFile = false;
-		$this->seekPosition = 0;
+		return $this->runUnwrapped(function () use ($path, $mode, $options) {
+			if (($options & STREAM_REPORT_ERRORS) !== 0) {
+				$file = fopen($path, $mode, ($options & STREAM_USE_PATH) !== 0);
+			} else {
+				$file = @fopen($path, $mode, ($options & STREAM_USE_PATH) !== 0);
+			}
+			if ($file !== false) {
+				$this->file = $file;
+				return true;
+			}
 
-		return true;
+			return false;
+		});
 	}
 
 	/**
@@ -105,12 +113,9 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_read($count): string
 	{
-		$this->readFromFile = true;
-
-		// Dummy return value that is also valid PHP for require(). We'll read
-		// and process the file elsewhere, so it's OK to provide dummy data for
-		// this read.
-		return '';
+		return $this->runUnwrapped(function () use ($count) {
+			return fread($this->file, $count);
+		});
 	}
 
 	/**
@@ -121,7 +126,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_close(): void
 	{
-		// no op
+		fclose($this->file);
 	}
 
 	/**
@@ -134,11 +139,9 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_stat()
 	{
-		if (self::$autoloadLocatedFile === null) {
-			return false;
-		}
-
-		return $this->url_stat(self::$autoloadLocatedFile, STREAM_URL_STAT_QUIET);
+		return $this->runUnwrapped(function () {
+			return fstat($this->file);
+		});
 	}
 
 	/**
@@ -159,26 +162,13 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function url_stat($path, $flags)
 	{
-		if (self::$registeredStreamWrapperProtocols === null) {
-			throw new \PHPStan\ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
-		}
+		return $this->runUnwrapped(static function () use ($path, $flags) {
+			if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
+				return @stat($path);
+			}
 
-		foreach (self::$registeredStreamWrapperProtocols as $protocol) {
-			stream_wrapper_restore($protocol);
-		}
-
-		if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
-			$result = @stat($path);
-		} else {
-			$result = stat($path);
-		}
-
-		foreach (self::$registeredStreamWrapperProtocols as $protocol) {
-			stream_wrapper_unregister($protocol);
-			stream_wrapper_register($protocol, self::class);
-		}
-
-		return $result;
+			return stat($path);
+		});
 	}
 
 	/**
@@ -188,17 +178,17 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_eof(): bool
 	{
-		return $this->readFromFile;
+		return feof($this->file);
 	}
 
 	public function stream_flush(): bool
 	{
-		return true;
+		return fflush($this->file);
 	}
 
 	public function stream_tell(): int
 	{
-		return $this->seekPosition;
+		return ftell($this->file);
 	}
 
 	/**
@@ -208,26 +198,9 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_seek($offset, $whence): bool
 	{
-		switch ($whence) {
-			// Behavior is the same for a zero-length file
-			case SEEK_SET:
-			case SEEK_END:
-				if ($offset < 0) {
-					return false;
-				}
-				$this->seekPosition = $offset;
-				return true;
-
-			case SEEK_CUR:
-				if ($offset < 0) {
-					return false;
-				}
-				$this->seekPosition += $offset;
-				return true;
-
-			default:
-				return false;
-		}
+		return $this->runUnwrapped(function () use ($offset, $whence): bool {
+			return fseek($this->file, $offset, $whence) === 0;
+		});
 	}
 
 	/**
@@ -239,6 +212,31 @@ final class FileReadTrapStreamWrapper
 	public function stream_set_option($option, $arg1, $arg2): bool
 	{
 		return false;
+	}
+
+	/**
+	 * @template TReturn
+	 * @param callable() : TReturn $c
+	 * @return TReturn
+	 */
+	private function runUnwrapped(callable $c): TReturn
+	{
+		if (self::$registeredStreamWrapperProtocols === null) {
+			throw new \PHPStan\ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
+		}
+
+		foreach (self::$registeredStreamWrapperProtocols as $protocol) {
+			stream_wrapper_restore($protocol);
+		}
+
+		$result = $c();
+
+		foreach (self::$registeredStreamWrapperProtocols as $protocol) {
+			stream_wrapper_unregister($protocol);
+			stream_wrapper_register($protocol, self::class);
+		}
+
+		return $result;
 	}
 
 }

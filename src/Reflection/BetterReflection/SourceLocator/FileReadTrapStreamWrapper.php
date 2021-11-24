@@ -113,7 +113,7 @@ final class FileReadTrapStreamWrapper
 	 *
 	 * @param 0|positive-int $count
 	 *
-	 * @return string|false
+	 * @return string|bool
 	 */
 	public function stream_read($count)
 	{

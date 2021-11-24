@@ -111,12 +111,15 @@ final class FileReadTrapStreamWrapper
 	 * Since we allow our wrapper's stream_open() to succeed, we need to
 	 * simulate a successful read so autoloaders with require() don't explode.
 	 *
-	 * @param int $count
+	 * @param 0|positive-int $count
 	 *
-	 * @return string
+	 * @return string|false
 	 */
-	public function stream_read($count): string
+	public function stream_read($count)
 	{
+		if ($this->file === null) {
+			return false;
+		}
 		return $this->runUnwrapped(function () use ($count) {
 			return fread($this->file, $count);
 		});
@@ -130,6 +133,10 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_close(): void
 	{
+		if ($this->file === null) {
+			return;
+		}
+
 		fclose($this->file);
 	}
 
@@ -143,6 +150,9 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_stat()
 	{
+		if ($this->file === null) {
+			return false;
+		}
 		return $this->runUnwrapped(function () {
 			return fstat($this->file);
 		});
@@ -182,17 +192,17 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_eof(): bool
 	{
-		return feof($this->file);
+		return $this->file === null || feof($this->file);
 	}
 
 	public function stream_flush(): bool
 	{
-		return fflush($this->file);
+		return $this->file !== null && fflush($this->file);
 	}
 
 	public function stream_tell(): int
 	{
-		return ftell($this->file);
+		return $this->file !== null ? (int) ftell($this->file) : 0;
 	}
 
 	/**
@@ -202,6 +212,9 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_seek($offset, $whence): bool
 	{
+		if ($this->file === null) {
+			return false;
+		}
 		return $this->runUnwrapped(function () use ($offset, $whence): bool {
 			return fseek($this->file, $offset, $whence) === 0;
 		});

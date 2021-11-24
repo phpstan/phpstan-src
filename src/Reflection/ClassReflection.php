@@ -521,9 +521,18 @@ class ClassReflection
 		return $this->reflection->isTrait();
 	}
 
+	public function isEnum(): bool
+	{
+		if (method_exists($this->reflection, 'isEnum')) {
+			return $this->reflection->isEnum();
+		}
+
+		return false;
+	}
+
 	public function isClass(): bool
 	{
-		return !$this->isInterface() && !$this->isTrait();
+		return !$this->isInterface() && !$this->isTrait() && !$this->isEnum();
 	}
 
 	public function isAnonymous(): bool

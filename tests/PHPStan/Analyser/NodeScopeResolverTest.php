@@ -520,6 +520,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/variadic-parameter-php8.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4896.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5843.php');
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/eval-implicit-throw.php');
@@ -527,6 +529,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5501.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4743.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5017.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5992.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6001.php');
 
 		if (PHP_VERSION_ID >= 70400) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5458.php');
@@ -560,6 +564,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/filesystem-functions.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs-phpstanPropertyPrefix.php');
 	}
 
 	/**

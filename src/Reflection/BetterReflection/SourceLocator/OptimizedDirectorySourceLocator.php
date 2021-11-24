@@ -217,7 +217,8 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			return ['classes' => [], 'functions' => []];
 		}
 
-		if (!preg_match_all(sprintf('{\b(?:class|interface|trait|function%s)\s}i', $this->extraTypes), $contents, $matches)) {
+		$matchResults = (bool) preg_match_all(sprintf('{\b(?:class|interface|trait|function%s)\s}i', $this->extraTypes), $contents, $matches);
+		if (!$matchResults) {
 			return ['classes' => [], 'functions' => []];
 		}
 

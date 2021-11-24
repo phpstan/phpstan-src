@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "669c335796ae43e31c7b06f23e01c519",
+    "content-hash": "59111ae499b0cf02094db5a97eec37e3",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1348,12 +1348,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "fdcc30312221ce08f3a4413588e2df4b77f843fc"
+                "reference": "08a6c2191819c501f5ad5ef8c7fd9705316d7110"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/fdcc30312221ce08f3a4413588e2df4b77f843fc",
-                "reference": "fdcc30312221ce08f3a4413588e2df4b77f843fc",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/08a6c2191819c501f5ad5ef8c7fd9705316d7110",
+                "reference": "08a6c2191819c501f5ad5ef8c7fd9705316d7110",
                 "shasum": ""
             },
             "require-dev": {
@@ -1389,7 +1389,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2021-11-04T13:27:30+00:00"
+            "time": "2021-11-22T17:13:27+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -2094,16 +2094,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "4.3.80",
+            "version": "4.3.81",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "56f215f08c4421f69e2d0e82096601b0b4fbaa2c"
+                "reference": "9c0125e45ecb730c34136bcc45eb725158d44ca6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/56f215f08c4421f69e2d0e82096601b0b4fbaa2c",
-                "reference": "56f215f08c4421f69e2d0e82096601b0b4fbaa2c",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/9c0125e45ecb730c34136bcc45eb725158d44ca6",
+                "reference": "9c0125e45ecb730c34136bcc45eb725158d44ca6",
                 "shasum": ""
             },
             "require": {
@@ -2113,7 +2113,7 @@
                 "php": ">=7.1.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.49",
+                "phpstan/phpstan": "^1.2.0",
                 "phpunit/phpunit": "^7.5.18"
             },
             "suggest": {
@@ -2158,22 +2158,22 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.80"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/4.3.81"
             },
-            "time": "2021-11-11T09:24:16+00:00"
+            "time": "2021-11-21T06:43:54+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
-            "version": "0.1.23",
+            "version": "0.1.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/php-8-stubs.git",
-                "reference": "3882ffe35d87a7eb7a133916907a44739d020184"
+                "reference": "f42f2919fd58ddf4ba9b2ddeba4a1201144626fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/3882ffe35d87a7eb7a133916907a44739d020184",
-                "reference": "3882ffe35d87a7eb7a133916907a44739d020184",
+                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/f42f2919fd58ddf4ba9b2ddeba4a1201144626fd",
+                "reference": "f42f2919fd58ddf4ba9b2ddeba4a1201144626fd",
                 "shasum": ""
             },
             "type": "library",
@@ -2190,9 +2190,9 @@
             "description": "PHP stubs extracted from php-src",
             "support": {
                 "issues": "https://github.com/phpstan/php-8-stubs/issues",
-                "source": "https://github.com/phpstan/php-8-stubs/tree/0.1.23"
+                "source": "https://github.com/phpstan/php-8-stubs/tree/0.1.36"
             },
-            "time": "2021-08-31T00:08:55+00:00"
+            "time": "2021-11-20T07:57:45+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",

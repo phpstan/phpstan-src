@@ -87,7 +87,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_open($path, $mode, $options, &$openedPath): bool
 	{
-		if(self::$autoloadLocatedFile === null){
+		if (self::$autoloadLocatedFile === null) {
 			//We want to capture the first file only. Since we allow the autoloading to continue, this will be called
 			//multiple times if loading the class caused other files to be loaded too.
 			self::$autoloadLocatedFile = $path;

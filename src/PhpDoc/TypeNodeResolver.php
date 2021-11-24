@@ -38,6 +38,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -505,6 +506,12 @@ class TypeNodeResolver
 
 				return IntegerRangeType::fromInterval($min, $max);
 			}
+		} elseif ($mainTypeName === 'key-of') {
+			if (count($genericTypes) === 1 && $genericTypes[0] instanceof ConstantArrayType) { // key-of<ValueType>
+				return $genericTypes[0]->getIterableKeyType();
+			}
+
+			return new ErrorType();
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);

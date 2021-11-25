@@ -14,7 +14,7 @@ use PHPStan\File\FileReader;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v13-remove-deprecated';
+	public const CACHE_KEY = 'v14-update-nette';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 

@@ -5,7 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\Config\Loader;
 use Nette\DI\ContainerLoader;
 
-class Configurator extends \Nette\Configurator
+class Configurator extends \Nette\Bootstrap\Configurator
 {
 
 	private LoaderFactory $loaderFactory;
@@ -39,12 +39,12 @@ class Configurator extends \Nette\Configurator
 	{
 		$loader = new ContainerLoader(
 			$this->getContainerCacheDirectory(),
-			$this->parameters['debugMode']
+			$this->staticParameters['debugMode']
 		);
 
 		return $loader->load(
 			[$this, 'generateContainer'],
-			[$this->parameters, array_keys($this->dynamicParameters), $this->configs, PHP_VERSION_ID - PHP_RELEASE_VERSION, NeonAdapter::CACHE_KEY]
+			[$this->staticParameters, array_keys($this->dynamicParameters), $this->configs, PHP_VERSION_ID - PHP_RELEASE_VERSION, NeonAdapter::CACHE_KEY]
 		);
 	}
 

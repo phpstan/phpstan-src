@@ -1778,12 +1778,29 @@ class MutatingScope implements Scope
 				$valueType = $this->getType($arrayItem->value);
 				if ($arrayItem->unpack) {
 					if ($valueType instanceof ConstantArrayType) {
-						foreach ($valueType->getValueTypes() as $innerValueType) {
-							$arrayBuilder->setOffsetValueType(null, $innerValueType);
+						$hasStringKey = false;
+						foreach ($valueType->getKeyTypes() as $keyType) {
+							if ($keyType instanceof ConstantStringType) {
+								$hasStringKey = true;
+								break;
+							}
+						}
+
+						foreach ($valueType->getValueTypes() as $i => $innerValueType) {
+							if ($hasStringKey && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
+								$arrayBuilder->setOffsetValueType($valueType->getKeyTypes()[$i], $innerValueType);
+							} else {
+								$arrayBuilder->setOffsetValueType(null, $innerValueType);
+							}
 						}
 					} else {
 						$arrayBuilder->degradeToGeneralArray();
-						$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes() && !$valueType->getIterableValueType()->isIterableAtLeastOnce()->yes());
+
+						if (! (new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no() && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
+							$arrayBuilder->setOffsetValueType($valueType->getIterableKeyType(), $valueType->getIterableValueType());
+						} else {
+							$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes() && !$valueType->getIterableValueType()->isIterableAtLeastOnce()->yes());
+						}
 					}
 				} else {
 					$arrayBuilder->setOffsetValueType(

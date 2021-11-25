@@ -537,7 +537,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5017.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5992.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6001.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5287.php');
+
+		if (PHP_VERSION_ID >= 80100) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5287-php81.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5287.php');
+		}
 
 		if (PHP_VERSION_ID >= 70400) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5458.php');
@@ -568,6 +573,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 80100) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-is-list-type-specifying.php');
+		}
+
+		if (PHP_VERSION_ID >= 80100) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-unpacking-string-keys.php');
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/filesystem-functions.php');

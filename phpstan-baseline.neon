@@ -91,11 +91,10 @@ parameters:
 			path: src/PhpDoc/ResolvedPhpDocBlock.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
-				"""
+			message: """
+				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
+			"""
 			count: 1
 			path: src/PhpDoc/StubValidator.php
 
@@ -260,20 +259,18 @@ parameters:
 			path: src/Type/IntersectionType.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
-				"""
+			message: """
+				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
+			"""
 			count: 1
 			path: src/Type/ObjectType.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getUniversalObjectCratesClasses\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Inject %%universalObjectCratesClasses%% parameter instead\\.$#
-				"""
+			message: """
+				#^Call to deprecated method getUniversalObjectCratesClasses\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Inject %%universalObjectCratesClasses%% parameter instead\\.$#
+			"""
 			count: 1
 			path: src/Type/ObjectType.php
 
@@ -313,29 +310,26 @@ parameters:
 			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-				"""
+			message: """
+				#^Call to deprecated method getClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+			"""
 			count: 1
 			path: tests/PHPStan/Broker/BrokerTest.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getFunction\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-				"""
+			message: """
+				#^Call to deprecated method getFunction\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+			"""
 			count: 1
 			path: tests/PHPStan/Broker/BrokerTest.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method hasClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-				"""
+			message: """
+				#^Call to deprecated method hasClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+			"""
 			count: 1
 			path: tests/PHPStan/Broker/BrokerTest.php
 

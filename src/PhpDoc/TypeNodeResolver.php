@@ -505,6 +505,18 @@ class TypeNodeResolver
 
 				return IntegerRangeType::fromInterval($min, $max);
 			}
+		} elseif ($mainTypeName === 'key-of') {
+			if (count($genericTypes) === 1) { // key-of<ValueType>
+				return $genericTypes[0]->getIterableKeyType();
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'value-of') {
+			if (count($genericTypes) === 1) { // value-of<ValueType>
+				return $genericTypes[0]->getIterableValueType();
+			}
+
+			return new ErrorType();
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);

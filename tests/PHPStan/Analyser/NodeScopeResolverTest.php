@@ -55,6 +55,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/native-types.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-change-after-array-access-assignment.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/iterator_to_array.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/key-of.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/value-of.php');
 
 		if (self::$useStaticReflectionProvider || extension_loaded('ds')) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/ext-ds.php');

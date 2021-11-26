@@ -500,6 +500,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				1751,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
+			[
+				'Parameter #1 $code of method Test\\KeyOfParam::foo() expects \'jfk\'|\'lga\', \'sfo\' given.',
+				1777,
+			],
+			[
+				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
+				1802,
+			],
 		]);
 	}
 
@@ -786,6 +794,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()',
 				1751,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Parameter #1 $code of method Test\\KeyOfParam::foo() expects \'jfk\'|\'lga\', \'sfo\' given.',
+				1777,
+			],
+			[
+				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
+				1802,
 			],
 		]);
 	}

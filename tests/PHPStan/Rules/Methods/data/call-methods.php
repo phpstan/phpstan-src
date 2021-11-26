@@ -1752,3 +1752,53 @@ class InvalidReturnTypeUsingArrayTemplateTypeBound
 	}
 
 }
+
+class KeyOfParam
+{
+	public const JFK = 'jfk';
+	public const LGA = 'lga';
+
+	private const ALL = [
+		self::JFK => 'John F. Kennedy Airport',
+		self::LGA => 'La Guardia Airport',
+	];
+
+	/**
+	 * @param key-of<self::ALL> $code
+	 */
+	public function foo(string $code): void
+	{
+	}
+
+	public function test(): void
+	{
+		$this->foo(KeyOfParam::JFK);
+		$this->foo('jfk');
+		$this->foo('sfo');
+	}
+}
+
+class ValueOfParam
+{
+	public const JFK = 'jfk';
+	public const LGA = 'lga';
+
+	public const ALL = [
+		self::JFK => 'John F. Kennedy Airport',
+		self::LGA => 'La Guardia Airport',
+	];
+
+	/**
+	 * @param value-of<self::ALL> $code
+	 */
+	public function foo(string $code): void
+	{
+	}
+
+	public function test(): void
+	{
+		$this->foo(ValueOfParam::ALL[ValueOfParam::JFK]);
+		$this->foo('John F. Kennedy Airport');
+		$this->foo('Newark Liberty International');
+	}
+}

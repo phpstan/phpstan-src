@@ -80,9 +80,6 @@ class AnalyseCommandTest extends \PHPStan\Testing\PHPStanTestCase
 	 */
 	private function runCommand(int $expectedStatusCode, array $parameters = []): string
 	{
-		if (PHP_VERSION_ID >= 80000 && DIRECTORY_SEPARATOR === '\\') {
-			$this->markTestSkipped('Skipped because of https://github.com/symfony/symfony/issues/37508');
-		}
 		$commandTester = new CommandTester(new AnalyseCommand([]));
 
 		$commandTester->execute([

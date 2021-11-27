@@ -27,7 +27,7 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\PHPStanTestCase
 			if ($resource === false) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			$this->outputStream = new StreamOutput($resource);
+			$this->outputStream = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, false);
 		}
 
 		return $this->outputStream;

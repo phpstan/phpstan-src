@@ -467,6 +467,18 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertCount(0, $errors);
 	}
 
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/enums.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Access to an undefined property EnumTypeAssertions\Foo::$value.', $errors[0]->getMessage());
+		$this->assertSame(23, $errors[0]->getLine());
+	}
+
 	/**
 	 * @return Error[]
 	 */

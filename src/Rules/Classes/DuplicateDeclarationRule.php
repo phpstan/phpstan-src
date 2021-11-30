@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\EnumCase;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -42,6 +43,23 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 				} else {
 					$declaredClassConstants[$const->name->name] = true;
 				}
+			}
+		}
+
+		$declaredEnumCases = [];
+		foreach ($node->getOriginalNode()->stmts as $stmtNode) {
+			if (!$stmtNode instanceof EnumCase) {
+				continue;
+			}
+
+			if (array_key_exists($stmtNode->name->name, $declaredEnumCases)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Cannot redeclare enum case %s::%s.',
+					$classReflection->getDisplayName(),
+					$stmtNode->name->name
+				))->line($stmtNode->getLine())->nonIgnorable()->build();
+			} else {
+				$declaredEnumCases[$stmtNode->name->name] = true;
 			}
 		}
 

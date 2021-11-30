@@ -1,0 +1,11 @@
+<?php
+
+namespace NeverReturnStubFiles;
+
+class Redirector {
+    /**
+     * @return no-return
+     */
+    public function gotoUrlAndExit($url)
+    {}
+}

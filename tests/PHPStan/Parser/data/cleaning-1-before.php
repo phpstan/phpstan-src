@@ -68,6 +68,12 @@ class InlineVars
 		/** @var Test3 */
 		$foo = doFoo();
 
+		/** @phpstan-var Test */
+		$foo = doFoo();
+
+		/** @psalm-var Test */
+		$foo = doFoo();
+
 		if (rand(0, 1)) {
 			yield;
 		}

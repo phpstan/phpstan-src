@@ -3097,6 +3097,100 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				StrictMixedType::class,
 				'mixed',
 			],
+			[
+				[
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+					new ConstantArrayType([new ConstantStringType('bar')], [new StringType()]),
+				],
+				ConstantArrayType::class,
+				'array{foo: string, bar: string}',
+			],
+			[
+				[
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()], 0, [0]),
+				],
+				ConstantArrayType::class,
+				'array{foo: string}',
+			],
+			[
+				[
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()], 0, [0]),
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+				],
+				ConstantArrayType::class,
+				'array{foo: string}',
+			],
+			[
+				[
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+					new ConstantArrayType([new ConstantStringType('foo')], [new ConstantStringType('test')]),
+				],
+				ConstantArrayType::class,
+				'array{foo: \'test\'}',
+			],
+			[
+				[
+					new ConstantArrayType([new ConstantStringType('foo')], [new ConstantStringType('test')]),
+					new ConstantArrayType([new ConstantStringType('foo')], [new ConstantStringType('test')]),
+				],
+				ConstantArrayType::class,
+				'array{foo: \'test\'}',
+			],
+			[
+				[
+					new ConstantArrayType([new ConstantStringType('foo')], [new IntegerType()]),
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+				],
+				ConstantArrayType::class,
+				'array{foo: *NEVER*}',
+			],
+			[
+				[
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()], 0, [0]),
+					new ConstantArrayType([new ConstantStringType('foo')], [new StringType()], 0, [0]),
+				],
+				ConstantArrayType::class,
+				'array{foo?: string}',
+			],
+			[
+				[
+					new ConstantArrayType(
+						[new ConstantStringType('name'), new ConstantStringType('age')],
+						[new StringType(), new IntegerType()]
+					),
+					new ConstantArrayType(
+						[new ConstantStringType('age'), new ConstantStringType('codes')],
+						[new IntegerType(), new BooleanType()]
+					),
+					new ConstantArrayType(
+						[new ConstantStringType('name'), new ConstantStringType('drinks')],
+						[new StringType(), new BooleanType()]
+					),
+				],
+				ConstantArrayType::class,
+				'array{name: string, age: int, codes: bool, drinks: bool}',
+			],
+			[
+				[
+					new ConstantArrayType(
+						[new ConstantStringType('foo')],
+						[new ConstantArrayType(
+							[new ConstantStringType('bar')],
+							[new StringType()]
+						)]
+					),
+					new ConstantArrayType(
+						[new ConstantStringType('foo')],
+						[new ConstantArrayType(
+							[new ConstantStringType('baz')],
+							[new IntegerType()]
+						)]
+					),
+				],
+				ConstantArrayType::class,
+				'array{foo: array{bar: string, baz: int}}',
+			],
 		];
 	}
 

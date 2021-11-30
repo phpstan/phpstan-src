@@ -29,6 +29,9 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+
+use function array_search;
+use function array_splice;
 use function array_unique;
 
 /**
@@ -47,7 +50,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	private int $nextAutoIndex;
 
-	/** @var int[] */
+	/** @var list<int> */
 	private array $optionalKeys;
 
 	/** @var self[]|null */
@@ -58,7 +61,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param int $nextAutoIndex
-	 * @param int[] $optionalKeys
+	 * @param list<int> $optionalKeys
 	 */
 	public function __construct(
 		array $keyTypes,
@@ -854,6 +857,29 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return count($otherKeys) === 0;
+	}
+
+	public function merge(self $other): self {
+		$keyTypes = $this->keyTypes;
+		$valueTypes = $this->valueTypes;
+		$optionalKeys = $this->optionalKeys;
+		foreach ($other->keyTypes as $otherIndex => $keyType) {
+			$thisIndex = $this->getKeyIndex($keyType);
+			if ($thisIndex === null) {
+				$keyTypes[] = $keyType;
+				$valueTypes[] = $other->valueTypes[$otherIndex];
+				continue;
+			}
+			$optionalIndex = array_search($thisIndex, $optionalKeys, true);
+			if ($optionalIndex !== false && !$other->isOptionalKey($otherIndex)) {
+				array_splice($optionalKeys, $optionalIndex, 1);
+			}
+			if ($valueTypes[$thisIndex]->equals($other->valueTypes[$otherIndex])) {
+				continue;
+			}
+			$valueTypes[$thisIndex] = TypeCombinator::intersect($valueTypes[$thisIndex], $other->valueTypes[$otherIndex]);
+		}
+		return new self($keyTypes, $valueTypes, 0, $optionalKeys);
 	}
 
 	public function mergeWith(self $otherArray): self

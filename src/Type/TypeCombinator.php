@@ -716,6 +716,22 @@ class TypeCombinator
 
 	public static function intersect(Type ...$types): Type
 	{
+		$combinedConstantArray = null;
+		foreach ($types as $index => $type) {
+			if (!$type instanceof ConstantArrayType) {
+				continue;
+			}
+			unset($types[$index]);
+			if ($combinedConstantArray === null) {
+				$combinedConstantArray = clone $type;
+				continue;
+			}
+			$combinedConstantArray = $combinedConstantArray->merge($type);
+		}
+		if ($combinedConstantArray !== null) {
+			$types[] = $combinedConstantArray;
+		}
+
 		$types = array_values($types);
 
 		$sortTypes = static function (Type $a, Type $b): int {

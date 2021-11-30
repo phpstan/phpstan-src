@@ -51,7 +51,11 @@ class CleaningVisitor extends NodeVisitorAbstract
 				return in_array($node->name->toLowerString(), ParametersAcceptor::VARIADIC_FUNCTIONS, true);
 			}
 			if ($node instanceof Node\Stmt && $node->getDocComment() !== null) {
-				return strpos($node->getDocComment()->getText(), '@var') !== false;
+				foreach (['phpstan-', 'psalm-', ''] as $tagPrefix) {
+					if (strpos($node->getDocComment()->getText(), '@' . $tagPrefix . 'var') !== false) {
+						return true;
+					}
+				}
 			}
 
 			return false;

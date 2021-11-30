@@ -38,6 +38,8 @@ class InlineVars
         /** @var Test */
         /** @var Test2 */
         /** @var Test3 */
+        /** @phpstan-var Test */
+        /** @psalm-var Test */
         yield;
         \func_get_args();
     }

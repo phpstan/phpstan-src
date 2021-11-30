@@ -5,10 +5,10 @@ namespace PHPStan\Type;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
+use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\Parser;
-use PHPStan\PhpDoc\NameScopedPhpDocString;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -43,20 +43,14 @@ class FileTypeMapper
 
 	private \PHPStan\Broker\AnonymousClassNameHelper $anonymousClassNameHelper;
 
-	/** @var \PHPStan\PhpDoc\NameScopedPhpDocString[][] */
+	/** @var \PHPStan\Analyser\NameScope[][] */
 	private array $memoryCache = [];
 
-	/** @var (false|(callable(): \PHPStan\PhpDoc\NameScopedPhpDocString)|\PHPStan\PhpDoc\NameScopedPhpDocString)[][] */
+	/** @var (false|(callable(): \PHPStan\Analyser\NameScope)|\PHPStan\Analyser\NameScope)[][] */
 	private array $inProcess = [];
-
-	/** @var array<string, ResolvedPhpDocBlock> */
-	private array $resolvedPhpDocBlockCache = [];
 
 	/** @var array<string, bool> */
 	private array $alreadyProcessedDependentFiles = [];
-
-	/** @var array<string, string> */
-	private array $docKeys = [];
 
 	public function __construct(
 		ReflectionProviderProvider $reflectionProviderProvider,
@@ -88,43 +82,37 @@ class FileTypeMapper
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		$phpDocKey = $this->getPhpDocKey($fileName, $className, $traitName, $functionName, $docComment);
-		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {
-			return $this->resolvedPhpDocBlockCache[$phpDocKey];
-		}
-
-		$phpDocMap = [];
+		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
+		$nameScopeMap = [];
 
 		if (!isset($this->inProcess[$fileName])) {
-			$phpDocMap = $this->getResolvedPhpDocMap($fileName);
+			$nameScopeMap = $this->getNameScopeMap($fileName);
 		}
 
-		if (isset($phpDocMap[$phpDocKey])) {
-			return $this->createResolvedPhpDocBlock($phpDocKey, $phpDocMap[$phpDocKey], $fileName);
+		if (isset($nameScopeMap[$nameScopeKey])) {
+			return $this->createResolvedPhpDocBlock($nameScopeMap[$nameScopeKey], $docComment, $fileName);
 		}
 
-		if (!isset($this->inProcess[$fileName][$phpDocKey])) { // wrong $fileName due to traits
+		if (!isset($this->inProcess[$fileName][$nameScopeKey])) { // wrong $fileName due to traits
 			return ResolvedPhpDocBlock::createEmpty();
 		}
 
-		if ($this->inProcess[$fileName][$phpDocKey] === false) { // PHPDoc has cyclic dependency
+		if ($this->inProcess[$fileName][$nameScopeKey] === false) { // PHPDoc has cyclic dependency
 			return ResolvedPhpDocBlock::createEmpty();
 		}
 
-		if (is_callable($this->inProcess[$fileName][$phpDocKey])) {
-			$resolveCallback = $this->inProcess[$fileName][$phpDocKey];
-			$this->inProcess[$fileName][$phpDocKey] = false;
-			$this->inProcess[$fileName][$phpDocKey] = $resolveCallback();
+		if (is_callable($this->inProcess[$fileName][$nameScopeKey])) {
+			$resolveCallback = $this->inProcess[$fileName][$nameScopeKey];
+			$this->inProcess[$fileName][$nameScopeKey] = false;
+			$this->inProcess[$fileName][$nameScopeKey] = $resolveCallback();
 		}
 
-		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$phpDocKey], $fileName);
+		return $this->createResolvedPhpDocBlock($this->inProcess[$fileName][$nameScopeKey], $docComment, $fileName);
 	}
 
-	private function createResolvedPhpDocBlock(string $phpDocKey, NameScopedPhpDocString $nameScopedPhpDocString, string $fileName): ResolvedPhpDocBlock
+	private function createResolvedPhpDocBlock(NameScope $nameScope, string $phpDocString, string $fileName): ResolvedPhpDocBlock
 	{
-		$phpDocString = $nameScopedPhpDocString->getPhpDocString();
 		$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
-		$nameScope = $nameScopedPhpDocString->getNameScope();
 		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 		$templateTypeScope = $nameScope->getTemplateTypeScope();
 
@@ -152,7 +140,7 @@ class FileTypeMapper
 			$templateTypeMap = TemplateTypeMap::createEmpty();
 		}
 
-		$this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
+		return ResolvedPhpDocBlock::create(
 			$phpDocNode,
 			$phpDocString,
 			$fileName,
@@ -161,8 +149,6 @@ class FileTypeMapper
 			$templateTags,
 			$this->phpDocNodeResolver
 		);
-
-		return $this->resolvedPhpDocBlockCache[$phpDocKey];
 	}
 
 	private function resolvePhpDocStringToDocNode(string $phpDocString): PhpDocNode
@@ -212,12 +198,12 @@ class FileTypeMapper
 
 	/**
 	 * @param string $fileName
-	 * @return \PHPStan\PhpDoc\NameScopedPhpDocString[]
+	 * @return \PHPStan\Analyser\NameScope[]
 	 */
-	private function getResolvedPhpDocMap(string $fileName): array
+	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v12-inline-prefixed-vars', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v13-namescope', $fileName);
 			$variableCacheKey = implode(',', array_map(static function (array $file): string {
 				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
 			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
@@ -236,27 +222,27 @@ class FileTypeMapper
 
 	/**
 	 * @param string $fileName
-	 * @return \PHPStan\PhpDoc\NameScopedPhpDocString[]
+	 * @return \PHPStan\Analyser\NameScope[]
 	 */
 	private function createResolvedPhpDocMap(string $fileName): array
 	{
-		$phpDocMap = $this->createFilePhpDocMap($fileName, null, null);
-		$resolvedPhpDocMap = [];
+		$nameScopeMap = $this->createNameScopeMap($fileName, null, null);
+		$resolvedNameScopeMap = [];
 
 		try {
-			$this->inProcess[$fileName] = $phpDocMap;
+			$this->inProcess[$fileName] = $nameScopeMap;
 
-			foreach ($phpDocMap as $phpDocKey => $resolveCallback) {
-				$this->inProcess[$fileName][$phpDocKey] = false;
-				$this->inProcess[$fileName][$phpDocKey] = $data = $resolveCallback();
-				$resolvedPhpDocMap[$phpDocKey] = $data;
+			foreach ($nameScopeMap as $nameScopeKey => $resolveCallback) {
+				$this->inProcess[$fileName][$nameScopeKey] = false;
+				$this->inProcess[$fileName][$nameScopeKey] = $data = $resolveCallback();
+				$resolvedNameScopeMap[$nameScopeKey] = $data;
 			}
 
 		} finally {
 			unset($this->inProcess[$fileName]);
 		}
 
-		return $resolvedPhpDocMap;
+		return $resolvedNameScopeMap;
 	}
 
 	/**
@@ -264,17 +250,17 @@ class FileTypeMapper
 	 * @param string|null $lookForTrait
 	 * @param string|null $traitUseClass
 	 * @param array<string, string> $traitMethodAliases
-	 * @return (callable(): \PHPStan\PhpDoc\NameScopedPhpDocString)[]
+	 * @return (callable(): \PHPStan\Analyser\NameScope)[]
 	 */
-	private function createFilePhpDocMap(
+	private function createNameScopeMap(
 		string $fileName,
 		?string $lookForTrait,
 		?string $traitUseClass,
 		array $traitMethodAliases = []
 	): array
 	{
-		/** @var (callable(): \PHPStan\PhpDoc\NameScopedPhpDocString)[] $phpDocMap */
-		$phpDocMap = [];
+		/** @var (callable(): \PHPStan\Analyser\NameScope)[] $nameScopeMap */
+		$nameScopeMap = [];
 
 		/** @var (callable(): TemplateTypeMap)[] $typeMapStack */
 		$typeMapStack = [];
@@ -295,8 +281,7 @@ class FileTypeMapper
 		$uses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$phpDocMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
-				$resolvableTemplateTypes = false;
+			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($lookForTrait !== null) {
 						if (!$node instanceof Node\Stmt\Trait_) {
@@ -320,49 +305,63 @@ class FileTypeMapper
 						$classStack[] = $className;
 						$typeAliasStack[] = $this->getTypeAliasesMap($node->getDocComment());
 						$functionStack[] = null;
-						$resolvableTemplateTypes = true;
 					}
-				} elseif ($node instanceof Node\Stmt\TraitUse) {
-					$resolvableTemplateTypes = true;
 				} elseif ($node instanceof Node\Stmt\ClassMethod) {
 					if (array_key_exists($node->name->name, $traitMethodAliases)) {
 						$functionStack[] = $traitMethodAliases[$node->name->name];
 					} else {
 						$functionStack[] = $node->name->name;
 					}
-					$resolvableTemplateTypes = true;
-				} elseif (
-					$node instanceof Node\Param
-					&& $node->flags !== 0
-				) {
-					$resolvableTemplateTypes = true;
 				} elseif ($node instanceof Node\Stmt\Function_) {
 					$functionStack[] = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
-					$resolvableTemplateTypes = true;
-				} elseif ($node instanceof Node\Stmt\Property) {
-					$resolvableTemplateTypes = true;
-				} elseif (
-					!$node instanceof Node\Stmt
-					&& !$node instanceof Node\Expr\Assign
-					&& !$node instanceof Node\Expr\AssignRef
-				) {
-					return null;
 				}
 
-				foreach (array_reverse($node->getComments()) as $comment) {
-					if (!$comment instanceof Doc) {
-						continue;
+				$className = $classStack[count($classStack) - 1] ?? null;
+				$functionName = $functionStack[count($functionStack) - 1] ?? null;
+
+				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+					$phpDocString = GetLastDocComment::forNode($node);
+					if ($phpDocString !== '') {
+						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack): TemplateTypeMap {
+							$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
+							$nameScope = new NameScope($namespace, $uses, $className, $functionName);
+							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
+							$templateTypeScope = $nameScope->getTemplateTypeScope();
+							if ($templateTypeScope === null) {
+								throw new \PHPStan\ShouldNotHappenException();
+							}
+							$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
+								return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
+							}, $templateTags));
+							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
+
+							return new TemplateTypeMap(array_merge(
+								$typeMapCb !== null ? $typeMapCb()->getTypes() : [],
+								$templateTypeMap->getTypes()
+							));
+						};
 					}
+				}
 
-					$phpDocString = $comment->getText();
-					$className = $classStack[count($classStack) - 1] ?? null;
-					$functionName = $functionStack[count($functionStack) - 1] ?? null;
-					$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
-					$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
+				$resolvableTemplateTypes = ($className !== null && $lookForTrait === null) || $functionName !== null;
+				$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
+				$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
 
-					$phpDocKey = $this->getPhpDocKey($fileName, $className, $lookForTrait, $functionName, $phpDocString);
-					$phpDocMap[$phpDocKey] = static function () use ($phpDocString, $namespace, $uses, $className, $functionName, $typeMapCb, $typeAliasesMap, $resolvableTemplateTypes): NameScopedPhpDocString {
-						$nameScope = new NameScope(
+				$nameScopeKey = $this->getNameScopeKey($fileName, $className, $lookForTrait, $functionName);
+				if (
+					$node instanceof Node\Stmt
+					&& !$node instanceof Node\Stmt\Namespace_
+					&& !$node instanceof Node\Stmt\Declare_
+					&& !$node instanceof Node\Stmt\DeclareDeclare
+					&& !$node instanceof Node\Stmt\Use_
+					&& !$node instanceof Node\Stmt\UseUse
+					&& !$node instanceof Node\Stmt\GroupUse
+					&& !$node instanceof Node\Stmt\TraitUse
+					&& !$node instanceof Node\Stmt\TraitUseAdaptation
+					&& !array_key_exists($nameScopeKey, $nameScopeMap)
+				) {
+					$nameScopeMap[$nameScopeKey] = static function () use ($namespace, $uses, $className, $functionName, $typeMapCb, $typeAliasesMap, $resolvableTemplateTypes): NameScope {
+						return new NameScope(
 							$namespace,
 							$uses,
 							$className,
@@ -388,28 +387,16 @@ class FileTypeMapper
 							}),
 							$typeAliasesMap
 						);
-						return new NameScopedPhpDocString($phpDocString, $nameScope);
 					};
+				}
 
-					if (!($node instanceof Node\Stmt\ClassLike) && !($node instanceof Node\FunctionLike)) {
-						continue;
+				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+					$phpDocString = GetLastDocComment::forNode($node);
+					if ($phpDocString !== '') {
+						return self::POP_TYPE_MAP_STACK;
 					}
 
-					$typeMapStack[] = function () use ($fileName, $className, $lookForTrait, $functionName, $phpDocString, $typeMapCb): TemplateTypeMap {
-						$resolvedPhpDoc = $this->getResolvedPhpDoc(
-							$fileName,
-							$className,
-							$lookForTrait,
-							$functionName,
-							$phpDocString
-						);
-						return new TemplateTypeMap(array_merge(
-							$typeMapCb !== null ? $typeMapCb()->getTypes() : [],
-							$resolvedPhpDoc->getTemplateTypeMap()->getTypes()
-						));
-					};
-
-					return self::POP_TYPE_MAP_STACK;
+					return null;
 				}
 
 				if ($node instanceof \PhpParser\Node\Stmt\Namespace_) {
@@ -474,16 +461,16 @@ class FileTypeMapper
 							throw new \PHPStan\ShouldNotHappenException();
 						}
 
-						$traitPhpDocMap = $this->createFilePhpDocMap(
+						$traitPhpDocMap = $this->createNameScopeMap(
 							$traitReflection->getFileName(),
 							$traitName,
 							$className,
 							$traitMethodAliases[$traitName] ?? []
 						);
 						$finalTraitPhpDocMap = [];
-						foreach ($traitPhpDocMap as $phpDocKey => $callback) {
-							$finalTraitPhpDocMap[$phpDocKey] = function () use ($callback, $traitReflection, $fileName, $className, $lookForTrait, $useDocComment): NameScopedPhpDocString {
-								/** @var NameScopedPhpDocString $original */
+						foreach ($traitPhpDocMap as $nameScopeTraitKey => $callback) {
+							$finalTraitPhpDocMap[$nameScopeTraitKey] = function () use ($callback, $traitReflection, $fileName, $className, $lookForTrait, $useDocComment): NameScope {
+								/** @var NameScope $original */
 								$original = $callback();
 								if (!$traitReflection->isGeneric()) {
 									return $original;
@@ -516,23 +503,17 @@ class FileTypeMapper
 								}
 
 								if ($useType === null) {
-									return new NameScopedPhpDocString(
-										$original->getPhpDocString(),
-										$original->getNameScope()->withTemplateTypeMap($traitTemplateTypeMap->resolveToBounds())
-									);
+									return $original->withTemplateTypeMap($traitTemplateTypeMap->resolveToBounds());
 								}
 
 								$transformedTraitTypeMap = $traitReflection->typeMapFromList($useType->getTypes());
 
-								return new NameScopedPhpDocString(
-									$original->getPhpDocString(),
-									$original->getNameScope()->withTemplateTypeMap($traitTemplateTypeMap->map(static function (string $name, Type $type) use ($transformedTraitTypeMap): Type {
-										return TemplateTypeHelper::resolveTemplateTypes($type, $transformedTraitTypeMap);
-									}))
-								);
+								return $original->withTemplateTypeMap($traitTemplateTypeMap->map(static function (string $name, Type $type) use ($transformedTraitTypeMap): Type {
+									return TemplateTypeHelper::resolveTemplateTypes($type, $transformedTraitTypeMap);
+								}));
 							};
 						}
-						$phpDocMap = array_merge($phpDocMap, $finalTraitPhpDocMap);
+						$nameScopeMap = array_merge($nameScopeMap, $finalTraitPhpDocMap);
 					}
 				}
 
@@ -581,7 +562,7 @@ class FileTypeMapper
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
-		return $phpDocMap;
+		return $nameScopeMap;
 	}
 
 	/**
@@ -633,25 +614,18 @@ class FileTypeMapper
 		}
 	}
 
-	private function getPhpDocKey(
+	private function getNameScopeKey(
 		string $file,
 		?string $class,
 		?string $trait,
-		?string $function,
-		string $docComment
+		?string $function
 	): string
 	{
-		$cacheKey = md5($docComment);
-		if (!isset($this->docKeys[$cacheKey])) {
-			$this->docKeys[$cacheKey] = \Nette\Utils\Strings::replace($docComment, '#\s+#', ' ');
-		}
-		$docComment = $this->docKeys[$cacheKey];
-
 		if ($class === null && $trait === null && $function === null) {
-			return md5(sprintf('%s-%s', $file, $docComment));
+			return md5(sprintf('%s', $file));
 		}
 
-		return md5(sprintf('%s-%s-%s-%s', $class, $trait, $function, $docComment));
+		return md5(sprintf('%s-%s-%s', $class, $trait, $function));
 	}
 
 	/**

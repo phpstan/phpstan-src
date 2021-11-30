@@ -104,12 +104,12 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4486.php'], [
 			[
-				'PHPDoc tag @var for variable $one contains unknown class Bug4486\ClassName1.',
+				'PHPDoc tag @var for variable $one contains unknown class Some\Namespaced\ClassName1.',
 				10,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'PHPDoc tag @var for variable $two contains unknown class Bug4486\ClassName2.',
+				'PHPDoc tag @var for variable $two contains unknown class Some\Namespaced\ClassName2.',
 				10,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
@@ -125,7 +125,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4486-ns.php'], [
 			[
-				'PHPDoc tag @var for variable $one contains unknown class ClassName1.',
+				'PHPDoc tag @var for variable $one contains unknown class Bug4486Namespace\ClassName1.',
 				6,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],

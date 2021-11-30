@@ -73,4 +73,18 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDuplicateEnumCase(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
+		}
+
+		$this->analyse([__DIR__ . '/data/duplicate-enum-cases.php'], [
+			[
+				'Cannot redeclare enum case DuplicatedEnumCase\Foo::BAR.',
+				9,
+			],
+		]);
+	}
+
 }

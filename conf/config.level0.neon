@@ -32,6 +32,7 @@ rules:
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
 	- PHPStan\Rules\Constants\FinalConstantRule
+	- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
 	- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule

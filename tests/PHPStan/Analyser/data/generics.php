@@ -371,7 +371,7 @@ class C
 		/** @var T */
 		$v = $cb();
 
-		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, argument)', $v);
+		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, parameter)', $v); // should be argument
 
 		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, argument)', $this->a);
 

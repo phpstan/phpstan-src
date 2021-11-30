@@ -859,7 +859,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return count($otherKeys) === 0;
 	}
 
-	public function merge(self $other): self {
+	public function merge(self $other): self
+	{
 		$keyTypes = $this->keyTypes;
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;

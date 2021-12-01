@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
@@ -72,7 +73,7 @@ class ArrayDestructuringRule implements Rule
 		if ($exprType instanceof ErrorType) {
 			return [];
 		}
-		if (!$exprType->isArray()->yes()) {
+		if (!$exprType->isArray()->yes() && !(new ObjectType(\ArrayAccess::class))->isSuperTypeOf($exprType)->yes()) {
 			return [
 				RuleErrorBuilder::message(sprintf('Cannot use array destructuring on %s.', $exprType->describe(VerbosityLevel::typeOnly())))->build(),
 			];

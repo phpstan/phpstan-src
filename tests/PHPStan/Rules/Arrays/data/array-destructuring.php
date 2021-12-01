@@ -23,3 +23,31 @@ class Foo
 	}
 
 }
+
+class ArrayObject implements \ArrayAccess
+{
+
+	public function offsetGet($key)
+	{
+		return true;
+	}
+
+	public function offsetSet($key, $value): void
+	{
+	}
+
+	public function offsetUnset($key): void
+	{
+	}
+
+	public function offsetExists($key): bool
+	{
+		return false;
+	}
+
+	public function doFoo(): void
+	{
+		['a' => $a] = $this;
+	}
+
+}

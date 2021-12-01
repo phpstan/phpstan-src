@@ -105,6 +105,9 @@ class ConstantArrayTypeBuilder
 
 		$this->keyTypes[] = TypeUtils::generalizeType($offsetType, GeneralizePrecision::moreSpecific());
 		$this->valueTypes[] = $valueType;
+		if ($optional) {
+			$this->optionalKeys[] = count($this->keyTypes) - 1;
+		}
 		$this->degradeToGeneralArray = true;
 	}
 

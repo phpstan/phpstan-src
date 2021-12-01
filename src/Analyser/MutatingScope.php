@@ -1774,7 +1774,7 @@ class MutatingScope implements Scope
 						}
 					} else {
 						$arrayBuilder->degradeToGeneralArray();
-						$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType());
+						$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes() && !$valueType->getIterableValueType()->isIterableAtLeastOnce()->yes());
 					}
 				} else {
 					$arrayBuilder->setOffsetValueType(

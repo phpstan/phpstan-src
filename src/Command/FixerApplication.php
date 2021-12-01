@@ -313,7 +313,7 @@ class FixerApplication
 			throw new \PHPStan\Command\FixerProcessException();
 		}
 
-		$env = null;
+		$env = getenv();
 		$forcedPort = $_SERVER['PHPSTAN_PRO_WEB_PORT'] ?? null;
 		if ($forcedPort !== null) {
 			$env['PHPSTAN_PRO_WEB_PORT'] = $_SERVER['PHPSTAN_PRO_WEB_PORT'];

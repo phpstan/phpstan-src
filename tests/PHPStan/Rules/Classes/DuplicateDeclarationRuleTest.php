@@ -82,7 +82,15 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/duplicate-enum-cases.php'], [
 			[
 				'Cannot redeclare enum case DuplicatedEnumCase\Foo::BAR.',
-				9,
+				10,
+			],
+			[
+				'Cannot redeclare enum case DuplicatedEnumCase\Boo::BAR.',
+				17,
+			],
+			[
+				'Cannot redeclare constant DuplicatedEnumCase\Hoo::BAR.',
+				23,
 			],
 		]);
 	}

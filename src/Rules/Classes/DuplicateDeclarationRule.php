@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\EnumCase;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
@@ -31,35 +32,30 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 
 		$errors = [];
 
-		$declaredClassConstants = [];
-		foreach ($node->getOriginalNode()->getConstants() as $constDecl) {
-			foreach ($constDecl->consts as $const) {
-				if (array_key_exists($const->name->name, $declaredClassConstants)) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Cannot redeclare constant %s::%s.',
-						$classReflection->getDisplayName(),
-						$const->name->name
-					))->line($const->getLine())->nonIgnorable()->build();
-				} else {
-					$declaredClassConstants[$const->name->name] = true;
-				}
-			}
-		}
-
-		$declaredEnumCases = [];
+		$declaredClassConstantsOrEnumCases = [];
 		foreach ($node->getOriginalNode()->stmts as $stmtNode) {
-			if (!$stmtNode instanceof EnumCase) {
-				continue;
-			}
-
-			if (array_key_exists($stmtNode->name->name, $declaredEnumCases)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Cannot redeclare enum case %s::%s.',
-					$classReflection->getDisplayName(),
-					$stmtNode->name->name
-				))->line($stmtNode->getLine())->nonIgnorable()->build();
-			} else {
-				$declaredEnumCases[$stmtNode->name->name] = true;
+			if ($stmtNode instanceof EnumCase) {
+				if (array_key_exists($stmtNode->name->name, $declaredClassConstantsOrEnumCases)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Cannot redeclare enum case %s::%s.',
+						$classReflection->getDisplayName(),
+						$stmtNode->name->name
+					))->line($stmtNode->getLine())->nonIgnorable()->build();
+				} else {
+					$declaredClassConstantsOrEnumCases[$stmtNode->name->name] = true;
+				}
+			} elseif ($stmtNode instanceof ClassConst) {
+				foreach ($stmtNode->consts as $classConstNode) {
+					if (array_key_exists($classConstNode->name->name, $declaredClassConstantsOrEnumCases)) {
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'Cannot redeclare constant %s::%s.',
+							$classReflection->getDisplayName(),
+							$classConstNode->name->name
+						))->line($classConstNode->getLine())->nonIgnorable()->build();
+					} else {
+						$declaredClassConstantsOrEnumCases[$classConstNode->name->name] = true;
+					}
+				}
 			}
 		}
 

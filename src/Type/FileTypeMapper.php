@@ -85,6 +85,10 @@ class FileTypeMapper
 			throw new \PHPStan\ShouldNotHappenException();
 		}
 
+		if ($docComment === '') {
+			return ResolvedPhpDocBlock::createEmpty();
+		}
+
 		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
 		$phpDocKey = md5(sprintf('%s-%s', $nameScopeKey, $docComment));
 		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {

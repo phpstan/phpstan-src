@@ -66,7 +66,7 @@ class ArrayDestructuringRule implements Rule
 			$expr,
 			'',
 			static function (Type $varType): bool {
-				return $varType->isArray()->yes();
+				return $varType->isArray()->yes() || (new ObjectType(\ArrayAccess::class))->isSuperTypeOf($varType)->yes();
 			}
 		);
 		$exprType = $exprTypeResult->getType();

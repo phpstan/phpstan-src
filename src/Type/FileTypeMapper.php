@@ -49,6 +49,9 @@ class FileTypeMapper
 	/** @var (false|(callable(): \PHPStan\Analyser\NameScope)|\PHPStan\Analyser\NameScope)[][] */
 	private array $inProcess = [];
 
+	/** @var array<string, ResolvedPhpDocBlock> */
+	private array $resolvedPhpDocBlockCache = [];
+
 	/** @var array<string, bool> */
 	private array $alreadyProcessedDependentFiles = [];
 
@@ -83,6 +86,10 @@ class FileTypeMapper
 		}
 
 		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
+		$phpDocKey = md5(sprintf('%s-%s', $nameScopeKey, $docComment));
+		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {
+			return $this->resolvedPhpDocBlockCache[$phpDocKey];
+		}
 		$nameScopeMap = [];
 
 		if (!isset($this->inProcess[$fileName])) {
@@ -90,7 +97,7 @@ class FileTypeMapper
 		}
 
 		if (isset($nameScopeMap[$nameScopeKey])) {
-			return $this->createResolvedPhpDocBlock($nameScopeMap[$nameScopeKey], $docComment, $fileName);
+			return $this->createResolvedPhpDocBlock($phpDocKey, $nameScopeMap[$nameScopeKey], $docComment, $fileName);
 		}
 
 		if (!isset($this->inProcess[$fileName][$nameScopeKey])) { // wrong $fileName due to traits
@@ -107,10 +114,10 @@ class FileTypeMapper
 			$this->inProcess[$fileName][$nameScopeKey] = $resolveCallback();
 		}
 
-		return $this->createResolvedPhpDocBlock($this->inProcess[$fileName][$nameScopeKey], $docComment, $fileName);
+		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$nameScopeKey], $docComment, $fileName);
 	}
 
-	private function createResolvedPhpDocBlock(NameScope $nameScope, string $phpDocString, string $fileName): ResolvedPhpDocBlock
+	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, string $fileName): ResolvedPhpDocBlock
 	{
 		$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
 		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
@@ -140,7 +147,7 @@ class FileTypeMapper
 			$templateTypeMap = TemplateTypeMap::createEmpty();
 		}
 
-		return ResolvedPhpDocBlock::create(
+		return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
 			$phpDocNode,
 			$phpDocString,
 			$fileName,

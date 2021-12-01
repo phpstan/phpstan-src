@@ -22,9 +22,15 @@ class Foo
 		['a' => $a] = ['b' => 1];
 	}
 
+	public function doBaz(): void
+	{
+		$arrayObject = new FooArrayObject();
+		['a' => $a] = $arrayObject;
+	}
+
 }
 
-class ArrayObject implements \ArrayAccess
+class FooArrayObject implements \ArrayAccess
 {
 
 	public function offsetGet($key)
@@ -43,11 +49,6 @@ class ArrayObject implements \ArrayAccess
 	public function offsetExists($key): bool
 	{
 		return false;
-	}
-
-	public function doFoo(): void
-	{
-		['a' => $a] = $this;
 	}
 
 }

@@ -59,21 +59,6 @@ class InlineVars
 {
 	public function doFoo()
 	{
-		/** @var Test */
-		$foo = doFoo();
-
-		/** @var Test2 */
-		$foo = doFoo();
-
-		/** @var Test3 */
-		$foo = doFoo();
-
-		/** @phpstan-var Test */
-		$foo = doFoo();
-
-		/** @psalm-var Test */
-		$foo = doFoo();
-
 		if (rand(0, 1)) {
 			yield;
 		}

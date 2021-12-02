@@ -40,29 +40,49 @@ class EnumSanityRule implements \PHPStan\Rules\Rule
 				))->line($methodNode->getLine())->nonIgnorable()->build();
 			}
 
-			if (!$methodNode->isMagic()) {
-				continue;
-			}
-
 			$lowercasedMethodName = $methodNode->name->toLowerString();
 
-			if ($lowercasedMethodName === '__construct') {
+			if ($methodNode->isMagic()) {
+				if ($lowercasedMethodName === '__construct') {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Enum %s contains constructor.',
+						$node->namespacedName->toString()
+					))->line($methodNode->getLine())->nonIgnorable()->build();
+				} elseif ($lowercasedMethodName === '__destruct') {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Enum %s contains destructor.',
+						$node->namespacedName->toString()
+					))->line($methodNode->getLine())->nonIgnorable()->build();
+				} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Enum %s contains magic method %s().',
+						$node->namespacedName->toString(),
+						$methodNode->name->name
+					))->line($methodNode->getLine())->nonIgnorable()->build();
+				}
+			}
+
+			if ($lowercasedMethodName === 'cases') {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s contains constructor.',
-					$node->namespacedName->toString()
-				))->line($methodNode->getLine())->nonIgnorable()->build();
-			} elseif ($lowercasedMethodName === '__destruct') {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s contains destructor.',
-					$node->namespacedName->toString()
-				))->line($methodNode->getLine())->nonIgnorable()->build();
-			} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s contains magic method %s().',
+					'Enum %s cannot redeclare native method %s().',
 					$node->namespacedName->toString(),
 					$methodNode->name->name
 				))->line($methodNode->getLine())->nonIgnorable()->build();
 			}
+
+			if ($node->scalarType === null) {
+				continue;
+			}
+
+			if ($lowercasedMethodName !== 'from' && $lowercasedMethodName !== 'tryfrom') {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Enum %s cannot redeclare native method %s().',
+				$node->namespacedName->toString(),
+				$methodNode->name->name
+			))->line($methodNode->getLine())->nonIgnorable()->build();
 		}
 
 		return $errors;

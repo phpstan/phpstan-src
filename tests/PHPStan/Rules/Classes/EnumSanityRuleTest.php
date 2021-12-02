@@ -43,6 +43,22 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumWithMagicMethods contains magic method __set().',
 				30,
 			],
+			[
+				'Enum EnumSanity\PureEnumCannotRedeclareMethods cannot redeclare native method cases().',
+				39,
+			],
+			[
+				'Enum EnumSanity\BackedEnumCannotRedeclareMethods cannot redeclare native method cases().',
+				54,
+			],
+			[
+				'Enum EnumSanity\BackedEnumCannotRedeclareMethods cannot redeclare native method tryFrom().',
+				58,
+			],
+			[
+				'Enum EnumSanity\BackedEnumCannotRedeclareMethods cannot redeclare native method from().',
+				62,
+			],
 		]);
 	}
 

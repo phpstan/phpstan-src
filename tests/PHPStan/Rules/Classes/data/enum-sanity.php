@@ -33,3 +33,33 @@ enum EnumWithMagicMethods
 	public function __invoke()
 	{}
 }
+
+enum PureEnumCannotRedeclareMethods
+{
+	public static function cases()
+	{
+	}
+
+	public static function tryFrom()
+	{
+	}
+
+	public static function from()
+	{
+	}
+}
+
+enum BackedEnumCannotRedeclareMethods: int
+{
+	public static function cases()
+	{
+	}
+
+	public static function tryFrom()
+	{
+	}
+
+	public static function from()
+	{
+	}
+}

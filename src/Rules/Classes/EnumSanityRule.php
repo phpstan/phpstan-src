@@ -5,12 +5,19 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_key_exists;
 
 /**
  * @implements \PHPStan\Rules\Rule<Node\Stmt\Enum_>
  */
 class EnumSanityRule implements \PHPStan\Rules\Rule
 {
+
+	private const ALLOWED_MAGIC_METHODS = [
+		'__call' => true,
+		'__callstatic' => true,
+		'__invoke' => true,
+	];
 
 	public function getNodeType(): string
 	{
@@ -33,6 +40,10 @@ class EnumSanityRule implements \PHPStan\Rules\Rule
 				))->line($methodNode->getLine())->nonIgnorable()->build();
 			}
 
+			if (!$methodNode->isMagic()) {
+				continue;
+			}
+
 			$lowercasedMethodName = $methodNode->name->toLowerString();
 
 			if ($lowercasedMethodName === '__construct') {
@@ -44,6 +55,12 @@ class EnumSanityRule implements \PHPStan\Rules\Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Enum %s contains destructor.',
 					$node->namespacedName->toString()
+				))->line($methodNode->getLine())->nonIgnorable()->build();
+			} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum %s contains magic method %s().',
+					$node->namespacedName->toString(),
+					$methodNode->name->name
 				))->line($methodNode->getLine())->nonIgnorable()->build();
 			}
 		}

@@ -27,6 +27,14 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumWithAbstractMethod contains abstract method foo().',
 				7,
 			],
+			[
+				'Enum EnumSanity\EnumWithConstructorAndDestructor contains constructor.',
+				12,
+			],
+			[
+				'Enum EnumSanity\EnumWithConstructorAndDestructor contains destructor.',
+				15,
+			],
 		]);
 	}
 

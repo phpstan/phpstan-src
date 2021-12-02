@@ -8825,7 +8825,7 @@ return [
 'Postal\Expand::expand_address' => ['string[]', 'address'=>'string', 'options='=>'array<string, mixed>'],
 'Postal\Parser::parse_address' => ['array<string,string>', 'address'=>'string', 'options='=>'array<string, string>'],
 'pow' => ['float|int', 'base'=>'int|float', 'exponent'=>'int|float'],
-'preg_filter' => ['mixed', 'regex'=>'mixed', 'replace'=>'mixed', 'subject'=>'mixed', 'limit='=>'int', '&w_count='=>'int'],
+'preg_filter' => ['string|array|null', 'regex'=>'string|array', 'replace'=>'string|array', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],	
 'preg_grep' => ['array|false', 'regex'=>'string', 'input'=>'array', 'flags='=>'int'],
 'preg_last_error' => ['int'],
 'preg_match' => ['int|false', 'pattern'=>'string', 'subject'=>'string', '&w_subpatterns='=>'string[]', 'flags='=>'int', 'offset='=>'int'],

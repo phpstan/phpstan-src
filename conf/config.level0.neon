@@ -22,6 +22,7 @@ rules:
 	- PHPStan\Rules\Classes\ClassConstantAttributesRule
 	- PHPStan\Rules\Classes\ClassConstantRule
 	- PHPStan\Rules\Classes\DuplicateDeclarationRule
+	- PHPStan\Rules\Classes\EnumSanityRule
 	- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
 	- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule

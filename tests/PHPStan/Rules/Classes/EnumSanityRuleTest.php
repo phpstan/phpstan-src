@@ -59,6 +59,14 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\BackedEnumCannotRedeclareMethods cannot redeclare native method from().',
 				62,
 			],
+			[
+				'Backed enum EnumSanity\BackedEnumWithFloatType can have only "int" or "string" type.',
+				67,
+			],
+			[
+				'Backed enum EnumSanity\BackedEnumWithBoolType can have only "int" or "string" type.',
+				71,
+			],
 		]);
 	}
 

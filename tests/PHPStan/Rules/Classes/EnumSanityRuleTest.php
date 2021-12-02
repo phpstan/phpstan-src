@@ -35,6 +35,14 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumWithConstructorAndDestructor contains destructor.',
 				15,
 			],
+			[
+				'Enum EnumSanity\EnumWithMagicMethods contains magic method __get().',
+				21,
+			],
+			[
+				'Enum EnumSanity\EnumWithMagicMethods contains magic method __set().',
+				30,
+			],
 		]);
 	}
 

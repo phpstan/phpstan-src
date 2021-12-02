@@ -85,6 +85,17 @@ class EnumSanityRule implements \PHPStan\Rules\Rule
 			))->line($methodNode->getLine())->nonIgnorable()->build();
 		}
 
+		if (
+			$node->scalarType !== null
+			&& $node->scalarType->name !== 'int'
+			&& $node->scalarType->name !== 'string'
+		) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Backed enum %s can have only "int" or "string" type.',
+				$node->namespacedName->toString()
+			))->line($node->scalarType->getLine())->nonIgnorable()->build();
+		}
+
 		return $errors;
 	}
 

@@ -63,3 +63,11 @@ enum BackedEnumCannotRedeclareMethods: int
 	{
 	}
 }
+
+enum BackedEnumWithFloatType: float
+{
+}
+
+enum BackedEnumWithBoolType: bool
+{
+}

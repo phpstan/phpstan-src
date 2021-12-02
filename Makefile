@@ -29,6 +29,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Arrays/data/offset-access-without-dim-for-reading.php \
 		--exclude tests/PHPStan/Rules/Classes/data/duplicate-declarations.php \
 		--exclude tests/PHPStan/Rules/Classes/data/duplicate-enum-cases.php \
+		--exclude tests/PHPStan/Rules/Classes/data/enum-sanity.php \
 		--exclude tests/PHPStan/Rules/Classes/data/extends-error.php \
 		--exclude tests/PHPStan/Rules/Classes/data/implements-error.php \
 		--exclude tests/PHPStan/Rules/Classes/data/interface-extends-error.php \

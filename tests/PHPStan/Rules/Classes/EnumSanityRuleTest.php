@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<EnumSanityRule>
@@ -20,6 +21,10 @@ class EnumSanityRuleTest extends RuleTestCase
 	{
 		if (!self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires static reflection');
+		}
+
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
 		}
 
 		$this->analyse([__DIR__ . '/data/enum-sanity.php'], [

@@ -7,6 +7,9 @@ if (\PHP_VERSION_ID < 80000) {
 
 	class ReflectionAttribute
 	{
+
+		public const IS_INSTANCEOF = 2;
+
 		public function getName(): string
 		{
 		}

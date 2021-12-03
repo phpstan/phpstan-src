@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use const PHP_VERSION_ID;
 
 class AttributesCheck
 {
@@ -48,6 +49,10 @@ class AttributesCheck
 				$name = $attribute->name->toString();
 				if (!$this->reflectionProvider->hasClass($name)) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not exist.', $name))->line($attribute->getLine())->build();
+					continue;
+				}
+
+				if (PHP_VERSION_ID < 70200) {
 					continue;
 				}
 

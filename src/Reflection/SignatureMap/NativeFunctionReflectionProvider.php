@@ -3,7 +3,7 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\FunctionVariant;
@@ -31,16 +31,16 @@ class NativeFunctionReflectionProvider
 
 	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
 
-	private \PHPStan\BetterReflection\Reflector\FunctionReflector $functionReflector;
+	private Reflector $reflector;
 
 	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
-	public function __construct(SignatureMapProvider $signatureMapProvider, FunctionReflector $functionReflector, FileTypeMapper $fileTypeMapper, StubPhpDocProvider $stubPhpDocProvider)
+	public function __construct(SignatureMapProvider $signatureMapProvider, Reflector $reflector, FileTypeMapper $fileTypeMapper, StubPhpDocProvider $stubPhpDocProvider)
 	{
 		$this->signatureMapProvider = $signatureMapProvider;
-		$this->functionReflector = $functionReflector;
+		$this->reflector = $reflector;
 		$this->fileTypeMapper = $fileTypeMapper;
 		$this->stubPhpDocProvider = $stubPhpDocProvider;
 	}
@@ -146,7 +146,7 @@ class NativeFunctionReflectionProvider
 		$throwType = null;
 		$isDeprecated = false;
 		try {
-			$reflectionFunction = $this->functionReflector->reflect($functionName);
+			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			if ($reflectionFunction->getFileName() !== null) {
 				$fileName = $reflectionFunction->getFileName();
 				$docComment = $reflectionFunction->getDocComment();

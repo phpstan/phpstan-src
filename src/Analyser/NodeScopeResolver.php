@@ -47,7 +47,7 @@ use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
-use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
@@ -134,7 +134,7 @@ class NodeScopeResolver
 
 	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
-	private ClassReflector $classReflector;
+	private Reflector $reflector;
 
 	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
@@ -171,7 +171,7 @@ class NodeScopeResolver
 
 	/**
 	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param ClassReflector $classReflector
+	 * @param Reflector $reflector
 	 * @param Parser $parser
 	 * @param FileTypeMapper $fileTypeMapper
 	 * @param PhpDocInheritanceResolver $phpDocInheritanceResolver
@@ -185,7 +185,7 @@ class NodeScopeResolver
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		ClassReflector $classReflector,
+		Reflector $reflector,
 		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		Parser $parser,
 		FileTypeMapper $fileTypeMapper,
@@ -203,7 +203,7 @@ class NodeScopeResolver
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
-		$this->classReflector = $classReflector;
+		$this->reflector = $reflector;
 		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
 		$this->parser = $parser;
 		$this->fileTypeMapper = $fileTypeMapper;
@@ -1455,29 +1455,29 @@ class NodeScopeResolver
 	{
 		$className = $stmt->namespacedName->toString();
 		if (!$this->reflectionProvider->hasClass($className)) {
-			return $this->createAstClassReflection($stmt, $scope);
+			return $this->createAstClassReflection($stmt, $className, $scope);
 		}
 
 		$defaultClassReflection = $this->reflectionProvider->getClass($stmt->namespacedName->toString());
 		if ($defaultClassReflection->getFileName() !== $scope->getFile()) {
-			return $this->createAstClassReflection($stmt, $scope);
+			return $this->createAstClassReflection($stmt, $className, $scope);
 		}
 
 		$startLine = $defaultClassReflection->getNativeReflection()->getStartLine();
 		if ($startLine !== $stmt->getStartLine()) {
-			return $this->createAstClassReflection($stmt, $scope);
+			return $this->createAstClassReflection($stmt, $className, $scope);
 		}
 
 		return $defaultClassReflection;
 	}
 
-	private function createAstClassReflection(Node\Stmt\ClassLike $stmt, Scope $scope): ClassReflection
+	private function createAstClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection
 	{
 		$nodeToReflection = new NodeToReflection();
 		$betterReflectionClass = $nodeToReflection->__invoke(
-			$this->classReflector,
+			$this->reflector,
 			$stmt,
-			new LocatedSource(FileReader::read($scope->getFile()), $scope->getFile()),
+			new LocatedSource(FileReader::read($scope->getFile()), $className, $scope->getFile()),
 			$scope->getNamespace() !== null ? new Node\Stmt\Namespace_(new Name($scope->getNamespace())) : null
 		);
 		if (!$betterReflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionClass) {

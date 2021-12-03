@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\NodeTraverser;
-use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\File\FileReader;
 use PHPStan\Parser\Parser;
 
@@ -29,22 +28,20 @@ class FileNodesFetcher
 		$nodeTraverser->addVisitor($this->cachingVisitor);
 
 		$contents = FileReader::read($fileName);
-		$locatedSource = new LocatedSource($contents, $fileName);
 
 		try {
 			/** @var \PhpParser\Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
 		} catch (\PHPStan\Parser\ParserErrorsException $e) {
-			return new FetchedNodesResult([], [], [], $locatedSource);
+			return new FetchedNodesResult([], [], []);
 		}
-		$this->cachingVisitor->reset($fileName);
+		$this->cachingVisitor->reset($fileName, $contents);
 		$nodeTraverser->traverse($ast);
 
 		return new FetchedNodesResult(
 			$this->cachingVisitor->getClassNodes(),
 			$this->cachingVisitor->getFunctionNodes(),
-			$this->cachingVisitor->getConstantNodes(),
-			$locatedSource
+			$this->cachingVisitor->getConstantNodes()
 		);
 	}
 

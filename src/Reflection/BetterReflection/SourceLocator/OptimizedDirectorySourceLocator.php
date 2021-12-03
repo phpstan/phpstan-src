@@ -37,9 +37,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
 	private array $functionNodes = [];
 
-	/** @var array<string, \PHPStan\BetterReflection\SourceLocator\Located\LocatedSource> */
-	private array $locatedSourcesByFile = [];
-
 	/**
 	 * @param FileNodesFetcher $fileNodesFetcher
 	 * @param string[] $files
@@ -80,8 +77,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			}
 
 			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-			$locatedSource = $fetchedNodesResult->getLocatedSource();
-			$this->locatedSourcesByFile[$file] = $locatedSource;
 			foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
 				foreach ($fetchedClassNodes as $fetchedClassNode) {
 					$this->classNodes[$identifierName] = $fetchedClassNode;
@@ -105,8 +100,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			$files = $this->findFilesByFunction($functionName);
 			foreach ($files as $file) {
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-				$locatedSource = $fetchedNodesResult->getLocatedSource();
-				$this->locatedSourcesByFile[$file] = $locatedSource;
 				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
 					$this->functionNodes[$identifierName] = $fetchedFunctionNode;
 				}
@@ -130,18 +123,12 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode): Reflection
 	{
 		$nodeToReflection = new NodeToReflection();
-		$reflection = $nodeToReflection->__invoke(
+		return $nodeToReflection->__invoke(
 			$reflector,
 			$fetchedNode->getNode(),
-			$this->locatedSourcesByFile[$fetchedNode->getFileName()],
+			$fetchedNode->getLocatedSource(),
 			$fetchedNode->getNamespace()
 		);
-
-		if ($reflection === null) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
-		return $reflection;
 	}
 
 	private function findFileByClass(string $className): ?string

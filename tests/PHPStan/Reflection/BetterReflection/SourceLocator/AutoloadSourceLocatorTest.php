@@ -3,9 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
-use PHPStan\BetterReflection\Reflector\ClassReflector;
-use PHPStan\BetterReflection\Reflector\ConstantReflector;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\Testing\PHPStanTestCase;
 use TestSingleFileSourceLocator\AFoo;
 use TestSingleFileSourceLocator\InCondition;
@@ -20,36 +18,32 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 
 	public function testAutoloadEverythingInFile(): void
 	{
-		/** @var FunctionReflector $functionReflector */
-		$functionReflector = null;
 		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
-		$classReflector = new ClassReflector($locator);
-		$functionReflector = new FunctionReflector($locator, $classReflector);
-		$constantReflector = new ConstantReflector($locator, $classReflector);
-		$aFoo = $classReflector->reflect(AFoo::class);
+		$reflector = new DefaultReflector($locator);
+		$aFoo = $reflector->reflectClass(AFoo::class);
 		$this->assertNotNull($aFoo->getFileName());
 		$this->assertSame('a.php', basename($aFoo->getFileName()));
 
-		$testFunctionReflection = $functionReflector->reflect('PHPStan\\Reflection\\BetterReflection\\SourceLocator\testFunctionForLocator');
+		$testFunctionReflection = $reflector->reflectFunction('PHPStan\\Reflection\\BetterReflection\\SourceLocator\testFunctionForLocator');
 		$this->assertSame(str_replace('\\', '/', __FILE__), $testFunctionReflection->getFileName());
 
-		$someConstant = $constantReflector->reflect('TestSingleFileSourceLocator\\SOME_CONSTANT');
+		$someConstant = $reflector->reflectConstant('TestSingleFileSourceLocator\\SOME_CONSTANT');
 		$this->assertNotNull($someConstant->getFileName());
 		$this->assertSame('a.php', basename($someConstant->getFileName()));
 		$this->assertSame(1, $someConstant->getValue());
 
-		$anotherConstant = $constantReflector->reflect('TestSingleFileSourceLocator\\ANOTHER_CONSTANT');
+		$anotherConstant = $reflector->reflectConstant('TestSingleFileSourceLocator\\ANOTHER_CONSTANT');
 		$this->assertNotNull($anotherConstant->getFileName());
 		$this->assertSame('a.php', basename($anotherConstant->getFileName()));
 		$this->assertSame(2, $anotherConstant->getValue());
 
-		$doFooFunctionReflection = $functionReflector->reflect('TestSingleFileSourceLocator\\doFoo');
+		$doFooFunctionReflection = $reflector->reflectFunction('TestSingleFileSourceLocator\\doFoo');
 		$this->assertSame('TestSingleFileSourceLocator\\doFoo', $doFooFunctionReflection->getName());
 		$this->assertNotNull($doFooFunctionReflection->getFileName());
 		$this->assertSame('a.php', basename($doFooFunctionReflection->getFileName()));
 
 		class_exists(InCondition::class);
-		$classInCondition = $classReflector->reflect(InCondition::class);
+		$classInCondition = $reflector->reflectClass(InCondition::class);
 		$classInConditionFilename = $classInCondition->getFileName();
 		$this->assertNotNull($classInConditionFilename);
 		$this->assertSame('a.php', basename($classInConditionFilename));

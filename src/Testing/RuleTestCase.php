@@ -48,7 +48,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 			$typeSpecifier = $this->getTypeSpecifier();
 			$nodeScopeResolver = new NodeScopeResolver(
 				$reflectionProvider,
-				self::getReflectors()[0],
+				self::getReflector(),
 				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),
 				self::getContainer()->getByType(FileTypeMapper::class),

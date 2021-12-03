@@ -14,33 +14,17 @@ services:
 			stubFiles: %stubFiles%
 
 	nodeScopeResolverClassReflector:
-		factory: @stubClassReflector
+		factory: @stubReflector
 
 	stubBetterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:
-			classReflector: @stubClassReflector
-			functionReflector: @stubFunctionReflector
-			constantReflector: @stubConstantReflector
+			reflector: @stubReflector
 		autowired: false
 
-	stubClassReflector:
-		class: PHPStan\BetterReflection\Reflector\ClassReflector
+	stubReflector:
+		class: PHPStan\BetterReflection\Reflector\DefaultReflector
 		arguments:
-			sourceLocator: @stubSourceLocator
-		autowired: false
-
-	stubFunctionReflector:
-		class: PHPStan\BetterReflection\Reflector\FunctionReflector
-		arguments:
-			classReflector: @stubClassReflector
-			sourceLocator: @stubSourceLocator
-		autowired: false
-
-	stubConstantReflector:
-		class: PHPStan\BetterReflection\Reflector\ConstantReflector
-		arguments:
-			classReflector: @stubClassReflector
 			sourceLocator: @stubSourceLocator
 		autowired: false
 

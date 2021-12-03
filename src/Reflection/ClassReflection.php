@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -956,17 +955,6 @@ class ClassReflection
 	private function findAttributeClass(): ?Attribute
 	{
 		if ($this->isInterface() || $this->isTrait()) {
-			return null;
-		}
-
-		if ($this->reflection instanceof ReflectionClass) {
-			foreach ($this->reflection->getBetterReflection()->getAttributes() as $attribute) {
-				if ($attribute->getName() === \Attribute::class) {
-					/** @var \Attribute */
-					return $attribute->newInstance();
-				}
-			}
-
 			return null;
 		}
 

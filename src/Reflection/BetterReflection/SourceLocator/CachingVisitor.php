@@ -6,12 +6,15 @@ use PhpParser\BuilderHelpers;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
+use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\Util\ConstantNodeChecker;
 
 class CachingVisitor extends NodeVisitorAbstract
 {
 
 	private string $fileName;
+
+	private string $contents;
 
 	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
 	private array $classNodes;
@@ -39,7 +42,8 @@ class CachingVisitor extends NodeVisitorAbstract
 				$this->classNodes[strtolower($fullClassName)][] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
-					$this->fileName
+					$this->fileName,
+					new LocatedSource($this->contents, $fullClassName, $this->fileName)
 				);
 			}
 
@@ -47,10 +51,12 @@ class CachingVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof \PhpParser\Node\Stmt\Function_) {
-			$this->functionNodes[strtolower($node->namespacedName->toString())] = new FetchedNode(
+			$functionName = $node->namespacedName->toString();
+			$this->functionNodes[strtolower($functionName)] = new FetchedNode(
 				$node,
 				$this->currentNamespaceNode,
-				$this->fileName
+				$this->fileName,
+				new LocatedSource($this->contents, $functionName, $this->fileName)
 			);
 
 			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
@@ -60,7 +66,8 @@ class CachingVisitor extends NodeVisitorAbstract
 			$this->constantNodes[] = new FetchedNode(
 				$node,
 				$this->currentNamespaceNode,
-				$this->fileName
+				$this->fileName,
+				new LocatedSource($this->contents, null, $this->fileName)
 			);
 
 			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
@@ -85,7 +92,8 @@ class CachingVisitor extends NodeVisitorAbstract
 			$constantNode = new FetchedNode(
 				$node,
 				$this->currentNamespaceNode,
-				$this->fileName
+				$this->fileName,
+				new LocatedSource($this->contents, $constantName, $this->fileName)
 			);
 			$this->constantNodes[] = $constantNode;
 
@@ -133,12 +141,13 @@ class CachingVisitor extends NodeVisitorAbstract
 		return $this->constantNodes;
 	}
 
-	public function reset(string $fileName): void
+	public function reset(string $fileName, string $contents): void
 	{
 		$this->classNodes = [];
 		$this->functionNodes = [];
 		$this->constantNodes = [];
 		$this->fileName = $fileName;
+		$this->contents = $contents;
 	}
 
 }

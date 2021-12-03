@@ -15,29 +15,18 @@ services:
 	testCaseBetterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:
-			classReflector: @testCaseClassReflector
-			functionReflector: @testCaseFunctionReflector
-			constantReflector: @testCaseConstantReflector
+			reflector: @testCaseReflector
 		autowired: false
 
-	testCaseClassReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector
+	originalTestCaseReflector:
+		class: PHPStan\BetterReflection\Reflector\DefaultReflector
 		arguments:
 			sourceLocator: @testCaseSourceLocator
-		autowired: false
 
-	testCaseFunctionReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector
+	testCaseReflector:
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector
 		arguments:
-			classReflector: @testCaseClassReflector
-			sourceLocator: @testCaseSourceLocator
-		autowired: false
-
-	testCaseConstantReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector
-		arguments:
-			classReflector: @testCaseClassReflector
-			sourceLocator: @testCaseSourceLocator
+			reflector: @originalTestCaseReflector
 		autowired: false
 
 	testCaseSourceLocator:

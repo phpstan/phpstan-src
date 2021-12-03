@@ -38,7 +38,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$resolver = new NodeScopeResolver(
 			$reflectionProvider,
-			self::getReflectors()[0],
+			self::getReflector(),
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),

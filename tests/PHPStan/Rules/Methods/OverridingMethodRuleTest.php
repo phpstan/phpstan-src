@@ -550,6 +550,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires static reflection.');
 		}
 
+		if (PHP_VERSION_ID < 80100) {
+			$errors = [];
+		}
+
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], $errors);
 	}

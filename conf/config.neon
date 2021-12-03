@@ -413,7 +413,7 @@ services:
 		class: PHPStan\Analyser\NodeScopeResolver
 		arguments:
 			parser: @defaultAnalysisParser
-			classReflector: @nodeScopeResolverClassReflector
+			reflector: @nodeScopeResolverReflector
 			polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
@@ -680,7 +680,7 @@ services:
 	-
 		class: PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider
 		arguments:
-			functionReflector: @betterReflectionFunctionReflector
+			reflector: @betterReflectionReflector
 
 	-
 		class: PHPStan\Reflection\SignatureMap\SignatureMapParser
@@ -1632,36 +1632,25 @@ services:
 		factory: @PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory::create
 		autowired: false
 
-	betterReflectionClassReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector
+	originalBetterReflectionReflector:
+		class: PHPStan\BetterReflection\Reflector\DefaultReflector
 		arguments:
 			sourceLocator: @betterReflectionSourceLocator
-		autowired: false
 
-	nodeScopeResolverClassReflector:
-		factory: @betterReflectionClassReflector
-		autowired: false
-
-	betterReflectionFunctionReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector
+	betterReflectionReflector:
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector
 		arguments:
-			classReflector: @betterReflectionClassReflector
-			sourceLocator: @betterReflectionSourceLocator
+			reflector: @originalBetterReflectionReflector
 		autowired: false
 
-	betterReflectionConstantReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector
-		arguments:
-			classReflector: @betterReflectionClassReflector
-			sourceLocator: @betterReflectionSourceLocator
+	nodeScopeResolverReflector:
+		factory: @betterReflectionReflector
 		autowired: false
 
 	betterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:
-			classReflector: @betterReflectionClassReflector
-			functionReflector: @betterReflectionFunctionReflector
-			constantReflector: @betterReflectionConstantReflector
+			reflector: @betterReflectionReflector
 		autowired: false
 
 	regexParser:
@@ -1701,10 +1690,12 @@ services:
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory
 
 	-
-		class: PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
+		class: PHPStan\Reflection\BetterReflection\SourceStubber\PhpStormStubsSourceStubberFactory
 		arguments:
 			phpParser: @php8PhpParser
-			phpVersionId: %phpVersion%
+
+	-
+		factory: @PHPStan\Reflection\BetterReflection\SourceStubber\PhpStormStubsSourceStubberFactory::create()
 		autowired:
 			- PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 

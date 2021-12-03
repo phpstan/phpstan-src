@@ -2,9 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PHPStan\BetterReflection\Reflector\ClassReflector;
+use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\Testing\PHPStanTestCase;
 use TestDirectorySourceLocator\AFoo;
 
@@ -46,8 +45,8 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
-		$classReflector = new ClassReflector($locator);
-		$classReflection = $classReflector->reflect($className);
+		$reflector = new DefaultReflector($locator);
+		$classReflection = $reflector->reflectClass($className);
 		$this->assertSame($expectedClassName, $classReflection->getName());
 		$this->assertNotNull($classReflection->getFileName());
 		$this->assertSame($file, basename($classReflection->getFileName()));
@@ -104,9 +103,8 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
-		$classReflector = new ClassReflector($locator);
-		$functionReflector = new FunctionReflector($locator, $classReflector);
-		$functionReflection = $functionReflector->reflect($functionName);
+		$reflector = new DefaultReflector($locator);
+		$functionReflection = $reflector->reflectFunction($functionName);
 		$this->assertSame($expectedFunctionName, $functionReflection->getName());
 		$this->assertNotNull($functionReflection->getFileName());
 		$this->assertSame($file, basename($functionReflection->getFileName()));
@@ -128,11 +126,10 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
-		$classReflector = new ClassReflector($locator);
-		$functionReflector = new FunctionReflector($locator, $classReflector);
+		$reflector = new DefaultReflector($locator);
 
 		$this->expectException(IdentifierNotFound::class);
-		$functionReflector->reflect($functionName);
+		$reflector->reflectFunction($functionName);
 	}
 
 	public function testBug5525(): void
@@ -143,9 +140,9 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->createByFiles([__DIR__ . '/data/bug-5525.php']);
-		$classReflector = new ClassReflector($locator);
+		$reflector = new DefaultReflector($locator);
 
-		$class = $classReflector->reflect('Faker\\Provider\\nl_BE\\Text');
+		$class = $reflector->reflectClass('Faker\\Provider\\nl_BE\\Text');
 
 		/** @var string $className */
 		$className = $class->getName();

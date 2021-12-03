@@ -69,7 +69,7 @@ services:
 	-
 		class: PHPStan\Rules\Functions\ReturnTypeRule
 		arguments:
-			functionReflector: @betterReflectionFunctionReflector
+			reflector: @betterReflectionReflector
 		tags:
 			- phpstan.rules.rule
 

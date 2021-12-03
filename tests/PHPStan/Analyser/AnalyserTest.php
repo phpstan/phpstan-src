@@ -492,7 +492,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$reflectionProvider,
-			self::getReflectors()[0],
+			self::getReflector(),
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,

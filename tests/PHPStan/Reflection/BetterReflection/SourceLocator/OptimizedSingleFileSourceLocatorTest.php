@@ -2,10 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PHPStan\BetterReflection\Reflector\ClassReflector;
-use PHPStan\BetterReflection\Reflector\ConstantReflector;
+use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\Testing\PHPStanTestCase;
 use TestSingleFileSourceLocator\AFoo;
 
@@ -48,8 +46,8 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create($file);
-		$classReflector = new ClassReflector($locator);
-		$classReflection = $classReflector->reflect($className);
+		$reflector = new DefaultReflector($locator);
+		$classReflection = $reflector->reflectClass($className);
 		$this->assertSame($expectedClassName, $classReflection->getName());
 	}
 
@@ -89,9 +87,8 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create($file);
-		$classReflector = new ClassReflector($locator);
-		$functionReflector = new FunctionReflector($locator, $classReflector);
-		$functionReflection = $functionReflector->reflect($functionName);
+		$reflector = new DefaultReflector($locator);
+		$functionReflection = $reflector->reflectFunction($functionName);
 		$this->assertSame($expectedFunctionName, $functionReflection->getName());
 	}
 
@@ -130,9 +127,8 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create(__DIR__ . '/data/const.php');
-		$classReflector = new ClassReflector($locator);
-		$constantReflector = new ConstantReflector($locator, $classReflector);
-		$constant = $constantReflector->reflect($constantName);
+		$reflector = new DefaultReflector($locator);
+		$constant = $reflector->reflectConstant($constantName);
 		$this->assertSame($constantName, $constant->getName());
 		$this->assertEquals($value, $constant->getValue());
 	}
@@ -152,10 +148,9 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create(__DIR__ . '/data/const.php');
-		$classReflector = new ClassReflector($locator);
-		$constantReflector = new ConstantReflector($locator, $classReflector);
+		$reflector = new DefaultReflector($locator);
 		$this->expectException(IdentifierNotFound::class);
-		$constantReflector->reflect($constantName);
+		$reflector->reflectConstant($constantName);
 	}
 
 }

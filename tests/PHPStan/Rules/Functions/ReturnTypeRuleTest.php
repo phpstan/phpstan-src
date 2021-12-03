@@ -13,8 +13,7 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	protected function getRule(): \PHPStan\Rules\Rule
 	{
-		[, $functionReflector] = self::getReflectors();
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)), $functionReflector);
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)), self::getReflector());
 	}
 
 	public function testReturnTypeRule(): void

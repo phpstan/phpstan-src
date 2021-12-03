@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -20,15 +20,15 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 
 	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
 
-	private FunctionReflector $functionReflector;
+	private Reflector $reflector;
 
 	public function __construct(
 		FunctionReturnTypeCheck $returnTypeCheck,
-		FunctionReflector $functionReflector
+		Reflector $reflector
 	)
 	{
 		$this->returnTypeCheck = $returnTypeCheck;
-		$this->functionReflector = $functionReflector;
+		$this->reflector = $reflector;
 	}
 
 	public function getNodeType(): string
@@ -59,7 +59,7 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 			$reflection = new \ReflectionFunction($function->getName());
 		} else {
 			try {
-				$reflection = $this->functionReflector->reflect($function->getName());
+				$reflection = $this->reflector->reflectFunction($function->getName());
 			} catch (IdentifierNotFound $e) {
 				// pass
 			}

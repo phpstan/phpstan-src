@@ -2,14 +2,12 @@
 
 namespace PHPStan\PhpDoc;
 
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 
 class StubSourceLocatorFactory
@@ -21,8 +19,6 @@ class StubSourceLocatorFactory
 
 	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
-	private \PHPStan\DependencyInjection\Container $container;
-
 	/** @var string[] */
 	private array $stubFiles;
 
@@ -33,23 +29,19 @@ class StubSourceLocatorFactory
 		\PhpParser\Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
-		Container $container,
 		array $stubFiles
 	)
 	{
 		$this->php8Parser = $php8Parser;
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
-		$this->container = $container;
 		$this->stubFiles = $stubFiles;
 	}
 
 	public function create(): SourceLocator
 	{
 		$locators = [];
-		$astPhp8Locator = new Locator($this->php8Parser, function (): FunctionReflector {
-			return $this->container->getService('stubFunctionReflector');
-		});
+		$astPhp8Locator = new Locator($this->php8Parser);
 		foreach ($this->stubFiles as $stubFile) {
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($stubFile);
 		}

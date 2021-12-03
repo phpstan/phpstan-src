@@ -7,9 +7,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\TypeSpecifier;
-use PHPStan\BetterReflection\Reflector\ClassReflector;
-use PHPStan\BetterReflection\Reflector\ConstantReflector;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
@@ -108,16 +106,9 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		return self::getContainer()->getByType(ReflectionProvider::class);
 	}
 
-	/**
-	 * @return array{ClassReflector, FunctionReflector, ConstantReflector}
-	 */
-	public static function getReflectors(): array
+	public static function getReflector(): Reflector
 	{
-		return [
-			self::getContainer()->getService('betterReflectionClassReflector'),
-			self::getContainer()->getService('betterReflectionFunctionReflector'),
-			self::getContainer()->getService('betterReflectionConstantReflector'),
-		];
+		return self::getContainer()->getService('betterReflectionReflector');
 	}
 
 	public function getClassReflectionExtensionRegistryProvider(): ClassReflectionExtensionRegistryProvider

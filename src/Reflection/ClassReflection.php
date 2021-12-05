@@ -77,10 +77,8 @@ class ClassReflection
 
 	private ?bool $isFinal = null;
 
-	/** @var ?TemplateTypeMap */
 	private ?TemplateTypeMap $templateTypeMap = null;
 
-	/** @var ?TemplateTypeMap */
 	private ?TemplateTypeMap $resolvedTemplateTypeMap;
 
 	private ?ResolvedPhpDocBlock $stubPhpDocBlock;

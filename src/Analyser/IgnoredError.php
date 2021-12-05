@@ -9,7 +9,6 @@ class IgnoredError
 {
 
 	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
 	 * @param mixed[]|string $ignoredError
 	 * @return string Representation of the ignored error
 	 */
@@ -34,7 +33,6 @@ class IgnoredError
 	}
 
 	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
 	 * @param FileHelper $fileHelper
 	 * @param Error $error
 	 * @param string $ignoredErrorPattern

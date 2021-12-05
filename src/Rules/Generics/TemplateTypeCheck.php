@@ -56,8 +56,6 @@ class TemplateTypeCheck
 	}
 
 	/**
-	 * @param \PhpParser\Node $node
-	 * @param TemplateTypeScope $templateTypeScope
 	 * @param array<string, \PHPStan\PhpDoc\Tag\TemplateTag> $templateTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */

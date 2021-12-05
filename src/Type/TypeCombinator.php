@@ -404,8 +404,6 @@ class TypeCombinator
 	}
 
 	/**
-	 * @param Type $a
-	 * @param Type $b
 	 * @return array{Type, null}|array{null, Type}|null
 	 */
 	private static function compareTypesInUnion(Type $a, Type $b): ?array

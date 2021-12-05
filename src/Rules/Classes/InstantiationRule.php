@@ -56,9 +56,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param string $class
 	 * @param \PhpParser\Node\Expr\New_ $node
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function checkClassName(string $class, bool $isName, Node $node, Scope $scope): array
@@ -207,7 +205,6 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 
 	/**
 	 * @param \PhpParser\Node\Expr\New_ $node $node
-	 * @param Scope $scope
 	 * @return array<int, array{string, bool}>
 	 */
 	private function getClassNames(Node $node, Scope $scope): array

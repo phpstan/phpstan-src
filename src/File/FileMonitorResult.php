@@ -21,7 +21,6 @@ class FileMonitorResult
 	 * @param string[] $newFiles
 	 * @param string[] $changedFiles
 	 * @param string[] $deletedFiles
-	 * @param int $totalFilesCount
 	 */
 	public function __construct(
 		array $newFiles,

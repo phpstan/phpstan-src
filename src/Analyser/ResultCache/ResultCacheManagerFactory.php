@@ -7,7 +7,6 @@ interface ResultCacheManagerFactory
 
 	/**
 	 * @param array<string, string> $fileReplacements
-	 * @return ResultCacheManager
 	 */
 	public function create(array $fileReplacements): ResultCacheManager;
 

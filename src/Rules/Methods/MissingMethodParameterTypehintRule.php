@@ -50,8 +50,6 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\MethodReflection $methodReflection
-	 * @param \PHPStan\Reflection\ParameterReflection $parameterReflection
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	private function checkMethodParameter(MethodReflection $methodReflection, ParameterReflection $parameterReflection): array

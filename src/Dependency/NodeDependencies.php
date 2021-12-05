@@ -17,7 +17,6 @@ class NodeDependencies
 	private ?ExportedNode $exportedNode;
 
 	/**
-	 * @param FileHelper $fileHelper
 	 * @param array<int, ClassReflection|FunctionReflection> $reflections
 	 */
 	public function __construct(
@@ -32,7 +31,6 @@ class NodeDependencies
 	}
 
 	/**
-	 * @param string $currentFile
 	 * @param array<string, true> $analysedFiles
 	 * @return string[]
 	 */

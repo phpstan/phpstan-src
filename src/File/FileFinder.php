@@ -15,8 +15,6 @@ class FileFinder
 	private array $fileExtensions;
 
 	/**
-	 * @param FileExcluder $fileExcluder
-	 * @param FileHelper $fileHelper
 	 * @param string[] $fileExtensions
 	 */
 	public function __construct(
@@ -32,7 +30,6 @@ class FileFinder
 
 	/**
 	 * @param string[] $paths
-	 * @return FileFinderResult
 	 */
 	public function findFiles(array $paths): FileFinderResult
 	{

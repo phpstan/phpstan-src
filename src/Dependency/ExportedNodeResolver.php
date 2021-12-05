@@ -152,7 +152,6 @@ class ExportedNodeResolver
 
 	/**
 	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $type
-	 * @return string|null
 	 */
 	private function printType($type): ?string
 	{

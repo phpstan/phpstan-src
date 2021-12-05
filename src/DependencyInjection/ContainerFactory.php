@@ -46,17 +46,10 @@ class ContainerFactory
 	}
 
 	/**
-	 * @param string $tempDirectory
 	 * @param string[] $additionalConfigFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
-	 * @param string $usedLevel
-	 * @param string|null $generateBaselineFile
-	 * @param string|null $cliAutoloadFile
-	 * @param string|null $singleReflectionFile
-	 * @param string|null $singleReflectionInsteadOfFile
-	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(
 		string $tempDirectory,

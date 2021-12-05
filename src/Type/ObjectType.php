@@ -891,7 +891,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -935,7 +934,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
@@ -1035,7 +1033,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	}
 
 	/**
-	 * @param string $className
 	 * @return self|null
 	 */
 	public function getAncestorWithClassName(string $className): ?TypeWithClassName

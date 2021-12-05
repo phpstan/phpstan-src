@@ -1229,7 +1229,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataIterable
-	 * @param bool $checkNullables
 	 */
 	public function testIterables(bool $checkNullables): void
 	{
@@ -1496,7 +1495,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataExplicitMixed
-	 * @param bool $checkExplicitMixed
 	 * @param mixed[] $errors
 	 */
 	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void

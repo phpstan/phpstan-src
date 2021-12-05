@@ -62,7 +62,6 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataThrowsAnnotations
-	 * @param string $className
 	 * @param array<string, mixed> $throwsAnnotations
 	 */
 	public function testThrowsAnnotations(string $className, array $throwsAnnotations): void

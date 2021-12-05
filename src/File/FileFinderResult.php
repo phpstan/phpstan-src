@@ -12,7 +12,6 @@ class FileFinderResult
 
 	/**
 	 * @param string[] $files
-	 * @param bool $onlyFiles
 	 */
 	public function __construct(array $files, bool $onlyFiles)
 	{

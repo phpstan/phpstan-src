@@ -23,8 +23,6 @@ class ExpressionResult
 	private ?MutatingScope $falseyScope = null;
 
 	/**
-	 * @param MutatingScope $scope
-	 * @param bool $hasYield
 	 * @param ThrowPoint[] $throwPoints
 	 * @param (callable(): MutatingScope)|null $truthyScopeCallback
 	 * @param (callable(): MutatingScope)|null $falseyScopeCallback

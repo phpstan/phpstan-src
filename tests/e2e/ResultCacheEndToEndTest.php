@@ -121,7 +121,6 @@ class ResultCacheEndToEndTest extends TestCase
 	}
 
 	/**
-	 * @param int $expectedExitCode
 	 * @return mixed[]
 	 */
 	private function runPhpstan(int $expectedExitCode): array

@@ -21,9 +21,6 @@ class StatementResult
 	private array $throwPoints;
 
 	/**
-	 * @param MutatingScope $scope
-	 * @param bool $hasYield
-	 * @param bool $isAlwaysTerminating
 	 * @param StatementExitPoint[] $exitPoints
 	 * @param ThrowPoint[] $throwPoints
 	 */

@@ -22,11 +22,7 @@ class ThrowPoint
 	private bool $canContainAnyThrowable;
 
 	/**
-	 * @param MutatingScope $scope
-	 * @param Type $type
 	 * @param Node\Expr|Node\Stmt $node
-	 * @param bool $explicit
-	 * @param bool $canContainAnyThrowable
 	 */
 	private function __construct(
 		MutatingScope $scope,
@@ -44,11 +40,7 @@ class ThrowPoint
 	}
 
 	/**
-	 * @param MutatingScope $scope
-	 * @param Type $type
 	 * @param Node\Expr|Node\Stmt $node
-	 * @param bool $canContainAnyThrowable
-	 * @return self
 	 */
 	public static function createExplicit(MutatingScope $scope, Type $type, Node $node, bool $canContainAnyThrowable): self
 	{
@@ -56,9 +48,7 @@ class ThrowPoint
 	}
 
 	/**
-	 * @param MutatingScope $scope
 	 * @param Node\Expr|Node\Stmt $node
-	 * @return self
 	 */
 	public static function createImplicit(MutatingScope $scope, Node $node): self
 	{

@@ -23,7 +23,6 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $serviceName
 	 * @return mixed
 	 */
 	public function getService(string $serviceName)
@@ -52,7 +51,6 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $tagName
 	 * @return mixed[]
 	 */
 	public function getServicesByTag(string $tagName): array
@@ -74,7 +72,6 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $parameterName
 	 * @return mixed
 	 */
 	public function getParameter(string $parameterName)

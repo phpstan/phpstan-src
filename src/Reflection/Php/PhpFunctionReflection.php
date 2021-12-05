@@ -56,20 +56,7 @@ class PhpFunctionReflection implements FunctionReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param \ReflectionFunction $reflection
-	 * @param Parser $parser
-	 * @param FunctionCallStatementFinder $functionCallStatementFinder
-	 * @param Cache $cache
-	 * @param TemplateTypeMap $templateTypeMap
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $phpDocThrowType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param string|null $filename
-	 * @param bool|null $isPure
 	 */
 	public function __construct(
 		\ReflectionFunction $reflection,
@@ -188,7 +175,6 @@ class PhpFunctionReflection implements FunctionReflection
 
 	/**
 	 * @param \PhpParser\Node[] $nodes
-	 * @return bool
 	 */
 	private function callsFuncGetArgs(array $nodes): bool
 	{

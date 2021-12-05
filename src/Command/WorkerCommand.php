@@ -150,13 +150,7 @@ class WorkerCommand extends Command
 	}
 
 	/**
-	 * @param Container $container
-	 * @param WritableStreamInterface $out
-	 * @param ReadableStreamInterface $in
-	 * @param OutputInterface $output
 	 * @param array<string, true> $analysedFiles
-	 * @param string|null $tmpFile
-	 * @param string|null $insteadOfFile
 	 */
 	private function runWorker(
 		Container $container,
@@ -242,8 +236,6 @@ class WorkerCommand extends Command
 
 	/**
 	 * @param string[] $analysedFiles
-	 * @param string|null $insteadOfFile
-	 * @param string|null $tmpFile
 	 * @return string[]
 	 */
 	private function switchTmpFile(

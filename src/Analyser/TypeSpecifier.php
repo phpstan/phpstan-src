@@ -75,8 +75,6 @@ class TypeSpecifier
 	private ?array $staticMethodTypeSpecifyingExtensionsByClass = null;
 
 	/**
-	 * @param \PhpParser\PrettyPrinter\Standard $printer
-	 * @param ReflectionProvider $reflectionProvider
 	 * @param \PHPStan\Type\FunctionTypeSpecifyingExtension[] $functionTypeSpecifyingExtensions
 	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
 	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
@@ -905,9 +903,6 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param SpecifiedTypes $leftTypes
-	 * @param SpecifiedTypes $rightTypes
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
@@ -951,8 +946,6 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PhpParser\Node\Expr\BinaryOp $binaryOperation
 	 * @return (Expr|\PHPStan\Type\ConstantScalarType)[]|null
 	 */
 	private function findTypeExpressionsFromBinaryOperation(Scope $scope, Node\Expr\BinaryOp $binaryOperation): ?array
@@ -1131,7 +1124,6 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @param string $className
 	 * @return \PHPStan\Type\MethodTypeSpecifyingExtension[]
 	 */
 	private function getMethodTypeSpecifyingExtensionsForClass(string $className): array
@@ -1148,7 +1140,6 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @param string $className
 	 * @return \PHPStan\Type\StaticMethodTypeSpecifyingExtension[]
 	 */
 	private function getStaticMethodTypeSpecifyingExtensionsForClass(string $className): array
@@ -1166,7 +1157,6 @@ class TypeSpecifier
 
 	/**
 	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[][]|\PHPStan\Type\StaticMethodTypeSpecifyingExtension[][] $extensions
-	 * @param string $className
 	 * @return mixed[]
 	 */
 	private function getTypeSpecifyingExtensionsForType(array $extensions, string $className): array

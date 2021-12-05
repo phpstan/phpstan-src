@@ -14,7 +14,6 @@ class ParserErrorsException extends \Exception
 
 	/**
 	 * @param \PhpParser\Error[] $errors
-	 * @param string|null $parsedFile
 	 */
 	public function __construct(
 		array $errors,

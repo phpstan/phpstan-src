@@ -21,8 +21,6 @@ class NeonLoader extends \Nette\DI\Config\Loader
 	}
 
 	/**
-	 * @param string $file
-	 * @param bool|null $merge
 	 * @return mixed[]
 	 */
 	public function load(string $file, ?bool $merge = true): array

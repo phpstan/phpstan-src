@@ -23,8 +23,6 @@ class StaticTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsIterable
-	 * @param StaticType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsIterable(StaticType $type, TrinaryLogic $expectedResult): void
 	{
@@ -48,8 +46,6 @@ class StaticTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsCallable
-	 * @param StaticType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsCallable(StaticType $type, TrinaryLogic $expectedResult): void
 	{
@@ -250,9 +246,6 @@ class StaticTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param Type $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -294,9 +287,6 @@ class StaticTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param StaticType $type
-	 * @param StaticType $otherType
-	 * @param bool $expected
 	 */
 	public function testEquals(StaticType $type, StaticType $otherType, bool $expected): void
 	{

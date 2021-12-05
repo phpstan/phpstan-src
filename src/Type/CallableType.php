@@ -40,8 +40,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 	/**
 	 * @api
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
-	 * @param Type $returnType
-	 * @param bool $variadic
 	 */
 	public function __construct(
 		?array $parameters = null,
@@ -158,7 +156,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -331,7 +328,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

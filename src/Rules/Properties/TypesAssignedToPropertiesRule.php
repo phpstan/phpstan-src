@@ -70,8 +70,6 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param FoundPropertyReflection $propertyReflection
-	 * @param Node\Expr $node
 	 * @return RuleError[]
 	 */
 	private function processSingleProperty(

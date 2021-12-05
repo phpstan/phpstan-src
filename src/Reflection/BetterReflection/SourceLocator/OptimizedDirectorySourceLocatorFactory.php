@@ -32,7 +32,6 @@ class OptimizedDirectorySourceLocatorFactory
 
 	/**
 	 * @param string[] $files
-	 * @return OptimizedDirectorySourceLocator
 	 */
 	public function createByFiles(array $files): OptimizedDirectorySourceLocator
 	{

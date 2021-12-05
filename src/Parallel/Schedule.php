@@ -11,7 +11,6 @@ class Schedule
 	private array $jobs;
 
 	/**
-	 * @param int $numberOfProcesses
 	 * @param array<array<string>> $jobs
 	 */
 	public function __construct(int $numberOfProcesses, array $jobs)

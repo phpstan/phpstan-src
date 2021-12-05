@@ -29,7 +29,6 @@ class ParametersSchemaExtension extends \Nette\DI\CompilerExtension
 
 	/**
 	 * @param Statement[] $statements
-	 * @return \Nette\Schema\Schema
 	 */
 	private function processSchema(array $statements): Schema
 	{

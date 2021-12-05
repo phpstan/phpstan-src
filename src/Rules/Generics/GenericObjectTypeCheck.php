@@ -14,11 +14,6 @@ class GenericObjectTypeCheck
 {
 
 	/**
-	 * @param \PHPStan\Type\Type $phpDocType
-	 * @param string $classNotGenericMessage
-	 * @param string $notEnoughTypesMessage
-	 * @param string $extraTypesMessage
-	 * @param string $typeIsNotSubtypeMessage
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	public function check(
@@ -102,7 +97,6 @@ class GenericObjectTypeCheck
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $phpDocType
 	 * @return \PHPStan\Type\Generic\GenericObjectType[]
 	 */
 	private function getGenericTypes(Type $phpDocType): array

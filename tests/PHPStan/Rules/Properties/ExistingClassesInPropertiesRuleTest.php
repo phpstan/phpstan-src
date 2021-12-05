@@ -168,7 +168,6 @@ class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataIntersectionTypes
-	 * @param int $phpVersion
 	 * @param mixed[] $errors
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void

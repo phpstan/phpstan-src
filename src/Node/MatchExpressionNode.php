@@ -18,7 +18,6 @@ class MatchExpressionNode extends NodeAbstract implements VirtualNode
 	private Scope $endScope;
 
 	/**
-	 * @param Expr $condition
 	 * @param MatchExpressionArm[] $arms
 	 */
 	public function __construct(

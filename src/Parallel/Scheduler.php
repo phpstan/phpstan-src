@@ -23,9 +23,7 @@ class Scheduler
 	}
 
 	/**
-	 * @param int $cpuCores
 	 * @param array<string> $files
-	 * @return Schedule
 	 */
 	public function scheduleWork(
 		int $cpuCores,

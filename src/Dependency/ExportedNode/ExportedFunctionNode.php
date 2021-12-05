@@ -20,10 +20,6 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 	private array $parameters;
 
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
-	 * @param bool $byRef
-	 * @param string|null $returnType
 	 * @param ExportedParameterNode[] $parameters
 	 */
 	public function __construct(

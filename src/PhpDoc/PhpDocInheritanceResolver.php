@@ -61,13 +61,7 @@ class PhpDocInheritanceResolver
 	}
 
 	/**
-	 * @param string|null $docComment
-	 * @param string $fileName
-	 * @param ClassReflection $classReflection
-	 * @param string|null $declaringTraitName
-	 * @param string $methodName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return ResolvedPhpDocBlock
 	 */
 	public function resolvePhpDocForMethod(
 		?string $docComment,

@@ -53,8 +53,6 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\FunctionReflection $functionReflection
-	 * @param \PHPStan\Reflection\ParameterReflection $parameterReflection
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	private function checkFunctionParameter(FunctionReflection $functionReflection, ParameterReflection $parameterReflection): array

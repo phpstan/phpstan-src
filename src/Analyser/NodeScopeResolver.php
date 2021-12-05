@@ -170,18 +170,8 @@ class NodeScopeResolver
 	private array $analysedFiles = [];
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param Reflector $reflector
-	 * @param Parser $parser
-	 * @param FileTypeMapper $fileTypeMapper
-	 * @param PhpDocInheritanceResolver $phpDocInheritanceResolver
-	 * @param FileHelper $fileHelper
-	 * @param TypeSpecifier $typeSpecifier
-	 * @param bool $polluteScopeWithLoopInitialAssignments
-	 * @param bool $polluteScopeWithAlwaysIterableForeach
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
-	 * @param bool $implicitThrows
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -232,7 +222,6 @@ class NodeScopeResolver
 	/**
 	 * @api
 	 * @param \PhpParser\Node[] $nodes
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processNodes(
@@ -266,11 +255,8 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node $parentNode
 	 * @param \PhpParser\Node\Stmt[] $stmts
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @return StatementResult
 	 */
 	public function processStmtNodes(
 		Node $parentNode,
@@ -343,10 +329,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt $stmt
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @return StatementResult
 	 */
 	private function processStmtNode(
 		Node\Stmt $stmt,
@@ -1417,8 +1400,6 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Node\Stmt $statement
-	 * @param MutatingScope $scope
 	 * @return ThrowPoint[]|null
 	 */
 	private function getOverridingThrowPoints(Node\Stmt $statement, MutatingScope $scope): ?array
@@ -1528,10 +1509,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param MutatingScope $scope
-	 * @param Expr $expr
 	 * @param \Closure(MutatingScope $scope, Expr $expr): MutatingScope $callback
-	 * @return MutatingScope
 	 */
 	private function lookForVariableAssignCallback(MutatingScope $scope, Expr $expr, \Closure $callback): MutatingScope
 	{
@@ -1613,9 +1591,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param MutatingScope $scope
 	 * @param EnsuredNonNullabilityResultExpression[] $specifiedExpressions
-	 * @return MutatingScope
 	 */
 	private function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
 	{
@@ -1679,11 +1655,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr $expr
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @param \PHPStan\Analyser\ExpressionContext $context
-	 * @return \PHPStan\Analyser\ExpressionResult
 	 */
 	private function processExprNode(Expr $expr, MutatingScope $scope, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
@@ -2879,7 +2851,6 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Expr $expr
 	 * @return string[]
 	 */
 	private function getAssignedVariables(Expr $expr): array
@@ -2910,9 +2881,6 @@ class NodeScopeResolver
 
 	/**
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @param Expr $expr
-	 * @param MutatingScope $scope
-	 * @param ExpressionContext $context
 	 */
 	private function callNodeCallbackWithExpression(
 		callable $nodeCallback,
@@ -2928,12 +2896,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\Closure $expr
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @param ExpressionContext $context
-	 * @param Type|null $passedToType
-	 * @return \PHPStan\Analyser\ExpressionResult
 	 */
 	private function processClosureNode(
 		Expr\Closure $expr,
@@ -3058,12 +3021,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\ArrowFunction $expr
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @param ExpressionContext $context
-	 * @param Type|null $passedToType
-	 * @return \PHPStan\Analyser\ExpressionResult
 	 */
 	private function processArrowFunctionNode(
 		Expr\ArrowFunction $expr,
@@ -3143,8 +3101,6 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Param $param
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processParamNode(
@@ -3173,13 +3129,8 @@ class NodeScopeResolver
 
 	/**
 	 * @param \PHPStan\Reflection\MethodReflection|\PHPStan\Reflection\FunctionReflection|null $calleeReflection
-	 * @param ParametersAcceptor|null $parametersAcceptor
 	 * @param \PhpParser\Node\Arg[] $args
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @param ExpressionContext $context
-	 * @param \PHPStan\Analyser\MutatingScope|null $closureBindScope
-	 * @return \PHPStan\Analyser\ExpressionResult
 	 */
 	private function processArgs(
 		$calleeReflection,
@@ -3255,14 +3206,8 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\MutatingScope $scope
-	 * @param \PhpParser\Node\Expr $var
-	 * @param \PhpParser\Node\Expr $assignedExpr
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @param ExpressionContext $context
 	 * @param \Closure(MutatingScope $scope): ExpressionResult $processExprCallback
-	 * @param bool $enterExpressionAssign
-	 * @return ExpressionResult
 	 */
 	private function processAssignVar(
 		MutatingScope $scope,
@@ -3480,11 +3425,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param string $variableName
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param SpecifiedTypes $specifiedTypes
-	 * @param Type $variableType
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
@@ -3512,11 +3453,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param string $variableName
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param SpecifiedTypes $specifiedTypes
-	 * @param Type $variableType
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
@@ -3606,11 +3543,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param MutatingScope $scope
 	 * @param array<int, string> $variableNames
-	 * @param Node $node
-	 * @param bool $changed
-	 * @return MutatingScope
 	 */
 	private function processVarAnnotation(MutatingScope $scope, array $variableNames, Node $node, bool &$changed = false): MutatingScope
 	{
@@ -3716,8 +3649,6 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt\TraitUse $node
-	 * @param MutatingScope $classScope
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processTraitUse(Node\Stmt\TraitUse $node, MutatingScope $classScope, callable $nodeCallback): void
@@ -3743,8 +3674,6 @@ class NodeScopeResolver
 
 	/**
 	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
-	 * @param ClassReflection $traitReflection
-	 * @param \PHPStan\Analyser\MutatingScope $scope
 	 * @param Node\Stmt\TraitUseAdaptation[] $adaptations
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -3800,8 +3729,6 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param Node\FunctionLike $functionLike
 	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike $functionLike): array

@@ -20,10 +20,6 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 	private ?array $insteadOfs;
 
 	/**
-	 * @param string|null $traitName
-	 * @param string $method
-	 * @param int|null $newModifier
-	 * @param string|null $newName
 	 * @param string[]|null $insteadOfs
 	 */
 	private function __construct(
@@ -52,10 +48,7 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 	}
 
 	/**
-	 * @param string|null $traitName
-	 * @param string $method
 	 * @param string[] $insteadOfs
-	 * @return self
 	 */
 	public static function createPrecedence(
 		?string $traitName,

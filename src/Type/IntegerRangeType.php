@@ -54,7 +54,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers smaller than the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllSmallerThan($value): Type
 	{
@@ -77,7 +76,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers smaller than or equal to the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllSmallerThanOrEqualTo($value): Type
 	{
@@ -100,7 +98,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers greater than the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllGreaterThan($value): Type
 	{
@@ -123,7 +120,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers greater than or equal to the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllGreaterThanOrEqualTo($value): Type
 	{
@@ -417,8 +413,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	/**
 	 * Return the union with another type, but only if it can be expressed in a simpler way than using UnionType
 	 *
-	 * @param Type $otherType
-	 * @return Type|null
 	 */
 	public function tryUnion(Type $otherType): ?Type
 	{
@@ -452,8 +446,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the intersection with another type, but only if it can be expressed in a simpler way than using
 	 * IntersectionType
 	 *
-	 * @param Type $otherType
-	 * @return Type|null
 	 */
 	public function tryIntersect(Type $otherType): ?Type
 	{
@@ -499,8 +491,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	/**
 	 * Return the different with another type, or null if it cannot be represented.
 	 *
-	 * @param Type $typeToRemove
-	 * @return Type|null
 	 */
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
@@ -547,7 +537,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

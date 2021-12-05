@@ -94,18 +94,6 @@ class PhpClassReflectionExtension
 	private array $inferClassConstructorPropertyTypesInProcess = [];
 
 	/**
-	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
-	 * @param \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver
-	 * @param \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory
-	 * @param \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver
-	 * @param \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension
-	 * @param \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension
-	 * @param \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider
-	 * @param \PHPStan\Parser\Parser $parser
-	 * @param \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider
-	 * @param ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
-	 * @param FileTypeMapper $fileTypeMapper
-	 * @param bool $inferPrivatePropertyTypeFromConstructor
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
@@ -702,14 +690,10 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param FunctionSignature $methodSignature
 	 * @param array<string, Type> $stubPhpDocParameterTypes
 	 * @param array<string, bool> $stubPhpDocParameterVariadicity
-	 * @param Type|null $stubPhpDocReturnType
 	 * @param array<string, Type> $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
 	 * @param array<string, string> $phpDocParameterNameMapping
-	 * @return FunctionVariantWithPhpDocs
 	 */
 	private function createNativeMethodVariant(
 		FunctionSignature $methodSignature,
@@ -789,8 +773,6 @@ class PhpClassReflectionExtension
 
 	/**
 	 * @param \ReflectionClass<object>[] $traits
-	 * @param \ReflectionProperty $propertyReflection
-	 * @return string|null
 	 */
 	private function deepScanTraitsForProperty(
 		array $traits,
@@ -866,7 +848,6 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \ReflectionClass $class
 	 * @return \ReflectionClass[]
 	 */
 	private function collectTraits(\ReflectionClass $class): array
@@ -912,7 +893,6 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\MethodReflection $constructor
 	 * @return array<string, Type>
 	 */
 	private function inferAndCachePropertyTypes(
@@ -1007,9 +987,7 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param string $className
 	 * @param \PhpParser\Node[] $nodes
-	 * @return \PhpParser\Node\Stmt\Class_|null
 	 */
 	private function findClassNode(string $className, array $nodes): ?Class_
 	{
@@ -1043,9 +1021,7 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param string $methodName
 	 * @param \PhpParser\Node\Stmt[] $classStatements
-	 * @return \PhpParser\Node\Stmt\ClassMethod|null
 	 */
 	private function findConstructorNode(string $methodName, array $classStatements): ?ClassMethod
 	{
@@ -1082,8 +1058,6 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param ClassReflection $declaringClass
-	 * @param string $methodName
 	 * @param array<int, string> $positionalParameterNames
 	 * @return array{\PHPStan\PhpDoc\ResolvedPhpDocBlock, ClassReflection}|null
 	 */

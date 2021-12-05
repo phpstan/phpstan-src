@@ -31,14 +31,7 @@ class InceptionResult
 
 	/**
 	 * @param callable(): (array{string[], bool}) $filesCallback
-	 * @param Output $stdOutput
-	 * @param Output $errorOutput
-	 * @param \PHPStan\DependencyInjection\Container $container
-	 * @param bool $isDefaultLevelUsed
-	 * @param string $memoryLimitFile
-	 * @param string|null $projectConfigFile
 	 * @param mixed[] $projectConfigArray
-	 * @param string|null $generateBaselineFile
 	 */
 	public function __construct(
 		callable $filesCallback,

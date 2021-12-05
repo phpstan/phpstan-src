@@ -95,9 +95,6 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataMergeInheritedPhpDocs
-	 * @param string $className
-	 * @param string $method
-	 * @param string $expectedType
 	 */
 	public function testMergeInheritedPhpDocs(
 		string $className,

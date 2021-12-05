@@ -104,7 +104,6 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @param \PhpParser\Node $node
 	 * @return null
 	 */
 	public function leaveNode(\PhpParser\Node $node)

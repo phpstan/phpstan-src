@@ -129,8 +129,6 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 	 * @param string[] $uncheckedExceptionClasses
 	 * @param string[] $checkedExceptionRegexes
 	 * @param string[] $checkedExceptionClasses
-	 * @param string $className
-	 * @param bool $expectedResult
 	 */
 	public function testIsCheckedException(
 		array $uncheckedExceptionRegexes,

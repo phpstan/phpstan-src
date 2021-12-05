@@ -12,8 +12,6 @@ final class SymfonyProcess implements Process
 
 	/**
 	 * @param string[] $command
-	 * @param string $cwd
-	 * @param \Symfony\Component\Console\Output\OutputInterface $output
 	 */
 	public function __construct(array $command, string $cwd, OutputInterface $output)
 	{

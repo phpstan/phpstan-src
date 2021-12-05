@@ -46,7 +46,6 @@ class ApiClassImplementsRule implements Rule
 	}
 
 	/**
-	 * @param Node\Name $name
 	 * @return RuleError[]
 	 */
 	private function checkName(Scope $scope, Node\Name $name): array

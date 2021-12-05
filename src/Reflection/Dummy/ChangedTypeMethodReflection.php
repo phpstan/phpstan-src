@@ -20,7 +20,6 @@ class ChangedTypeMethodReflection implements MethodReflection
 	private array $variants;
 
 	/**
-	 * @param MethodReflection $reflection
 	 * @param ParametersAcceptor[] $variants
 	 */
 	public function __construct(ClassReflection $declaringClass, MethodReflection $reflection, array $variants)

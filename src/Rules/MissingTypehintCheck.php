@@ -59,7 +59,6 @@ class MissingTypehintCheck
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
 	 * @return \PHPStan\Type\Type[]
 	 */
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
@@ -104,7 +103,6 @@ class MissingTypehintCheck
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
 	 * @return array<int, array{string, string[]}>
 	 */
 	public function getNonGenericObjectTypesWithGenericClass(Type $type): array
@@ -159,7 +157,6 @@ class MissingTypehintCheck
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
 	 * @return \PHPStan\Type\Type[]
 	 */
 	public function getCallablesWithMissingSignature(Type $type): array

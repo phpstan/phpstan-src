@@ -32,13 +32,7 @@ class NativeMethodReflection implements MethodReflection
 	private ?Type $throwType;
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
-	 * @param BuiltinMethodReflection $reflection
 	 * @param \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] $variants
-	 * @param TrinaryLogic $hasSideEffects
-	 * @param string|null $stubPhpDocString
-	 * @param Type|null $throwType
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,

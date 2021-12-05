@@ -31,11 +31,6 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 	private array $statements;
 
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
-	 * @param bool $abstract
-	 * @param bool $final
-	 * @param string|null $extends
 	 * @param string[] $implements
 	 * @param string[] $usedTraits
 	 * @param ExportedTraitUseAdaptation[] $traitUseAdaptations

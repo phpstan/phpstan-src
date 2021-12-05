@@ -14,7 +14,6 @@ class FileExcluderFactory
 	private ?array $excludePaths;
 
 	/**
-	 * @param FileExcluderRawFactory $fileExcluderRawFactory
 	 * @param string[] $obsoleteExcludesAnalyse
 	 * @param array{analyse?: array<int, string>, analyseAndScan?: array<int, string>}|null $excludePaths
 	 */

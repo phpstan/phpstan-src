@@ -27,10 +27,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	private bool $isPromoted;
 
 	/**
-	 * @param int $flags
 	 * @param Identifier|Name|Node\ComplexType|null $type
-	 * @param string $name
-	 * @param Expr|null $default
 	 */
 	public function __construct(
 		string $name,

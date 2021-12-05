@@ -113,8 +113,6 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PhpParser\Node\Expr $var
 	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
@@ -161,7 +159,6 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param Expr $expr
 	 * @return string[]
 	 */
 	private function getAssignedVariables(Expr $expr): array
@@ -191,8 +188,6 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr|null $keyVar
-	 * @param \PhpParser\Node\Expr $valueVar
 	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
@@ -281,8 +276,6 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PhpParser\Node\Expr $expr
 	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
@@ -296,9 +289,7 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @param Expr|null $defaultExpr
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	private function processStmt(Scope $scope, array $varTags, ?Expr $defaultExpr): array
@@ -329,7 +320,6 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
 	 * @return \PHPStan\Rules\RuleError[]
 	 */

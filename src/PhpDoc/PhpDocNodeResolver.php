@@ -50,8 +50,6 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
 	 * @return array<string|int, \PHPStan\PhpDoc\Tag\VarTag>
 	 */
 	public function resolveVarTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
@@ -89,8 +87,6 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
 	 * @return array<string, \PHPStan\PhpDoc\Tag\PropertyTag>
 	 */
 	public function resolvePropertyTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
@@ -140,8 +136,6 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
 	 * @return array<string, \PHPStan\PhpDoc\Tag\MethodTag>
 	 */
 	public function resolveMethodTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
@@ -243,8 +237,6 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
 	 * @return array<string, \PHPStan\PhpDoc\Tag\TemplateTag>
 	 */
 	public function resolveTemplateTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
@@ -300,8 +292,6 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
 	 * @return array<string, \PHPStan\PhpDoc\Tag\ParamTag>
 	 */
 	public function resolveParamTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
@@ -366,8 +356,6 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
 	 * @return array<MixinTag>
 	 */
 	public function resolveMixinTags(PhpDocNode $phpDocNode, NameScope $nameScope): array

@@ -29,10 +29,6 @@ class NonexistentOffsetInArrayDimFetchCheck
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param Expr $var
-	 * @param string $unknownClassPattern
-	 * @param Type $dimType
 	 * @return RuleError[]
 	 */
 	public function check(

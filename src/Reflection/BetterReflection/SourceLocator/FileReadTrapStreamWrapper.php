@@ -101,7 +101,6 @@ final class FileReadTrapStreamWrapper
 	 *
 	 * @param int $count
 	 *
-	 * @return string
 	 */
 	public function stream_read($count): string
 	{
@@ -117,7 +116,6 @@ final class FileReadTrapStreamWrapper
 	 * Since we allowed the open to succeed, we should allow the close to occur
 	 * as well.
 	 *
-	 * @return void
 	 */
 	public function stream_close(): void
 	{
@@ -184,7 +182,6 @@ final class FileReadTrapStreamWrapper
 	/**
 	 * Simulates behavior of reading from an empty file.
 	 *
-	 * @return bool
 	 */
 	public function stream_eof(): bool
 	{
@@ -204,7 +201,6 @@ final class FileReadTrapStreamWrapper
 	/**
 	 * @param   int  $offset
 	 * @param   int  $whence
-	 * @return  bool
 	 */
 	public function stream_seek($offset, $whence): bool
 	{
@@ -234,7 +230,6 @@ final class FileReadTrapStreamWrapper
 	 * @param int  $option
 	 * @param int  $arg1
 	 * @param int  $arg2
-	 * @return bool
 	 */
 	public function stream_set_option($option, $arg1, $arg2): bool
 	{

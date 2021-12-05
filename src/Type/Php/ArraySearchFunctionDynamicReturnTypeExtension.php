@@ -134,7 +134,6 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 	}
 
 	/**
-	 * @param Type $type
 	 * @return Type[]
 	 */
 	private function pickArrays(Type $type): array

@@ -67,9 +67,6 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param ArrayType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(ArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -132,9 +129,6 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param ArrayType $acceptingType
-	 * @param Type $acceptedType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(
 		ArrayType $acceptingType,
@@ -165,8 +159,6 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataDescribe
-	 * @param ArrayType $type
-	 * @param string $expectedDescription
 	 */
 	public function testDescribe(
 		ArrayType $type,

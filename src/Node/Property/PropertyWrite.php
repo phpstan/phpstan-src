@@ -19,7 +19,6 @@ class PropertyWrite
 	 * PropertyWrite constructor.
 	 *
 	 * @param PropertyFetch|StaticPropertyFetch $fetch
-	 * @param Scope $scope
 	 */
 	public function __construct($fetch, Scope $scope)
 	{

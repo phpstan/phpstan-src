@@ -9,12 +9,7 @@ class ProcessHelper
 {
 
 	/**
-	 * @param string $mainScript
-	 * @param string $commandName
-	 * @param string|null $projectConfigFile
 	 * @param string[] $additionalItems
-	 * @param InputInterface $input
-	 * @return string
 	 */
 	public static function getWorkerCommand(
 		string $mainScript,

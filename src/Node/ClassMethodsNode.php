@@ -20,7 +20,6 @@ class ClassMethodsNode extends NodeAbstract implements VirtualNode
 	private array $methodCalls;
 
 	/**
-	 * @param ClassLike $class
 	 * @param ClassMethod[] $methods
 	 * @param array<int, MethodCall> $methodCalls
 	 */

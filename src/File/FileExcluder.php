@@ -21,7 +21,6 @@ class FileExcluder
 	private int $fnmatchFlags;
 
 	/**
-	 * @param FileHelper $fileHelper
 	 * @param string[] $analyseExcludes
 	 * @param string[] $stubFiles
 	 */

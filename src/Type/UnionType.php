@@ -199,7 +199,6 @@ class UnionType implements CompoundType
 	/**
 	 * @param callable(Type $type): TrinaryLogic $canCallback
 	 * @param callable(Type $type): TrinaryLogic $hasCallback
-	 * @return TrinaryLogic
 	 */
 	private function hasInternal(
 		callable $canCallback,
@@ -473,7 +472,6 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -697,7 +695,6 @@ class UnionType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
@@ -706,7 +703,6 @@ class UnionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): TrinaryLogic $getResult
-	 * @return TrinaryLogic
 	 */
 	protected function unionResults(callable $getResult): TrinaryLogic
 	{
@@ -715,7 +711,6 @@ class UnionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): Type $getType
-	 * @return Type
 	 */
 	protected function unionTypes(callable $getType): Type
 	{

@@ -29,7 +29,6 @@ class ParamTag implements TypedTag
 	}
 
 	/**
-	 * @param Type $type
 	 * @return self
 	 */
 	public function withType(Type $type): TypedTag

@@ -21,10 +21,7 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 	private bool $isDeprecated;
 
 	/**
-	 * @param string $name
 	 * @param \PHPStan\Reflection\ParametersAcceptor[] $variants
-	 * @param \PHPStan\Type\Type|null $throwType
-	 * @param \PHPStan\TrinaryLogic $hasSideEffects
 	 */
 	public function __construct(
 		string $name,

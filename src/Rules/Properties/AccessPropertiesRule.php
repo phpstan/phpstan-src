@@ -64,9 +64,6 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param PropertyFetch $node
-	 * @param string $name
 	 * @return RuleError[]
 	 */
 	private function processSingleProperty(Scope $scope, PropertyFetch $node, string $name): array

@@ -23,7 +23,6 @@ class FileNodeTest extends RuleTestCase
 
 			/**
 			 * @param \PHPStan\Node\FileNode $node
-			 * @param \PHPStan\Analyser\Scope $scope
 			 * @return \PHPStan\Rules\RuleError[]
 			 */
 			public function processNode(Node $node, Scope $scope): array
@@ -69,9 +68,6 @@ class FileNodeTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param string $file
-	 * @param string $expectedError
-	 * @param int $line
 	 */
 	public function testRule(string $file, string $expectedError, int $line): void
 	{

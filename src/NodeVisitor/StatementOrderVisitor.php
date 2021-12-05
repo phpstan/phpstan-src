@@ -31,7 +31,6 @@ class StatementOrderVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @param Node $node
 	 * @return null
 	 */
 	public function enterNode(Node $node)
@@ -67,7 +66,6 @@ class StatementOrderVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @param Node $node
 	 * @return null
 	 */
 	public function leaveNode(Node $node)

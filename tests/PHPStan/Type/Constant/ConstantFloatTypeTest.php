@@ -31,8 +31,6 @@ class ConstantFloatTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataDescribe
-	 * @param ConstantFloatType $type
-	 * @param string $expectedDescription
 	 */
 	public function testDescribe(
 		ConstantFloatType $type,

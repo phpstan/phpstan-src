@@ -19,7 +19,6 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 	/**
 	 * ExportedNodeVisitor constructor.
 	 *
-	 * @param ExportedNodeResolver $exportedNodeResolver
 	 */
 	public function __construct(ExportedNodeResolver $exportedNodeResolver)
 	{

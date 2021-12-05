@@ -22,7 +22,6 @@ class ParallelAnalyserIntegrationTest extends TestCase
 
 	/**
 	 * @dataProvider dataRun
-	 * @param string $command
 	 */
 	public function testRun(string $command): void
 	{

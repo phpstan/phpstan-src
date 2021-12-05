@@ -51,8 +51,6 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionThrowType
-	 * @param string $functionName
-	 * @param ?Type $expectedThrowType
 	 */
 	public function testFunctionThrowType(string $functionName, ?Type $expectedThrowType): void
 	{
@@ -98,8 +96,6 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionDeprecated
-	 * @param string $functionName
-	 * @param bool $isDeprecated
 	 */
 	public function testFunctionDeprecated(string $functionName, bool $isDeprecated): void
 	{
@@ -126,9 +122,6 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataMethodThrowType
-	 * @param string $className
-	 * @param string $methodName
-	 * @param ?Type $expectedThrowType
 	 */
 	public function testMethodThrowType(string $className, string $methodName, ?Type $expectedThrowType): void
 	{

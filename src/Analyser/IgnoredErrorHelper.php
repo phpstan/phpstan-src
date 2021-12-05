@@ -19,10 +19,7 @@ class IgnoredErrorHelper
 	private bool $reportUnmatchedIgnoredErrors;
 
 	/**
-	 * @param IgnoredRegexValidator $ignoredRegexValidator
-	 * @param FileHelper $fileHelper
 	 * @param (string|mixed[])[] $ignoreErrors
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 */
 	public function __construct(
 		IgnoredRegexValidator $ignoredRegexValidator,
@@ -130,9 +127,7 @@ class IgnoredErrorHelper
 	}
 
 	/**
-	 * @param string $regex
 	 * @param array<string, string> $ignoredTypes
-	 * @return string
 	 */
 	private function createIgnoredTypesError(string $regex, array $ignoredTypes): string
 	{

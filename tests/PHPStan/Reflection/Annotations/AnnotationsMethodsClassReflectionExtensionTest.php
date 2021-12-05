@@ -951,7 +951,6 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 
 	/**
 	 * @dataProvider dataMethods
-	 * @param string $className
 	 * @param array<string, mixed> $methods
 	 */
 	public function testMethods(string $className, array $methods): void

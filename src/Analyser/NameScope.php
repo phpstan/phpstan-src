@@ -28,9 +28,7 @@ class NameScope
 
 	/**
 	 * @api
-	 * @param string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
-	 * @param string|null $className
 	 * @param array<string, true> $typeAliasesMap
 	 */
 	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, array $typeAliasesMap = [], bool $bypassTypeAliases = false)
@@ -170,7 +168,6 @@ class NameScope
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

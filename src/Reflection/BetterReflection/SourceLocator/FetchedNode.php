@@ -21,9 +21,6 @@ class FetchedNode
 
 	/**
 	 * @param T $node
-	 * @param \PhpParser\Node\Stmt\Namespace_|null $namespace
-	 * @param string $fileName
-	 * @param LocatedSource $locatedSource
 	 */
 	public function __construct(
 		\PhpParser\Node $node,

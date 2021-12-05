@@ -72,7 +72,6 @@ class UnreachableStatementRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataBugWithoutGitHubIssue1
-	 * @param bool $treatPhpDocTypesAsCertain
 	 */
 	public function testBugWithoutGitHubIssue1(bool $treatPhpDocTypesAsCertain): void
 	{

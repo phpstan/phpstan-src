@@ -20,7 +20,6 @@ class ClassConstantsNode extends NodeAbstract implements VirtualNode
 	private array $fetches;
 
 	/**
-	 * @param ClassLike $class
 	 * @param ClassConst[] $constants
 	 * @param ClassConstantFetch[] $fetches
 	 */

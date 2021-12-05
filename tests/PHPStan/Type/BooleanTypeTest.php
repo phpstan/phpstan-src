@@ -47,9 +47,6 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param BooleanType  $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(BooleanType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -96,9 +93,6 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param BooleanType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(BooleanType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -153,9 +147,6 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param BooleanType $type
-	 * @param Type $otherType
-	 * @param bool $expectedResult
 	 */
 	public function testEquals(BooleanType $type, Type $otherType, bool $expectedResult): void
 	{

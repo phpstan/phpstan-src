@@ -109,8 +109,6 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
@@ -119,7 +117,6 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $functionName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array

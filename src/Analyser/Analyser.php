@@ -35,9 +35,7 @@ class Analyser
 	 * @param string[] $files
 	 * @param \Closure(string $file): void|null $preFileCallback
 	 * @param \Closure(int): void|null $postFileCallback
-	 * @param bool $debug
 	 * @param string[]|null $allAnalysedFiles
-	 * @return AnalyserResult
 	 */
 	public function analyse(
 		array $files,

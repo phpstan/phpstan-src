@@ -9,8 +9,6 @@ interface ProcessFactory
 
 	/**
 	 * @param string[] $command
-	 * @param string $cwd
-	 * @return \PHPStan\Compiler\Process\Process
 	 */
 	public function create(array $command, string $cwd): Process;
 

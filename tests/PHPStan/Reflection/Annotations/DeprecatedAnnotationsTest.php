@@ -76,9 +76,6 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataDeprecatedAnnotations
-	 * @param bool $deprecated
-	 * @param string $className
-	 * @param string|null $classDeprecation
 	 * @param array<string, mixed> $deprecatedAnnotations
 	 */
 	public function testDeprecatedAnnotations(bool $deprecated, string $className, ?string $classDeprecation, array $deprecatedAnnotations): void

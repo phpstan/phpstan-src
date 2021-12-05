@@ -24,7 +24,6 @@ class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 	private array $checkedExceptionClasses;
 
 	/**
-	 * @param ReflectionProvider $reflectionProvider
 	 * @param string[] $uncheckedExceptionRegexes
 	 * @param string[] $uncheckedExceptionClasses
 	 * @param string[] $checkedExceptionRegexes

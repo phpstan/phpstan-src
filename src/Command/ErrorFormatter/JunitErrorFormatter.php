@@ -60,10 +60,7 @@ class JunitErrorFormatter implements ErrorFormatter
 	/**
 	 * Format a single test case
 	 *
-	 * @param string      $reference
-	 * @param string|null $message
 	 *
-	 * @return string
 	 */
 	private function createTestCase(string $reference, string $type, ?string $message = null): string
 	{
@@ -81,8 +78,6 @@ class JunitErrorFormatter implements ErrorFormatter
 	/**
 	 * Escapes values for using in XML
 	 *
-	 * @param string $string
-	 * @return string
 	 */
 	private function escape(string $string): string
 	{

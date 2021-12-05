@@ -15,8 +15,6 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataAsserts
-	 * @param string $assertType
-	 * @param string $file
 	 * @param mixed ...$args
 	 */
 	public function testAsserts(

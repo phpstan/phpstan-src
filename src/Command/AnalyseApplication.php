@@ -43,14 +43,7 @@ class AnalyseApplication
 
 	/**
 	 * @param string[] $files
-	 * @param bool $onlyFiles
-	 * @param \PHPStan\Command\Output $stdOutput
-	 * @param \PHPStan\Command\Output $errorOutput
-	 * @param bool $defaultLevelUsed
-	 * @param bool $debug
-	 * @param string|null $projectConfigFile
 	 * @param mixed[]|null $projectConfigArray
-	 * @return AnalysisResult
 	 */
 	public function analyse(
 		array $files,

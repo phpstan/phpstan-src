@@ -421,7 +421,6 @@ class IntersectionType implements CompoundType
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -611,7 +610,6 @@ class IntersectionType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
@@ -620,7 +618,6 @@ class IntersectionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): TrinaryLogic $getResult
-	 * @return TrinaryLogic
 	 */
 	private function intersectResults(callable $getResult): TrinaryLogic
 	{
@@ -630,7 +627,6 @@ class IntersectionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): Type $getType
-	 * @return Type
 	 */
 	private function intersectTypes(callable $getType): Type
 	{

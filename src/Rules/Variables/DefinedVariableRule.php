@@ -90,7 +90,6 @@ class DefinedVariableRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param Scope $scope
 	 * @return array<int, array<int, string>>
 	 */
 	private function getParentVariables(Scope $scope): array

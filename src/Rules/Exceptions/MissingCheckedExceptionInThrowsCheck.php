@@ -23,7 +23,6 @@ class MissingCheckedExceptionInThrowsCheck
 	}
 
 	/**
-	 * @param Type|null $throwType
 	 * @param ThrowPoint[] $throwPoints
 	 * @return array<int, array{string, Node\Expr|Node\Stmt, int|null}>
 	 */

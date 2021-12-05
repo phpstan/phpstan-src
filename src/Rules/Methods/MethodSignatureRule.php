@@ -120,8 +120,6 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param string $methodName
-	 * @param \PHPStan\Reflection\ClassReflection $class
 	 * @return \PHPStan\Reflection\MethodReflection[]
 	 */
 	private function collectParentMethods(string $methodName, ClassReflection $class): array
@@ -148,8 +146,6 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs $currentVariant
-	 * @param ParametersAcceptorWithPhpDocs $parentVariant
 	 * @return array{TrinaryLogic, Type, Type}
 	 */
 	private function checkReturnTypeCompatibility(

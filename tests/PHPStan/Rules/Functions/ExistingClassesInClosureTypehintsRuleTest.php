@@ -112,7 +112,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 
 	/**
 	 * @dataProvider dataNativeUnionTypes
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
@@ -154,7 +153,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 
 	/**
 	 * @dataProvider dataRequiredParameterAfterOptional
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
@@ -193,7 +191,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends \PHPStan\Testing\RuleTes
 
 	/**
 	 * @dataProvider dataIntersectionTypes
-	 * @param int $phpVersion
 	 * @param mixed[] $errors
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void

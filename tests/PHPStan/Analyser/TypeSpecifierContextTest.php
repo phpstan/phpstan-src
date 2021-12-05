@@ -33,7 +33,6 @@ class TypeSpecifierContextTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataContext
-	 * @param \PHPStan\Analyser\TypeSpecifierContext $context
 	 * @param bool[] $results
 	 */
 	public function testContext(TypeSpecifierContext $context, array $results): void
@@ -69,7 +68,6 @@ class TypeSpecifierContextTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataNegate
-	 * @param \PHPStan\Analyser\TypeSpecifierContext $context
 	 * @param bool[] $results
 	 */
 	public function testNegate(TypeSpecifierContext $context, array $results): void

@@ -29,7 +29,6 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @dataProvider dataHasTraitUse
 	 * @param class-string $className
-	 * @param bool $has
 	 */
 	public function testHasTraitUse(string $className, bool $has): void
 	{
@@ -186,8 +185,6 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsAttributeClass
-	 * @param string $className
-	 * @param bool $expected
 	 */
 	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = \Attribute::TARGET_ALL): void
 	{
@@ -218,7 +215,6 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 	 * @dataProvider dataNestedRecursiveTraits
 	 * @param class-string $className
 	 * @param array<class-string, class-string> $expected
-	 * @param bool $recursive
 	 */
 	public function testGetTraits(string $className, array $expected, bool $recursive): void
 	{

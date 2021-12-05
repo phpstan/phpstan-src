@@ -18,11 +18,8 @@ class UnusedFunctionParametersCheck
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param string[] $parameterNames
 	 * @param \PhpParser\Node[] $statements
-	 * @param string $unusedParameterMessage
-	 * @param string $identifier
 	 * @param mixed[] $additionalMetadata
 	 * @return RuleError[]
 	 */
@@ -54,7 +51,6 @@ class UnusedFunctionParametersCheck
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
 	 * @return string[]
 	 */

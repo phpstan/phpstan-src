@@ -9,7 +9,6 @@ interface Container
 	public function hasService(string $serviceName): bool;
 
 	/**
-	 * @param string $serviceName
 	 * @return mixed
 	 */
 	public function getService(string $serviceName);
@@ -29,7 +28,6 @@ interface Container
 	public function findServiceNamesByType(string $className): array;
 
 	/**
-	 * @param string $tagName
 	 * @return mixed[]
 	 */
 	public function getServicesByTag(string $tagName): array;
@@ -42,7 +40,6 @@ interface Container
 	public function hasParameter(string $parameterName): bool;
 
 	/**
-	 * @param string $parameterName
 	 * @return mixed
 	 * @throws \PHPStan\DependencyInjection\ParameterNotFoundException
 	 */

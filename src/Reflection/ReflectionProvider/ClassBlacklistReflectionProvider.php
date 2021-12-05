@@ -23,7 +23,6 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	private ?string $singleReflectionInsteadOfFile;
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param string[] $patterns
 	 */
 	public function __construct(

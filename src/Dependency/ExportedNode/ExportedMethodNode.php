@@ -30,15 +30,6 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 	private array $parameters;
 
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
-	 * @param bool $byRef
-	 * @param bool $public
-	 * @param bool $private
-	 * @param bool $abstract
-	 * @param bool $final
-	 * @param bool $static
-	 * @param string|null $returnType
 	 * @param ExportedParameterNode[] $parameters
 	 */
 	public function __construct(

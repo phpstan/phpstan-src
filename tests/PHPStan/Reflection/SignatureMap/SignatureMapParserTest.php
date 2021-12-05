@@ -362,8 +362,6 @@ class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @dataProvider dataGetFunctions
 	 * @param mixed[] $map
-	 * @param string|null $className
-	 * @param \PHPStan\Reflection\SignatureMap\FunctionSignature $expectedSignature
 	 */
 	public function testGetFunctions(
 		array $map,
@@ -430,7 +428,6 @@ class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataParseAll
-	 * @param int $phpVersionId
 	 */
 	public function testParseAll(int $phpVersionId): void
 	{

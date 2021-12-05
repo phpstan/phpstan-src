@@ -41,7 +41,6 @@ class FinalConstantRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testRule(int $phpVersionId, array $errors): void

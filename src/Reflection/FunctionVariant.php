@@ -23,8 +23,6 @@ class FunctionVariant implements ParametersAcceptor
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection> $parameters
-	 * @param bool $isVariadic
-	 * @param Type $returnType
 	 */
 	public function __construct(
 		TemplateTypeMap $templateTypeMap,

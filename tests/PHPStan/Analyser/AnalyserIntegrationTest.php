@@ -463,7 +463,6 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	}
 
 	/**
-	 * @param string $file
 	 * @return \PHPStan\Analyser\Error[]
 	 */
 	private function runAnalyse(string $file): array

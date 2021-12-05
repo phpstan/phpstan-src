@@ -29,8 +29,6 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 	private array $universalObjectCratesClasses;
 
 	/**
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param bool $treatPhpDocTypesAsCertain
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(ReflectionProvider $reflectionProvider, bool $treatPhpDocTypesAsCertain, array $universalObjectCratesClasses)

@@ -138,7 +138,6 @@ class VerbosityLevel
 	 * @param callable(): string $valueCallback
 	 * @param callable(): string|null $preciseCallback
 	 * @param callable(): string|null $cacheCallback
-	 * @return string
 	 */
 	public function handle(
 		callable $typeOnlyCallback,

@@ -258,10 +258,6 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 
 	/**
 	 * @param mixed[] $expectedParameters
-	 * @param Type $expectedReturnType
-	 * @param Type $expectedNativeReturnType
-	 * @param bool $expectedVariadic
-	 * @param FunctionSignature $actualSignature
 	 */
 	private function assertSignature(
 		array $expectedParameters,
@@ -296,7 +292,6 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataParseAll
-	 * @param string $stubFile
 	 */
 	public function testParseAll(string $stubFile): void
 	{

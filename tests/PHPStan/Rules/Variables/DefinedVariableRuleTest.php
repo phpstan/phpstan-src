@@ -346,8 +346,6 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataLoopInitialAssignments
-	 * @param bool $polluteScopeWithLoopInitialAssignments
-	 * @param bool $checkMaybeUndefinedVariables
 	 * @param mixed[][] $expectedErrors
 	 */
 	public function testLoopInitialAssignments(
@@ -571,7 +569,6 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 	/**
 	 * @dataProvider dataForeachPolluteScopeWithAlwaysIterableForeach
 	 *
-	 * @param bool $polluteScopeWithAlwaysIterableForeach
 	 * @param mixed[] $errors
 	 */
 	public function testForeachPolluteScopeWithAlwaysIterableForeach(bool $polluteScopeWithAlwaysIterableForeach, array $errors): void

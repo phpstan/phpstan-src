@@ -69,8 +69,6 @@ interface Scope extends ClassMemberAccessAnswerer
 	 * Works for function/method parameters only.
 	 *
 	 * @internal
-	 * @param Expr $expr
-	 * @return Type
 	 */
 	public function getNativeType(Expr $expr): Type;
 
@@ -97,9 +95,6 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	/**
 	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
-	 * @param bool $isNullable
-	 * @param bool $isVariadic
-	 * @return Type
 	 */
 	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type;
 

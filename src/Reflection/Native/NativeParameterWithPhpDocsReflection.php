@@ -88,7 +88,6 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

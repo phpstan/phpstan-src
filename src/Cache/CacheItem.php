@@ -11,7 +11,6 @@ class CacheItem
 	private $data;
 
 	/**
-	 * @param string $variableKey
 	 * @param mixed $data
 	 */
 	public function __construct(string $variableKey, $data)
@@ -35,7 +34,6 @@ class CacheItem
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

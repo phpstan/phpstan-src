@@ -86,7 +86,6 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param bool $missingCheckedExceptionInThrows
 	 * @param string[] $checkedExceptionClasses
 	 * @param mixed[] $errors
 	 */

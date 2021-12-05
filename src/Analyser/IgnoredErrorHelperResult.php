@@ -24,12 +24,10 @@ class IgnoredErrorHelperResult
 	private bool $reportUnmatchedIgnoredErrors;
 
 	/**
-	 * @param FileHelper $fileHelper
 	 * @param string[] $errors
 	 * @param array<array<mixed>> $otherIgnoreErrors
 	 * @param array<string, array<array<mixed>>> $ignoreErrorsByFile
 	 * @param (string|mixed[])[] $ignoreErrors
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 */
 	public function __construct(
 		FileHelper $fileHelper,

@@ -183,34 +183,15 @@ class MutatingScope implements Scope
 	private ?Scope $parentScope;
 
 	/**
-	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\Type\DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry
-	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry
-	 * @param \PhpParser\PrettyPrinter\Standard $printer
-	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
-	 * @param \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder
-	 * @param Parser $parser
-	 * @param NodeScopeResolver $nodeScopeResolver
-	 * @param \PHPStan\Analyser\ScopeContext $context
-	 * @param PhpVersion $phpVersion
-	 * @param bool $declareStrictTypes
 	 * @param array<string, Type> $constantTypes
 	 * @param \PHPStan\Reflection\FunctionReflection|MethodReflection|null $function
-	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param string|null $inClosureBindScopeClass
-	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
-	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 * @param string[] $dynamicConstantNames
-	 * @param bool $treatPhpDocTypesAsCertain
-	 * @param bool $afterExtractCall
-	 * @param Scope|null $parentScope
 	 */
 	public function __construct(
 		ScopeFactory $scopeFactory,
@@ -2424,7 +2405,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param ParametersAcceptor[] $variants
-	 * @return Type
 	 */
 	private function createFirstClassCallable(array $variants): Type
 	{
@@ -2550,7 +2530,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
-	 * @return bool
 	 */
 	private function hasPropertyNativeType($propertyFetch): bool
 	{
@@ -2785,7 +2764,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param MethodReflection|FunctionReflection $reflection
-	 * @return self
 	 */
 	public function pushInFunctionCall($reflection): self
 	{
@@ -2903,17 +2881,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param Node\Stmt\ClassMethod $classMethod
-	 * @param TemplateTypeMap $templateTypeMap
 	 * @param Type[] $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $throwType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param bool|null $isPure
-	 * @return self
 	 */
 	public function enterClassMethod(
 		Node\Stmt\ClassMethod $classMethod,
@@ -2976,7 +2944,6 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param Node\FunctionLike $functionLike
 	 * @return Type[]
 	 */
 	private function getRealParameterTypes(Node\FunctionLike $functionLike): array
@@ -2997,7 +2964,6 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param Node\FunctionLike $functionLike
 	 * @return Type[]
 	 */
 	private function getRealParameterDefaultValues(Node\FunctionLike $functionLike): array
@@ -3018,17 +2984,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param Node\Stmt\Function_ $function
-	 * @param TemplateTypeMap $templateTypeMap
 	 * @param Type[] $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $throwType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param bool|null $isPure
-	 * @return self
 	 */
 	public function enterFunction(
 		Node\Stmt\Function_ $function,
@@ -3196,9 +3152,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param \PhpParser\Node\Expr\Closure $closure
 	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
-	 * @return self
 	 */
 	public function enterAnonymousFunction(
 		Expr\Closure $closure,
@@ -3233,9 +3187,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\Closure $closure
 	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
-	 * @return self
 	 */
 	private function enterAnonymousFunctionWithoutReflection(
 		Expr\Closure $closure,
@@ -3488,9 +3440,6 @@ class MutatingScope implements Scope
 	/**
 	 * @api
 	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
-	 * @param bool $isNullable
-	 * @param bool $isVariadic
-	 * @return Type
 	 */
 	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type
 	{
@@ -3556,8 +3505,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param \PhpParser\Node\Name[] $classes
-	 * @param string|null $variableName
-	 * @return self
 	 */
 	public function enterCatch(array $classes, ?string $variableName): self
 	{
@@ -4026,7 +3973,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param \PhpParser\Node\Expr $expr
 	 * @return \PHPStan\Analyser\MutatingScope
 	 */
 	public function filterByTruthyValue(Expr $expr): Scope
@@ -4037,7 +3983,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param \PhpParser\Node\Expr $expr
 	 * @return \PHPStan\Analyser\MutatingScope
 	 */
 	public function filterByFalseyValue(Expr $expr): Scope
@@ -4181,7 +4126,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressionHolders
-	 * @return self
 	 */
 	public function changeConditionalExpressions(array $newConditionalExpressionHolders): self
 	{
@@ -4206,9 +4150,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param string $exprString
 	 * @param ConditionalExpressionHolder[] $conditionalExpressionHolders
-	 * @return self
 	 */
 	public function addConditionalExpressions(string $exprString, array $conditionalExpressionHolders): self
 	{
@@ -4265,7 +4207,6 @@ class MutatingScope implements Scope
 	/**
 	 * @phpcsSuppress SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
 	 * @param Type[] $types
-	 * @return self
 	 */
 	private function addMoreSpecificTypes(array $types): self
 	{
@@ -4581,10 +4522,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param self $closureScope
-	 * @param self|null $prevScope
 	 * @param Expr\ClosureUse[] $byRefUses
-	 * @return self
 	 */
 	public function processClosureScope(
 		self $closureScope,
@@ -4960,7 +4898,6 @@ class MutatingScope implements Scope
 	/**
 	 * @param VariableTypeHolder[] $variableTypeHolders
 	 * @param VariableTypeHolder[] $otherVariableTypeHolders
-	 * @return bool
 	 */
 	private function compareVariableTypeHolders(array $variableTypeHolders, array $otherVariableTypeHolders): bool
 	{
@@ -5231,10 +5168,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $typeWithMethod
-	 * @param string $methodName
 	 * @param MethodCall|\PhpParser\Node\Expr\StaticCall $methodCall
-	 * @return \PHPStan\Type\Type|null
 	 */
 	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
 	{
@@ -5300,10 +5234,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $fetchedOnType
-	 * @param string $propertyName
 	 * @param PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
-	 * @return \PHPStan\Type\Type|null
 	 */
 	private function propertyFetchType(Type $fetchedOnType, string $propertyName, Expr $propertyFetch): ?Type
 	{

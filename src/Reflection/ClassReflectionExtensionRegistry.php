@@ -14,7 +14,6 @@ class ClassReflectionExtensionRegistry
 	private array $methodsClassReflectionExtensions;
 
 	/**
-	 * @param \PHPStan\Broker\Broker $broker
 	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
 	 * @param \PHPStan\Reflection\MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 */

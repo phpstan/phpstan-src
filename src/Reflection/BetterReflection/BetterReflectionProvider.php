@@ -388,10 +388,7 @@ class BetterReflectionProvider implements ReflectionProvider
 	}
 
 	/**
-	 * @param \PhpParser\Node\Name $nameNode
 	 * @param \Closure(string $name): bool $existsCallback
-	 * @param Scope|null $scope
-	 * @return string|null
 	 */
 	private function resolveName(
 		\PhpParser\Node\Name $nameNode,

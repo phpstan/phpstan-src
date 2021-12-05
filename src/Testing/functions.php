@@ -8,7 +8,6 @@ use PHPStan\TrinaryLogic;
  * Asserts the static type of a value.
  *
  * @phpstan-pure
- * @param string $type
  * @param mixed $value
  * @return mixed
  */
@@ -24,7 +23,6 @@ function assertType(string $type, $value) // phpcs:ignore
  * method/function parameter phpDocs.
  *
  * @phpstan-pure
- * @param string $type
  * @param mixed $value
  * @return mixed
  */
@@ -35,7 +33,6 @@ function assertNativeType(string $type, $value) // phpcs:ignore
 
 /**
  * @phpstan-pure
- * @param TrinaryLogic $certainty
  * @param mixed $variable
  * @return mixed
  */

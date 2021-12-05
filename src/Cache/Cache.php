@@ -13,7 +13,6 @@ class Cache
 	}
 
 	/**
-	 * @param string $key
 	 * @return mixed|null
 	 */
 	public function load(string $key, string $variableKey)
@@ -22,10 +21,7 @@ class Cache
 	}
 
 	/**
-	 * @param string $key
-	 * @param string $variableKey
 	 * @param mixed $data
-	 * @return void
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{

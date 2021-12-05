@@ -75,10 +75,6 @@ class PhpVersionFactoryTest extends TestCase
 
 	/**
 	 * @dataProvider dataCreate
-	 * @param int|null $versionId
-	 * @param string|null $composerPhpVersion
-	 * @param int $expectedVersion
-	 * @param string|null $expectedVersionString
 	 */
 	public function testCreate(
 		?int $versionId,

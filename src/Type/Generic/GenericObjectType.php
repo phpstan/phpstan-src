@@ -294,10 +294,7 @@ class GenericObjectType extends ObjectType
 	}
 
 	/**
-	 * @param string $className
 	 * @param Type[] $types
-	 * @param Type|null $subtractedType
-	 * @return self
 	 */
 	protected function recreate(string $className, array $types, ?Type $subtractedType): self
 	{
@@ -315,7 +312,6 @@ class GenericObjectType extends ObjectType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

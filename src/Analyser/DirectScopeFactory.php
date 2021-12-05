@@ -72,24 +72,15 @@ class DirectScopeFactory implements ScopeFactory
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\ScopeContext $context
-	 * @param bool $declareStrictTypes
 	 * @param  array<string, Type> $constantTypes
 	 * @param \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null $function
-	 * @param string|null $namespace
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
 	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param string|null $inClosureBindScopeClass
-	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
-	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<\PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection> $inFunctionCallsStack
-	 * @param bool $afterExtractCall
-	 * @param Scope|null $parentScope
 	 *
-	 * @return MutatingScope
 	 */
 	public function create(
 		ScopeContext $context,

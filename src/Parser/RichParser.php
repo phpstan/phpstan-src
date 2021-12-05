@@ -52,7 +52,6 @@ class RichParser implements Parser
 	}
 
 	/**
-	 * @param string $sourceCode
 	 * @return \PhpParser\Node\Stmt[]
 	 */
 	public function parseString(string $sourceCode): array

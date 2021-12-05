@@ -13,7 +13,6 @@ class MatchExpressionArm
 
 	/**
 	 * @param MatchExpressionArmCondition[] $conditions
-	 * @param int $line
 	 */
 	public function __construct(array $conditions, int $line)
 	{

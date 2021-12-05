@@ -11,7 +11,6 @@ class EnsuredNonNullabilityResult
 	private array $specifiedExpressions;
 
 	/**
-	 * @param MutatingScope $scope
 	 * @param EnsuredNonNullabilityResultExpression[] $specifiedExpressions
 	 */
 	public function __construct(MutatingScope $scope, array $specifiedExpressions)

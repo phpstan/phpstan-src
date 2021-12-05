@@ -79,8 +79,6 @@ class FixerApplication
 	private $fixerSuggestionId;
 
 	/**
-	 * @param FileMonitor $fileMonitor
-	 * @param ResultCacheManagerFactory $resultCacheManagerFactory
 	 * @param string[] $analysedPaths
 	 */
 	public function __construct(
@@ -109,10 +107,8 @@ class FixerApplication
 	}
 
 	/**
-	 * @param \Symfony\Component\Console\Output\OutputInterface $output
 	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
-	 * @return int
 	 */
 	public function run(
 		?string $projectConfigFile,
@@ -442,7 +438,6 @@ class FixerApplication
 	}
 
 	/**
-	 * @param LoopInterface $loop
 	 * @param callable(FileMonitorResult): void $hasChangesCallback
 	 */
 	private function monitorFileChanges(LoopInterface $loop, callable $hasChangesCallback): void

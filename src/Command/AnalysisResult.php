@@ -31,9 +31,6 @@ class AnalysisResult
 	 * @param string[] $notFileSpecificErrors
 	 * @param string[] $internalErrors
 	 * @param string[] $warnings
-	 * @param bool $defaultLevelUsed
-	 * @param string|null $projectConfigFile
-	 * @param bool $savedResultCache
 	 */
 	public function __construct(
 		array $fileSpecificErrors,

@@ -33,10 +33,6 @@ class IgnoredError
 	}
 
 	/**
-	 * @param FileHelper $fileHelper
-	 * @param Error $error
-	 * @param string $ignoredErrorPattern
-	 * @param string|null $path
 	 * @return bool To ignore or not to ignore?
 	 */
 	public static function shouldIgnore(

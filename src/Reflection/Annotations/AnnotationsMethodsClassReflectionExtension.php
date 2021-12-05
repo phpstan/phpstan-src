@@ -104,7 +104,6 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 
 	/**
 	 * @param AnnotationsMethodParameterReflection[] $parameters
-	 * @return bool
 	 */
 	private function detectMethodVariadic(array $parameters): bool
 	{

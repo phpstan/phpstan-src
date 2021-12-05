@@ -90,9 +90,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAddNull
-	 * @param \PHPStan\Type\Type $type
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testAddNull(
 		Type $type,
@@ -107,9 +105,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAddNull
-	 * @param \PHPStan\Type\Type $type
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testUnionWithNull(
 		Type $type,
@@ -212,9 +208,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataRemoveNull
-	 * @param \PHPStan\Type\Type $type
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testRemoveNull(
 		Type $type,
@@ -1870,7 +1864,6 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 	 * @dataProvider dataUnion
 	 * @param \PHPStan\Type\Type[] $types
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testUnion(
 		array $types,
@@ -1919,7 +1912,6 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 	 * @dataProvider dataUnion
 	 * @param \PHPStan\Type\Type[] $types
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testUnionInversed(
 		array $types,
@@ -3104,7 +3096,6 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 	 * @dataProvider dataIntersect
 	 * @param \PHPStan\Type\Type[] $types
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testIntersect(
 		array $types,
@@ -3129,7 +3120,6 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 	 * @dataProvider dataIntersect
 	 * @param \PHPStan\Type\Type[] $types
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testIntersectInversed(
 		array $types,
@@ -3615,10 +3605,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataRemove
-	 * @param \PHPStan\Type\Type $fromType
-	 * @param \PHPStan\Type\Type $type
 	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
 	 */
 	public function testRemove(
 		Type $fromType,

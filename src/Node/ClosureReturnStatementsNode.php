@@ -23,10 +23,8 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 	private StatementResult $statementResult;
 
 	/**
-	 * @param \PhpParser\Node\Expr\Closure $closureExpr
 	 * @param \PHPStan\Node\ReturnStatement[] $returnStatements
 	 * @param array<int, Yield_|YieldFrom> $yieldStatements
-	 * @param \PHPStan\Analyser\StatementResult $statementResult
 	 */
 	public function __construct(
 		Closure $closureExpr,

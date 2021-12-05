@@ -48,9 +48,6 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param IntegerType  $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -97,9 +94,6 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param IntegerType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -159,9 +153,6 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param IntegerType $type
-	 * @param Type $otherType
-	 * @param bool $expectedResult
 	 */
 	public function testEquals(IntegerType $type, Type $otherType, bool $expectedResult): void
 	{

@@ -59,7 +59,6 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function processAssertType(array $args, Scope $scope): array
@@ -87,7 +86,6 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function processAssertNativeType(array $args, Scope $scope): array
@@ -116,7 +114,6 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function processAssertVariableCertainty(array $args, Scope $scope): array

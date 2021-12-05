@@ -69,7 +69,6 @@ class UninitializedPropertyRule implements Rule
 	}
 
 	/**
-	 * @param ClassReflection $classReflection
 	 * @return string[]
 	 */
 	private function getConstructors(ClassReflection $classReflection): array

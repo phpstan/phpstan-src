@@ -18,7 +18,6 @@ class ClassWhitelistSourceLocator implements SourceLocator
 	private array $patterns;
 
 	/**
-	 * @param SourceLocator $sourceLocator
 	 * @param string[] $patterns
 	 */
 	public function __construct(

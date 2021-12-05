@@ -41,7 +41,6 @@ class UnsetCastRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param int $phpVersion
 	 * @param mixed[] $errors
 	 */
 	public function testRule(int $phpVersion, array $errors): void

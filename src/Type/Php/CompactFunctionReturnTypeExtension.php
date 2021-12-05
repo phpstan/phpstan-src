@@ -63,7 +63,6 @@ class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	}
 
 	/**
-	 * @param Type $type
 	 * @return array<int, ConstantStringType>|null
 	 */
 	private function findConstantStrings(Type $type): ?array

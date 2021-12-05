@@ -376,8 +376,6 @@ class StatementResultTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsAlwaysTerminating
-	 * @param string $code
-	 * @param bool $expectedIsAlwaysTerminating
 	 */
 	public function testIsAlwaysTerminating(
 		string $code,

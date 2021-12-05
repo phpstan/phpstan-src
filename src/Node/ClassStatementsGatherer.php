@@ -43,7 +43,6 @@ class ClassStatementsGatherer
 	private array $constantFetches = [];
 
 	/**
-	 * @param ClassReflection $classReflection
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function __construct(

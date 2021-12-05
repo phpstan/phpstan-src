@@ -47,8 +47,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	/**
 	 * @api
 	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
-	 * @param Type $returnType
-	 * @param bool $variadic
 	 */
 	public function __construct(
 		array $parameters,
@@ -267,7 +265,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -428,7 +425,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

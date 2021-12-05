@@ -32,7 +32,6 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataTopics
-	 * @param string $topic
 	 */
 	public function testLevels(
 		string $topic
@@ -141,9 +140,7 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 	}
 
 	/**
-	 * @param string $expectedJsonFile
 	 * @param string[] $expectedMessages
-	 * @return \PHPUnit\Framework\AssertionFailedError|null
 	 */
 	private function compareFiles(string $expectedJsonFile, array $expectedMessages): ?\PHPUnit\Framework\AssertionFailedError
 	{

@@ -15,12 +15,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 
 	/**
 	 * @api
-	 * @param TemplateTypeMap $templateTypeMap
 	 * @param array<int, \PHPStan\Reflection\ParameterReflectionWithPhpDocs> $parameters
-	 * @param bool $isVariadic
-	 * @param Type $returnType
-	 * @param Type $phpDocReturnType
-	 * @param Type $nativeReturnType
 	 */
 	public function __construct(
 		TemplateTypeMap $templateTypeMap,

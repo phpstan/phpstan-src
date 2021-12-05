@@ -69,12 +69,7 @@ class SchedulerTest extends TestCase
 
 	/**
 	 * @dataProvider dataSchedule
-	 * @param int $cpuCores
-	 * @param int $maximumNumberOfProcesses
-	 * @param int $minimumNumberOfJobsPerProcess
-	 * @param int $jobSize
 	 * @param 0|positive-int $numberOfFiles
-	 * @param int $expectedNumberOfProcesses
 	 * @param array<int> $expectedJobSizes
 	 */
 	public function testSchedule(

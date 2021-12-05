@@ -189,7 +189,6 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataBug3566
-	 * @param bool $checkExplicitMixed
 	 * @param mixed[] $errors
 	 */
 	public function testBug3566(bool $checkExplicitMixed, array $errors): void

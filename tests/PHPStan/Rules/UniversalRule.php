@@ -35,7 +35,6 @@ class UniversalRule implements Rule
 
 	/**
 	 * @param TNodeType $node
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @return array<string|RuleError>
 	 */
 	public function processNode(Node $node, Scope $scope): array

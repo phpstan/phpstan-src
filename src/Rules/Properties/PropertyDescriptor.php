@@ -17,9 +17,7 @@ class PropertyDescriptor
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\PropertyReflection $property
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
-	 * @return string
 	 */
 	public function describeProperty(PropertyReflection $property, $propertyFetch): string
 	{

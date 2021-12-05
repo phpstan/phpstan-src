@@ -22,20 +22,9 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	private \PHPStan\Reflection\ClassReflection $declaringClass;
 
 	/**
-	 * @param ClassReflection $declaringClass
-	 * @param ClassMethod $classMethod
-	 * @param TemplateTypeMap $templateTypeMap
 	 * @param \PHPStan\Type\Type[] $realParameterTypes
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
 	 * @param \PHPStan\Type\Type[] $realParameterDefaultValues
-	 * @param Type $realReturnType
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $throwType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param bool|null $isPure
 	 */
 	public function __construct(
 		ClassReflection $declaringClass,

@@ -14,7 +14,6 @@ interface Parser
 	public function parseFile(string $file): array;
 
 	/**
-	 * @param string $sourceCode
 	 * @return \PhpParser\Node\Stmt[]
 	 * @throws \PHPStan\Parser\ParserErrorsException
 	 */

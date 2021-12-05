@@ -20,7 +20,6 @@ class IntersectionTypeMethodReflection implements MethodReflection
 	private array $methods;
 
 	/**
-	 * @param string $methodName
 	 * @param \PHPStan\Reflection\MethodReflection[] $methods
 	 */
 	public function __construct(string $methodName, array $methods)

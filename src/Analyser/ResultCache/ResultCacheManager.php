@@ -65,16 +65,9 @@ class ResultCacheManager
 	private bool $checkDependenciesOfProjectExtensionFiles;
 
 	/**
-	 * @param ExportedNodeFetcher $exportedNodeFetcher
-	 * @param FileFinder $scanFileFinder
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param string $cacheFilePath
-	 * @param string $tempResultCachePath
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $stubFiles
-	 * @param string $usedLevel
-	 * @param string|null $cliAutoloadFile
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
@@ -118,8 +111,6 @@ class ResultCacheManager
 	/**
 	 * @param string[] $allAnalysedFiles
 	 * @param mixed[]|null $projectConfigArray
-	 * @param bool $debug
-	 * @return ResultCache
 	 */
 	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, ?array $projectConfigArray, Output $output, ?string $resultCacheName = null): ResultCache
 	{
@@ -290,7 +281,6 @@ class ResultCacheManager
 	/**
 	 * @param mixed[] $cachedMeta
 	 * @param mixed[] $currentMeta
-	 * @return bool
 	 */
 	private function isMetaDifferent(array $cachedMeta, array $currentMeta): bool
 	{
@@ -303,9 +293,7 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param string $analysedFile
 	 * @param array<int, ExportedNode> $cachedFileExportedNodes
-	 * @return bool
 	 */
 	private function exportedNodesChanged(string $analysedFile, array $cachedFileExportedNodes): bool
 	{
@@ -328,10 +316,7 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param AnalyserResult $analyserResult
-	 * @param ResultCache $resultCache
 	 * @param bool|string $save
-	 * @return ResultCacheProcessResult
 	 */
 	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
 	{
@@ -425,7 +410,6 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param ResultCache $resultCache
 	 * @param array<string, array<Error>> $freshErrorsByFile
 	 * @return array<string, array<Error>>
 	 */
@@ -444,7 +428,6 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param ResultCache $resultCache
 	 * @param array<string, array<string>>|null $freshDependencies
 	 * @return array<string, array<string>>|null
 	 */
@@ -486,7 +469,6 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param ResultCache $resultCache
 	 * @param array<string, array<ExportedNode>> $freshExportedNodes
 	 * @return array<string, array<ExportedNode>>
 	 */
@@ -506,8 +488,6 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param int $lastFullAnalysisTime
-	 * @param string|null $resultCacheName
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
@@ -675,7 +655,6 @@ php;
 	}
 
 	/**
-	 * @param string $fileName
 	 * @param array<string, array<int, string>> $dependencies
 	 * @return array<int, string>
 	 */

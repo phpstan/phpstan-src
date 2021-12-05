@@ -19,8 +19,6 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 	private array $statements;
 
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
 	 * @param string[] $extends
 	 * @param ExportedNode[] $statements
 	 */

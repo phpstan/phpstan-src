@@ -59,8 +59,6 @@ class FunctionCallParametersCheck
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParametersAcceptor $parametersAcceptor
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\New_ $funcCall
 	 * @param array{string, string, string, string, string, string, string, string, string, string, string, string, string} $messages
 	 * @return RuleError[]
@@ -364,11 +362,7 @@ class FunctionCallParametersCheck
 	}
 
 	/**
-	 * @param ParametersAcceptor $parametersAcceptor
 	 * @param array<int, array{Expr, Type, bool, string|null, int}> $arguments
-	 * @param bool $hasNamedArguments
-	 * @param string $missingParameterMessage
-	 * @param string $unknownParameterMessage
 	 * @return array{RuleError[], array<int, array{Expr, Type, bool, string|null, int, \PHPStan\Reflection\ParameterReflection|null}>}
 	 */
 	private function processArguments(

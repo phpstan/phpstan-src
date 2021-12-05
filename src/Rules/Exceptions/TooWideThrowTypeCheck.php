@@ -14,7 +14,6 @@ class TooWideThrowTypeCheck
 {
 
 	/**
-	 * @param Type $throwType
 	 * @param ThrowPoint[] $throwPoints
 	 * @return string[]
 	 */

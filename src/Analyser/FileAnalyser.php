@@ -50,11 +50,8 @@ class FileAnalyser
 	}
 
 	/**
-	 * @param string $file
 	 * @param array<string, true> $analysedFiles
-	 * @param Registry $registry
 	 * @param callable(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
-	 * @return FileAnalyserResult
 	 */
 	public function analyseFile(
 		string $file,
@@ -269,7 +266,6 @@ class FileAnalyser
 	}
 
 	/**
-	 * @param Node $node
 	 * @return int[]
 	 */
 	private function getLinesToIgnore(Node $node): array
@@ -295,7 +291,6 @@ class FileAnalyser
 	}
 
 	/**
-	 * @param string $file
 	 * @param \PhpParser\Node[] $nodes
 	 * @return array<string, array<int, true>>
 	 */

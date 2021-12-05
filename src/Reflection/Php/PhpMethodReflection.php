@@ -79,21 +79,7 @@ class PhpMethodReflection implements MethodReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param ClassReflection $declaringClass
-	 * @param ClassReflection|null $declaringTrait
-	 * @param BuiltinMethodReflection $reflection
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param Parser $parser
-	 * @param FunctionCallStatementFinder $functionCallStatementFinder
-	 * @param Cache $cache
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $phpDocThrowType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param string|null $stubPhpDocString
 	 */
 	public function __construct(
 		ClassReflection $declaringClass,
@@ -300,9 +286,7 @@ class PhpMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @param ClassReflection $declaringClass
 	 * @param \PhpParser\Node[] $nodes
-	 * @return bool
 	 */
 	private function callsFuncGetArgs(ClassReflection $declaringClass, array $nodes): bool
 	{

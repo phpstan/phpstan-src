@@ -34,7 +34,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	private array $methodCalls;
 
 	/**
-	 * @param ClassLike $class
 	 * @param ClassPropertyNode[] $properties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
@@ -187,7 +186,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	}
 
 	/**
-	 * @param ObjectType $classType
 	 * @param MethodCall[] $methodCalls
 	 * @param string[] $methods
 	 * @return string[]

@@ -226,7 +226,6 @@ class ClassConstantRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataClassConstantOnExpression
-	 * @param int $phpVersion
 	 * @param mixed[] $errors
 	 */
 	public function testClassConstantOnExpression(int $phpVersion, array $errors): void

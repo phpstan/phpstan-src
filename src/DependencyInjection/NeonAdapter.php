@@ -22,7 +22,6 @@ class NeonAdapter implements Adapter
 	private array $fileHelpers = [];
 
 	/**
-	 * @param string $file
 	 * @return mixed[]
 	 */
 	public function load(string $file): array
@@ -125,7 +124,6 @@ class NeonAdapter implements Adapter
 
 	/**
 	 * @param mixed[] $data
-	 * @return string
 	 */
 	public function dump(array $data): string
 	{

@@ -57,9 +57,6 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param IterableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -159,9 +156,6 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IterableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -175,9 +169,6 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IterableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -336,9 +327,6 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param IterableType $iterableType
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(IterableType $iterableType, Type $otherType, TrinaryLogic $expectedResult): void
 	{

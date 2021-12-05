@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\Runtime;
 
-use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
@@ -152,8 +151,6 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	/**
 	 * @param \ReflectionClass<object> $reflectionClass
-	 * @param string $displayName
-	 * @param string|null $anonymousFilename
 	 */
 	private function getClassFromReflection(\ReflectionClass $reflectionClass, string $displayName, ?string $anonymousFilename): ClassReflection
 	{
@@ -363,10 +360,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	}
 
 	/**
-	 * @param Node\Name $nameNode
 	 * @param \Closure(string $name): bool $existsCallback
-	 * @param Scope|null $scope
-	 * @return string|null
 	 */
 	private function resolveName(
 		\PhpParser\Node\Name $nameNode,

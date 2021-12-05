@@ -23,13 +23,6 @@ class FunctionReturnTypeCheck
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PHPStan\Type\Type $returnType
-	 * @param \PhpParser\Node\Expr|null $returnValue
-	 * @param string $emptyReturnStatementMessage
-	 * @param string $voidMessage
-	 * @param string $typeMismatchMessage
-	 * @param bool $isGenerator
 	 * @return RuleError[]
 	 */
 	public function checkReturnType(

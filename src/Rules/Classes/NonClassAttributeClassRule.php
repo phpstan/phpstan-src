@@ -36,7 +36,6 @@ class NonClassAttributeClassRule implements Rule
 	}
 
 	/**
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function check(Scope $scope): array

@@ -21,7 +21,6 @@ class ParentDirectoryRelativePathHelper implements RelativePathHelper
 	}
 
 	/**
-	 * @param string $filename
 	 * @return string[]
 	 */
 	public function getFilenameParts(string $filename): array

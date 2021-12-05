@@ -151,9 +151,6 @@ class MixedTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param \PHPStan\Type\MixedType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(MixedType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{

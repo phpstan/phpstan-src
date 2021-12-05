@@ -34,16 +34,8 @@ class Error implements \JsonSerializable
 	/**
 	 * Error constructor.
 	 *
-	 * @param string $message
-	 * @param string $file
-	 * @param int|null $line
 	 * @param bool|\Throwable $canBeIgnored
-	 * @param string|null $filePath
-	 * @param string|null $traitFilePath
-	 * @param string|null $tip
-	 * @param int|null $nodeLine
 	 * @param class-string<\PhpParser\Node>|null $nodeType
-	 * @param string|null $identifier
 	 * @param mixed[] $metadata
 	 */
 	public function __construct(
@@ -223,7 +215,6 @@ class Error implements \JsonSerializable
 
 	/**
 	 * @param mixed[] $json
-	 * @return self
 	 */
 	public static function decode(array $json): self
 	{
@@ -244,7 +235,6 @@ class Error implements \JsonSerializable
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

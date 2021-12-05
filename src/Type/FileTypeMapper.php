@@ -208,7 +208,6 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param string $fileName
 	 * @return \PHPStan\Analyser\NameScope[]
 	 */
 	private function getNameScopeMap(string $fileName): array
@@ -232,7 +231,6 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param string $fileName
 	 * @return \PHPStan\Analyser\NameScope[]
 	 */
 	private function createResolvedPhpDocMap(string $fileName): array
@@ -257,9 +255,6 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param string $fileName
-	 * @param string|null $lookForTrait
-	 * @param string|null $traitUseClass
 	 * @param array<string, string> $traitMethodAliases
 	 * @return (callable(): \PHPStan\Analyser\NameScope)[]
 	 */
@@ -582,7 +577,6 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param Doc|null $docComment
 	 * @return array<string, true>
 	 */
 	private function getTypeAliasesMap(?Doc $docComment): array
@@ -645,7 +639,6 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param string $fileName
 	 * @return array<array{filename: string, modifiedTime: int}>
 	 */
 	private function getCachedDependentFilesWithTimestamps(string $fileName): array
@@ -705,7 +698,6 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param string $fileName
 	 * @return string[]
 	 */
 	private function getDependentFiles(string $fileName): array

@@ -208,7 +208,6 @@ class DependencyResolver
 	}
 
 	/**
-	 * @param string $className
 	 * @param array<int, ClassReflection|FunctionReflection> $dependenciesReflections
 	 */
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
@@ -240,7 +239,6 @@ class DependencyResolver
 	}
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs $parametersAcceptor
 	 * @param array<ClassReflection|FunctionReflection> $dependenciesReflections
 	 */
 	private function extractFromParametersAcceptor(
@@ -269,7 +267,6 @@ class DependencyResolver
 	}
 
 	/**
-	 * @param Type|null $throwType
 	 * @param array<ClassReflection|FunctionReflection> $dependenciesReflections
 	 */
 	private function extractThrowType(

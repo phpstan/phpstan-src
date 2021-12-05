@@ -34,10 +34,7 @@ class ImpossibleCheckTypeHelper
 	private bool $treatPhpDocTypesAsCertain;
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param string[] $universalObjectCratesClasses
-	 * @param bool $treatPhpDocTypesAsCertain
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -261,9 +258,7 @@ class ImpossibleCheckTypeHelper
 	}
 
 	/**
-	 * @param Scope $scope
 	 * @param \PhpParser\Node\Arg[] $args
-	 * @return string
 	 */
 	public function getArgumentsDescription(
 		Scope $scope,

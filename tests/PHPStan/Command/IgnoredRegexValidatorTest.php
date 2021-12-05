@@ -115,10 +115,7 @@ class IgnoredRegexValidatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataValidate
-	 * @param string $regex
 	 * @param string[] $expectedTypes
-	 * @param bool $expectedHasAnchors
-	 * @param bool $expectAllErrorsIgnored
 	 */
 	public function testValidate(
 		string $regex,

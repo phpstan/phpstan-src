@@ -447,8 +447,6 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 	 * @dataProvider dataSelectFromTypes
 	 * @param \PHPStan\Type\Type[] $types
 	 * @param ParametersAcceptor[] $variants
-	 * @param bool $unpack
-	 * @param ParametersAcceptor $expected
 	 */
 	public function testSelectFromTypes(
 		array $types,

@@ -24,8 +24,6 @@ class CleaningParserTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataParse
-	 * @param string $beforeFile
-	 * @param string $afterFile
 	 */
 	public function testParse(
 		string $beforeFile,

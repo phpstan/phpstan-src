@@ -13,7 +13,6 @@ class LiteralArrayNode extends NodeAbstract implements VirtualNode
 	private array $itemNodes;
 
 	/**
-	 * @param Array_ $originalNode
 	 * @param LiteralArrayItem[] $itemNodes
 	 */
 	public function __construct(Array_ $originalNode, array $itemNodes)

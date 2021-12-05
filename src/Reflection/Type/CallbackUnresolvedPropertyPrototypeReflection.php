@@ -25,9 +25,6 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
 	/**
-	 * @param PropertyReflection $propertyReflection
-	 * @param ClassReflection $resolvedDeclaringClass
-	 * @param bool $resolveTemplateTypeMapToBounds
 	 * @param callable(Type): Type $transformStaticTypeCallback
 	 */
 	public function __construct(

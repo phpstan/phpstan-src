@@ -48,7 +48,6 @@ class OverridingConstantRule implements Rule
 	}
 
 	/**
-	 * @param string $constantName
 	 * @return RuleError[]
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array

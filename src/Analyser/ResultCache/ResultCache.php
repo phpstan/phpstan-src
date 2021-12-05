@@ -29,8 +29,6 @@ class ResultCache
 
 	/**
 	 * @param string[] $filesToAnalyse
-	 * @param bool $fullAnalysis
-	 * @param int $lastFullAnalysisTime
 	 * @param mixed[] $meta
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies

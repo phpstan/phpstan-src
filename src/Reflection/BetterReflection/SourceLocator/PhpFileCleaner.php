@@ -202,9 +202,7 @@ class PhpFileCleaner
 	}
 
 	/**
-	 * @param string $regex
 	 * @param string[]|null $match
-	 * @return bool
 	 */
 	private function match(string $regex, ?array &$match = null): bool
 	{

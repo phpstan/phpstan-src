@@ -63,8 +63,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsCallable
-	 * @param UnionType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsCallable(UnionType $type, TrinaryLogic $expectedResult): void
 	{
@@ -138,7 +136,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @dataProvider dataSelfCompare
 	 *
-	 * @param  Type $type
 	 */
 	public function testSelfCompare(Type $type): void
 	{
@@ -339,9 +336,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param UnionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -510,9 +504,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param UnionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -526,9 +517,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param UnionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -685,9 +673,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataDescribe
-	 * @param Type $type
-	 * @param string $expectedValueDescription
-	 * @param string $expectedTypeOnlyDescription
 	 */
 	public function testDescribe(
 		Type $type,
@@ -774,9 +759,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param UnionType $type
-	 * @param Type $acceptedType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(
 		UnionType $type,
@@ -819,9 +801,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataHasMethod
-	 * @param UnionType $type
-	 * @param string $methodName
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testHasMethod(
 		UnionType $type,

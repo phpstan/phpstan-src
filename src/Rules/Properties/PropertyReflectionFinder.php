@@ -15,7 +15,6 @@ class PropertyReflectionFinder
 
 	/**
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @return FoundPropertyReflection[]
 	 */
 	public function findPropertyReflectionsFromNode($propertyFetch, Scope $scope): array
@@ -86,8 +85,6 @@ class PropertyReflectionFinder
 
 	/**
 	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return FoundPropertyReflection|null
 	 */
 	public function findPropertyReflectionFromNode($propertyFetch, Scope $scope): ?FoundPropertyReflection
 	{

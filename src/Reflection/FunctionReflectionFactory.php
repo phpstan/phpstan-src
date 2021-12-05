@@ -10,18 +10,7 @@ interface FunctionReflectionFactory
 {
 
 	/**
-	 * @param \ReflectionFunction $reflection
-	 * @param TemplateTypeMap $templateTypeMap
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $phpDocThrowType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param string|null $filename
-	 * @param bool|null $isPure
-	 * @return PhpFunctionReflection
 	 */
 	public function create(
 		\ReflectionFunction $reflection,

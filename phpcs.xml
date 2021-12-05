@@ -18,8 +18,7 @@
 		<exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameInAnnotation"/>
 		<exclude name="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly"/>
 		<exclude name="Consistence.Exceptions.ExceptionDeclaration"/>
-		<exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
-		<exclude name="Squiz.Commenting.FunctionComment.ParamNameNoMatch"/>
+		<exclude name="Squiz.Commenting.FunctionComment"/>
 		<exclude name="Squiz.PHP.Heredoc.NotAllowed"/>
 		<exclude name="Squiz.WhiteSpace.FunctionSpacing.Before"/>
 	</rule>
@@ -36,12 +35,21 @@
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
 	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation">
+		<severity>10</severity>
+	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation">
+		<severity>10</severity>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingAnyTypeHint"/>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation">
+		<severity>10</severity>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Functions.UnusedInheritedVariablePassedToClosure.UnusedInheritedVariable">
 		<exclude-pattern>src/Command/CommandHelper.php</exclude-pattern>

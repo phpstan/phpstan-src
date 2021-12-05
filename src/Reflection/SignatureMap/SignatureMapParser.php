@@ -22,8 +22,6 @@ class SignatureMapParser
 
 	/**
 	 * @param mixed[] $map
-	 * @param string|null $className
-	 * @return \PHPStan\Reflection\SignatureMap\FunctionSignature
 	 */
 	public function getFunctionSignature(array $map, ?string $className): FunctionSignature
 	{
@@ -75,7 +73,6 @@ class SignatureMapParser
 	}
 
 	/**
-	 * @param string $parameterNameString
 	 * @return mixed[]
 	 */
 	private function getParameterInfoFromName(string $parameterNameString): array

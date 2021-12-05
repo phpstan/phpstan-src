@@ -18,8 +18,6 @@ class IgnoredRegexValidatorResult
 
 	/**
 	 * @param array<string, string> $ignoredTypes
-	 * @param bool $anchorsInTheMiddle
-	 * @param bool $allErrorsIgnored
 	 */
 	public function __construct(
 		array $ignoredTypes,

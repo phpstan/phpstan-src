@@ -41,7 +41,6 @@ class ThrowExpressionRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param int $phpVersion
 	 * @param mixed[] $expectedErrors
 	 */
 	public function testRule(int $phpVersion, array $expectedErrors): void

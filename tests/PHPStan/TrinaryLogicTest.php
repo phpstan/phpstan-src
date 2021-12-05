@@ -28,9 +28,6 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAnd
-	 * @param TrinaryLogic $expectedResult
-	 * @param TrinaryLogic $value
-	 * @param TrinaryLogic ...$operands
 	 */
 	public function testAnd(
 		TrinaryLogic $expectedResult,
@@ -64,9 +61,6 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataOr
-	 * @param TrinaryLogic $expectedResult
-	 * @param TrinaryLogic $value
-	 * @param TrinaryLogic ...$operands
 	 */
 	public function testOr(
 		TrinaryLogic $expectedResult,
@@ -88,8 +82,6 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataNegate
-	 * @param TrinaryLogic $expectedResult
-	 * @param TrinaryLogic $operand
 	 */
 	public function testNegate(TrinaryLogic $expectedResult, TrinaryLogic $operand): void
 	{
@@ -137,9 +129,6 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataCompareTo
-	 * @param TrinaryLogic $first
-	 * @param TrinaryLogic $second
-	 * @param TrinaryLogic|null $expected
 	 */
 	public function testCompareTo(TrinaryLogic $first, TrinaryLogic $second, ?TrinaryLogic $expected): void
 	{
@@ -151,9 +140,6 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataCompareTo
-	 * @param TrinaryLogic $first
-	 * @param TrinaryLogic $second
-	 * @param TrinaryLogic|null $expected
 	 */
 	public function testCompareToInversed(TrinaryLogic $first, TrinaryLogic $second, ?TrinaryLogic $expected): void
 	{

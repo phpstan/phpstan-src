@@ -15,8 +15,6 @@ class PhpParserDecorator implements \PhpParser\Parser
 	}
 
 	/**
-	 * @param string $code
-	 * @param \PhpParser\ErrorHandler|null $errorHandler
 	 * @return \PhpParser\Node\Stmt[]
 	 */
 	public function parse(string $code, ?ErrorHandler $errorHandler = null): array

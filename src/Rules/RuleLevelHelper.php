@@ -122,11 +122,7 @@ class RuleLevelHelper
 
 	/**
 	 * @api
-	 * @param Scope $scope
-	 * @param Expr $var
-	 * @param string $unknownClassErrorPattern
 	 * @param callable(Type $type): bool $unionTypeCriteriaCallback
-	 * @return FoundTypeResult
 	 */
 	public function findTypeToCheck(
 		Scope $scope,

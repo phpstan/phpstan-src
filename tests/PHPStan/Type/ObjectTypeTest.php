@@ -26,8 +26,6 @@ class ObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsIterable
-	 * @param ObjectType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsIterable(ObjectType $type, TrinaryLogic $expectedResult): void
 	{
@@ -50,8 +48,6 @@ class ObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsCallable
-	 * @param ObjectType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsCallable(ObjectType $type, TrinaryLogic $expectedResult): void
 	{
@@ -351,9 +347,6 @@ class ObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param ObjectType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(ObjectType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -408,9 +401,6 @@ class ObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param \PHPStan\Type\ObjectType $type
-	 * @param Type $acceptedType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(
 		ObjectType $type,
@@ -491,9 +481,6 @@ class ObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataHasOffsetValueType
-	 * @param \PHPStan\Type\ObjectType $type
-	 * @param Type $offsetType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testHasOffsetValueType(
 		ObjectType $type,

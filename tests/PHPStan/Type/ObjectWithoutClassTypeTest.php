@@ -60,9 +60,6 @@ class ObjectWithoutClassTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param ObjectWithoutClassType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(ObjectWithoutClassType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{

@@ -12,8 +12,6 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 	private ?string $pathToTrim = null;
 
 	/**
-	 * @param RelativePathHelper $fallbackRelativePathHelper
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
 	 * @param non-empty-string|null $directorySeparator
 	 */

@@ -78,8 +78,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataUnionInCatch
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testUnionInCatch(
 		string $description,
@@ -205,8 +203,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataUnionAndIntersection
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testUnionAndIntersection(
 		string $description,
@@ -732,11 +728,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataAssignInIf
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param string $variableName
-	 * @param \PHPStan\TrinaryLogic $expectedCertainty
-	 * @param string|null $typeDescription
-	 * @param string|null $iterableValueTypeDescription
 	 */
 	public function testAssignInIf(
 		Scope $scope,
@@ -875,9 +866,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataConstantTypes
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param string $variableName
-	 * @param string $typeDescription
 	 */
 	public function testConstantTypes(
 		Scope $scope,
@@ -1213,8 +1201,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrayDestructuring
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrayDestructuring(
 		string $description,
@@ -1296,8 +1282,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataParameterTypes
-	 * @param string $typeClass
-	 * @param string $expression
 	 */
 	public function testTypehints(
 		string $typeClass,
@@ -1359,8 +1343,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataAnonymousFunctionParameterTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testAnonymousFunctionTypehints(
 		string $description,
@@ -1442,8 +1424,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataVarAnnotations
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testVarAnnotations(
 		string $description,
@@ -1600,8 +1580,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataCasts
-	 * @param string $desciptiion
-	 * @param string $expression
 	 */
 	public function testCasts(
 		string $desciptiion,
@@ -1627,8 +1605,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataUnsetCast
-	 * @param string $desciptiion
-	 * @param string $expression
 	 */
 	public function testUnsetCast(
 		string $desciptiion,
@@ -1763,8 +1739,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataDeductedTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testDeductedTypes(
 		string $description,
@@ -1911,8 +1885,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataProperties
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testProperties(
 		string $description,
@@ -3218,8 +3190,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataBinaryOperations
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testBinaryOperations(
 		string $description,
@@ -3245,8 +3215,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataVarStatementAnnotation
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testVarStatementAnnotation(
 		string $description,
@@ -3272,8 +3240,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataCloneOperators
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testCloneOperators(
 		string $description,
@@ -3327,8 +3293,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataLiteralArrays
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testLiteralArrays(
 		string $description,
@@ -3406,8 +3370,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataLiteralArraysKeys
-	 * @param string $description
-	 * @param string $evaluatedPointExpressionType
 	 */
 	public function testLiteralArraysKeys(
 		string $description,
@@ -3450,8 +3412,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataStringArrayAccess
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testStringArrayAccess(
 		string $description,
@@ -3628,8 +3588,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromFunctionFunctionPhpDocs
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testTypeFromFunctionPhpDocs(
 		string $description,
@@ -3657,8 +3615,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromFunctionPrefixedPhpDocs
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testTypeFromFunctionPhpDocsPsalmPrefix(
 		string $description,
@@ -3676,8 +3632,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromFunctionPrefixedPhpDocs
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testTypeFromFunctionPhpDocsPhpstanPrefix(
 		string $description,
@@ -3837,8 +3791,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testTypeFromMethodPhpDocs(
 		string $description,
@@ -3855,9 +3807,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
-	 * @param bool $replaceClass
 	 */
 	public function testTypeFromMethodPhpDocsPsalmPrefix(
 		string $description,
@@ -3883,8 +3832,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
 	 * @param bool $replaceClass = true
 	 */
 	public function testTypeFromMethodPhpDocsPhpstanPrefix(
@@ -3911,9 +3858,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
-	 * @param bool $replaceClass
 	 */
 	public function testTypeFromTraitPhpDocs(
 		string $description,
@@ -3939,9 +3883,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
-	 * @param bool $replaceClass
 	 */
 	public function testTypeFromMethodPhpDocsInheritDocWithoutCurlyBraces(
 		string $description,
@@ -3967,9 +3908,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
-	 * @param bool $replaceClass
 	 */
 	public function testTypeFromRecursiveTraitPhpDocs(
 		string $description,
@@ -4004,8 +3942,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataTypeFromTraitPhpDocsInSameFile
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testTypeFromTraitPhpDocsInSameFile(
 		string $description,
@@ -4022,9 +3958,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
-	 * @param bool $replaceClass
 	 */
 	public function testTypeFromMethodPhpDocsInheritDoc(
 		string $description,
@@ -4050,9 +3983,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataTypeFromFunctionPhpDocs
 	 * @dataProvider dataTypeFromMethodPhpDocs
-	 * @param string $description
-	 * @param string $expression
-	 * @param bool $replaceClass
 	 */
 	public function testTypeFromMethodPhpDocsImplicitInheritance(
 		string $description,
@@ -4104,8 +4034,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSwitchInstanceOf
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testSwitchInstanceof(
 		string $description,
@@ -4121,8 +4049,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSwitchInstanceOf
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testSwitchInstanceofTruthy(
 		string $description,
@@ -4154,9 +4080,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSwitchGetClass
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testSwitchGetClass(
 		string $description,
@@ -4184,8 +4107,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSwitchInstanceOfFallthrough
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testSwitchInstanceOfFallthrough(
 		string $description,
@@ -4211,8 +4132,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSwitchTypeElimination
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testSwitchTypeElimination(
 		string $description,
@@ -4249,9 +4168,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataOverwritingVariable
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpressionType
 	 */
 	public function testOverwritingVariable(
 		string $description,
@@ -4319,8 +4235,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataNegatedInstanceof
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testNegatedInstanceof(
 		string $description,
@@ -4358,8 +4272,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataAnonymousFunction
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testAnonymousFunction(
 		string $description,
@@ -4496,9 +4408,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataForeachArrayType
-	 * @param string $file
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testForeachArrayType(
 		string $file,
@@ -4526,9 +4435,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataOverridingSpecifiedType
-	 * @param string $file
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testOverridingSpecifiedType(
 		string $file,
@@ -4587,10 +4493,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataForeachObjectType
-	 * @param string $file
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testForeachObjectType(
 		string $file,
@@ -5299,8 +5201,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrayFunctions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrayFunctions(
 		string $description,
@@ -5767,8 +5667,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataFunctions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testFunctions(
 		string $description,
@@ -5794,8 +5692,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataDioFunctions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testDioFunctions(
 		string $description,
@@ -5824,8 +5720,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSsh2Functions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testSsh2Functions(
 		string $description,
@@ -5895,8 +5789,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataRangeFunction
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testRangeFunction(
 		string $description,
@@ -6054,8 +5946,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSpecifiedTypesUsingIsFunctions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testSpecifiedTypesUsingIsFunctions(
 		string $description,
@@ -6221,8 +6111,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataIterable
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testIterable(
 		string $description,
@@ -6260,8 +6148,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrayAccess
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrayAccess(
 		string $description,
@@ -6295,8 +6181,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataVoid
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testVoid(
 		string $description,
@@ -6334,8 +6218,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataNullableReturnTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testNullableReturnTypes(
 		string $description,
@@ -6381,8 +6263,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataTernary
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testTernary(
 		string $description,
@@ -6412,8 +6292,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataHeredoc
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testHeredoc(
 		string $description,
@@ -6585,9 +6463,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataTypeElimination
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testTypeElimination(
 		string $description,
@@ -6623,8 +6498,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataMisleadingTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testMisleadingTypes(
 		string $description,
@@ -6654,8 +6527,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataMisleadingTypesWithoutNamespace
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testMisleadingTypesWithoutNamespace(
 		string $description,
@@ -6689,8 +6560,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataUnresolvableTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testUnresolvableTypes(
 		string $description,
@@ -6720,8 +6589,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataCombineTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testCombineTypes(
 		string $description,
@@ -6761,8 +6628,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataConstants
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testConstants(
 		string $description,
@@ -6792,8 +6657,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataFinally
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testFinally(
 		string $description,
@@ -6809,8 +6672,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataFinally
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testFinallyWithEarlyTermination(
 		string $description,
@@ -6836,8 +6697,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromInterface
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocFromInterface(
 		string $description,
@@ -6853,8 +6712,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromInterface
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocWithoutCurlyBracesFromInterface(
 		string $description,
@@ -6880,8 +6737,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromInterface2
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocFromInterface2(
 		string $description,
@@ -6898,8 +6753,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromInterface2
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocWithoutCurlyBracesFromInterface2(
 		string $description,
@@ -6926,8 +6779,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromTrait
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocFromTrait(
 		string $description,
@@ -6943,8 +6794,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromTrait
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocWithoutCurlyBracesFromTrait(
 		string $description,
@@ -6970,8 +6819,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromTrait2
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocFromTrait2(
 		string $description,
@@ -6989,8 +6836,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInheritDocFromTrait2
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInheritDocWithoutCurlyBracesFromTrait2(
 		string $description,
@@ -7034,8 +6879,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataResolveStatic
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testResolveStatic(
 		string $description,
@@ -7239,9 +7082,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataLoopVariables
 	 * @dataProvider dataForeachLoopVariables
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testForeachLoopVariables(
 		string $description,
@@ -7260,9 +7100,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataLoopVariables
 	 * @dataProvider dataWhileLoopVariables
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testWhileLoopVariables(
 		string $description,
@@ -7281,9 +7118,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataLoopVariables
 	 * @dataProvider dataForLoopVariables
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testForLoopVariables(
 		string $description,
@@ -7393,9 +7227,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataDoWhileLoopVariables
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testDoWhileLoopVariables(
 		string $description,
@@ -7429,9 +7260,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataMultipleClassesInOneFile
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testMultipleClassesInOneFile(
 		string $description,
@@ -7463,8 +7291,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataCallingMultipleClassesInOneFile
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testCallingMultipleClassesInOneFile(
 		string $description,
@@ -7506,8 +7332,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataExplode
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testExplode(
 		string $description,
@@ -7577,8 +7401,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrayPointerFunctions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrayPointerFunctions(
 		string $description,
@@ -7656,8 +7478,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataReplaceFunctions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testReplaceFunctions(
 		string $description,
@@ -7817,8 +7637,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/**
 	 * @dataProvider dataFilterVar
 	 * @dataProvider dataFilterVarUnchanged
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testFilterVar(
 		string $description,
@@ -7930,9 +7748,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataClosureWithUsePassedByReference
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testClosureWithUsePassedByReference(
 		string $description,
@@ -7960,8 +7775,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataClosureWithUsePassedByReferenceInMethodCall
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testClosureWithUsePassedByReferenceInMethodCall(
 		string $description,
@@ -8013,8 +7826,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataStaticClosure
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testStaticClosure(
 		string $description,
@@ -8030,9 +7841,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataClosureWithUsePassedByReferenceReturn
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testClosureWithUsePassedByReferenceReturn(
 		string $description,
@@ -8064,8 +7872,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataClosureWithInferredTypehint
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testClosureWithInferredTypehint(
 		string $description,
@@ -8174,8 +7980,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataTraitsPhpDocs
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testTraitsPhpDocs(
 		string $description,
@@ -8209,8 +8013,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataPassedByReference
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testPassedByReference(
 		string $description,
@@ -8256,8 +8058,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataCallables
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testCallables(
 		string $description,
@@ -8315,8 +8115,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrayKeysInBranches
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrayKeysInBranches(
 		string $description,
@@ -8363,9 +8161,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataSpecifiedFunctionCall
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testSpecifiedFunctionCall(
 		string $description,
@@ -8409,8 +8204,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataElementsOnMixed
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testElementsOnMixed(
 		string $description,
@@ -8440,8 +8233,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataCaseInsensitivePhpDocTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testCaseInsensitivePhpDocTypes(
 		string $description,
@@ -8523,9 +8314,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataConstantTypeAfterDuplicateCondition
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testConstantTypeAfterDuplicateCondition(
 		string $description,
@@ -8579,9 +8367,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataAnonymousClass
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testAnonymousClassName(
 		string $description,
@@ -8609,8 +8394,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataAnonymousClassInTrait
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testAnonymousClassNameInTrait(
 		string $description,
@@ -8652,8 +8435,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataDynamicConstants
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testDynamicConstants(
 		string $description,
@@ -8740,8 +8521,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataIsset
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testIsset(
 		string $description,
@@ -8788,9 +8567,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataPropertyArrayAssignment
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testPropertyArrayAssignment(
 		string $description,
@@ -8830,8 +8606,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInArray
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInArray(
 		string $description,
@@ -8921,9 +8695,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataGetParentClass
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testGetParentClass(
 		string $description,
@@ -8957,9 +8728,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataIsCountable
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testIsCountable(
 		string $description,
@@ -9075,8 +8843,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataPhp73Functions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testPhp73Functions(
 		string $description,
@@ -9209,8 +8975,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataPhp74Functions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testPhp74Functions(
 		string $description,
@@ -9243,8 +9007,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataUnionMethods
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testUnionMethods(
 		string $description,
@@ -9274,8 +9036,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataUnionProperties
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testUnionProperties(
 		string $description,
@@ -9301,8 +9061,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataAssignmentInCondition
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testAssignmentInCondition(
 		string $description,
@@ -9328,8 +9086,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataGeneralizeScope
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testGeneralizeScope(
 		string $description,
@@ -9355,8 +9111,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataGeneralizeScopeRecursiveType
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testGeneralizeScopeRecursiveType(
 		string $description,
@@ -9390,8 +9144,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrayShapesInPhpDoc
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrayShapesInPhpDoc(
 		string $description,
@@ -9445,8 +9197,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataInferPrivatePropertyTypeFromConstructor
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testInferPrivatePropertyTypeFromConstructor(
 		string $description,
@@ -9480,8 +9230,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataPropertyNativeTypes
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testPropertyNativeTypes(
 		string $description,
@@ -9518,8 +9266,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrowFunctions
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrowFunctions(
 		string $description,
@@ -9556,8 +9302,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArrowFunctionsInside
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArrowFunctionsInside(
 		string $description,
@@ -9618,8 +9362,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataCoalesceAssign
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testCoalesceAssign(
 		string $description,
@@ -9672,8 +9414,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataArraySpread
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testArraySpread(
 		string $description,
@@ -9702,8 +9442,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataPhp74FunctionsIn73
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testPhp74FunctionsIn73(
 		string $description,
@@ -9732,8 +9470,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataPhp74FunctionsIn74
-	 * @param string $description
-	 * @param string $expression
 	 */
 	public function testPhp74FunctionsIn74(
 		string $description,
@@ -9773,9 +9509,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataTryCatchScope
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 */
 	public function testTryCatchScope(
 		string $description,
@@ -9794,12 +9527,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	}
 
 	/**
-	 * @param string $file
-	 * @param string $description
-	 * @param string $expression
-	 * @param string $evaluatedPointExpression
 	 * @param string[] $dynamicConstantNames
-	 * @param bool $useCache
 	 */
 	private function assertTypes(
 		string $file,
@@ -9872,8 +9600,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataDeclareStrictTypes
-	 * @param string $file
-	 * @param bool $result
 	 */
 	public function testDeclareStrictTypes(string $file, bool $result): void
 	{

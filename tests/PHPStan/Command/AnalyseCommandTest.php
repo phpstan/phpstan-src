@@ -12,8 +12,6 @@ class AnalyseCommandTest extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	/**
-	 * @param string $dir
-	 * @param string $file
 	 * @dataProvider autoDiscoveryPathsProvider
 	 */
 	public function testConfigurationAutoDiscovery(string $dir, string $file): void
@@ -74,9 +72,7 @@ class AnalyseCommandTest extends \PHPStan\Testing\PHPStanTestCase
 	}
 
 	/**
-	 * @param int $expectedStatusCode
 	 * @param array<string, string> $parameters
-	 * @return string
 	 */
 	private function runCommand(int $expectedStatusCode, array $parameters = []): string
 	{

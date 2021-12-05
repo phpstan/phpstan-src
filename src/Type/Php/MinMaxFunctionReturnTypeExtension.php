@@ -116,9 +116,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 	}
 
 	/**
-	 * @param string $functionName
 	 * @param \PHPStan\Type\Type[] $types
-	 * @return Type
 	 */
 	private function processType(
 		string $functionName,

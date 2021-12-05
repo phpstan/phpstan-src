@@ -210,7 +210,6 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends \PHPStan\Testing
 
 	/**
 	 * @dataProvider dataProperties
-	 * @param string $className
 	 * @param array<string, mixed> $properties
 	 */
 	public function testProperties(string $className, array $properties): void

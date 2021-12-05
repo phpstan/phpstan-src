@@ -104,8 +104,6 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataInternalAnnotations
-	 * @param bool $internal
-	 * @param string $className
 	 * @param array<string, mixed> $internalAnnotations
 	 */
 	public function testInternalAnnotations(bool $internal, string $className, array $internalAnnotations): void

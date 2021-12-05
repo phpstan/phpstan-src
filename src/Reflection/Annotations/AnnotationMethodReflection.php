@@ -30,12 +30,7 @@ class AnnotationMethodReflection implements MethodReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param string $name
-	 * @param ClassReflection $declaringClass
-	 * @param Type $returnType
 	 * @param \PHPStan\Reflection\Annotations\AnnotationsMethodParameterReflection[] $parameters
-	 * @param bool $isStatic
-	 * @param bool $isVariadic
 	 */
 	public function __construct(
 		string $name,

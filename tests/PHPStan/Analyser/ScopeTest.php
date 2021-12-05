@@ -160,9 +160,6 @@ class ScopeTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataGeneralize
-	 * @param Type $a
-	 * @param Type $b
-	 * @param string $expectedTypeDescription
 	 */
 	public function testGeneralize(Type $a, Type $b, string $expectedTypeDescription): void
 	{

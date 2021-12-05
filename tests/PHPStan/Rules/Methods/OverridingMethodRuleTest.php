@@ -43,8 +43,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataOverridingFinalMethod
-	 * @param int $phpVersion
-	 * @param string $contravariantMessage
 	 */
 	public function testOverridingFinalMethod(int $phpVersion, string $contravariantMessage): void
 	{
@@ -221,8 +219,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataParameterContravariance
-	 * @param string $file
-	 * @param int $phpVersion
 	 * @param mixed[] $expectedErrors
 	 */
 	public function testParameterContravariance(
@@ -285,7 +281,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataReturnTypeCovariance
-	 * @param int $phpVersion
 	 * @param mixed[] $expectedErrors
 	 */
 	public function testReturnTypeCovariance(
@@ -303,9 +298,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataOverridingFinalMethod
-	 * @param int $phpVersion
-	 * @param string $contravariantMessage
-	 * @param string $covariantMessage
 	 */
 	public function testParle(int $phpVersion, string $contravariantMessage, string $covariantMessage): void
 	{
@@ -334,7 +326,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataOverridingFinalMethod
-	 * @param int $phpVersion
 	 */
 	public function testBug3403(int $phpVersion): void
 	{
@@ -465,7 +456,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataLessOverridenParametersWithVariadic
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testLessOverridenParametersWithVariadic(int $phpVersionId, array $errors): void
@@ -498,7 +488,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataParameterTypeWidening
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testParameterTypeWidening(int $phpVersionId, array $errors): void
@@ -541,7 +530,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataTentativeReturnTypes
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testTentativeReturnTypes(int $phpVersionId, array $errors): void

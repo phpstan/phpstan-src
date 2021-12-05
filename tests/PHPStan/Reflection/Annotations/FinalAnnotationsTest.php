@@ -36,8 +36,6 @@ class FinalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFinalAnnotations
-	 * @param bool $final
-	 * @param string $className
 	 * @param array<string, mixed> $finalAnnotations
 	 */
 	public function testFinalAnnotations(bool $final, string $className, array $finalAnnotations): void

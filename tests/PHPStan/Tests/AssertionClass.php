@@ -25,7 +25,6 @@ class AssertionClass
 
 	/**
 	 * @param mixed $arg
-	 * @return bool
 	 * @throws AssertionException
 	 */
 	public function assertNotInt($arg): bool

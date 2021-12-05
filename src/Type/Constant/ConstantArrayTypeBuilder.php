@@ -33,7 +33,6 @@ class ConstantArrayTypeBuilder
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param array<int> $optionalKeys
-	 * @param int $nextAutoIndex
 	 */
 	private function __construct(
 		array $keyTypes,

@@ -89,9 +89,6 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 
 	/**
 	 * @param Node\Name|Expr $class
-	 * @param string $methodName
-	 * @param Scope $scope
-	 * @return MethodReflection
 	 * @throws \PHPStan\ShouldNotHappenException
 	 */
 	private function getMethod(

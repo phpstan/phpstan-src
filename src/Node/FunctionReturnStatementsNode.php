@@ -21,9 +21,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	private array $executionEnds;
 
 	/**
-	 * @param \PhpParser\Node\Stmt\Function_ $function
 	 * @param \PHPStan\Node\ReturnStatement[] $returnStatements
-	 * @param \PHPStan\Analyser\StatementResult $statementResult
 	 * @param ExecutionEndNode[] $executionEnds
 	 */
 	public function __construct(

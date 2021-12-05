@@ -236,7 +236,6 @@ class MissingReturnRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataCheckPhpDocMissingReturn
-	 * @param bool $checkPhpDocMissingReturn
 	 * @param mixed[] $errors
 	 */
 	public function testCheckPhpDocMissingReturn(bool $checkPhpDocMissingReturn, array $errors): void
@@ -264,7 +263,6 @@ class MissingReturnRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataModelMixin
-	 * @param bool $checkExplicitMixedMissingReturn
 	 */
 	public function testModelMixin(bool $checkExplicitMixedMissingReturn): void
 	{

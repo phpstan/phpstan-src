@@ -7,9 +7,7 @@ class FileExcluderTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataExcludeOnWindows
-	 * @param string $filePath
 	 * @param string[] $analyseExcludes
-	 * @param bool $isExcluded
 	 */
 	public function testFilesAreExcludedFromAnalysingOnWindows(
 		string $filePath,
@@ -117,9 +115,7 @@ class FileExcluderTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataExcludeOnUnix
-	 * @param string $filePath
 	 * @param string[] $analyseExcludes
-	 * @param bool $isExcluded
 	 */
 	public function testFilesAreExcludedFromAnalysingOnUnix(
 		string $filePath,

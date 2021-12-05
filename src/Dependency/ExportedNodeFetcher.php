@@ -22,7 +22,6 @@ class ExportedNodeFetcher
 	}
 
 	/**
-	 * @param string $fileName
 	 * @return ExportedNode[]
 	 */
 	public function fetchNodes(string $fileName): array

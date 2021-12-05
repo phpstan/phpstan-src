@@ -27,7 +27,6 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 	private ?\PHPStan\Analyser\Analyser $analyser = null;
 
 	/**
-	 * @return \PHPStan\Rules\Rule
 	 * @phpstan-return TRule
 	 */
 	abstract protected function getRule(): Rule;

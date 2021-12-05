@@ -90,12 +90,7 @@ class CommandHelperTest extends TestCase
 
 	/**
 	 * @dataProvider dataBegin
-	 * @param string $input
-	 * @param string $expectedOutput
-	 * @param string|null $projectConfigFile
-	 * @param string|null $level
 	 * @param mixed[] $expectedParameters
-	 * @param bool $expectException
 	 */
 	public function testBegin(
 		string $input,
@@ -289,7 +284,6 @@ class CommandHelperTest extends TestCase
 
 	/**
 	 * @dataProvider dataParameters
-	 * @param string $configFile
 	 * @param array<string, string> $expectedParameters
 	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
 	 */

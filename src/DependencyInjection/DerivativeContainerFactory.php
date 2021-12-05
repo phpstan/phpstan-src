@@ -32,13 +32,10 @@ class DerivativeContainerFactory
 	private ?string $singleReflectionInsteadOfFile;
 
 	/**
-	 * @param string $currentWorkingDirectory
-	 * @param string $tempDirectory
 	 * @param string[] $additionalConfigFiles
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
-	 * @param string $usedLevel
 	 */
 	public function __construct(
 		string $currentWorkingDirectory,
@@ -69,7 +66,6 @@ class DerivativeContainerFactory
 
 	/**
 	 * @param string[] $additionalConfigFiles
-	 * @return \PHPStan\DependencyInjection\Container
 	 */
 	public function create(array $additionalConfigFiles): Container
 	{

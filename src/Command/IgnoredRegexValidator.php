@@ -54,7 +54,6 @@ class IgnoredRegexValidator
 	}
 
 	/**
-	 * @param TreeNode $ast
 	 * @return array<string, string>
 	 */
 	private function getIgnoredTypes(TreeNode $ast): array

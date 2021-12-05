@@ -789,7 +789,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataArrayMapMultiple
-	 * @param bool $checkExplicitMixed
 	 */
 	public function testArrayMapMultiple(bool $checkExplicitMixed): void
 	{
@@ -812,7 +811,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataArrayFilterCallback
-	 * @param bool $checkExplicitMixed
 	 */
 	public function testArrayFilterCallback(bool $checkExplicitMixed): void
 	{

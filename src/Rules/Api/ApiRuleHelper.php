@@ -41,7 +41,6 @@ class ApiRuleHelper
 	}
 
 	/**
-	 * @param string $currentDirectory
 	 * @param string[] $parts
 	 * @return string[]
 	 */

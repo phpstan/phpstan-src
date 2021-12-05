@@ -9,10 +9,8 @@ class RecursionGuard
 	private static array $context = [];
 
 	/**
-	 * @param Type $type
 	 * @param callable(): Type $callback
 	 *
-	 * @return Type
 	 */
 	public static function run(Type $type, callable $callback): Type
 	{

@@ -27,15 +27,7 @@ class MethodPrototypeReflection implements ClassMemberReflection
 	private ?Type $tentativeReturnType;
 
 	/**
-	 * @param string $name
-	 * @param ClassReflection $declaringClass
-	 * @param bool $isStatic
-	 * @param bool $isPrivate
-	 * @param bool $isPublic
-	 * @param bool $isAbstract
-	 * @param bool $isFinal
 	 * @param ParametersAcceptor[] $variants
-	 * @param ?Type $tentativeReturnType
 	 */
 	public function __construct(
 		string $name,

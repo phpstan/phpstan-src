@@ -38,8 +38,6 @@ class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param FuncCall $functionCall
-	 * @param Scope $scope
 	 * @return string[]
 	 */
 	private function extractPatterns(FuncCall $functionCall, Scope $scope): array

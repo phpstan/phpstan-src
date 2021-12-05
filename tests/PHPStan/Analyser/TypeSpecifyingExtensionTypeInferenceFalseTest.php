@@ -16,8 +16,6 @@ class TypeSpecifyingExtensionTypeInferenceFalseTest extends TypeInferenceTestCas
 
 	/**
 	 * @dataProvider dataTypeSpecifyingExtensionsFalse
-	 * @param string $assertType
-	 * @param string $file
 	 * @param mixed ...$args
 	 */
 	public function testTypeSpecifyingExtensionsFalse(

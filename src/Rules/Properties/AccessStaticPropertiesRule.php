@@ -70,9 +70,6 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param StaticPropertyFetch $node
-	 * @param string $name
 	 * @return RuleError[]
 	 */
 	private function processSingleProperty(Scope $scope, StaticPropertyFetch $node, string $name): array

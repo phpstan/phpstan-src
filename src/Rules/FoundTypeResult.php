@@ -19,7 +19,6 @@ class FoundTypeResult
 	private ?string $tip;
 
 	/**
-	 * @param \PHPStan\Type\Type $type
 	 * @param string[] $referencedClasses
 	 * @param RuleError[] $unknownClassErrors
 	 */

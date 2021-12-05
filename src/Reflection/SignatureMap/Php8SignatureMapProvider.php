@@ -60,8 +60,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @return array{ClassMethod, string}|null
 	 * @throws \PHPStan\ShouldNotHappenException
 	 */
@@ -237,8 +235,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
@@ -247,7 +243,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $functionName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array
@@ -257,8 +252,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 	/**
 	 * @param ClassMethod|Function_ $function
-	 * @param string $stubFile
-	 * @return FunctionSignature
 	 */
 	private function getSignature(
 		FunctionLike $function,

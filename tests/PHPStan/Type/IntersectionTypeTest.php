@@ -57,9 +57,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -103,8 +100,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsCallable
-	 * @param IntersectionType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsCallable(IntersectionType $type, TrinaryLogic $expectedResult): void
 	{
@@ -268,9 +263,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -371,9 +363,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -387,9 +376,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{

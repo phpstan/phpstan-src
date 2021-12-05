@@ -164,7 +164,6 @@ class TemplateTypeVariance
 
 	/**
 	 * @param array{value: int} $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

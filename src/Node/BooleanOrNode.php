@@ -18,7 +18,6 @@ class BooleanOrNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param BooleanOr|LogicalOr $originalNode
-	 * @param Scope $rightScope
 	 */
 	public function __construct($originalNode, Scope $rightScope)
 	{

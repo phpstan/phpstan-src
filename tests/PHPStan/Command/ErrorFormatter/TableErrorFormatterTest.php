@@ -136,11 +136,6 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @dataProvider dataFormatterOutputProvider
 	 *
-	 * @param string $message
-	 * @param int    $exitCode
-	 * @param int    $numFileErrors
-	 * @param int    $numGenericErrors
-	 * @param string $expected
 	 */
 	public function testFormatErrors(
 		string $message,

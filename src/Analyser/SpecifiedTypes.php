@@ -24,7 +24,6 @@ class SpecifiedTypes
 	 * @api
 	 * @param array<string, array{Expr, Type}> $sureTypes
 	 * @param array<string, array{Expr, Type}> $sureNotTypes
-	 * @param bool $overwrite
 	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressionHolders
 	 */
 	public function __construct(

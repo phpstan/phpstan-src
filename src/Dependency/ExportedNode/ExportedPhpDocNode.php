@@ -16,8 +16,6 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	private array $uses;
 
 	/**
-	 * @param string $phpDocString
-	 * @param string|null $namespace
 	 * @param array<string, string> $uses
 	 */
 	public function __construct(string $phpDocString, ?string $namespace, array $uses)

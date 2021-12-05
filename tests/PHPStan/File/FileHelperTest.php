@@ -23,8 +23,6 @@ class FileHelperTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAbsolutizePathOnWindows
-	 * @param string $path
-	 * @param string $absolutePath
 	 */
 	public function testAbsolutizePathOnWindows(string $path, string $absolutePath): void
 	{
@@ -52,8 +50,6 @@ class FileHelperTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAbsolutizePathOnLinuxOrMac
-	 * @param string $path
-	 * @param string $absolutePath
 	 */
 	public function testAbsolutizePathOnLinuxOrMac(string $path, string $absolutePath): void
 	{
@@ -80,8 +76,6 @@ class FileHelperTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataNormalizePathOnWindows
-	 * @param string $path
-	 * @param string $normalizedPath
 	 */
 	public function testNormalizePathOnWindows(string $path, string $normalizedPath): void
 	{
@@ -109,8 +103,6 @@ class FileHelperTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataNormalizePathOnLinuxOrMac
-	 * @param string $path
-	 * @param string $normalizedPath
 	 */
 	public function testNormalizePathOnLinuxOrMac(string $path, string $normalizedPath): void
 	{

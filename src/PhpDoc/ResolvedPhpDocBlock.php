@@ -91,14 +91,7 @@ class ResolvedPhpDocBlock
 	}
 
 	/**
-	 * @param \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode $phpDocNode
-	 * @param string $phpDocString
-	 * @param string $filename
-	 * @param \PHPStan\Analyser\NameScope $nameScope
-	 * @param \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap
 	 * @param \PHPStan\PhpDoc\Tag\TemplateTag[] $templateTags
-	 * @param \PHPStan\PhpDoc\PhpDocNodeResolver $phpDocNodeResolver
-	 * @return self
 	 */
 	public static function create(
 		PhpDocNode $phpDocNode,
@@ -157,7 +150,6 @@ class ResolvedPhpDocBlock
 	/**
 	 * @param array<int, self> $parents
 	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
-	 * @return self
 	 */
 	public function merge(array $parents, array $parentPhpDocBlocks): self
 	{
@@ -201,7 +193,6 @@ class ResolvedPhpDocBlock
 
 	/**
 	 * @param array<string, string> $parameterNameMapping
-	 * @return self
 	 */
 	public function changeParameterNamesByMapping(array $parameterNameMapping): self
 	{
@@ -544,7 +535,6 @@ class ResolvedPhpDocBlock
 
 	/**
 	 * @param ResolvedPhpDocBlock $parent
-	 * @param PhpDocBlock $phpDocBlock
 	 * @return array<string|int, VarTag>|null
 	 */
 	private static function mergeOneParentVarTags(self $parent, PhpDocBlock $phpDocBlock): ?array
@@ -574,7 +564,6 @@ class ResolvedPhpDocBlock
 	/**
 	 * @param array<string, ParamTag> $paramTags
 	 * @param ResolvedPhpDocBlock $parent
-	 * @param PhpDocBlock $phpDocBlock
 	 * @return array<string, ParamTag>
 	 */
 	private static function mergeOneParentParamTags(array $paramTags, self $parent, PhpDocBlock $phpDocBlock): array
@@ -593,7 +582,6 @@ class ResolvedPhpDocBlock
 	}
 
 	/**
-	 * @param ReturnTag|null $returnTag
 	 * @param array<int, self> $parents
 	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
 	 * @return ReturnTag|Null
@@ -676,7 +664,6 @@ class ResolvedPhpDocBlock
 	/**
 	 * @template T of \PHPStan\PhpDoc\Tag\TypedTag
 	 * @param T $tag
-	 * @param PhpDocBlock $phpDocBlock
 	 * @return T
 	 */
 	private static function resolveTemplateTypeInTag(TypedTag $tag, PhpDocBlock $phpDocBlock): TypedTag

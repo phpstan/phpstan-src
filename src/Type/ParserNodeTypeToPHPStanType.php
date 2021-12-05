@@ -13,8 +13,6 @@ class ParserNodeTypeToPHPStanType
 
 	/**
 	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
-	 * @param ClassReflection|null $classReflection
-	 * @return Type
 	 */
 	public static function resolve($type, ?ClassReflection $classReflection): Type
 	{

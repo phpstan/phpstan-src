@@ -166,7 +166,6 @@ class BooleanOrConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataTreatPhpDocTypesAsCertainRegression
-	 * @param bool $treatPhpDocTypesAsCertain
 	 */
 	public function testTreatPhpDocTypesAsCertainRegression(bool $treatPhpDocTypesAsCertain): void
 	{

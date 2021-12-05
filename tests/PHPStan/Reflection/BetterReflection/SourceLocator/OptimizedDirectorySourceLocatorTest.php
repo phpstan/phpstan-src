@@ -38,8 +38,6 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataClass
-	 * @param string $className
-	 * @param string $file
 	 */
 	public function testClass(string $className, string $expectedClassName, string $file): void
 	{
@@ -95,9 +93,6 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionExists
-	 * @param string $functionName
-	 * @param string $expectedFunctionName
-	 * @param string $file
 	 */
 	public function testFunctionExists(string $functionName, string $expectedFunctionName, string $file): void
 	{
@@ -120,7 +115,6 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionDoesNotExist
-	 * @param string $functionName
 	 */
 	public function testFunctionDoesNotExist(string $functionName): void
 	{

@@ -16,8 +16,6 @@ class MethodTag
 	private array $parameters;
 
 	/**
-	 * @param \PHPStan\Type\Type $returnType
-	 * @param bool $isStatic
 	 * @param array<string, \PHPStan\PhpDoc\Tag\MethodTagParameter> $parameters
 	 */
 	public function __construct(

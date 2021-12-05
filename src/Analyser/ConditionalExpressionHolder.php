@@ -15,7 +15,6 @@ class ConditionalExpressionHolder
 
 	/**
 	 * @param array<string, Type> $conditionExpressionTypes
-	 * @param VariableTypeHolder $typeHolder
 	 */
 	public function __construct(
 		array $conditionExpressionTypes,

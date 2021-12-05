@@ -36,10 +36,7 @@ class UniversalObjectCratesClassReflectionExtension
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param string[] $classes
-	 * @param \PHPStan\Reflection\ClassReflection $classReflection
-	 * @return bool
 	 */
 	public static function isUniversalObjectCrate(
 		ReflectionProvider $reflectionProvider,

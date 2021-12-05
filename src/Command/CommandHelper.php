@@ -465,8 +465,6 @@ class CommandHelper
 	}
 
 	/**
-	 * @param \PHPStan\Command\Output $output
-	 * @param \PHPStan\File\FileHelper $fileHelper
 	 * @param string[] $configFiles
 	 * @param array<string, string> $loaderParameters
 	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
@@ -510,11 +508,7 @@ class CommandHelper
 	}
 
 	/**
-	 * @param \PHPStan\DependencyInjection\NeonAdapter $neonAdapter
-	 * @param \Nette\DI\Config\Adapters\PhpAdapter $phpAdapter
-	 * @param string $configFile
 	 * @param array<string, string> $loaderParameters
-	 * @param string|null $generateBaselineFile
 	 * @return string[]
 	 */
 	private static function getConfigFiles(

@@ -168,9 +168,6 @@ class StringTypeTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param \PHPStan\Type\StringType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(StringType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -220,9 +217,6 @@ class StringTypeTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param StringType $type
-	 * @param Type $otherType
-	 * @param bool $expectedResult
 	 */
 	public function testEquals(StringType $type, Type $otherType, bool $expectedResult): void
 	{

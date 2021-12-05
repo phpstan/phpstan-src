@@ -41,7 +41,6 @@ class FileWhitespaceRule implements Rule
 			private $lastNodes = [];
 
 			/**
-			 * @param Node $node
 			 * @return int|Node|null
 			 */
 			public function enterNode(Node $node)

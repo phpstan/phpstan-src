@@ -29,7 +29,6 @@ class AnalyserResult
 	 * @param string[] $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
-	 * @param bool $reachedInternalErrorsCountLimit
 	 */
 	public function __construct(
 		array $errors,

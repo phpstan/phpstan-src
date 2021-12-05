@@ -138,9 +138,6 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param HasMethodType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(HasMethodType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -191,9 +188,6 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param HasMethodType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(HasMethodType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -207,9 +201,6 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param HasMethodType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(HasMethodType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{

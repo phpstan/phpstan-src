@@ -112,15 +112,8 @@ class ClassReflection
 	private static array $resolvingTypeAliasImports = [];
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\Type\FileTypeMapper $fileTypeMapper
 	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
 	 * @param \PHPStan\Reflection\MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
-	 * @param string $displayName
-	 * @param \ReflectionClass $reflection
-	 * @param string|null $anonymousFilename
-	 * @param ResolvedPhpDocBlock|null $stubPhpDocBlock
-	 * @param string|null $extraCacheKey
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -1018,7 +1011,6 @@ class ClassReflection
 
 	/**
 	 * @param array<int, Type> $types
-	 * @return \PHPStan\Type\Generic\TemplateTypeMap
 	 */
 	public function typeMapFromList(array $types): TemplateTypeMap
 	{

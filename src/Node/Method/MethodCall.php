@@ -17,7 +17,6 @@ class MethodCall
 
 	/**
 	 * @param \PhpParser\Node\Expr\MethodCall|StaticCall|Array_ $node
-	 * @param Scope $scope
 	 */
 	public function __construct($node, Scope $scope)
 	{

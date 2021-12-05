@@ -34,8 +34,6 @@ class FileCacheStorage implements CacheStorage
 	}
 
 	/**
-	 * @param string $key
-	 * @param string $variableKey
 	 * @return mixed|null
 	 */
 	public function load(string $key, string $variableKey)
@@ -60,10 +58,7 @@ class FileCacheStorage implements CacheStorage
 	}
 
 	/**
-	 * @param string $key
-	 * @param string $variableKey
 	 * @param mixed $data
-	 * @return void
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{
@@ -99,7 +94,6 @@ class FileCacheStorage implements CacheStorage
 	}
 
 	/**
-	 * @param string $key
 	 * @return array{string, string, string}
 	 */
 	private function getFilePaths(string $key): array

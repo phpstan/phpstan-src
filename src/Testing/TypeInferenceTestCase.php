@@ -23,7 +23,6 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 {
 
 	/**
-	 * @param string $file
 	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
 	 * @param string[] $dynamicConstantNames
 	 */
@@ -75,8 +74,6 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @api
-	 * @param string $assertType
-	 * @param string $file
 	 * @param mixed ...$args
 	 */
 	public function assertFileAsserts(
@@ -108,7 +105,6 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @api
-	 * @param string $file
 	 * @return array<string, mixed[]>
 	 */
 	public function gatherAssertTypes(string $file): array

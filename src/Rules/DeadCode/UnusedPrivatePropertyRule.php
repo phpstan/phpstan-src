@@ -31,7 +31,6 @@ class UnusedPrivatePropertyRule implements Rule
 	private bool $checkUninitializedProperties;
 
 	/**
-	 * @param ReadWritePropertiesExtensionProvider $extensionProvider
 	 * @param string[] $alwaysWrittenTags
 	 * @param string[] $alwaysReadTags
 	 */

@@ -98,7 +98,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testIgnoreErrorByPathAndCountMoreThanExpected(bool $onlyFiles): void
 	{
@@ -130,7 +129,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testIgnoreErrorByPathAndCountLessThanExpected(bool $onlyFiles): void
 	{
@@ -251,7 +249,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIgnoreErrorInTraitUsingClassFilePath
-	 * @param string $pathToIgnore
 	 */
 	public function testIgnoreErrorInTraitUsingClassFilePath(string $pathToIgnore): void
 	{
@@ -330,7 +327,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testDoNotReportUnmatchedIgnoredErrorsFromPathIfPathWasNotAnalysed(bool $onlyFiles): void
 	{
@@ -352,7 +348,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testDoNotReportUnmatchedIgnoredErrorsFromPathWithCountIfPathWasNotAnalysed(bool $onlyFiles): void
 	{
@@ -376,7 +371,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 */
 	public function testIgnoreNextLine(bool $reportUnmatchedIgnoredErrors): void
 	{
@@ -403,7 +397,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 */
 	public function testIgnoreLine(bool $reportUnmatchedIgnoredErrors): void
 	{
@@ -430,9 +423,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @param mixed[] $ignoreErrors
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param string|string[] $filePaths
-	 * @param bool $onlyFiles
 	 * @return string[]|\PHPStan\Analyser\Error[]
 	 */
 	private function runAnalyser(

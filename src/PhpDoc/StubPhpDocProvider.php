@@ -65,7 +65,6 @@ class StubPhpDocProvider
 	private array $knownFunctionParameterNames = [];
 
 	/**
-	 * @param \PHPStan\Parser\Parser $parser
 	 * @param string[] $stubFiles
 	 */
 	public function __construct(
@@ -160,10 +159,7 @@ class StubPhpDocProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock|null
 	 */
 	public function findMethodPhpDoc(string $className, string $methodName, array $positionalParameterNames): ?ResolvedPhpDocBlock
 	{
@@ -205,9 +201,7 @@ class StubPhpDocProvider
 	}
 
 	/**
-	 * @param string $functionName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return ResolvedPhpDocBlock|null
 	 * @throws \PHPStan\ShouldNotHappenException
 	 */
 	public function findFunctionPhpDoc(string $functionName, array $positionalParameterNames): ?ResolvedPhpDocBlock

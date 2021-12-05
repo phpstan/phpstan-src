@@ -38,13 +38,6 @@ class AnalyserRunner
 	 * @param string[] $allAnalysedFiles
 	 * @param (\Closure(string $file): void)|null $preFileCallback
 	 * @param (\Closure(int): void)|null $postFileCallback
-	 * @param bool $debug
-	 * @param bool $allowParallel
-	 * @param string|null $projectConfigFile
-	 * @param string|null $tmpFile
-	 * @param string|null $insteadOfFile
-	 * @param InputInterface $input
-	 * @return AnalyserResult
 	 */
 	public function runAnalyser(
 		array $files,
@@ -90,8 +83,6 @@ class AnalyserRunner
 
 	/**
 	 * @param string[] $analysedFiles
-	 * @param string|null $insteadOfFile
-	 * @param string|null $tmpFile
 	 * @return string[]
 	 */
 	private function switchTmpFile(

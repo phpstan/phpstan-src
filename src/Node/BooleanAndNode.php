@@ -18,7 +18,6 @@ class BooleanAndNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param BooleanAnd|LogicalAnd $originalNode
-	 * @param Scope $rightScope
 	 */
 	public function __construct($originalNode, Scope $rightScope)
 	{

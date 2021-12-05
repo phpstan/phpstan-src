@@ -38,9 +38,6 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataClass
-	 * @param string $className
-	 * @param string $expectedClassName
-	 * @param string $file
 	 */
 	public function testClass(string $className, string $expectedClassName, string $file): void
 	{
@@ -79,9 +76,6 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunction
-	 * @param string $functionName
-	 * @param string $expectedFunctionName
-	 * @param string $file
 	 */
 	public function testFunction(string $functionName, string $expectedFunctionName, string $file): void
 	{
@@ -120,7 +114,6 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataConst
-	 * @param string $constantName
 	 * @param mixed $value
 	 */
 	public function testConst(string $constantName, $value): void
@@ -142,7 +135,6 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataConstUnknown
-	 * @param string $constantName
 	 */
 	public function testConstUnknown(string $constantName): void
 	{

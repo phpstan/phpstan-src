@@ -38,7 +38,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	private array $functionNodes = [];
 
 	/**
-	 * @param FileNodesFetcher $fileNodesFetcher
 	 * @param string[] $files
 	 */
 	public function __construct(
@@ -116,9 +115,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param Reflector $reflector
 	 * @param FetchedNode<\PhpParser\Node\Stmt\ClassLike>|FetchedNode<\PhpParser\Node\Stmt\Function_> $fetchedNode
-	 * @return Reflection
 	 */
 	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode): Reflection
 	{
@@ -148,7 +145,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param string $functionName
 	 * @return string[]
 	 */
 	private function findFilesByFunction(string $functionName): array
@@ -194,7 +190,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	 * Inspired by Composer\Autoload\ClassMapGenerator::findClasses()
 	 * @link https://github.com/composer/composer/blob/45d3e133a4691eccb12e9cd6f9dfd76eddc1906d/src/Composer/Autoload/ClassMapGenerator.php#L216
 	 *
-	 * @param string $file
 	 * @return array{classes: string[], functions: string[]}
 	 */
 	private function findSymbols(string $file): array

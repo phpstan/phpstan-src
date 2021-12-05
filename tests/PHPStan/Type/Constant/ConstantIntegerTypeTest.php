@@ -33,9 +33,6 @@ class ConstantIntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param ConstantIntegerType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(ConstantIntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -70,9 +67,6 @@ class ConstantIntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param ConstantIntegerType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(ConstantIntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{

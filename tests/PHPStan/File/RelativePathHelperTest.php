@@ -142,10 +142,7 @@ class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataGetRelativePath
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
-	 * @param string $filenameToRelativize
-	 * @param string $expectedResult
 	 */
 	public function testGetRelativePathOnUnix(
 		string $currentWorkingDirectory,
@@ -163,10 +160,7 @@ class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataGetRelativePath
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
-	 * @param string $filenameToRelativize
-	 * @param string $expectedResult
 	 */
 	public function testGetRelativePathOnWindows(
 		string $currentWorkingDirectory,
@@ -215,10 +209,7 @@ class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataGetRelativePathWindowsSpecific
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
-	 * @param string $filenameToRelativize
-	 * @param string $expectedResult
 	 */
 	public function testGetRelativePathWindowsSpecific(
 		string $currentWorkingDirectory,

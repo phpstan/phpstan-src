@@ -18,14 +18,11 @@ interface SignatureMapProvider
 	public function hasFunctionMetadata(string $name): bool;
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array;
 
 	/**
-	 * @param string $functionName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array;

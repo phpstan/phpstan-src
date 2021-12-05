@@ -66,7 +66,6 @@ final class CompactVariablesRule implements Rule
 	}
 
 	/**
-	 * @param Type $type
 	 * @return array<int, ConstantStringType>
 	 */
 	private function findConstantStrings(Type $type): array

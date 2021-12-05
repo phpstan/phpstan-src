@@ -61,11 +61,6 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt\Function_ $function
-	 * @param string $parameterMessage
-	 * @param string $returnMessage
-	 * @param string $unionTypesMessage
-	 * @param string $templateTypeMissingInParameterMessage
 	 * @return RuleError[]
 	 */
 	public function checkFunction(
@@ -94,12 +89,8 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param \PhpParser\Node\Param[] $parameters
 	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\ComplexType|null $returnTypeNode
-	 * @param string $parameterMessage
-	 * @param string $returnMessage
-	 * @param string $unionTypesMessage
 	 * @return \PHPStan\Rules\RuleError[]
 	 */
 	public function checkAnonymousFunction(
@@ -197,12 +188,6 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param PhpMethodFromParserNodeReflection $methodReflection
-	 * @param ClassMethod $methodNode
-	 * @param string $parameterMessage
-	 * @param string $returnMessage
-	 * @param string $unionTypesMessage
-	 * @param string $templateTypeMissingInParameterMessage
 	 * @return RuleError[]
 	 */
 	public function checkClassMethod(
@@ -232,12 +217,6 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param ParametersAcceptor $parametersAcceptor
-	 * @param FunctionLike $functionNode
-	 * @param string $parameterMessage
-	 * @param string $returnMessage
-	 * @param string $unionTypesMessage
-	 * @param string $templateTypeMissingInParameterMessage
 	 * @return RuleError[]
 	 */
 	private function checkParametersAcceptor(
@@ -425,9 +404,7 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param string $parameterName
 	 * @param Param[] $parameterNodes
-	 * @return Param
 	 */
 	private function getParameterNode(
 		string $parameterName,
@@ -452,7 +429,6 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParameterReflection $parameter
 	 * @return string[]
 	 */
 	private function getParameterReferencedClasses(ParameterReflection $parameter): array
@@ -472,7 +448,6 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParametersAcceptor $parametersAcceptor
 	 * @return string[]
 	 */
 	private function getReturnTypeReferencedClasses(ParametersAcceptor $parametersAcceptor): array

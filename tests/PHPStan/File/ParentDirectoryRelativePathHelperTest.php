@@ -105,9 +105,6 @@ class ParentDirectoryRelativePathHelperTest extends TestCase
 
 	/**
 	 * @dataProvider dataGetRelativePath
-	 * @param string $parentDirectory
-	 * @param string $filename
-	 * @param string $expectedRelativePath
 	 */
 	public function testGetRelativePath(
 		string $parentDirectory,

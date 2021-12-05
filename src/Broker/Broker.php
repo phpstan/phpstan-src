@@ -20,7 +20,6 @@ class Broker implements ReflectionProvider
 	private static ?Broker $instance = null;
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(

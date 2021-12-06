@@ -2,11 +2,18 @@
 
 namespace PHPStan\Command;
 
+use Closure;
 use Composer\XdebugHandler\XdebugHandler;
 use Nette\DI\Config\Adapters\PhpAdapter;
 use Nette\DI\Helpers;
+use Nette\DI\InvalidConfigurationException;
+use Nette\DI\ServiceCreationException;
+use Nette\FileNotFoundException;
+use Nette\InvalidStateException;
 use Nette\Schema\Context as SchemaContext;
 use Nette\Schema\Processor;
+use Nette\Schema\ValidationException;
+use Nette\Utils\AssertionException;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use PHPStan\Command\Symfony\SymfonyOutput;
@@ -15,12 +22,43 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
+use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\ShouldNotHappenException;
+use ReflectionClass;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
+use function array_diff_key;
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function class_exists;
+use function count;
+use function dirname;
+use function function_exists;
+use function get_class;
+use function getcwd;
+use function gettype;
+use function implode;
+use function ini_set;
+use function is_dir;
+use function is_file;
+use function is_readable;
+use function is_string;
+use function mkdir;
+use function pcntl_async_signals;
+use function pcntl_signal;
+use function sprintf;
+use function sys_get_temp_dir;
+use function unlink;
+use const DIRECTORY_SEPARATOR;
+use const PHP_VERSION_ID;
+use const SIGINT;
 
 class CommandHelper
 {
@@ -31,7 +69,7 @@ class CommandHelper
 	 * @param string[] $paths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 *
-	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
+	 * @throws InceptionNotSuccessfulException
 	 */
 	public static function begin(
 		InputInterface $input,
@@ -58,25 +96,25 @@ class CommandHelper
 		}
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
 
-		/** @var \PHPStan\Command\Output $errorOutput */
+		/** @var Output $errorOutput */
 		$errorOutput = (static function () use ($input, $output): Output {
 			$symfonyErrorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 			return new SymfonyOutput($symfonyErrorOutput, new SymfonyStyle(new ErrorsConsoleStyle($input, $symfonyErrorOutput)));
 		})();
 		if ($memoryLimit !== null) {
-			if (\Nette\Utils\Strings::match($memoryLimit, '#^-?\d+[kMG]?$#i') === null) {
+			if (Strings::match($memoryLimit, '#^-?\d+[kMG]?$#i') === null) {
 				$errorOutput->writeLineFormatted(sprintf('Invalid memory limit format "%s".', $memoryLimit));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 			if (ini_set('memory_limit', $memoryLimit) === false) {
 				$errorOutput->writeLineFormatted(sprintf('Memory limit "%s" cannot be set.', $memoryLimit));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 		}
 
 		$currentWorkingDirectory = getcwd();
 		if ($currentWorkingDirectory === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$currentWorkingDirectoryFileHelper = new FileHelper($currentWorkingDirectory);
 		$currentWorkingDirectory = $currentWorkingDirectoryFileHelper->getWorkingDirectory();
@@ -84,7 +122,7 @@ class CommandHelper
 			$autoloadFile = $currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile);
 			if (!is_file($autoloadFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Autoload file "%s" not found.', $autoloadFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 
 			(static function (string $file): void {
@@ -124,7 +162,7 @@ class CommandHelper
 		if ($projectConfigFile !== null) {
 			if (!is_file($projectConfigFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Project config file at path %s does not exist.', $projectConfigFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 
 			$loader = (new LoaderFactory(
@@ -136,9 +174,9 @@ class CommandHelper
 
 			try {
 				$projectConfig = $loader->load($projectConfigFile, null);
-			} catch (\Nette\InvalidStateException | \Nette\FileNotFoundException $e) {
+			} catch (InvalidStateException | FileNotFoundException $e) {
 				$errorOutput->writeLineFormatted($e->getMessage());
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 			$defaultParameters = [
 				'rootDir' => $containerFactory->getRootDirectory(),
@@ -164,20 +202,20 @@ class CommandHelper
 			$levelConfigFile = sprintf('%s/config.level%s.neon', $containerFactory->getConfigDirectory(), $level);
 			if (!is_file($levelConfigFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Level config file %s was not found.', $levelConfigFile));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 
 			$additionalConfigFiles[] = $levelConfigFile;
 		}
 
 		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
-			$generatedConfigReflection = new \ReflectionClass('PHPStan\ExtensionInstaller\GeneratedConfig');
+			$generatedConfigReflection = new ReflectionClass('PHPStan\ExtensionInstaller\GeneratedConfig');
 			$generatedConfigDirectory = dirname($generatedConfigReflection->getFileName());
-			foreach (\PHPStan\ExtensionInstaller\GeneratedConfig::EXTENSIONS as $name => $extensionConfig) {
+			foreach (GeneratedConfig::EXTENSIONS as $name => $extensionConfig) {
 				foreach ($extensionConfig['extra']['includes'] ?? [] as $includedFile) {
 					if (!is_string($includedFile)) {
 						$errorOutput->writeLineFormatted(sprintf('Cannot include config from package %s, expecting string file path but got %s', $name, gettype($includedFile)));
-						throw new \PHPStan\Command\InceptionNotSuccessfulException();
+						throw new InceptionNotSuccessfulException();
 					}
 					$includedFilePath = null;
 					if (isset($extensionConfig['relative_install_path'])) {
@@ -192,7 +230,7 @@ class CommandHelper
 					}
 					if (!is_file($includedFilePath) || !is_readable($includedFilePath)) {
 						$errorOutput->writeLineFormatted(sprintf('Config file %s does not exist or isn\'t readable', $includedFilePath));
-						throw new \PHPStan\Command\InceptionNotSuccessfulException();
+						throw new InceptionNotSuccessfulException();
 					}
 					$additionalConfigFiles[] = $includedFilePath;
 				}
@@ -221,7 +259,7 @@ class CommandHelper
 		$createDir = static function (string $path) use ($errorOutput): void {
 			if (!is_dir($path) && !@mkdir($path, 0777) && !is_dir($path)) {
 				$errorOutput->writeLineFormatted(sprintf('Cannot create a temp directory %s', $path));
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 		};
 
@@ -232,11 +270,11 @@ class CommandHelper
 
 		try {
 			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile, $singleReflectionInsteadOfFile);
-		} catch (\Nette\DI\InvalidConfigurationException | \Nette\Utils\AssertionException $e) {
+		} catch (InvalidConfigurationException | AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
-		} catch (\Nette\DI\ServiceCreationException $e) {
+			throw new InceptionNotSuccessfulException();
+		} catch (ServiceCreationException $e) {
 			$matches = Strings::match($e->getMessage(), '#Service of type (?<serviceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]): Service of type (?<parserServiceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]) needed by \$(?<parameterName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*) in (?<methodName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)\(\)#');
 			if ($matches === null) {
 				throw $e;
@@ -266,7 +304,7 @@ class CommandHelper
 			$errorOutput->writeLineFormatted(sprintf("\t\t%s: @defaultAnalysisParser", $matches['parameterName']));
 			$errorOutput->writeLineFormatted('');
 
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 
 		if ($cleanupContainerCache) {
@@ -275,7 +313,7 @@ class CommandHelper
 
 		if (count($paths) === 0) {
 			$errorOutput->writeLineFormatted('At least one path must be specified to analyse.');
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 
 		$memoryLimitFile = $container->getParameter('memoryLimitFile');
@@ -301,7 +339,7 @@ class CommandHelper
 			$errorOutput->writeLineFormatted(sprintf('* create your own <info>custom ruleset</info> by selecting which rules you want to check by copying the service definitions from the built-in config level files in <options=bold>%s</>.', $currentWorkingDirectoryFileHelper->normalizePath(__DIR__ . '/../../conf')));
 			$errorOutput->writeLineFormatted('  * in this case, don\'t forget to define parameter <options=bold>customRulesetUsed</> in your config file.');
 			$errorOutput->writeLineFormatted('');
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		} elseif ((bool) $container->getParameter('customRulesetUsed')) {
 			$defaultLevelUsed = false;
 		}
@@ -314,12 +352,12 @@ class CommandHelper
 
 		try {
 			$processor->process($schema, $container->getParameters());
-		} catch (\Nette\Schema\ValidationException $e) {
+		} catch (ValidationException $e) {
 			foreach ($e->getMessages() as $message) {
 				$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 				$errorOutput->writeLineFormatted($message);
 			}
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
@@ -341,7 +379,7 @@ class CommandHelper
 
 			$errorOutput->writeLineFormatted(sprintf('Scanned file %s does not exist.', $scannedFile));
 
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 
 		foreach ($container->getParameter('scanDirectories') as $scannedDirectory) {
@@ -351,7 +389,7 @@ class CommandHelper
 
 			$errorOutput->writeLineFormatted(sprintf('Scanned directory %s does not exist.', $scannedDirectory));
 
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 
 		$alreadyAddedStubFiles = [];
@@ -359,7 +397,7 @@ class CommandHelper
 			if (array_key_exists($stubFile, $alreadyAddedStubFiles)) {
 				$errorOutput->writeLineFormatted(sprintf('Stub file %s is added multiple times.', $stubFile));
 
-				throw new \PHPStan\Command\InceptionNotSuccessfulException();
+				throw new InceptionNotSuccessfulException();
 			}
 
 			$alreadyAddedStubFiles[$stubFile] = true;
@@ -370,7 +408,7 @@ class CommandHelper
 
 			$errorOutput->writeLineFormatted(sprintf('Stub file %s does not exist.', $stubFile));
 
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 
 		$excludesAnalyse = $container->getParameter('excludes_analyse');
@@ -381,7 +419,7 @@ class CommandHelper
 			$errorOutput->writeLineFormatted(sprintf('Parameter <fg=cyan>excludes_analyse</> has been deprecated so use <fg=cyan>excludePaths</> only from now on.'));
 			$errorOutput->writeLineFormatted('');
 
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		} elseif (count($excludesAnalyse) > 0) {
 			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>excludes_analyse</>. ⚠️️');
 			$errorOutput->writeLineFormatted('');
@@ -396,7 +434,7 @@ class CommandHelper
 
 		$pathRoutingParser = $container->getService('pathRoutingParser');
 
-		/** @var \Closure(): (array{string[], bool}) $filesCallback */
+		/** @var Closure(): array{string[], bool} $filesCallback */
 		$filesCallback = static function () use ($fileFinder, $pathRoutingParser, $paths): array {
 			$fileFinderResult = $fileFinder->findFiles($paths);
 			$files = $fileFinderResult->getFiles();
@@ -431,20 +469,20 @@ class CommandHelper
 	{
 		if (!is_file($file)) {
 			$errorOutput->writeLineFormatted(sprintf('Bootstrap file %s does not exist.', $file));
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 		try {
 			(static function (string $file) use ($container): void {
 				require_once $file;
 			})($file);
-		} catch (\Throwable $e) {
+		} catch (Throwable $e) {
 			$errorOutput->writeLineFormatted(sprintf('%s thrown in %s on line %d while loading bootstrap file %s: %s', get_class($e), $e->getFile(), $e->getLine(), $file, $e->getMessage()));
 
 			if ($debugEnabled) {
 				$errorOutput->writeLineFormatted($e->getTraceAsString());
 			}
 
-			throw new \PHPStan\Command\InceptionNotSuccessfulException();
+			throw new InceptionNotSuccessfulException();
 		}
 	}
 
@@ -467,7 +505,7 @@ class CommandHelper
 	/**
 	 * @param string[] $configFiles
 	 * @param array<string, string> $loaderParameters
-	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
+	 * @throws InceptionNotSuccessfulException
 	 */
 	private static function detectDuplicateIncludedFiles(
 		Output $output,
@@ -504,7 +542,7 @@ class CommandHelper
 			$output->writeLineFormatted('');
 			$output->writeLineFormatted('It can lead to unexpected results. If you\'re using phpstan/extension-installer, make sure you have removed corresponding neon files from your project config file.');
 		}
-		throw new \PHPStan\Command\InceptionNotSuccessfulException();
+		throw new InceptionNotSuccessfulException();
 	}
 
 	/**

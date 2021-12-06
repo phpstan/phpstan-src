@@ -2,10 +2,16 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function array_map;
+use function count;
+use function is_string;
+use function sprintf;
+use function str_replace;
 
 class TableErrorFormatter implements ErrorFormatter
 {
@@ -57,7 +63,7 @@ class TableErrorFormatter implements ErrorFormatter
 			return 0;
 		}
 
-		/** @var array<string, \PHPStan\Analyser\Error[]> $fileErrors */
+		/** @var array<string, Error[]> $fileErrors */
 		$fileErrors = [];
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			if (!isset($fileErrors[$fileSpecificError->getFile()])) {

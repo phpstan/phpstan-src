@@ -5,12 +5,14 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -19,12 +21,19 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use function array_map;
+use function count;
+use function implode;
+use function in_array;
+use function sprintf;
+use function strlen;
+use function substr;
 
 /** @api */
 class IntersectionType implements CompoundType
 {
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $types;
 
 	/**
@@ -34,7 +43,7 @@ class IntersectionType implements CompoundType
 	public function __construct(array $types)
 	{
 		if (count($types) < 2) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf(
+			throw new ShouldNotHappenException(sprintf(
 				'Cannot create %s with: %s',
 				self::class,
 				implode(', ', array_map(static function (Type $type): string {
@@ -252,7 +261,7 @@ class IntersectionType implements CompoundType
 
 		$propertiesCount = count($propertyPrototypes);
 		if ($propertiesCount === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($propertiesCount === 1) {
@@ -294,7 +303,7 @@ class IntersectionType implements CompoundType
 
 		$methodsCount = count($methodPrototypes);
 		if ($methodsCount === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($methodsCount === 1) {
@@ -326,7 +335,7 @@ class IntersectionType implements CompoundType
 			}
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function isIterable(): TrinaryLogic
@@ -421,12 +430,12 @@ class IntersectionType implements CompoundType
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		if ($this->isCallable()->no()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return [new TrivialParametersAcceptor()];

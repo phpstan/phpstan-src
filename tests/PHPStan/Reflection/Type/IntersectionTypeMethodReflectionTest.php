@@ -3,9 +3,10 @@
 namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 
-class IntersectionTypeMethodReflectionTest extends \PHPStan\Testing\PHPStanTestCase
+class IntersectionTypeMethodReflectionTest extends PHPStanTestCase
 {
 
 	public function testCollectsDeprecatedMessages(): void

@@ -14,6 +14,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
@@ -21,7 +22,12 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use Traversable;
+use function array_key_exists;
 use function array_slice;
+use function count;
+use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<InClassMethodNode>
@@ -55,7 +61,7 @@ class OverridingMethodRule implements Rule
 	{
 		$method = $scope->getFunction();
 		if (!$method instanceof PhpMethodFromParserNodeReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$prototype = $method->getPrototype();
@@ -452,7 +458,7 @@ class OverridingMethodRule implements Rule
 				if ($prototypeParameterType instanceof ArrayType) {
 					return true;
 				}
-				if ($prototypeParameterType instanceof ObjectType && $prototypeParameterType->getClassName() === \Traversable::class) {
+				if ($prototypeParameterType instanceof ObjectType && $prototypeParameterType->getClassName() === Traversable::class) {
 					return true;
 				}
 			}

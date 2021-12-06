@@ -7,7 +7,7 @@ use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ClassAncestorsRule>
+ * @extends RuleTestCase<ClassAncestorsRule>
  */
 class ClassAncestorsRuleTest extends RuleTestCase
 {

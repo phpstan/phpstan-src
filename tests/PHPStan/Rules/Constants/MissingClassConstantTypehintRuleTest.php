@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Constants;
 
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -11,7 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class MissingClassConstantTypehintRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new MissingClassConstantTypehintRule(new MissingTypehintCheck($reflectionProvider, true, true, true, []));

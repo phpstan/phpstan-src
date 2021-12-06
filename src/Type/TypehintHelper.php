@@ -2,13 +2,20 @@
 
 namespace PHPStan\Type;
 
+use Nette\Utils\Strings;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
+use function array_map;
+use function count;
+use function get_class;
+use function sprintf;
+use function strtolower;
 
 class TypehintHelper
 {
@@ -67,7 +74,7 @@ class TypehintHelper
 
 	/** @api */
 	public static function decideTypeFromReflection(
-		?\ReflectionType $reflectionType,
+		?ReflectionType $reflectionType,
 		?Type $phpDocType = null,
 		?string $selfClass = null,
 		bool $isVariadic = false
@@ -103,23 +110,23 @@ class TypehintHelper
 		}
 
 		if (!$reflectionType instanceof ReflectionNamedType) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
+			throw new ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
 		}
 
 		$reflectionTypeString = $reflectionType->getName();
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\object')) {
+		if (Strings::endsWith(strtolower($reflectionTypeString), '\\object')) {
 			$reflectionTypeString = 'object';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\mixed')) {
+		if (Strings::endsWith(strtolower($reflectionTypeString), '\\mixed')) {
 			$reflectionTypeString = 'mixed';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\false')) {
+		if (Strings::endsWith(strtolower($reflectionTypeString), '\\false')) {
 			$reflectionTypeString = 'false';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\null')) {
+		if (Strings::endsWith(strtolower($reflectionTypeString), '\\null')) {
 			$reflectionTypeString = 'null';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\never')) {
+		if (Strings::endsWith(strtolower($reflectionTypeString), '\\never')) {
 			$reflectionTypeString = 'never';
 		}
 

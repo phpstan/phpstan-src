@@ -8,7 +8,7 @@ use PHPStan\Type\Type;
 class ExtendsTag
 {
 
-	private \PHPStan\Type\Type $type;
+	private Type $type;
 
 	public function __construct(Type $type)
 	{

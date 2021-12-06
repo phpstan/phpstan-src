@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
@@ -17,6 +18,8 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function get_class;
+use function sprintf;
 
 /** @api */
 class StaticType implements TypeWithClassName
@@ -27,7 +30,7 @@ class StaticType implements TypeWithClassName
 
 	private ClassReflection $classReflection;
 
-	private ?\PHPStan\Type\ObjectType $staticObjectType = null;
+	private ?ObjectType $staticObjectType = null;
 
 	private string $baseClass;
 
@@ -334,7 +337,7 @@ class StaticType implements TypeWithClassName
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{

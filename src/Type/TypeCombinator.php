@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -18,6 +21,18 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateUnionType;
+use Traversable;
+use function array_intersect_key;
+use function array_key_exists;
+use function array_merge;
+use function array_slice;
+use function array_splice;
+use function array_values;
+use function count;
+use function get_class;
+use function is_int;
+use function md5;
+use function usort;
 
 /** @api */
 class TypeCombinator
@@ -68,13 +83,13 @@ class TypeCombinator
 		} elseif ($fromType instanceof IterableType) {
 			$arrayType = new ArrayType(new MixedType(), new MixedType());
 			if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
-				return new GenericObjectType(\Traversable::class, [
+				return new GenericObjectType(Traversable::class, [
 					$fromType->getIterableKeyType(),
 					$fromType->getIterableValueType(),
 				]);
 			}
 
-			$traversableType = new ObjectType(\Traversable::class);
+			$traversableType = new ObjectType(Traversable::class);
 			if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
 				return new ArrayType($fromType->getIterableKeyType(), $fromType->getIterableValueType());
 			}
@@ -118,13 +133,13 @@ class TypeCombinator
 			if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
 				return new ConstantStringType('');
 			}
-		} elseif ($fromType instanceof ObjectType && $fromType->getClassName() === \DateTimeInterface::class) {
-			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === \DateTimeImmutable::class) {
-				return new ObjectType(\DateTime::class);
+		} elseif ($fromType instanceof ObjectType && $fromType->getClassName() === DateTimeInterface::class) {
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTimeImmutable::class) {
+				return new ObjectType(DateTime::class);
 			}
 
-			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === \DateTime::class) {
-				return new ObjectType(\DateTimeImmutable::class);
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTime::class) {
+				return new ObjectType(DateTimeImmutable::class);
 			}
 		}
 

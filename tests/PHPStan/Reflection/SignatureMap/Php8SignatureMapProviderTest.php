@@ -25,6 +25,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function array_map;
+use function array_merge;
+use function count;
 
 class Php8SignatureMapProviderTest extends PHPStanTestCase
 {

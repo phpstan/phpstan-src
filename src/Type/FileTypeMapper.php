@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use Closure;
+use Jean85\PrettyVersions;
+use OutOfBoundsException;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
@@ -16,14 +19,33 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use ReflectionClass;
 use function array_key_exists;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function array_pop;
+use function count;
+use function error_get_last;
 use function filemtime;
+use function implode;
+use function is_array;
+use function is_callable;
 use function is_file;
+use function ltrim;
+use function md5;
+use function serialize;
+use function sprintf;
+use function strtolower;
+use function time;
+use function trait_exists;
+use function unserialize;
 
 class FileTypeMapper
 {
@@ -33,20 +55,20 @@ class FileTypeMapper
 
 	private ReflectionProviderProvider $reflectionProviderProvider;
 
-	private \PHPStan\Parser\Parser $phpParser;
+	private Parser $phpParser;
 
-	private \PHPStan\PhpDoc\PhpDocStringResolver $phpDocStringResolver;
+	private PhpDocStringResolver $phpDocStringResolver;
 
-	private \PHPStan\PhpDoc\PhpDocNodeResolver $phpDocNodeResolver;
+	private PhpDocNodeResolver $phpDocNodeResolver;
 
-	private \PHPStan\Cache\Cache $cache;
+	private Cache $cache;
 
-	private \PHPStan\Broker\AnonymousClassNameHelper $anonymousClassNameHelper;
+	private AnonymousClassNameHelper $anonymousClassNameHelper;
 
-	/** @var \PHPStan\Analyser\NameScope[][] */
+	/** @var NameScope[][] */
 	private array $memoryCache = [];
 
-	/** @var (false|(callable(): \PHPStan\Analyser\NameScope)|\PHPStan\Analyser\NameScope)[][] */
+	/** @var (false|callable(): NameScope|NameScope)[][] */
 	private array $inProcess = [];
 
 	/** @var array<string, ResolvedPhpDocBlock> */
@@ -82,7 +104,7 @@ class FileTypeMapper
 	): ResolvedPhpDocBlock
 	{
 		if ($className === null && $traitName !== null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($docComment === '') {
@@ -166,8 +188,8 @@ class FileTypeMapper
 	{
 		$phpDocParserVersion = 'Version unknown';
 		try {
-			$phpDocParserVersion = \Jean85\PrettyVersions::getVersion('phpstan/phpdoc-parser')->getPrettyVersion();
-		} catch (\OutOfBoundsException $e) {
+			$phpDocParserVersion = PrettyVersions::getVersion('phpstan/phpdoc-parser')->getPrettyVersion();
+		} catch (OutOfBoundsException $e) {
 			// skip
 		}
 		$cacheKey = sprintf('phpdocstring-%s', $phpDocString);
@@ -177,10 +199,10 @@ class FileTypeMapper
 			if ($unserializeResult === false) {
 				$error = error_get_last();
 				if ($error !== null) {
-					throw new \PHPStan\ShouldNotHappenException(sprintf('unserialize() error: %s', $error['message']));
+					throw new ShouldNotHappenException(sprintf('unserialize() error: %s', $error['message']));
 				}
 
-				throw new \PHPStan\ShouldNotHappenException('Unknown unserialize() error');
+				throw new ShouldNotHappenException('Unknown unserialize() error');
 			}
 
 			return $unserializeResult;
@@ -208,7 +230,7 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\NameScope[]
+	 * @return NameScope[]
 	 */
 	private function getNameScopeMap(string $fileName): array
 	{
@@ -231,7 +253,7 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\NameScope[]
+	 * @return NameScope[]
 	 */
 	private function createResolvedPhpDocMap(string $fileName): array
 	{
@@ -256,7 +278,7 @@ class FileTypeMapper
 
 	/**
 	 * @param array<string, string> $traitMethodAliases
-	 * @return (callable(): \PHPStan\Analyser\NameScope)[]
+	 * @return (callable(): NameScope)[]
 	 */
 	private function createNameScopeMap(
 		string $fileName,
@@ -265,7 +287,7 @@ class FileTypeMapper
 		array $traitMethodAliases = []
 	): array
 	{
-		/** @var (callable(): \PHPStan\Analyser\NameScope)[] $nameScopeMap */
+		/** @var (callable(): NameScope)[] $nameScopeMap */
 		$nameScopeMap = [];
 
 		/** @var (callable(): TemplateTypeMap)[] $typeMapStack */
@@ -287,7 +309,7 @@ class FileTypeMapper
 		$uses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (\PhpParser\Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
+			function (Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($lookForTrait !== null) {
 						if (!$node instanceof Node\Stmt\Trait_) {
@@ -299,7 +321,7 @@ class FileTypeMapper
 					} else {
 						if ($node->name === null) {
 							if (!$node instanceof Node\Stmt\Class_) {
-								throw new \PHPStan\ShouldNotHappenException();
+								throw new ShouldNotHappenException();
 							}
 
 							$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $fileName);
@@ -335,7 +357,7 @@ class FileTypeMapper
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
 							if ($templateTypeScope === null) {
-								throw new \PHPStan\ShouldNotHappenException();
+								throw new ShouldNotHappenException();
 							}
 							$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
 								return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
@@ -410,16 +432,16 @@ class FileTypeMapper
 					return null;
 				}
 
-				if ($node instanceof \PhpParser\Node\Stmt\Namespace_) {
+				if ($node instanceof Node\Stmt\Namespace_) {
 					$namespace = (string) $node->name;
-				} elseif ($node instanceof \PhpParser\Node\Stmt\Use_ && $node->type === \PhpParser\Node\Stmt\Use_::TYPE_NORMAL) {
+				} elseif ($node instanceof Node\Stmt\Use_ && $node->type === Node\Stmt\Use_::TYPE_NORMAL) {
 					foreach ($node->uses as $use) {
 						$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
 					}
-				} elseif ($node instanceof \PhpParser\Node\Stmt\GroupUse) {
+				} elseif ($node instanceof Node\Stmt\GroupUse) {
 					$prefix = (string) $node->prefix;
 					foreach ($node->uses as $use) {
-						if ($node->type !== \PhpParser\Node\Stmt\Use_::TYPE_NORMAL && $use->type !== \PhpParser\Node\Stmt\Use_::TYPE_NORMAL) {
+						if ($node->type !== Node\Stmt\Use_::TYPE_NORMAL && $use->type !== Node\Stmt\Use_::TYPE_NORMAL) {
 							continue;
 						}
 
@@ -469,7 +491,7 @@ class FileTypeMapper
 
 						$className = $classStack[count($classStack) - 1] ?? null;
 						if ($className === null) {
-							throw new \PHPStan\ShouldNotHappenException();
+							throw new ShouldNotHappenException();
 						}
 
 						$traitPhpDocMap = $this->createNameScopeMap(
@@ -530,30 +552,30 @@ class FileTypeMapper
 
 				return null;
 			},
-			static function (\PhpParser\Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack): void {
+			static function (Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack): void {
 				if ($node instanceof Node\Stmt\ClassLike && $lookForTrait === null) {
 					if (count($classStack) === 0) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					array_pop($classStack);
 
 					if (count($typeAliasStack) === 0) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					array_pop($typeAliasStack);
 
 					if (count($functionStack) === 0) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					array_pop($functionStack);
-				} elseif ($node instanceof \PhpParser\Node\Stmt\Namespace_) {
+				} elseif ($node instanceof Node\Stmt\Namespace_) {
 					$namespace = null;
 					$uses = [];
 				} elseif ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					if (count($functionStack) === 0) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					array_pop($functionStack);
@@ -563,14 +585,14 @@ class FileTypeMapper
 				}
 
 				if (count($typeMapStack) === 0) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				array_pop($typeMapStack);
 			}
 		);
 
 		if (count($typeMapStack) > 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $nameScopeMap;
@@ -601,11 +623,11 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
-	 * @param \Closure(\PhpParser\Node $node): mixed $nodeCallback
-	 * @param \Closure(\PhpParser\Node $node, mixed $callbackResult): void $endNodeCallback
+	 * @param Node[]|Node|scalar $node
+	 * @param Closure(Node $node): mixed $nodeCallback
+	 * @param Closure(Node $node, mixed $callbackResult): void $endNodeCallback
 	 */
-	private function processNodes($node, \Closure $nodeCallback, \Closure $endNodeCallback): void
+	private function processNodes($node, Closure $nodeCallback, Closure $endNodeCallback): void
 	{
 		if ($node instanceof Node) {
 			$callbackResult = $nodeCallback($node);
@@ -735,7 +757,7 @@ class FileTypeMapper
 							continue;
 						}
 
-						$traitReflection = new \ReflectionClass($traitName);
+						$traitReflection = new ReflectionClass($traitName);
 						if ($traitReflection->getFileName() === false) {
 							continue;
 						}

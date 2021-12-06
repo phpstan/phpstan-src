@@ -3,15 +3,18 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AccessStaticPropertiesRule>
+ * @extends RuleTestCase<AccessStaticPropertiesRule>
  */
-class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class AccessStaticPropertiesRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessStaticPropertiesRule(

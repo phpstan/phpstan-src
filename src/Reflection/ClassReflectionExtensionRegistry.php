@@ -3,19 +3,20 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Broker\Broker;
+use function array_merge;
 
 class ClassReflectionExtensionRegistry
 {
 
-	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
+	/** @var PropertiesClassReflectionExtension[] */
 	private array $propertiesClassReflectionExtensions;
 
-	/** @var \PHPStan\Reflection\MethodsClassReflectionExtension[] */
+	/** @var MethodsClassReflectionExtension[] */
 	private array $methodsClassReflectionExtensions;
 
 	/**
-	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
-	 * @param \PHPStan\Reflection\MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
+	 * @param PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
+	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 */
 	public function __construct(
 		Broker $broker,
@@ -35,7 +36,7 @@ class ClassReflectionExtensionRegistry
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\PropertiesClassReflectionExtension[]
+	 * @return PropertiesClassReflectionExtension[]
 	 */
 	public function getPropertiesClassReflectionExtensions(): array
 	{
@@ -43,7 +44,7 @@ class ClassReflectionExtensionRegistry
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\MethodsClassReflectionExtension[]
+	 * @return MethodsClassReflectionExtension[]
 	 */
 	public function getMethodsClassReflectionExtensions(): array
 	{

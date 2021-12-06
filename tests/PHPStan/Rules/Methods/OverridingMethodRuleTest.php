@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function array_filter;
+use function array_merge;
+use function array_values;
 use const PHP_VERSION_ID;
 
 /**

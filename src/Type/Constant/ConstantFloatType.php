@@ -10,6 +10,7 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function strpos;
 
 /** @api */
 class ConstantFloatType extends FloatType implements ConstantScalarType

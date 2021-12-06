@@ -26,7 +26,7 @@ class TrivialParametersAcceptor implements ParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflection>
+	 * @return array<int, ParameterReflection>
 	 */
 	public function getParameters(): array
 	{

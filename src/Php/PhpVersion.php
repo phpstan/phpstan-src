@@ -2,6 +2,8 @@
 
 namespace PHPStan\Php;
 
+use function floor;
+
 /** @api */
 class PhpVersion
 {

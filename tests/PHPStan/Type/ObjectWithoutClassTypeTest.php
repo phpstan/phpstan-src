@@ -2,9 +2,12 @@
 
 namespace PHPStan\Type;
 
+use InvalidArgumentException;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use function sprintf;
 
-class ObjectWithoutClassTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class ObjectWithoutClassTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -26,13 +29,13 @@ class ObjectWithoutClassTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createNo(),
 			],
 			[
-				new ObjectWithoutClassType(new ObjectType(\InvalidArgumentException::class)),
+				new ObjectWithoutClassType(new ObjectType(InvalidArgumentException::class)),
 				new ObjectType('Exception'),
 				TrinaryLogic::createMaybe(),
 			],
 			[
 				new ObjectWithoutClassType(new ObjectType('Exception')),
-				new ObjectType(\InvalidArgumentException::class),
+				new ObjectType(InvalidArgumentException::class),
 				TrinaryLogic::createNo(),
 			],
 			[
@@ -46,13 +49,13 @@ class ObjectWithoutClassTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new ObjectWithoutClassType(new ObjectType(\InvalidArgumentException::class)),
+				new ObjectWithoutClassType(new ObjectType(InvalidArgumentException::class)),
 				new ObjectWithoutClassType(new ObjectType('Exception')),
 				TrinaryLogic::createYes(),
 			],
 			[
 				new ObjectWithoutClassType(new ObjectType('Exception')),
-				new ObjectWithoutClassType(new ObjectType(\InvalidArgumentException::class)),
+				new ObjectWithoutClassType(new ObjectType(InvalidArgumentException::class)),
 				TrinaryLogic::createMaybe(),
 			],
 		];

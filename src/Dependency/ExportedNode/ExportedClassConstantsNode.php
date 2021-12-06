@@ -4,6 +4,10 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 {
@@ -88,7 +92,7 @@ class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 		return new self(
 			array_map(static function (array $constantData): ExportedClassConstantNode {
 				if ($constantData['type'] !== ExportedClassConstantNode::class) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return ExportedClassConstantNode::decode($constantData['data']);
 			}, $data['constants']),
@@ -102,7 +106,7 @@ class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

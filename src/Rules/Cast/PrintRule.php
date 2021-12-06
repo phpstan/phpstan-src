@@ -10,9 +10,10 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Print_>
+ * @implements Rule<Node\Expr\Print_>
  */
 class PrintRule implements Rule
 {

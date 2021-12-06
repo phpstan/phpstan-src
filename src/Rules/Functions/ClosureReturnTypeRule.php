@@ -6,15 +6,18 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
 
 /**
- * @implements \PHPStan\Rules\Rule<ClosureReturnStatementsNode>
+ * @implements Rule<ClosureReturnStatementsNode>
  */
-class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
+class ClosureReturnTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
+	private FunctionReturnTypeCheck $returnTypeCheck;
 
 	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
 	{
@@ -32,7 +35,7 @@ class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		/** @var \PHPStan\Type\Type $returnType */
+		/** @var Type $returnType */
 		$returnType = $scope->getAnonymousFunctionReturnType();
 		$containsNull = TypeCombinator::containsNull($returnType);
 		$hasNativeTypehint = $node->getClosureExpr()->returnType !== null;

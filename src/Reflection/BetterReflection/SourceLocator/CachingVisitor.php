@@ -3,11 +3,16 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\BuilderHelpers;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\Util\ConstantNodeChecker;
+use function constant;
+use function defined;
+use function strtolower;
 
 class CachingVisitor extends NodeVisitorAbstract
 {
@@ -16,24 +21,24 @@ class CachingVisitor extends NodeVisitorAbstract
 
 	private string $contents;
 
-	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
+	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
 	private array $classNodes;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
 	private array $functionNodes;
 
-	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
+	/** @var array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> */
 	private array $constantNodes;
 
-	private ?\PhpParser\Node\Stmt\Namespace_ $currentNamespaceNode = null;
+	private ?Node\Stmt\Namespace_ $currentNamespaceNode = null;
 
-	public function enterNode(\PhpParser\Node $node): ?int
+	public function enterNode(Node $node): ?int
 	{
 		if ($node instanceof Namespace_) {
 			$this->currentNamespaceNode = $node;
 		}
 
-		if ($node instanceof \PhpParser\Node\Stmt\ClassLike) {
+		if ($node instanceof Node\Stmt\ClassLike) {
 			if ($node->name !== null) {
 				$fullClassName = $node->name->toString();
 				if ($this->currentNamespaceNode !== null && $this->currentNamespaceNode->name !== null) {
@@ -47,10 +52,10 @@ class CachingVisitor extends NodeVisitorAbstract
 				);
 			}
 
-			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 
-		if ($node instanceof \PhpParser\Node\Stmt\Function_) {
+		if ($node instanceof Node\Stmt\Function_) {
 			if ($node->namespacedName !== null) {
 				$functionName = $node->namespacedName->toString();
 				$this->functionNodes[strtolower($functionName)] = new FetchedNode(
@@ -61,10 +66,10 @@ class CachingVisitor extends NodeVisitorAbstract
 				);
 			}
 
-			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 
-		if ($node instanceof \PhpParser\Node\Stmt\Const_) {
+		if ($node instanceof Node\Stmt\Const_) {
 			$this->constantNodes[] = new FetchedNode(
 				$node,
 				$this->currentNamespaceNode,
@@ -72,17 +77,17 @@ class CachingVisitor extends NodeVisitorAbstract
 				new LocatedSource($this->contents, null, $this->fileName)
 			);
 
-			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 
-		if ($node instanceof \PhpParser\Node\Expr\FuncCall) {
+		if ($node instanceof Node\Expr\FuncCall) {
 			try {
 				ConstantNodeChecker::assertValidDefineFunctionCall($node);
 			} catch (InvalidConstantNode $e) {
 				return null;
 			}
 
-			/** @var \PhpParser\Node\Scalar\String_ $nameNode */
+			/** @var Node\Scalar\String_ $nameNode */
 			$nameNode = $node->getArgs()[0]->value;
 			$constantName = $nameNode->value;
 
@@ -99,7 +104,7 @@ class CachingVisitor extends NodeVisitorAbstract
 			);
 			$this->constantNodes[] = $constantNode;
 
-			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 
 		return null;
@@ -108,7 +113,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	/**
 	 * @return null
 	 */
-	public function leaveNode(\PhpParser\Node $node)
+	public function leaveNode(Node $node)
 	{
 		if (!$node instanceof Namespace_) {
 			return null;
@@ -119,7 +124,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>>
+	 * @return array<string, array<FetchedNode<Node\Stmt\ClassLike>>>
 	 */
 	public function getClassNodes(): array
 	{
@@ -127,7 +132,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>>
+	 * @return array<string, FetchedNode<Node\Stmt\Function_>>
 	 */
 	public function getFunctionNodes(): array
 	{
@@ -135,7 +140,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>>
+	 * @return array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>
 	 */
 	public function getConstantNodes(): array
 	{

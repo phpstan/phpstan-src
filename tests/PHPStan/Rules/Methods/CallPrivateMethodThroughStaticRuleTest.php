@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -10,7 +11,7 @@ use PHPStan\Testing\RuleTestCase;
 class CallPrivateMethodThroughStaticRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new CallPrivateMethodThroughStaticRule();
 	}

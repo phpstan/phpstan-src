@@ -2,17 +2,21 @@
 
 namespace PHPStan\Rules;
 
+use PhpParser\Node;
+use function class_implements;
+use function class_parents;
+
 class Registry
 {
 
-	/** @var \PHPStan\Rules\Rule[][] */
+	/** @var Rule[][] */
 	private array $rules = [];
 
-	/** @var \PHPStan\Rules\Rule[][] */
+	/** @var Rule[][] */
 	private array $cache = [];
 
 	/**
-	 * @param \PHPStan\Rules\Rule[] $rules
+	 * @param Rule[] $rules
 	 */
 	public function __construct(array $rules)
 	{
@@ -22,11 +26,11 @@ class Registry
 	}
 
 	/**
-	 * @template TNodeType of \PhpParser\Node
+	 * @template TNodeType of Node
 	 * @phpstan-param class-string<TNodeType> $nodeType
-	 * @param \PhpParser\Node $nodeType
-	 * @phpstan-return array<\PHPStan\Rules\Rule<TNodeType>>
-	 * @return \PHPStan\Rules\Rule[]
+	 * @param Node $nodeType
+	 * @phpstan-return array<Rule<TNodeType>>
+	 * @return Rule[]
 	 */
 	public function getRules(string $nodeType): array
 	{
@@ -44,8 +48,8 @@ class Registry
 		}
 
 		/**
-		 * @phpstan-var array<\PHPStan\Rules\Rule<TNodeType>> $selectedRules
-		 * @var \PHPStan\Rules\Rule[] $selectedRules
+		 * @phpstan-var array<Rule<TNodeType>> $selectedRules
+		 * @var Rule[] $selectedRules
 		 */
 		$selectedRules = $this->cache[$nodeType];
 

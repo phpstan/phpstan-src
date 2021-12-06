@@ -4,15 +4,20 @@ namespace PHPStan\Analyser;
 
 use Bug4288\MyClass;
 use Bug4713\Service;
+use ExtendingKnownClassWithCheck\Foo;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use const PHP_VERSION_ID;
 use function array_reverse;
+use function extension_loaded;
+use function method_exists;
+use function restore_error_handler;
+use const PHP_VERSION_ID;
 
-class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
+class AnalyserIntegrationTest extends PHPStanTestCase
 {
 
 	public function testUndefinedVariableFromAssignErrorHasLine(): void
@@ -83,7 +88,7 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertCount(0, $errors);
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$this->assertTrue($reflectionProvider->hasClass(\ExtendingKnownClassWithCheck\Foo::class));
+		$this->assertTrue($reflectionProvider->hasClass(Foo::class));
 	}
 
 	public function testInfiniteRecursionWithCallable(): void
@@ -463,16 +468,16 @@ class AnalyserIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	private function runAnalyse(string $file): array
 	{
 		$file = $this->getFileHelper()->normalizePath($file);
-		/** @var \PHPStan\Analyser\Analyser $analyser */
+		/** @var Analyser $analyser */
 		$analyser = self::getContainer()->getByType(Analyser::class);
-		/** @var \PHPStan\File\FileHelper $fileHelper */
+		/** @var FileHelper $fileHelper */
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
-		/** @var \PHPStan\Analyser\Error[] $errors */
+		/** @var Error[] $errors */
 		$errors = $analyser->analyse([$file])->getErrors();
 		foreach ($errors as $error) {
 			$this->assertSame($fileHelper->normalizePath($file), $error->getFilePath());

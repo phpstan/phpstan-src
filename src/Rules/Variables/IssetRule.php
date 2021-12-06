@@ -5,13 +5,14 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IssetCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 /**
- * @implements \PHPStan\Rules\Rule<Node\Expr\Isset_>
+ * @implements Rule<Node\Expr\Isset_>
  */
-class IssetRule implements \PHPStan\Rules\Rule
+class IssetRule implements Rule
 {
 
 	private IssetCheck $issetCheck;

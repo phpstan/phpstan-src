@@ -3,25 +3,28 @@
 namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Scalar\Encapsed>
+ * @implements Rule<Node\Scalar\Encapsed>
  */
-class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
+class InvalidPartOfEncapsedStringRule implements Rule
 {
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
+	private Standard $printer;
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
-		\PhpParser\PrettyPrinter\Standard $printer,
+		Standard $printer,
 		RuleLevelHelper $ruleLevelHelper
 	)
 	{
@@ -31,7 +34,7 @@ class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Scalar\Encapsed::class;
+		return Node\Scalar\Encapsed::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

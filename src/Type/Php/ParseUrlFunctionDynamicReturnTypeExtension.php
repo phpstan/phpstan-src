@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -17,6 +18,17 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use ValueError;
+use function count;
+use function parse_url;
+use const PHP_URL_FRAGMENT;
+use const PHP_URL_HOST;
+use const PHP_URL_PASS;
+use const PHP_URL_PATH;
+use const PHP_URL_PORT;
+use const PHP_URL_QUERY;
+use const PHP_URL_SCHEME;
+use const PHP_URL_USER;
 
 final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -55,7 +67,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			$componentType = $componentType->toInteger();
 
 			if (!$componentType instanceof ConstantIntegerType) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 		} else {
 			$componentType = new ConstantIntegerType(-1);
@@ -64,7 +76,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		if ($urlType instanceof ConstantStringType) {
 			try {
 				$result = @parse_url($urlType->getValue(), $componentType->getValue());
-			} catch (\ValueError $e) {
+			} catch (ValueError $e) {
 				return new ConstantBooleanType(false);
 			}
 
@@ -88,7 +100,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 
 			if ($this->componentTypesPairedStrings === null) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			foreach ($this->componentTypesPairedStrings as $componentName => $componentValueType) {

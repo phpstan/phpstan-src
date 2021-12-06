@@ -6,7 +6,9 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function sprintf;
 
 class TypeAliasResolver
 {
@@ -114,7 +116,7 @@ class TypeAliasResolver
 
 		if (array_key_exists($aliasNameInClassScope, $this->inProcess)) {
 			// resolve circular reference as ErrorType to make it easier to detect
-			throw new \PHPStan\Type\CircularTypeAliasDefinitionException();
+			throw new CircularTypeAliasDefinitionException();
 		}
 
 		$this->inProcess[$aliasNameInClassScope] = true;
@@ -122,7 +124,7 @@ class TypeAliasResolver
 		try {
 			$unresolvedAlias = $localTypeAliases[$aliasName];
 			$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
-		} catch (\PHPStan\Type\CircularTypeAliasDefinitionException $e) {
+		} catch (CircularTypeAliasDefinitionException $e) {
 			$resolvedAliasType = new CircularTypeAliasErrorType();
 		}
 
@@ -143,11 +145,11 @@ class TypeAliasResolver
 		}
 
 		if ($this->reflectionProvider->hasClass($nameScope->resolveStringName($aliasName))) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Type alias %s already exists as a class.', $aliasName));
+			throw new ShouldNotHappenException(sprintf('Type alias %s already exists as a class.', $aliasName));
 		}
 
 		if (array_key_exists($aliasName, $this->inProcess)) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Circular definition for type alias %s.', $aliasName));
+			throw new ShouldNotHappenException(sprintf('Circular definition for type alias %s.', $aliasName));
 		}
 
 		$this->inProcess[$aliasName] = true;

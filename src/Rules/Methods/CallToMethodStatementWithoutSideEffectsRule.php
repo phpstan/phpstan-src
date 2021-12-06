@@ -12,14 +12,15 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ * @implements Rule<Node\Stmt\Expression>
  */
 class CallToMethodStatementWithoutSideEffectsRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(RuleLevelHelper $ruleLevelHelper)
 	{

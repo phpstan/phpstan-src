@@ -4,6 +4,11 @@ namespace PHPStan\Rules\Api;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
+use function dirname;
+use function pathinfo;
+use function stripos;
+use function strpos;
+use function strtolower;
 use const PATHINFO_BASENAME;
 
 class ApiRuleHelper

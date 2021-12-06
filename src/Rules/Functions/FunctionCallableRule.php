@@ -8,16 +8,19 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<FunctionCallableNode>
+ * @implements Rule<FunctionCallableNode>
  */
-class FunctionCallableRule implements \PHPStan\Rules\Rule
+class FunctionCallableRule implements Rule
 {
 
 	private ReflectionProvider $reflectionProvider;

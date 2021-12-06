@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection;
 
+use PhpParser\Node;
+
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;

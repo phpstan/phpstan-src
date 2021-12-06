@@ -12,23 +12,30 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
+use function array_map;
+use function array_merge;
+use function count;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\New_>
+ * @implements Rule<Node\Expr\New_>
  */
-class InstantiationRule implements \PHPStan\Rules\Rule
+class InstantiationRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\FunctionCallParametersCheck $check;
+	private FunctionCallParametersCheck $check;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -56,7 +63,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\New_ $node
+	 * @param Node\Expr\New_ $node
 	 * @return RuleError[]
 	 */
 	private function checkClassName(string $class, bool $isName, Node $node, Scope $scope): array
@@ -204,19 +211,19 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\New_ $node $node
+	 * @param Node\Expr\New_ $node $node
 	 * @return array<int, array{string, bool}>
 	 */
 	private function getClassNames(Node $node, Scope $scope): array
 	{
-		if ($node->class instanceof \PhpParser\Node\Name) {
+		if ($node->class instanceof Node\Name) {
 			return [[(string) $node->class, true]];
 		}
 
 		if ($node->class instanceof Node\Stmt\Class_) {
 			$anonymousClassType = $scope->getType($node);
 			if (!$anonymousClassType instanceof TypeWithClassName) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			return [[$anonymousClassType->getClassName(), true]];

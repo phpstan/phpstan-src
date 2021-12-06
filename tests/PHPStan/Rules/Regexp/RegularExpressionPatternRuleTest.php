@@ -2,13 +2,17 @@
 
 namespace PHPStan\Rules\Regexp;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<RegularExpressionPatternRule>
+ * @extends RuleTestCase<RegularExpressionPatternRule>
  */
-class RegularExpressionPatternRuleTest extends \PHPStan\Testing\RuleTestCase
+class RegularExpressionPatternRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new RegularExpressionPatternRule();
 	}

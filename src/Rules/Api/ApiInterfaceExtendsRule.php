@@ -10,6 +10,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
+use function array_merge;
+use function count;
+use function sprintf;
 
 /**
  * @implements Rule<Interface_>

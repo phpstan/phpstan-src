@@ -4,9 +4,10 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<IncompatibleDefaultParameterTypeRule>
+ * @extends RuleTestCase<IncompatibleDefaultParameterTypeRule>
  */
 class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 {

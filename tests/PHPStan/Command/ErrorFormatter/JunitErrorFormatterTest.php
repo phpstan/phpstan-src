@@ -10,7 +10,7 @@ use PHPStan\Testing\ErrorFormatterTestCase;
 class JunitErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	/** @var \PHPStan\Command\ErrorFormatter\JunitErrorFormatter */
+	/** @var JunitErrorFormatter */
 	private $formatter;
 
 	public function setUp(): void
@@ -21,7 +21,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @return \Generator<array<int, string|int>>
+	 * @return Generator<array<int, (string|int)>>
 	 */
 	public function dataFormatterOutputProvider(): Generator
 	{

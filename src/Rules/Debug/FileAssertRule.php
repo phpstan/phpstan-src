@@ -12,6 +12,9 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function is_string;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>

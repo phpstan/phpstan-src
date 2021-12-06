@@ -13,9 +13,9 @@ interface ScopeFactory
 	/**
 	 * @api
 	 * @param array<string, Type> $constantTypes
-	 * @param \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null $function
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
+	 * @param FunctionReflection|MethodReflection|null $function
+	 * @param VariableTypeHolder[] $variablesTypes
+	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes

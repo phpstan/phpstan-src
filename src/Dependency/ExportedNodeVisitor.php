@@ -5,6 +5,7 @@ namespace PHPStan\Dependency;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\ShouldNotHappenException;
 
 class ExportedNodeVisitor extends NodeVisitorAbstract
 {
@@ -42,7 +43,7 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 	public function enterNode(Node $node): ?int
 	{
 		if ($this->fileName === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$exportedNode = $this->exportedNodeResolver->resolve($this->fileName, $node);
 		if ($exportedNode !== null) {

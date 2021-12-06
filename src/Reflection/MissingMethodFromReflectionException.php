@@ -2,7 +2,10 @@
 
 namespace PHPStan\Reflection;
 
-class MissingMethodFromReflectionException extends \Exception
+use Exception;
+use function sprintf;
+
+class MissingMethodFromReflectionException extends Exception
 {
 
 	public function __construct(

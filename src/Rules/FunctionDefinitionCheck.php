@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
@@ -20,6 +21,7 @@ use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
@@ -27,13 +29,19 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function count;
+use function is_string;
+use function sprintf;
 
 class FunctionDefinitionCheck
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	private UnresolvableTypeHelper $unresolvableTypeHelper;
 
@@ -89,9 +97,9 @@ class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @param \PhpParser\Node\Param[] $parameters
-	 * @param \PhpParser\Node\Identifier|\PhpParser\Node\Name|\PhpParser\Node\ComplexType|null $returnTypeNode
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param Node\Param[] $parameters
+	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnTypeNode
+	 * @return RuleError[]
 	 */
 	public function checkAnonymousFunction(
 		Scope $scope,
@@ -120,7 +128,7 @@ class FunctionDefinitionCheck
 			}
 
 			if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$type = $scope->getFunctionType($param->type, false, false);
 			if ($type instanceof VoidType) {
@@ -201,7 +209,7 @@ class FunctionDefinitionCheck
 		string $unresolvableReturnTypeMessage
 	): array
 	{
-		/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
+		/** @var ParametersAcceptorWithPhpDocs $parametersAcceptor */
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants());
 
 		return $this->checkParametersAcceptor(
@@ -267,7 +275,7 @@ class FunctionDefinitionCheck
 			if ($parameter instanceof ParameterReflectionWithPhpDocs) {
 				$parameterVar = $parameterNodeCallback()->var;
 				if (!$parameterVar instanceof Variable || !is_string($parameterVar->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				if ($parameter->getNativeType() instanceof VoidType) {
 					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameterVar->name, 'void'))->line($parameterNodeCallback()->getLine())->nonIgnorable()->build();
@@ -368,10 +376,10 @@ class FunctionDefinitionCheck
 		$errors = [];
 		foreach ($parameterNodes as $parameterNode) {
 			if (!$parameterNode->var instanceof Variable) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			if (!is_string($parameterNode->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$parameterName = $parameterNode->var->name;
 			if ($optionalParameter !== null && $parameterNode->default === null && !$parameterNode->variadic) {
@@ -412,7 +420,7 @@ class FunctionDefinitionCheck
 	): Param
 	{
 		foreach ($parameterNodes as $param) {
-			if ($param->var instanceof \PhpParser\Node\Expr\Error) {
+			if ($param->var instanceof Node\Expr\Error) {
 				continue;
 			}
 
@@ -425,7 +433,7 @@ class FunctionDefinitionCheck
 			}
 		}
 
-		throw new \PHPStan\ShouldNotHappenException(sprintf('Parameter %s not found.', $parameterName));
+		throw new ShouldNotHappenException(sprintf('Parameter %s not found.', $parameterName));
 	}
 
 	/**

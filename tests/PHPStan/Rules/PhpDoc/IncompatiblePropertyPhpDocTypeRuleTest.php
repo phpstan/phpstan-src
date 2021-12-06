@@ -4,11 +4,13 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<IncompatiblePropertyPhpDocTypeRule>
+ * @extends RuleTestCase<IncompatiblePropertyPhpDocTypeRule>
  */
-class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule

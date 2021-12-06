@@ -8,14 +8,15 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassNode>
+ * @implements Rule<InClassNode>
  */
 class ClassTemplateTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
+	private TemplateTypeCheck $templateTypeCheck;
 
 	public function __construct(
 		TemplateTypeCheck $templateTypeCheck

@@ -2,12 +2,14 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
-class ConstantIntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class ConstantIntegerTypeTest extends PHPStanTestCase
 {
 
 	public function dataAccepts(): iterable

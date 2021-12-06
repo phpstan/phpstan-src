@@ -2,19 +2,27 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_slice;
+use function count;
+use function sprintf;
+use const ARRAY_FILTER_USE_BOTH;
+use const ARRAY_FILTER_USE_KEY;
 
 /** @api */
 class ParametersAcceptorSelector
@@ -30,14 +38,14 @@ class ParametersAcceptorSelector
 	): ParametersAcceptor
 	{
 		if (count($parametersAcceptors) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $parametersAcceptors[0];
 	}
 
 	/**
-	 * @param \PhpParser\Node\Arg[] $args
+	 * @param Node\Arg[] $args
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 */
 	public static function selectFromArgs(
@@ -161,7 +169,7 @@ class ParametersAcceptorSelector
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type[] $types
+	 * @param Type[] $types
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 */
 	public static function selectFromTypes(
@@ -175,7 +183,7 @@ class ParametersAcceptorSelector
 		}
 
 		if (count($parametersAcceptors) === 0) {
-			throw new \PHPStan\ShouldNotHappenException(
+			throw new ShouldNotHappenException(
 				'getVariants() must return at least one variant.'
 			);
 		}
@@ -275,7 +283,7 @@ class ParametersAcceptorSelector
 	public static function combineAcceptors(array $acceptors): ParametersAcceptor
 	{
 		if (count($acceptors) === 0) {
-			throw new \PHPStan\ShouldNotHappenException(
+			throw new ShouldNotHappenException(
 				'getVariants() must return at least one variant.'
 			);
 		}

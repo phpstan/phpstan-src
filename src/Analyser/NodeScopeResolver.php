@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use ArrayAccess;
+use Closure;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -98,6 +100,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -125,6 +128,22 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
+use Throwable;
+use function array_fill_keys;
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+use function array_pop;
+use function array_reverse;
+use function array_slice;
+use function count;
+use function in_array;
+use function is_array;
+use function is_int;
+use function is_string;
+use function sprintf;
+use function strtolower;
+use function trim;
 
 class NodeScopeResolver
 {
@@ -132,25 +151,25 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	private Reflector $reflector;
 
 	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
-	private \PHPStan\Parser\Parser $parser;
+	private Parser $parser;
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
 	private PhpVersion $phpVersion;
 
-	private \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver;
+	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
-	private \PHPStan\File\FileHelper $fileHelper;
+	private FileHelper $fileHelper;
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider;
 
@@ -221,8 +240,8 @@ class NodeScopeResolver
 
 	/**
 	 * @api
-	 * @param \PhpParser\Node[] $nodes
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param Node[] $nodes
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processNodes(
 		array $nodes,
@@ -255,8 +274,8 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt[] $stmts
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processStmtNodes(
 		Node $parentNode,
@@ -329,7 +348,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processStmtNode(
 		Node\Stmt $stmt,
@@ -354,7 +373,7 @@ class NodeScopeResolver
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			if (
 				$scope->isInTrait()
@@ -429,7 +448,7 @@ class NodeScopeResolver
 
 			$gatheredReturnStatements = [];
 			$executionEnds = [];
-			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$executionEnds): void {
+			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$executionEnds): void {
 				$nodeCallback($node, $scope);
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
@@ -494,7 +513,7 @@ class NodeScopeResolver
 					}
 
 					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					$phpDoc = null;
 					if ($param->getDocComment() !== null) {
@@ -519,7 +538,7 @@ class NodeScopeResolver
 			if ($stmt->stmts !== null) {
 				$gatheredReturnStatements = [];
 				$executionEnds = [];
-				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$executionEnds): void {
+				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$executionEnds): void {
 					$nodeCallback($node, $scope);
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
 						return;
@@ -619,7 +638,7 @@ class NodeScopeResolver
 				$nodeCallback(new InClassNode($stmt, $classReflection), $classScope);
 			} elseif ($stmt instanceof Class_) {
 				if ($stmt->name === null) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				if ($stmt->getAttribute('anonymousClass', false) === false) {
 					$classReflection = $this->reflectionProvider->getClass($stmt->name->toString());
@@ -629,7 +648,7 @@ class NodeScopeResolver
 				$classScope = $scope->enterClass($classReflection);
 				$nodeCallback(new InClassNode($stmt, $classReflection), $classScope);
 			} else {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			foreach ($stmt->attrGroups as $attrGroup) {
@@ -1182,7 +1201,7 @@ class NodeScopeResolver
 				$matchingThrowPoints = [];
 				$newThrowPoints = [];
 				foreach ($throwPoints as $throwPoint) {
-					if (!$throwPoint->isExplicit() && !$catchType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+					if (!$throwPoint->isExplicit() && !$catchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 						continue;
 					}
 					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
@@ -1206,7 +1225,7 @@ class NodeScopeResolver
 
 				if (count($matchingThrowPoints) === 0) {
 					$throwableThrowPoints = [];
-					if ($originalCatchType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+					if ($originalCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 						foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
 							if (!$originalThrowPoint->canContainAnyThrowable()) {
 								continue;
@@ -1236,7 +1255,7 @@ class NodeScopeResolver
 				$variableName = null;
 				if ($catchNode->var !== null) {
 					if (!is_string($catchNode->var->name)) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					$variableName = $catchNode->var->name;
@@ -1323,7 +1342,7 @@ class NodeScopeResolver
 			$vars = [];
 			foreach ($stmt->vars as $var) {
 				if (!$var instanceof Variable) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$scope = $this->lookForEnterVariableAssign($scope, $var);
 				$this->processExprNode($var, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -1356,7 +1375,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			if (!is_string($stmt->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			if ($stmt->default !== null) {
 				$this->processExprNode($stmt->default, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -1461,7 +1480,7 @@ class NodeScopeResolver
 			$scope->getNamespace() !== null ? new Node\Stmt\Namespace_(new Name($scope->getNamespace())) : null
 		);
 		if (!$betterReflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionClass) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return new ClassReflection(
@@ -1508,9 +1527,9 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \Closure(MutatingScope $scope, Expr $expr): MutatingScope $callback
+	 * @param Closure(MutatingScope $scope, Expr $expr): MutatingScope $callback
 	 */
-	private function lookForVariableAssignCallback(MutatingScope $scope, Expr $expr, \Closure $callback): MutatingScope
+	private function lookForVariableAssignCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
 	{
 		if ($expr instanceof Variable) {
 			$scope = $callback($scope, $expr);
@@ -1654,7 +1673,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processExprNode(Expr $expr, MutatingScope $scope, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
@@ -1668,7 +1687,7 @@ class NodeScopeResolver
 			} elseif ($expr instanceof New_ && !$expr->class instanceof Class_) {
 				$newExpr = new InstantiationCallableNode($expr->class, $expr->getAttributes());
 			} else {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			return $this->processExprNode($newExpr, $scope, $nodeCallback, $context);
@@ -2585,7 +2604,7 @@ class NodeScopeResolver
 				}
 
 				if (count($arm->conds) === 0) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				$filteringExpr = null;
@@ -2713,7 +2732,7 @@ class NodeScopeResolver
 		if ($throwType === null && $parametersAcceptor !== null) {
 			$returnType = $parametersAcceptor->getReturnType();
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-				$throwType = new ObjectType(\Throwable::class);
+				$throwType = new ObjectType(Throwable::class);
 			}
 		}
 
@@ -2740,7 +2759,7 @@ class NodeScopeResolver
 				|| count($funcCall->getArgs()) > 0
 			) {
 				$functionReturnedType = $scope->getType($funcCall);
-				if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
+				if (!(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
 					return ThrowPoint::createImplicit($scope, $funcCall);
 				}
 			}
@@ -2768,7 +2787,7 @@ class NodeScopeResolver
 		if ($throwType === null) {
 			$returnType = $parametersAcceptor->getReturnType();
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-				$throwType = new ObjectType(\Throwable::class);
+				$throwType = new ObjectType(Throwable::class);
 			}
 		}
 
@@ -2778,7 +2797,7 @@ class NodeScopeResolver
 			}
 		} elseif ($this->implicitThrows) {
 			$methodReturnedType = $scope->getType($methodCall);
-			if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
 				return ThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}
@@ -2811,7 +2830,7 @@ class NodeScopeResolver
 				return ThrowPoint::createExplicit($scope, $throwType, $new, true);
 			}
 		} elseif ($this->implicitThrows) {
-			if ($classReflection->getName() !== \Throwable::class && !$classReflection->isSubclassOf(\Throwable::class)) {
+			if ($classReflection->getName() !== Throwable::class && !$classReflection->isSubclassOf(Throwable::class)) {
 				return ThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}
@@ -2841,7 +2860,7 @@ class NodeScopeResolver
 			}
 		} elseif ($this->implicitThrows) {
 			$methodReturnedType = $scope->getType($methodCall);
-			if (!(new ObjectType(\Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
 				return ThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}
@@ -2879,7 +2898,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function callNodeCallbackWithExpression(
 		callable $nodeCallback,
@@ -2895,7 +2914,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processClosureNode(
 		Expr\Closure $expr,
@@ -2964,7 +2983,7 @@ class NodeScopeResolver
 
 		$gatheredReturnStatements = [];
 		$gatheredYieldStatements = [];
-		$closureStmtsCallback = static function (\PhpParser\Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope): void {
+		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope): void {
 			$nodeCallback($node, $scope);
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 				return;
@@ -3020,7 +3039,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processArrowFunctionNode(
 		Expr\ArrowFunction $expr,
@@ -3058,7 +3077,7 @@ class NodeScopeResolver
 	{
 		if ($expr instanceof Array_ || $expr instanceof List_) {
 			foreach ($expr->items as $key => $item) {
-				/** @var \PhpParser\Node\Expr\ArrayItem|null $itemValue */
+				/** @var Node\Expr\ArrayItem|null $itemValue */
 				$itemValue = $item;
 				if ($itemValue === null) {
 					continue;
@@ -3100,7 +3119,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processParamNode(
 		Node\Param $param,
@@ -3127,9 +3146,9 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\MethodReflection|\PHPStan\Reflection\FunctionReflection|null $calleeReflection
-	 * @param \PhpParser\Node\Arg[] $args
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param MethodReflection|FunctionReflection|null $calleeReflection
+	 * @param Node\Arg[] $args
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processArgs(
 		$calleeReflection,
@@ -3205,8 +3224,8 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
-	 * @param \Closure(MutatingScope $scope): ExpressionResult $processExprCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param Closure(MutatingScope $scope): ExpressionResult $processExprCallback
 	 */
 	private function processAssignVar(
 		MutatingScope $scope,
@@ -3214,7 +3233,7 @@ class NodeScopeResolver
 		Expr $assignedExpr,
 		callable $nodeCallback,
 		ExpressionContext $context,
-		\Closure $processExprCallback,
+		Closure $processExprCallback,
 		bool $enterExpressionAssign
 	): ExpressionResult
 	{
@@ -3297,7 +3316,7 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($var);
-			if (!(new ObjectType(\ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
+			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				// 4. compose types
 				if ($varType instanceof ErrorType) {
 					$varType = new ConstantArrayType([], []);
@@ -3376,7 +3395,7 @@ class NodeScopeResolver
 			}
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
-			if ($var->class instanceof \PhpParser\Node\Name) {
+			if ($var->class instanceof Node\Name) {
 				$propertyHolderType = $scope->resolveTypeByName($var->class);
 			} else {
 				$this->processExprNode($var->class, $scope, $nodeCallback, $context);
@@ -3648,7 +3667,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processTraitUse(Node\Stmt\TraitUse $node, MutatingScope $classScope, callable $nodeCallback): void
 	{
@@ -3672,9 +3691,9 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
+	 * @param Node[]|Node|scalar $node
 	 * @param Node\Stmt\TraitUseAdaptation[] $adaptations
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processNodesForTraitUse($node, ClassReflection $traitReflection, MutatingScope $scope, array $adaptations, callable $nodeCallback): void
 	{
@@ -3753,12 +3772,12 @@ class NodeScopeResolver
 
 		if ($functionLike instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$functionName = $functionLike->name->name;
 			$positionalParameterNames = array_map(static function (Node\Param $param): string {
 				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $param->var->name;
@@ -3786,7 +3805,7 @@ class NodeScopeResolver
 						!$param->var instanceof Variable
 						|| !is_string($param->var->name)
 					) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					$paramPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(

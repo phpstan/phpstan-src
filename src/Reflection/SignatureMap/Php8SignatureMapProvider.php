@@ -10,11 +10,19 @@ use PHPStan\Php8StubsMap;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use ReflectionMethod;
+use function array_key_exists;
+use function array_map;
+use function count;
+use function is_string;
+use function sprintf;
+use function strtolower;
 
 class Php8SignatureMapProvider implements SignatureMapProvider
 {
@@ -61,7 +69,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 	/**
 	 * @return array{ClassMethod, string}|null
-	 * @throws \PHPStan\ShouldNotHappenException
+	 * @throws ShouldNotHappenException
 	 */
 	private function findMethodNode(string $className, string $methodName): ?array
 	{
@@ -75,12 +83,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
 		$classes = $nodes->getClassNodes();
 		if (count($classes) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 		}
 
 		$class = $classes[$lowerClassName];
 		if (count($class) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 		}
 
 		foreach ($class[0]->getNode()->stmts as $stmt) {
@@ -110,7 +118,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return true;
 	}
 
-	public function getMethodSignature(string $className, string $methodName, ?\ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
+	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
 	{
 		$lowerClassName = strtolower($className);
 		if (!array_key_exists($lowerClassName, Php8StubsMap::CLASSES)) {
@@ -162,7 +170,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
 		$functions = $nodes->getFunctionNodes();
 		if (count($functions) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
+			throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
 		}
 
 		$signature = $this->getSignature($functions[$lowerName]->getNode(), null, $stubFile);
@@ -267,7 +275,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			} elseif ($function->namespacedName !== null) {
 				$functionName = $function->namespacedName->toString();
 			} else {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$phpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$stubFile,
@@ -288,7 +296,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		foreach ($function->getParams() as $param) {
 			$name = $param->var;
 			if (!$name instanceof Variable || !is_string($name->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, null);
 			$parameters[] = new ParameterSignature(

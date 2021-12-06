@@ -6,6 +6,9 @@ use PHPStan\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\StubData;
 use PHPStan\File\FileReader;
 use PHPStan\Php8StubsMap;
+use function array_key_exists;
+use function explode;
+use function strtolower;
 
 class Php8StubsSourceStubber implements SourceStubber
 {

@@ -28,6 +28,12 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
+use function array_reverse;
+use function count;
+use function in_array;
+use function strpos;
+use function substr;
 
 class PhpDocNodeResolver
 {
@@ -50,7 +56,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string|int, \PHPStan\PhpDoc\Tag\VarTag>
+	 * @return array<(string|int), VarTag>
 	 */
 	public function resolveVarTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -87,7 +93,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\PropertyTag>
+	 * @return array<string, PropertyTag>
 	 */
 	public function resolvePropertyTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -136,7 +142,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\MethodTag>
+	 * @return array<string, MethodTag>
 	 */
 	public function resolveMethodTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -183,7 +189,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\ExtendsTag>
+	 * @return array<string, ExtendsTag>
 	 */
 	public function resolveExtendsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -201,7 +207,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\ImplementsTag>
+	 * @return array<string, ImplementsTag>
 	 */
 	public function resolveImplementsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -219,7 +225,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\UsesTag>
+	 * @return array<string, UsesTag>
 	 */
 	public function resolveUsesTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -237,7 +243,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\TemplateTag>
+	 * @return array<string, TemplateTag>
 	 */
 	public function resolveTemplateTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -292,7 +298,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\ParamTag>
+	 * @return array<string, ParamTag>
 	 */
 	public function resolveParamTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -316,7 +322,7 @@ class PhpDocNodeResolver
 		return $resolved;
 	}
 
-	public function resolveReturnTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\ReturnTag
+	public function resolveReturnTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?ReturnTag
 	{
 		$resolved = null;
 
@@ -333,7 +339,7 @@ class PhpDocNodeResolver
 		return $resolved;
 	}
 
-	public function resolveThrowsTags(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\ThrowsTag
+	public function resolveThrowsTags(PhpDocNode $phpDocNode, NameScope $nameScope): ?ThrowsTag
 	{
 		foreach (['@phpstan-throws', '@throws'] as $tagName) {
 			$types = [];
@@ -404,7 +410,7 @@ class PhpDocNodeResolver
 		return $resolved;
 	}
 
-	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\DeprecatedTag
+	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?DeprecatedTag
 	{
 		foreach ($phpDocNode->getDeprecatedTagValues() as $deprecatedTagValue) {
 			$description = (string) $deprecatedTagValue;

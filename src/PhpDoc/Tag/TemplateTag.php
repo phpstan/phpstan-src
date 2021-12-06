@@ -11,7 +11,7 @@ class TemplateTag
 
 	private string $name;
 
-	private \PHPStan\Type\Type $bound;
+	private Type $bound;
 
 	private TemplateTypeVariance $variance;
 

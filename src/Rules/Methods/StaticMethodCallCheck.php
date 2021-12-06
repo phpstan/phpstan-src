@@ -16,6 +16,7 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -26,6 +27,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function in_array;
+use function sprintf;
+use function strtolower;
 
 class StaticMethodCallCheck
 {
@@ -113,7 +118,7 @@ class StaticMethodCallCheck
 				}
 
 				if ($scope->getFunctionName() === null) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				$classType = $scope->resolveTypeByName($class);

@@ -7,15 +7,18 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_map;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Interface_>
+ * @implements Rule<Node\Stmt\Interface_>
  */
-class ExistingClassesInInterfaceExtendsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInInterfaceExtendsRule implements Rule
 {
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	private ReflectionProvider $reflectionProvider;
 

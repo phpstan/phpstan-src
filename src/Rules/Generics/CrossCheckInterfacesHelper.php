@@ -6,6 +6,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
+use function sprintf;
 
 class CrossCheckInterfacesHelper
 {

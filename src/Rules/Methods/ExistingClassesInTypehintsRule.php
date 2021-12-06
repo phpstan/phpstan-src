@@ -8,14 +8,17 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InClassMethodNode>
+ * @implements Rule<InClassMethodNode>
  */
-class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInTypehintsRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionDefinitionCheck $check;
+	private FunctionDefinitionCheck $check;
 
 	public function __construct(FunctionDefinitionCheck $check)
 	{
@@ -31,10 +34,10 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 	{
 		$methodReflection = $scope->getFunction();
 		if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$className = SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName());

@@ -9,7 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\UnreachableStatementNode>
+ * @implements Rule<UnreachableStatementNode>
  */
 class UnreachableStatementRule implements Rule
 {

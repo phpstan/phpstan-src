@@ -8,6 +8,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
+use function sprintf;
 
 class VarianceCheck
 {

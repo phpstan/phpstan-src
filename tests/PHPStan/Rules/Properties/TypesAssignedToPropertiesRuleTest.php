@@ -2,15 +2,17 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<TypesAssignedToPropertiesRule>
+ * @extends RuleTestCase<TypesAssignedToPropertiesRule>
  */
-class TypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false), new PropertyDescriptor(), new PropertyReflectionFinder());
 	}

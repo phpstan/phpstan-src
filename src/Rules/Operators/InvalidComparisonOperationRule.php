@@ -4,8 +4,10 @@ namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
@@ -15,14 +17,15 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp>
+ * @implements Rule<Node\Expr\BinaryOp>
  */
-class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
+class InvalidComparisonOperationRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(RuleLevelHelper $ruleLevelHelper)
 	{
@@ -110,7 +113,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 		}
 
 		$isSuperType = $acceptedType->isSuperTypeOf($type);
-		if ($type instanceof \PHPStan\Type\BenevolentUnionType) {
+		if ($type instanceof BenevolentUnionType) {
 			return !$isSuperType->no();
 		}
 

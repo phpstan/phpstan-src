@@ -4,11 +4,12 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\FileTypeMapper;
+use function strtolower;
 
 class PhpDocInheritanceResolver
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper

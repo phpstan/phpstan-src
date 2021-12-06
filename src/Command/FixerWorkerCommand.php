@@ -7,11 +7,16 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function count;
+use function is_array;
+use function is_bool;
+use function is_string;
 
 class FixerWorkerCommand extends Command
 {
@@ -70,7 +75,7 @@ class FixerWorkerCommand extends Command
 			|| (!is_bool($allowXdebug))
 			|| (!is_bool($allowParallel))
 		) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		/** @var string|null $tmpFile */
@@ -86,12 +91,12 @@ class FixerWorkerCommand extends Command
 		$restoreResultCache = $input->getOption('restore-result-cache');
 		if (is_string($tmpFile)) {
 			if (!is_string($insteadOfFile)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 		} elseif (is_string($insteadOfFile)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		} elseif ($saveResultCache === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$singleReflectionFile = null;
@@ -117,7 +122,7 @@ class FixerWorkerCommand extends Command
 				$insteadOfFile,
 				false
 			);
-		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException $e) {
 			return 1;
 		}
 
@@ -127,7 +132,7 @@ class FixerWorkerCommand extends Command
 		$ignoredErrorHelper = $container->getByType(IgnoredErrorHelper::class);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		/** @var AnalyserRunner $analyserRunner */

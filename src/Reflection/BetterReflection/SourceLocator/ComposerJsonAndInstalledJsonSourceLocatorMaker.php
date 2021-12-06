@@ -3,18 +3,29 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr0Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
+use function array_filter;
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+use function array_merge_recursive;
+use function count;
+use function dirname;
+use function is_dir;
+use function is_file;
 
 class ComposerJsonAndInstalledJsonSourceLocatorMaker
 {
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository;
+	private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository;
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory;
+	private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory;
 
 	private OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory;
 
@@ -45,14 +56,14 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		try {
 			$composerJsonContents = FileReader::read($composerJsonPath);
 			$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
-		} catch (\PHPStan\File\CouldNotReadFileException | \Nette\Utils\JsonException $e) {
+		} catch (CouldNotReadFileException | JsonException $e) {
 			return null;
 		}
 
 		try {
 			$installedJsonContents = FileReader::read($installedJsonPath);
 			$installedJson = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
-		} catch (\PHPStan\File\CouldNotReadFileException | \Nette\Utils\JsonException $e) {
+		} catch (CouldNotReadFileException | JsonException $e) {
 			return null;
 		}
 

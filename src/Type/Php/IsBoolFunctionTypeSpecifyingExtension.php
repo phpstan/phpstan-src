@@ -9,13 +9,15 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use function strtolower;
 
 class IsBoolFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
@@ -29,7 +31,7 @@ class IsBoolFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 			return new SpecifiedTypes();
 		}
 		if ($context->null()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $this->typeSpecifier->create($node->getArgs()[0]->value, new BooleanType(), $context, false, $scope);

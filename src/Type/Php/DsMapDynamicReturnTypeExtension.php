@@ -12,6 +12,9 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_filter;
+use function array_values;
+use function count;
 
 final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {

@@ -8,6 +8,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use stdClass;
 
 class DummyPropertyReflection implements PropertyReflection
 {
@@ -16,7 +17,7 @@ class DummyPropertyReflection implements PropertyReflection
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-		return $reflectionProvider->getClass(\stdClass::class);
+		return $reflectionProvider->getClass(stdClass::class);
 	}
 
 	public function isStatic(): bool

@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use function count;
 
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {

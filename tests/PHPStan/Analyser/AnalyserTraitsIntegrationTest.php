@@ -3,11 +3,14 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\File\FileHelper;
+use PHPStan\Testing\PHPStanTestCase;
+use function array_map;
+use function sprintf;
 
-class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
+class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 {
 
-	/** @var \PHPStan\File\FileHelper */
+	/** @var FileHelper */
 	private $fileHelper;
 
 	protected function setUp(): void
@@ -165,16 +168,16 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @param string[] $files
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	private function runAnalyse(array $files): array
 	{
 		$files = array_map(function (string $file): string {
 			return $this->getFileHelper()->normalizePath($file);
 		}, $files);
-		/** @var \PHPStan\Analyser\Analyser $analyser */
+		/** @var Analyser $analyser */
 		$analyser = self::getContainer()->getByType(Analyser::class);
-		/** @var \PHPStan\Analyser\Error[] $errors */
+		/** @var Error[] $errors */
 		$errors = $analyser->analyse($files)->getErrors();
 		return $errors;
 	}

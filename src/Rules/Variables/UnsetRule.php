@@ -4,14 +4,17 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
+use function is_string;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Unset_>
+ * @implements Rule<Node\Stmt\Unset_>
  */
-class UnsetRule implements \PHPStan\Rules\Rule
+class UnsetRule implements Rule
 {
 
 	public function getNodeType(): string

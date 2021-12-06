@@ -9,7 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\LiteralArrayNode>
+ * @implements Rule<LiteralArrayNode>
  */
 class EmptyArrayItemRule implements Rule
 {

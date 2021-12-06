@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type;
 
+use Closure;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -14,8 +16,10 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use function array_map;
+use function sprintf;
 
-class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class CallableTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -335,7 +339,7 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
-					new GenericClassStringType(new ObjectType(\Closure::class)),
+					new GenericClassStringType(new ObjectType(Closure::class)),
 					new ConstantStringType('bind'),
 				]),
 				TrinaryLogic::createYes(),

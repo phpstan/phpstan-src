@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -18,6 +19,8 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function sprintf;
+use function strtolower;
 
 class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -68,7 +71,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$constant = $this->reflectionProvider->getConstant(new Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
 		}
 
 		return $valueType->getValue();

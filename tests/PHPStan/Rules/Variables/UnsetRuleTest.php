@@ -2,13 +2,16 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<UnsetRule>
+ * @extends RuleTestCase<UnsetRule>
  */
-class UnsetRuleTest extends \PHPStan\Testing\RuleTestCase
+class UnsetRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new UnsetRule();
 	}

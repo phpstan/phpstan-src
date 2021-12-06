@@ -13,6 +13,7 @@ use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use function array_map;
 
 class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {

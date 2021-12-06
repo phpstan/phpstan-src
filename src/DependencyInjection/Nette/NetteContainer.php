@@ -3,6 +3,10 @@
 namespace PHPStan\DependencyInjection\Nette;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ParameterNotFoundException;
+use function array_key_exists;
+use function array_keys;
+use function array_map;
 
 /**
  * @internal
@@ -77,7 +81,7 @@ class NetteContainer implements Container
 	public function getParameter(string $parameterName)
 	{
 		if (!$this->hasParameter($parameterName)) {
-			throw new \PHPStan\DependencyInjection\ParameterNotFoundException($parameterName);
+			throw new ParameterNotFoundException($parameterName);
 		}
 
 		return $this->container->parameters[$parameterName];

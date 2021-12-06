@@ -6,13 +6,14 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_merge;
 
 /** @api */
 class TypeUtils
 {
 
 	/**
-	 * @return \PHPStan\Type\ArrayType[]
+	 * @return ArrayType[]
 	 */
 	public static function getArrays(Type $type): array
 	{
@@ -56,7 +57,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return \PHPStan\Type\Constant\ConstantArrayType[]
+	 * @return ConstantArrayType[]
 	 */
 	public static function getConstantArrays(Type $type): array
 	{
@@ -82,7 +83,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return \PHPStan\Type\Constant\ConstantStringType[]
+	 * @return ConstantStringType[]
 	 */
 	public static function getConstantStrings(Type $type): array
 	{
@@ -90,7 +91,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return \PHPStan\Type\ConstantType[]
+	 * @return ConstantType[]
 	 */
 	public static function getConstantTypes(Type $type): array
 	{
@@ -98,7 +99,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return \PHPStan\Type\ConstantType[]
+	 * @return ConstantType[]
 	 */
 	public static function getAnyConstantTypes(Type $type): array
 	{
@@ -106,7 +107,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return \PHPStan\Type\ArrayType[]
+	 * @return ArrayType[]
 	 */
 	public static function getAnyArrays(Type $type): array
 	{
@@ -150,7 +151,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return \PHPStan\Type\ConstantScalarType[]
+	 * @return ConstantScalarType[]
 	 */
 	public static function getConstantScalars(Type $type): array
 	{
@@ -298,7 +299,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return \PHPStan\Type\Accessory\AccessoryType[]
+	 * @return AccessoryType[]
 	 */
 	public static function getAccessoryTypes(Type $type): array
 	{

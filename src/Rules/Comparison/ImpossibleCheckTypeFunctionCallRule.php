@@ -4,15 +4,18 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
+class ImpossibleCheckTypeFunctionCallRule implements Rule
 {
 
-	private \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
+	private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
 
 	private bool $checkAlwaysTrueCheckTypeFunctionCall;
 
@@ -31,7 +34,7 @@ class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\FuncCall::class;
+		return Node\Expr\FuncCall::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

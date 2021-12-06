@@ -19,6 +19,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 
 class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 {
@@ -82,7 +83,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return $type instanceof self;
 	}
 
-	public function describe(\PHPStan\Type\VerbosityLevel $level): string
+	public function describe(VerbosityLevel $level): string
 	{
 		return 'non-empty-string';
 	}

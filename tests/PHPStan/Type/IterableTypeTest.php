@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -10,8 +11,10 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use function array_map;
+use function sprintf;
 
-class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class IterableTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

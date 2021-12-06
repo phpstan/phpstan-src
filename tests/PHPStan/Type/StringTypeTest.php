@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use Exception;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -10,7 +11,9 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use stdClass;
 use Test\ClassWithToString;
+use function sprintf;
 
 class StringTypeTest extends PHPStanTestCase
 {
@@ -20,7 +23,7 @@ class StringTypeTest extends PHPStanTestCase
 		return [
 			[
 				new StringType(),
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -64,7 +67,7 @@ class StringTypeTest extends PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				new GenericClassStringType(new ObjectType(stdClass::class)),
 				TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
@@ -80,7 +83,7 @@ class StringTypeTest extends PHPStanTestCase
 					new StringType(),
 					TemplateTypeVariance::createInvariant()
 				),
-				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				new GenericClassStringType(new ObjectType(stdClass::class)),
 				TrinaryLogic::createMaybe(),
 			],
 		];

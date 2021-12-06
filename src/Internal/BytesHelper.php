@@ -2,6 +2,11 @@
 
 namespace PHPStan\Internal;
 
+use PHPStan\ShouldNotHappenException;
+use function abs;
+use function end;
+use function round;
+
 class BytesHelper
 {
 
@@ -17,7 +22,7 @@ class BytesHelper
 		}
 
 		if (!isset($unit)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return round($bytes, 2) . ' ' . $unit;

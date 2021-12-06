@@ -2,6 +2,7 @@
 
 namespace PHPStan\Generics;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -13,8 +14,9 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
-class TemplateTypeFactoryTest extends \PHPStan\Testing\PHPStanTestCase
+class TemplateTypeFactoryTest extends PHPStanTestCase
 {
 
 	/** @return array<array{?Type, Type}> */

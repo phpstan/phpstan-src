@@ -2,19 +2,22 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrayDimFetch>
+ * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
+class NonexistentOffsetInArrayDimFetchRule implements Rule
 {
 
 	private RuleLevelHelper $ruleLevelHelper;
@@ -36,10 +39,10 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\ArrayDimFetch::class;
+		return Node\Expr\ArrayDimFetch::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node->dim !== null) {
 			$dimType = $scope->getType($node->dim);

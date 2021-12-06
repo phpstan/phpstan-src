@@ -8,6 +8,8 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
  * @implements Rule<FunctionReturnStatementsNode>
@@ -32,7 +34,7 @@ class TooWideFunctionThrowTypeRule implements Rule
 		$statementResult = $node->getStatementResult();
 		$functionReflection = $scope->getFunction();
 		if (!$functionReflection instanceof FunctionReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$throwType = $functionReflection->getThrowType();

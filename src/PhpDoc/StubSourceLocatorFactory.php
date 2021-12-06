@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
+use PhpParser\Parser;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
@@ -13,11 +14,11 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceL
 class StubSourceLocatorFactory
 {
 
-	private \PhpParser\Parser $php8Parser;
+	private Parser $php8Parser;
 
 	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
+	private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
 	/** @var string[] */
 	private array $stubFiles;
@@ -26,7 +27,7 @@ class StubSourceLocatorFactory
 	 * @param string[] $stubFiles
 	 */
 	public function __construct(
-		\PhpParser\Parser $php8Parser,
+		Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		array $stubFiles

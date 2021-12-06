@@ -6,15 +6,18 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
+class CallToNonExistentFunctionRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	private bool $checkFunctionNameCase;
 
@@ -34,7 +37,7 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!($node->name instanceof \PhpParser\Node\Name)) {
+		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
 

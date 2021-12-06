@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use Throwable;
 
 class ThrowPoint
 {
@@ -52,7 +53,7 @@ class ThrowPoint
 	 */
 	public static function createImplicit(MutatingScope $scope, Node $node): self
 	{
-		return new self($scope, new ObjectType(\Throwable::class), $node, false, true);
+		return new self($scope, new ObjectType(Throwable::class), $node, false, true);
 	}
 
 	public function getScope(): MutatingScope

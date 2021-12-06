@@ -3,12 +3,14 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
+use function count;
+use function usort;
 
 /** @api */
 class AnalysisResult
 {
 
-	/** @var \PHPStan\Analyser\Error[] sorted by their file name, line number and message */
+	/** @var Error[] sorted by their file name, line number and message */
 	private array $fileSpecificErrors;
 
 	/** @var string[] */
@@ -27,7 +29,7 @@ class AnalysisResult
 	private bool $savedResultCache;
 
 	/**
-	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
+	 * @param Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
 	 * @param string[] $internalErrors
 	 * @param string[] $warnings
@@ -77,7 +79,7 @@ class AnalysisResult
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\Error[] sorted by their file name, line number and message
+	 * @return Error[] sorted by their file name, line number and message
 	 */
 	public function getFileSpecificErrors(): array
 	{

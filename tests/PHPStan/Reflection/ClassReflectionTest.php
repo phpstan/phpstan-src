@@ -2,27 +2,52 @@
 
 namespace PHPStan\Reflection;
 
+use Attribute;
 use Attributes\IsAttribute;
 use Attributes\IsAttribute2;
 use Attributes\IsAttribute3;
 use Attributes\IsNotAttribute;
+use GenericInheritance\C;
+use HasTraitUse\Bar;
+use HasTraitUse\Baz;
+use HasTraitUse\Foo;
+use HasTraitUse\FooTrait;
+use HierarchyDistances\ExtendedIpsumInterface;
+use HierarchyDistances\FirstIpsumInterface;
+use HierarchyDistances\FirstLoremInterface;
+use HierarchyDistances\Ipsum;
+use HierarchyDistances\Lorem;
+use HierarchyDistances\SecondIpsumInterface;
+use HierarchyDistances\SecondLoremInterface;
+use HierarchyDistances\ThirdIpsumInterface;
+use HierarchyDistances\TraitOne;
+use HierarchyDistances\TraitThree;
+use HierarchyDistances\TraitTwo;
+use NestedTraits\BarTrait;
+use NestedTraits\BazChild;
+use NestedTraits\BazTrait;
+use NestedTraits\NoTrait;
 use PHPStan\Broker\Broker;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use ReflectionClass;
 use WrongClassConstantFile\SecuredRouter;
+use function array_map;
+use function array_values;
 use const PHP_VERSION_ID;
 
-class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
+class ClassReflectionTest extends PHPStanTestCase
 {
 
 	public function dataHasTraitUse(): array
 	{
 		return [
-			[\HasTraitUse\Foo::class, true],
-			[\HasTraitUse\Bar::class, true],
-			[\HasTraitUse\Baz::class, false],
+			[Foo::class, true],
+			[Bar::class, true],
+			[Baz::class, false],
 		];
 	}
 
@@ -36,52 +61,52 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 		$fileTypeMapper = $this->createMock(FileTypeMapper::class);
 		$stubPhpDocProvider = $this->createMock(StubPhpDocProvider::class);
 		$phpDocInheritanceResolver = $this->createMock(PhpDocInheritanceResolver::class);
-		$classReflection = new ClassReflection($broker, $fileTypeMapper, $stubPhpDocProvider, $phpDocInheritanceResolver, new PhpVersion(PHP_VERSION_ID), [], [], $className, new \ReflectionClass($className), null, null, null);
-		$this->assertSame($has, $classReflection->hasTraitUse(\HasTraitUse\FooTrait::class));
+		$classReflection = new ClassReflection($broker, $fileTypeMapper, $stubPhpDocProvider, $phpDocInheritanceResolver, new PhpVersion(PHP_VERSION_ID), [], [], $className, new ReflectionClass($className), null, null, null);
+		$this->assertSame($has, $classReflection->hasTraitUse(FooTrait::class));
 	}
 
 	public function dataClassHierarchyDistances(): array
 	{
 		return [
 			[
-				\HierarchyDistances\Lorem::class,
+				Lorem::class,
 				[
-					\HierarchyDistances\Lorem::class => 0,
-					\HierarchyDistances\TraitTwo::class => 1,
-					\HierarchyDistances\TraitThree::class => 2,
-					\HierarchyDistances\FirstLoremInterface::class => 3,
-					\HierarchyDistances\SecondLoremInterface::class => 4,
+					Lorem::class => 0,
+					TraitTwo::class => 1,
+					TraitThree::class => 2,
+					FirstLoremInterface::class => 3,
+					SecondLoremInterface::class => 4,
 				],
 			],
 			[
-				\HierarchyDistances\Ipsum::class,
+				Ipsum::class,
 				PHP_VERSION_ID < 70400 ?
 				[
-					\HierarchyDistances\Ipsum::class => 0,
-					\HierarchyDistances\TraitOne::class => 1,
-					\HierarchyDistances\Lorem::class => 2,
-					\HierarchyDistances\TraitTwo::class => 3,
-					\HierarchyDistances\TraitThree::class => 4,
-					\HierarchyDistances\SecondLoremInterface::class => 5,
-					\HierarchyDistances\FirstLoremInterface::class => 6,
-					\HierarchyDistances\FirstIpsumInterface::class => 7,
-					\HierarchyDistances\ExtendedIpsumInterface::class => 8,
-					\HierarchyDistances\SecondIpsumInterface::class => 9,
-					\HierarchyDistances\ThirdIpsumInterface::class => 10,
+					Ipsum::class => 0,
+					TraitOne::class => 1,
+					Lorem::class => 2,
+					TraitTwo::class => 3,
+					TraitThree::class => 4,
+					SecondLoremInterface::class => 5,
+					FirstLoremInterface::class => 6,
+					FirstIpsumInterface::class => 7,
+					ExtendedIpsumInterface::class => 8,
+					SecondIpsumInterface::class => 9,
+					ThirdIpsumInterface::class => 10,
 				]
 				:
 				[
-					\HierarchyDistances\Ipsum::class => 0,
-					\HierarchyDistances\TraitOne::class => 1,
-					\HierarchyDistances\Lorem::class => 2,
-					\HierarchyDistances\TraitTwo::class => 3,
-					\HierarchyDistances\TraitThree::class => 4,
-					\HierarchyDistances\FirstLoremInterface::class => 5,
-					\HierarchyDistances\SecondLoremInterface::class => 6,
-					\HierarchyDistances\FirstIpsumInterface::class => 7,
-					\HierarchyDistances\SecondIpsumInterface::class => 8,
-					\HierarchyDistances\ThirdIpsumInterface::class => 9,
-					\HierarchyDistances\ExtendedIpsumInterface::class => 10,
+					Ipsum::class => 0,
+					TraitOne::class => 1,
+					Lorem::class => 2,
+					TraitTwo::class => 3,
+					TraitThree::class => 4,
+					FirstLoremInterface::class => 5,
+					SecondLoremInterface::class => 6,
+					FirstIpsumInterface::class => 7,
+					SecondIpsumInterface::class => 8,
+					ThirdIpsumInterface::class => 9,
+					ExtendedIpsumInterface::class => 10,
 				],
 			],
 		];
@@ -111,7 +136,7 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 			[],
 			[],
 			$class,
-			new \ReflectionClass($class),
+			new ReflectionClass($class),
 			null,
 			null,
 			null
@@ -125,7 +150,7 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testVariadicTraitMethod(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$fooReflection = $reflectionProvider->getClass(\HasTraitUse\Foo::class);
+		$fooReflection = $reflectionProvider->getClass(Foo::class);
 		$variadicMethod = $fooReflection->getNativeMethod('variadicMethod');
 		$methodVariant = ParametersAcceptorSelector::selectSingle($variadicMethod->getVariants());
 		$this->assertTrue($methodVariant->isVariadic());
@@ -134,7 +159,7 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testGenericInheritance(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$reflection = $reflectionProvider->getClass(\GenericInheritance\C::class);
+		$reflection = $reflectionProvider->getClass(C::class);
 
 		$this->assertSame('GenericInheritance\\C', $reflection->getDisplayName());
 
@@ -155,7 +180,7 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testIsGenericWithStubPhpDoc(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$reflection = $reflectionProvider->getClass(\ReflectionClass::class);
+		$reflection = $reflectionProvider->getClass(ReflectionClass::class);
 		$this->assertTrue($reflection->isGeneric());
 	}
 
@@ -173,12 +198,12 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				IsAttribute2::class,
 				true,
-				\Attribute::IS_REPEATABLE,
+				Attribute::IS_REPEATABLE,
 			],
 			[
 				IsAttribute3::class,
 				true,
-				\Attribute::IS_REPEATABLE | \Attribute::TARGET_PROPERTY,
+				Attribute::IS_REPEATABLE | Attribute::TARGET_PROPERTY,
 			],
 		];
 	}
@@ -186,7 +211,7 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @dataProvider dataIsAttributeClass
 	 */
-	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = \Attribute::TARGET_ALL): void
+	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = Attribute::TARGET_ALL): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
@@ -235,12 +260,12 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		return [
 			[
-				\NestedTraits\NoTrait::class,
+				NoTrait::class,
 				[],
 				false,
 			],
 			[
-				\NestedTraits\NoTrait::class,
+				NoTrait::class,
 				[],
 				true,
 			],
@@ -261,14 +286,14 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				\NestedTraits\Bar::class,
 				[
-					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					BarTrait::class => BarTrait::class,
 				],
 				false,
 			],
 			[
 				\NestedTraits\Bar::class,
 				[
-					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					BarTrait::class => BarTrait::class,
 					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				true,
@@ -276,29 +301,29 @@ class ClassReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				\NestedTraits\Baz::class,
 				[
-					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
+					BazTrait::class => BazTrait::class,
 				],
 				false,
 			],
 			[
 				\NestedTraits\Baz::class,
 				[
-					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
-					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					BazTrait::class => BazTrait::class,
+					BarTrait::class => BarTrait::class,
 					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				true,
 			],
 			[
-				\NestedTraits\BazChild::class,
+				BazChild::class,
 				[],
 				false,
 			],
 			[
-				\NestedTraits\BazChild::class,
+				BazChild::class,
 				[
-					\NestedTraits\BazTrait::class => \NestedTraits\BazTrait::class,
-					\NestedTraits\BarTrait::class => \NestedTraits\BarTrait::class,
+					BazTrait::class => BazTrait::class,
+					BarTrait::class => BarTrait::class,
 					\NestedTraits\FooTrait::class => \NestedTraits\FooTrait::class,
 				],
 				true,

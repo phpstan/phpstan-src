@@ -9,14 +9,15 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 class Php8StubsSourceStubberTest extends TestCase
 {
 
 	public function testClass(): void
 	{
-		$reflection = $this->getReflector()->reflectClass(\Throwable::class);
-		$this->assertSame(\Throwable::class, $reflection->getName());
+		$reflection = $this->getReflector()->reflectClass(Throwable::class);
+		$this->assertSame(Throwable::class, $reflection->getName());
 	}
 
 	public function testFunction(): void

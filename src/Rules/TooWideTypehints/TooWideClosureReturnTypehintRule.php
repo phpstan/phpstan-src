@@ -11,9 +11,11 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClosureReturnStatementsNode>
+ * @implements Rule<ClosureReturnStatementsNode>
  */
 class TooWideClosureReturnTypehintRule implements Rule
 {

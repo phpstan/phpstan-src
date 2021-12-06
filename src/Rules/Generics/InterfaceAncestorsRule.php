@@ -11,16 +11,19 @@ use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
+use function array_map;
+use function array_merge;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassNode>
+ * @implements Rule<InClassNode>
  */
 class InterfaceAncestorsRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
-	private \PHPStan\Rules\Generics\GenericAncestorsCheck $genericAncestorsCheck;
+	private GenericAncestorsCheck $genericAncestorsCheck;
 
 	private CrossCheckInterfacesHelper $crossCheckInterfacesHelper;
 

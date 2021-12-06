@@ -10,9 +10,10 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Echo_>
+ * @implements Rule<Node\Stmt\Echo_>
  */
 class EchoRule implements Rule
 {

@@ -2,26 +2,28 @@
 
 namespace PHPStan\Reflection\Native;
 
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 
-class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
+class NativeFunctionReflection implements FunctionReflection
 {
 
 	private string $name;
 
-	/** @var \PHPStan\Reflection\ParametersAcceptor[] */
+	/** @var ParametersAcceptor[] */
 	private array $variants;
 
-	private ?\PHPStan\Type\Type $throwType;
+	private ?Type $throwType;
 
 	private TrinaryLogic $hasSideEffects;
 
 	private bool $isDeprecated;
 
 	/**
-	 * @param \PHPStan\Reflection\ParametersAcceptor[] $variants
+	 * @param ParametersAcceptor[] $variants
 	 */
 	public function __construct(
 		string $name,
@@ -49,7 +51,7 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{

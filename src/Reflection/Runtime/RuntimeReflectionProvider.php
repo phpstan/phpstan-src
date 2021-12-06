@@ -2,8 +2,14 @@
 
 namespace PHPStan\Reflection\Runtime;
 
+use Closure;
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\Broker\ClassAutoloadingException;
+use PHPStan\Broker\ClassNotFoundException;
+use PHPStan\Broker\ConstantNotFoundException;
+use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -12,15 +18,36 @@ use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\GlobalConstantReflection;
+use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionParameter;
+use Throwable;
+use function array_key_exists;
+use function array_map;
+use function class_exists;
+use function constant;
+use function debug_backtrace;
+use function defined;
+use function function_exists;
+use function interface_exists;
+use function spl_autoload_register;
+use function spl_autoload_unregister;
+use function sprintf;
+use function strtolower;
+use function trait_exists;
+use function trim;
+use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
 class RuntimeReflectionProvider implements ReflectionProvider
 {
@@ -29,16 +56,16 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
-	/** @var \PHPStan\Reflection\ClassReflection[] */
+	/** @var ClassReflection[] */
 	private array $classReflections = [];
 
-	private \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory;
+	private FunctionReflectionFactory $functionReflectionFactory;
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	private PhpVersion $phpVersion;
 
-	private \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
+	private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
@@ -46,16 +73,16 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
-	/** @var \PHPStan\Reflection\FunctionReflection[] */
+	/** @var FunctionReflection[] */
 	private array $functionReflections = [];
 
-	/** @var \PHPStan\Reflection\Php\PhpFunctionReflection[] */
+	/** @var PhpFunctionReflection[] */
 	private array $customFunctionReflections = [];
 
 	/** @var bool[] */
 	private array $hasClassCache = [];
 
-	/** @var \PHPStan\Reflection\ClassReflection[] */
+	/** @var ClassReflection[] */
 	private static array $anonymousClasses = [];
 
 	/** @var array<string, GlobalConstantReflection> */
@@ -84,12 +111,12 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 	}
 
-	public function getClass(string $className): \PHPStan\Reflection\ClassReflection
+	public function getClass(string $className): ClassReflection
 	{
 		/** @var class-string $className */
 		$className = $className;
 		if (!$this->hasClass($className)) {
-			throw new \PHPStan\Broker\ClassNotFoundException($className);
+			throw new ClassNotFoundException($className);
 		}
 
 		if (isset(self::$anonymousClasses[$className])) {
@@ -121,7 +148,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	public function getClassName(string $className): string
 	{
 		if (!$this->hasClass($className)) {
-			throw new \PHPStan\Broker\ClassNotFoundException($className);
+			throw new ClassNotFoundException($className);
 		}
 
 		/** @var class-string $className */
@@ -142,17 +169,17 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	}
 
 	public function getAnonymousClassReflection(
-		\PhpParser\Node\Stmt\Class_ $classNode,
+		Node\Stmt\Class_ $classNode,
 		Scope $scope
 	): ClassReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	/**
-	 * @param \ReflectionClass<object> $reflectionClass
+	 * @param ReflectionClass<object> $reflectionClass
 	 */
-	private function getClassFromReflection(\ReflectionClass $reflectionClass, string $displayName, ?string $anonymousFilename): ClassReflection
+	private function getClassFromReflection(ReflectionClass $reflectionClass, string $displayName, ?string $anonymousFilename): ClassReflection
 	{
 		$className = $reflectionClass->getName();
 		if (!isset($this->classReflections[$className])) {
@@ -190,16 +217,16 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		spl_autoload_register($autoloader = function (string $autoloadedClassName) use ($className): void {
 			$autoloadedClassName = trim($autoloadedClassName, '\\');
 			if ($autoloadedClassName !== $className && !$this->isExistsCheckCall()) {
-				throw new \PHPStan\Broker\ClassAutoloadingException($autoloadedClassName);
+				throw new ClassAutoloadingException($autoloadedClassName);
 			}
 		});
 
 		try {
 			return $this->hasClassCache[$className] = class_exists($className) || interface_exists($className) || trait_exists($className);
-		} catch (\PHPStan\Broker\ClassAutoloadingException $e) {
+		} catch (ClassAutoloadingException $e) {
 			throw $e;
-		} catch (\Throwable $t) {
-			throw new \PHPStan\Broker\ClassAutoloadingException(
+		} catch (Throwable $t) {
+			throw new ClassAutoloadingException(
 				$className,
 				$t
 			);
@@ -208,11 +235,11 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		}
 	}
 
-	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): \PHPStan\Reflection\FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
 	{
 		$functionName = $this->resolveFunctionName($nameNode, $scope);
 		if ($functionName === null) {
-			throw new \PHPStan\Broker\FunctionNotFoundException((string) $nameNode);
+			throw new FunctionNotFoundException((string) $nameNode);
 		}
 
 		$lowerCasedFunctionName = strtolower($functionName);
@@ -231,12 +258,12 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		return $this->functionReflections[$lowerCasedFunctionName];
 	}
 
-	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->resolveFunctionName($nameNode, $scope) !== null;
 	}
 
-	private function hasCustomFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	private function hasCustomFunction(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		$functionName = $this->resolveFunctionName($nameNode, $scope);
 		if ($functionName === null) {
@@ -246,23 +273,23 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		return $this->nativeFunctionReflectionProvider->findFunctionReflection($functionName) === null;
 	}
 
-	private function getCustomFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): \PHPStan\Reflection\Php\PhpFunctionReflection
+	private function getCustomFunction(Node\Name $nameNode, ?Scope $scope): PhpFunctionReflection
 	{
 		if (!$this->hasCustomFunction($nameNode, $scope)) {
-			throw new \PHPStan\Broker\FunctionNotFoundException((string) $nameNode);
+			throw new FunctionNotFoundException((string) $nameNode);
 		}
 
 		/** @var string $functionName */
 		$functionName = $this->resolveFunctionName($nameNode, $scope);
 		if (!function_exists($functionName)) {
-			throw new \PHPStan\Broker\FunctionNotFoundException($functionName);
+			throw new FunctionNotFoundException($functionName);
 		}
 		$lowerCasedFunctionName = strtolower($functionName);
 		if (isset($this->customFunctionReflections[$lowerCasedFunctionName])) {
 			return $this->customFunctionReflections[$lowerCasedFunctionName];
 		}
 
-		$reflectionFunction = new \ReflectionFunction($functionName);
+		$reflectionFunction = new ReflectionFunction($functionName);
 		$templateTypeMap = TemplateTypeMap::createEmpty();
 		$phpDocParameterTags = [];
 		$phpDocReturnTag = null;
@@ -272,7 +299,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = null;
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static function (\ReflectionParameter $parameter): string {
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static function (ReflectionParameter $parameter): string {
 			return $parameter->getName();
 		}, $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
@@ -313,7 +340,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		return $functionReflection;
 	}
 
-	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->resolveName($nameNode, function (string $name): bool {
 			$exists = function_exists($name) || $this->nativeFunctionReflectionProvider->findFunctionReflection($name) !== null;
@@ -329,16 +356,16 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		}, $scope);
 	}
 
-	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->resolveConstantName($nameNode, $scope) !== null;
 	}
 
-	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
 	{
 		$constantName = $this->resolveConstantName($nameNode, $scope);
 		if ($constantName === null) {
-			throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
+			throw new ConstantNotFoundException((string) $nameNode);
 		}
 
 		if (array_key_exists($constantName, $this->cachedConstants)) {
@@ -352,7 +379,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		);
 	}
 
-	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->resolveName($nameNode, static function (string $name): bool {
 			return defined($name);
@@ -360,11 +387,11 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	}
 
 	/**
-	 * @param \Closure(string $name): bool $existsCallback
+	 * @param Closure(string $name): bool $existsCallback
 	 */
 	private function resolveName(
-		\PhpParser\Node\Name $nameNode,
-		\Closure $existsCallback,
+		Node\Name $nameNode,
+		Closure $existsCallback,
 		?Scope $scope
 	): ?string
 	{

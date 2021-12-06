@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
- * @template TNodeType of \PhpParser\Node
+ * @template TNodeType of Node
  * @implements Rule<TNodeType>
  */
 class UniversalRule implements Rule

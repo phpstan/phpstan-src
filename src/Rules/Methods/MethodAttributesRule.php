@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\AttributesCheck;
@@ -30,7 +31,7 @@ class MethodAttributesRule implements Rule
 		return $this->attributesCheck->check(
 			$scope,
 			$node->attrGroups,
-			\Attribute::TARGET_METHOD,
+			Attribute::TARGET_METHOD,
 			'method'
 		);
 	}

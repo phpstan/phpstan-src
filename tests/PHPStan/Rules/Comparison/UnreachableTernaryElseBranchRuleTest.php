@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<UnreachableTernaryElseBranchRule>
+ * @extends RuleTestCase<UnreachableTernaryElseBranchRule>
  */
 class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 {

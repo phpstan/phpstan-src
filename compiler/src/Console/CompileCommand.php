@@ -2,12 +2,34 @@
 
 namespace PHPStan\Compiler\Console;
 
+use Exception;
 use PHPStan\Compiler\Filesystem\Filesystem;
 use PHPStan\Compiler\Process\ProcessFactory;
+use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\Finder;
+use function basename;
+use function dirname;
 use function escapeshellarg;
+use function exec;
+use function file_get_contents;
+use function file_put_contents;
+use function implode;
+use function is_dir;
+use function json_decode;
+use function json_encode;
+use function realpath;
+use function rename;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function substr;
+use function unlink;
+use function var_export;
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
 
 final class CompileCommand extends Command
 {
@@ -74,7 +96,7 @@ final class CompileCommand extends Command
 
 		$encodedJson = json_encode($json, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 		if ($encodedJson === false) {
-			throw new \Exception('json_encode() was not successful.');
+			throw new Exception('json_encode() was not successful.');
 		}
 
 		$this->filesystem->write($buildDir . '/composer.json', $encodedJson);
@@ -87,10 +109,10 @@ final class CompileCommand extends Command
 			return;
 		}
 
-		$stubFinder = \Symfony\Component\Finder\Finder::create();
+		$stubFinder = Finder::create();
 		$stubsMapPath = realpath($directory . '/PhpStormStubsMap.php');
 		if ($stubsMapPath === false) {
-			throw new \Exception('realpath() failed');
+			throw new Exception('realpath() failed');
 		}
 		foreach ($stubFinder->files()->name('*.php')->in($directory) as $stubFile) {
 			$path = $stubFile->getPathname();
@@ -103,20 +125,20 @@ final class CompileCommand extends Command
 				dirname($path) . '/' . $stubFile->getBasename('.php') . '.stub'
 			);
 			if ($renameSuccess === false) {
-				throw new \PHPStan\ShouldNotHappenException(sprintf('Could not rename %s', $path));
+				throw new ShouldNotHappenException(sprintf('Could not rename %s', $path));
 			}
 		}
 
 		$stubsMapContents = file_get_contents($stubsMapPath);
 		if ($stubsMapContents === false) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not read %s', $stubsMapPath));
+			throw new ShouldNotHappenException(sprintf('Could not read %s', $stubsMapPath));
 		}
 
 		$stubsMapContents = str_replace('.php\',', '.stub\',', $stubsMapContents);
 
 		$putSuccess = file_put_contents($stubsMapPath, $stubsMapContents);
 		if ($putSuccess === false) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
+			throw new ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
 		}
 	}
 
@@ -127,7 +149,7 @@ final class CompileCommand extends Command
 			return;
 		}
 
-		$stubFinder = \Symfony\Component\Finder\Finder::create();
+		$stubFinder = Finder::create();
 		$stubsMapPath = $directory . '/../Php8StubsMap.php';
 		foreach ($stubFinder->files()->name('*.php')->in($directory) as $stubFile) {
 			$path = $stubFile->getPathname();
@@ -140,26 +162,26 @@ final class CompileCommand extends Command
 				dirname($path) . '/' . $stubFile->getBasename('.php') . '.stub'
 			);
 			if ($renameSuccess === false) {
-				throw new \PHPStan\ShouldNotHappenException(sprintf('Could not rename %s', $path));
+				throw new ShouldNotHappenException(sprintf('Could not rename %s', $path));
 			}
 		}
 
 		$stubsMapContents = file_get_contents($stubsMapPath);
 		if ($stubsMapContents === false) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not read %s', $stubsMapPath));
+			throw new ShouldNotHappenException(sprintf('Could not read %s', $stubsMapPath));
 		}
 
 		$stubsMapContents = str_replace('.php\',', '.stub\',', $stubsMapContents);
 
 		$putSuccess = file_put_contents($stubsMapPath, $stubsMapContents);
 		if ($putSuccess === false) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
+			throw new ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
 		}
 	}
 
 	private function patchPhpStormStubs(OutputInterface $output): void
 	{
-		$stubFinder = \Symfony\Component\Finder\Finder::create();
+		$stubFinder = Finder::create();
 		$stubsDirectory = __DIR__ . '/../../../vendor/jetbrains/phpstorm-stubs';
 		foreach ($stubFinder->files()->name('*.patch')->in(__DIR__ . '/../../patches/stubs') as $patchFile) {
 			$absolutePatchPath = $patchFile->getPathname();
@@ -186,7 +208,7 @@ final class CompileCommand extends Command
 
 %s
 php;
-		$finder = \Symfony\Component\Finder\Finder::create();
+		$finder = Finder::create();
 		$root = realpath(__DIR__ . '/../../..');
 		if ($root === false) {
 			return;
@@ -243,7 +265,7 @@ php;
 			return;
 		}
 
-		throw new \PHPStan\ShouldNotHappenException(implode("\n", $outputLines));
+		throw new ShouldNotHappenException(implode("\n", $outputLines));
 	}
 
 }

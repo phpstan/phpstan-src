@@ -2,17 +2,23 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
+use function in_array;
 
 class VarExportFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function isFunctionSupported(\PHPStan\Reflection\FunctionReflection $functionReflection): bool
+	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array(
 			$functionReflection->getName(),
@@ -26,7 +32,7 @@ class VarExportFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 		);
 	}
 
-	public function getTypeFromFunctionCall(\PHPStan\Reflection\FunctionReflection $functionReflection, \PhpParser\Node\Expr\FuncCall $functionCall, \PHPStan\Analyser\Scope $scope): \PHPStan\Type\Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, Node\Expr\FuncCall $functionCall, Scope $scope): Type
 	{
 		if ($functionReflection->getName() === 'var_export') {
 			$fallbackReturnType = new NullType();

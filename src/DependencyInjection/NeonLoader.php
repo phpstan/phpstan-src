@@ -2,9 +2,10 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\DI\Config\Loader;
 use PHPStan\File\FileHelper;
 
-class NeonLoader extends \Nette\DI\Config\Loader
+class NeonLoader extends Loader
 {
 
 	private FileHelper $fileHelper;

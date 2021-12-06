@@ -2,6 +2,10 @@
 
 namespace PHPStan\Compiler\Filesystem;
 
+use RuntimeException;
+use function file_get_contents;
+use function file_put_contents;
+
 final class SymfonyFilesystem implements Filesystem
 {
 
@@ -32,7 +36,7 @@ final class SymfonyFilesystem implements Filesystem
 	{
 		$content = file_get_contents($file);
 		if ($content === false) {
-			throw new \RuntimeException();
+			throw new RuntimeException();
 		}
 		return $content;
 	}

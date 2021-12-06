@@ -2,14 +2,22 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\Statement;
+use Nette\Schema\Elements\AnyOf;
+use Nette\Schema\Elements\Structure;
+use Nette\Schema\Elements\Type;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
+use PHPStan\ShouldNotHappenException;
+use function array_map;
+use function count;
+use function is_array;
 
-class ParametersSchemaExtension extends \Nette\DI\CompilerExtension
+class ParametersSchemaExtension extends CompilerExtension
 {
 
-	public function getConfigSchema(): \Nette\Schema\Schema
+	public function getConfigSchema(): Schema
 	{
 		return Expect::arrayOf(Expect::type(Statement::class))->min(1);
 	}
@@ -33,7 +41,7 @@ class ParametersSchemaExtension extends \Nette\DI\CompilerExtension
 	private function processSchema(array $statements): Schema
 	{
 		if (count($statements) === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$parameterSchema = null;
@@ -42,7 +50,7 @@ class ParametersSchemaExtension extends \Nette\DI\CompilerExtension
 				return $this->processArgument($argument);
 			}, $statement->arguments);
 			if ($parameterSchema === null) {
-				/** @var \Nette\Schema\Elements\Type|\Nette\Schema\Elements\AnyOf|\Nette\Schema\Elements\Structure $parameterSchema */
+				/** @var Type|AnyOf|Structure $parameterSchema */
 				$parameterSchema = Expect::{$statement->getEntity()}(...$processedArguments);
 			} else {
 				$parameterSchema->{$statement->getEntity()}(...$processedArguments);
@@ -65,14 +73,14 @@ class ParametersSchemaExtension extends \Nette\DI\CompilerExtension
 				$arguments = [];
 				foreach ($argument->arguments as $schemaArgument) {
 					if (!$schemaArgument instanceof Statement) {
-						throw new \PHPStan\ShouldNotHappenException('schema() should contain another statement().');
+						throw new ShouldNotHappenException('schema() should contain another statement().');
 					}
 
 					$arguments[] = $schemaArgument;
 				}
 
 				if (count($arguments) === 0) {
-					throw new \PHPStan\ShouldNotHappenException('schema() should have at least one argument.');
+					throw new ShouldNotHappenException('schema() should have at least one argument.');
 				}
 
 				return $this->processSchema($arguments);

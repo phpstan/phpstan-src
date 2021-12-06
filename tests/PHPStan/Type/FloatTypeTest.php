@@ -2,12 +2,14 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use function sprintf;
 
-class FloatTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class FloatTypeTest extends PHPStanTestCase
 {
 
 	public function dataAccepts(): array

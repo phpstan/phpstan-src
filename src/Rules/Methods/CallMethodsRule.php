@@ -8,16 +8,18 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\Rule;
+use function array_merge;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\MethodCall>
+ * @implements Rule<Node\Expr\MethodCall>
  */
-class CallMethodsRule implements \PHPStan\Rules\Rule
+class CallMethodsRule implements Rule
 {
 
 	private MethodCallCheck $methodCallCheck;
 
-	private \PHPStan\Rules\FunctionCallParametersCheck $parametersCheck;
+	private FunctionCallParametersCheck $parametersCheck;
 
 	public function __construct(
 		MethodCallCheck $methodCallCheck,

@@ -9,7 +9,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Ternary>
+ * @implements Rule<Node\Expr\Ternary>
  */
 class UnreachableTernaryElseBranchRule implements Rule
 {

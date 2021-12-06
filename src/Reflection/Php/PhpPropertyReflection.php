@@ -8,24 +8,27 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use ReflectionProperty;
+use ReflectionType;
+use function method_exists;
 
 /** @api */
 class PhpPropertyReflection implements PropertyReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ClassReflection $declaringClass;
 
-	private ?\PHPStan\Reflection\ClassReflection $declaringTrait;
+	private ?ClassReflection $declaringTrait;
 
-	private ?\ReflectionType $nativeType;
+	private ?ReflectionType $nativeType;
 
-	private ?\PHPStan\Type\Type $finalNativeType = null;
+	private ?Type $finalNativeType = null;
 
-	private ?\PHPStan\Type\Type $phpDocType;
+	private ?Type $phpDocType;
 
-	private ?\PHPStan\Type\Type $type = null;
+	private ?Type $type = null;
 
-	private \ReflectionProperty $reflection;
+	private ReflectionProperty $reflection;
 
 	private ?string $deprecatedDescription;
 
@@ -38,9 +41,9 @@ class PhpPropertyReflection implements PropertyReflection
 	public function __construct(
 		ClassReflection $declaringClass,
 		?ClassReflection $declaringTrait,
-		?\ReflectionType $nativeType,
+		?ReflectionType $nativeType,
 		?Type $phpDocType,
-		\ReflectionProperty $reflection,
+		ReflectionProperty $reflection,
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
@@ -199,7 +202,7 @@ class PhpPropertyReflection implements PropertyReflection
 		return TrinaryLogic::createFromBoolean($this->isInternal);
 	}
 
-	public function getNativeReflection(): \ReflectionProperty
+	public function getNativeReflection(): ReflectionProperty
 	{
 		return $this->reflection;
 	}

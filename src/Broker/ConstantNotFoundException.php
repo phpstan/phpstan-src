@@ -2,7 +2,10 @@
 
 namespace PHPStan\Broker;
 
-class ConstantNotFoundException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use function sprintf;
+
+class ConstantNotFoundException extends AnalysedCodeException
 {
 
 	private string $constantName;

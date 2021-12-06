@@ -2,20 +2,23 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Assign>
+ * @implements Rule<Node\Expr\Assign>
  */
-class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
+class AppendedArrayKeyTypeRule implements Rule
 {
 
 	private PropertyReflectionFinder $propertyReflectionFinder;
@@ -36,15 +39,15 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 		return Assign::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!($node->var instanceof ArrayDimFetch)) {
 			return [];
 		}
 
 		if (
-			!$node->var->var instanceof \PhpParser\Node\Expr\PropertyFetch
-			&& !$node->var->var instanceof \PhpParser\Node\Expr\StaticPropertyFetch
+			!$node->var->var instanceof Node\Expr\PropertyFetch
+			&& !$node->var->var instanceof Node\Expr\StaticPropertyFetch
 		) {
 			return [];
 		}

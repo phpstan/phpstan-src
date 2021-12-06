@@ -4,9 +4,10 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToFunctionStatementWithoutSideEffectsRule>
+ * @extends RuleTestCase<CallToFunctionStatementWithoutSideEffectsRule>
  */
 class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 {

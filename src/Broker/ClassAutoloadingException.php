@@ -2,14 +2,19 @@
 
 namespace PHPStan\Broker;
 
-class ClassAutoloadingException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use Throwable;
+use function get_class;
+use function sprintf;
+
+class ClassAutoloadingException extends AnalysedCodeException
 {
 
 	private string $className;
 
 	public function __construct(
 		string $functionName,
-		?\Throwable $previous = null
+		?Throwable $previous = null
 	)
 	{
 		if ($previous !== null) {

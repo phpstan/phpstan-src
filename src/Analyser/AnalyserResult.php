@@ -3,14 +3,15 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Dependency\ExportedNode;
+use function usort;
 
 class AnalyserResult
 {
 
-	/** @var \PHPStan\Analyser\Error[] */
+	/** @var Error[] */
 	private array $unorderedErrors;
 
-	/** @var \PHPStan\Analyser\Error[] */
+	/** @var Error[] */
 	private array $errors;
 
 	/** @var string[] */
@@ -25,7 +26,7 @@ class AnalyserResult
 	private bool $reachedInternalErrorsCountLimit;
 
 	/**
-	 * @param \PHPStan\Analyser\Error[] $errors
+	 * @param Error[] $errors
 	 * @param string[] $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
@@ -63,7 +64,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	public function getUnorderedErrors(): array
 	{
@@ -71,7 +72,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	public function getErrors(): array
 	{

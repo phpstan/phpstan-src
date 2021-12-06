@@ -5,6 +5,16 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use function assert;
+use function ceil;
+use function floor;
+use function get_class;
+use function is_int;
+use function max;
+use function min;
+use function sprintf;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 /** @api */
 class IntegerRangeType extends IntegerType implements CompoundType

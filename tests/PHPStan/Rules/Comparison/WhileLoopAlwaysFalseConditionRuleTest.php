@@ -2,16 +2,19 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<WhileLoopAlwaysFalseConditionRule>
+ * @extends RuleTestCase<WhileLoopAlwaysFalseConditionRule>
  */
-class WhileLoopAlwaysFalseConditionRuleTest extends \PHPStan\Testing\RuleTestCase
+class WhileLoopAlwaysFalseConditionRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $treatPhpDocTypesAsCertain = true;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new WhileLoopAlwaysFalseConditionRule(
 			new ConstantConditionRuleHelper(

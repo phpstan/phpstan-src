@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\AttributesCheck;
@@ -30,7 +31,7 @@ class PropertyAttributesRule implements Rule
 		return $this->attributesCheck->check(
 			$scope,
 			$node->attrGroups,
-			\Attribute::TARGET_PROPERTY,
+			Attribute::TARGET_PROPERTY,
 			'property'
 		);
 	}

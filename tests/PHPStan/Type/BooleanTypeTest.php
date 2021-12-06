@@ -2,11 +2,13 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use function sprintf;
 
-class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class BooleanTypeTest extends PHPStanTestCase
 {
 
 	public function dataAccepts(): array

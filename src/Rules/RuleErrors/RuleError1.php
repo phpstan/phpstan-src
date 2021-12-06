@@ -2,10 +2,12 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+use PHPStan\Rules\RuleError;
+
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError1 implements \PHPStan\Rules\RuleError
+class RuleError1 implements RuleError
 {
 
 	public string $message;

@@ -10,9 +10,9 @@ use PHPStan\Type\Type;
 class AnnotationPropertyReflection implements PropertyReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ClassReflection $declaringClass;
 
-	private \PHPStan\Type\Type $type;
+	private Type $type;
 
 	private bool $readable;
 

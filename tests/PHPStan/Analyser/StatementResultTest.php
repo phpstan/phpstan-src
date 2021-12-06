@@ -4,12 +4,14 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
 use PHPStan\Parser\Parser;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
+use function sprintf;
 
-class StatementResultTest extends \PHPStan\Testing\PHPStanTestCase
+class StatementResultTest extends PHPStanTestCase
 {
 
 	public function dataIsAlwaysTerminating(): array

@@ -21,11 +21,14 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
+use function strpos;
 
 class RuleLevelHelper
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	private bool $checkNullables;
 
@@ -136,7 +139,7 @@ class RuleLevelHelper
 		}
 		$type = $scope->getType($var);
 		if (!$this->checkNullables && !$type instanceof NullType) {
-			$type = \PHPStan\Type\TypeCombinator::removeNull($type);
+			$type = TypeCombinator::removeNull($type);
 		}
 
 		if (

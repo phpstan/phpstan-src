@@ -15,7 +15,11 @@ use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use function array_key_exists;
+use function in_array;
+use function sprintf;
 
 /**
  * @implements Rule<InClassNode>
@@ -133,7 +137,7 @@ class LocalTypeAliasesRule implements Rule
 
 			$resolvedType = $typeAliasTag->getTypeAlias()->resolve($this->typeNodeResolver);
 			$foundError = false;
-			TypeTraverser::map($resolvedType, static function (\PHPStan\Type\Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): \PHPStan\Type\Type {
+			TypeTraverser::map($resolvedType, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
 				if ($foundError) {
 					return $type;
 				}

@@ -7,19 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ * @implements Rule<Node\Stmt\ClassMethod>
  */
 class MethodTemplateTypeRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
-	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
+	private TemplateTypeCheck $templateTypeCheck;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
@@ -43,7 +46,7 @@ class MethodTemplateTypeRule implements Rule
 		}
 
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$classReflection = $scope->getClassReflection();

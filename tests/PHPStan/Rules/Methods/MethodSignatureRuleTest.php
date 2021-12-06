@@ -3,12 +3,14 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<OverridingMethodRule>
+ * @extends RuleTestCase<OverridingMethodRule>
  */
-class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
+class MethodSignatureRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
@@ -17,7 +19,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var bool */
 	private $reportStatic;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new OverridingMethodRule(
 			new PhpVersion(PHP_VERSION_ID),

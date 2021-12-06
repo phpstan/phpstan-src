@@ -2,6 +2,8 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Node;
+
 use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;

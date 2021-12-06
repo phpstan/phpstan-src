@@ -2,6 +2,10 @@
 
 namespace PHPStan\PhpDoc;
 
+use Closure;
+use Generator;
+use Iterator;
+use IteratorAggregate;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\NameScope;
 use PHPStan\DependencyInjection\Container;
@@ -28,6 +32,7 @@ use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -67,6 +72,16 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
+use Traversable;
+use function array_map;
+use function count;
+use function get_class;
+use function in_array;
+use function preg_quote;
+use function str_replace;
+use function strpos;
+use function strtolower;
+use function substr;
 
 class TypeNodeResolver
 {
@@ -529,9 +544,9 @@ class TypeNodeResolver
 			$classReflection = $this->getReflectionProvider()->getClass($mainType->getClassName());
 			if ($classReflection->isGeneric()) {
 				if (in_array($mainType->getClassName(), [
-					\Traversable::class,
-					\IteratorAggregate::class,
-					\Iterator::class,
+					Traversable::class,
+					IteratorAggregate::class,
+					Iterator::class,
 				], true)) {
 					if (count($genericTypes) === 1) {
 						return new GenericObjectType($mainType->getClassName(), [
@@ -547,7 +562,7 @@ class TypeNodeResolver
 						]);
 					}
 				}
-				if ($mainType->getClassName() === \Generator::class) {
+				if ($mainType->getClassName() === Generator::class) {
 					if (count($genericTypes) === 1) {
 						$mixed = new MixedType(true);
 						return new GenericObjectType($mainType->getClassName(), [
@@ -634,7 +649,7 @@ class TypeNodeResolver
 
 		} elseif (
 			$mainType instanceof ObjectType
-			&& $mainType->getClassName() === \Closure::class
+			&& $mainType->getClassName() === Closure::class
 		) {
 			return new ClosureType($parameters, $returnType, $isVariadic);
 		}
@@ -655,7 +670,7 @@ class TypeNodeResolver
 			} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
 				$offsetType = new ConstantStringType($itemNode->keyName->value);
 			} elseif ($itemNode->keyName !== null) {
-				throw new \PHPStan\ShouldNotHappenException('Unsupported key node type: ' . get_class($itemNode->keyName));
+				throw new ShouldNotHappenException('Unsupported key node type: ' . get_class($itemNode->keyName));
 			}
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
@@ -667,7 +682,7 @@ class TypeNodeResolver
 	{
 		$constExpr = $typeNode->constExpr;
 		if ($constExpr instanceof ConstExprArrayNode) {
-			throw new \PHPStan\ShouldNotHappenException(); // we prefer array shapes
+			throw new ShouldNotHappenException(); // we prefer array shapes
 		}
 
 		if (
@@ -675,12 +690,12 @@ class TypeNodeResolver
 			|| $constExpr instanceof ConstExprTrueNode
 			|| $constExpr instanceof ConstExprNullNode
 		) {
-			throw new \PHPStan\ShouldNotHappenException(); // we prefer IdentifierTypeNode
+			throw new ShouldNotHappenException(); // we prefer IdentifierTypeNode
 		}
 
 		if ($constExpr instanceof ConstFetchNode) {
 			if ($constExpr->className === '') {
-				throw new \PHPStan\ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
+				throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
 			}
 
 			if ($nameScope->getClassName() !== null) {

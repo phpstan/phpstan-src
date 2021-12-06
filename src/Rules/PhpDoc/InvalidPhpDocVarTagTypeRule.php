@@ -14,21 +14,25 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
+use function array_merge;
+use function implode;
+use function is_string;
 use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt>
+ * @implements Rule<Node\Stmt>
  */
 class InvalidPhpDocVarTagTypeRule implements Rule
 {
 
 	private FileTypeMapper $fileTypeMapper;
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
+	private GenericObjectTypeCheck $genericObjectTypeCheck;
 
 	private MissingTypehintCheck $missingTypehintCheck;
 
@@ -61,7 +65,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt::class;
+		return Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

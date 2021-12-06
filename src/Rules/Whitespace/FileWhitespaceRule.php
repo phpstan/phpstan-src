@@ -5,10 +5,12 @@ namespace PHPStan\Rules\Whitespace;
 use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function count;
 
 /**
  * @implements Rule<FileNode>
@@ -35,9 +37,9 @@ class FileWhitespaceRule implements Rule
 		}
 
 		$nodeTraverser = new NodeTraverser();
-		$visitor = new class () extends \PhpParser\NodeVisitorAbstract {
+		$visitor = new class () extends NodeVisitorAbstract {
 
-			/** @var \PhpParser\Node[] */
+			/** @var Node[] */
 			private $lastNodes = [];
 
 			/**

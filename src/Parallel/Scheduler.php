@@ -2,6 +2,12 @@
 
 namespace PHPStan\Parallel;
 
+use function array_chunk;
+use function count;
+use function floor;
+use function max;
+use function min;
+
 class Scheduler
 {
 

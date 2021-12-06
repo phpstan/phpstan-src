@@ -2,19 +2,22 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\AssignOp>
+ * @implements Rule<Node\Expr\AssignOp>
  */
-class OffsetAccessAssignOpRule implements \PHPStan\Rules\Rule
+class OffsetAccessAssignOpRule implements Rule
 {
 
 	private RuleLevelHelper $ruleLevelHelper;
@@ -26,10 +29,10 @@ class OffsetAccessAssignOpRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\AssignOp::class;
+		return Node\Expr\AssignOp::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->var instanceof ArrayDimFetch) {
 			return [];

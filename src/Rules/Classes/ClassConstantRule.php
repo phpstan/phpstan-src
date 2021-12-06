@@ -11,6 +11,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -19,18 +20,22 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function in_array;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ClassConstFetch>
+ * @implements Rule<Node\Expr\ClassConstFetch>
  */
-class ClassConstantRule implements \PHPStan\Rules\Rule
+class ClassConstantRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	private PhpVersion $phpVersion;
 
@@ -61,7 +66,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 
 		$class = $node->class;
 		$messages = [];
-		if ($class instanceof \PhpParser\Node\Name) {
+		if ($class instanceof Node\Name) {
 			$className = (string) $class;
 			$lowercasedClassName = strtolower($className);
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {

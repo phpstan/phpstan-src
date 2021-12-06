@@ -6,17 +6,21 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
+ * @implements Rule<ClassPropertyNode>
  */
-final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
+final class MissingPropertyTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
+	private MissingTypehintCheck $missingTypehintCheck;
 
 	public function __construct(MissingTypehintCheck $missingTypehintCheck)
 	{
@@ -31,7 +35,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());

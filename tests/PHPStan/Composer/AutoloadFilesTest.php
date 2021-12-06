@@ -5,8 +5,17 @@ namespace PHPStan\Composer;
 use Nette\Utils\Json;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
+use function array_map;
+use function array_splice;
+use function dirname;
+use function realpath;
+use function sort;
+use function strlen;
+use function substr;
+use const PHP_VERSION_ID;
 
 class AutoloadFilesTest extends TestCase
 {
@@ -18,7 +27,7 @@ class AutoloadFilesTest extends TestCase
 		$autoloadFiles = [];
 		$vendorPath = realpath(__DIR__ . '/../../../vendor');
 		if ($vendorPath === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$fileHelper = new FileHelper(__DIR__);
@@ -26,7 +35,7 @@ class AutoloadFilesTest extends TestCase
 		foreach ($finder->files()->name('composer.json')->in(__DIR__ . '/../../../vendor') as $fileInfo) {
 			$realpath = $fileInfo->getRealPath();
 			if ($realpath === false) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$json = Json::decode(FileReader::read($realpath), Json::FORCE_ARRAY);
 			if (!isset($json['autoload']['files'])) {

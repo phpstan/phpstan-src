@@ -6,7 +6,10 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
+use function array_intersect;
+use function count;
 
 class MixinPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
@@ -31,7 +34,7 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 	{
 		$property = $this->findProperty($classReflection, $propertyName);
 		if ($property === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $property;

@@ -3,10 +3,12 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
+use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function is_string;
 
 class ClearResultCacheCommand extends Command
 {
@@ -46,7 +48,7 @@ class ClearResultCacheCommand extends Command
 			(!is_string($autoloadFile) && $autoloadFile !== null)
 			|| (!is_string($configuration) && $configuration !== null)
 		) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		try {
@@ -63,7 +65,7 @@ class ClearResultCacheCommand extends Command
 				false,
 				false
 			);
-		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException $e) {
 			return 1;
 		}
 

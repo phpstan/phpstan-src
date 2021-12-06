@@ -5,10 +5,12 @@ namespace PHPStan\Reflection\Dummy;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use stdClass;
 
 class DummyMethodReflection implements MethodReflection
 {
@@ -24,7 +26,7 @@ class DummyMethodReflection implements MethodReflection
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-		return $reflectionProvider->getClass(\stdClass::class);
+		return $reflectionProvider->getClass(stdClass::class);
 	}
 
 	public function isStatic(): bool
@@ -53,7 +55,7 @@ class DummyMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{

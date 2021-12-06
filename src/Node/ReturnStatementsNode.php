@@ -9,7 +9,7 @@ interface ReturnStatementsNode extends VirtualNode
 {
 
 	/**
-	 * @return \PHPStan\Node\ReturnStatement[]
+	 * @return ReturnStatement[]
 	 */
 	public function getReturnStatements(): array;
 

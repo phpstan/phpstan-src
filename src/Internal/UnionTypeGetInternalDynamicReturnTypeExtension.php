@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function count;
 
 class UnionTypeGetInternalDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {

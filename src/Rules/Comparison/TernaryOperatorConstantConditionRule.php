@@ -2,13 +2,17 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Ternary>
+ * @implements Rule<Node\Expr\Ternary>
  */
-class TernaryOperatorConstantConditionRule implements \PHPStan\Rules\Rule
+class TernaryOperatorConstantConditionRule implements Rule
 {
 
 	private ConstantConditionRuleHelper $helper;
@@ -26,12 +30,12 @@ class TernaryOperatorConstantConditionRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\Ternary::class;
+		return Node\Expr\Ternary::class;
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		\PHPStan\Analyser\Scope $scope
+		Node $node,
+		Scope $scope
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);

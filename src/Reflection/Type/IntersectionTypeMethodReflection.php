@@ -10,6 +10,9 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
+use function count;
+use function implode;
 
 class IntersectionTypeMethodReflection implements MethodReflection
 {
@@ -20,7 +23,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 	private array $methods;
 
 	/**
-	 * @param \PHPStan\Reflection\MethodReflection[] $methods
+	 * @param MethodReflection[] $methods
 	 */
 	public function __construct(string $methodName, array $methods)
 	{

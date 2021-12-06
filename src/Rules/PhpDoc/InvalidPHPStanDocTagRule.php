@@ -7,12 +7,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function in_array;
+use function sprintf;
+use function strpos;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ * @implements Rule<Node>
  */
-class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
+class InvalidPHPStanDocTagRule implements Rule
 {
 
 	private const POSSIBLE_PHPSTAN_TAGS = [
@@ -50,7 +54,7 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node::class;
+		return Node::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

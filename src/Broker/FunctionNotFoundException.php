@@ -2,7 +2,10 @@
 
 namespace PHPStan\Broker;
 
-class FunctionNotFoundException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use function sprintf;
+
+class FunctionNotFoundException extends AnalysedCodeException
 {
 
 	private string $functionName;

@@ -8,7 +8,7 @@ use PHPStan\Type\Type;
 class FoundTypeResult
 {
 
-	private \PHPStan\Type\Type $type;
+	private Type $type;
 
 	/** @var string[] */
 	private array $referencedClasses;

@@ -5,12 +5,15 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function htmlspecialchars;
 use function sprintf;
+use const ENT_COMPAT;
+use const ENT_XML1;
 
 class JunitErrorFormatter implements ErrorFormatter
 {
 
-	private \PHPStan\File\RelativePathHelper $relativePathHelper;
+	private RelativePathHelper $relativePathHelper;
 
 	public function __construct(RelativePathHelper $relativePathHelper)
 	{

@@ -2,14 +2,20 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
+use function is_a;
 
 /**
  * @internal
@@ -19,19 +25,19 @@ class DirectScopeFactory implements ScopeFactory
 
 	private string $scopeClass;
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider;
+	private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider;
 
 	private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider;
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
+	private Standard $printer;
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
-	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
+	private PropertyReflectionFinder $propertyReflectionFinder;
 
-	private \PHPStan\Parser\Parser $parser;
+	private Parser $parser;
 
 	private NodeScopeResolver $nodeScopeResolver;
 
@@ -47,10 +53,10 @@ class DirectScopeFactory implements ScopeFactory
 		ReflectionProvider $reflectionProvider,
 		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
-		\PhpParser\PrettyPrinter\Standard $printer,
+		Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
-		\PHPStan\Parser\Parser $parser,
+		Parser $parser,
 		NodeScopeResolver $nodeScopeResolver,
 		bool $treatPhpDocTypesAsCertain,
 		Container $container,
@@ -73,13 +79,13 @@ class DirectScopeFactory implements ScopeFactory
 
 	/**
 	 * @param  array<string, Type> $constantTypes
-	 * @param \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null $function
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
+	 * @param FunctionReflection|MethodReflection|null $function
+	 * @param VariableTypeHolder[] $variablesTypes
+	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
-	 * @param array<\PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection> $inFunctionCallsStack
+	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 *
 	 */
 	public function create(
@@ -103,7 +109,7 @@ class DirectScopeFactory implements ScopeFactory
 	{
 		$scopeClass = $this->scopeClass;
 		if (!is_a($scopeClass, MutatingScope::class, true)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return new $scopeClass(

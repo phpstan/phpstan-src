@@ -6,6 +6,7 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use function array_map;
 
 class ResolvedFunctionVariant implements ParametersAcceptor
 {

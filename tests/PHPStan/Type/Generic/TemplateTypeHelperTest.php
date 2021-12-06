@@ -2,11 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
+use DateTime;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 
-class TemplateTypeHelperTest extends \PHPStan\Testing\PHPStanTestCase
+class TemplateTypeHelperTest extends PHPStanTestCase
 {
 
 	public function testIssue2512(): void
@@ -34,7 +36,7 @@ class TemplateTypeHelperTest extends \PHPStan\Testing\PHPStanTestCase
 			$templateType,
 			new TemplateTypeMap([
 				'T' => new IntersectionType([
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 					$templateType,
 				]),
 			])

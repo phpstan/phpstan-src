@@ -12,12 +12,14 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function count;
 
-class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var string[] */
@@ -116,7 +118,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type[] $types
+	 * @param Type[] $types
 	 */
 	private function processType(
 		string $functionName,

@@ -2,10 +2,12 @@
 
 namespace PHPStan\Levels;
 
+use PHPStan\Testing\LevelsTestCase;
+
 /**
  * @group exec
  */
-class InferPrivatePropertyTypeFromConstructorIntegrationTest extends \PHPStan\Testing\LevelsTestCase
+class InferPrivatePropertyTypeFromConstructorIntegrationTest extends LevelsTestCase
 {
 
 	public function dataTopics(): array

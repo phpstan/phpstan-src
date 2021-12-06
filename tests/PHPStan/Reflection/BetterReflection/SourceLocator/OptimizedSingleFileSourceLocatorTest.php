@@ -5,7 +5,10 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Testing\PHPStanTestCase;
+use SingleFileSourceLocatorTestClass;
+use stdClass;
 use TestSingleFileSourceLocator\AFoo;
+use function str_replace;
 
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 {
@@ -24,13 +27,13 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 				__DIR__ . '/data/a.php',
 			],
 			[
-				\SingleFileSourceLocatorTestClass::class,
-				\SingleFileSourceLocatorTestClass::class,
+				SingleFileSourceLocatorTestClass::class,
+				SingleFileSourceLocatorTestClass::class,
 				__DIR__ . '/data/b.php',
 			],
 			[
 				'SinglefilesourceLocatortestClass',
-				\SingleFileSourceLocatorTestClass::class,
+				SingleFileSourceLocatorTestClass::class,
 				__DIR__ . '/data/b.php',
 			],
 		];
@@ -107,7 +110,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 			],
 			[
 				'OPTIMIZED_SFSL_OBJECT_CONSTANT',
-				new \stdClass(),
+				new stdClass(),
 			],
 		];
 	}

@@ -9,14 +9,16 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VoidType;
+use function in_array;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ * @implements Rule<Node\Stmt\Expression>
  */
 class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	public function __construct(ReflectionProvider $reflectionProvider)
 	{
@@ -35,7 +37,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$funcCall = $node->expr;
-		if (!($funcCall->name instanceof \PhpParser\Node\Name)) {
+		if (!($funcCall->name instanceof Node\Name)) {
 			return [];
 		}
 

@@ -4,16 +4,17 @@ namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 
 class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTypeSpecifyingExtensionRegistryProvider
 {
 
-	private \PHPStan\DependencyInjection\Container $container;
+	private Container $container;
 
-	private ?\PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry $registry = null;
+	private ?OperatorTypeSpecifyingExtensionRegistry $registry = null;
 
-	public function __construct(\PHPStan\DependencyInjection\Container $container)
+	public function __construct(Container $container)
 	{
 		$this->container = $container;
 	}

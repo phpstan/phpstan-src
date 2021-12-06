@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
@@ -14,6 +15,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
@@ -28,40 +30,51 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use ReflectionException;
+use ReflectionParameter;
+use function array_map;
+use function explode;
+use function filemtime;
+use function is_bool;
+use function is_file;
+use function sprintf;
+use function strtolower;
+use function time;
+use const PHP_VERSION_ID;
 
 /** @api */
 class PhpMethodReflection implements MethodReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ClassReflection $declaringClass;
 
 	private ?ClassReflection $declaringTrait;
 
 	private BuiltinMethodReflection $reflection;
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Parser\Parser $parser;
+	private Parser $parser;
 
-	private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
+	private FunctionCallStatementFinder $functionCallStatementFinder;
 
-	private \PHPStan\Cache\Cache $cache;
+	private Cache $cache;
 
-	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
+	private TemplateTypeMap $templateTypeMap;
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $phpDocParameterTypes;
 
-	private ?\PHPStan\Type\Type $phpDocReturnType;
+	private ?Type $phpDocReturnType;
 
-	private ?\PHPStan\Type\Type $phpDocThrowType;
+	private ?Type $phpDocThrowType;
 
-	/** @var \PHPStan\Reflection\Php\PhpParameterReflection[]|null */
+	/** @var PhpParameterReflection[]|null */
 	private ?array $parameters = null;
 
-	private ?\PHPStan\Type\Type $returnType = null;
+	private ?Type $returnType = null;
 
-	private ?\PHPStan\Type\Type $nativeReturnType = null;
+	private ?Type $nativeReturnType = null;
 
 	private ?string $deprecatedDescription;
 
@@ -79,7 +92,7 @@ class PhpMethodReflection implements MethodReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
+	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
 		ClassReflection $declaringClass,
@@ -140,7 +153,7 @@ class PhpMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return self|\PHPStan\Reflection\MethodPrototypeReflection
+	 * @return self|MethodPrototypeReflection
 	 */
 	public function getPrototype(): ClassMemberReflection
 	{
@@ -164,7 +177,7 @@ class PhpMethodReflection implements MethodReflection
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
 				$tentativeReturnType
 			);
-		} catch (\ReflectionException $e) {
+		} catch (ReflectionException $e) {
 			return $this;
 		}
 	}
@@ -237,12 +250,12 @@ class PhpMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParameterReflectionWithPhpDocs[]
+	 * @return ParameterReflectionWithPhpDocs[]
 	 */
 	private function getParameters(): array
 	{
 		if ($this->parameters === null) {
-			$this->parameters = array_map(function (\ReflectionParameter $reflection): PhpParameterReflection {
+			$this->parameters = array_map(function (ReflectionParameter $reflection): PhpParameterReflection {
 				return new PhpParameterReflection(
 					$reflection,
 					$this->phpDocParameterTypes[$reflection->getName()] ?? null,
@@ -286,13 +299,13 @@ class PhpMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @param \PhpParser\Node[] $nodes
+	 * @param Node[] $nodes
 	 */
 	private function callsFuncGetArgs(ClassReflection $declaringClass, array $nodes): bool
 	{
 		foreach ($nodes as $node) {
 			if (
-				$node instanceof \PhpParser\Node\Stmt\ClassLike
+				$node instanceof Node\Stmt\ClassLike
 			) {
 				if (!isset($node->namespacedName)) {
 					continue;

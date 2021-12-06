@@ -2,7 +2,10 @@
 
 namespace PHPStan\DependencyInjection;
 
-class ParameterNotFoundException extends \Exception
+use Exception;
+use function sprintf;
+
+class ParameterNotFoundException extends Exception
 {
 
 	public function __construct(string $parameterName)

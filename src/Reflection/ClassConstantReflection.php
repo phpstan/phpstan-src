@@ -7,13 +7,16 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Type;
+use ReflectionClassConstant;
+use function method_exists;
+use const NAN;
 
 class ClassConstantReflection implements ConstantReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ClassReflection $declaringClass;
 
-	private \ReflectionClassConstant $reflection;
+	private ReflectionClassConstant $reflection;
 
 	private ?Type $phpDocType;
 
@@ -29,7 +32,7 @@ class ClassConstantReflection implements ConstantReflection
 
 	public function __construct(
 		ClassReflection $declaringClass,
-		\ReflectionClassConstant $reflection,
+		ReflectionClassConstant $reflection,
 		?Type $phpDocType,
 		PhpVersion $phpVersion,
 		?string $deprecatedDescription,

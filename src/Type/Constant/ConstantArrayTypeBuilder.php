@@ -9,6 +9,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_filter;
+use function array_values;
+use function count;
+use function is_float;
+use function max;
 
 /** @api */
 class ConstantArrayTypeBuilder

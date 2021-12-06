@@ -8,12 +8,15 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
+use function strpos;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ * @implements Rule<Node>
  */
-class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
+class InvalidPhpDocTagValueRule implements Rule
 {
 
 	private Lexer $phpDocLexer;
@@ -28,7 +31,7 @@ class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node::class;
+		return Node::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

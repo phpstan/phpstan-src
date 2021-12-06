@@ -2,11 +2,15 @@
 
 namespace PHPStan\Type\Constant;
 
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -28,6 +32,11 @@ use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function is_float;
+use function is_numeric;
+use function strlen;
+use function substr;
+use function var_export;
 
 /** @api */
 class ConstantStringType extends StringType implements ConstantScalarType
@@ -78,8 +87,8 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				}
 
 				try {
-					$truncatedValue = \Nette\Utils\Strings::truncate($this->value, self::DESCRIBE_LIMIT);
-				} catch (\Nette\Utils\RegexpException $e) {
+					$truncatedValue = Strings::truncate($this->value, self::DESCRIBE_LIMIT);
+				} catch (RegexpException $e) {
 					$truncatedValue = substr($this->value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
 				}
 
@@ -156,7 +165,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		// 'MyClass::myStaticFunction'
-		$matches = \Nette\Utils\Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
+		$matches = Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
 		if ($matches !== null) {
 			if (!$reflectionProvider->hasClass($matches[1])) {
 				return TrinaryLogic::createMaybe();
@@ -178,7 +187,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -191,7 +200,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		// 'MyClass::myStaticFunction'
-		$matches = \Nette\Utils\Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
+		$matches = Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
 		if ($matches !== null) {
 			if (!$reflectionProvider->hasClass($matches[1])) {
 				return [new TrivialParametersAcceptor()];
@@ -212,7 +221,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			}
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function toNumber(): Type

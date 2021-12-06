@@ -2,6 +2,8 @@
 
 namespace PHPStan\DependencyInjection;
 
+use function array_merge;
+
 class DerivativeContainerFactory
 {
 

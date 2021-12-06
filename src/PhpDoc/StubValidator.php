@@ -51,11 +51,15 @@ use PHPStan\Rules\Properties\MissingPropertyTypehintRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
+use Throwable;
+use function array_fill_keys;
+use function count;
+use function sprintf;
 
 class StubValidator
 {
 
-	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
+	private DerivativeContainerFactory $derivativeContainerFactory;
 
 	public function __construct(
 		DerivativeContainerFactory $derivativeContainerFactory
@@ -66,7 +70,7 @@ class StubValidator
 
 	/**
 	 * @param string[] $stubFiles
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	public function validate(array $stubFiles, bool $debug): array
 	{
@@ -107,7 +111,7 @@ class StubValidator
 				foreach ($tmpErrors as $tmpError) {
 					$errors[] = $tmpError->withoutTip();
 				}
-			} catch (\Throwable $e) {
+			} catch (Throwable $e) {
 				if ($debug) {
 					throw $e;
 				}

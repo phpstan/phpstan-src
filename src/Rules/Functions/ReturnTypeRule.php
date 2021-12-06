@@ -11,14 +11,18 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
+use ReflectionFunction;
+use function function_exists;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Return_>
+ * @implements Rule<Node\Stmt\Return_>
  */
-class ReturnTypeRule implements \PHPStan\Rules\Rule
+class ReturnTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
+	private FunctionReturnTypeCheck $returnTypeCheck;
 
 	private Reflector $reflector;
 
@@ -56,7 +60,7 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 
 		$reflection = null;
 		if (function_exists($function->getName())) {
-			$reflection = new \ReflectionFunction($function->getName());
+			$reflection = new ReflectionFunction($function->getName());
 		} else {
 			try {
 				$reflection = $this->reflector->reflectFunction($function->getName());

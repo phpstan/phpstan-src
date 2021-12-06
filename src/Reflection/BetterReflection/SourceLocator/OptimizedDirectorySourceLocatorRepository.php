@@ -2,10 +2,12 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use function array_key_exists;
+
 class OptimizedDirectorySourceLocatorRepository
 {
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory $factory;
+	private OptimizedDirectorySourceLocatorFactory $factory;
 
 	/** @var array<string, OptimizedDirectorySourceLocator> */
 	private array $locators = [];

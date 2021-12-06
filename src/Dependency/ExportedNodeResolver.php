@@ -19,7 +19,11 @@ use PHPStan\Dependency\ExportedNode\ExportedPhpDocNode;
 use PHPStan\Dependency\ExportedNode\ExportedPropertiesNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitUseAdaptation;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
+use function array_map;
+use function implode;
+use function is_string;
 
 class ExportedNodeResolver
 {
@@ -34,7 +38,7 @@ class ExportedNodeResolver
 		$this->printer = $printer;
 	}
 
-	public function resolve(string $fileName, \PhpParser\Node $node): ?ExportedNode
+	public function resolve(string $fileName, Node $node): ?ExportedNode
 	{
 		if ($node instanceof Class_ && isset($node->namespacedName)) {
 			$docComment = $node->getDocComment();
@@ -94,13 +98,13 @@ class ExportedNodeResolver
 						);
 					}
 
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}, $adaptations),
 				$this->exportClassStatements($node->stmts, $fileName, $node, $className)
 			);
 		}
 
-		if ($node instanceof \PhpParser\Node\Stmt\Interface_ && isset($node->namespacedName)) {
+		if ($node instanceof Node\Stmt\Interface_ && isset($node->namespacedName)) {
 			$extendsNames = array_map(static function (Name $name): string {
 				return (string) $name;
 			}, $node->extends);
@@ -167,7 +171,7 @@ class ExportedNodeResolver
 			return implode('|', array_map(function ($innerType): string {
 				$printedType = $this->printType($innerType);
 				if ($printedType === null) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $printedType;
@@ -178,7 +182,7 @@ class ExportedNodeResolver
 			return implode('&', array_map(function ($innerType): string {
 				$printedType = $this->printType($innerType);
 				if ($printedType === null) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $printedType;
@@ -189,7 +193,7 @@ class ExportedNodeResolver
 			return $type->toString();
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	/**
@@ -201,7 +205,7 @@ class ExportedNodeResolver
 		$nodes = [];
 		foreach ($params as $param) {
 			if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$type = $param->type;
 			if (

@@ -2,14 +2,16 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PHPStan\File\FileReader;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
 
 class FileNodesFetcher
 {
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor $cachingVisitor;
+	private CachingVisitor $cachingVisitor;
 
 	private Parser $parser;
 
@@ -30,9 +32,9 @@ class FileNodesFetcher
 		$contents = FileReader::read($fileName);
 
 		try {
-			/** @var \PhpParser\Node[] $ast */
+			/** @var Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
-		} catch (\PHPStan\Parser\ParserErrorsException $e) {
+		} catch (ParserErrorsException $e) {
 			return new FetchedNodesResult([], [], []);
 		}
 		$this->cachingVisitor->reset($fileName, $contents);

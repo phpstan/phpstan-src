@@ -2,10 +2,13 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+use PHPStan\Rules\NonIgnorableRuleError;
+use PHPStan\Rules\RuleError;
+
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError65 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\NonIgnorableRuleError
+class RuleError65 implements RuleError, NonIgnorableRuleError
 {
 
 	public string $message;

@@ -7,15 +7,18 @@ use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\EnumCase;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function is_string;
 use function sprintf;
 use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InClassNode>
+ * @implements Rule<InClassNode>
  */
-class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
+class DuplicateDeclarationRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -27,7 +30,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 	{
 		$classReflection = $scope->getClassReflection();
 		if ($classReflection === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$errors = [];
@@ -83,7 +86,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 					}
 
 					if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					$propertyName = $param->var->name;

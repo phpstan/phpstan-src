@@ -17,13 +17,19 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionProperty;
+use function array_map;
+use function array_merge;
+use function count;
+use function is_string;
+use function sprintf;
 
 /** @api */
-abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
+abstract class TypeInferenceTestCase extends PHPStanTestCase
 {
 
 	/**
-	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
+	 * @param callable(Node , Scope ): void $callback
 	 * @param string[] $dynamicConstantNames
 	 */
 	public function processFile(
@@ -59,7 +65,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 
 		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier);
 		if (count($dynamicConstantNames) > 0) {
-			$reflectionProperty = new \ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
+			$reflectionProperty = new ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
 			$reflectionProperty->setAccessible(true);
 			$reflectionProperty->setValue($scopeFactory, $dynamicConstantNames);
 		}

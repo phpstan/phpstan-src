@@ -4,7 +4,14 @@ namespace PHPStan\Parallel;
 
 use Nette\Utils\Json;
 use PHPStan\File\FileHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
+use function array_map;
+use function escapeshellarg;
+use function exec;
+use function implode;
+use function sprintf;
+use const PHP_BINARY;
 
 /**
  * @group exec
@@ -27,7 +34,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 	{
 		exec(sprintf('%s %s clear-result-cache --configuration %s -q', escapeshellarg(PHP_BINARY), escapeshellarg(__DIR__ . '/../../../bin/phpstan'), escapeshellarg(__DIR__ . '/parallel-analyser.neon')), $clearResultCacheOutputLines, $clearResultCacheExitCode);
 		if ($clearResultCacheExitCode !== 0) {
-			throw new \PHPStan\ShouldNotHappenException('Could not clear result cache.');
+			throw new ShouldNotHappenException('Could not clear result cache.');
 		}
 
 		exec(sprintf(

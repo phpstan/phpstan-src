@@ -2,7 +2,9 @@
 
 namespace PHPStan\Tests;
 
-class AssertionException extends \Exception
+use Exception;
+
+class AssertionException extends Exception
 {
 
 }

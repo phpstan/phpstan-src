@@ -5,14 +5,15 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrowFunction>
+ * @implements Rule<Node\Expr\ArrowFunction>
  */
-class ExistingClassesInArrowFunctionTypehintsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionDefinitionCheck $check;
+	private FunctionDefinitionCheck $check;
 
 	public function __construct(FunctionDefinitionCheck $check)
 	{

@@ -7,22 +7,28 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function is_string;
+use function sprintf;
+use function trim;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\FunctionLike>
+ * @implements Rule<Node\FunctionLike>
  */
-class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
+class IncompatiblePhpDocTypeRule implements Rule
 {
 
 	private FileTypeMapper $fileTypeMapper;
 
-	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
+	private GenericObjectTypeCheck $genericObjectTypeCheck;
 
 	private UnresolvableTypeHelper $unresolvableTypeHelper;
 
@@ -39,7 +45,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\FunctionLike::class;
+		return Node\FunctionLike::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -188,13 +194,13 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 	/**
 	 * @return Type[]
 	 */
-	private function getNativeParameterTypes(\PhpParser\Node\FunctionLike $node, Scope $scope): array
+	private function getNativeParameterTypes(Node\FunctionLike $node, Scope $scope): array
 	{
 		$nativeParameterTypes = [];
 		foreach ($node->getParams() as $parameter) {
 			$isNullable = $scope->isParameterValueNullable($parameter);
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$nativeParameterTypes[$parameter->var->name] = $scope->getFunctionType(
 				$parameter->type,
@@ -206,7 +212,7 @@ class IncompatiblePhpDocTypeRule implements \PHPStan\Rules\Rule
 		return $nativeParameterTypes;
 	}
 
-	private function getNativeReturnType(\PhpParser\Node\FunctionLike $node, Scope $scope): Type
+	private function getNativeReturnType(Node\FunctionLike $node, Scope $scope): Type
 	{
 		return $scope->getFunctionType($node->getReturnType(), false, false);
 	}

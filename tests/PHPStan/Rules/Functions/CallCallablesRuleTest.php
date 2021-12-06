@@ -6,18 +6,21 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallCallablesRule>
+ * @extends RuleTestCase<CallCallablesRule>
  */
-class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallCallablesRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $checkExplicitMixed = false;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed);
 		return new CallCallablesRule(

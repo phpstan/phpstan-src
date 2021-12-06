@@ -13,9 +13,10 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Yield_>
+ * @implements Rule<Node\Expr\Yield_>
  */
 class YieldTypeRule implements Rule
 {

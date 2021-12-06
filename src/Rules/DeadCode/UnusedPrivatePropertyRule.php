@@ -9,10 +9,16 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
+use function array_key_exists;
+use function array_map;
+use function count;
+use function sprintf;
+use function strpos;
 
 /**
  * @implements Rule<ClassPropertiesNode>
@@ -58,7 +64,7 @@ class UnusedPrivatePropertyRule implements Rule
 			return [];
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 		$classType = new ObjectType($classReflection->getName());

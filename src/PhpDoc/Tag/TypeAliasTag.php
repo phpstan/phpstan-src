@@ -4,6 +4,7 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\TypeAlias;
 
 /** @api */
 class TypeAliasTag
@@ -31,9 +32,9 @@ class TypeAliasTag
 		return $this->aliasName;
 	}
 
-	public function getTypeAlias(): \PHPStan\Type\TypeAlias
+	public function getTypeAlias(): TypeAlias
 	{
-		return new \PHPStan\Type\TypeAlias(
+		return new TypeAlias(
 			$this->typeNode,
 			$this->nameScope
 		);

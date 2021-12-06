@@ -4,6 +4,7 @@ namespace PHPStan\Process\Runnable;
 
 use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
+use function sprintf;
 
 class RunnableStub implements Runnable
 {
@@ -38,7 +39,7 @@ class RunnableStub implements Runnable
 
 	public function cancel(): void
 	{
-		$this->deferred->reject(new \PHPStan\Process\Runnable\RunnableCanceledException(sprintf('Runnable %s canceled', $this->getName())));
+		$this->deferred->reject(new RunnableCanceledException(sprintf('Runnable %s canceled', $this->getName())));
 	}
 
 }

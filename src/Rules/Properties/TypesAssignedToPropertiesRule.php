@@ -4,22 +4,25 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @implements Rule<Node\Expr>
  */
-class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
+class TypesAssignedToPropertiesRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
-	private \PHPStan\Rules\Properties\PropertyDescriptor $propertyDescriptor;
+	private PropertyDescriptor $propertyDescriptor;
 
-	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
+	private PropertyReflectionFinder $propertyReflectionFinder;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
@@ -34,7 +37,7 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr::class;
+		return Node\Expr::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -54,7 +57,7 @@ class TypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		/** @var \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch */
+		/** @var Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch */
 		$propertyFetch = $node->var;
 		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $scope);
 

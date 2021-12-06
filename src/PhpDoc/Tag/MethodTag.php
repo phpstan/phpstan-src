@@ -8,15 +8,15 @@ use PHPStan\Type\Type;
 class MethodTag
 {
 
-	private \PHPStan\Type\Type $returnType;
+	private Type $returnType;
 
 	private bool $isStatic;
 
-	/** @var array<string, \PHPStan\PhpDoc\Tag\MethodTagParameter> */
+	/** @var array<string, MethodTagParameter> */
 	private array $parameters;
 
 	/**
-	 * @param array<string, \PHPStan\PhpDoc\Tag\MethodTagParameter> $parameters
+	 * @param array<string, MethodTagParameter> $parameters
 	 */
 	public function __construct(
 		Type $returnType,
@@ -40,7 +40,7 @@ class MethodTag
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\MethodTagParameter>
+	 * @return array<string, MethodTagParameter>
 	 */
 	public function getParameters(): array
 	{

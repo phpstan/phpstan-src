@@ -4,8 +4,10 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -23,13 +25,29 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function array_pop;
+use function array_slice;
 use function array_unique;
+use function array_values;
+use function assert;
+use function count;
+use function implode;
+use function in_array;
+use function is_string;
+use function max;
+use function pow;
+use function sprintf;
+use function strpos;
 
 /**
  * @api
@@ -133,7 +151,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			$array = $builder->getArray();
 			if (!$array instanceof ConstantArrayType) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$arrays[] = $array;
@@ -322,13 +340,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		$typeAndMethodName = $this->findTypeAndMethodName();
 		if ($typeAndMethodName === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($typeAndMethodName->isUnknown() || !$typeAndMethodName->getCertainty()->yes()) {
@@ -373,7 +391,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 		} elseif ($classOrObject instanceof GenericClassStringType) {
 			$type = $classOrObject->getGenericType();
-		} elseif ((new \PHPStan\Type\ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
+		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
 			$type = $classOrObject;
 		} else {
 			return ConstantArrayTypeAndMethod::createUnknown();

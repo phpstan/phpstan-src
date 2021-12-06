@@ -9,15 +9,18 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Parser\Parser;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
+use function array_map;
+use function is_string;
 
 class StubPhpDocProvider
 {
 
-	private \PHPStan\Parser\Parser $parser;
+	private Parser $parser;
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	private Container $container;
 
@@ -182,7 +185,7 @@ class StubPhpDocProvider
 			);
 
 			if (!isset($this->knownMethodsParameterNames[$className][$methodName])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$methodParameterNames = $this->knownMethodsParameterNames[$className][$methodName];
@@ -202,7 +205,7 @@ class StubPhpDocProvider
 
 	/**
 	 * @param array<int, string> $positionalParameterNames
-	 * @throws \PHPStan\ShouldNotHappenException
+	 * @throws ShouldNotHappenException
 	 */
 	public function findFunctionPhpDoc(string $functionName, array $positionalParameterNames): ?ResolvedPhpDocBlock
 	{
@@ -225,7 +228,7 @@ class StubPhpDocProvider
 			);
 
 			if (!isset($this->knownFunctionParameterNames[$functionName])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$functionParameterNames = $this->knownFunctionParameterNames[$functionName];
@@ -270,7 +273,7 @@ class StubPhpDocProvider
 	private function initializeKnownElements(): void
 	{
 		if ($this->initializing) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		if ($this->initialized) {
 			return;
@@ -326,7 +329,7 @@ class StubPhpDocProvider
 			}
 			$this->knownFunctionParameterNames[$functionName] = array_map(static function (Node\Param $param): string {
 				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $param->var->name;
@@ -387,7 +390,7 @@ class StubPhpDocProvider
 				$this->knownMethodsDocComments[$className][$methodName] = [$stubFile, $docComment->getText()];
 				$this->knownMethodsParameterNames[$className][$methodName] = array_map(static function (Node\Param $param): string {
 					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					return $param->var->name;

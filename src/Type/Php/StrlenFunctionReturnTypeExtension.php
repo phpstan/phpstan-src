@@ -11,7 +11,10 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
+use function count;
+use function strlen;
 
 class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -25,7 +28,7 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope
-	): \PHPStan\Type\Type
+	): Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {

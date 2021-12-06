@@ -2,7 +2,10 @@
 
 namespace PHPStan\File;
 
-class CouldNotWriteFileException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use function sprintf;
+
+class CouldNotWriteFileException extends AnalysedCodeException
 {
 
 	public function __construct(string $fileName, string $error)

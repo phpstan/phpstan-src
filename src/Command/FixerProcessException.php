@@ -2,7 +2,9 @@
 
 namespace PHPStan\Command;
 
-class FixerProcessException extends \Exception
+use Exception;
+
+class FixerProcessException extends Exception
 {
 
 }

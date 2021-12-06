@@ -2,18 +2,20 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<WritingToReadOnlyPropertiesRule>
+ * @extends RuleTestCase<WritingToReadOnlyPropertiesRule>
  */
-class WritingToReadOnlyPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $checkThisOnly;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new WritingToReadOnlyPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false), new PropertyDescriptor(), new PropertyReflectionFinder(), $this->checkThisOnly);
 	}

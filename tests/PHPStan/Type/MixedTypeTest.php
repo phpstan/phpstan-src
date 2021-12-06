@@ -2,10 +2,12 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use function sprintf;
 
-class MixedTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class MixedTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array

@@ -10,6 +10,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
+use function sprintf;
 
 class TemplateTypeVarianceTest extends TestCase
 {

@@ -3,6 +3,7 @@
 namespace PHPStan\Testing;
 
 use Composer\Autoload\ClassLoader;
+use PhpParser\Parser;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
@@ -14,6 +15,11 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
+use PHPStan\ShouldNotHappenException;
+use ReflectionClass;
+use function dirname;
+use function is_file;
+use function sprintf;
 
 class TestCaseSourceLocatorFactory
 {
@@ -22,9 +28,9 @@ class TestCaseSourceLocatorFactory
 
 	private AutoloadSourceLocator $autoloadSourceLocator;
 
-	private \PhpParser\Parser $phpParser;
+	private Parser $phpParser;
 
-	private \PhpParser\Parser $php8Parser;
+	private Parser $php8Parser;
 
 	private PhpStormStubsSourceStubber $phpstormStubsSourceStubber;
 
@@ -33,8 +39,8 @@ class TestCaseSourceLocatorFactory
 	public function __construct(
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
-		\PhpParser\Parser $phpParser,
-		\PhpParser\Parser $php8Parser,
+		Parser $phpParser,
+		Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		ReflectionSourceStubber $reflectionSourceStubber
 	)
@@ -49,19 +55,19 @@ class TestCaseSourceLocatorFactory
 
 	public function create(): SourceLocator
 	{
-		$classLoaderReflection = new \ReflectionClass(ClassLoader::class);
+		$classLoaderReflection = new ReflectionClass(ClassLoader::class);
 		if ($classLoaderReflection->getFileName() === false) {
-			throw new \PHPStan\ShouldNotHappenException('Unknown ClassLoader filename');
+			throw new ShouldNotHappenException('Unknown ClassLoader filename');
 		}
 
 		$composerProjectPath = dirname($classLoaderReflection->getFileName(), 3);
 		if (!is_file($composerProjectPath . '/composer.json')) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('composer.json not found in directory %s', $composerProjectPath));
+			throw new ShouldNotHappenException(sprintf('composer.json not found in directory %s', $composerProjectPath));
 		}
 
 		$composerSourceLocator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
 		if ($composerSourceLocator === null) {
-			throw new \PHPStan\ShouldNotHappenException('Could not create composer source locator');
+			throw new ShouldNotHappenException('Could not create composer source locator');
 		}
 
 		$locators = [

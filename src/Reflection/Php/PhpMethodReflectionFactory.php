@@ -10,7 +10,7 @@ interface PhpMethodReflectionFactory
 {
 
 	/**
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
+	 * @param Type[] $phpDocParameterTypes
 	 *
 	 */
 	public function create(

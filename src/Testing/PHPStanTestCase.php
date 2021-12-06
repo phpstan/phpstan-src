@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -22,9 +23,19 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\TypeAliasResolver;
+use PHPUnit\Framework\TestCase;
+use function array_merge;
+use function implode;
+use function is_dir;
+use function mkdir;
+use function sha1;
+use function sprintf;
+use function sys_get_temp_dir;
+use const DIRECTORY_SEPARATOR;
+use const PHP_VERSION_ID;
 
 /** @api */
-abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
+abstract class PHPStanTestCase extends TestCase
 {
 
 	/** @var bool */
@@ -125,7 +136,7 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 			$reflectionProvider,
 			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
-			new \PhpParser\PrettyPrinter\Standard(),
+			new Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
 			$this->getParser(),

@@ -4,11 +4,18 @@ namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
 use PhpParser\Lexer;
+use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\File\FileReader;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
+use PHPStan\ShouldNotHappenException;
+use function is_string;
+use function strpos;
+use function substr_count;
+use const T_COMMENT;
+use const T_DOC_COMMENT;
 
 class RichParser implements Parser
 {
@@ -40,19 +47,19 @@ class RichParser implements Parser
 
 	/**
 	 * @param string $file path to a file to parse
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseFile(string $file): array
 	{
 		try {
 			return $this->parseString(FileReader::read($file));
-		} catch (\PHPStan\Parser\ParserErrorsException $e) {
-			throw new \PHPStan\Parser\ParserErrorsException($e->getErrors(), $file);
+		} catch (ParserErrorsException $e) {
+			throw new ParserErrorsException($e->getErrors(), $file);
 		}
 	}
 
 	/**
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseString(string $sourceCode): array
 	{
@@ -60,10 +67,10 @@ class RichParser implements Parser
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
 		$tokens = $this->lexer->getTokens();
 		if ($errorHandler->hasErrors()) {
-			throw new \PHPStan\Parser\ParserErrorsException($errorHandler->getErrors(), null);
+			throw new ParserErrorsException($errorHandler->getErrors(), null);
 		}
 		if ($nodes === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$nodeTraverser = new NodeTraverser();
@@ -71,7 +78,7 @@ class RichParser implements Parser
 		$nodeTraverser->addVisitor($this->nodeConnectingVisitor);
 		$nodeTraverser->addVisitor($this->statementOrderVisitor);
 
-		/** @var array<\PhpParser\Node\Stmt> */
+		/** @var array<Node\Stmt> */
 		$nodes = $nodeTraverser->traverse($nodes);
 		if (isset($nodes[0])) {
 			$nodes[0]->setAttribute('linesToIgnore', $this->getLinesToIgnore($tokens));

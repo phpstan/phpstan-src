@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function sprintf;
 
 /** @api */
 class ObjectWithoutClassType implements SubtractableType
@@ -15,7 +16,7 @@ class ObjectWithoutClassType implements SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private ?\PHPStan\Type\Type $subtractedType;
+	private ?Type $subtractedType;
 
 	/** @api */
 	public function __construct(

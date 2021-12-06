@@ -4,9 +4,11 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -26,13 +28,16 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
+use function array_merge;
+use function get_class;
+use function sprintf;
 
 class TemplateTypeCheck
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	private GenericObjectTypeCheck $genericObjectTypeCheck;
 
@@ -56,8 +61,8 @@ class TemplateTypeCheck
 	}
 
 	/**
-	 * @param array<string, \PHPStan\PhpDoc\Tag\TemplateTag> $templateTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param array<string, TemplateTag> $templateTags
+	 * @return RuleError[]
 	 */
 	public function check(
 		Node $node,

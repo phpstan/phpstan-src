@@ -2,8 +2,10 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use Jean85\PrettyVersions;
 use Nette\DI\Definitions\Statement;
 use Nette\Neon\Neon;
+use OutOfBoundsException;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\Output;
@@ -13,8 +15,30 @@ use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
+use Throwable;
+use function array_diff;
 use function array_fill_keys;
+use function array_filter;
 use function array_key_exists;
+use function array_keys;
+use function array_merge;
+use function array_unique;
+use function array_values;
+use function count;
+use function get_loaded_extensions;
+use function is_array;
+use function is_file;
+use function is_string;
+use function ksort;
+use function sha1;
+use function sort;
+use function sprintf;
+use function str_replace;
+use function time;
+use function unlink;
+use function var_export;
+use const PHP_VERSION_ID;
 
 class ResultCacheManager
 {
@@ -144,7 +168,7 @@ class ResultCacheManager
 
 		try {
 			$data = require $cacheFilePath;
-		} catch (\Throwable $e) {
+		} catch (Throwable $e) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
 			}
@@ -449,7 +473,7 @@ class ResultCacheManager
 
 		foreach (array_keys($filesNoOneIsDependingOn) as $file) {
 			if (array_key_exists($file, $cachedDependencies)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$cachedDependencies[$file] = [];
@@ -519,7 +543,7 @@ class ResultCacheManager
 
 		foreach (array_keys($filesNoOneIsDependingOn) as $file) {
 			if (array_key_exists($file, $invertedDependencies)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if (!is_file($file)) {
@@ -785,8 +809,8 @@ php;
 	private function getPhpStanVersion(): string
 	{
 		try {
-			return \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (\OutOfBoundsException $e) {
+			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
+		} catch (OutOfBoundsException $e) {
 			return 'Version unknown';
 		}
 	}

@@ -7,18 +7,21 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallStaticMethodsRule>
+ * @extends RuleTestCase<CallStaticMethodsRule>
  */
-class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallStaticMethodsRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $checkThisOnly;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, false);

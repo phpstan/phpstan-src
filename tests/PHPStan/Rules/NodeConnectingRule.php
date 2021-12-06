@@ -4,6 +4,8 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use function get_class;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Stmt\Echo_>

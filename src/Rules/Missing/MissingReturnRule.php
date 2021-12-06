@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Missing;
 
+use Generator;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ExecutionEndNode;
@@ -9,6 +10,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
@@ -17,9 +19,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ExecutionEndNode>
+ * @implements Rule<ExecutionEndNode>
  */
 class MissingReturnRule implements Rule
 {
@@ -65,7 +68,7 @@ class MissingReturnRule implements Rule
 				$description = sprintf('Function %s()', $scopeFunction->getName());
 			}
 		} else {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$isVoidSuperType = $returnType->isSuperTypeOf(new VoidType());
@@ -77,7 +80,7 @@ class MissingReturnRule implements Rule
 			if ($returnType instanceof TypeWithClassName && $this->checkPhpDocMissingReturn) {
 				$generatorReturnType = GenericTypeVariableResolver::getType(
 					$returnType,
-					\Generator::class,
+					Generator::class,
 					'TReturn'
 				);
 				if ($generatorReturnType !== null) {

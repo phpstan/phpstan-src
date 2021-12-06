@@ -8,14 +8,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Return_>
+ * @implements Rule<Node\Stmt\Return_>
  */
-class ReturnTypeRule implements \PHPStan\Rules\Rule
+class ReturnTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
+	private FunctionReturnTypeCheck $returnTypeCheck;
 
 	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
 	{

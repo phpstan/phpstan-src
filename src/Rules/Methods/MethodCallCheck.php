@@ -7,26 +7,31 @@ use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
+use function strtolower;
 
 class MethodCallCheck
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	private bool $checkFunctionNameCase;
 
 	private bool $reportMagicMethods;
 
 	public function __construct(
-		\PHPStan\Reflection\ReflectionProvider $reflectionProvider,
-		\PHPStan\Rules\RuleLevelHelper $ruleLevelHelper,
+		ReflectionProvider $reflectionProvider,
+		RuleLevelHelper $ruleLevelHelper,
 		bool $checkFunctionNameCase,
 		bool $reportMagicMethods
 	)

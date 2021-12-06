@@ -2,14 +2,16 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Node;
 use PHPStan\File\FileReader;
+use function array_slice;
 
 class CachedParser implements Parser
 {
 
-	private \PHPStan\Parser\Parser $originalParser;
+	private Parser $originalParser;
 
-	/** @var array<string, \PhpParser\Node\Stmt[]>*/
+	/** @var array<string, Node\Stmt[]>*/
 	private array $cachedNodesByString = [];
 
 	private int $cachedNodesByStringCount = 0;
@@ -30,7 +32,7 @@ class CachedParser implements Parser
 
 	/**
 	 * @param string $file path to a file to parse
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseFile(string $file): array
 	{
@@ -56,7 +58,7 @@ class CachedParser implements Parser
 	}
 
 	/**
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseString(string $sourceCode): array
 	{
@@ -91,7 +93,7 @@ class CachedParser implements Parser
 	}
 
 	/**
-	 * @return array<string, \PhpParser\Node[]>
+	 * @return array<string, Node[]>
 	 */
 	public function getCachedNodesByString(): array
 	{

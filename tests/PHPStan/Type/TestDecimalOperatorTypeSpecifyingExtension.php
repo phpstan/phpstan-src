@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Fixture\TestDecimal;
+use function in_array;
 
 final class TestDecimalOperatorTypeSpecifyingExtension implements OperatorTypeSpecifyingExtension
 {

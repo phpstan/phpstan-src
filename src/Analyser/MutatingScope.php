@@ -2,6 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use ArrayAccess;
+use Closure;
+use Generator;
 use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
@@ -26,8 +29,10 @@ use PhpParser\Node\Scalar\EncapsedStringPart;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberReflection;
@@ -37,6 +42,7 @@ use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
@@ -47,6 +53,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -99,7 +106,27 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use Throwable;
+use function abs;
+use function array_column;
+use function array_filter;
 use function array_key_exists;
+use function array_keys;
+use function array_map;
+use function array_pop;
+use function count;
+use function dirname;
+use function get_class;
+use function in_array;
+use function is_float;
+use function is_string;
+use function ltrim;
+use function max;
+use function sprintf;
+use function strlen;
+use function strtolower;
+use function substr;
+use function usort;
 
 class MutatingScope implements Scope
 {
@@ -114,29 +141,29 @@ class MutatingScope implements Scope
 		Node\Expr\AssignOp\Div::class => '/',
 	];
 
-	private \PHPStan\Analyser\ScopeFactory $scopeFactory;
+	private ScopeFactory $scopeFactory;
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Type\DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry;
+	private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry;
 
 	private OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry;
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
+	private Standard $printer;
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
-	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
+	private PropertyReflectionFinder $propertyReflectionFinder;
 
 	private Parser $parser;
 
 	private NodeScopeResolver $nodeScopeResolver;
 
-	private \PHPStan\Analyser\ScopeContext $context;
+	private ScopeContext $context;
 
 	private PhpVersion $phpVersion;
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $resolvedTypes = [];
 
 	private bool $declareStrictTypes;
@@ -144,15 +171,15 @@ class MutatingScope implements Scope
 	/** @var array<string, Type> */
 	private array $constantTypes;
 
-	/** @var \PHPStan\Reflection\FunctionReflection|MethodReflection|null */
+	/** @var FunctionReflection|MethodReflection|null */
 	private $function;
 
 	private ?string $namespace;
 
-	/** @var \PHPStan\Analyser\VariableTypeHolder[] */
+	/** @var VariableTypeHolder[] */
 	private array $variableTypes;
 
-	/** @var \PHPStan\Analyser\VariableTypeHolder[] */
+	/** @var VariableTypeHolder[] */
 	private array $moreSpecificTypes;
 
 	/** @var array<string, ConditionalExpressionHolder[]> */
@@ -184,9 +211,9 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, Type> $constantTypes
-	 * @param \PHPStan\Reflection\FunctionReflection|MethodReflection|null $function
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
+	 * @param FunctionReflection|MethodReflection|null $function
+	 * @param VariableTypeHolder[] $variablesTypes
+	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
@@ -198,7 +225,7 @@ class MutatingScope implements Scope
 		ReflectionProvider $reflectionProvider,
 		DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
 		OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry,
-		\PhpParser\PrettyPrinter\Standard $printer,
+		Standard $printer,
 		TypeSpecifier $typeSpecifier,
 		PropertyReflectionFinder $propertyReflectionFinder,
 		Parser $parser,
@@ -281,7 +308,7 @@ class MutatingScope implements Scope
 
 		$traitReflection = $this->context->getTraitReflection();
 		if ($traitReflection->getFileName() === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return sprintf(
@@ -335,7 +362,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null
+	 * @return FunctionReflection|MethodReflection|null
 	 */
 	public function getFunction()
 	{
@@ -361,7 +388,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @return array<string, \PHPStan\Analyser\VariableTypeHolder>
+	 * @return array<string, VariableTypeHolder>
 	 */
 	private function getVariableTypes(): array
 	{
@@ -477,7 +504,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($this->hasVariableType($variableName)->no()) {
-			throw new \PHPStan\Analyser\UndefinedVariableException($this, $variableName);
+			throw new UndefinedVariableException($this, $variableName);
 		}
 
 		if (!array_key_exists($variableName, $this->variableTypes)) {
@@ -558,7 +585,7 @@ class MutatingScope implements Scope
 	{
 		$nodes = $this->parser->parseFile($this->getFile());
 		foreach ($nodes as $node) {
-			if ($node instanceof \PhpParser\Node\Stmt\HaltCompiler) {
+			if ($node instanceof Node\Stmt\HaltCompiler) {
 				return true;
 			}
 		}
@@ -579,7 +606,7 @@ class MutatingScope implements Scope
 	}
 
 	/** @api */
-	public function getAnonymousFunctionReturnType(): ?\PHPStan\Type\Type
+	public function getAnonymousFunctionReturnType(): ?Type
 	{
 		if ($this->anonymousFunctionReflection === null) {
 			return null;
@@ -683,7 +710,7 @@ class MutatingScope implements Scope
 			return $result;
 		}
 
-		if ($node instanceof \PhpParser\Node\Expr\BooleanNot) {
+		if ($node instanceof Node\Expr\BooleanNot) {
 			if ($this->treatPhpDocTypesAsCertain) {
 				$exprBooleanType = $this->getType($node->expr)->toBoolean();
 			} else {
@@ -696,7 +723,7 @@ class MutatingScope implements Scope
 			return new BooleanType();
 		}
 
-		if ($node instanceof \PhpParser\Node\Expr\BitwiseNot) {
+		if ($node instanceof Node\Expr\BitwiseNot) {
 			$exprType = $this->getType($node->expr);
 			return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
@@ -716,8 +743,8 @@ class MutatingScope implements Scope
 		}
 
 		if (
-			$node instanceof \PhpParser\Node\Expr\BinaryOp\BooleanAnd
-			|| $node instanceof \PhpParser\Node\Expr\BinaryOp\LogicalAnd
+			$node instanceof Node\Expr\BinaryOp\BooleanAnd
+			|| $node instanceof Node\Expr\BinaryOp\LogicalAnd
 		) {
 			if ($this->treatPhpDocTypesAsCertain) {
 				$leftBooleanType = $this->getType($node->left)->toBoolean();
@@ -758,8 +785,8 @@ class MutatingScope implements Scope
 		}
 
 		if (
-			$node instanceof \PhpParser\Node\Expr\BinaryOp\BooleanOr
-			|| $node instanceof \PhpParser\Node\Expr\BinaryOp\LogicalOr
+			$node instanceof Node\Expr\BinaryOp\BooleanOr
+			|| $node instanceof Node\Expr\BinaryOp\LogicalOr
 		) {
 			if ($this->treatPhpDocTypesAsCertain) {
 				$leftBooleanType = $this->getType($node->left)->toBoolean();
@@ -798,7 +825,7 @@ class MutatingScope implements Scope
 			return new BooleanType();
 		}
 
-		if ($node instanceof \PhpParser\Node\Expr\BinaryOp\LogicalXor) {
+		if ($node instanceof Node\Expr\BinaryOp\LogicalXor) {
 			if ($this->treatPhpDocTypesAsCertain) {
 				$leftBooleanType = $this->getType($node->left)->toBoolean();
 				$rightBooleanType = $this->getType($node->right)->toBoolean();
@@ -1479,12 +1506,12 @@ class MutatingScope implements Scope
 						);
 					}
 
-					return new ObjectType(\Closure::class);
+					return new ObjectType(Closure::class);
 				}
 
 				$callableType = $this->getType($node->name);
 				if (!$callableType->isCallable()->yes()) {
-					return new ObjectType(\Closure::class);
+					return new ObjectType(Closure::class);
 				}
 
 				return $this->createFirstClassCallable(
@@ -1494,13 +1521,13 @@ class MutatingScope implements Scope
 
 			if ($node instanceof MethodCall) {
 				if (!$node->name instanceof Node\Identifier) {
-					return new ObjectType(\Closure::class);
+					return new ObjectType(Closure::class);
 				}
 
 				$varType = $this->getType($node->var);
 				$method = $this->getMethodReflection($varType, $node->name->toString());
 				if ($method === null) {
-					return new ObjectType(\Closure::class);
+					return new ObjectType(Closure::class);
 				}
 
 				return $this->createFirstClassCallable($method->getVariants());
@@ -1508,17 +1535,17 @@ class MutatingScope implements Scope
 
 			if ($node instanceof Expr\StaticCall) {
 				if (!$node->class instanceof Name) {
-					return new ObjectType(\Closure::class);
+					return new ObjectType(Closure::class);
 				}
 
 				$classType = $this->resolveTypeByName($node->class);
 				if (!$node->name instanceof Node\Identifier) {
-					return new ObjectType(\Closure::class);
+					return new ObjectType(Closure::class);
 				}
 
 				$methodName = $node->name->toString();
 				if (!$classType->hasMethod($methodName)->yes()) {
-					return new ObjectType(\Closure::class);
+					return new ObjectType(Closure::class);
 				}
 
 				return $this->createFirstClassCallable($classType->getMethod($methodName, $this)->getVariants());
@@ -1528,7 +1555,7 @@ class MutatingScope implements Scope
 				return new ErrorType();
 			}
 
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		} elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
 			$parameters = [];
 			$isVariadic = false;
@@ -1550,7 +1577,7 @@ class MutatingScope implements Scope
 					$isVariadic = true;
 				}
 				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$parameters[] = new NativeParameterReflection(
 					$param->var->name,
@@ -1691,7 +1718,7 @@ class MutatingScope implements Scope
 						$valueTypes[] = $yieldFromType->getIterableValueType();
 					}
 
-					$returnType = new GenericObjectType(\Generator::class, [
+					$returnType = new GenericObjectType(Generator::class, [
 						TypeCombinator::union(...$keyTypes),
 						TypeCombinator::union(...$valueTypes),
 						new MixedType(),
@@ -1772,9 +1799,9 @@ class MutatingScope implements Scope
 			return $this->getType($node->expr)->toBoolean();
 		} elseif ($node instanceof Double) {
 			return $this->getType($node->expr)->toFloat();
-		} elseif ($node instanceof \PhpParser\Node\Expr\Cast\String_) {
+		} elseif ($node instanceof Node\Expr\Cast\String_) {
 			return $this->getType($node->expr)->toString();
-		} elseif ($node instanceof \PhpParser\Node\Expr\Cast\Array_) {
+		} elseif ($node instanceof Node\Expr\Cast\Array_) {
 			return $this->getType($node->expr)->toArray();
 		} elseif ($node instanceof Node\Scalar\MagicConst\Line) {
 			return new ConstantIntegerType($node->getLine());
@@ -1881,7 +1908,7 @@ class MutatingScope implements Scope
 				return new MixedType();
 			}
 
-			$generatorSendType = GenericTypeVariableResolver::getType($returnType, \Generator::class, 'TSend');
+			$generatorSendType = GenericTypeVariableResolver::getType($returnType, Generator::class, 'TSend');
 			if ($generatorSendType === null) {
 				return new MixedType();
 			}
@@ -1894,7 +1921,7 @@ class MutatingScope implements Scope
 				return new MixedType();
 			}
 
-			$generatorReturnType = GenericTypeVariableResolver::getType($yieldFromType, \Generator::class, 'TReturn');
+			$generatorReturnType = GenericTypeVariableResolver::getType($yieldFromType, Generator::class, 'TReturn');
 			if ($generatorReturnType === null) {
 				return new MixedType();
 			}
@@ -1912,7 +1939,7 @@ class MutatingScope implements Scope
 				}
 
 				if (count($arm->conds) === 0) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				$filteringExpr = null;
@@ -1998,9 +2025,9 @@ class MutatingScope implements Scope
 			$constName = (string) $node->name;
 			$loweredConstName = strtolower($constName);
 			if ($loweredConstName === 'true') {
-				return new \PHPStan\Type\Constant\ConstantBooleanType(true);
+				return new ConstantBooleanType(true);
 			} elseif ($loweredConstName === 'false') {
-				return new \PHPStan\Type\Constant\ConstantBooleanType(false);
+				return new ConstantBooleanType(false);
 			} elseif ($loweredConstName === 'null') {
 				return new NullType();
 			}
@@ -2499,13 +2526,13 @@ class MutatingScope implements Scope
 		$variableTypes = $this->variableTypes;
 		foreach ($this->nativeExpressionTypes as $expressionType => $type) {
 			if (substr($expressionType, 0, 1) !== '$') {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$variableName = substr($expressionType, 1);
 			$has = $this->hasVariableType($variableName);
 			if ($has->no()) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$variableTypes[$variableName] = new VariableTypeHolder($type, $has);
@@ -2529,7 +2556,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */
 	private function hasPropertyNativeType($propertyFetch): bool
 	{
@@ -2553,10 +2580,10 @@ class MutatingScope implements Scope
 	): Type
 	{
 		if ($arrayDimFetch->dim === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
-		if ((new ObjectType(\ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()) {
+		if ((new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()) {
 			return $this->getType(
 				new MethodCall(
 					$arrayDimFetch->var,
@@ -2606,7 +2633,7 @@ class MutatingScope implements Scope
 		}
 
 		if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		/** @var float|int $leftNumberValue */
@@ -2897,7 +2924,7 @@ class MutatingScope implements Scope
 	): self
 	{
 		if (!$this->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $this->enterFunctionLike(
@@ -2951,7 +2978,7 @@ class MutatingScope implements Scope
 		$realParameterTypes = [];
 		foreach ($functionLike->getParams() as $parameter) {
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$realParameterTypes[$parameter->var->name] = $this->getFunctionType(
 				$parameter->type,
@@ -2974,7 +3001,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$realParameterDefaultValues[$parameter->var->name] = $this->getType($parameter->default);
 		}
@@ -3152,7 +3179,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $callableParameters
 	 */
 	public function enterAnonymousFunction(
 		Expr\Closure $closure,
@@ -3161,7 +3188,7 @@ class MutatingScope implements Scope
 	{
 		$anonymousFunctionReflection = $this->getType($closure);
 		if (!$anonymousFunctionReflection instanceof ClosureType) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters);
@@ -3187,7 +3214,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $callableParameters
 	 */
 	private function enterAnonymousFunctionWithoutReflection(
 		Expr\Closure $closure,
@@ -3214,7 +3241,7 @@ class MutatingScope implements Scope
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes(
 				$parameterType
@@ -3225,7 +3252,7 @@ class MutatingScope implements Scope
 		$moreSpecificTypes = [];
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			if ($use->byRef) {
 				continue;
@@ -3239,7 +3266,7 @@ class MutatingScope implements Scope
 			}
 			$variableTypes[$variableName] = VariableTypeHolder::createYes($variableType);
 			foreach ($this->moreSpecificTypes as $exprString => $moreSpecificType) {
-				$matches = \Nette\Utils\Strings::matchAll((string) $exprString, '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				$matches = Strings::matchAll((string) $exprString, '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
 				if ($matches === []) {
 					continue;
 				}
@@ -3279,13 +3306,13 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $callableParameters
 	 */
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters = null): self
 	{
 		$anonymousFunctionReflection = $this->getType($arrowFunction);
 		if (!$anonymousFunctionReflection instanceof ClosureType) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters);
@@ -3311,7 +3338,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $callableParameters
 	 */
 	private function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
 	{
@@ -3342,7 +3369,7 @@ class MutatingScope implements Scope
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes($parameterType);
@@ -3439,7 +3466,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
+	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
 	 */
 	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type
 	{
@@ -3504,11 +3531,11 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param \PhpParser\Node\Name[] $classes
+	 * @param Node\Name[] $classes
 	 */
 	public function enterCatch(array $classes, ?string $variableName): self
 	{
-		$type = TypeCombinator::union(...array_map(static function (\PhpParser\Node\Name $class): ObjectType {
+		$type = TypeCombinator::union(...array_map(static function (Node\Name $class): ObjectType {
 			return new ObjectType((string) $class);
 		}, $classes));
 
@@ -3523,7 +3550,7 @@ class MutatingScope implements Scope
 
 		return $this->assignVariable(
 			$variableName,
-			TypeCombinator::intersect($catchType, new ObjectType(\Throwable::class))
+			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class))
 		);
 	}
 
@@ -3591,7 +3618,7 @@ class MutatingScope implements Scope
 		if ($certainty === null) {
 			$certainty = TrinaryLogic::createYes();
 		} elseif ($certainty->no()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$variableTypes = $this->getVariableTypes();
 		$variableTypes[$variableName] = new VariableTypeHolder($type, $certainty);
@@ -3602,7 +3629,7 @@ class MutatingScope implements Scope
 		$variableString = $this->printer->prettyPrintExpr(new Variable($variableName));
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		foreach (array_keys($moreSpecificTypeHolders) as $key) {
-			$matches = \Nette\Utils\Strings::matchAll((string) $key, '#\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*#');
+			$matches = Strings::matchAll((string) $key, '#\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*#');
 
 			if ($matches === []) {
 				continue;
@@ -3840,11 +3867,11 @@ class MutatingScope implements Scope
 
 			try {
 				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
-			} catch (\PHPStan\Parser\ParserErrorsException $e) {
+			} catch (ParserErrorsException $e) {
 				continue;
 			}
 			if (!$expr instanceof Node\Stmt\Expression) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
 				if (!$node instanceof $expressionToInvalidateClass) {
@@ -3902,11 +3929,11 @@ class MutatingScope implements Scope
 
 			try {
 				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
-			} catch (\PHPStan\Parser\ParserErrorsException $e) {
+			} catch (ParserErrorsException $e) {
 				continue;
 			}
 			if (!$expr instanceof Node\Stmt\Expression) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($exprStringToInvalidate): bool {
 				if (!$node instanceof MethodCall) {
@@ -3973,7 +4000,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return \PHPStan\Analyser\MutatingScope
+	 * @return MutatingScope
 	 */
 	public function filterByTruthyValue(Expr $expr): Scope
 	{
@@ -3983,7 +4010,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return \PHPStan\Analyser\MutatingScope
+	 * @return MutatingScope
 	 */
 	public function filterByFalseyValue(Expr $expr): Scope
 	{
@@ -4045,7 +4072,7 @@ class MutatingScope implements Scope
 				|| $specifiedTypes->shouldOverwrite()
 			) {
 				// @phpstan-ignore-next-line
-				$match = \Nette\Utils\Strings::match((string) $typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				$match = Strings::match((string) $typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
 				if ($match !== null) {
 					$skipVariables[$match[1]] = true;
 				}
@@ -4538,7 +4565,7 @@ class MutatingScope implements Scope
 
 		foreach ($byRefUses as $use) {
 			if (!is_string($use->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$variableName = $use->var->name;
@@ -5168,7 +5195,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param MethodCall|\PhpParser\Node\Expr\StaticCall $methodCall
+	 * @param MethodCall|Node\Expr\StaticCall $methodCall
 	 */
 	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
 	{
@@ -5234,7 +5261,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+	 * @param PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */
 	private function propertyFetchType(Type $fetchedOnType, string $propertyName, Expr $propertyFetch): ?Type
 	{
@@ -5252,7 +5279,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param ConstantIntegerType|IntegerRangeType $range
-	 * @param \PhpParser\Node\Expr\AssignOp\Div|\PhpParser\Node\Expr\AssignOp\Minus|\PhpParser\Node\Expr\AssignOp\Mul|\PhpParser\Node\Expr\AssignOp\Plus|\PhpParser\Node\Expr\BinaryOp\Div|\PhpParser\Node\Expr\BinaryOp\Minus|\PhpParser\Node\Expr\BinaryOp\Mul|\PhpParser\Node\Expr\BinaryOp\Plus $node
+	 * @param Node\Expr\AssignOp\Div|Node\Expr\AssignOp\Minus|Node\Expr\AssignOp\Mul|Node\Expr\AssignOp\Plus|Node\Expr\BinaryOp\Div|Node\Expr\BinaryOp\Minus|Node\Expr\BinaryOp\Mul|Node\Expr\BinaryOp\Plus $node
 	 * @param IntegerRangeType|ConstantIntegerType|UnionType $operand
 	 */
 	private function integerRangeMath(Type $range, Expr $node, Type $operand): Type

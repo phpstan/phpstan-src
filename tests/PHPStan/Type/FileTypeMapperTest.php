@@ -2,7 +2,15 @@
 
 namespace PHPStan\Type;
 
-class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
+use DependentPhpDocs\Foo;
+use PHPStan\Broker\Broker;
+use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Testing\PHPStanTestCase;
+use RuntimeException;
+use function realpath;
+
+class FileTypeMapperTest extends PHPStanTestCase
 {
 
 	public function testGetResolvedPhpDoc(): void
@@ -85,12 +93,12 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$realpath = realpath(__DIR__ . '/data/dependent-phpdocs.php');
 		if ($realpath === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc(
 			$realpath,
-			\DependentPhpDocs\Foo::class,
+			Foo::class,
 			null,
 			'addPages',
 			'/** @param Foo[]|Foo|\Iterator $pages */'
@@ -110,7 +118,7 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$realpath = realpath(__DIR__ . '/data/throws-phpdocs.php');
 		if ($realpath === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \ThrowsPhpDocs\Foo::class, null, 'throwRuntimeException', '/**
@@ -119,7 +127,7 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertNotNull($resolved->getThrowsTag());
 		$this->assertSame(
-			\RuntimeException::class,
+			RuntimeException::class,
 			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise())
 		);
 
@@ -147,14 +155,14 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function testFileWithCyclicPhpDocs(): void
 	{
-		self::getContainer()->getByType(\PHPStan\Broker\Broker::class);
+		self::getContainer()->getByType(Broker::class);
 
 		/** @var FileTypeMapper $fileTypeMapper */
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 
 		$realpath = realpath(__DIR__ . '/data/cyclic-phpdocs.php');
 		if ($realpath === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc(
@@ -165,7 +173,7 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 			'/** @return iterable<Foo> | Foo */'
 		);
 
-		/** @var \PHPStan\PhpDoc\Tag\ReturnTag $returnTag */
+		/** @var ReturnTag $returnTag */
 		$returnTag = $resolved->getReturnTag();
 		$this->assertSame('CyclicPhpDocs\Foo|iterable<CyclicPhpDocs\Foo>', $returnTag->getType()->describe(VerbosityLevel::precise()));
 	}

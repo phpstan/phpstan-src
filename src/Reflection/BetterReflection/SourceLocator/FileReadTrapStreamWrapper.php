@@ -2,10 +2,15 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PHPStan\ShouldNotHappenException;
 use function stat;
 use function stream_wrapper_register;
 use function stream_wrapper_restore;
 use function stream_wrapper_unregister;
+use const SEEK_CUR;
+use const SEEK_END;
+use const SEEK_SET;
+use const STREAM_URL_STAT_QUIET;
 
 /**
  * This class will operate as a stream wrapper, intercepting any access to a file while
@@ -158,7 +163,7 @@ final class FileReadTrapStreamWrapper
 	public function url_stat($path, $flags)
 	{
 		if (self::$registeredStreamWrapperProtocols === null) {
-			throw new \PHPStan\ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
+			throw new ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
 		}
 
 		foreach (self::$registeredStreamWrapperProtocols as $protocol) {

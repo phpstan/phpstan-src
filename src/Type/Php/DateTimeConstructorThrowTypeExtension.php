@@ -12,6 +12,8 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function count;
+use function in_array;
 
 class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
@@ -32,7 +34,7 @@ class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowT
 
 		foreach ($constantStrings as $constantString) {
 			try {
-				new \DateTime($constantString->getValue());
+				new DateTime($constantString->getValue());
 			} catch (\Exception $e) { // phpcs:ignore
 				return $methodReflection->getThrowType();
 			}

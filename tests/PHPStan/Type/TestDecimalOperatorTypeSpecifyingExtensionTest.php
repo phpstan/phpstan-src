@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Fixture\TestDecimal;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 {
@@ -63,14 +64,14 @@ class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 	{
 		yield 'left' => [
 			'+',
-			new ObjectType(\stdClass::class),
+			new ObjectType(stdClass::class),
 			new ObjectType(TestDecimal::class),
 		];
 
 		yield 'right' => [
 			'+',
 			new ObjectType(TestDecimal::class),
-			new ObjectType(\stdClass::class),
+			new ObjectType(stdClass::class),
 		];
 	}
 

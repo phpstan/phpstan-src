@@ -6,12 +6,13 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInPropertiesRule>
+ * @extends RuleTestCase<ExistingClassesInPropertiesRule>
  */
-class ExistingClassesInPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 {
 
 	/** @var int */

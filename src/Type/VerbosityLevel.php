@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -174,7 +175,7 @@ class VerbosityLevel
 			return $valueCallback();
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 }

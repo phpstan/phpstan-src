@@ -4,6 +4,8 @@ namespace PHPStan\NodeVisitor;
 
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use function array_pop;
+use function count;
 
 class StatementOrderVisitor extends NodeVisitorAbstract
 {

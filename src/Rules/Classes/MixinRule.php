@@ -14,6 +14,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function implode;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Stmt\Class_>
@@ -25,9 +28,9 @@ class MixinRule implements Rule
 
 	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
-	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
+	private GenericObjectTypeCheck $genericObjectTypeCheck;
 
 	private MissingTypehintCheck $missingTypehintCheck;
 

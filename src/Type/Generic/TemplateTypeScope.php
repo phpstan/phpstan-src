@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
+use function sprintf;
+
 class TemplateTypeScope
 {
 

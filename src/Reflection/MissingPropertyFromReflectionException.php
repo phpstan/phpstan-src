@@ -2,7 +2,10 @@
 
 namespace PHPStan\Reflection;
 
-class MissingPropertyFromReflectionException extends \Exception
+use Exception;
+use function sprintf;
+
+class MissingPropertyFromReflectionException extends Exception
 {
 
 	public function __construct(

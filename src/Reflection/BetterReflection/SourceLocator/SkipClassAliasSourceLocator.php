@@ -7,6 +7,8 @@ use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use ReflectionClass;
+use function class_exists;
 
 class SkipClassAliasSourceLocator implements SourceLocator
 {
@@ -26,7 +28,7 @@ class SkipClassAliasSourceLocator implements SourceLocator
 				return $this->sourceLocator->locateIdentifier($reflector, $identifier);
 			}
 
-			$reflection = new \ReflectionClass($className);
+			$reflection = new ReflectionClass($className);
 			if ($reflection->getName() === 'ReturnTypeWillChange') {
 				return $this->sourceLocator->locateIdentifier($reflector, $identifier);
 			}

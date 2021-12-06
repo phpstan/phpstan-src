@@ -5,12 +5,13 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ * @implements Rule<Node\Stmt\Function_>
  */
-class InnerFunctionRule implements \PHPStan\Rules\Rule
+class InnerFunctionRule implements Rule
 {
 
 	public function getNodeType(): string

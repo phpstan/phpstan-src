@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
@@ -9,12 +10,19 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function array_merge;
+use function count;
+use function php_strip_whitespace;
+use function preg_match_all;
+use function sprintf;
+use function strtolower;
 
 class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher $fileNodesFetcher;
+	private FileNodesFetcher $fileNodesFetcher;
 
 	private PhpVersion $phpVersion;
 
@@ -31,10 +39,10 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, array<int, string>>|null */
 	private ?array $functionToFiles = null;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
+	/** @var array<string, FetchedNode<Node\Stmt\ClassLike>> */
 	private array $classNodes = [];
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
 	private array $functionNodes = [];
 
 	/**
@@ -115,7 +123,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param FetchedNode<\PhpParser\Node\Stmt\ClassLike>|FetchedNode<\PhpParser\Node\Stmt\Function_> $fetchedNode
+	 * @param FetchedNode<Node\Stmt\ClassLike>|FetchedNode<Node\Stmt\Function_> $fetchedNode
 	 */
 	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode): Reflection
 	{
@@ -133,7 +141,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		if ($this->classToFile === null) {
 			$this->init();
 			if ($this->classToFile === null) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 		}
 
@@ -152,7 +160,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		if ($this->functionToFiles === null) {
 			$this->init();
 			if ($this->functionToFiles === null) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 		}
 

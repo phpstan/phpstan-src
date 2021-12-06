@@ -7,7 +7,7 @@ use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<WrongVariableNameInVarTagRule>
+ * @extends RuleTestCase<WrongVariableNameInVarTagRule>
  */
 class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 {

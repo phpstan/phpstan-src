@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
@@ -9,18 +10,19 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
+use function array_map;
 
 class PropertyReflectionFinder
 {
 
 	/**
-	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 * @return FoundPropertyReflection[]
 	 */
 	public function findPropertyReflectionsFromNode($propertyFetch, Scope $scope): array
 	{
-		if ($propertyFetch instanceof \PhpParser\Node\Expr\PropertyFetch) {
-			if ($propertyFetch->name instanceof \PhpParser\Node\Identifier) {
+		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
+			if ($propertyFetch->name instanceof Node\Identifier) {
 				$names = [$propertyFetch->name->name];
 			} else {
 				$names = array_map(static function (ConstantStringType $name): string {
@@ -49,7 +51,7 @@ class PropertyReflectionFinder
 			return $reflections;
 		}
 
-		if ($propertyFetch->class instanceof \PhpParser\Node\Name) {
+		if ($propertyFetch->class instanceof Node\Name) {
 			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
 		} else {
 			$propertyHolderType = $scope->getType($propertyFetch->class);
@@ -84,23 +86,23 @@ class PropertyReflectionFinder
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */
 	public function findPropertyReflectionFromNode($propertyFetch, Scope $scope): ?FoundPropertyReflection
 	{
-		if ($propertyFetch instanceof \PhpParser\Node\Expr\PropertyFetch) {
-			if (!$propertyFetch->name instanceof \PhpParser\Node\Identifier) {
+		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
+			if (!$propertyFetch->name instanceof Node\Identifier) {
 				return null;
 			}
 			$propertyHolderType = $scope->getType($propertyFetch->var);
 			return $this->findPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
 		}
 
-		if (!$propertyFetch->name instanceof \PhpParser\Node\Identifier) {
+		if (!$propertyFetch->name instanceof Node\Identifier) {
 			return null;
 		}
 
-		if ($propertyFetch->class instanceof \PhpParser\Node\Name) {
+		if ($propertyFetch->class instanceof Node\Name) {
 			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
 		} else {
 			$propertyHolderType = $scope->getType($propertyFetch->class);

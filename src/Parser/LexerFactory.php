@@ -4,6 +4,7 @@ namespace PHPStan\Parser;
 
 use PhpParser\Lexer;
 use PHPStan\Php\PhpVersion;
+use const PHP_VERSION_ID;
 
 class LexerFactory
 {

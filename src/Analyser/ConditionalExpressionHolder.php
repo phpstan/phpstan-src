@@ -2,8 +2,12 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function implode;
+use function sprintf;
 
 class ConditionalExpressionHolder
 {
@@ -22,7 +26,7 @@ class ConditionalExpressionHolder
 	)
 	{
 		if (count($conditionExpressionTypes) === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$this->conditionExpressionTypes = $conditionExpressionTypes;
 		$this->typeHolder = $typeHolder;

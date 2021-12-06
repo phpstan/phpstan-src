@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generators;
 
+use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr\YieldFrom;
 use PHPStan\Analyser\Scope;
@@ -14,9 +15,10 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\YieldFrom>
+ * @implements Rule<Node\Expr\YieldFrom>
  */
 class YieldFromTypeRule implements Rule
 {
@@ -110,8 +112,8 @@ class YieldFromTypeRule implements Rule
 			return $messages;
 		}
 
-		$exprSendType = GenericTypeVariableResolver::getType($exprType, \Generator::class, 'TSend');
-		$thisSendType = GenericTypeVariableResolver::getType($currentReturnType, \Generator::class, 'TSend');
+		$exprSendType = GenericTypeVariableResolver::getType($exprType, Generator::class, 'TSend');
+		$thisSendType = GenericTypeVariableResolver::getType($currentReturnType, Generator::class, 'TSend');
 		if ($exprSendType === null || $thisSendType === null) {
 			return $messages;
 		}

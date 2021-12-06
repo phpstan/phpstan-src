@@ -2,10 +2,13 @@
 
 namespace PHPStan\Type;
 
+use Exception;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use stdClass;
+use function sprintf;
 
 class ClassStringTypeTest extends PHPStanTestCase
 {
@@ -15,7 +18,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 		return [
 			[
 				new ClassStringType(),
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -25,7 +28,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 			],
 			[
 				new ClassStringType(),
-				new ConstantStringType(\stdClass::class),
+				new ConstantStringType(stdClass::class),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -71,7 +74,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 
 		yield [
 			new ClassStringType(),
-			new ConstantStringType(\stdClass::class),
+			new ConstantStringType(stdClass::class),
 			TrinaryLogic::createYes(),
 		];
 
@@ -83,13 +86,13 @@ class ClassStringTypeTest extends PHPStanTestCase
 
 		yield [
 			new ClassStringType(),
-			new UnionType([new ConstantStringType(\stdClass::class), new ConstantStringType(self::class)]),
+			new UnionType([new ConstantStringType(stdClass::class), new ConstantStringType(self::class)]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new ClassStringType(),
-			new UnionType([new ConstantStringType(\stdClass::class), new ConstantStringType('Nonexistent')]),
+			new UnionType([new ConstantStringType(stdClass::class), new ConstantStringType('Nonexistent')]),
 			TrinaryLogic::createMaybe(),
 		];
 

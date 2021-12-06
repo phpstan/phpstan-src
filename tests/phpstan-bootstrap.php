@@ -1,4 +1,9 @@
 <?php declare(strict_types = 1);
 
-class_alias(\ReturnTypes\Foo::class, \ReturnTypes\FooAlias::class, true);
-class_alias(\TestAccessProperties\FooAccessProperties::class, \TestAccessProperties\FooAccessPropertiesAlias::class, true);
+use ReturnTypes\Foo;
+use ReturnTypes\FooAlias;
+use TestAccessProperties\FooAccessProperties;
+use TestAccessProperties\FooAccessPropertiesAlias;
+
+class_alias(Foo::class, FooAlias::class, true);
+class_alias(FooAccessProperties::class, FooAccessPropertiesAlias::class, true);

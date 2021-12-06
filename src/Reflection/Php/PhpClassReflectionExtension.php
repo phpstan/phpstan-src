@@ -994,6 +994,7 @@ class PhpClassReflectionExtension
 		foreach ($nodes as $node) {
 			if (
 				$node instanceof Class_
+				&& $node->namespacedName !== null
 				&& $node->namespacedName->toString() === $className
 			) {
 				return $node;

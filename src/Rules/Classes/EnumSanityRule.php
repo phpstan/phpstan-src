@@ -31,6 +31,10 @@ class EnumSanityRule implements \PHPStan\Rules\Rule
 	{
 		$errors = [];
 
+		if ($node->namespacedName === null) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
 		foreach ($node->getMethods() as $methodNode) {
 			if ($methodNode->isAbstract()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(

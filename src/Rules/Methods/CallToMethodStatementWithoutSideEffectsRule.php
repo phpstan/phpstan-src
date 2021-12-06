@@ -66,8 +66,8 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$method = $calledOnType->getMethod($methodName, $scope);
-		if ($method->hasSideEffects()->no() || ($node->expr instanceof Node\Expr\CallLike && $node->expr->isFirstClassCallable())) {
-			if (!$node->expr instanceof Node\Expr\CallLike || !$node->expr->isFirstClassCallable()) {
+		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+			if (!$node->expr->isFirstClassCallable()) {
 				$throwsType = $method->getThrowType();
 				if ($throwsType !== null && !$throwsType instanceof VoidType) {
 					return [];

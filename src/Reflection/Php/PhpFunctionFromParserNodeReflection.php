@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Php;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Function_;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
@@ -17,6 +18,7 @@ use PHPStan\Type\VoidType;
 class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\FunctionReflection
 {
 
+	/** @var Function_|ClassMethod */
 	private \PhpParser\Node\FunctionLike $functionLike;
 
 	private string $fileName;
@@ -52,6 +54,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	private ?array $variants = null;
 
 	/**
+	 * @param Function_|ClassMethod $functionLike
 	 * @param \PHPStan\Type\Type[] $realParameterTypes
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
 	 * @param \PHPStan\Type\Type[] $realParameterDefaultValues
@@ -103,6 +106,10 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	{
 		if ($this->functionLike instanceof ClassMethod) {
 			return $this->functionLike->name->name;
+		}
+
+		if ($this->functionLike->namespacedName === null) {
+			throw new \PHPStan\ShouldNotHappenException();
 		}
 
 		return (string) $this->functionLike->namespacedName;

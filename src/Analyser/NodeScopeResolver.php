@@ -614,7 +614,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			if (isset($stmt->namespacedName)) {
-				$classReflection = $this->getCurrentClassReflection($stmt, $scope);
+				$classReflection = $this->getCurrentClassReflection($stmt, $stmt->namespacedName->toString(), $scope);
 				$classScope = $scope->enterClass($classReflection);
 				$nodeCallback(new InClassNode($stmt, $classReflection), $classScope);
 			} elseif ($stmt instanceof Class_) {
@@ -1432,14 +1432,13 @@ class NodeScopeResolver
 		return null;
 	}
 
-	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, Scope $scope): ClassReflection
+	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection
 	{
-		$className = $stmt->namespacedName->toString();
 		if (!$this->reflectionProvider->hasClass($className)) {
 			return $this->createAstClassReflection($stmt, $className, $scope);
 		}
 
-		$defaultClassReflection = $this->reflectionProvider->getClass($stmt->namespacedName->toString());
+		$defaultClassReflection = $this->reflectionProvider->getClass($className);
 		if ($defaultClassReflection->getFileName() !== $scope->getFile()) {
 			return $this->createAstClassReflection($stmt, $className, $scope);
 		}

@@ -51,13 +51,15 @@ class CachingVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof \PhpParser\Node\Stmt\Function_) {
-			$functionName = $node->namespacedName->toString();
-			$this->functionNodes[strtolower($functionName)] = new FetchedNode(
-				$node,
-				$this->currentNamespaceNode,
-				$this->fileName,
-				new LocatedSource($this->contents, $functionName, $this->fileName)
-			);
+			if ($node->namespacedName !== null) {
+				$functionName = $node->namespacedName->toString();
+				$this->functionNodes[strtolower($functionName)] = new FetchedNode(
+					$node,
+					$this->currentNamespaceNode,
+					$this->fileName,
+					new LocatedSource($this->contents, $functionName, $this->fileName)
+				);
+			}
 
 			return \PhpParser\NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}

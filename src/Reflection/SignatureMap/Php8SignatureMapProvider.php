@@ -262,11 +262,18 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$phpDocParameterTypes = null;
 		$phpDocReturnType = null;
 		if ($function->getDocComment() !== null) {
+			if ($function instanceof ClassMethod) {
+				$functionName = $function->name->toString();
+			} elseif ($function->namespacedName !== null) {
+				$functionName = $function->namespacedName->toString();
+			} else {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
 			$phpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$stubFile,
 				$className,
 				null,
-				$function instanceof ClassMethod ? $function->name->toString() : $function->namespacedName->toString(),
+				$functionName,
 				$function->getDocComment()->getText()
 			);
 			$phpDocParameterTypes = array_map(static function (ParamTag $param): Type {

@@ -2,9 +2,10 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 
-class ConstantFloatTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class ConstantFloatTypeTest extends PHPStanTestCase
 {
 
 	public function dataDescribe(): array

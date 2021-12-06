@@ -3,8 +3,11 @@
 namespace PHPStan\Analyser;
 
 use Generator;
+use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\VirtualNode;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -14,6 +17,15 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use SomeNodeScopeResolverNamespace\Foo;
+use function define;
+use function defined;
+use function function_exists;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_string;
+use function sprintf;
+use function str_replace;
 use const PHP_VERSION_ID;
 
 class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
@@ -24,7 +36,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function testClassMethodScope(): void
 	{
-		$this->processFile(__DIR__ . '/data/class.php', function (\PhpParser\Node $node, Scope $scope): void {
+		$this->processFile(__DIR__ . '/data/class.php', function (Node $node, Scope $scope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -53,9 +65,9 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	private function getFileScope(string $filename): Scope
 	{
-		/** @var \PHPStan\Analyser\Scope $testScope */
+		/** @var Scope $testScope */
 		$testScope = null;
-		$this->processFile($filename, static function (\PhpParser\Node $node, Scope $scope) use (&$testScope): void {
+		$this->processFile($filename, static function (Node $node, Scope $scope) use (&$testScope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -1911,7 +1923,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				return (new ConstantStringType($value))->describe(VerbosityLevel::precise());
 			}
 
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		};
 
 		return [
@@ -9539,7 +9551,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	): void
 	{
 		$assertType = function (Scope $scope) use ($expression, $description, $evaluatedPointExpression): void {
-			/** @var \PhpParser\Node\Stmt\Expression $expressionNode */
+			/** @var Node\Stmt\Expression $expressionNode */
 			$expressionNode = $this->getParser()->parseString(sprintf('<?php %s;', $expression))[0];
 			$type = $scope->getType($expressionNode->expr);
 			$this->assertTypeDescribe(
@@ -9554,11 +9566,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		}
 			$this->processFile(
 				$file,
-				static function (\PhpParser\Node $node, Scope $scope) use ($file, $evaluatedPointExpression, $assertType): void {
+				static function (Node $node, Scope $scope) use ($file, $evaluatedPointExpression, $assertType): void {
 					if ($node instanceof VirtualNode) {
 						return;
 					}
-					$printer = new \PhpParser\PrettyPrinter\Standard();
+					$printer = new Standard();
 					$printedNode = $printer->prettyPrint([$node]);
 					if ($printedNode !== $evaluatedPointExpression) {
 						return;
@@ -9603,7 +9615,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testDeclareStrictTypes(string $file, bool $result): void
 	{
-		$this->processFile($file, function (\PhpParser\Node $node, Scope $scope) use ($result): void {
+		$this->processFile($file, function (Node $node, Scope $scope) use ($result): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -9614,7 +9626,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function testEarlyTermination(): void
 	{
-		$this->processFile(__DIR__ . '/data/early-termination.php', function (\PhpParser\Node $node, Scope $scope): void {
+		$this->processFile(__DIR__ . '/data/early-termination.php', function (Node $node, Scope $scope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}

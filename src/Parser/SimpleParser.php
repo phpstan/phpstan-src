@@ -3,9 +3,11 @@
 namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
+use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PHPStan\File\FileReader;
+use PHPStan\ShouldNotHappenException;
 
 class SimpleParser implements Parser
 {
@@ -25,35 +27,35 @@ class SimpleParser implements Parser
 
 	/**
 	 * @param string $file path to a file to parse
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseFile(string $file): array
 	{
 		try {
 			return $this->parseString(FileReader::read($file));
-		} catch (\PHPStan\Parser\ParserErrorsException $e) {
-			throw new \PHPStan\Parser\ParserErrorsException($e->getErrors(), $file);
+		} catch (ParserErrorsException $e) {
+			throw new ParserErrorsException($e->getErrors(), $file);
 		}
 	}
 
 	/**
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseString(string $sourceCode): array
 	{
 		$errorHandler = new Collecting();
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
 		if ($errorHandler->hasErrors()) {
-			throw new \PHPStan\Parser\ParserErrorsException($errorHandler->getErrors(), null);
+			throw new ParserErrorsException($errorHandler->getErrors(), null);
 		}
 		if ($nodes === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
 
-		/** @var array<\PhpParser\Node\Stmt> */
+		/** @var array<Node\Stmt> */
 		return $nodeTraverser->traverse($nodes);
 	}
 

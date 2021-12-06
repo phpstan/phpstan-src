@@ -2,22 +2,33 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_fill_keys;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function count;
+use function implode;
+use function in_array;
+use function sprintf;
 
 class GenericAncestorsCheck
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
+	private GenericObjectTypeCheck $genericObjectTypeCheck;
 
-	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
+	private VarianceCheck $varianceCheck;
 
 	private bool $checkGenericClassInNonGenericObjectType;
 
@@ -43,9 +54,9 @@ class GenericAncestorsCheck
 	}
 
 	/**
-	 * @param array<\PhpParser\Node\Name> $nameNodes
-	 * @param array<\PHPStan\Type\Type> $ancestorTypes
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param array<Node\Name> $nameNodes
+	 * @param array<Type> $ancestorTypes
+	 * @return RuleError[]
 	 */
 	public function check(
 		array $nameNodes,

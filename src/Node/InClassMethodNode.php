@@ -2,19 +2,21 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
+
 /** @api */
-class InClassMethodNode extends \PhpParser\Node\Stmt implements VirtualNode
+class InClassMethodNode extends Node\Stmt implements VirtualNode
 {
 
-	private \PhpParser\Node\Stmt\ClassMethod $originalNode;
+	private Node\Stmt\ClassMethod $originalNode;
 
-	public function __construct(\PhpParser\Node\Stmt\ClassMethod $originalNode)
+	public function __construct(Node\Stmt\ClassMethod $originalNode)
 	{
 		parent::__construct($originalNode->getAttributes());
 		$this->originalNode = $originalNode;
 	}
 
-	public function getOriginalNode(): \PhpParser\Node\Stmt\ClassMethod
+	public function getOriginalNode(): Node\Stmt\ClassMethod
 	{
 		return $this->originalNode;
 	}

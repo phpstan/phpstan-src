@@ -8,12 +8,17 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_merge;
+use function count;
+use function strcasecmp;
+use function usort;
+use const PHP_INT_MIN;
 
 class UnionTypeHelper
 {
 
 	/**
-	 * @param \PHPStan\Type\Type[] $types
+	 * @param Type[] $types
 	 * @return string[]
 	 */
 	public static function getReferencedClasses(array $types): array
@@ -27,8 +32,8 @@ class UnionTypeHelper
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type[] $types
-	 * @return \PHPStan\Type\Type[]
+	 * @param Type[] $types
+	 * @return Type[]
 	 */
 	public static function sortTypes(array $types): array
 	{

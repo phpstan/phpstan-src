@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection;
 
+use Closure;
+use PhpParser\Node;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
@@ -15,6 +17,9 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\Broker\AnonymousClassNameHelper;
+use PHPStan\Broker\ClassNotFoundException;
+use PHPStan\Broker\ConstantNotFoundException;
+use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
@@ -28,52 +33,59 @@ use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\GlobalConstantReflection;
+use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use ReflectionParameter;
+use function array_key_exists;
+use function array_map;
+use function sprintf;
+use function strtolower;
 
 class BetterReflectionProvider implements ReflectionProvider
 {
 
 	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
 
-	private \PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
+	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
 
-	private \PHPStan\BetterReflection\Reflector\Reflector $reflector;
+	private Reflector $reflector;
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
 	private PhpVersion $phpVersion;
 
-	private \PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
+	private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
-	private \PHPStan\Reflection\FunctionReflectionFactory $functionReflectionFactory;
+	private FunctionReflectionFactory $functionReflectionFactory;
 
 	private RelativePathHelper $relativePathHelper;
 
 	private AnonymousClassNameHelper $anonymousClassNameHelper;
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
+	private Standard $printer;
 
-	private \PHPStan\File\FileHelper $fileHelper;
+	private FileHelper $fileHelper;
 
 	private PhpStormStubsSourceStubber $phpstormStubsSourceStubber;
 
-	/** @var \PHPStan\Reflection\FunctionReflection[] */
+	/** @var FunctionReflection[] */
 	private array $functionReflections = [];
 
-	/** @var \PHPStan\Reflection\ClassReflection[] */
+	/** @var ClassReflection[] */
 	private array $classReflections = [];
 
-	/** @var \PHPStan\Reflection\ClassReflection[] */
+	/** @var ClassReflection[] */
 	private static array $anonymousClasses = [];
 
 	/** @var array<string, GlobalConstantReflection> */
@@ -141,7 +153,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		try {
 			$reflectionClass = $this->reflector->reflectClass($className);
 		} catch (IdentifierNotFound $e) {
-			throw new \PHPStan\Broker\ClassNotFoundException($className);
+			throw new ClassNotFoundException($className);
 		}
 
 		$reflectionClassName = strtolower($reflectionClass->getName());
@@ -173,7 +185,7 @@ class BetterReflectionProvider implements ReflectionProvider
 	public function getClassName(string $className): string
 	{
 		if (!$this->hasClass($className)) {
-			throw new \PHPStan\Broker\ClassNotFoundException($className);
+			throw new ClassNotFoundException($className);
 		}
 
 		if (isset(self::$anonymousClasses[$className])) {
@@ -190,10 +202,10 @@ class BetterReflectionProvider implements ReflectionProvider
 		return true;
 	}
 
-	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
+	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		if (isset($classNode->namespacedName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if (!$scope->isInTrait()) {
@@ -210,7 +222,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$classNode,
 			$scopeFile
 		);
-		$classNode->name = new \PhpParser\Node\Identifier($className);
+		$classNode->name = new Node\Identifier($className);
 		$classNode->setAttribute('anonymousClass', true);
 
 		if (isset(self::$anonymousClasses[$className])) {
@@ -243,16 +255,16 @@ class BetterReflectionProvider implements ReflectionProvider
 		return self::$anonymousClasses[$className];
 	}
 
-	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->resolveFunctionName($nameNode, $scope) !== null;
 	}
 
-	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
 	{
 		$functionName = $this->resolveFunctionName($nameNode, $scope);
 		if ($functionName === null) {
-			throw new \PHPStan\Broker\FunctionNotFoundException((string) $nameNode);
+			throw new FunctionNotFoundException((string) $nameNode);
 		}
 
 		$lowerCasedFunctionName = strtolower($functionName);
@@ -271,7 +283,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		return $this->functionReflections[$lowerCasedFunctionName];
 	}
 
-	private function getCustomFunction(string $functionName): \PHPStan\Reflection\Php\PhpFunctionReflection
+	private function getCustomFunction(string $functionName): PhpFunctionReflection
 	{
 		$reflectionFunction = new ReflectionFunction($this->reflector->reflectFunction($functionName));
 		$templateTypeMap = TemplateTypeMap::createEmpty();
@@ -283,7 +295,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = null;
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static function (\ReflectionParameter $parameter): string {
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static function (ReflectionParameter $parameter): string {
 			return $parameter->getName();
 		}, $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
@@ -320,13 +332,13 @@ class BetterReflectionProvider implements ReflectionProvider
 		);
 	}
 
-	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectFunction($name);
 				return true;
-			} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+			} catch (IdentifierNotFound $e) {
 				// pass
 			} catch (InvalidIdentifierName $e) {
 				// pass
@@ -339,16 +351,16 @@ class BetterReflectionProvider implements ReflectionProvider
 		}, $scope);
 	}
 
-	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->resolveConstantName($nameNode, $scope) !== null;
 	}
 
-	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
 	{
 		$constantName = $this->resolveConstantName($nameNode, $scope);
 		if ($constantName === null) {
-			throw new \PHPStan\Broker\ConstantNotFoundException((string) $nameNode);
+			throw new ConstantNotFoundException((string) $nameNode);
 		}
 
 		if (array_key_exists($constantName, $this->cachedConstants)) {
@@ -372,13 +384,13 @@ class BetterReflectionProvider implements ReflectionProvider
 		);
 	}
 
-	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectConstant($name);
 				return true;
-			} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+			} catch (IdentifierNotFound $e) {
 				// pass
 			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
 				// pass
@@ -388,11 +400,11 @@ class BetterReflectionProvider implements ReflectionProvider
 	}
 
 	/**
-	 * @param \Closure(string $name): bool $existsCallback
+	 * @param Closure(string $name): bool $existsCallback
 	 */
 	private function resolveName(
-		\PhpParser\Node\Name $nameNode,
-		\Closure $existsCallback,
+		Node\Name $nameNode,
+		Closure $existsCallback,
 		?Scope $scope
 	): ?string
 	{

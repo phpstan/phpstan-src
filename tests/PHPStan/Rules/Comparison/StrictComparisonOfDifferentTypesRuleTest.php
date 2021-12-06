@@ -2,16 +2,20 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<StrictComparisonOfDifferentTypesRule>
+ * @extends RuleTestCase<StrictComparisonOfDifferentTypesRule>
  */
-class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTestCase
+class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $checkAlwaysTrueStrictComparison;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison);
 	}

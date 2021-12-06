@@ -2,9 +2,15 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function count;
+use function htmlspecialchars;
+use function sprintf;
+use const ENT_COMPAT;
+use const ENT_XML1;
 
 class CheckstyleErrorFormatter implements ErrorFormatter
 {
@@ -91,14 +97,14 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 	/**
 	 * Group errors by file
 	 *
-	 * @return array<string, array<\PHPStan\Analyser\Error>> Array that have as key the relative path of file
-	 *                              and as value an array with occurred errors.
+	 * @return array<string, array<Error>> Array that have as key the relative path of file
+	 * and as value an array with occurred errors.
 	 */
 	private function groupByFile(AnalysisResult $analysisResult): array
 	{
 		$files = [];
 
-		/** @var \PHPStan\Analyser\Error $fileSpecificError */
+		/** @var Error $fileSpecificError */
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$absolutePath = $fileSpecificError->getFilePath();
 			if ($fileSpecificError->getTraitFilePath() !== null) {

@@ -2,6 +2,9 @@
 
 namespace PHPStan\File;
 
+use function error_get_last;
+use function file_put_contents;
+
 class FileWriter
 {
 
@@ -11,7 +14,7 @@ class FileWriter
 		if ($success === false) {
 			$error = error_get_last();
 
-			throw new \PHPStan\File\CouldNotWriteFileException(
+			throw new CouldNotWriteFileException(
 				$fileName,
 				$error !== null ? $error['message'] : 'unknown cause'
 			);

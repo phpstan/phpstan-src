@@ -4,10 +4,16 @@ namespace PHPStan\Command;
 
 use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
+use Hoa\Exception\Exception;
 use Nette\Utils\Strings;
 use PHPStan\PhpDoc\TypeStringResolver;
+use PHPStan\PhpDocParser\Parser\ParserException;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function strpos;
+use function strrpos;
 use function substr;
 
 class IgnoredRegexValidator
@@ -15,7 +21,7 @@ class IgnoredRegexValidator
 
 	private Parser $parser;
 
-	private \PHPStan\PhpDoc\TypeStringResolver $typeStringResolver;
+	private TypeStringResolver $typeStringResolver;
 
 	public function __construct(
 		Parser $parser,
@@ -33,7 +39,7 @@ class IgnoredRegexValidator
 		try {
 			/** @var TreeNode $ast */
 			$ast = $this->parser->parse($regex);
-		} catch (\Hoa\Exception\Exception $e) {
+		} catch (Exception $e) {
 			if (strpos($e->getMessage(), 'Unexpected token "|" (alternation) at line 1') === 0) {
 				return new IgnoredRegexValidatorResult([], false, true, '||', '\|\|');
 			}
@@ -82,7 +88,7 @@ class IgnoredRegexValidator
 
 			try {
 				$type = $this->typeStringResolver->resolve($matches[1], null);
-			} catch (\PHPStan\PhpDocParser\Parser\ParserException $e) {
+			} catch (ParserException $e) {
 				continue;
 			}
 
@@ -105,7 +111,7 @@ class IgnoredRegexValidator
 		$delimiter = substr($regex, 0, 1);
 		$endDelimiterPosition = strrpos($regex, $delimiter);
 		if ($endDelimiterPosition === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return substr($regex, 1, $endDelimiterPosition - 1);

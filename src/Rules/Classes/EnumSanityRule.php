@@ -4,13 +4,16 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<Node\Stmt\Enum_>
+ * @implements Rule<Node\Stmt\Enum_>
  */
-class EnumSanityRule implements \PHPStan\Rules\Rule
+class EnumSanityRule implements Rule
 {
 
 	private const ALLOWED_MAGIC_METHODS = [
@@ -32,7 +35,7 @@ class EnumSanityRule implements \PHPStan\Rules\Rule
 		$errors = [];
 
 		if ($node->namespacedName === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		foreach ($node->getMethods() as $methodNode) {

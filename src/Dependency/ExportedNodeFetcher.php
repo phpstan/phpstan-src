@@ -2,8 +2,10 @@
 
 namespace PHPStan\Dependency;
 
+use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
 
 class ExportedNodeFetcher
 {
@@ -30,9 +32,9 @@ class ExportedNodeFetcher
 		$nodeTraverser->addVisitor($this->visitor);
 
 		try {
-			/** @var \PhpParser\Node[] $ast */
+			/** @var Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
-		} catch (\PHPStan\Parser\ParserErrorsException $e) {
+		} catch (ParserErrorsException $e) {
 			return [];
 		}
 		$this->visitor->reset($fileName);

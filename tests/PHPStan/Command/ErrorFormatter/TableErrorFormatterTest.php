@@ -7,6 +7,8 @@ use PHPStan\Command\AnalysisResult;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function sprintf;
+use const PHP_VERSION_ID;
 
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {

@@ -14,6 +14,8 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use ReflectionAttribute;
+use function count;
 
 class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -54,7 +56,7 @@ class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodR
 			return $this->getDefaultReturnType($scope, $methodCall, $methodReflection);
 		}
 
-		return new ArrayType(new MixedType(), new GenericObjectType(\ReflectionAttribute::class, [$classType]));
+		return new ArrayType(new MixedType(), new GenericObjectType(ReflectionAttribute::class, [$classType]));
 	}
 
 	private function getDefaultReturnType(Scope $scope, MethodCall $methodCall, MethodReflection $methodReflection): Type

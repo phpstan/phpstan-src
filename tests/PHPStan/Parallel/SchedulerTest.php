@@ -3,6 +3,9 @@
 namespace PHPStan\Parallel;
 
 use PHPUnit\Framework\TestCase;
+use function array_fill;
+use function array_map;
+use function count;
 
 class SchedulerTest extends TestCase
 {

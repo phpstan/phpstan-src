@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
@@ -11,11 +12,12 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 class FunctionReturnTypeCheck
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(RuleLevelHelper $ruleLevelHelper)
 	{
@@ -52,7 +54,7 @@ class FunctionReturnTypeCheck
 
 			$returnType = GenericTypeVariableResolver::getType(
 				$returnType,
-				\Generator::class,
+				Generator::class,
 				'TReturn'
 			);
 			if ($returnType === null) {

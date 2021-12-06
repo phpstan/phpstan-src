@@ -14,7 +14,7 @@ interface MethodReflection extends ClassMemberReflection
 	public function getPrototype(): ClassMemberReflection;
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array;
 

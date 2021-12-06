@@ -4,14 +4,16 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp>
+ * @implements Rule<Node\Expr\BinaryOp>
  */
-class StrictComparisonOfDifferentTypesRule implements \PHPStan\Rules\Rule
+class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
 	private bool $checkAlwaysTrueStrictComparison;

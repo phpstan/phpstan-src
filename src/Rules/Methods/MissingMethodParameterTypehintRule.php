@@ -9,17 +9,21 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassMethodNode>
+ * @implements Rule<InClassMethodNode>
  */
-final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
+final class MissingMethodParameterTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
+	private MissingTypehintCheck $missingTypehintCheck;
 
 	public function __construct(MissingTypehintCheck $missingTypehintCheck)
 	{
@@ -50,7 +54,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @return RuleError[]
 	 */
 	private function checkMethodParameter(MethodReflection $methodReflection, ParameterReflection $parameterReflection): array
 	{

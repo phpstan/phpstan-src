@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\Type;
+use function array_map;
 
 class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {

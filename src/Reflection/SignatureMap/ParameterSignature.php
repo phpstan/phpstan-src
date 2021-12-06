@@ -12,11 +12,11 @@ class ParameterSignature
 
 	private bool $optional;
 
-	private \PHPStan\Type\Type $type;
+	private Type $type;
 
-	private \PHPStan\Type\Type $nativeType;
+	private Type $nativeType;
 
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
+	private PassedByReference $passedByReference;
 
 	private bool $variadic;
 

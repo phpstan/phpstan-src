@@ -2,7 +2,11 @@
 
 namespace PHPStan\File;
 
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function array_keys;
+use function count;
+use function sha1;
 
 class FileMonitor
 {
@@ -39,7 +43,7 @@ class FileMonitor
 	public function getChanges(): FileMonitorResult
 	{
 		if ($this->fileHashes === null || $this->paths === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$finderResult = $this->fileFinder->findFiles($this->paths);
 		$oldFileHashes = $this->fileHashes;

@@ -5,6 +5,8 @@ namespace PHPStan\Command;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Internal\BytesHelper;
 use function memory_get_peak_usage;
+use function sprintf;
+use function unlink;
 
 class InceptionResult
 {
@@ -16,7 +18,7 @@ class InceptionResult
 
 	private Output $errorOutput;
 
-	private \PHPStan\DependencyInjection\Container $container;
+	private Container $container;
 
 	private bool $isDefaultLevelUsed;
 

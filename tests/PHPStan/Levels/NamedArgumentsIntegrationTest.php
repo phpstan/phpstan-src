@@ -2,10 +2,12 @@
 
 namespace PHPStan\Levels;
 
+use PHPStan\Testing\LevelsTestCase;
+
 /**
  * @group exec
  */
-class NamedArgumentsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
+class NamedArgumentsIntegrationTest extends LevelsTestCase
 {
 
 	public function dataTopics(): array

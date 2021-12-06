@@ -9,9 +9,9 @@ use PHPStan\Type\TypeCombinator;
 class VariableTypeHolder
 {
 
-	private \PHPStan\Type\Type $type;
+	private Type $type;
 
-	private \PHPStan\TrinaryLogic $certainty;
+	private TrinaryLogic $certainty;
 
 	public function __construct(Type $type, TrinaryLogic $certainty)
 	{

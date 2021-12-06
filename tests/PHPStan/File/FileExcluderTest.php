@@ -2,7 +2,9 @@
 
 namespace PHPStan\File;
 
-class FileExcluderTest extends \PHPStan\Testing\PHPStanTestCase
+use PHPStan\Testing\PHPStanTestCase;
+
+class FileExcluderTest extends PHPStanTestCase
 {
 
 	/**

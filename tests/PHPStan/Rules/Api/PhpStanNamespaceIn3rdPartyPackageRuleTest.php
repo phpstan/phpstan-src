@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Api;
 
 use Nette\Utils\Json;
 use PHPStan\File\FileWriter;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function unlink;
 
 /**
  * @extends RuleTestCase<PhpStanNamespaceIn3rdPartyPackageRule>
@@ -12,7 +14,7 @@ use PHPStan\Testing\RuleTestCase;
 class PhpStanNamespaceIn3rdPartyPackageRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new PhpStanNamespaceIn3rdPartyPackageRule(new ApiRuleHelper());
 	}

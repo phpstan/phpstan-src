@@ -2,10 +2,17 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use InternalAnnotations\Foo;
+use InternalAnnotations\FooInterface;
+use InternalAnnotations\FooTrait;
+use InternalAnnotations\InternalFoo;
+use InternalAnnotations\InternalFooInterface;
+use InternalAnnotations\InternalFooTrait;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\Testing\PHPStanTestCase;
 
-class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
+class InternalAnnotationsTest extends PHPStanTestCase
 {
 
 	public function dataInternalAnnotations(): array
@@ -13,7 +20,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 		return [
 			[
 				false,
-				\InternalAnnotations\Foo::class,
+				Foo::class,
 				[
 					'constant' => [
 						'FOO',
@@ -30,7 +37,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				true,
-				\InternalAnnotations\InternalFoo::class,
+				InternalFoo::class,
 				[
 					'constant' => [
 						'INTERNAL_FOO',
@@ -47,7 +54,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				false,
-				\InternalAnnotations\FooInterface::class,
+				FooInterface::class,
 				[
 					'constant' => [
 						'FOO',
@@ -60,7 +67,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				true,
-				\InternalAnnotations\InternalFooInterface::class,
+				InternalFooInterface::class,
 				[
 					'constant' => [
 						'INTERNAL_FOO',
@@ -73,7 +80,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				false,
-				\InternalAnnotations\FooTrait::class,
+				FooTrait::class,
 				[
 					'method' => [
 						'foo',
@@ -87,7 +94,7 @@ class InternalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				true,
-				\InternalAnnotations\InternalFooTrait::class,
+				InternalFooTrait::class,
 				[
 					'method' => [
 						'internalFoo',

@@ -3,26 +3,32 @@
 namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
+use function strlen;
+use function substr;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @implements Rule<Node\Expr>
  */
-class InvalidBinaryOperationRule implements \PHPStan\Rules\Rule
+class InvalidBinaryOperationRule implements Rule
 {
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
+	private Standard $printer;
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
-		\PhpParser\PrettyPrinter\Standard $printer,
+		Standard $printer,
 		RuleLevelHelper $ruleLevelHelper
 	)
 	{
@@ -35,7 +41,7 @@ class InvalidBinaryOperationRule implements \PHPStan\Rules\Rule
 		return Node\Expr::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
 			!$node instanceof Node\Expr\BinaryOp
@@ -94,7 +100,7 @@ class InvalidBinaryOperationRule implements \PHPStan\Rules\Rule
 			}
 
 			if (!$scope instanceof MutatingScope) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$scope = $scope

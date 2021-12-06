@@ -3,6 +3,11 @@
 namespace PHPStan\File;
 
 use Symfony\Component\Finder\Finder;
+use function array_filter;
+use function array_values;
+use function file_exists;
+use function implode;
+use function is_file;
 
 class FileFinder
 {
@@ -39,7 +44,7 @@ class FileFinder
 			if (is_file($path)) {
 				$files[] = $this->fileHelper->normalizePath($path);
 			} elseif (!file_exists($path)) {
-				throw new \PHPStan\File\PathNotFoundException($path);
+				throw new PathNotFoundException($path);
 			} else {
 				$finder = new Finder();
 				$finder->followLinks();

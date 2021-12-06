@@ -9,6 +9,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
 
 /**
  * @implements Rule<MethodCallableNode>

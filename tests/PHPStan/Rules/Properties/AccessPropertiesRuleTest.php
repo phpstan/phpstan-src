@@ -2,12 +2,15 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AccessPropertiesRule>
+ * @extends RuleTestCase<AccessPropertiesRule>
  */
-class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class AccessPropertiesRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
@@ -16,7 +19,7 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var bool */
 	private $checkUnionTypes;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true);

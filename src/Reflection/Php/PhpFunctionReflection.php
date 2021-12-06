@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
@@ -11,6 +12,7 @@ use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
@@ -19,26 +21,33 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use ReflectionFunction;
+use ReflectionParameter;
+use function array_map;
+use function filemtime;
+use function is_file;
+use function sprintf;
+use function time;
 
 class PhpFunctionReflection implements FunctionReflection
 {
 
-	private \ReflectionFunction $reflection;
+	private ReflectionFunction $reflection;
 
-	private \PHPStan\Parser\Parser $parser;
+	private Parser $parser;
 
-	private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
+	private FunctionCallStatementFinder $functionCallStatementFinder;
 
-	private \PHPStan\Cache\Cache $cache;
+	private Cache $cache;
 
-	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
+	private TemplateTypeMap $templateTypeMap;
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $phpDocParameterTypes;
 
-	private ?\PHPStan\Type\Type $phpDocReturnType;
+	private ?Type $phpDocReturnType;
 
-	private ?\PHPStan\Type\Type $phpDocThrowType;
+	private ?Type $phpDocThrowType;
 
 	private ?string $deprecatedDescription;
 
@@ -56,10 +65,10 @@ class PhpFunctionReflection implements FunctionReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
+	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
-		\ReflectionFunction $reflection,
+		ReflectionFunction $reflection,
 		Parser $parser,
 		FunctionCallStatementFinder $functionCallStatementFinder,
 		Cache $cache,
@@ -132,11 +141,11 @@ class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParameterReflectionWithPhpDocs[]
+	 * @return ParameterReflectionWithPhpDocs[]
 	 */
 	private function getParameters(): array
 	{
-		return array_map(function (\ReflectionParameter $reflection): PhpParameterReflection {
+		return array_map(function (ReflectionParameter $reflection): PhpParameterReflection {
 			return new PhpParameterReflection(
 				$reflection,
 				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
@@ -174,7 +183,7 @@ class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @param \PhpParser\Node[] $nodes
+	 * @param Node[] $nodes
 	 */
 	private function callsFuncGetArgs(array $nodes): bool
 	{

@@ -5,13 +5,14 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IssetCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @implements Rule<Node\Expr>
  */
-class NullCoalesceRule implements \PHPStan\Rules\Rule
+class NullCoalesceRule implements Rule
 {
 
 	private IssetCheck $issetCheck;
@@ -23,7 +24,7 @@ class NullCoalesceRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr::class;
+		return Node\Expr::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

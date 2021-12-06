@@ -5,13 +5,14 @@ namespace PHPStan\Reflection;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use function array_merge;
 
 class GenericParametersAcceptorResolver
 {
 
 	/**
 	 * @api
-	 * @param \PHPStan\Type\Type[] $argTypes
+	 * @param Type[] $argTypes
 	 */
 	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
 	{

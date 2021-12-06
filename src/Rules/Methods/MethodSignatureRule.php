@@ -6,9 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -20,11 +23,14 @@ use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function count;
+use function min;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassMethodNode>
+ * @implements Rule<InClassMethodNode>
  */
-class MethodSignatureRule implements \PHPStan\Rules\Rule
+class MethodSignatureRule implements Rule
 {
 
 	private bool $reportMaybes;
@@ -120,7 +126,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\MethodReflection[]
+	 * @return MethodReflection[]
 	 */
 	private function collectParentMethods(string $methodName, ClassReflection $class): array
 	{
@@ -180,8 +186,8 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parameters
-	 * @param \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parentParameters
+	 * @param ParameterReflectionWithPhpDocs[] $parameters
+	 * @param ParameterReflectionWithPhpDocs[] $parentParameters
 	 * @return array<int, array{TrinaryLogic, Type, Type}>
 	 */
 	private function checkParameterTypeCompatibility(

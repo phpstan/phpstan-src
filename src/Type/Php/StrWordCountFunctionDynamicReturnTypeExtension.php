@@ -2,18 +2,21 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function count;
 
-class StrWordCountFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class StrWordCountFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -23,7 +26,7 @@ class StrWordCountFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dy
 
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
-		\PhpParser\Node\Expr\FuncCall $functionCall,
+		Node\Expr\FuncCall $functionCall,
 		Scope $scope
 	): Type
 	{

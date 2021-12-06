@@ -2,14 +2,19 @@
 
 namespace PHPStan\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -17,12 +22,17 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
+use function array_map;
+use function count;
+use function implode;
+use function sprintf;
+use function strpos;
 
 /** @api */
 class UnionType implements CompoundType
 {
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $types;
 
 	/**
@@ -32,7 +42,7 @@ class UnionType implements CompoundType
 	public function __construct(array $types)
 	{
 		$throwException = static function () use ($types): void {
-			throw new \PHPStan\ShouldNotHappenException(sprintf(
+			throw new ShouldNotHappenException(sprintf(
 				'Cannot create %s with: %s',
 				self::class,
 				implode(', ', array_map(static function (Type $type): string {
@@ -57,7 +67,7 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * @return \PHPStan\Type\Type[]
+	 * @return Type[]
 	 */
 	public function getTypes(): array
 	{
@@ -75,9 +85,9 @@ class UnionType implements CompoundType
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if (
-			$type->equals(new ObjectType(\DateTimeInterface::class))
+			$type->equals(new ObjectType(DateTimeInterface::class))
 			&& $this->accepts(
-				new UnionType([new ObjectType(\DateTime::class), new ObjectType(\DateTimeImmutable::class)]),
+				new UnionType([new ObjectType(DateTime::class), new ObjectType(DateTimeImmutable::class)]),
 				$strictTypes
 			)->yes()
 		) {
@@ -247,7 +257,7 @@ class UnionType implements CompoundType
 		}
 
 		if ($object === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $object;
@@ -285,7 +295,7 @@ class UnionType implements CompoundType
 
 		$propertiesCount = count($propertyPrototypes);
 		if ($propertiesCount === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($propertiesCount === 1) {
@@ -327,7 +337,7 @@ class UnionType implements CompoundType
 
 		$methodsCount = count($methodPrototypes);
 		if ($methodsCount === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($methodsCount === 1) {
@@ -472,7 +482,7 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -484,7 +494,7 @@ class UnionType implements CompoundType
 			return $type->getCallableParametersAcceptors($scope);
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function isCloneable(): TrinaryLogic

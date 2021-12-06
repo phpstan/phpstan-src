@@ -3,6 +3,7 @@
 namespace PHPStan\Php;
 
 use PHPUnit\Framework\TestCase;
+use const PHP_VERSION_ID;
 
 class PhpVersionFactoryTest extends TestCase
 {

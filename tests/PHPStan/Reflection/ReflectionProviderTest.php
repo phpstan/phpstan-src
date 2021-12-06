@@ -2,12 +2,14 @@
 
 namespace PHPStan\Reflection;
 
+use DateTime;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use const PHP_VERSION_ID;
 
 class ReflectionProviderTest extends PHPStanTestCase
 {
@@ -108,12 +110,12 @@ class ReflectionProviderTest extends PHPStanTestCase
 	{
 		return [
 			[
-				\DateTime::class,
+				DateTime::class,
 				'__construct',
 				new ObjectType('Exception'),
 			],
 			[
-				\DateTime::class,
+				DateTime::class,
 				'format',
 				null,
 			],

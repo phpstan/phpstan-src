@@ -8,6 +8,11 @@ use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use ReflectionException;
+use function array_key_exists;
+use function explode;
+use function sprintf;
 
 /**
  * @implements Rule<ClassPropertiesNode>
@@ -43,7 +48,7 @@ class UninitializedPropertyRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->getConstructors($classReflection), $this->extensionProvider->getExtensions());
@@ -94,7 +99,7 @@ class UninitializedPropertyRule implements Rule
 
 			try {
 				$prototype = $nativeMethod->getPrototype();
-			} catch (\ReflectionException $e) {
+			} catch (ReflectionException $e) {
 				$prototype = $nativeMethod;
 			}
 

@@ -3,6 +3,8 @@
 namespace PHPStan\Parser;
 
 use PHPStan\File\FileHelper;
+use function array_fill_keys;
+use function strpos;
 
 class PathRoutingParser implements Parser
 {

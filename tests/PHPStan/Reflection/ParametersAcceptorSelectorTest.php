@@ -2,9 +2,13 @@
 
 namespace PHPStan\Reflection;
 
+use DateInterval;
+use DateTimeInterface;
+use Generator;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -19,13 +23,15 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 
-class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
+class ParametersAcceptorSelectorTest extends PHPStanTestCase
 {
 
-	public function dataSelectFromTypes(): \Generator
+	public function dataSelectFromTypes(): Generator
 	{
 		require_once __DIR__ . '/data/function-definitions.php';
 		$reflectionProvider = $this->createReflectionProvider();
@@ -53,8 +59,8 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 		$datePeriodConstructorVariants = $reflectionProvider->getClass('DatePeriod')->getNativeMethod('__construct')->getVariants();
 		yield [
 			[
-				new ObjectType(\DateTimeInterface::class),
-				new ObjectType(\DateInterval::class),
+				new ObjectType(DateTimeInterface::class),
+				new ObjectType(DateInterval::class),
 				new IntegerType(),
 				new IntegerType(),
 			],
@@ -64,9 +70,9 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 		];
 		yield [
 			[
-				new ObjectType(\DateTimeInterface::class),
-				new ObjectType(\DateInterval::class),
-				new ObjectType(\DateTimeInterface::class),
+				new ObjectType(DateTimeInterface::class),
+				new ObjectType(DateInterval::class),
+				new ObjectType(DateTimeInterface::class),
 				new IntegerType(),
 			],
 			$datePeriodConstructorVariants,
@@ -445,7 +451,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataSelectFromTypes
-	 * @param \PHPStan\Type\Type[] $types
+	 * @param Type[] $types
 	 * @param ParametersAcceptor[] $variants
 	 */
 	public function testSelectFromTypes(

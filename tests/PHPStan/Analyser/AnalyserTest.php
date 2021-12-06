@@ -2,7 +2,11 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Lexer;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
+use PhpParser\Parser\Php7;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
@@ -14,9 +18,20 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use function array_map;
+use function array_merge;
+use function assert;
+use function count;
+use function is_string;
+use function sprintf;
+use function str_replace;
+use function strtoupper;
+use function substr;
+use const PHP_OS;
 
-class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
+class AnalyserTest extends PHPStanTestCase
 {
 
 	public function testReturnErrorIfIgnoredMessagesDoesNotOccur(): void
@@ -424,7 +439,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @param mixed[] $ignoreErrors
 	 * @param string|string[] $filePaths
-	 * @return string[]|\PHPStan\Analyser\Error[]
+	 * @return string[]|Error[]
 	 */
 	private function runAnalyser(
 		array $ignoreErrors,
@@ -467,14 +482,14 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 		);
 	}
 
-	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): \PHPStan\Analyser\Analyser
+	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): Analyser
 	{
 		$registry = new Registry([
 			new AlwaysFailRule(),
 		]);
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$printer = new \PhpParser\PrettyPrinter\Standard();
+		$printer = new Standard();
 		$fileHelper = $this->getFileHelper();
 
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
@@ -499,14 +514,14 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			[],
 			true
 		);
-		$lexer = new \PhpParser\Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
+		$lexer = new Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 			$nodeScopeResolver,
 			new RichParser(
-				new \PhpParser\Parser\Php7($lexer),
+				new Php7($lexer),
 				$lexer,
-				new \PhpParser\NodeVisitor\NameResolver(),
+				new NameResolver(),
 				new NodeConnectingVisitor(),
 				new StatementOrderVisitor()
 			),

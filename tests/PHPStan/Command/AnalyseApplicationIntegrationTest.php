@@ -7,11 +7,20 @@ use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Testing\PHPStanTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use function file_exists;
+use function fopen;
+use function rewind;
+use function sprintf;
+use function stream_get_contents;
+use function unlink;
+use const DIRECTORY_SEPARATOR;
 
-class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
+class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 {
 
 	public function testExecuteOnAFile(): void
@@ -43,7 +52,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$analyserApplication = self::getContainer()->getByType(AnalyseApplication::class);
 		$resource = fopen('php://memory', 'w', false);
 		if ($resource === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$output = new StreamOutput($resource);
 
@@ -77,7 +86,7 @@ class AnalyseApplicationIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$contents = stream_get_contents($output->getStream());
 		if ($contents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $contents;

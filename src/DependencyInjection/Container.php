@@ -41,7 +41,7 @@ interface Container
 
 	/**
 	 * @return mixed
-	 * @throws \PHPStan\DependencyInjection\ParameterNotFoundException
+	 * @throws ParameterNotFoundException
 	 */
 	public function getParameter(string $parameterName);
 

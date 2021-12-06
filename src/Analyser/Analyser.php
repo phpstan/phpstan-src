@@ -2,20 +2,31 @@
 
 namespace PHPStan\Analyser;
 
+use Closure;
 use PHPStan\Rules\Registry;
+use Throwable;
+use function array_fill_keys;
+use function array_merge;
+use function count;
+use function error_reporting;
+use function in_array;
+use function restore_error_handler;
+use function set_error_handler;
+use function sprintf;
+use const E_DEPRECATED;
 
 class Analyser
 {
 
-	private \PHPStan\Analyser\FileAnalyser $fileAnalyser;
+	private FileAnalyser $fileAnalyser;
 
 	private Registry $registry;
 
-	private \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver;
+	private NodeScopeResolver $nodeScopeResolver;
 
 	private int $internalErrorsCountLimit;
 
-	/** @var \PHPStan\Analyser\Error[] */
+	/** @var Error[] */
 	private array $collectedErrors = [];
 
 	public function __construct(
@@ -33,14 +44,14 @@ class Analyser
 
 	/**
 	 * @param string[] $files
-	 * @param \Closure(string $file): void|null $preFileCallback
-	 * @param \Closure(int): void|null $postFileCallback
+	 * @param Closure(string $file): void|null $preFileCallback
+	 * @param Closure(int ): void|null $postFileCallback
 	 * @param string[]|null $allAnalysedFiles
 	 */
 	public function analyse(
 		array $files,
-		?\Closure $preFileCallback = null,
-		?\Closure $postFileCallback = null,
+		?Closure $preFileCallback = null,
+		?Closure $postFileCallback = null,
 		bool $debug = false,
 		?array $allAnalysedFiles = null
 	): AnalyserResult
@@ -78,7 +89,7 @@ class Analyser
 				if (count($fileExportedNodes) > 0) {
 					$exportedNodes[$file] = $fileExportedNodes;
 				}
-			} catch (\Throwable $t) {
+			} catch (Throwable $t) {
 				if ($debug) {
 					throw $t;
 				}

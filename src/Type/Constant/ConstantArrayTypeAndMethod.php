@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
@@ -9,7 +10,7 @@ use PHPStan\Type\Type;
 class ConstantArrayTypeAndMethod
 {
 
-	private ?\PHPStan\Type\Type $type;
+	private ?Type $type;
 
 	private ?string $method;
 
@@ -33,7 +34,7 @@ class ConstantArrayTypeAndMethod
 	): self
 	{
 		if ($certainty->no()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return new self($type, $method, $certainty);
 	}
@@ -51,7 +52,7 @@ class ConstantArrayTypeAndMethod
 	public function getType(): Type
 	{
 		if ($this->type === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $this->type;
@@ -60,7 +61,7 @@ class ConstantArrayTypeAndMethod
 	public function getMethod(): string
 	{
 		if ($this->method === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $this->method;

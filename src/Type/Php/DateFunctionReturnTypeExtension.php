@@ -13,6 +13,10 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use function count;
+use function date;
+use function is_numeric;
+use function sprintf;
 
 class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

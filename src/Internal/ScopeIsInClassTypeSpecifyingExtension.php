@@ -22,9 +22,9 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 
 	private string $removeNullMethodName;
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function __construct(
 		string $isInMethodName,

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use Closure;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
@@ -23,6 +24,10 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_map;
+use function array_merge;
+use function implode;
+use function sprintf;
 
 /** @api */
 class ClosureType implements TypeWithClassName, ParametersAcceptor
@@ -33,7 +38,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	private ObjectType $objectType;
 
-	/** @var array<int, \PHPStan\Reflection\ParameterReflection> */
+	/** @var array<int, ParameterReflection> */
 	private array $parameters;
 
 	private Type $returnType;
@@ -46,7 +51,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	/**
 	 * @api
-	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
+	 * @param array<int, ParameterReflection> $parameters
 	 */
 	public function __construct(
 		array $parameters,
@@ -56,7 +61,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap = null
 	)
 	{
-		$this->objectType = new ObjectType(\Closure::class);
+		$this->objectType = new ObjectType(Closure::class);
 		$this->parameters = $parameters;
 		$this->returnType = $returnType;
 		$this->variadic = $variadic;
@@ -122,7 +127,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 		if (
 			$type instanceof TypeWithClassName
-			&& $type->getClassName() === \Closure::class
+			&& $type->getClassName() === Closure::class
 		) {
 			return TrinaryLogic::createMaybe();
 		}
@@ -265,7 +270,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -322,7 +327,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflection>
+	 * @return array<int, ParameterReflection>
 	 */
 	public function getParameters(): array
 	{

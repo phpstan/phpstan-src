@@ -7,6 +7,8 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
  * @implements Rule<Stmt>
@@ -58,7 +60,7 @@ class ContinueBreakInLoopRule implements Rule
 				$value--;
 				$parent = $parent->getAttribute('parent');
 				if (!$parent instanceof Stmt\Switch_) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 			}
 

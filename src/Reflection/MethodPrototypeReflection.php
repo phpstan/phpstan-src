@@ -7,7 +7,7 @@ use PHPStan\Type\Type;
 class MethodPrototypeReflection implements ClassMemberReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ClassReflection $declaringClass;
 
 	private string $name;
 

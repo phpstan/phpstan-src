@@ -2,15 +2,18 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<UnusedConstructorParametersRule>
+ * @extends RuleTestCase<UnusedConstructorParametersRule>
  */
-class UnusedConstructorParametersRuleTest extends \PHPStan\Testing\RuleTestCase
+class UnusedConstructorParametersRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new UnusedConstructorParametersRule(new UnusedFunctionParametersCheck(
 			$this->createReflectionProvider()

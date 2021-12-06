@@ -6,6 +6,7 @@ use NativeMixedType\Foo;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\MixedType;
+use const PHP_VERSION_ID;
 
 class MixedTypeTest extends PHPStanTestCase
 {

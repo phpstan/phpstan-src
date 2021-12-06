@@ -2,6 +2,11 @@
 
 namespace PHPStan\Type\Generic;
 
+use DateTime;
+use DateTimeInterface;
+use Exception;
+use Iterator;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -15,8 +20,13 @@ use PHPStan\Type\Test\D;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionClass;
+use stdClass;
+use Traversable;
+use function array_map;
+use function sprintf;
 
-class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class GenericObjectTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -88,43 +98,43 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new ObjectType(\ReflectionClass::class),
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new ObjectType(ReflectionClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
-				new ObjectType(\ReflectionClass::class),
+				new ObjectType(ReflectionClass::class),
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
+				new GenericObjectType(ReflectionClass::class, [
 					new ObjectWithoutClassType(),
 				]),
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
-				new GenericObjectType(\ReflectionClass::class, [
+				new GenericObjectType(ReflectionClass::class, [
 					new ObjectWithoutClassType(),
 				]),
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\Exception::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(Exception::class),
 				]),
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
 				TrinaryLogic::createNo(),
 			],
@@ -183,18 +193,18 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createNo(),
 			],
 			'generic object accepts normal object of same type' => [
-				new GenericObjectType(\Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
-				new ObjectType(\Traversable::class),
+				new GenericObjectType(Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
+				new ObjectType(Traversable::class),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\Iterator::class, [new MixedType(true), new MixedType(true)]),
-				new ObjectType(\Iterator::class),
+				new GenericObjectType(Iterator::class, [new MixedType(true), new MixedType(true)]),
+				new ObjectType(Iterator::class),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\Iterator::class, [new MixedType(true), new MixedType(true)]),
-				new IntersectionType([new ObjectType(\Iterator::class), new ObjectType(\DateTimeInterface::class)]),
+				new GenericObjectType(Iterator::class, [new MixedType(true), new MixedType(true)]),
+				new IntersectionType([new ObjectType(Iterator::class), new ObjectType(DateTimeInterface::class)]),
 				TrinaryLogic::createYes(),
 			],
 		];
@@ -232,7 +242,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		return [
 			'simple' => [
 				new GenericObjectType(A\A::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 				]),
 				new GenericObjectType(A\A::class, [
 					$templateType('T'),
@@ -241,7 +251,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			'two types' => [
 				new GenericObjectType(A\A2::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 					new IntegerType(),
 				]),
 				new GenericObjectType(A\A2::class, [
@@ -253,12 +263,12 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			'union' => [
 				new UnionType([
 					new GenericObjectType(A\A2::class, [
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 						new IntegerType(),
 					]),
 					new GenericObjectType(A\A2::class, [
 						new IntegerType(),
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 					]),
 				]),
 				new GenericObjectType(A\A2::class, [
@@ -270,7 +280,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			'nested' => [
 				new GenericObjectType(A\A::class, [
 					new GenericObjectType(A\A2::class, [
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 						new IntegerType(),
 					]),
 				]),
@@ -284,27 +294,27 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			'missing type' => [
 				new GenericObjectType(A\A2::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 				]),
 				new GenericObjectType(A\A2::class, [
-					$templateType('K', new ObjectType(\DateTimeInterface::class)),
-					$templateType('V', new ObjectType(\DateTimeInterface::class)),
+					$templateType('K', new ObjectType(DateTimeInterface::class)),
+					$templateType('V', new ObjectType(DateTimeInterface::class)),
 				]),
 				['K' => 'DateTime'],
 			],
 			'wrong class' => [
 				new GenericObjectType(B\I::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 				]),
 				new GenericObjectType(A\A::class, [
-					$templateType('T', new ObjectType(\DateTimeInterface::class)),
+					$templateType('T', new ObjectType(DateTimeInterface::class)),
 				]),
 				[],
 			],
 			'wrong type' => [
 				new IntegerType(),
 				new GenericObjectType(A\A::class, [
-					$templateType('T', new ObjectType(\DateTimeInterface::class)),
+					$templateType('T', new ObjectType(DateTimeInterface::class)),
 				]),
 				[],
 			],

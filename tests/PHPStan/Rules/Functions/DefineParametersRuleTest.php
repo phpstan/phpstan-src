@@ -3,14 +3,17 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DefineParametersRule>
+ * @extends RuleTestCase<DefineParametersRule>
  */
-class DefineParametersRuleTest extends \PHPStan\Testing\RuleTestCase
+class DefineParametersRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new DefineParametersRule(new PhpVersion(PHP_VERSION_ID));
 	}

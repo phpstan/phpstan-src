@@ -13,13 +13,13 @@ class NativeParameterReflection implements ParameterReflection
 
 	private bool $optional;
 
-	private \PHPStan\Type\Type $type;
+	private Type $type;
 
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
+	private PassedByReference $passedByReference;
 
 	private bool $variadic;
 
-	private ?\PHPStan\Type\Type $defaultValue;
+	private ?Type $defaultValue;
 
 	public function __construct(
 		string $name,

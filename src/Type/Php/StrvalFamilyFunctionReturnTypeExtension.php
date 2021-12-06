@@ -5,9 +5,12 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use function count;
+use function in_array;
 
 class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -48,7 +51,7 @@ class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			case 'doubleval':
 				return $argType->toFloat();
 			default:
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 		}
 	}
 

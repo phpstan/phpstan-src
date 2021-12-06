@@ -7,6 +7,9 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
+use function count;
+use function implode;
 
 class UnionTypePropertyReflection implements PropertyReflection
 {
@@ -15,7 +18,7 @@ class UnionTypePropertyReflection implements PropertyReflection
 	private array $properties;
 
 	/**
-	 * @param \PHPStan\Reflection\PropertyReflection[] $properties
+	 * @param PropertyReflection[] $properties
 	 */
 	public function __construct(array $properties)
 	{

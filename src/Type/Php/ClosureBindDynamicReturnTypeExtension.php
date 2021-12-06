@@ -2,19 +2,21 @@
 
 namespace PHPStan\Type\Php;
 
+use Closure;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 
-class ClosureBindDynamicReturnTypeExtension implements \PHPStan\Type\DynamicStaticMethodReturnTypeExtension
+class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 
 	public function getClass(): string
 	{
-		return \Closure::class;
+		return Closure::class;
 	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool

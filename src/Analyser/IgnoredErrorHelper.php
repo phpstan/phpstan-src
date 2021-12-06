@@ -3,15 +3,25 @@
 namespace PHPStan\Analyser;
 
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileHelper;
+use function array_keys;
+use function array_map;
+use function count;
+use function implode;
+use function is_array;
+use function is_file;
+use function sprintf;
 
 class IgnoredErrorHelper
 {
 
 	private IgnoredRegexValidator $ignoredRegexValidator;
 
-	private \PHPStan\File\FileHelper $fileHelper;
+	private FileHelper $fileHelper;
 
 	/** @var (string|mixed[])[] */
 	private array $ignoreErrors;
@@ -78,7 +88,7 @@ class IgnoredErrorHelper
 					}
 
 					$ignoreMessage = $ignoreError['message'];
-					\Nette\Utils\Strings::match('', $ignoreMessage);
+					Strings::match('', $ignoreMessage);
 					if (isset($ignoreError['count'])) {
 						continue; // ignoreError coming from baseline will be correct
 					}
@@ -101,7 +111,7 @@ class IgnoredErrorHelper
 						'ignoreError' => $ignoreError,
 					];
 					$ignoreMessage = $ignoreError;
-					\Nette\Utils\Strings::match('', $ignoreMessage);
+					Strings::match('', $ignoreMessage);
 					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
 					$ignoredTypes = $validationResult->getIgnoredTypes();
 					if (count($ignoredTypes) > 0) {
@@ -116,9 +126,9 @@ class IgnoredErrorHelper
 						$errors[] = sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
 					}
 				}
-			} catch (\Nette\Utils\RegexpException $e) {
+			} catch (RegexpException $e) {
 				$errors[] = $e->getMessage();
-			} catch (\Nette\Utils\JsonException $e) {
+			} catch (JsonException $e) {
 				$errors[] = $e->getMessage();
 			}
 		}

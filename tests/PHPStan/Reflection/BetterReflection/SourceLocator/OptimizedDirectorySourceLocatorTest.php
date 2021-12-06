@@ -2,10 +2,13 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use BFoo;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Testing\PHPStanTestCase;
 use TestDirectorySourceLocator\AFoo;
+use function basename;
+use const PHP_VERSION_ID;
 
 class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 {
@@ -24,13 +27,13 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'a.php',
 			],
 			[
-				\BFoo::class,
-				\BFoo::class,
+				BFoo::class,
+				BFoo::class,
 				'b.php',
 			],
 			[
 				'bfOO',
-				\BFoo::class,
+				BFoo::class,
 				'b.php',
 			],
 		];

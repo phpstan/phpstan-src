@@ -2,13 +2,16 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<OffsetAccessWithoutDimForReadingRule>
+ * @extends RuleTestCase<OffsetAccessWithoutDimForReadingRule>
  */
-class OffsetAccessWithoutDimForReadingRuleTest extends \PHPStan\Testing\RuleTestCase
+class OffsetAccessWithoutDimForReadingRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new OffsetAccessWithoutDimForReadingRule();
 	}

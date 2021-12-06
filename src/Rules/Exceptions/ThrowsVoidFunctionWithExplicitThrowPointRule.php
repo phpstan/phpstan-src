@@ -8,10 +8,12 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
  * @implements Rule<FunctionReturnStatementsNode>
@@ -42,7 +44,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 		$statementResult = $node->getStatementResult();
 		$functionReflection = $scope->getFunction();
 		if (!$functionReflection instanceof FunctionReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if (!$functionReflection->getThrowType() instanceof VoidType) {

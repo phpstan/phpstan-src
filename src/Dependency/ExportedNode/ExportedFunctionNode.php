@@ -4,6 +4,10 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedFunctionNode implements ExportedNode, JsonSerializable
 {
@@ -89,7 +93,7 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -117,7 +121,7 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 			$data['returnType'],
 			array_map(static function (array $parameterData): ExportedParameterNode {
 				if ($parameterData['type'] !== ExportedParameterNode::class) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return ExportedParameterNode::decode($parameterData['data']);
 			}, $data['parameters'])

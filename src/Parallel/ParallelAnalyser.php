@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parallel;
 
+use Closure;
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
@@ -11,8 +12,20 @@ use PHPStan\Dependency\ExportedNode;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
+use React\Socket\TcpServer;
 use Symfony\Component\Console\Input\InputInterface;
+use Throwable;
+use function array_map;
+use function array_pop;
+use function array_reverse;
+use function count;
+use function defined;
+use function escapeshellarg;
+use function is_string;
+use function max;
 use function parse_url;
+use function sprintf;
+use const PHP_URL_PORT;
 
 class ParallelAnalyser
 {
@@ -39,12 +52,12 @@ class ParallelAnalyser
 	}
 
 	/**
-	 * @param \Closure(int): void|null $postFileCallback
+	 * @param Closure(int ): void|null $postFileCallback
 	 */
 	public function analyse(
 		Schedule $schedule,
 		string $mainScript,
-		?\Closure $postFileCallback,
+		?Closure $postFileCallback,
 		?string $projectConfigFile,
 		?string $tmpFile,
 		?string $insteadOfFile,
@@ -58,11 +71,14 @@ class ParallelAnalyser
 		$errors = [];
 		$internalErrors = [];
 
-		$server = new \React\Socket\TcpServer('127.0.0.1:0', $loop);
+		$server = new TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server);
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs): void {
-			$decoder = new Decoder($connection, true, 512, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0, $this->decoderBufferSize);
-			$encoder = new Encoder($connection, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0);
+			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
+			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
+			// phpcs:enable
+			$decoder = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, $this->decoderBufferSize);
+			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$decoder->on('data', function (array $data) use (&$jobs, $decoder, $encoder): void {
 				if ($data['action'] !== 'hello') {
 					return;
@@ -90,7 +106,7 @@ class ParallelAnalyser
 
 		$reachedInternalErrorsCountLimit = false;
 
-		$handleError = function (\Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {
+		$handleError = function (Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {
 			$internalErrors[] = sprintf('Internal error: ' . $error->getMessage());
 			$internalErrorsCount++;
 			$reachedInternalErrorsCountLimit = true;

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
+use Exception;
+use InvalidArgumentException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
@@ -12,44 +14,44 @@ class TemplateTypeMapTest extends TestCase
 	public function dataUnionWithLowerBoundTypes(): iterable
 	{
 		$map = (new TemplateTypeMap([
-			'T' => new ObjectType(\Exception::class),
+			'T' => new ObjectType(Exception::class),
 		]))->convertToLowerBoundTypes();
 
 		yield [
 			$map,
-			\Exception::class,
+			Exception::class,
 		];
 
 		yield [
 			$map->union(new TemplateTypeMap([
-				'T' => new ObjectType(\InvalidArgumentException::class),
+				'T' => new ObjectType(InvalidArgumentException::class),
 			])),
-			\InvalidArgumentException::class,
+			InvalidArgumentException::class,
 		];
 
 		yield [
 			$map->union((new TemplateTypeMap([
-				'T' => new ObjectType(\InvalidArgumentException::class),
+				'T' => new ObjectType(InvalidArgumentException::class),
 			]))->convertToLowerBoundTypes()),
-			\InvalidArgumentException::class,
+			InvalidArgumentException::class,
 		];
 
 		yield [
 			(new TemplateTypeMap([
-				'T' => new ObjectType(\Exception::class),
+				'T' => new ObjectType(Exception::class),
 			], [
-				'T' => new ObjectType(\InvalidArgumentException::class),
+				'T' => new ObjectType(InvalidArgumentException::class),
 			]))->convertToLowerBoundTypes(),
-			\InvalidArgumentException::class,
+			InvalidArgumentException::class,
 		];
 
 		yield [
 			(new TemplateTypeMap([
-				'T' => new ObjectType(\InvalidArgumentException::class),
+				'T' => new ObjectType(InvalidArgumentException::class),
 			], [
-				'T' => new ObjectType(\Exception::class),
+				'T' => new ObjectType(Exception::class),
 			]))->convertToLowerBoundTypes(),
-			\InvalidArgumentException::class,
+			InvalidArgumentException::class,
 		];
 	}
 

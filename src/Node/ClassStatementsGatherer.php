@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -15,19 +16,21 @@ use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\ShouldNotHappenException;
+use function count;
 
 class ClassStatementsGatherer
 {
 
 	private ClassReflection $classReflection;
 
-	/** @var callable(\PhpParser\Node $node, Scope $scope): void */
+	/** @var callable(Node $node, Scope $scope): void */
 	private $nodeCallback;
 
 	/** @var ClassPropertyNode[] */
 	private array $properties = [];
 
-	/** @var \PhpParser\Node\Stmt\ClassMethod[] */
+	/** @var Node\Stmt\ClassMethod[] */
 	private array $methods = [];
 
 	/** @var \PHPStan\Node\Method\MethodCall[] */
@@ -36,14 +39,14 @@ class ClassStatementsGatherer
 	/** @var array<int, PropertyWrite|PropertyRead> */
 	private array $propertyUsages = [];
 
-	/** @var \PhpParser\Node\Stmt\ClassConst[] */
+	/** @var Node\Stmt\ClassConst[] */
 	private array $constants = [];
 
 	/** @var ClassConstantFetch[] */
 	private array $constantFetches = [];
 
 	/**
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void $nodeCallback
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function __construct(
 		ClassReflection $classReflection,
@@ -63,7 +66,7 @@ class ClassStatementsGatherer
 	}
 
 	/**
-	 * @return \PhpParser\Node\Stmt\ClassMethod[]
+	 * @return Node\Stmt\ClassMethod[]
 	 */
 	public function getMethods(): array
 	{
@@ -87,7 +90,7 @@ class ClassStatementsGatherer
 	}
 
 	/**
-	 * @return \PhpParser\Node\Stmt\ClassConst[]
+	 * @return Node\Stmt\ClassConst[]
 	 */
 	public function getConstants(): array
 	{
@@ -102,17 +105,17 @@ class ClassStatementsGatherer
 		return $this->constantFetches;
 	}
 
-	public function __invoke(\PhpParser\Node $node, Scope $scope): void
+	public function __invoke(Node $node, Scope $scope): void
 	{
 		$nodeCallback = $this->nodeCallback;
 		$nodeCallback($node, $scope);
 		$this->gatherNodes($node, $scope);
 	}
 
-	private function gatherNodes(\PhpParser\Node $node, Scope $scope): void
+	private function gatherNodes(Node $node, Scope $scope): void
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		if ($scope->getClassReflection()->getName() !== $this->classReflection->getName()) {
 			return;
@@ -127,11 +130,11 @@ class ClassStatementsGatherer
 			}
 			return;
 		}
-		if ($node instanceof \PhpParser\Node\Stmt\ClassMethod && !$scope->isInTrait()) {
+		if ($node instanceof Node\Stmt\ClassMethod && !$scope->isInTrait()) {
 			$this->methods[] = $node;
 			return;
 		}
-		if ($node instanceof \PhpParser\Node\Stmt\ClassConst) {
+		if ($node instanceof Node\Stmt\ClassConst) {
 			$this->constants[] = $node;
 			return;
 		}
@@ -162,7 +165,7 @@ class ClassStatementsGatherer
 			$this->gatherNodes($node->expr, $scope);
 			return;
 		}
-		if ($node instanceof \PhpParser\Node\Scalar\EncapsedStringPart) {
+		if ($node instanceof Node\Scalar\EncapsedStringPart) {
 			return;
 		}
 		$inAssign = $scope->isInExpressionAssign($node);

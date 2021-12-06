@@ -2,6 +2,10 @@
 
 namespace PHPStan\Type\Generic;
 
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ClassStringType;
@@ -14,8 +18,11 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use stdClass;
+use Throwable;
+use function sprintf;
 
-class GenericClassStringTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class GenericClassStringTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -24,53 +31,53 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		return [
 			0 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				new ClassStringType(),
 				TrinaryLogic::createMaybe(),
 			],
 			1 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				new StringType(),
 				TrinaryLogic::createMaybe(),
 			],
 			2 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				TrinaryLogic::createYes(),
 			],
 			3 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new GenericClassStringType(new ObjectType(\Throwable::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new GenericClassStringType(new ObjectType(Throwable::class)),
 				TrinaryLogic::createMaybe(),
 			],
 			4 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
 				TrinaryLogic::createYes(),
 			],
 			5 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new GenericClassStringType(new ObjectType(stdClass::class)),
 				TrinaryLogic::createNo(),
 			],
 			6 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
 			],
 			7 => [
-				new GenericClassStringType(new ObjectType(\Throwable::class)),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new ObjectType(Throwable::class)),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
 			],
 			8 => [
-				new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createNo(),
 			],
 			9 => [
-				new GenericClassStringType(new ObjectType(\stdClass::class)),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new ObjectType(stdClass::class)),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createNo(),
 			],
 			10 => [
@@ -80,62 +87,62 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					null,
 					TemplateTypeVariance::createInvariant()
 				)),
-				new ConstantStringType(\Exception::class),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
 			],
 			11 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
-					new ObjectType(\Exception::class),
+					new ObjectType(Exception::class),
 					TemplateTypeVariance::createInvariant()
 				)),
-				new ConstantStringType(\Exception::class),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
 			],
 			12 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
-					new ObjectType(\Exception::class),
+					new ObjectType(Exception::class),
 					TemplateTypeVariance::createInvariant()
 				)),
-				new ConstantStringType(\stdClass::class),
+				new ConstantStringType(stdClass::class),
 				TrinaryLogic::createNo(),
 			],
 			13 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
-					new ObjectType(\Exception::class),
+					new ObjectType(Exception::class),
 					TemplateTypeVariance::createInvariant()
 				)),
-				new ConstantStringType(\InvalidArgumentException::class),
+				new ConstantStringType(InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
 			],
 			14 => [
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
-					new ObjectType(\Exception::class),
+					new ObjectType(Exception::class),
 					TemplateTypeVariance::createInvariant()
 				)),
-				new ConstantStringType(\Throwable::class),
+				new ConstantStringType(Throwable::class),
 				TrinaryLogic::createNo(),
 			],
 			15 => [
-				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Exception::class))),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
 			],
 			16 => [
-				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\InvalidArgumentException::class))),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(InvalidArgumentException::class))),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createNo(),
 			],
 			17 => [
-				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Throwable::class))),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Throwable::class))),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
 			],
 		];
@@ -158,33 +165,33 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		return [
 			0 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new ConstantStringType(\Throwable::class),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new ConstantStringType(Throwable::class),
 				TrinaryLogic::createNo(),
 			],
 			1 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new ConstantStringType(\Exception::class),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
 			],
 			2 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new ConstantStringType(\InvalidArgumentException::class),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new ConstantStringType(InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
 			],
 			3 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				new StringType(),
 				TrinaryLogic::createMaybe(),
 			],
 			4 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new ObjectType(\Exception::class),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new ObjectType(Exception::class),
 				TrinaryLogic::createNo(),
 			],
 			5 => [
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				TrinaryLogic::createYes(),
 			],
 			6 => [
@@ -205,8 +212,8 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					TemplateTypeVariance::createInvariant()
 				)),
 				new UnionType([
-					new ConstantStringType(\DateTime::class),
-					new ConstantStringType(\Exception::class),
+					new ConstantStringType(DateTime::class),
+					new ConstantStringType(Exception::class),
 				]),
 				TrinaryLogic::createYes(),
 			],
@@ -281,23 +288,23 @@ class GenericClassStringTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		return [
 			[
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				true,
 			],
 			[
-				new GenericClassStringType(new ObjectType(\Exception::class)),
-				new GenericClassStringType(new ObjectType(\stdClass::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
+				new GenericClassStringType(new ObjectType(stdClass::class)),
 				false,
 			],
 			[
-				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
-				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Exception::class))),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Exception::class))),
 				true,
 			],
 			[
-				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\Exception::class))),
-				new GenericClassStringType(new StaticType($reflectionProvider->getClass(\stdClass::class))),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Exception::class))),
+				new GenericClassStringType(new StaticType($reflectionProvider->getClass(stdClass::class))),
 				false,
 			],
 		];

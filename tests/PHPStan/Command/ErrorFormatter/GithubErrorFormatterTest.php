@@ -5,6 +5,8 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function sprintf;
+use const PHP_VERSION_ID;
 
 class GithubErrorFormatterTest extends ErrorFormatterTestCase
 {

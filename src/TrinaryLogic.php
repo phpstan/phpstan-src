@@ -4,6 +4,9 @@ namespace PHPStan;
 
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function array_column;
+use function max;
+use function min;
 
 /**
  * @api

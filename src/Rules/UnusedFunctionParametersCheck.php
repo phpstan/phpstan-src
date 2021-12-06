@@ -6,6 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_fill_keys;
+use function array_keys;
+use function array_merge;
+use function is_array;
+use function is_string;
+use function sprintf;
 
 class UnusedFunctionParametersCheck
 {
@@ -19,7 +25,7 @@ class UnusedFunctionParametersCheck
 
 	/**
 	 * @param string[] $parameterNames
-	 * @param \PhpParser\Node[] $statements
+	 * @param Node[] $statements
 	 * @param mixed[] $additionalMetadata
 	 * @return RuleError[]
 	 */
@@ -51,7 +57,7 @@ class UnusedFunctionParametersCheck
 	}
 
 	/**
-	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
+	 * @param Node[]|Node|scalar $node
 	 * @return string[]
 	 */
 	private function getUsedVariables(Scope $scope, $node): array

@@ -2,18 +2,19 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 
 /**
- * @template-covariant T of \PhpParser\Node
+ * @template-covariant T of Node
  */
 class FetchedNode
 {
 
 	/** @var T */
-	private \PhpParser\Node $node;
+	private Node $node;
 
-	private ?\PhpParser\Node\Stmt\Namespace_ $namespace;
+	private ?Node\Stmt\Namespace_ $namespace;
 
 	private string $fileName;
 
@@ -23,8 +24,8 @@ class FetchedNode
 	 * @param T $node
 	 */
 	public function __construct(
-		\PhpParser\Node $node,
-		?\PhpParser\Node\Stmt\Namespace_ $namespace,
+		Node $node,
+		?Node\Stmt\Namespace_ $namespace,
 		string $fileName,
 		LocatedSource $locatedSource
 	)
@@ -38,12 +39,12 @@ class FetchedNode
 	/**
 	 * @return T
 	 */
-	public function getNode(): \PhpParser\Node
+	public function getNode(): Node
 	{
 		return $this->node;
 	}
 
-	public function getNamespace(): ?\PhpParser\Node\Stmt\Namespace_
+	public function getNamespace(): ?Node\Stmt\Namespace_
 	{
 		return $this->namespace;
 	}

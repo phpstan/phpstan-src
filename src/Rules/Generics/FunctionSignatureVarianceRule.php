@@ -8,14 +8,15 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InFunctionNode>
+ * @implements Rule<InFunctionNode>
  */
 class FunctionSignatureVarianceRule implements Rule
 {
 
-	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
+	private VarianceCheck $varianceCheck;
 
 	public function __construct(VarianceCheck $varianceCheck)
 	{

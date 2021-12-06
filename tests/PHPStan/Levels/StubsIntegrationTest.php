@@ -2,10 +2,12 @@
 
 namespace PHPStan\Levels;
 
+use PHPStan\Testing\LevelsTestCase;
+
 /**
  * @group exec
  */
-class StubsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
+class StubsIntegrationTest extends LevelsTestCase
 {
 
 	public function dataTopics(): array

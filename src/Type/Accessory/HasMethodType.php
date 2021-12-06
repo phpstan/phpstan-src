@@ -16,6 +16,9 @@ use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
+use function sprintf;
+use function strtolower;
 
 class HasMethodType implements AccessoryType, CompoundType
 {
@@ -78,7 +81,7 @@ class HasMethodType implements AccessoryType, CompoundType
 			&& $this->getCanonicalMethodName() === $type->getCanonicalMethodName();
 	}
 
-	public function describe(\PHPStan\Type\VerbosityLevel $level): string
+	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('hasMethod(%s)', $this->methodName);
 	}

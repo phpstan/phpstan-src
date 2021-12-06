@@ -6,8 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
+use function get_class;
+use function sprintf;
+use const DIRECTORY_SEPARATOR;
 
 class FileNodeTest extends RuleTestCase
 {
@@ -22,8 +26,8 @@ class FileNodeTest extends RuleTestCase
 			}
 
 			/**
-			 * @param \PHPStan\Node\FileNode $node
-			 * @return \PHPStan\Rules\RuleError[]
+			 * @param FileNode $node
+			 * @return RuleError[]
 			 */
 			public function processNode(Node $node, Scope $scope): array
 			{

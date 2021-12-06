@@ -7,6 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function is_string;
+use function sprintf;
 
 /**
  * @implements Rule<Node>
@@ -85,7 +88,7 @@ class InvalidPromotedPropertiesRule implements Rule
 			}
 
 			if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if (!$param->variadic) {

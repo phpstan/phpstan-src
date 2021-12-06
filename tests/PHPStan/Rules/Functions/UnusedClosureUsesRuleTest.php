@@ -2,15 +2,17 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<UnusedClosureUsesRule>
+ * @extends RuleTestCase<UnusedClosureUsesRule>
  */
-class UnusedClosureUsesRuleTest extends \PHPStan\Testing\RuleTestCase
+class UnusedClosureUsesRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck($this->createReflectionProvider()));
 	}

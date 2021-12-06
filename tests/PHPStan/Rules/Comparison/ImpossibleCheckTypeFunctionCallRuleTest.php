@@ -2,10 +2,15 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use stdClass;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ImpossibleCheckTypeFunctionCallRule>
+ * @extends RuleTestCase<ImpossibleCheckTypeFunctionCallRule>
  */
-class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestCase
+class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
@@ -14,13 +19,13 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 	/** @var bool */
 	private $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ImpossibleCheckTypeFunctionCallRule(
 			new ImpossibleCheckTypeHelper(
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[\stdClass::class],
+				[stdClass::class],
 				$this->treatPhpDocTypesAsCertain
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall,

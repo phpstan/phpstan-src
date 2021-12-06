@@ -19,6 +19,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function count;
 
 class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

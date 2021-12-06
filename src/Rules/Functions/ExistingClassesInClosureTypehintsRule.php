@@ -6,14 +6,15 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Closure>
+ * @implements Rule<Node\Expr\Closure>
  */
-class ExistingClassesInClosureTypehintsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInClosureTypehintsRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionDefinitionCheck $check;
+	private FunctionDefinitionCheck $check;
 
 	public function __construct(FunctionDefinitionCheck $check)
 	{

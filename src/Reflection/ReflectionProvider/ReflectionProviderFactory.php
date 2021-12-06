@@ -3,13 +3,14 @@
 namespace PHPStan\Reflection\ReflectionProvider;
 
 use PHPStan\Reflection\ReflectionProvider;
+use function count;
 
 class ReflectionProviderFactory
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $runtimeReflectionProvider;
+	private ReflectionProvider $runtimeReflectionProvider;
 
-	private \PHPStan\Reflection\ReflectionProvider $staticReflectionProvider;
+	private ReflectionProvider $staticReflectionProvider;
 
 	private bool $disableRuntimeReflectionProvider;
 

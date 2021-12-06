@@ -2,7 +2,10 @@
 
 namespace PHPStan\Broker;
 
-class ClassNotFoundException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use function sprintf;
+
+class ClassNotFoundException extends AnalysedCodeException
 {
 
 	private string $className;

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
@@ -131,7 +132,7 @@ class TemplateTypeVariance
 			return $b->isSuperTypeOf($a);
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function equals(self $other): bool
@@ -159,7 +160,7 @@ class TemplateTypeVariance
 				return 'static';
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	/**

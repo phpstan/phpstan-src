@@ -11,6 +11,8 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+use Throwable;
+use function array_map;
 
 class MissingCheckedExceptionInThrowsCheck
 {
@@ -39,7 +41,7 @@ class MissingCheckedExceptionInThrowsCheck
 			}
 
 			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
-				if ($throwPointType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+				if ($throwPointType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 					continue;
 				}
 				if ($throwType->isSuperTypeOf($throwPointType)->yes()) {

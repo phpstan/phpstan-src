@@ -4,9 +4,10 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<TooWideArrowFunctionReturnTypehintRule>
+ * @extends RuleTestCase<TooWideArrowFunctionReturnTypehintRule>
  */
 class TooWideArrowFunctionReturnTypehintRuleTest extends RuleTestCase
 {

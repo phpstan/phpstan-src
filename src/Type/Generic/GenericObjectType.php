@@ -9,6 +9,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -18,6 +19,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
+use function count;
+use function implode;
+use function sprintf;
 
 /** @api */
 class GenericObjectType extends ObjectType
@@ -163,7 +168,7 @@ class GenericObjectType extends ObjectType
 				continue;
 			}
 			if (!$templateType instanceof TemplateType) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);

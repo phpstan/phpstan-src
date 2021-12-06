@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use ThrowsVoidFunction\MyException;
 
 /**
  * @extends RuleTestCase<ThrowsVoidFunctionWithExplicitThrowPointRule>
@@ -48,7 +49,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				true,
-				[\ThrowsVoidFunction\MyException::class],
+				[MyException::class],
 				[],
 			],
 			[
@@ -73,7 +74,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				false,
-				[\ThrowsVoidFunction\MyException::class],
+				[MyException::class],
 				[
 					[
 						'Function ThrowsVoidFunction\foo() throws exception ThrowsVoidFunction\MyException but the PHPDoc contains @throws void.',

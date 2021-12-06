@@ -6,9 +6,9 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class DummyRule implements \PHPStan\Rules\Rule
+class DummyRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
@@ -15,8 +16,13 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use function array_key_exists;
+use function array_keys;
+use function count;
+use function in_array;
 
 /** @api */
 class ClassPropertiesNode extends NodeAbstract implements VirtualNode
@@ -96,7 +102,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return [[], []];
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 
@@ -206,7 +212,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			$callScope = $methodCall->getScope();
-			if ($methodCallNode instanceof \PhpParser\Node\Expr\MethodCall) {
+			if ($methodCallNode instanceof Node\Expr\MethodCall) {
 				$calledOnType = $callScope->getType($methodCallNode->var);
 			} else {
 				if (!$methodCallNode->class instanceof Name) {

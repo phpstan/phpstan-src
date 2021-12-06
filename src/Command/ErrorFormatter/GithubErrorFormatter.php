@@ -5,6 +5,10 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function array_walk;
+use function implode;
+use function sprintf;
+use function str_replace;
 
 /**
  * Allow errors to be reported in pull-requests diff when run in a GitHub Action

@@ -2,21 +2,29 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\LiteralArrayNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConstantScalarType;
+use function array_keys;
+use function count;
+use function implode;
+use function sprintf;
+use function var_export;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\LiteralArrayNode>
+ * @implements Rule<LiteralArrayNode>
  */
-class DuplicateKeysInLiteralArraysRule implements \PHPStan\Rules\Rule
+class DuplicateKeysInLiteralArraysRule implements Rule
 {
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
+	private Standard $printer;
 
 	public function __construct(
-		\PhpParser\PrettyPrinter\Standard $printer
+		Standard $printer
 	)
 	{
 		$this->printer = $printer;
@@ -27,7 +35,7 @@ class DuplicateKeysInLiteralArraysRule implements \PHPStan\Rules\Rule
 		return LiteralArrayNode::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		$values = [];
 		$duplicateKeys = [];

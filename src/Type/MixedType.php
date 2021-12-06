@@ -8,6 +8,7 @@ use PHPStan\Reflection\Dummy\DummyConstantReflection;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
@@ -20,6 +21,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use function sprintf;
 
 /** @api */
 class MixedType implements CompoundType, SubtractableType
@@ -30,7 +32,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	private bool $isExplicitMixed;
 
-	private ?\PHPStan\Type\Type $subtractedType;
+	private ?Type $subtractedType;
 
 	/** @api */
 	public function __construct(
@@ -130,7 +132,7 @@ class MixedType implements CompoundType, SubtractableType
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{

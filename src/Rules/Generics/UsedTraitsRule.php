@@ -7,18 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
+use function array_map;
+use function sprintf;
+use function ucfirst;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\TraitUse>
+ * @implements Rule<Node\Stmt\TraitUse>
  */
 class UsedTraitsRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
-	private \PHPStan\Rules\Generics\GenericAncestorsCheck $genericAncestorsCheck;
+	private GenericAncestorsCheck $genericAncestorsCheck;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
@@ -37,7 +41,7 @@ class UsedTraitsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$className = $scope->getClassReflection()->getName();

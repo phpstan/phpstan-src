@@ -10,6 +10,8 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use function count;
 
 class StrTokFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -19,7 +21,7 @@ class StrTokFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		return $functionReflection->getName() === 'strtok';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): \PHPStan\Type\Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) !== 2) {

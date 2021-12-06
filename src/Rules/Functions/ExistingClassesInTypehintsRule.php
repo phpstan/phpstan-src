@@ -8,14 +8,16 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\Rule;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InFunctionNode>
+ * @implements Rule<InFunctionNode>
  */
-class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInTypehintsRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionDefinitionCheck $check;
+	private FunctionDefinitionCheck $check;
 
 	public function __construct(FunctionDefinitionCheck $check)
 	{

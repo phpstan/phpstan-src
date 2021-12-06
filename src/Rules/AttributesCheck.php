@@ -2,12 +2,17 @@
 
 namespace PHPStan\Rules;
 
+use Attribute;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use function array_key_exists;
+use function count;
+use function sprintf;
+use function strtolower;
 use const PHP_VERSION_ID;
 
 class AttributesCheck
@@ -32,7 +37,7 @@ class AttributesCheck
 
 	/**
 	 * @param AttributeGroup[] $attrGroups
-	 * @param \Attribute::TARGET_* $requiredTarget
+	 * @param Attribute::TARGET_* $requiredTarget
 	 * @return RuleError[]
 	 */
 	public function check(
@@ -75,7 +80,7 @@ class AttributesCheck
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have the %s target.', $name, $targetName))->line($attribute->getLine())->build();
 				}
 
-				if (($flags & \Attribute::IS_REPEATABLE) === 0) {
+				if (($flags & Attribute::IS_REPEATABLE) === 0) {
 					$loweredName = strtolower($name);
 					if (array_key_exists($loweredName, $alreadyPresent)) {
 						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is not repeatable but is already present above the %s.', $name, $targetName))->line($attribute->getLine())->build();

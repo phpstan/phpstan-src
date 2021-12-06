@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
  * @implements Rule<CatchWithUnthrownExceptionNode>

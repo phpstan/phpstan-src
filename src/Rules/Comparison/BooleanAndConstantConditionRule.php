@@ -2,14 +2,19 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
 use PHPStan\Node\BooleanAndNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function count;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<BooleanAndNode>
+ * @implements Rule<BooleanAndNode>
  */
-class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
+class BooleanAndConstantConditionRule implements Rule
 {
 
 	private ConstantConditionRuleHelper $helper;
@@ -31,8 +36,8 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		\PHPStan\Analyser\Scope $scope
+		Node $node,
+		Scope $scope
 	): array
 	{
 		$errors = [];

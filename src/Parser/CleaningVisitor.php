@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Reflection\ParametersAcceptor;
+use function in_array;
 
 class CleaningVisitor extends NodeVisitorAbstract
 {

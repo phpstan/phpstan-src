@@ -8,15 +8,27 @@ use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubValidator;
 use Symfony\Component\Console\Input\InputInterface;
+use function array_merge;
+use function ceil;
+use function count;
+use function error_get_last;
+use function file_put_contents;
+use function is_string;
+use function memory_get_peak_usage;
+use function register_shutdown_function;
+use function sprintf;
+use function strpos;
+use function unlink;
+use const E_ERROR;
 
 class AnalyseApplication
 {
 
 	private AnalyserRunner $analyserRunner;
 
-	private \PHPStan\PhpDoc\StubValidator $stubValidator;
+	private StubValidator $stubValidator;
 
-	private \PHPStan\Analyser\ResultCache\ResultCacheManagerFactory $resultCacheManagerFactory;
+	private ResultCacheManagerFactory $resultCacheManagerFactory;
 
 	private IgnoredErrorHelper $ignoredErrorHelper;
 

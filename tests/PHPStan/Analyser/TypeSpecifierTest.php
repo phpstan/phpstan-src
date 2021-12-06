@@ -16,6 +16,8 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
+use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -26,8 +28,12 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
-class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
+class TypeSpecifierTest extends PHPStanTestCase
 {
 
 	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array{}|false|null';
@@ -35,10 +41,10 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 	private const SURE_NOT_FALSEY = '~' . self::FALSEY_TYPE_DESCRIPTION;
 	private const SURE_NOT_TRUTHY = '~' . self::TRUTHY_TYPE_DESCRIPTION;
 
-	/** @var \PhpParser\PrettyPrinter\Standard() */
+	/** @var Standard () */
 	private $printer;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
+	/** @var TypeSpecifier */
 	private $typeSpecifier;
 
 	/** @var Scope */
@@ -47,7 +53,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 	protected function setUp(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$this->printer = new \PhpParser\PrettyPrinter\Standard();
+		$this->printer = new Standard();
 		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$this->scope = $this->createScopeFactory($reflectionProvider, $this->typeSpecifier)->create(ScopeContext::create(''));
 		$this->scope = $this->scope->enterClass($reflectionProvider->getClass('DateTime'));

@@ -3,11 +3,16 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
+use function array_key_exists;
+use function count;
+use function strtolower;
 
 class PhpDocBlock
 {
@@ -323,7 +328,7 @@ class PhpDocBlock
 	): ?self
 	{
 		if ($classReflection->getFileNameWithPhpDocs() !== null && $classReflection->$hasMethodName($name)) {
-			/** @var \PHPStan\Reflection\PropertyReflection|\PHPStan\Reflection\MethodReflection|\PHPStan\Reflection\ConstantReflection $parentReflection */
+			/** @var PropertyReflection|MethodReflection|ConstantReflection $parentReflection */
 			$parentReflection = $classReflection->$getMethodName($name);
 			if ($parentReflection->isPrivate()) {
 				return null;

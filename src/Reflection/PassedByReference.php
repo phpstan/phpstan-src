@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use function array_key_exists;
+
 /** @api */
 class PassedByReference
 {

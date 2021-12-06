@@ -3,23 +3,47 @@
 namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
+use OndraM\CiDetector\Exception\CiNotDetectedException;
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
+use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
+use PHPStan\File\PathNotFoundException;
+use PHPStan\ShouldNotHappenException;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
+use Throwable;
+use function array_map;
+use function count;
+use function dirname;
+use function fopen;
+use function get_class;
+use function implode;
+use function is_array;
+use function is_bool;
+use function is_dir;
+use function is_string;
+use function mkdir;
+use function pathinfo;
+use function rewind;
+use function sprintf;
 use function stream_get_contents;
+use function strlen;
+use function substr;
+use const PATHINFO_BASENAME;
+use const PATHINFO_EXTENSION;
 
-class AnalyseCommand extends \Symfony\Component\Console\Command\Command
+class AnalyseCommand extends Command
 {
 
 	private const NAME = 'analyse';
@@ -77,7 +101,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		if ((bool) $input->getOption('debug')) {
 			$application = $this->getApplication();
 			if ($application === null) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$application->setCatchExceptions(false);
 			return;
@@ -113,7 +137,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			|| (!is_string($level) && $level !== null)
 			|| (!is_bool($allowXdebug))
 		) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		try {
@@ -131,7 +155,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				true,
 				$debugEnabled
 			);
-		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException $e) {
 			return 1;
 		}
 
@@ -153,7 +177,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 		$errorFormat = $input->getOption('error-format');
 
 		if (!is_string($errorFormat) && $errorFormat !== null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($errorFormat === null) {
@@ -167,7 +191,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
 					$errorFormat = 'teamcity';
 				}
-			} catch (\OndraM\CiDetector\Exception\CiNotDetectedException $e) {
+			} catch (CiNotDetectedException $e) {
 				// pass
 			}
 		}
@@ -202,7 +226,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 		try {
 			[$files, $onlyFiles] = $inceptionResult->getFiles();
-		} catch (\PHPStan\File\PathNotFoundException $e) {
+		} catch (PathNotFoundException $e) {
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
 		}
@@ -212,7 +236,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 		$debug = $input->getOption('debug');
 		if (!is_bool($debug)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		try {
@@ -227,7 +251,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 				$inceptionResult->getProjectConfigArray(),
 				$input
 			);
-		} catch (\Throwable $t) {
+		} catch (Throwable $t) {
 			if ($debug) {
 				$inceptionResult->getStdOutput()->writeRaw(sprintf(
 					'Uncaught %s: %s in %s:%d',
@@ -271,7 +295,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 			rewind($stream);
 			$baselineContents = stream_get_contents($stream);
 			if ($baselineContents === false) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if (!is_dir($baselineFileDirectory)) {
@@ -285,7 +309,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 			try {
 				FileWriter::write($generateBaselineFile, $baselineContents);
-			} catch (\PHPStan\File\CouldNotWriteFileException $e) {
+			} catch (CouldNotWriteFileException $e) {
 				$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
 				return $inceptionResult->handleReturn(1);
@@ -420,7 +444,7 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 	{
 		$resource = fopen('php://memory', 'w', false);
 		if ($resource === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return new StreamOutput($resource);
 	}

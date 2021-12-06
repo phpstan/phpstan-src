@@ -8,7 +8,7 @@ use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MethodTemplateTypeRule>
+ * @extends RuleTestCase<MethodTemplateTypeRule>
  */
 class MethodTemplateTypeRuleTest extends RuleTestCase
 {

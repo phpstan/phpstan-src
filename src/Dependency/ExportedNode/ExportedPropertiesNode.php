@@ -4,6 +4,8 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use ReturnTypeWillChange;
+use function count;
 
 class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 {
@@ -117,7 +119,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

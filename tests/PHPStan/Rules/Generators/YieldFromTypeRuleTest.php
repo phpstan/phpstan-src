@@ -7,7 +7,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<YieldFromTypeRule>
+ * @extends RuleTestCase<YieldFromTypeRule>
  */
 class YieldFromTypeRuleTest extends RuleTestCase
 {

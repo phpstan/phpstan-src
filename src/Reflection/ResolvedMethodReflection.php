@@ -14,7 +14,7 @@ class ResolvedMethodReflection implements MethodReflection
 
 	private TemplateTypeMap $resolvedTemplateTypeMap;
 
-	/** @var \PHPStan\Reflection\ParametersAcceptor[]|null */
+	/** @var ParametersAcceptor[]|null */
 	private ?array $variants = null;
 
 	public function __construct(MethodReflection $reflection, TemplateTypeMap $resolvedTemplateTypeMap)
@@ -34,7 +34,7 @@ class ResolvedMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{

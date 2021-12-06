@@ -2,12 +2,17 @@
 
 namespace PHPStan\Command;
 
+use Closure;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
 use Symfony\Component\Console\Input\InputInterface;
+use function array_filter;
+use function array_values;
+use function count;
+use function is_file;
 
 class AnalyserRunner
 {
@@ -36,14 +41,14 @@ class AnalyserRunner
 	/**
 	 * @param string[] $files
 	 * @param string[] $allAnalysedFiles
-	 * @param (\Closure(string $file): void)|null $preFileCallback
-	 * @param (\Closure(int): void)|null $postFileCallback
+	 * @param Closure(string $file): void|null $preFileCallback
+	 * @param Closure(int ): void|null $postFileCallback
 	 */
 	public function runAnalyser(
 		array $files,
 		array $allAnalysedFiles,
-		?\Closure $preFileCallback,
-		?\Closure $postFileCallback,
+		?Closure $preFileCallback,
+		?Closure $postFileCallback,
 		bool $debug,
 		bool $allowParallel,
 		?string $projectConfigFile,

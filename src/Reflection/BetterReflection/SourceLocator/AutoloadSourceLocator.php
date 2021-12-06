@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -14,11 +15,25 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionFunction;
 use function array_key_exists;
+use function array_keys;
+use function class_exists;
+use function constant;
+use function count;
+use function defined;
+use function function_exists;
+use function interface_exists;
 use function is_file;
+use function is_string;
 use function restore_error_handler;
+use function set_error_handler;
+use function spl_autoload_functions;
+use function strtolower;
+use function trait_exists;
+use const PHP_VERSION_ID;
 
 /**
  * Use PHP's built in autoloader to locate a class, without actually loading.
@@ -33,16 +48,16 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private FileNodesFetcher $fileNodesFetcher;
 
-	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
+	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
 	private array $classNodes = [];
 
 	/** @var array<string, Reflection|null> */
 	private array $classReflections = [];
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
 	private array $functionNodes = [];
 
-	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
+	/** @var array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> */
 	private array $constantNodes = [];
 
 	/** @var array<string, true> */
@@ -96,7 +111,7 @@ class AutoloadSourceLocator implements SourceLocator
 						$stmtConst->getNamespace()
 					);
 					if (!$constantReflection instanceof ReflectionConstant) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					if ($constantReflection->getName() !== $identifier->getName()) {
 						continue;
@@ -114,7 +129,7 @@ class AutoloadSourceLocator implements SourceLocator
 						$i
 					);
 					if (!$constantReflection instanceof ReflectionConstant) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					if ($constantReflection->getName() !== $identifier->getName()) {
 						continue;

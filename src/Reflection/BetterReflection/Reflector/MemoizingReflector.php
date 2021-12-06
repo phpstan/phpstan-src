@@ -6,19 +6,20 @@ use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use function strtolower;
 
 final class MemoizingReflector implements Reflector
 {
 
 	private Reflector $reflector;
 
-	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionClass> */
+	/** @var array<string, ReflectionClass> */
 	private array $classReflections = [];
 
-	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionConstant> */
+	/** @var array<string, ReflectionConstant> */
 	private array $constantReflections = [];
 
-	/** @var array<string, \PHPStan\BetterReflection\Reflection\ReflectionFunction> */
+	/** @var array<string, ReflectionFunction> */
 	private array $functionReflections = [];
 
 	public function __construct(Reflector $reflector)

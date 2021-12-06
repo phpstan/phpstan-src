@@ -6,18 +6,20 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Trait_>
+ * @implements Rule<Node\Stmt\Trait_>
  */
 class TraitTemplateTypeRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
-	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
+	private TemplateTypeCheck $templateTypeCheck;
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
@@ -41,7 +43,7 @@ class TraitTemplateTypeRule implements Rule
 		}
 
 		if (!isset($node->namespacedName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$traitName = (string) $node->namespacedName;

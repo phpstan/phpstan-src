@@ -2,9 +2,11 @@
 
 namespace PHPStan\Rules;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -17,11 +19,16 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function array_key_exists;
+use function count;
+use function is_string;
+use function max;
+use function sprintf;
 
 class FunctionCallParametersCheck
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	private NullsafeCheck $nullsafeCheck;
 
@@ -59,7 +66,7 @@ class FunctionCallParametersCheck
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\New_ $funcCall
+	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
 	 * @param array{string, string, string, string, string, string, string, string, string, string, string, string, string} $messages
 	 * @return RuleError[]
 	 */
@@ -87,7 +94,7 @@ class FunctionCallParametersCheck
 
 		/** @var array<int, array{Expr, Type, bool, string|null, int}> $arguments */
 		$arguments = [];
-		/** @var array<int, \PhpParser\Node\Arg> $args */
+		/** @var array<int, Node\Arg> $args */
 		$args = $funcCall->getArgs();
 		$hasNamedArguments = false;
 		$hasUnpackedArgument = false;
@@ -210,7 +217,7 @@ class FunctionCallParametersCheck
 		if (
 			$scope->getType($funcCall) instanceof VoidType
 			&& !$scope->isInFirstLevelStatement()
-			&& !$funcCall instanceof \PhpParser\Node\Expr\New_
+			&& !$funcCall instanceof Node\Expr\New_
 		) {
 			$errors[] = RuleErrorBuilder::message($messages[7])->line($funcCall->getLine())->build();
 		}
@@ -287,10 +294,10 @@ class FunctionCallParametersCheck
 				continue;
 			}
 
-			if ($argumentValue instanceof \PhpParser\Node\Expr\Variable
-				|| $argumentValue instanceof \PhpParser\Node\Expr\ArrayDimFetch
-				|| $argumentValue instanceof \PhpParser\Node\Expr\PropertyFetch
-				|| $argumentValue instanceof \PhpParser\Node\Expr\StaticPropertyFetch) {
+			if ($argumentValue instanceof Node\Expr\Variable
+				|| $argumentValue instanceof Node\Expr\ArrayDimFetch
+				|| $argumentValue instanceof Node\Expr\PropertyFetch
+				|| $argumentValue instanceof Node\Expr\StaticPropertyFetch) {
 				continue;
 			}
 
@@ -363,7 +370,7 @@ class FunctionCallParametersCheck
 
 	/**
 	 * @param array<int, array{Expr, Type, bool, string|null, int}> $arguments
-	 * @return array{RuleError[], array<int, array{Expr, Type, bool, string|null, int, \PHPStan\Reflection\ParameterReflection|null}>}
+	 * @return array{RuleError[], array<int, array{Expr, Type, bool, (string|null), int, (ParameterReflection|null)}>}
 	 */
 	private function processArguments(
 		ParametersAcceptor $parametersAcceptor,

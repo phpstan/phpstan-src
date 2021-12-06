@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use ArrayAccess;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
@@ -17,6 +18,8 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function sprintf;
 
 /**
  * @implements Rule<Assign>
@@ -66,14 +69,14 @@ class ArrayDestructuringRule implements Rule
 			$expr,
 			'',
 			static function (Type $varType): bool {
-				return $varType->isArray()->yes() || (new ObjectType(\ArrayAccess::class))->isSuperTypeOf($varType)->yes();
+				return $varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes();
 			}
 		);
 		$exprType = $exprTypeResult->getType();
 		if ($exprType instanceof ErrorType) {
 			return [];
 		}
-		if (!$exprType->isArray()->yes() && !(new ObjectType(\ArrayAccess::class))->isSuperTypeOf($exprType)->yes()) {
+		if (!$exprType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($exprType)->yes()) {
 			return [
 				RuleErrorBuilder::message(sprintf('Cannot use array destructuring on %s.', $exprType->describe(VerbosityLevel::typeOnly())))->build(),
 			];

@@ -5,22 +5,32 @@ namespace PHPStan\Command;
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use Composer\CaBundle\CaBundle;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeZone;
+use Jean85\PrettyVersions;
 use Nette\Utils\Json;
+use OutOfBoundsException;
 use Phar;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
+use PHPStan\Process\ProcessCanceledException;
+use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
 use PHPStan\Process\Runnable\RunnableQueue;
 use PHPStan\Process\Runnable\RunnableQueueLogger;
+use PHPStan\ShouldNotHappenException;
 use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
@@ -31,14 +41,35 @@ use React\Promise\ExtendedPromiseInterface;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
+use React\Socket\TcpServer;
+use React\Stream\ReadableStreamInterface;
+use RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use const PHP_BINARY;
+use Throwable;
 use function Clue\React\Block\await;
+use function count;
+use function defined;
 use function escapeshellarg;
+use function fclose;
+use function fopen;
+use function fwrite;
+use function getenv;
+use function ini_get;
+use function is_dir;
 use function is_file;
+use function is_string;
+use function min;
+use function mkdir;
+use function parse_url;
 use function React\Promise\resolve;
+use function sprintf;
+use function strlen;
+use function strpos;
+use function unlink;
+use const PHP_BINARY;
+use const PHP_URL_PORT;
 
 class FixerApplication
 {
@@ -107,7 +138,7 @@ class FixerApplication
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
+	 * @param Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
 	 */
 	public function run(
@@ -122,7 +153,7 @@ class FixerApplication
 	): int
 	{
 		$loop = new StreamSelectLoop();
-		$server = new \React\Socket\TcpServer('127.0.0.1:0', $loop);
+		$server = new TcpServer('127.0.0.1:0', $loop);
 		/** @var string $serverAddress */
 		$serverAddress = $server->getAddress();
 
@@ -141,8 +172,11 @@ class FixerApplication
 		);
 
 		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $reanalyseProcessQueue, $inceptionResult): void {
-			$decoder = new Decoder($connection, true, 512, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0, 128 * 1024 * 1024);
-			$encoder = new Encoder($connection, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0);
+			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
+			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
+			// phpcs:enable
+			$decoder = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
+			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$encoder->write(['action' => 'initialData', 'data' => [
 				'fileSpecificErrors' => $fileSpecificErrors,
 				'notFileSpecificErrors' => $notFileSpecificErrors,
@@ -188,13 +222,13 @@ class FixerApplication
 					$input
 				)->done(static function (string $output) use ($encoder, $id): void {
 					$encoder->write(['id' => $id, 'response' => Json::decode($output, Json::FORCE_ARRAY)]);
-				}, static function (\Throwable $e) use ($encoder, $id, $output): void {
-					if ($e instanceof \PHPStan\Process\ProcessCrashedException) {
+				}, static function (Throwable $e) use ($encoder, $id, $output): void {
+					if ($e instanceof ProcessCrashedException) {
 						$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
 						$encoder->write(['id' => $id, 'error' => $e->getMessage()]);
 						return;
 					}
-					if ($e instanceof \PHPStan\Process\ProcessCanceledException) {
+					if ($e instanceof ProcessCanceledException) {
 						$encoder->write(['id' => $id, 'error' => $e->getMessage()]);
 						return;
 					}
@@ -230,7 +264,7 @@ class FixerApplication
 						'filesCount' => $changes->getTotalFilesCount(),
 					]]);
 					$this->resultCacheClearer->clearTemporaryCaches();
-				}, function (\Throwable $e) use ($encoder, $output): void {
+				}, function (Throwable $e) use ($encoder, $output): void {
 					$this->processInProgress = null;
 					$this->fixerSuggestionId = null;
 					$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
@@ -243,7 +277,7 @@ class FixerApplication
 
 		try {
 			$fixerProcess = $this->getFixerProcess($output, $serverPort);
-		} catch (\PHPStan\Command\FixerProcessException $e) {
+		} catch (FixerProcessException $e) {
 			return 1;
 		}
 
@@ -271,7 +305,7 @@ class FixerApplication
 	{
 		if (!@mkdir($this->fixerTmpDir, 0777) && !is_dir($this->fixerTmpDir)) {
 			$output->writeln(sprintf('Cannot create a temp directory %s', $this->fixerTmpDir));
-			throw new \PHPStan\Command\FixerProcessException();
+			throw new FixerProcessException();
 		}
 
 		$pharPath = $this->fixerTmpDir . '/phpstan-fixer.phar';
@@ -279,12 +313,12 @@ class FixerApplication
 
 		try {
 			$this->downloadPhar($output, $pharPath, $infoPath);
-		} catch (\RuntimeException $e) {
+		} catch (RuntimeException $e) {
 			if (!is_file($pharPath)) {
 				$output->writeln('<fg=red>Could not download the PHPStan Pro executable.</>');
 				$output->writeln($e->getMessage());
 
-				throw new \PHPStan\Command\FixerProcessException();
+				throw new FixerProcessException();
 			}
 		}
 
@@ -293,12 +327,12 @@ class FixerApplication
 
 		try {
 			$phar = new Phar($pharPath);
-		} catch (\Throwable $e) {
+		} catch (Throwable $e) {
 			@unlink($pharPath);
 			@unlink($infoPath);
 			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
 
-			throw new \PHPStan\Command\FixerProcessException();
+			throw new FixerProcessException();
 		}
 
 		if ($phar->getSignature()['hash_type'] !== 'OpenSSL') {
@@ -306,7 +340,7 @@ class FixerApplication
 			@unlink($infoPath);
 			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
 
-			throw new \PHPStan\Command\FixerProcessException();
+			throw new FixerProcessException();
 		}
 
 		$env = getenv();
@@ -356,11 +390,11 @@ class FixerApplication
 			/** @var array{version: string, date: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
 			$currentVersion = $currentInfo['version'];
-			$currentDate = \DateTime::createFromFormat(\DateTime::ATOM, $currentInfo['date']);
+			$currentDate = DateTime::createFromFormat(DateTime::ATOM, $currentInfo['date']);
 			if ($currentDate === false) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
-			if ((new \DateTimeImmutable('', new \DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')) {
+			if ((new DateTimeImmutable('', new DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')) {
 				return;
 			}
 
@@ -394,13 +428,13 @@ class FixerApplication
 
 		$pharPathResource = fopen($pharPath, 'w');
 		if ($pharPathResource === false) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
+			throw new ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
 		}
 		$progressBar = new ProgressBar($output);
 		$client->requestStreaming('GET', $latestInfo['url'])->done(static function (ResponseInterface $response) use ($progressBar, $pharPathResource): void {
 			$body = $response->getBody();
-			if (!$body instanceof \React\Stream\ReadableStreamInterface) {
-				throw new \PHPStan\ShouldNotHappenException();
+			if (!$body instanceof ReadableStreamInterface) {
+				throw new ShouldNotHappenException();
 			}
 
 			$totalSize = (int) $response->getHeaderLine('Content-Length');
@@ -414,7 +448,7 @@ class FixerApplication
 				fwrite($pharPathResource, $chunk);
 				$progressBar->setProgress($bytes);
 			});
-		}, static function (\Throwable $e) use ($output): void {
+		}, static function (Throwable $e) use ($output): void {
 			$output->writeln(sprintf('<fg=red>Could not download the PHPStan Pro executable:</> %s', $e->getMessage()));
 		});
 
@@ -433,7 +467,7 @@ class FixerApplication
 	{
 		FileWriter::write($infoPath, Json::encode([
 			'version' => $version,
-			'date' => (new \DateTimeImmutable('', new \DateTimeZone('UTC')))->format(\DateTime::ATOM),
+			'date' => (new DateTimeImmutable('', new DateTimeZone('UTC')))->format(DateTime::ATOM),
 		]));
 	}
 
@@ -501,7 +535,7 @@ class FixerApplication
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
@@ -562,8 +596,8 @@ class FixerApplication
 	private function getPhpstanVersion(): string
 	{
 		try {
-			return \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (\OutOfBoundsException $e) {
+			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
+		} catch (OutOfBoundsException $e) {
 			return 'Version unknown';
 		}
 	}
@@ -578,7 +612,7 @@ class FixerApplication
 			$contents = FileReader::read('/proc/1/cgroup');
 
 			return strpos($contents, 'docker') !== false;
-		} catch (\PHPStan\File\CouldNotReadFileException $e) {
+		} catch (CouldNotReadFileException $e) {
 			return false;
 		}
 	}

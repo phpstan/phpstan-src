@@ -6,16 +6,28 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function count;
+use function function_exists;
+use function in_array;
+use function mb_encoding_aliases;
+use function mb_list_encodings;
+use function strtoupper;
 
-class MbFunctionsReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var string[] */
@@ -39,7 +51,7 @@ class MbFunctionsReturnTypeExtension implements \PHPStan\Type\DynamicFunctionRet
 			foreach (mb_list_encodings() as $encoding) {
 				$aliases = mb_encoding_aliases($encoding);
 				if ($aliases === false) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$supportedEncodings = array_merge($supportedEncodings, $aliases, [$encoding]);
 			}

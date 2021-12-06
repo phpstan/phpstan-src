@@ -2,28 +2,34 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function count;
+use function sprintf;
+use function ucfirst;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class CallCallablesRule implements \PHPStan\Rules\Rule
+class CallCallablesRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionCallParametersCheck $check;
+	private FunctionCallParametersCheck $check;
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	private bool $reportMaybes;
 
@@ -40,15 +46,15 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\FuncCall::class;
+		return Node\Expr\FuncCall::class;
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
+		Node $node,
 		Scope $scope
 	): array
 	{
-		if (!$node->name instanceof \PhpParser\Node\Expr) {
+		if (!$node->name instanceof Node\Expr) {
 			return [];
 		}
 

@@ -5,6 +5,8 @@ namespace PHPStan\Command\ErrorFormatter;
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use function array_key_exists;
+use function count;
 
 class JsonErrorFormatter implements ErrorFormatter
 {

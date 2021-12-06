@@ -7,7 +7,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AccessPropertiesInAssignRule>
+ * @extends RuleTestCase<AccessPropertiesInAssignRule>
  */
 class AccessPropertiesInAssignRuleTest extends RuleTestCase
 {

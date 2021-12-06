@@ -2,9 +2,12 @@
 
 namespace PHPStan\Type;
 
+use Closure;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use function sprintf;
 
-class ClosureTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class ClosureTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -12,7 +15,7 @@ class ClosureTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		return [
 			[
 				new ClosureType([], new MixedType(), false),
-				new ObjectType(\Closure::class),
+				new ObjectType(Closure::class),
 				TrinaryLogic::createMaybe(),
 			],
 			[
@@ -31,7 +34,7 @@ class ClosureTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new ObjectType(\Closure::class),
+				new ObjectType(Closure::class),
 				new ClosureType([], new MixedType(), false),
 				TrinaryLogic::createYes(),
 			],
@@ -71,13 +74,13 @@ class ClosureTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createNo(),
 			],
 			[
-				new ObjectWithoutClassType(new ObjectType(\Closure::class)),
+				new ObjectWithoutClassType(new ObjectType(Closure::class)),
 				new ClosureType([], new MixedType(), false),
 				TrinaryLogic::createNo(),
 			],
 			[
 				new ClosureType([], new MixedType(), false),
-				new ObjectWithoutClassType(new ObjectType(\Closure::class)),
+				new ObjectWithoutClassType(new ObjectType(Closure::class)),
 				TrinaryLogic::createNo(),
 			],
 		];

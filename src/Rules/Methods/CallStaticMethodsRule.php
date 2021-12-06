@@ -8,11 +8,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\Rule;
+use function array_merge;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\StaticCall>
+ * @implements Rule<Node\Expr\StaticCall>
  */
-class CallStaticMethodsRule implements \PHPStan\Rules\Rule
+class CallStaticMethodsRule implements Rule
 {
 
 	private StaticMethodCallCheck $methodCallCheck;

@@ -2,6 +2,18 @@
 
 namespace PHPStan\File;
 
+use Nette\Utils\Strings;
+use function array_pop;
+use function explode;
+use function implode;
+use function ltrim;
+use function rtrim;
+use function str_replace;
+use function strpos;
+use function substr;
+use function trim;
+use const DIRECTORY_SEPARATOR;
+
 class FileHelper
 {
 
@@ -29,7 +41,7 @@ class FileHelper
 				return $path;
 			}
 		}
-		if (\Nette\Utils\Strings::startsWith($path, 'phar://')) {
+		if (Strings::startsWith($path, 'phar://')) {
 			return $path;
 		}
 
@@ -43,7 +55,7 @@ class FileHelper
 
 		$matches = null;
 		if (!$isLocalPath) {
-			$matches = \Nette\Utils\Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');
+			$matches = Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');
 		}
 
 		if ($matches !== null) {

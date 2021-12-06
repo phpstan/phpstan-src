@@ -6,17 +6,22 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<Node\Stmt\ClassConst>
+ * @implements Rule<Node\Stmt\ClassConst>
  */
-final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
+final class MissingClassConstantTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
+	private MissingTypehintCheck $missingTypehintCheck;
 
 	public function __construct(MissingTypehintCheck $missingTypehintCheck)
 	{
@@ -31,7 +36,7 @@ final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$errors = [];

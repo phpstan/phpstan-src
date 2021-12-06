@@ -2,8 +2,12 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use DateInterval;
+use DateTime;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Parser\ParserException;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
@@ -17,8 +21,15 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionParameter;
+use Throwable;
+use function array_keys;
+use function count;
+use function explode;
+use function sprintf;
+use function strpos;
 
-class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
+class SignatureMapParserTest extends PHPStanTestCase
 {
 
 	public function dataGetFunctions(): array
@@ -158,7 +169,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 				new FunctionSignature(
 					[],
 					new UnionType([
-						new ObjectType(\Throwable::class),
+						new ObjectType(Throwable::class),
 						new ObjectType('Foo'),
 						new NullType(),
 					]),
@@ -305,26 +316,26 @@ class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 				null,
 				new FunctionSignature(
 					[],
-					new ArrayType(new IntegerType(), new ObjectType(\ReflectionParameter::class)),
+					new ArrayType(new IntegerType(), new ObjectType(ReflectionParameter::class)),
 					new MixedType(),
 					false
 				),
 			],
 			[
 				['static', 'interval' => 'DateInterval'],
-				\DateTime::class,
+				DateTime::class,
 				new FunctionSignature(
 					[
 						new ParameterSignature(
 							'interval',
 							false,
-							new ObjectType(\DateInterval::class),
+							new ObjectType(DateInterval::class),
 							new MixedType(),
 							PassedByReference::createNo(),
 							false
 						),
 					],
-					new StaticType($reflectionProvider->getClass(\DateTime::class)),
+					new StaticType($reflectionProvider->getClass(DateTime::class)),
 					new MixedType(),
 					false
 				),
@@ -446,7 +457,7 @@ class SignatureMapParserTest extends \PHPStan\Testing\PHPStanTestCase
 			try {
 				$signature = $provider->getFunctionSignature($functionName, $className);
 				$count++;
-			} catch (\PHPStan\PhpDocParser\Parser\ParserException $e) {
+			} catch (ParserException $e) {
 				$this->fail(sprintf('Could not parse %s: %s.', $functionName, $e->getMessage()));
 			}
 

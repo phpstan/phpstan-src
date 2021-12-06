@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
@@ -16,17 +17,28 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+use function array_column;
+use function array_map;
+use function array_pop;
+use function count;
+use function implode;
+use function in_array;
+use function is_string;
+use function reset;
+use function sprintf;
+use function strtolower;
 
 class ImpossibleCheckTypeHelper
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	/** @var string[] */
 	private array $universalObjectCratesClasses;
@@ -58,7 +70,7 @@ class ImpossibleCheckTypeHelper
 			$node instanceof FuncCall
 			&& count($node->getArgs()) > 0
 		) {
-			if ($node->name instanceof \PhpParser\Node\Name) {
+			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert') {
 					$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
@@ -190,7 +202,7 @@ class ImpossibleCheckTypeHelper
 				$argumentType = $scope->getNativeType($sureType[0]);
 			}
 
-			/** @var \PHPStan\Type\Type $resultType */
+			/** @var Type $resultType */
 			$resultType = $sureType[1];
 
 			$isSuperType = $resultType->isSuperTypeOf($argumentType);
@@ -213,7 +225,7 @@ class ImpossibleCheckTypeHelper
 				$argumentType = $scope->getNativeType($sureNotType[0]);
 			}
 
-			/** @var \PHPStan\Type\Type $resultType */
+			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
 
 			$isSuperType = $resultType->isSuperTypeOf($argumentType);
@@ -258,7 +270,7 @@ class ImpossibleCheckTypeHelper
 	}
 
 	/**
-	 * @param \PhpParser\Node\Arg[] $args
+	 * @param Node\Arg[] $args
 	 */
 	public function getArgumentsDescription(
 		Scope $scope,

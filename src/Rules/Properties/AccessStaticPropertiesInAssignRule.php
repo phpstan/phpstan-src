@@ -7,12 +7,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Assign>
+ * @implements Rule<Node\Expr\Assign>
  */
 class AccessStaticPropertiesInAssignRule implements Rule
 {
 
-	private \PHPStan\Rules\Properties\AccessStaticPropertiesRule $accessStaticPropertiesRule;
+	private AccessStaticPropertiesRule $accessStaticPropertiesRule;
 
 	public function __construct(AccessStaticPropertiesRule $accessStaticPropertiesRule)
 	{

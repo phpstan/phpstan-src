@@ -8,13 +8,14 @@ use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\PsrAutoloaderMapping;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use function is_file;
 
 class OptimizedPsrAutoloaderLocator implements SourceLocator
 {
 
 	private PsrAutoloaderMapping $mapping;
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
+	private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
 
 	public function __construct(
 		PsrAutoloaderMapping $mapping,

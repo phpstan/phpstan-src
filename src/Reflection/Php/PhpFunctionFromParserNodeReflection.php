@@ -2,43 +2,50 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use function array_reverse;
+use function is_string;
 
-class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\FunctionReflection
+class PhpFunctionFromParserNodeReflection implements FunctionReflection
 {
 
 	/** @var Function_|ClassMethod */
-	private \PhpParser\Node\FunctionLike $functionLike;
+	private Node\FunctionLike $functionLike;
 
 	private string $fileName;
 
-	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
+	private TemplateTypeMap $templateTypeMap;
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $realParameterTypes;
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $phpDocParameterTypes;
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $realParameterDefaultValues;
 
-	private \PHPStan\Type\Type $realReturnType;
+	private Type $realReturnType;
 
-	private ?\PHPStan\Type\Type $phpDocReturnType;
+	private ?Type $phpDocReturnType;
 
-	private ?\PHPStan\Type\Type $throwType;
+	private ?Type $throwType;
 
 	private ?string $deprecatedDescription;
 
@@ -55,9 +62,9 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 	/**
 	 * @param Function_|ClassMethod $functionLike
-	 * @param \PHPStan\Type\Type[] $realParameterTypes
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param \PHPStan\Type\Type[] $realParameterDefaultValues
+	 * @param Type[] $realParameterTypes
+	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $realParameterDefaultValues
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
@@ -109,14 +116,14 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 		}
 
 		if ($this->functionLike->namespacedName === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return (string) $this->functionLike->namespacedName;
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[]
+	 * @return ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array
 	{
@@ -138,21 +145,21 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParameterReflectionWithPhpDocs[]
+	 * @return ParameterReflectionWithPhpDocs[]
 	 */
 	private function getParameters(): array
 	{
 		$parameters = [];
 		$isOptional = true;
 
-		/** @var \PhpParser\Node\Param $parameter */
+		/** @var Node\Param $parameter */
 		foreach (array_reverse($this->functionLike->getParams()) as $parameter) {
 			if ($parameter->default === null && !$parameter->variadic) {
 				$isOptional = false;
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$parameters[] = new PhpParameterFromParserNodeReflection(
 				$parameter->var->name,

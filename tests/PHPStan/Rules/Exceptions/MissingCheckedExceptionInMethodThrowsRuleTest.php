@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -17,7 +18,7 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 			new MissingCheckedExceptionInThrowsCheck(new DefaultExceptionTypeResolver(
 				$this->createReflectionProvider(),
 				[],
-				[\PHPStan\ShouldNotHappenException::class],
+				[ShouldNotHappenException::class],
 				[],
 				[]
 			))

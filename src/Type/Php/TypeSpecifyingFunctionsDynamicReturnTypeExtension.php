@@ -13,6 +13,8 @@ use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
+use function count;
+use function in_array;
 
 class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension
 {
@@ -21,9 +23,9 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 
 	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
-	private ?\PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $helper = null;
+	private ?ImpossibleCheckTypeHelper $helper = null;
 
 	/** @var string[] */
 	private array $universalObjectCratesClasses;

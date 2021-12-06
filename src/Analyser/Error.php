@@ -2,8 +2,16 @@
 
 namespace PHPStan\Analyser;
 
+use Exception;
+use JsonSerializable;
+use PhpParser\Node;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use Throwable;
+use function is_bool;
+
 /** @api */
-class Error implements \JsonSerializable
+class Error implements JsonSerializable
 {
 
 	private string $message;
@@ -12,7 +20,7 @@ class Error implements \JsonSerializable
 
 	private ?int $line;
 
-	/** @var bool|\Throwable */
+	/** @var bool|Throwable */
 	private $canBeIgnored;
 
 	private ?string $filePath;
@@ -23,7 +31,7 @@ class Error implements \JsonSerializable
 
 	private ?int $nodeLine;
 
-	/** @phpstan-var class-string<\PhpParser\Node>|null */
+	/** @phpstan-var class-string<Node>|null */
 	private ?string $nodeType;
 
 	private ?string $identifier;
@@ -34,8 +42,8 @@ class Error implements \JsonSerializable
 	/**
 	 * Error constructor.
 	 *
-	 * @param bool|\Throwable $canBeIgnored
-	 * @param class-string<\PhpParser\Node>|null $nodeType
+	 * @param bool|Throwable $canBeIgnored
+	 * @param class-string<Node>|null $nodeType
 	 * @param mixed[] $metadata
 	 */
 	public function __construct(
@@ -87,7 +95,7 @@ class Error implements \JsonSerializable
 	public function changeFilePath(string $newFilePath): self
 	{
 		if ($this->traitFilePath !== null) {
-			throw new \PHPStan\ShouldNotHappenException('Errors in traits not yet supported');
+			throw new ShouldNotHappenException('Errors in traits not yet supported');
 		}
 
 		return new self(
@@ -139,7 +147,7 @@ class Error implements \JsonSerializable
 
 	public function hasNonIgnorableException(): bool
 	{
-		return $this->canBeIgnored instanceof \Throwable;
+		return $this->canBeIgnored instanceof Throwable;
 	}
 
 	public function getTip(): ?string
@@ -172,7 +180,7 @@ class Error implements \JsonSerializable
 	}
 
 	/**
-	 * @return class-string<\PhpParser\Node>|null
+	 * @return class-string<Node>|null
 	 */
 	public function getNodeType(): ?string
 	{
@@ -195,7 +203,7 @@ class Error implements \JsonSerializable
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -222,7 +230,7 @@ class Error implements \JsonSerializable
 			$json['message'],
 			$json['file'],
 			$json['line'],
-			$json['canBeIgnored'] === 'exception' ? new \Exception() : $json['canBeIgnored'],
+			$json['canBeIgnored'] === 'exception' ? new Exception() : $json['canBeIgnored'],
 			$json['filePath'],
 			$json['traitFilePath'],
 			$json['tip'],

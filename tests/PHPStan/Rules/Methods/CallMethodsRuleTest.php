@@ -8,12 +8,13 @@ use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallMethodsRule>
+ * @extends RuleTestCase<CallMethodsRule>
  */
-class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallMethodsRuleTest extends RuleTestCase
 {
 
 	/** @var bool */

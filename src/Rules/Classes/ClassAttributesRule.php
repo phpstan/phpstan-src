@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\AttributesCheck;
@@ -30,7 +31,7 @@ class ClassAttributesRule implements Rule
 		return $this->attributesCheck->check(
 			$scope,
 			$node->attrGroups,
-			\Attribute::TARGET_CLASS,
+			Attribute::TARGET_CLASS,
 			'class'
 		);
 	}

@@ -2,8 +2,22 @@
 
 namespace PHPStan\Cache;
 
+use InvalidArgumentException;
 use Nette\Utils\Random;
 use PHPStan\File\FileWriter;
+use PHPStan\ShouldNotHappenException;
+use function clearstatcache;
+use function error_get_last;
+use function is_dir;
+use function is_file;
+use function mkdir;
+use function rename;
+use function sha1;
+use function sprintf;
+use function substr;
+use function unlink;
+use function var_export;
+use const DIRECTORY_SEPARATOR;
 
 class FileCacheStorage implements CacheStorage
 {
@@ -29,7 +43,7 @@ class FileCacheStorage implements CacheStorage
 			}
 
 			$error = error_get_last();
-			throw new \InvalidArgumentException(sprintf('Failed to create directory "%s" (%s).', $this->directory, $error !== null ? $error['message'] : 'unknown cause'));
+			throw new InvalidArgumentException(sprintf('Failed to create directory "%s" (%s).', $this->directory, $error !== null ? $error['message'] : 'unknown cause'));
 		}
 	}
 
@@ -72,7 +86,7 @@ class FileCacheStorage implements CacheStorage
 		$exported = @var_export(new CacheItem($variableKey, $data), true);
 		$errorAfter = error_get_last();
 		if ($errorAfter !== null && $errorBefore !== $errorAfter) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Error occurred while saving item %s (%s) to cache: %s', $key, $variableKey, $errorAfter['message']));
+			throw new ShouldNotHappenException(sprintf('Error occurred while saving item %s (%s) to cache: %s', $key, $variableKey, $errorAfter['message']));
 		}
 		FileWriter::write(
 			$tmpPath,
@@ -89,7 +103,7 @@ class FileCacheStorage implements CacheStorage
 
 		@unlink($tmpPath);
 		if (DIRECTORY_SEPARATOR === '/' || !is_file($path)) {
-			throw new \InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
+			throw new InvalidArgumentException(sprintf('Could not write data to cache file %s.', $path));
 		}
 	}
 

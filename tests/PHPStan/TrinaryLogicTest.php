@@ -2,7 +2,9 @@
 
 namespace PHPStan;
 
-class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
+use PHPStan\Testing\PHPStanTestCase;
+
+class TrinaryLogicTest extends PHPStanTestCase
 {
 
 	public function dataAnd(): array

@@ -4,11 +4,13 @@ namespace PHPStan\Rules;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use function sprintf;
+use function strtolower;
 
 class ClassCaseSensitivityCheck
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	private bool $checkInternalClassCaseSensitivity;
 

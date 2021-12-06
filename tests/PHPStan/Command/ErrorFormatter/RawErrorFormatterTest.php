@@ -3,6 +3,7 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function sprintf;
 
 class RawErrorFormatterTest extends ErrorFormatterTestCase
 {

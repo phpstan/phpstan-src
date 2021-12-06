@@ -2,11 +2,13 @@
 
 namespace PHPStan\Broker;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 
 /** @api */
 class Broker implements ReflectionProvider
@@ -42,7 +44,7 @@ class Broker implements ReflectionProvider
 	public static function getInstance(): Broker
 	{
 		if (self::$instance === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return self::$instance;
 	}
@@ -82,7 +84,7 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
+	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		return $this->reflectionProvider->getAnonymousClassReflection($classNode, $scope);
 	}
@@ -90,7 +92,7 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->reflectionProvider->hasFunction($nameNode, $scope);
 	}
@@ -98,7 +100,7 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
 	{
 		return $this->reflectionProvider->getFunction($nameNode, $scope);
 	}
@@ -106,7 +108,7 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->reflectionProvider->resolveFunctionName($nameNode, $scope);
 	}
@@ -114,7 +116,7 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->reflectionProvider->hasConstant($nameNode, $scope);
 	}
@@ -122,7 +124,7 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
 	{
 		return $this->reflectionProvider->getConstant($nameNode, $scope);
 	}
@@ -130,7 +132,7 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->reflectionProvider->resolveConstantName($nameNode, $scope);
 	}

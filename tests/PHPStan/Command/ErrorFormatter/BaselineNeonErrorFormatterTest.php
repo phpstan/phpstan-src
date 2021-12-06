@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use Generator;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
@@ -9,6 +10,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function mt_srand;
 use function shuffle;
+use function sprintf;
 use function trim;
 
 class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
@@ -193,9 +195,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @return \Generator<int, array{list<Error>}, void, void>
+	 * @return Generator<int, array{list<Error>}, void, void>
 	 */
-	public function outputOrderingProvider(): \Generator
+	public function outputOrderingProvider(): Generator
 	{
 		$errors = [
 			new Error('Error #2', 'TestfileA', 1),

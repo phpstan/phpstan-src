@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
@@ -11,11 +12,12 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Instanceof_>
+ * @implements Rule<Node\Expr\Instanceof_>
  */
-class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
+class ImpossibleInstanceOfRule implements Rule
 {
 
 	private bool $checkAlwaysTrueInstanceof;

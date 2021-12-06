@@ -3,13 +3,25 @@
 namespace PHPStan\Tests;
 
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPUnit\Framework\TestCase;
+use function array_map;
+use function chdir;
 use function escapeshellarg;
+use function exec;
 use function file_put_contents;
+use function implode;
+use function ksort;
+use function sort;
+use function sprintf;
 use function str_replace;
+use function unlink;
+use const DIRECTORY_SEPARATOR;
+use const FILE_APPEND;
+use const PHP_BINARY;
 
 class ResultCacheEndToEndTest extends TestCase
 {
@@ -135,7 +147,7 @@ class ResultCacheEndToEndTest extends TestCase
 
 		try {
 			$json = Json::decode($output, Json::FORCE_ARRAY);
-		} catch (\Nette\Utils\JsonException $e) {
+		} catch (JsonException $e) {
 			$this->fail(sprintf('%s: %s', $e->getMessage(), $output));
 		}
 

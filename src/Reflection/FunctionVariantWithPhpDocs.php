@@ -15,7 +15,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 
 	/**
 	 * @api
-	 * @param array<int, \PHPStan\Reflection\ParameterReflectionWithPhpDocs> $parameters
+	 * @param array<int, ParameterReflectionWithPhpDocs> $parameters
 	 */
 	public function __construct(
 		TemplateTypeMap $templateTypeMap,
@@ -39,11 +39,11 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflectionWithPhpDocs>
+	 * @return array<int, ParameterReflectionWithPhpDocs>
 	 */
 	public function getParameters(): array
 	{
-		/** @var \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parameters */
+		/** @var ParameterReflectionWithPhpDocs[] $parameters */
 		$parameters = parent::getParameters();
 
 		return $parameters;

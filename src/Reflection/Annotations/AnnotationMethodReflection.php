@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -15,13 +16,13 @@ class AnnotationMethodReflection implements MethodReflection
 
 	private string $name;
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ClassReflection $declaringClass;
 
 	private Type $returnType;
 
 	private bool $isStatic;
 
-	/** @var \PHPStan\Reflection\Annotations\AnnotationsMethodParameterReflection[] */
+	/** @var AnnotationsMethodParameterReflection[] */
 	private array $parameters;
 
 	private bool $isVariadic;
@@ -30,7 +31,7 @@ class AnnotationMethodReflection implements MethodReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param \PHPStan\Reflection\Annotations\AnnotationsMethodParameterReflection[] $parameters
+	 * @param AnnotationsMethodParameterReflection[] $parameters
 	 */
 	public function __construct(
 		string $name,
@@ -80,7 +81,7 @@ class AnnotationMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{

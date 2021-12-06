@@ -5,7 +5,7 @@ namespace PHPStan\Cache;
 class MemoryCacheStorage implements CacheStorage
 {
 
-	/** @var array<string, \PHPStan\Cache\CacheItem> */
+	/** @var array<string, CacheItem> */
 	private array $storage = [];
 
 	/**

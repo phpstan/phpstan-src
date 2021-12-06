@@ -2,7 +2,9 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
 
 /**
  * @extends RuleTestCase<ApiInterfaceExtendsRule>
@@ -10,7 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class ApiInterfaceExtendsRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ApiInterfaceExtendsRule(new ApiRuleHelper(), $this->createReflectionProvider());
 	}

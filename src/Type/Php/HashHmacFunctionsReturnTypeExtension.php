@@ -12,6 +12,8 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
+use function count;
+use function in_array;
 
 final class HashHmacFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

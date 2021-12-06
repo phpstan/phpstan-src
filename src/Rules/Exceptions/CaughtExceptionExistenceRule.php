@@ -8,17 +8,21 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use Throwable;
+use function array_merge;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Catch_>
+ * @implements Rule<Node\Stmt\Catch_>
  */
-class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
+class CaughtExceptionExistenceRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	private bool $checkClassCaseSensitivity;
 
@@ -52,7 +56,7 @@ class CaughtExceptionExistenceRule implements \PHPStan\Rules\Rule
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($className);
-			if (!$classReflection->isInterface() && !$classReflection->implementsInterface(\Throwable::class)) {
+			if (!$classReflection->isInterface() && !$classReflection->implementsInterface(Throwable::class)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s is not an exception.', $classReflection->getDisplayName()))->line($class->getLine())->build();
 			}
 

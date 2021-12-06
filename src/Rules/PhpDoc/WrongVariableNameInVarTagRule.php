@@ -10,12 +10,24 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\VirtualNode;
+use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function count;
+use function implode;
+use function in_array;
+use function is_int;
+use function is_string;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt>
+ * @implements Rule<Node\Stmt>
  */
 class WrongVariableNameInVarTagRule implements Rule
 {
@@ -31,7 +43,7 @@ class WrongVariableNameInVarTagRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt::class;
+		return Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -96,7 +108,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			} elseif ($originalNode instanceof Node\Stmt\Class_) {
 				$description = 'a class';
 			} elseif ($originalNode instanceof Node\Stmt\Trait_) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			} elseif ($originalNode instanceof Node\Stmt\ClassMethod) {
 				$description = 'a method';
 			}
@@ -113,8 +125,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processAssign(Scope $scope, Node\Expr $var, array $varTags): array
 	{
@@ -188,8 +200,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processForeach(Node\Expr $iterateeExpr, ?Node\Expr $keyVar, Node\Expr $valueVar, array $varTags): array
 	{
@@ -231,9 +243,9 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt\StaticVar[] $vars
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param Node\Stmt\StaticVar[] $vars
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processStatic(array $vars, array $varTags): array
 	{
@@ -276,8 +288,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processExpression(Scope $scope, Expr $expr, array $varTags): array
 	{
@@ -289,8 +301,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processStmt(Scope $scope, array $varTags, ?Expr $defaultExpr): array
 	{
@@ -320,8 +332,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processGlobal(Scope $scope, Node\Stmt\Global_ $node, array $varTags): array
 	{

@@ -13,6 +13,9 @@ use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use Traversable;
+use function array_merge;
+use function sprintf;
 
 /** @api */
 class IterableType implements CompoundType
@@ -24,9 +27,9 @@ class IterableType implements CompoundType
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private \PHPStan\Type\Type $keyType;
+	private Type $keyType;
 
-	private \PHPStan\Type\Type $itemType;
+	private Type $itemType;
 
 	/** @api */
 	public function __construct(
@@ -117,7 +120,7 @@ class IterableType implements CompoundType
 			return $otherType->isSuperTypeOf(new UnionType([
 				new ArrayType($this->keyType, $this->itemType),
 				new IntersectionType([
-					new ObjectType(\Traversable::class),
+					new ObjectType(Traversable::class),
 					$this,
 				]),
 			]));

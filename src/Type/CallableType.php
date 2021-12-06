@@ -7,6 +7,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -17,6 +18,10 @@ use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use function array_map;
+use function array_merge;
+use function implode;
+use function sprintf;
 
 /** @api */
 class CallableType implements CompoundType, ParametersAcceptor
@@ -28,7 +33,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	/** @var array<int, \PHPStan\Reflection\ParameterReflection> */
+	/** @var array<int, ParameterReflection> */
 	private array $parameters;
 
 	private Type $returnType;
@@ -39,7 +44,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	/**
 	 * @api
-	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
+	 * @param array<int, ParameterReflection> $parameters
 	 */
 	public function __construct(
 		?array $parameters = null,
@@ -103,7 +108,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 		}
 
 		if ($variantsResult === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $isCallable->and($variantsResult);
@@ -156,7 +161,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -199,7 +204,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflection>
+	 * @return array<int, ParameterReflection>
 	 */
 	public function getParameters(): array
 	{

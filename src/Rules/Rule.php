@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @phpstan-template TNodeType of \PhpParser\Node
+ * @phpstan-template TNodeType of Node
  */
 interface Rule
 {

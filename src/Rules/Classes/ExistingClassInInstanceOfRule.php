@@ -8,17 +8,21 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function in_array;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Instanceof_>
+ * @implements Rule<Node\Expr\Instanceof_>
  */
-class ExistingClassInInstanceOfRule implements \PHPStan\Rules\Rule
+class ExistingClassInInstanceOfRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	private bool $checkClassCaseSensitivity;
 
@@ -41,7 +45,7 @@ class ExistingClassInInstanceOfRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$class = $node->class;
-		if (!($class instanceof \PhpParser\Node\Name)) {
+		if (!($class instanceof Node\Name)) {
 			return [];
 		}
 

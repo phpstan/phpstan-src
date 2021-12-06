@@ -5,6 +5,7 @@ namespace PHPStan\Dependency;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use function array_values;
 
 class NodeDependencies
 {

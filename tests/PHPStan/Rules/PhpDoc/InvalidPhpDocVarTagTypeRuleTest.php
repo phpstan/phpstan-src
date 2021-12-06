@@ -10,7 +10,7 @@ use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidPhpDocVarTagTypeRule>
+ * @extends RuleTestCase<InvalidPhpDocVarTagTypeRule>
  */
 class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 {

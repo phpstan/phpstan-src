@@ -2,10 +2,14 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DefinedVariableRule>
+ * @extends RuleTestCase<DefinedVariableRule>
  */
-class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
+class DefinedVariableRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
@@ -20,7 +24,7 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 	/** @var bool */
 	private $polluteScopeWithAlwaysIterableForeach;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new DefinedVariableRule(
 			$this->cliArgumentsVariablesRegistered,

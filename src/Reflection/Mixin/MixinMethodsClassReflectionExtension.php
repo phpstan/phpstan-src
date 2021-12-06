@@ -6,7 +6,10 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
+use function array_intersect;
+use function count;
 
 class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
@@ -31,7 +34,7 @@ class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExte
 	{
 		$method = $this->findMethod($classReflection, $methodName);
 		if ($method === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $method;

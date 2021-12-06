@@ -7,19 +7,24 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use function array_map;
+use function count;
 
-class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	public function __construct(\PHPStan\Reflection\ReflectionProvider $reflectionProvider)
+	public function __construct(ReflectionProvider $reflectionProvider)
 	{
 		$this->reflectionProvider = $reflectionProvider;
 	}
@@ -60,14 +65,14 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements \PHPStan\Type\
 
 		$constantStrings = TypeUtils::getConstantStrings($argType);
 		if (count($constantStrings) > 0) {
-			return \PHPStan\Type\TypeCombinator::union(...array_map(function (ConstantStringType $stringType): Type {
+			return TypeCombinator::union(...array_map(function (ConstantStringType $stringType): Type {
 				return $this->findParentClassNameType($stringType->getValue());
 			}, $constantStrings));
 		}
 
 		$classNames = TypeUtils::getDirectClassNames($argType);
 		if (count($classNames) > 0) {
-			return \PHPStan\Type\TypeCombinator::union(...array_map(function (string $classNames): Type {
+			return TypeCombinator::union(...array_map(function (string $classNames): Type {
 				return $this->findParentClassNameType($classNames);
 			}, $classNames));
 		}

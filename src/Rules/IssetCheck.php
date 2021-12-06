@@ -10,13 +10,15 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function is_string;
+use function sprintf;
 
 class IssetCheck
 {
 
-	private \PHPStan\Rules\Properties\PropertyDescriptor $propertyDescriptor;
+	private PropertyDescriptor $propertyDescriptor;
 
-	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
+	private PropertyReflectionFinder $propertyReflectionFinder;
 
 	private bool $checkAdvancedIsset;
 

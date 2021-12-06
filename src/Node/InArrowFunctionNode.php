@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\NodeAbstract;
 
@@ -9,7 +10,7 @@ use PhpParser\NodeAbstract;
 class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 {
 
-	private \PhpParser\Node\Expr\ArrowFunction $originalNode;
+	private Node\Expr\ArrowFunction $originalNode;
 
 	public function __construct(ArrowFunction $originalNode)
 	{
@@ -17,7 +18,7 @@ class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 		$this->originalNode = $originalNode;
 	}
 
-	public function getOriginalNode(): \PhpParser\Node\Expr\ArrowFunction
+	public function getOriginalNode(): Node\Expr\ArrowFunction
 	{
 		return $this->originalNode;
 	}

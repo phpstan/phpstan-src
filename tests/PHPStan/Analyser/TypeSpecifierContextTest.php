@@ -2,7 +2,10 @@
 
 namespace PHPStan\Analyser;
 
-class TypeSpecifierContextTest extends \PHPStan\Testing\PHPStanTestCase
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Testing\PHPStanTestCase;
+
+class TypeSpecifierContextTest extends PHPStanTestCase
 {
 
 	public function dataContext(): array
@@ -81,7 +84,7 @@ class TypeSpecifierContextTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function testNegateNull(): void
 	{
-		$this->expectException(\PHPStan\ShouldNotHappenException::class);
+		$this->expectException(ShouldNotHappenException::class);
 		TypeSpecifierContext::createNull()->negate();
 	}
 

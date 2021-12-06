@@ -10,6 +10,9 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use function count;
+use function in_array;
 
 class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -42,7 +45,7 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope
-	): \PHPStan\Type\Type
+	): Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {

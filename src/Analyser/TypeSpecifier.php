@@ -19,7 +19,9 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -30,17 +32,21 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
+use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
@@ -50,37 +56,42 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function array_merge;
 use function array_reverse;
+use function count;
+use function in_array;
+use function is_string;
+use function strtolower;
 
 class TypeSpecifier
 {
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
+	private Standard $printer;
 
 	private ReflectionProvider $reflectionProvider;
 
-	/** @var \PHPStan\Type\FunctionTypeSpecifyingExtension[] */
+	/** @var FunctionTypeSpecifyingExtension[] */
 	private array $functionTypeSpecifyingExtensions;
 
-	/** @var \PHPStan\Type\MethodTypeSpecifyingExtension[] */
+	/** @var MethodTypeSpecifyingExtension[] */
 	private array $methodTypeSpecifyingExtensions;
 
-	/** @var \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] */
+	/** @var StaticMethodTypeSpecifyingExtension[] */
 	private array $staticMethodTypeSpecifyingExtensions;
 
-	/** @var \PHPStan\Type\MethodTypeSpecifyingExtension[][]|null */
+	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
 
-	/** @var \PHPStan\Type\StaticMethodTypeSpecifyingExtension[][]|null */
+	/** @var StaticMethodTypeSpecifyingExtension[][]|null */
 	private ?array $staticMethodTypeSpecifyingExtensionsByClass = null;
 
 	/**
-	 * @param \PHPStan\Type\FunctionTypeSpecifyingExtension[] $functionTypeSpecifyingExtensions
-	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
-	 * @param \PHPStan\Type\StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
+	 * @param FunctionTypeSpecifyingExtension[] $functionTypeSpecifyingExtensions
+	 * @param MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
+	 * @param StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 */
 	public function __construct(
-		\PhpParser\PrettyPrinter\Standard $printer,
+		Standard $printer,
 		ReflectionProvider $reflectionProvider,
 		array $functionTypeSpecifyingExtensions,
 		array $methodTypeSpecifyingExtensions,
@@ -177,7 +188,7 @@ class TypeSpecifier
 			if ($expressions !== null) {
 				/** @var Expr $exprNode */
 				$exprNode = $expressions[0];
-				/** @var \PHPStan\Type\ConstantScalarType $constantType */
+				/** @var ConstantScalarType $constantType */
 				$constantType = $expressions[1];
 				if ($constantType->getValue() === false) {
 					$types = $this->create($exprNode, $constantType, $context, false, $scope);
@@ -328,7 +339,7 @@ class TypeSpecifier
 			if ($expressions !== null) {
 				/** @var Expr $exprNode */
 				$exprNode = $expressions[0];
-				/** @var \PHPStan\Type\ConstantScalarType $constantType */
+				/** @var ConstantScalarType $constantType */
 				$constantType = $expressions[1];
 				if ($constantType->getValue() === false || $constantType->getValue() === null) {
 					return $this->specifyTypesInCondition(
@@ -730,7 +741,7 @@ class TypeSpecifier
 			return $this->specifyTypesInCondition($scope, $expr->expr, $context->negate());
 		} elseif ($expr instanceof Node\Expr\Assign) {
 			if (!$scope instanceof MutatingScope) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			if ($context->null()) {
 				return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context);
@@ -767,7 +778,7 @@ class TypeSpecifier
 			}
 
 			if (count($vars) === 0) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$types = null;
@@ -946,20 +957,20 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @return (Expr|\PHPStan\Type\ConstantScalarType)[]|null
+	 * @return (Expr|ConstantScalarType)[]|null
 	 */
 	private function findTypeExpressionsFromBinaryOperation(Scope $scope, Node\Expr\BinaryOp $binaryOperation): ?array
 	{
 		$leftType = $scope->getType($binaryOperation->left);
 		$rightType = $scope->getType($binaryOperation->right);
 		if (
-			$leftType instanceof \PHPStan\Type\ConstantScalarType
+			$leftType instanceof ConstantScalarType
 			&& !$binaryOperation->right instanceof ConstFetch
 			&& !$binaryOperation->right instanceof ClassConstFetch
 		) {
 			return [$binaryOperation->right, $leftType];
 		} elseif (
-			$rightType instanceof \PHPStan\Type\ConstantScalarType
+			$rightType instanceof ConstantScalarType
 			&& !$binaryOperation->left instanceof ConstFetch
 			&& !$binaryOperation->left instanceof ClassConstFetch
 		) {
@@ -1116,7 +1127,7 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @return \PHPStan\Type\FunctionTypeSpecifyingExtension[]
+	 * @return FunctionTypeSpecifyingExtension[]
 	 */
 	private function getFunctionTypeSpecifyingExtensions(): array
 	{
@@ -1124,7 +1135,7 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @return \PHPStan\Type\MethodTypeSpecifyingExtension[]
+	 * @return MethodTypeSpecifyingExtension[]
 	 */
 	private function getMethodTypeSpecifyingExtensionsForClass(string $className): array
 	{
@@ -1140,7 +1151,7 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @return \PHPStan\Type\StaticMethodTypeSpecifyingExtension[]
+	 * @return StaticMethodTypeSpecifyingExtension[]
 	 */
 	private function getStaticMethodTypeSpecifyingExtensionsForClass(string $className): array
 	{
@@ -1156,7 +1167,7 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @param \PHPStan\Type\MethodTypeSpecifyingExtension[][]|\PHPStan\Type\StaticMethodTypeSpecifyingExtension[][] $extensions
+	 * @param MethodTypeSpecifyingExtension[][]|StaticMethodTypeSpecifyingExtension[][] $extensions
 	 * @return mixed[]
 	 */
 	private function getTypeSpecifyingExtensionsForType(array $extensions, string $className): array

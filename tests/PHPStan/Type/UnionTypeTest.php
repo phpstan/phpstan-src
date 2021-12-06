@@ -2,8 +2,13 @@
 
 namespace PHPStan\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use Exception;
+use Iterator;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -20,8 +25,13 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use stdClass;
+use function array_merge;
+use function array_reverse;
+use function get_class;
+use function sprintf;
 
-class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class UnionTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsCallable(): array
@@ -74,7 +84,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		);
 	}
 
-	public function dataSelfCompare(): \Iterator
+	public function dataSelfCompare(): Iterator
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -104,7 +114,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		yield [$constantStringType];
 		yield [new ErrorType()];
 		yield [new FloatType()];
-		yield [new GenericClassStringType(new ObjectType(\Exception::class))];
+		yield [new GenericClassStringType(new ObjectType(Exception::class))];
 		yield [new GenericObjectType('Foo', [new ObjectType('DateTime')])];
 		yield [new HasMethodType('Foo')];
 		yield [new HasOffsetType($constantStringType)];
@@ -156,7 +166,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): \Iterator
+	public function dataIsSuperTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([
 			new IntegerType(),
@@ -305,7 +315,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			$unionTypeB,
-			new ObjectType(\stdClass::class),
+			new ObjectType(stdClass::class),
 			TrinaryLogic::createNo(),
 		];
 
@@ -347,7 +357,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): \Iterator
+	public function dataIsSubTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([
 			new IntegerType(),
@@ -497,7 +507,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			$unionTypeB,
-			new ObjectType(\stdClass::class),
+			new ObjectType(stdClass::class),
 			TrinaryLogic::createNo(),
 		];
 	}
@@ -553,7 +563,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new ConstantFloatType(2.2),
 					new NullType(),
 					new ConstantStringType('10'),
-					new ObjectType(\stdClass::class),
+					new ObjectType(stdClass::class),
 					new ConstantBooleanType(true),
 					new ConstantStringType('foo'),
 					new ConstantStringType('2'),
@@ -777,12 +787,12 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		return [
 			[
-				new UnionType([new ObjectType(\DateTimeImmutable::class), new IntegerType()]),
+				new UnionType([new ObjectType(DateTimeImmutable::class), new IntegerType()]),
 				'format',
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new UnionType([new ObjectType(\DateTimeImmutable::class), new ObjectType(\DateTime::class)]),
+				new UnionType([new ObjectType(DateTimeImmutable::class), new ObjectType(DateTime::class)]),
 				'format',
 				TrinaryLogic::createYes(),
 			],
@@ -792,7 +802,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createNo(),
 			],
 			[
-				new UnionType([new ObjectType(\DateTimeImmutable::class), new NullType()]),
+				new UnionType([new ObjectType(DateTimeImmutable::class), new NullType()]),
 				'format',
 				TrinaryLogic::createMaybe(),
 			],

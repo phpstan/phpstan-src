@@ -3,6 +3,10 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use stdClass;
+use function define;
+use function extension_loaded;
+use const PHP_VERSION_ID;
 
 class NodeScopeResolverTest extends TypeInferenceTestCase
 {
@@ -553,7 +557,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/new-in-initializers.php');
 
 			if (PHP_VERSION_ID >= 80100) {
-				define('TEST_OBJECT_CONSTANT', new \stdClass());
+				define('TEST_OBJECT_CONSTANT', new stdClass());
 				yield from $this->gatherAssertTypes(__DIR__ . '/data/new-in-initializers-runtime.php');
 			}
 		}

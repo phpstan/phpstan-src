@@ -2,11 +2,16 @@
 
 namespace PHPStan\Command;
 
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\StreamOutput;
+use function fopen;
 use function realpath;
+use function rewind;
+use function stream_get_contents;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @group exec
@@ -103,7 +108,7 @@ class CommandHelperTest extends TestCase
 	{
 		$resource = fopen('php://memory', 'w', false);
 		if ($resource === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$output = new StreamOutput($resource);
 
@@ -124,12 +129,12 @@ class CommandHelperTest extends TestCase
 			if ($expectException) {
 				$this->fail();
 			}
-		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException $e) {
 			if (!$expectException) {
 				rewind($output->getStream());
 				$contents = stream_get_contents($output->getStream());
 				if ($contents === false) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$this->fail($contents);
 			}
@@ -139,7 +144,7 @@ class CommandHelperTest extends TestCase
 
 		$contents = stream_get_contents($output->getStream());
 		if ($contents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$this->assertStringContainsString($expectedOutput, $contents);
 
@@ -285,7 +290,7 @@ class CommandHelperTest extends TestCase
 	/**
 	 * @dataProvider dataParameters
 	 * @param array<string, string> $expectedParameters
-	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
+	 * @throws InceptionNotSuccessfulException
 	 */
 	public function testResolveParameters(
 		string $configFile,

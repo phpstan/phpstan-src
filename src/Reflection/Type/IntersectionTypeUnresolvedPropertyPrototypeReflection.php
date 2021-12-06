@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Type;
+use function array_map;
 
 class IntersectionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {

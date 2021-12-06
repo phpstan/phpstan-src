@@ -2,7 +2,9 @@
 
 namespace PHPStan\Process\Runnable;
 
-class RunnableCanceledException extends \Exception
+use Exception;
+
+class RunnableCanceledException extends Exception
 {
 
 }

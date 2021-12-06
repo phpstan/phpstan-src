@@ -4,11 +4,12 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInInterfaceExtendsRule>
+ * @extends RuleTestCase<ExistingClassesInInterfaceExtendsRule>
  */
-class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule

@@ -6,6 +6,7 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
+use function array_merge;
 
 class TypeSpecifierFactory
 {
@@ -14,7 +15,7 @@ class TypeSpecifierFactory
 	public const METHOD_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.typeSpecifier.methodTypeSpecifyingExtension';
 	public const STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension';
 
-	private \PHPStan\DependencyInjection\Container $container;
+	private Container $container;
 
 	public function __construct(Container $container)
 	{

@@ -3,15 +3,17 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ClosureReturnTypeRule>
+ * @extends RuleTestCase<ClosureReturnTypeRule>
  */
-class ClosureReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class ClosureReturnTypeRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ClosureReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)));
 	}

@@ -17,6 +17,8 @@ use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\CircularTypeAliasDefinitionException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -27,15 +29,33 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
+use function array_diff;
+use function array_filter;
+use function array_key_exists;
+use function array_map;
+use function array_merge;
+use function array_shift;
+use function array_unique;
+use function array_values;
+use function count;
+use function implode;
+use function in_array;
+use function is_file;
+use function method_exists;
+use function reset;
+use function sprintf;
+use function strtolower;
 
 /** @api */
 class ClassReflection
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
@@ -43,25 +63,25 @@ class ClassReflection
 
 	private PhpVersion $phpVersion;
 
-	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
+	/** @var PropertiesClassReflectionExtension[] */
 	private array $propertiesClassReflectionExtensions;
 
-	/** @var \PHPStan\Reflection\MethodsClassReflectionExtension[] */
+	/** @var MethodsClassReflectionExtension[] */
 	private array $methodsClassReflectionExtensions;
 
 	private string $displayName;
 
-	private \ReflectionClass $reflection;
+	private ReflectionClass $reflection;
 
 	private ?string $anonymousFilename;
 
-	/** @var \PHPStan\Reflection\MethodReflection[] */
+	/** @var MethodReflection[] */
 	private array $methods = [];
 
-	/** @var \PHPStan\Reflection\PropertyReflection[] */
+	/** @var PropertyReflection[] */
 	private array $properties = [];
 
-	/** @var \PHPStan\Reflection\ConstantReflection[] */
+	/** @var ConstantReflection[] */
 	private array $constants = [];
 
 	/** @var int[]|null */
@@ -99,10 +119,10 @@ class ClassReflection
 	/** @var string|false|null */
 	private $reflectionDocComment = false;
 
-	/** @var \PHPStan\Reflection\ClassReflection[]|null */
+	/** @var ClassReflection[]|null */
 	private ?array $cachedInterfaces = null;
 
-	/** @var \PHPStan\Reflection\ClassReflection|false|null */
+	/** @var ClassReflection|false|null */
 	private $cachedParentClass = false;
 
 	/** @var array<string, TypeAlias>|null */
@@ -112,8 +132,8 @@ class ClassReflection
 	private static array $resolvingTypeAliasImports = [];
 
 	/**
-	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
-	 * @param \PHPStan\Reflection\MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
+	 * @param PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
+	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -124,7 +144,7 @@ class ClassReflection
 		array $propertiesClassReflectionExtensions,
 		array $methodsClassReflectionExtensions,
 		string $displayName,
-		\ReflectionClass $reflection,
+		ReflectionClass $reflection,
 		?string $anonymousFilename,
 		?TemplateTypeMap $resolvedTemplateTypeMap,
 		?ResolvedPhpDocBlock $stubPhpDocBlock,
@@ -146,7 +166,7 @@ class ClassReflection
 		$this->extraCacheKey = $extraCacheKey;
 	}
 
-	public function getNativeReflection(): \ReflectionClass
+	public function getNativeReflection(): ReflectionClass
 	{
 		return $this->reflection;
 	}
@@ -325,10 +345,10 @@ class ClassReflection
 	}
 
 	/**
-	 * @param \ReflectionClass<object> $class
-	 * @return \ReflectionClass<object>[]
+	 * @param ReflectionClass<object> $class
+	 * @return ReflectionClass<object>[]
 	 */
-	private function collectTraits(\ReflectionClass $class): array
+	private function collectTraits(ReflectionClass $class): array
 	{
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
@@ -394,7 +414,7 @@ class ClassReflection
 		}
 
 		if (!isset($this->methods[$key])) {
-			throw new \PHPStan\Reflection\MissingMethodFromReflectionException($this->getName(), $methodName);
+			throw new MissingMethodFromReflectionException($this->getName(), $methodName);
 		}
 
 		return $this->methods[$key];
@@ -408,7 +428,7 @@ class ClassReflection
 	public function getNativeMethod(string $methodName): MethodReflection
 	{
 		if (!$this->hasNativeMethod($methodName)) {
-			throw new \PHPStan\Reflection\MissingMethodFromReflectionException($this->getName(), $methodName);
+			throw new MissingMethodFromReflectionException($this->getName(), $methodName);
 		}
 		return $this->getPhpExtension()->getNativeMethod($this, $methodName);
 	}
@@ -422,7 +442,7 @@ class ClassReflection
 	{
 		$constructor = $this->findConstructor();
 		if ($constructor === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return $this->getNativeMethod($constructor->getName());
 	}
@@ -449,7 +469,7 @@ class ClassReflection
 	{
 		$extension = $this->methodsClassReflectionExtensions[0];
 		if (!$extension instanceof PhpClassReflectionExtension) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $extension;
@@ -476,7 +496,7 @@ class ClassReflection
 		}
 
 		if (!isset($this->properties[$key])) {
-			throw new \PHPStan\Reflection\MissingPropertyFromReflectionException($this->getName(), $propertyName);
+			throw new MissingPropertyFromReflectionException($this->getName(), $propertyName);
 		}
 
 		return $this->properties[$key];
@@ -490,7 +510,7 @@ class ClassReflection
 	public function getNativeProperty(string $propertyName): PhpPropertyReflection
 	{
 		if (!$this->hasNativeProperty($propertyName)) {
-			throw new \PHPStan\Reflection\MissingPropertyFromReflectionException($this->getName(), $propertyName);
+			throw new MissingPropertyFromReflectionException($this->getName(), $propertyName);
 		}
 
 		return $this->getPhpExtension()->getNativeProperty($this, $propertyName);
@@ -542,7 +562,7 @@ class ClassReflection
 
 		try {
 			return $this->subclasses[$className] = $this->reflection->isSubclassOf($className);
-		} catch (\ReflectionException $e) {
+		} catch (ReflectionException $e) {
 			return $this->subclasses[$className] = false;
 		}
 	}
@@ -551,13 +571,13 @@ class ClassReflection
 	{
 		try {
 			return $this->reflection->implementsInterface($className);
-		} catch (\ReflectionException $e) {
+		} catch (ReflectionException $e) {
 			return false;
 		}
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ClassReflection[]
+	 * @return ClassReflection[]
 	 */
 	public function getParents(): array
 	{
@@ -572,7 +592,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ClassReflection[]
+	 * @return ClassReflection[]
 	 */
 	public function getInterfaces(): array
 	{
@@ -606,7 +626,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ClassReflection[]
+	 * @return ClassReflection[]
 	 */
 	private function collectInterfaces(ClassReflection $interface): array
 	{
@@ -622,7 +642,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ClassReflection[]
+	 * @return ClassReflection[]
 	 */
 	public function getImmediateInterfaces(): array
 	{
@@ -689,7 +709,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return array<string, \PHPStan\Reflection\ClassReflection>
+	 * @return array<string, ClassReflection>
 	 */
 	public function getTraits(bool $recursive = false): array
 	{
@@ -703,7 +723,7 @@ class ClassReflection
 			$traits = $this->getNativeReflection()->getTraits();
 		}
 
-		$traits = array_map(function (\ReflectionClass $trait): ClassReflection {
+		$traits = array_map(function (ReflectionClass $trait): ClassReflection {
 			return $this->reflectionProvider->getClass($trait->getName());
 		}, $traits);
 
@@ -755,7 +775,7 @@ class ClassReflection
 		if (!isset($this->constants[$name])) {
 			$reflectionConstant = $this->getNativeReflection()->getReflectionConstant($name);
 			if ($reflectionConstant === false) {
-				throw new \PHPStan\Reflection\MissingConstantFromReflectionException($this->getName(), $name);
+				throw new MissingConstantFromReflectionException($this->getName(), $name);
 			}
 
 			$deprecatedDescription = null;
@@ -840,7 +860,7 @@ class ClassReflection
 
 			// prevent circular imports
 			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {
-				throw new \PHPStan\Type\CircularTypeAliasDefinitionException();
+				throw new CircularTypeAliasDefinitionException();
 			}
 
 			self::$resolvingTypeAliasImports[$this->getName()] = true;
@@ -857,7 +877,7 @@ class ClassReflection
 
 				try {
 					$typeAliases = $importedFromReflection->getTypeAliases();
-				} catch (\PHPStan\Type\CircularTypeAliasDefinitionException $e) {
+				} catch (CircularTypeAliasDefinitionException $e) {
 					return TypeAlias::invalid();
 				}
 
@@ -953,7 +973,7 @@ class ClassReflection
 			return null;
 		}
 
-		$nativeAttributes = $this->reflection->getAttributes(\Attribute::class);
+		$nativeAttributes = $this->reflection->getAttributes(Attribute::class);
 		if (count($nativeAttributes) === 1) {
 			/** @var Attribute */
 			return $nativeAttributes[0]->newInstance();
@@ -966,7 +986,7 @@ class ClassReflection
 	{
 		$attribute = $this->findAttributeClass();
 		if ($attribute === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $attribute->flags;

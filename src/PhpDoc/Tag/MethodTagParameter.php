@@ -9,15 +9,15 @@ use PHPStan\Type\Type;
 class MethodTagParameter
 {
 
-	private \PHPStan\Type\Type $type;
+	private Type $type;
 
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
+	private PassedByReference $passedByReference;
 
 	private bool $isOptional;
 
 	private bool $isVariadic;
 
-	private ?\PHPStan\Type\Type $defaultValue;
+	private ?Type $defaultValue;
 
 	public function __construct(
 		Type $type,

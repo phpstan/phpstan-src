@@ -4,20 +4,23 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use Throwable;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Throw_>
+ * @implements Rule<Node\Stmt\Throw_>
  */
-class ThrowTypeRule implements \PHPStan\Rules\Rule
+class ThrowTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper
@@ -28,12 +31,12 @@ class ThrowTypeRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\Throw_::class;
+		return Node\Stmt\Throw_::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$throwableType = new ObjectType(\Throwable::class);
+		$throwableType = new ObjectType(Throwable::class);
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->expr,

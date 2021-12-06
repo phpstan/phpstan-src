@@ -5,15 +5,16 @@ namespace PHPStan\Reflection;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use ReflectionFunction;
 
 interface FunctionReflectionFactory
 {
 
 	/**
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
+	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function create(
-		\ReflectionFunction $reflection,
+		ReflectionFunction $reflection,
 		TemplateTypeMap $templateTypeMap,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,

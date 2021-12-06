@@ -3,6 +3,16 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\File\FileHelper;
+use PHPStan\ShouldNotHappenException;
+use function array_fill_keys;
+use function array_filter;
+use function array_key_exists;
+use function array_merge;
+use function array_values;
+use function count;
+use function is_array;
+use function is_string;
+use function sprintf;
 
 class IgnoredErrorHelperResult
 {
@@ -106,7 +116,7 @@ class IgnoredErrorHelperResult
 
 						if (isset($unmatchedIgnoredErrors[$i])) {
 							if (!is_array($unmatchedIgnoredErrors[$i])) {
-								throw new \PHPStan\ShouldNotHappenException();
+								throw new ShouldNotHappenException();
 							}
 							unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
 							if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
@@ -116,7 +126,7 @@ class IgnoredErrorHelperResult
 						break;
 					}
 				} else {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 			}
 

@@ -2,8 +2,17 @@
 
 namespace PHPStan\File;
 
+use PHPStan\ShouldNotHappenException;
+use function array_fill;
+use function array_merge;
 use function array_slice;
+use function count;
+use function explode;
+use function implode;
 use function str_replace;
+use function strpos;
+use function substr;
+use function trim;
 
 class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
@@ -55,7 +64,7 @@ class ParentDirectoryRelativePathHelper implements RelativePathHelper
 		$dotsCount = $parentPartsCount - $i;
 
 		if ($dotsCount < 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return array_merge(array_fill(0, $dotsCount, '..'), array_slice($filenameParts, $i));

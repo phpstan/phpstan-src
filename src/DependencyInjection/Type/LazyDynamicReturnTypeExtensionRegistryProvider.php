@@ -4,17 +4,18 @@ namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 
 class LazyDynamicReturnTypeExtensionRegistryProvider implements DynamicReturnTypeExtensionRegistryProvider
 {
 
-	private \PHPStan\DependencyInjection\Container $container;
+	private Container $container;
 
-	private ?\PHPStan\Type\DynamicReturnTypeExtensionRegistry $registry = null;
+	private ?DynamicReturnTypeExtensionRegistry $registry = null;
 
-	public function __construct(\PHPStan\DependencyInjection\Container $container)
+	public function __construct(Container $container)
 	{
 		$this->container = $container;
 	}

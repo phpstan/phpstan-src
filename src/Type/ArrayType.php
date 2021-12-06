@@ -3,7 +3,9 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -18,6 +20,12 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_merge;
+use function count;
+use function is_float;
+use function is_int;
+use function key;
+use function sprintf;
 
 /** @api */
 class ArrayType implements Type
@@ -28,9 +36,9 @@ class ArrayType implements Type
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private \PHPStan\Type\Type $keyType;
+	private Type $keyType;
 
-	private \PHPStan\Type\Type $itemType;
+	private Type $itemType;
 
 	/** @api */
 	public function __construct(Type $keyType, Type $itemType)
@@ -256,12 +264,12 @@ class ArrayType implements Type
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		if ($this->isCallable()->no()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return [new TrivialParametersAcceptor()];

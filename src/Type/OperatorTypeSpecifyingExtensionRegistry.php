@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BrokerAwareExtension;
+use function array_filter;
+use function array_values;
 
 class OperatorTypeSpecifyingExtensionRegistry
 {
@@ -12,7 +14,7 @@ class OperatorTypeSpecifyingExtensionRegistry
 	private array $extensions;
 
 	/**
-	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtension[] $extensions
+	 * @param OperatorTypeSpecifyingExtension[] $extensions
 	 */
 	public function __construct(
 		Broker $broker,

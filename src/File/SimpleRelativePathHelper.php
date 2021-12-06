@@ -2,6 +2,11 @@
 
 namespace PHPStan\File;
 
+use function str_replace;
+use function strlen;
+use function strpos;
+use function substr;
+
 class SimpleRelativePathHelper implements RelativePathHelper
 {
 

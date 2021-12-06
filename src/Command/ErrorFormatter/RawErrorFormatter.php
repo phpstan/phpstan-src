@@ -4,6 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use function sprintf;
 
 class RawErrorFormatter implements ErrorFormatter
 {

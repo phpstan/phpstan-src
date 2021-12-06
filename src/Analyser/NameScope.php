@@ -5,6 +5,16 @@ namespace PHPStan\Analyser;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
+use function array_key_exists;
+use function array_merge;
+use function array_shift;
+use function count;
+use function explode;
+use function implode;
+use function ltrim;
+use function sprintf;
+use function strpos;
+use function strtolower;
 
 /** @api */
 class NameScope

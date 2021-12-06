@@ -7,9 +7,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\New_>
+ * @implements Rule<Node\Expr\New_>
  */
 class NewStaticRule implements Rule
 {

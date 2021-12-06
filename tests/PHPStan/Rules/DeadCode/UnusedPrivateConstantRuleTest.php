@@ -8,6 +8,7 @@ use PHPStan\Rules\Constants\DirectAlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use UnusedPrivateConstant\TestExtension;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UnusedPrivateConstantRule>

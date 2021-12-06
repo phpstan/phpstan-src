@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -11,6 +12,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use function count;
 
 class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -49,8 +51,8 @@ class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		}
 
 		return $this->typeSpecifier->create(
-			new \PhpParser\Node\Expr\ConstFetch(
-				new \PhpParser\Node\Name\FullyQualified($constantName->getValue())
+			new Node\Expr\ConstFetch(
+				new Node\Name\FullyQualified($constantName->getValue())
 			),
 			$scope->getType($node->getArgs()[1]->value),
 			TypeSpecifierContext::createTruthy(),

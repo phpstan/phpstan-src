@@ -2,16 +2,19 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<BooleanOrConstantConditionRule>
+ * @extends RuleTestCase<BooleanOrConstantConditionRule>
  */
-class BooleanOrConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
+class BooleanOrConstantConditionRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new BooleanOrConstantConditionRule(
 			new ConstantConditionRuleHelper(

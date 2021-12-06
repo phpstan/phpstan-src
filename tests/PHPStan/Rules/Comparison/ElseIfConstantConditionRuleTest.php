@@ -2,16 +2,19 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ElseIfConstantConditionRule>
+ * @extends RuleTestCase<ElseIfConstantConditionRule>
  */
-class ElseIfConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
+class ElseIfConstantConditionRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ElseIfConstantConditionRule(
 			new ConstantConditionRuleHelper(

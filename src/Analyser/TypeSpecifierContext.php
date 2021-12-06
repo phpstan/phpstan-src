@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\ShouldNotHappenException;
+
 /** @api */
 class TypeSpecifierContext
 {
@@ -58,7 +60,7 @@ class TypeSpecifierContext
 	public function negate(): self
 	{
 		if ($this->value === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return self::create(~$this->value & self::CONTEXT_BITMASK);
 	}

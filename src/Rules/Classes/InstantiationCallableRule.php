@@ -5,12 +5,13 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InstantiationCallableNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<InstantiationCallableNode>
+ * @implements Rule<InstantiationCallableNode>
  */
-class InstantiationCallableRule implements \PHPStan\Rules\Rule
+class InstantiationCallableRule implements Rule
 {
 
 	public function getNodeType(): string

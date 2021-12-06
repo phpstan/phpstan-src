@@ -4,19 +4,21 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Foreach_>
+ * @implements Rule<Node\Stmt\Foreach_>
  */
-class IterableInForeachRule implements \PHPStan\Rules\Rule
+class IterableInForeachRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
+	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(RuleLevelHelper $ruleLevelHelper)
 	{
@@ -25,7 +27,7 @@ class IterableInForeachRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\Foreach_::class;
+		return Node\Stmt\Foreach_::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

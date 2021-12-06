@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<UnreachableStatementRule>
+ * @extends RuleTestCase<UnreachableStatementRule>
  */
 class UnreachableStatementRuleTest extends RuleTestCase
 {

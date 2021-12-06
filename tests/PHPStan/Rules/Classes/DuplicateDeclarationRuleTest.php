@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<\PHPStan\Rules\Classes\DuplicateDeclarationRule>
+ * @extends RuleTestCase<DuplicateDeclarationRule>
  */
 class DuplicateDeclarationRuleTest extends RuleTestCase
 {

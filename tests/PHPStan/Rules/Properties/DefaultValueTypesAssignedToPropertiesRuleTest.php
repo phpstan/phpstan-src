@@ -4,11 +4,12 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DefaultValueTypesAssignedToPropertiesRule>
+ * @extends RuleTestCase<DefaultValueTypesAssignedToPropertiesRule>
  */
-class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class DefaultValueTypesAssignedToPropertiesRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule

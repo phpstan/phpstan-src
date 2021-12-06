@@ -2,7 +2,10 @@
 
 namespace PHPStan\Reflection;
 
-class MissingConstantFromReflectionException extends \Exception
+use Exception;
+use function sprintf;
+
+class MissingConstantFromReflectionException extends Exception
 {
 
 	public function __construct(

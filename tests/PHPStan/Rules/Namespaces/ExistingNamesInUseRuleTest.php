@@ -3,14 +3,16 @@
 namespace PHPStan\Rules\Namespaces;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingNamesInUseRule>
+ * @extends RuleTestCase<ExistingNamesInUseRule>
  */
-class ExistingNamesInUseRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingNamesInUseRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new ExistingNamesInUseRule($broker, new ClassCaseSensitivityCheck($broker, true), true);

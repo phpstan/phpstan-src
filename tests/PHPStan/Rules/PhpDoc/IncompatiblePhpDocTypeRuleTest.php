@@ -3,15 +3,18 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<IncompatiblePhpDocTypeRule>
+ * @extends RuleTestCase<IncompatiblePhpDocTypeRule>
  */
-class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use DoctrineIntersectionTypeIsSupertypeOf\Collection;
+use Iterator;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -9,12 +12,15 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use stdClass;
 use Test\ClassWithToString;
+use Traversable;
+use function sprintf;
 
-class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class IntersectionTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): \Iterator
+	public function dataAccepts(): Iterator
 	{
 		$intersectionType = new IntersectionType([
 			new ObjectType('Collection'),
@@ -111,7 +117,7 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): \Iterator
+	public function dataIsSuperTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),
@@ -190,24 +196,24 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\Traversable::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Traversable::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\Traversable::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Traversable::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
@@ -215,47 +221,47 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		yield [
 			new IntersectionType([
 				new ObjectType(\TestIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
 				new ObjectType(\TestIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
-			]),
-			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new IntersectionType([
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
+			]),
+			new IntersectionType([
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
@@ -274,7 +280,7 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): \Iterator
+	public function dataIsSubTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),

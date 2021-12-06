@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 
@@ -34,7 +35,7 @@ class AnonymousClassNameRule implements Rule
 			: (string) $node->name;
 		try {
 			$this->reflectionProvider->getClass($className);
-		} catch (\PHPStan\Broker\ClassNotFoundException $e) {
+		} catch (ClassNotFoundException $e) {
 			return ['not found'];
 		}
 

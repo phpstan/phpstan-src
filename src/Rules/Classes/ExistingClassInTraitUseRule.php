@@ -7,15 +7,19 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function array_map;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\TraitUse>
+ * @implements Rule<Node\Stmt\TraitUse>
  */
-class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
+class ExistingClassInTraitUseRule implements Rule
 {
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
+	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
 
 	private ReflectionProvider $reflectionProvider;
 
@@ -30,7 +34,7 @@ class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\TraitUse::class;
+		return Node\Stmt\TraitUse::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -42,7 +46,7 @@ class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
 		);
 
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$classReflection = $scope->getClassReflection();

@@ -2,21 +2,23 @@
 
 namespace PHPStan\Reflection\ReflectionProvider;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use function strtolower;
 
 class MemoizingReflectionProvider implements ReflectionProvider
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $provider;
+	private ReflectionProvider $provider;
 
 	/** @var array<string, bool> */
 	private array $hasClasses = [];
 
-	/** @var array<string, \PHPStan\Reflection\ClassReflection> */
+	/** @var array<string, ClassReflection> */
 	private array $classes = [];
 
 	/** @var array<string, string> */
@@ -62,37 +64,37 @@ class MemoizingReflectionProvider implements ReflectionProvider
 		return $this->provider->supportsAnonymousClasses();
 	}
 
-	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
+	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		return $this->provider->getAnonymousClassReflection($classNode, $scope);
 	}
 
-	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->provider->hasFunction($nameNode, $scope);
 	}
 
-	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
 	{
 		return $this->provider->getFunction($nameNode, $scope);
 	}
 
-	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->provider->resolveFunctionName($nameNode, $scope);
 	}
 
-	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->provider->hasConstant($nameNode, $scope);
 	}
 
-	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
 	{
 		return $this->provider->getConstant($nameNode, $scope);
 	}
 
-	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->provider->resolveConstantName($nameNode, $scope);
 	}

@@ -2,8 +2,12 @@
 
 namespace PHPStan\Broker;
 
+use PhpParser\Node;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\ShouldNotHappenException;
+use function md5;
+use function sprintf;
 
 class AnonymousClassNameHelper
 {
@@ -22,12 +26,12 @@ class AnonymousClassNameHelper
 	}
 
 	public function getAnonymousClassName(
-		\PhpParser\Node\Stmt\Class_ $classNode,
+		Node\Stmt\Class_ $classNode,
 		string $filename
 	): string
 	{
 		if (isset($classNode->namespacedName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$filename = $this->relativePathHelper->getRelativePath(

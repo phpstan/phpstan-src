@@ -30,6 +30,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\FunctionSignature;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -43,6 +44,21 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
+use ReflectionClass;
+use ReflectionParameter;
+use function array_key_exists;
+use function array_map;
+use function array_shift;
+use function array_slice;
+use function class_exists;
+use function count;
+use function explode;
+use function implode;
+use function in_array;
+use function is_array;
+use function method_exists;
+use function reset;
+use function sprintf;
 
 class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
@@ -52,19 +68,19 @@ class PhpClassReflectionExtension
 
 	private NodeScopeResolver $nodeScopeResolver;
 
-	private \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory;
+	private PhpMethodReflectionFactory $methodReflectionFactory;
 
-	private \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver;
+	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
 
-	private \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension;
+	private AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension;
 
-	private \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension;
+	private AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension;
 
-	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
+	private SignatureMapProvider $signatureMapProvider;
 
-	private \PHPStan\Parser\Parser $parser;
+	private Parser $parser;
 
-	private \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider;
+	private StubPhpDocProvider $stubPhpDocProvider;
 
 	private bool $inferPrivatePropertyTypeFromConstructor;
 
@@ -75,16 +91,16 @@ class PhpClassReflectionExtension
 	/** @var string[] */
 	private array $universalObjectCratesClasses;
 
-	/** @var \PHPStan\Reflection\PropertyReflection[][] */
+	/** @var PropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
 
-	/** @var \PHPStan\Reflection\Php\PhpPropertyReflection[][] */
+	/** @var PhpPropertyReflection[][] */
 	private array $nativeProperties = [];
 
-	/** @var \PHPStan\Reflection\MethodReflection[][] */
+	/** @var MethodReflection[][] */
 	private array $methodsIncludingAnnotations = [];
 
-	/** @var \PHPStan\Reflection\MethodReflection[][] */
+	/** @var MethodReflection[][] */
 	private array $nativeMethods = [];
 
 	/** @var array<string, array<string, Type>> */
@@ -144,7 +160,7 @@ class PhpClassReflectionExtension
 	public function getNativeProperty(ClassReflection $classReflection, string $propertyName): PhpPropertyReflection
 	{
 		if (!isset($this->nativeProperties[$classReflection->getCacheKey()][$propertyName])) {
-			/** @var \PHPStan\Reflection\Php\PhpPropertyReflection $property */
+			/** @var PhpPropertyReflection $property */
 			$property = $this->createProperty($classReflection, $propertyName, false);
 			$this->nativeProperties[$classReflection->getCacheKey()][$propertyName] = $property;
 		}
@@ -163,7 +179,7 @@ class PhpClassReflectionExtension
 		$declaringClassName = $propertyReflection->getDeclaringClass()->getName();
 		$declaringClassReflection = $classReflection->getAncestorWithClassName($declaringClassName);
 		if ($declaringClassReflection === null) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf(
+			throw new ShouldNotHappenException(sprintf(
 				'Internal error: Expected to find an ancestor with class name %s on %s, but none was found.',
 				$declaringClassName,
 				$classReflection->getName()
@@ -178,7 +194,7 @@ class PhpClassReflectionExtension
 			$hierarchyDistances = $classReflection->getClassHierarchyDistances();
 			$annotationProperty = $this->annotationsPropertiesClassReflectionExtension->getProperty($classReflection, $propertyName);
 			if (!isset($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$distanceDeclaringClass = $propertyReflection->getDeclaringClass()->getName();
@@ -187,7 +203,7 @@ class PhpClassReflectionExtension
 				$distanceDeclaringClass = $propertyTrait;
 			}
 			if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
@@ -255,7 +271,7 @@ class PhpClassReflectionExtension
 				$nativeClassReflection = $declaringClassReflection->getNativeReflection();
 				$positionalParameterNames = [];
 				if ($nativeClassReflection->getConstructor() !== null) {
-					$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
+					$positionalParameterNames = array_map(static function (ReflectionParameter $parameter): string {
 						return $parameter->getName();
 					}, $nativeClassReflection->getConstructor()->getParameters());
 				}
@@ -276,7 +292,7 @@ class PhpClassReflectionExtension
 
 		if ($resolvedPhpDoc !== null) {
 			if (!isset($phpDocBlockClassReflection)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
 				$phpDocType,
@@ -387,7 +403,7 @@ class PhpClassReflectionExtension
 					$this->universalObjectCratesClasses,
 					$classReflection
 				)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$nativeMethodReflection = new FakeBuiltinMethodReflection(
@@ -414,7 +430,7 @@ class PhpClassReflectionExtension
 			$hierarchyDistances = $classReflection->getClassHierarchyDistances();
 			$annotationMethod = $this->annotationsMethodsClassReflectionExtension->getMethod($classReflection, $methodReflection->getName());
 			if (!isset($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$distanceDeclaringClass = $methodReflection->getDeclaringClass()->getName();
@@ -423,7 +439,7 @@ class PhpClassReflectionExtension
 				$distanceDeclaringClass = $methodTrait;
 			}
 			if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
@@ -434,7 +450,7 @@ class PhpClassReflectionExtension
 		$declaringClass = $classReflection->getAncestorWithClassName($declaringClassName);
 
 		if ($declaringClass === null) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf(
+			throw new ShouldNotHappenException(sprintf(
 				'Internal error: Expected to find an ancestor with class name %s on %s, but none was found.',
 				$declaringClassName,
 				$classReflection->getName()
@@ -456,7 +472,7 @@ class PhpClassReflectionExtension
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			} elseif (class_exists($classReflection->getName(), false)) {
-				$reflectionClass = new \ReflectionClass($classReflection->getName());
+				$reflectionClass = new ReflectionClass($classReflection->getName());
 				if ($reflectionClass->hasMethod($methodReflection->getName())) {
 					$reflectionMethod = $reflectionClass->getMethod($methodReflection->getName());
 				}
@@ -556,7 +572,7 @@ class PhpClassReflectionExtension
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
 		$resolvedPhpDoc = null;
-		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (\ReflectionParameter $parameter): string {
+		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (ReflectionParameter $parameter): string {
 			return $parameter->getName();
 		}, $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $declaringClass;
@@ -568,7 +584,7 @@ class PhpClassReflectionExtension
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== null) {
 				$docComment = $methodReflection->getDocComment();
-				$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
+				$positionalParameterNames = array_map(static function (ReflectionParameter $parameter): string {
 					return $parameter->getName();
 				}, $methodReflection->getParameters());
 
@@ -772,7 +788,7 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \ReflectionClass<object>[] $traits
+	 * @param ReflectionClass<object>[] $traits
 	 */
 	private function deepScanTraitsForProperty(
 		array $traits,
@@ -848,9 +864,9 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @return \ReflectionClass[]
+	 * @return ReflectionClass[]
 	 */
-	private function collectTraits(\ReflectionClass $class): array
+	private function collectTraits(ReflectionClass $class): array
 	{
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
@@ -987,7 +1003,7 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \PhpParser\Node[] $nodes
+	 * @param Node[] $nodes
 	 */
 	private function findClassNode(string $className, array $nodes): ?Class_
 	{
@@ -1022,7 +1038,7 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt[] $classStatements
+	 * @param Node\Stmt[] $classStatements
 	 */
 	private function findConstructorNode(string $methodName, array $classStatements): ?ClassMethod
 	{
@@ -1060,7 +1076,7 @@ class PhpClassReflectionExtension
 
 	/**
 	 * @param array<int, string> $positionalParameterNames
-	 * @return array{\PHPStan\PhpDoc\ResolvedPhpDocBlock, ClassReflection}|null
+	 * @return array{ResolvedPhpDocBlock, ClassReflection}|null
 	 */
 	private function findMethodPhpDocIncludingAncestors(ClassReflection $declaringClass, string $methodName, array $positionalParameterNames): ?array
 	{

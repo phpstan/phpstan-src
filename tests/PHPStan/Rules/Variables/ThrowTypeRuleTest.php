@@ -2,15 +2,18 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ThrowTypeRule>
+ * @extends RuleTestCase<ThrowTypeRule>
  */
-class ThrowTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class ThrowTypeRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ThrowTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
 	}

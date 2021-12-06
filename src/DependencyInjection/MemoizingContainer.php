@@ -2,6 +2,8 @@
 
 namespace PHPStan\DependencyInjection;
 
+use function array_key_exists;
+
 class MemoizingContainer implements Container
 {
 

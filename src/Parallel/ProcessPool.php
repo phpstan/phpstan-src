@@ -2,8 +2,12 @@
 
 namespace PHPStan\Parallel;
 
+use PHPStan\ShouldNotHappenException;
 use React\Socket\TcpServer;
 use function array_key_exists;
+use function array_keys;
+use function count;
+use function sprintf;
 
 class ProcessPool
 {
@@ -21,7 +25,7 @@ class ProcessPool
 	public function getProcess(string $identifier): Process
 	{
 		if (!array_key_exists($identifier, $this->processes)) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Process %s not found.', $identifier));
+			throw new ShouldNotHappenException(sprintf('Process %s not found.', $identifier));
 		}
 
 		return $this->processes[$identifier];

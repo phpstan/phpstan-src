@@ -2,10 +2,13 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+use PHPStan\Rules\MetadataRuleError;
+use PHPStan\Rules\RuleError;
+
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError33 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\MetadataRuleError
+class RuleError33 implements RuleError, MetadataRuleError
 {
 
 	public string $message;

@@ -2,18 +2,21 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<NonexistentOffsetInArrayDimFetchRule>
+ * @extends RuleTestCase<NonexistentOffsetInArrayDimFetchRule>
  */
-class NonexistentOffsetInArrayDimFetchRuleTest extends \PHPStan\Testing\RuleTestCase
+class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $checkExplicitMixed = false;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed);
 

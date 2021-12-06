@@ -7,17 +7,17 @@ use PHPStan\Type\Type;
 class FunctionSignature
 {
 
-	/** @var \PHPStan\Reflection\SignatureMap\ParameterSignature[] */
+	/** @var ParameterSignature[] */
 	private array $parameters;
 
-	private \PHPStan\Type\Type $returnType;
+	private Type $returnType;
 
-	private \PHPStan\Type\Type $nativeReturnType;
+	private Type $nativeReturnType;
 
 	private bool $variadic;
 
 	/**
-	 * @param array<int, \PHPStan\Reflection\SignatureMap\ParameterSignature> $parameters
+	 * @param array<int, ParameterSignature> $parameters
 	 */
 	public function __construct(
 		array $parameters,
@@ -33,7 +33,7 @@ class FunctionSignature
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\SignatureMap\ParameterSignature>
+	 * @return array<int, ParameterSignature>
 	 */
 	public function getParameters(): array
 	{

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Comment;
 use PhpParser\Node;
+use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
 use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
@@ -11,6 +12,7 @@ use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
@@ -19,16 +21,24 @@ use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\TipRuleError;
 use function array_key_exists;
+use function array_keys;
 use function array_unique;
+use function array_values;
+use function get_class;
+use function is_dir;
+use function is_file;
+use function is_string;
+use function sprintf;
+use function strpos;
 
 class FileAnalyser
 {
 
-	private \PHPStan\Analyser\ScopeFactory $scopeFactory;
+	private ScopeFactory $scopeFactory;
 
-	private \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver;
+	private NodeScopeResolver $nodeScopeResolver;
 
-	private \PHPStan\Parser\Parser $parser;
+	private Parser $parser;
 
 	private DependencyResolver $dependencyResolver;
 
@@ -51,7 +61,7 @@ class FileAnalyser
 
 	/**
 	 * @param array<string, true> $analysedFiles
-	 * @param callable(\PhpParser\Node $node, Scope $scope): void|null $outerNodeCallback
+	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
 	 */
 	public function analyseFile(
 		string $file,
@@ -68,7 +78,7 @@ class FileAnalyser
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $this->getLinesToIgnoreFromTokens($file, $parserNodes);
 				$temporaryFileErrors = [];
-				$nodeCallback = function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
+				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
 							if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
@@ -86,7 +96,7 @@ class FileAnalyser
 					foreach ($registry->getRules($nodeType) as $rule) {
 						try {
 							$ruleErrors = $rule->processNode($node, $scope);
-						} catch (\PHPStan\AnalysedCodeException $e) {
+						} catch (AnalysedCodeException $e) {
 							if (isset($uniquedAnalysedCodeExceptionMessages[$e->getMessage()])) {
 								continue;
 							}
@@ -189,7 +199,7 @@ class FileAnalyser
 						if ($dependencies->getExportedNode() !== null) {
 							$exportedNodes[] = $dependencies->getExportedNode();
 						}
-					} catch (\PHPStan\AnalysedCodeException $e) {
+					} catch (AnalysedCodeException $e) {
 						// pass
 					} catch (IdentifierNotFound $e) {
 						// pass
@@ -245,11 +255,11 @@ class FileAnalyser
 				}
 			} catch (\PhpParser\Error $e) {
 				$fileErrors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e);
-			} catch (\PHPStan\Parser\ParserErrorsException $e) {
+			} catch (ParserErrorsException $e) {
 				foreach ($e->getErrors() as $error) {
 					$fileErrors[] = new Error($error->getMessage(), $e->getParsedFile() ?? $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, $e);
 				}
-			} catch (\PHPStan\AnalysedCodeException $e) {
+			} catch (AnalysedCodeException $e) {
 				$fileErrors[] = new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip());
 			} catch (IdentifierNotFound $e) {
 				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
@@ -291,7 +301,7 @@ class FileAnalyser
 	}
 
 	/**
-	 * @param \PhpParser\Node[] $nodes
+	 * @param Node[] $nodes
 	 * @return array<string, array<int, true>>
 	 */
 	private function getLinesToIgnoreFromTokens(string $file, array $nodes): array

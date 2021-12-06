@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ConstFetch>
+ * @implements Rule<Node\Expr\ConstFetch>
  */
-class ConstantRule implements \PHPStan\Rules\Rule
+class ConstantRule implements Rule
 {
 
 	public function getNodeType(): string

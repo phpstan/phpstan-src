@@ -2,7 +2,9 @@
 
 namespace PHPStan;
 
-final class ShouldNotHappenException extends \Exception
+use Exception;
+
+final class ShouldNotHappenException extends Exception
 {
 
 	/** @api */

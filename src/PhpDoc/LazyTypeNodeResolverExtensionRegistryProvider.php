@@ -2,14 +2,16 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\DependencyInjection\Container;
+
 class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
 {
 
-	private \PHPStan\DependencyInjection\Container $container;
+	private Container $container;
 
 	private ?TypeNodeResolverExtensionRegistry $registry = null;
 
-	public function __construct(\PHPStan\DependencyInjection\Container $container)
+	public function __construct(Container $container)
 	{
 		$this->container = $container;
 	}

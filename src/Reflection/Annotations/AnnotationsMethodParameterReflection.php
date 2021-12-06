@@ -13,7 +13,7 @@ class AnnotationsMethodParameterReflection implements ParameterReflection
 
 	private Type $type;
 
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
+	private PassedByReference $passedByReference;
 
 	private bool $isOptional;
 

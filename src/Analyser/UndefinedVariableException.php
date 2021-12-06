@@ -2,10 +2,13 @@
 
 namespace PHPStan\Analyser;
 
-class UndefinedVariableException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use function sprintf;
+
+class UndefinedVariableException extends AnalysedCodeException
 {
 
-	private \PHPStan\Analyser\Scope $scope;
+	private Scope $scope;
 
 	private string $variableName;
 

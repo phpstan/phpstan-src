@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\NodeAbstract;
 
@@ -9,7 +10,7 @@ use PhpParser\NodeAbstract;
 class InClosureNode extends NodeAbstract implements VirtualNode
 {
 
-	private \PhpParser\Node\Expr\Closure $originalNode;
+	private Node\Expr\Closure $originalNode;
 
 	public function __construct(Closure $originalNode)
 	{

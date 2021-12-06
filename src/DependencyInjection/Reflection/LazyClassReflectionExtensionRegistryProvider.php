@@ -4,19 +4,21 @@ namespace PHPStan\DependencyInjection\Reflection;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflectionExtensionRegistry;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
+use function array_merge;
 
 class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
 
-	private \PHPStan\DependencyInjection\Container $container;
+	private Container $container;
 
-	private ?\PHPStan\Reflection\ClassReflectionExtensionRegistry $registry = null;
+	private ?ClassReflectionExtensionRegistry $registry = null;
 
-	public function __construct(\PHPStan\DependencyInjection\Container $container)
+	public function __construct(Container $container)
 	{
 		$this->container = $container;
 	}

@@ -15,6 +15,7 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function strtolower;
 
 class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {

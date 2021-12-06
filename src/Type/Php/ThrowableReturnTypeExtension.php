@@ -6,16 +6,18 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use Throwable;
 
-final class ThrowableReturnTypeExtension implements \PHPStan\Type\DynamicMethodReturnTypeExtension
+final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function getClass(): string
 	{
-		return \Throwable::class;
+		return Throwable::class;
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool

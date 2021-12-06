@@ -6,15 +6,18 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\StaticCall>
+ * @implements Rule<Node\Expr\StaticCall>
  */
-class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
+class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 {
 
-	private \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
+	private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
 
 	private bool $checkAlwaysTrueCheckTypeFunctionCall;
 
@@ -33,7 +36,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\StaticCall::class;
+		return Node\Expr\StaticCall::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -89,7 +92,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 
 	/**
 	 * @param Node\Name|Expr $class
-	 * @throws \PHPStan\ShouldNotHappenException
+	 * @throws ShouldNotHappenException
 	 */
 	private function getMethod(
 		$class,
@@ -105,7 +108,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 
 		$method = $scope->getMethodReflection($calledOnType, $methodName);
 		if ($method === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $method;

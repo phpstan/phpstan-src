@@ -2,7 +2,12 @@
 
 namespace PHPStan\File;
 
-class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
+use PHPUnit\Framework\TestCase;
+use function array_map;
+use function str_replace;
+use function substr;
+
+class RelativePathHelperTest extends TestCase
 {
 
 	public function dataGetRelativePath(): array

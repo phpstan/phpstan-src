@@ -2,6 +2,9 @@
 
 namespace PHPStan\Php;
 
+use function explode;
+use function max;
+use function min;
 use const PHP_VERSION_ID;
 
 class PhpVersionFactory

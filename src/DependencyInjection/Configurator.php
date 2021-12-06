@@ -4,6 +4,9 @@ namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Config\Loader;
 use Nette\DI\ContainerLoader;
+use function array_keys;
+use const PHP_RELEASE_VERSION;
+use const PHP_VERSION_ID;
 
 class Configurator extends \Nette\Bootstrap\Configurator
 {

@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<FunctionSignatureVarianceRule>
+ * @extends RuleTestCase<FunctionSignatureVarianceRule>
  */
 class FunctionSignatureVarianceRuleTest extends RuleTestCase
 {

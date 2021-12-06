@@ -2,6 +2,7 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Extensions\PhpExtension;
 use Phar;
 use PHPStan\BetterReflection\BetterReflection;
@@ -13,7 +14,13 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use Symfony\Component\Finder\Finder;
+use function dirname;
+use function extension_loaded;
+use function ini_get;
+use function is_dir;
 use function sys_get_temp_dir;
+use function time;
+use function unlink;
 
 /** @api */
 class ContainerFactory
@@ -72,7 +79,7 @@ class ContainerFactory
 		));
 		$configurator->defaultExtensions = [
 			'php' => PhpExtension::class,
-			'extensions' => \Nette\DI\Extensions\ExtensionsExtension::class,
+			'extensions' => ExtensionsExtension::class,
 		];
 		$configurator->setDebugMode(true);
 		$configurator->setTempDirectory($tempDirectory);

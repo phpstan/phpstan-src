@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<TooWideMethodReturnTypehintRule>
+ * @extends RuleTestCase<TooWideMethodReturnTypehintRule>
  */
 class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 {

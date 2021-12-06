@@ -2,7 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-class ErrorTest extends \PHPStan\Testing\PHPStanTestCase
+use PHPStan\Testing\PHPStanTestCase;
+
+class ErrorTest extends PHPStanTestCase
 {
 
 	public function testError(): void

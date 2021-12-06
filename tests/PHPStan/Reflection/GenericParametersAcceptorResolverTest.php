@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -17,8 +18,11 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function get_class;
+use function sprintf;
 
-class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTestCase
+class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 {
 
 	/**
@@ -414,7 +418,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 
 	/**
 	 * @dataProvider dataResolve
-	 * @param \PHPStan\Type\Type[] $argTypes
+	 * @param Type[] $argTypes
 	 */
 	public function testResolve(array $argTypes, ParametersAcceptor $parametersAcceptor, ParametersAcceptor $expectedResult): void
 	{

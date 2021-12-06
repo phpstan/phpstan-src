@@ -5,17 +5,20 @@ namespace PHPStan\Rules\Variables;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<NullCoalesceRule>
+ * @extends RuleTestCase<NullCoalesceRule>
  */
-class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
+class NullCoalesceRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new NullCoalesceRule(new IssetCheck(
 			new PropertyDescriptor(),

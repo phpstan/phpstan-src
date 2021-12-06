@@ -11,9 +11,10 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\LiteralArrayNode>
+ * @implements Rule<LiteralArrayNode>
  */
 class UnpackIterableInArrayRule implements Rule
 {

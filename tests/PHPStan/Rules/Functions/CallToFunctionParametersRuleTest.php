@@ -6,19 +6,21 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToFunctionParametersRule>
+ * @extends RuleTestCase<CallToFunctionParametersRule>
  */
-class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallToFunctionParametersRuleTest extends RuleTestCase
 {
 
 	/** @var bool */
 	private $checkExplicitMixed = false;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(

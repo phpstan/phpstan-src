@@ -12,7 +12,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 
 	private Function_ $function;
 
-	/** @var \PHPStan\Node\ReturnStatement[] */
+	/** @var ReturnStatement[] */
 	private array $returnStatements;
 
 	private StatementResult $statementResult;
@@ -21,7 +21,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	private array $executionEnds;
 
 	/**
-	 * @param \PHPStan\Node\ReturnStatement[] $returnStatements
+	 * @param ReturnStatement[] $returnStatements
 	 * @param ExecutionEndNode[] $executionEnds
 	 */
 	public function __construct(
@@ -39,7 +39,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	}
 
 	/**
-	 * @return \PHPStan\Node\ReturnStatement[]
+	 * @return ReturnStatement[]
 	 */
 	public function getReturnStatements(): array
 	{

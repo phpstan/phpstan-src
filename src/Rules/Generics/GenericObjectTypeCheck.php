@@ -2,19 +2,26 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
+use function array_values;
+use function count;
+use function implode;
+use function sprintf;
 
 class GenericObjectTypeCheck
 {
 
 	/**
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @return RuleError[]
 	 */
 	public function check(
 		Type $phpDocType,
@@ -97,7 +104,7 @@ class GenericObjectTypeCheck
 	}
 
 	/**
-	 * @return \PHPStan\Type\Generic\GenericObjectType[]
+	 * @return GenericObjectType[]
 	 */
 	private function getGenericTypes(Type $phpDocType): array
 	{
@@ -106,7 +113,7 @@ class GenericObjectTypeCheck
 			if ($type instanceof GenericObjectType) {
 				$resolvedType = TemplateTypeHelper::resolveToBounds($type);
 				if (!$resolvedType instanceof GenericObjectType) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$genericObjectTypes[] = $resolvedType;
 				$traverse($type);

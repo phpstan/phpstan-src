@@ -6,10 +6,24 @@ use Nette\DI\Config\Adapter;
 use Nette\DI\Config\Helpers;
 use Nette\DI\Definitions\Reference;
 use Nette\DI\Definitions\Statement;
+use Nette\DI\InvalidConfigurationException;
 use Nette\Neon\Entity;
+use Nette\Neon\Exception;
 use Nette\Neon\Neon;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use function array_values;
+use function array_walk_recursive;
+use function dirname;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_int;
+use function is_string;
+use function ltrim;
+use function sprintf;
+use function strpos;
+use function substr;
 
 class NeonAdapter implements Adapter
 {
@@ -29,8 +43,8 @@ class NeonAdapter implements Adapter
 		$contents = FileReader::read($file);
 		try {
 			return $this->process((array) Neon::decode($contents), '', $file);
-		} catch (\Nette\Neon\Exception $e) {
-			throw new \Nette\Neon\Exception(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
+		} catch (Exception $e) {
+			throw new Exception(sprintf('Error while loading %s: %s', $file, $e->getMessage()));
 		}
 	}
 
@@ -44,7 +58,7 @@ class NeonAdapter implements Adapter
 		foreach ($arr as $key => $val) {
 			if (is_string($key) && substr($key, -1) === self::PREVENT_MERGING_SUFFIX) {
 				if (!is_array($val) && $val !== null) {
-					throw new \Nette\DI\InvalidConfigurationException(sprintf('Replacing operator is available only for arrays, item \'%s\' is not array.', $key));
+					throw new InvalidConfigurationException(sprintf('Replacing operator is available only for arrays, item \'%s\' is not array.', $key));
 				}
 				$key = substr($key, 0, -1);
 				$val[Helpers::PREVENT_MERGING] = true;

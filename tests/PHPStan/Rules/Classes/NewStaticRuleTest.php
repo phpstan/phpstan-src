@@ -3,11 +3,12 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<NewStaticRule>
+ * @extends RuleTestCase<NewStaticRule>
  */
-class NewStaticRuleTest extends \PHPStan\Testing\RuleTestCase
+class NewStaticRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule

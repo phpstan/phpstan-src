@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -22,6 +23,8 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
+use function array_map;
+use function strtolower;
 
 class NativeFunctionReflectionProvider
 {
@@ -29,11 +32,11 @@ class NativeFunctionReflectionProvider
 	/** @var NativeFunctionReflection[] */
 	private static array $functionMap = [];
 
-	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
+	private SignatureMapProvider $signatureMapProvider;
 
 	private Reflector $reflector;
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
+	private FileTypeMapper $fileTypeMapper;
 
 	private StubPhpDocProvider $stubPhpDocProvider;
 
@@ -157,7 +160,7 @@ class NativeFunctionReflectionProvider
 				}
 				$isDeprecated = $reflectionFunction->isDeprecated();
 			}
-		} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+		} catch (IdentifierNotFound $e) {
 			// pass
 		} catch (InvalidIdentifierName $e) {
 			// pass

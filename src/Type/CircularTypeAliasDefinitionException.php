@@ -2,7 +2,9 @@
 
 namespace PHPStan\Type;
 
-class CircularTypeAliasDefinitionException extends \Exception
+use Exception;
+
+class CircularTypeAliasDefinitionException extends Exception
 {
 
 }

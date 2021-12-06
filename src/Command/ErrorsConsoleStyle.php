@@ -6,15 +6,21 @@ use OndraM\CiDetector\CiDetector;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Console\Terminal;
+use function array_map;
+use function strlen;
+use function time;
+use function wordwrap;
 
-class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
+class ErrorsConsoleStyle extends SymfonyStyle
 {
 
 	public const OPTION_NO_PROGRESS = 'no-progress';
 
 	private bool $showProgress;
 
-	private \Symfony\Component\Console\Helper\ProgressBar $progressBar;
+	private ProgressBar $progressBar;
 
 	private ?bool $isCiDetected = null;
 
@@ -41,7 +47,7 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 	public function table(array $headers, array $rows): void
 	{
 		/** @var int $terminalWidth */
-		$terminalWidth = (new \Symfony\Component\Console\Terminal())->getWidth() - 2;
+		$terminalWidth = (new Terminal())->getWidth() - 2;
 		$maxHeaderWidth = strlen($headers[0]);
 		foreach ($rows as $row) {
 			$length = strlen($row[0]);

@@ -2,22 +2,24 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node;
+
 class FetchedNodesResult
 {
 
-	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
+	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
 	private array $classNodes;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
 	private array $functionNodes;
 
-	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
+	/** @var array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> */
 	private array $constantNodes;
 
 	/**
-	 * @param array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> $classNodes
-	 * @param array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> $functionNodes
-	 * @param array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> $constantNodes
+	 * @param array<string, array<FetchedNode<Node\Stmt\ClassLike>>> $classNodes
+	 * @param array<string, FetchedNode<Node\Stmt\Function_>> $functionNodes
+	 * @param array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> $constantNodes
 	 */
 	public function __construct(
 		array $classNodes,
@@ -31,7 +33,7 @@ class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>>
+	 * @return array<string, array<FetchedNode<Node\Stmt\ClassLike>>>
 	 */
 	public function getClassNodes(): array
 	{
@@ -39,7 +41,7 @@ class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>>
+	 * @return array<string, FetchedNode<Node\Stmt\Function_>>
 	 */
 	public function getFunctionNodes(): array
 	{
@@ -47,7 +49,7 @@ class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>>
+	 * @return array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>
 	 */
 	public function getConstantNodes(): array
 	{

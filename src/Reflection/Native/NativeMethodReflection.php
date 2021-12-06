@@ -6,23 +6,26 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\BuiltinMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use ReflectionException;
+use function strtolower;
 
 class NativeMethodReflection implements MethodReflection
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ClassReflection $declaringClass;
 
 	private BuiltinMethodReflection $reflection;
 
-	/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] */
+	/** @var ParametersAcceptorWithPhpDocs[] */
 	private array $variants;
 
 	private TrinaryLogic $hasSideEffects;
@@ -32,7 +35,7 @@ class NativeMethodReflection implements MethodReflection
 	private ?Type $throwType;
 
 	/**
-	 * @param \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] $variants
+	 * @param ParametersAcceptorWithPhpDocs[] $variants
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
@@ -100,7 +103,7 @@ class NativeMethodReflection implements MethodReflection
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
 				$tentativeReturnType
 			);
-		} catch (\ReflectionException $e) {
+		} catch (ReflectionException $e) {
 			return $this;
 		}
 	}
@@ -111,7 +114,7 @@ class NativeMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[]
+	 * @return ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array
 	{

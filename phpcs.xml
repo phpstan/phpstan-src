@@ -6,11 +6,12 @@
 	<arg name="encoding" value="utf-8"/>
 	<arg name="tab-width" value="4"/>
 	<arg name="cache" value="tmp/cache/phpcs"/>
-	<arg name="ignore" value="tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
+	<arg name="ignore" value="compiler/tests/*/data,tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
 	<arg value="sp"/>
 	<file>src</file>
 	<file>tests</file>
 	<file>compiler/src</file>
+	<file>compiler/tests</file>
 
 	<rule ref="build-cs/vendor/consistence-community/coding-standard/Consistence/ruleset.xml">
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat"/>
@@ -71,7 +72,7 @@
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
 	<rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
 		<properties>
-			<property name="rootNamespaces" type="array" value="compiler/src =>PHPStan\Compiler,src=>PHPStan,tests/PHPStan=>PHPStan, tests/e2e => PHPStan\Tests"/>
+			<property name="rootNamespaces" type="array" value="compiler/src =>PHPStan\Compiler,compiler/tests =>PHPStan\Compiler,src=>PHPStan,tests/PHPStan=>PHPStan, tests/e2e => PHPStan\Tests"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>

@@ -72,7 +72,13 @@
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
 	<rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
 		<properties>
-			<property name="rootNamespaces" type="array" value="compiler/src =>PHPStan\Compiler,compiler/tests =>PHPStan\Compiler,src=>PHPStan,tests/PHPStan=>PHPStan, tests/e2e => PHPStan\Tests"/>
+			<property name="rootNamespaces" type="array">
+				<element key="compiler/src" value="PHPStan\Compiler"/>
+				<element key="compiler/tests" value="PHPStan\Compiler"/>
+				<element key="src" value="PHPStan"/>
+				<element key="tests/PHPStan" value="PHPStan"/>
+				<element key="tests/e2e" value="PHPStan\Tests"/>
+			</property>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>

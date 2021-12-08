@@ -361,4 +361,26 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/first-class-instantiation-callable.php'], []);
 	}
 
+	public function testEnumInstantiation(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-instantiation.php'], [
+			[
+				'Cannot instantiate enum EnumInstantiation\Foo.',
+				9,
+			],
+			[
+				'Cannot instantiate enum EnumInstantiation\Foo.',
+				14,
+			],
+			[
+				'Cannot instantiate enum EnumInstantiation\Foo.',
+				21,
+			],
+		]);
+	}
+
 }

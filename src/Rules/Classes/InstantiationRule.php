@@ -137,6 +137,14 @@ class InstantiationRule implements Rule
 			$classReflection = $this->reflectionProvider->getClass($class);
 		}
 
+		if ($classReflection->isEnum() && $isName) {
+			return [
+				RuleErrorBuilder::message(
+					sprintf('Cannot instantiate enum %s.', $classReflection->getDisplayName())
+				)->build(),
+			];
+		}
+
 		if (!$isStatic && $classReflection->isInterface() && $isName) {
 			return [
 				RuleErrorBuilder::message(

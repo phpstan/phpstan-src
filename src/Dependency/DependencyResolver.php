@@ -23,6 +23,7 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_merge;
+use function count;
 
 class DependencyResolver
 {

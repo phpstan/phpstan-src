@@ -3319,7 +3319,7 @@ return [
 'get_parent_class' => ['class-string|false', 'object='=>'mixed'],
 'get_required_files' => ['string[]'],
 'get_resource_type' => ['string', 'res'=>'resource'],
-'get_resources' => ['resource[]', 'resource_type'=>'string'],
+'get_resources' => ['array<int, resource>', 'type='=>'string'],
 'getallheaders' => ['array'],
 'getcwd' => ['string|false'],
 'getdate' => ['array', 'timestamp='=>'int'],

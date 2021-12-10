@@ -199,7 +199,7 @@ class DependencyResolver
 
 	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool
 	{
-		$items = $arrayNode->items[0];
+		$items = $arrayNode->items;
 		if (count($items) !== 2) {
 			return false;
 		}

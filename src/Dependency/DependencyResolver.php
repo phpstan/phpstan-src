@@ -199,13 +199,14 @@ class DependencyResolver
 
 	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool
 	{
-		if (!isset($arrayNode->items[0])) {
+		$items = $arrayNode->items[0];
+		if (count($items) !== 2) {
 			return false;
 		}
 
-		$itemType = $scope->getType($arrayNode->items[0]->value);
+		$itemType = $scope->getType($items[0]->value);
 		if (!$itemType instanceof ConstantStringType) {
-			return true;
+			return false;
 		}
 
 		return $itemType->isClassString();

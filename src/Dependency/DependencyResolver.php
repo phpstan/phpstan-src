@@ -205,6 +205,10 @@ class DependencyResolver
 			return false;
 		}
 
+		if ($items[0] === null) {
+			return false;
+		}
+
 		$itemType = $scope->getType($items[0]->value);
 		if (!$itemType instanceof ConstantStringType) {
 			return false;

@@ -162,6 +162,7 @@ return [
 			if (!in_array($filePath, [
 				'src/Testing/TestCaseSourceLocatorFactory.php',
 				'src/Testing/PHPStanTestCase.php',
+				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/Type/ComposerSourceLocator.php',
 			], true)) {
 				return $content;
 			}
@@ -198,8 +199,24 @@ return [
 		},
 		function (string $filePath, string $prefix, string $content): string {
 			if (!in_array($filePath, [
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionClass.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionClassConstant.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionFunction.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionMethod.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionObject.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionParameter.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionProperty.php',
+			], true)) {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\ReturnTypeWillChange', $prefix), 'ReturnTypeWillChange', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (!in_array($filePath, [
 				'src/Type/TypehintHelper.php',
 				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionIntersectionType.php',
+				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/ReflectionSourceStubber.php',
 			], true)) {
 				return $content;
 			}

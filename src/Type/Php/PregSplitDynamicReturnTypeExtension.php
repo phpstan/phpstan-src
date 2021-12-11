@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
@@ -15,6 +16,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -46,7 +48,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($this->hasFlag($this->getConstant('PREG_SPLIT_OFFSET_CAPTURE'), $flagsArg, $scope)) {
 			$type = new ArrayType(
 				new IntegerType(),
-				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), new IntegerType()]),
+				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), IntegerRangeType::fromInterval(0, null)]),
 			);
 			return TypeCombinator::union($type, new ConstantBooleanType(false));
 		}
@@ -59,6 +61,21 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	{
 		if ($expression === null) {
 			return false;
+		}
+
+		if ($expression->value instanceof BitwiseOr) {
+            $left = $expression->value->left;
+            $right = $expression->value->right;
+
+            $leftType = $scope->getType($left);
+            $rightType = $scope->getType($right);
+
+            if ($leftType instanceof ConstantIntegerType && ($leftType->getValue() & $flag) === $flag) {
+                return true;
+            }
+            if ($rightType instanceof ConstantIntegerType && ($rightType->getValue() & $flag) === $flag) {
+                return true;
+            }
 		}
 
 		$type = $scope->getType($expression->value);

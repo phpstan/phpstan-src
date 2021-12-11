@@ -549,4 +549,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], $errors);
 	}
 
+	public function testCountableBug(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/countable-bug.php'], []);
+	}
+
 }

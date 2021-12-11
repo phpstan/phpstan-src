@@ -64,18 +64,18 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		if ($expression->value instanceof BitwiseOr) {
-            $left = $expression->value->left;
-            $right = $expression->value->right;
+			$left = $expression->value->left;
+			$right = $expression->value->right;
 
-            $leftType = $scope->getType($left);
-            $rightType = $scope->getType($right);
+			$leftType = $scope->getType($left);
+			$rightType = $scope->getType($right);
 
-            if ($leftType instanceof ConstantIntegerType && ($leftType->getValue() & $flag) === $flag) {
-                return true;
-            }
-            if ($rightType instanceof ConstantIntegerType && ($rightType->getValue() & $flag) === $flag) {
-                return true;
-            }
+			if ($leftType instanceof ConstantIntegerType && ($leftType->getValue() & $flag) === $flag) {
+				return true;
+			}
+			if ($rightType instanceof ConstantIntegerType && ($rightType->getValue() & $flag) === $flag) {
+				return true;
+			}
 		}
 
 		$type = $scope->getType($expression->value);

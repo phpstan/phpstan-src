@@ -212,6 +212,13 @@ return [
 			}
 
 			return str_replace(sprintf('%s\\Attribute', $prefix), 'Attribute', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if ($filePath !== 'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php') {
+				return $content;
+			}
+
+			return str_replace('Core/Core_d.php', 'Core/Core_d.stub', $content);
 		}
 	],
 	'whitelist' => [

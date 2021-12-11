@@ -2,10 +2,14 @@
 
 namespace PHPStan\Reflection\BetterReflection\Reflector;
 
+use PHPStan\BetterReflection\Identifier\Identifier;
+use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use function array_key_exists;
 use function strtolower;
 
 final class MemoizingReflector implements Reflector
@@ -13,13 +17,13 @@ final class MemoizingReflector implements Reflector
 
 	private Reflector $reflector;
 
-	/** @var array<string, ReflectionClass> */
+	/** @var array<string, ReflectionClass|null> */
 	private array $classReflections = [];
 
-	/** @var array<string, ReflectionConstant> */
+	/** @var array<string, ReflectionConstant|null> */
 	private array $constantReflections = [];
 
-	/** @var array<string, ReflectionFunction> */
+	/** @var array<string, ReflectionFunction|null> */
 	private array $functionReflections = [];
 
 	public function __construct(Reflector $reflector)
@@ -30,30 +34,66 @@ final class MemoizingReflector implements Reflector
 	public function reflectClass(string $className): ReflectionClass
 	{
 		$lowerClassName = strtolower($className);
-		if (isset($this->classReflections[$lowerClassName])) {
+		if (array_key_exists($lowerClassName, $this->classReflections) && $this->classReflections[$lowerClassName] !== null) {
 			return $this->classReflections[$lowerClassName];
 		}
+		if (array_key_exists($className, $this->classReflections)) {
+			$classReflection = $this->classReflections[$className];
+			if ($classReflection === null) {
+				throw IdentifierNotFound::fromIdentifier(new Identifier($className, new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
+			}
 
-		return $this->classReflections[$lowerClassName] = $this->reflector->reflectClass($className);
+			return $classReflection;
+		}
+
+		try {
+			return $this->classReflections[$lowerClassName] = $this->reflector->reflectClass($className);
+		} catch (IdentifierNotFound $e) {
+			$this->classReflections[$className] = null;
+
+			throw $e;
+		}
 	}
 
 	public function reflectConstant(string $constantName): ReflectionConstant
 	{
-		if (isset($this->constantReflections[$constantName])) {
-			return $this->constantReflections[$constantName];
+		if (array_key_exists($constantName, $this->constantReflections)) {
+			$constantReflection = $this->constantReflections[$constantName];
+			if ($constantReflection === null) {
+				throw IdentifierNotFound::fromIdentifier(new Identifier($constantName, new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT)));
+			}
+
+			return $constantReflection;
 		}
 
-		return $this->constantReflections[$constantName] = $this->reflector->reflectConstant($constantName);
+		try {
+			return $this->constantReflections[$constantName] = $this->reflector->reflectConstant($constantName);
+		} catch (IdentifierNotFound $e) {
+			$this->constantReflections[$constantName] = null;
+
+			throw $e;
+		}
 	}
 
 	public function reflectFunction(string $functionName): ReflectionFunction
 	{
 		$lowerFunctionName = strtolower($functionName);
-		if (isset($this->functionReflections[$lowerFunctionName])) {
-			return $this->functionReflections[$lowerFunctionName];
+		if (array_key_exists($lowerFunctionName, $this->functionReflections)) {
+			$functionReflection = $this->functionReflections[$lowerFunctionName];
+			if ($functionReflection === null) {
+				throw IdentifierNotFound::fromIdentifier(new Identifier($functionName, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION)));
+			}
+
+			return $functionReflection;
 		}
 
-		return $this->functionReflections[$lowerFunctionName] = $this->reflector->reflectFunction($functionName);
+		try {
+			return $this->functionReflections[$lowerFunctionName] = $this->reflector->reflectFunction($functionName);
+		} catch (IdentifierNotFound $e) {
+			$this->functionReflections[$lowerFunctionName] = null;
+
+			throw $e;
+		}
 	}
 
 	public function reflectAllClasses(): iterable

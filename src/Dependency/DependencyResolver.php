@@ -209,12 +209,17 @@ class DependencyResolver
 			return false;
 		}
 
-		$itemType = $scope->getType($items[0]->value);
-		if (!$itemType instanceof ConstantStringType) {
-			return false;
+		$stringTypeArray = [];
+
+		foreach ($items as $item) {
+			$itemType = $scope->getType($item);
+			if (! $itemType instanceof ConstantStringType) {
+				return false;
+			}
+			$stringTypeArray[] = $itemType->getValue();
 		}
 
-		return $itemType->isClassString();
+		return method_exists(...$stringTypeArray);
 	}
 
 	/**

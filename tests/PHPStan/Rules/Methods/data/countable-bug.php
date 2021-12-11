@@ -9,6 +9,7 @@ class Foo implements \Countable
 	 *
 	 * @return int Number of packages
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return 1;

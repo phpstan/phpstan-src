@@ -55,7 +55,11 @@
 			"php": "7.4.6"
 		},
 		"platform-check": false,
-		"sort-packages": true
+		"sort-packages": true,
+		"allow-plugins": {
+			"composer/package-versions-deprecated": true,
+			"vaimo/composer-patches": true
+		}
 	},
 	"extra": {
 		"branch-alias": {

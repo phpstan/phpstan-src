@@ -2099,12 +2099,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "3f3994533dc250c6fcf1ff4cdd5582cbb744a411"
+                "reference": "45298d3231482114c566c14f4b6cda252029caf3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/3f3994533dc250c6fcf1ff4cdd5582cbb744a411",
-                "reference": "3f3994533dc250c6fcf1ff4cdd5582cbb744a411",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/45298d3231482114c566c14f4b6cda252029caf3",
+                "reference": "45298d3231482114c566c14f4b6cda252029caf3",
                 "shasum": ""
             },
             "require": {
@@ -2161,7 +2161,7 @@
             "support": {
                 "source": "https://github.com/ondrejmirtes/BetterReflection/tree/ng"
             },
-            "time": "2021-12-12T13:23:55+00:00"
+            "time": "2021-12-12T13:55:45+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

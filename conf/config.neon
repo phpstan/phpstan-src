@@ -1643,6 +1643,27 @@ services:
 			reflector: @originalBetterReflectionReflector
 		autowired: false
 
+	# deprecated
+	betterReflectionClassReflector:
+		class: PHPStan\BetterReflection\Reflector\ClassReflector
+		arguments:
+			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
+	# deprecated
+	betterReflectionFunctionReflector:
+		class: PHPStan\BetterReflection\Reflector\FunctionReflector
+		arguments:
+			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
+	# deprecated
+	betterReflectionConstantReflector:
+		class: PHPStan\BetterReflection\Reflector\ConstantReflector
+		arguments:
+			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
 	nodeScopeResolverReflector:
 		factory: @betterReflectionReflector
 		autowired: false

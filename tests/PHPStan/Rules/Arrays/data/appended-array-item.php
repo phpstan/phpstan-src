@@ -78,3 +78,22 @@ function (Lorem $lorem)
 {
 	$lorem->staticProperty[] = new Baz();
 };
+
+class ArrayAccess
+{
+	/** @var \ArrayAccess<int, string> */
+	private $collection1;
+
+	/** @var \ArrayAccess<int, string>&\Countable */
+	private $collection2;
+
+	/** @var \ArrayAccess<int, string>&\Countable&iterable<int, string> */
+	private $collection3;
+
+	public function doFoo()
+	{
+		$this->collection1[] = 1;
+		$this->collection2[] = 2;
+		$this->collection3[] = 3;
+	}
+}

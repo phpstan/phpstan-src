@@ -746,6 +746,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return new MixedType();
 		}
 
+		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
+			$tValue = GenericTypeVariableResolver::getType($this, ArrayAccess::class, 'TValue');
+			if ($tValue !== null) {
+				return $tValue;
+			}
+
+			return new MixedType();
+		}
+
 		return new ErrorType();
 	}
 

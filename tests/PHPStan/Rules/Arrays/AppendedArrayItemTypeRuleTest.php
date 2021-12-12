@@ -58,6 +58,18 @@ class AppendedArrayItemTypeRuleTest extends RuleTestCase
 					'Array (array<AppendedArrayItem\Lorem>) does not accept AppendedArrayItem\Baz.',
 					79,
 				],
+				[
+					'Array (ArrayAccess<int, string>) does not accept int.',
+					95,
+				],
+				[
+					'Array (ArrayAccess<int, string>&Countable) does not accept int.',
+					96,
+				],
+				[
+					'Array (ArrayAccess<int, string>&Countable&iterable<int, string>) does not accept int.',
+					97,
+				],
 			]
 		);
 	}

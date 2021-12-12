@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use ArrayAccess;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
@@ -13,6 +14,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -67,7 +69,7 @@ class AppendedArrayItemTypeRule implements Rule
 		}
 
 		$assignedToType = $propertyReflection->getWritableType();
-		if (!($assignedToType instanceof ArrayType)) {
+		if (!($assignedToType instanceof ArrayType) && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($assignedToType)->yes()) {
 			return [];
 		}
 
@@ -77,7 +79,7 @@ class AppendedArrayItemTypeRule implements Rule
 			$assignedValueType = $scope->getType($node);
 		}
 
-		$itemType = $assignedToType->getItemType();
+		$itemType = $assignedToType->getIterableValueType();
 		if (!$this->ruleLevelHelper->accepts($itemType, $assignedValueType, $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($itemType, $assignedValueType);
 			return [

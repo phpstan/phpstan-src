@@ -62,4 +62,17 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleOnArrayAccessIntersection(): void
+	{
+		$this->analyse([__DIR__ . '/data/offset-access-value-assignment-on-array-access-intersection.php'], [
+			[
+				'ArrayAccess<int, string> does not accept int.',
+				15,
+			],
+			[
+				'ArrayAccess<int, string>&Countable&iterable<int, string> does not accept int.',
+				16,
+			],
+		]);
+	}
 }

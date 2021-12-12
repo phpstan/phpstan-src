@@ -208,6 +208,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			new Error('Error with Windows directory separators', 'TestFiles\\TestA', 1),
 			new Error('Error with Unix directory separators', 'TestFiles/TestA', 1),
 			new Error('Error without directory separators', 'TestFilesFoo', 1),
+			new Error('Error with identifier', 'TestFilesFoo', 1, true, null, null, null, null, null, 'my.identifier'),
 		];
 		yield [$errors];
 		mt_srand(0);
@@ -256,6 +257,12 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 							'message' => '#^Error without directory separators$#',
 							'count' => 1,
 							'path' => 'TestFilesFoo',
+						],
+						[
+							'message' => '#^Error with identifier$#',
+							'count' => 1,
+							'path' => 'TestFilesFoo',
+							'identifier' => 'my.identifier',
 						],
 						[
 							'message' => '#^A different error \\#1$#',

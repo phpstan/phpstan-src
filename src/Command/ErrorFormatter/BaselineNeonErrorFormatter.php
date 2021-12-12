@@ -40,29 +40,34 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 			if (!$fileSpecificError->canBeIgnored()) {
 				continue;
 			}
-			$fileErrors[$this->relativePathHelper->getRelativePath($fileSpecificError->getFilePath())][] = $fileSpecificError->getMessage();
+
+			$relativePath = $this->relativePathHelper->getRelativePath($fileSpecificError->getFilePath());
+			$key = $fileSpecificError->getIdentifier() . $fileSpecificError->getMessage();
+
+			$fileErrors[$relativePath][$key] ??= [
+				'message' => $fileSpecificError->getMessage(),
+				'count' => 0,
+				'identifier' => $fileSpecificError->getIdentifier()
+			];
+			$fileErrors[$relativePath][$key]['count']++;
 		}
 		ksort($fileErrors, SORT_STRING);
 
 		$errorsToOutput = [];
-		foreach ($fileErrors as $file => $errorMessages) {
-			$fileErrorsCounts = [];
-			foreach ($errorMessages as $errorMessage) {
-				if (!isset($fileErrorsCounts[$errorMessage])) {
-					$fileErrorsCounts[$errorMessage] = 1;
-					continue;
-				}
+		foreach ($fileErrors as $file => $fileSpecificErrors) {
+			ksort($fileSpecificErrors, SORT_STRING);
 
-				$fileErrorsCounts[$errorMessage]++;
-			}
-			ksort($fileErrorsCounts, SORT_STRING);
-
-			foreach ($fileErrorsCounts as $message => $count) {
-				$errorsToOutput[] = [
-					'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
-					'count' => $count,
+			foreach ($fileSpecificErrors as $data) {
+				$error = [
+					'message' => Helpers::escape('#^' . preg_quote($data['message'], '#') . '$#'),
+					'count' => $data['count'],
 					'path' => Helpers::escape($file),
 				];
+				if ($data['identifier'] !== null && $data['identifier'] !== '') {
+					$error['identifier'] = Helpers::escape($data['identifier']);
+				}
+
+				$errorsToOutput[] = $error;
 			}
 		}
 

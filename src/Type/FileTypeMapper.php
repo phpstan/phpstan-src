@@ -68,6 +68,8 @@ class FileTypeMapper
 	/** @var array<string, ResolvedPhpDocBlock> */
 	private array $resolvedPhpDocBlockCache = [];
 
+	private int $resolvedPhpDocBlockCacheCount = 0;
+
 	/** @var array<string, bool> */
 	private array $alreadyProcessedDependentFiles = [];
 
@@ -167,7 +169,18 @@ class FileTypeMapper
 			$templateTypeMap = TemplateTypeMap::createEmpty();
 		}
 
-		return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
+		if ($this->resolvedPhpDocBlockCacheCount >= 512) {
+			$this->resolvedPhpDocBlockCache = array_slice(
+				$this->resolvedPhpDocBlockCache,
+				1,
+				null,
+				true
+			);
+
+			$this->resolvedPhpDocBlockCacheCount--;
+		}
+
+		$this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
 			$phpDocNode,
 			$phpDocString,
 			$fileName,
@@ -176,6 +189,9 @@ class FileTypeMapper
 			$templateTags,
 			$this->phpDocNodeResolver
 		);
+		$this->resolvedPhpDocBlockCacheCount++;
+
+		return $this->resolvedPhpDocBlockCache[$phpDocKey];
 	}
 
 	private function resolvePhpDocStringToDocNode(string $phpDocString): PhpDocNode

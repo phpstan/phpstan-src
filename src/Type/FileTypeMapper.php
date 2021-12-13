@@ -3,8 +3,6 @@
 namespace PHPStan\Type;
 
 use Closure;
-use Jean85\PrettyVersions;
-use OutOfBoundsException;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
@@ -16,7 +14,6 @@ use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\TemplateTag;
-use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
@@ -32,7 +29,6 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function count;
-use function error_get_last;
 use function filemtime;
 use function implode;
 use function is_array;
@@ -40,12 +36,10 @@ use function is_callable;
 use function is_file;
 use function ltrim;
 use function md5;
-use function serialize;
 use function sprintf;
 use function strtolower;
 use function time;
 use function trait_exists;
-use function unserialize;
 
 class FileTypeMapper
 {
@@ -186,47 +180,7 @@ class FileTypeMapper
 
 	private function resolvePhpDocStringToDocNode(string $phpDocString): PhpDocNode
 	{
-		$phpDocParserVersion = 'Version unknown';
-		try {
-			$phpDocParserVersion = PrettyVersions::getVersion('phpstan/phpdoc-parser')->getPrettyVersion();
-		} catch (OutOfBoundsException $e) {
-			// skip
-		}
-		$cacheKey = sprintf('phpdocstring-%s', $phpDocString);
-		$phpDocNodeSerializedString = $this->cache->load($cacheKey, $phpDocParserVersion);
-		if ($phpDocNodeSerializedString !== null) {
-			$unserializeResult = @unserialize($phpDocNodeSerializedString);
-			if ($unserializeResult === false) {
-				$error = error_get_last();
-				if ($error !== null) {
-					throw new ShouldNotHappenException(sprintf('unserialize() error: %s', $error['message']));
-				}
-
-				throw new ShouldNotHappenException('Unknown unserialize() error');
-			}
-
-			return $unserializeResult;
-		}
-
-		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);
-		if ($this->shouldPhpDocNodeBeCachedToDisk($phpDocNode)) {
-			$this->cache->save($cacheKey, $phpDocParserVersion, serialize($phpDocNode));
-		}
-
-		return $phpDocNode;
-	}
-
-	private function shouldPhpDocNodeBeCachedToDisk(PhpDocNode $phpDocNode): bool
-	{
-		foreach ($phpDocNode->getTags() as $phpDocTag) {
-			if (!$phpDocTag->value instanceof InvalidTagValueNode) {
-				continue;
-			}
-
-			return false;
-		}
-
-		return true;
+		return $this->phpDocStringResolver->resolve($phpDocString);
 	}
 
 	/**

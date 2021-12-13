@@ -90,10 +90,21 @@ class ArrayAccess
 	/** @var \ArrayAccess<int, string>&\Countable&iterable<int, string> */
 	private $collection3;
 
+	/** @var \SplObjectStorage<int, string> */
+	private $collection4;
+
 	public function doFoo()
 	{
+		$this->collection1[] = 'foo';
 		$this->collection1[] = 1;
+
+		$this->collection2[] = 'foo';
 		$this->collection2[] = 2;
+
+		$this->collection3[] = 'foo';
 		$this->collection3[] = 3;
+
+		$this->collection4[] = 'foo';
+		$this->collection4[] = 4;
 	}
 }

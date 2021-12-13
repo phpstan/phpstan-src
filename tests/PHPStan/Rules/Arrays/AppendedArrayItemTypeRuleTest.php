@@ -60,15 +60,19 @@ class AppendedArrayItemTypeRuleTest extends RuleTestCase
 				],
 				[
 					'Array (ArrayAccess<int, string>) does not accept int.',
-					95,
+					99,
 				],
 				[
 					'Array (ArrayAccess<int, string>&Countable) does not accept int.',
-					96,
+					102,
 				],
 				[
 					'Array (ArrayAccess<int, string>&Countable&iterable<int, string>) does not accept int.',
-					97,
+					105,
+				],
+				[
+					'Array (SplObjectStorage<int, string>) does not accept int.',
+					108,
 				],
 			]
 		);

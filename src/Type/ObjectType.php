@@ -680,6 +680,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getIterableKeyType(): Type
 	{
+		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
+			$tKey = GenericTypeVariableResolver::getType($this, ArrayAccess::class, 'TKey');
+			if ($tKey !== null) {
+				return $tKey;
+			}
+
+			return new MixedType();
+		}
+
 		$classReflection = $this->getClassReflection();
 		if ($classReflection === null) {
 			return new ErrorType();
@@ -713,20 +722,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return new MixedType();
 		}
 
-		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
-			$tKey = GenericTypeVariableResolver::getType($this, ArrayAccess::class, 'TKey');
-			if ($tKey !== null) {
-				return $tKey;
-			}
-
-			return new MixedType();
-		}
-
 		return new ErrorType();
 	}
 
 	public function getIterableValueType(): Type
 	{
+		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
+			$tValue = GenericTypeVariableResolver::getType($this, ArrayAccess::class, 'TValue');
+			if ($tValue !== null) {
+				return $tValue;
+			}
+
+			return new MixedType();
+		}
+
 		if ($this->isInstanceOf(Iterator::class)->yes()) {
 			return RecursionGuard::run($this, function (): Type {
 				return ParametersAcceptorSelector::selectSingle(
@@ -748,15 +757,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($this->isInstanceOf(Traversable::class)->yes()) {
 			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
-			if ($tValue !== null) {
-				return $tValue;
-			}
-
-			return new MixedType();
-		}
-
-		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
-			$tValue = GenericTypeVariableResolver::getType($this, ArrayAccess::class, 'TValue');
 			if ($tValue !== null) {
 				return $tValue;
 			}

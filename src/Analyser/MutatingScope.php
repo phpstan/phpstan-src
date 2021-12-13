@@ -618,6 +618,11 @@ class MutatingScope implements Scope
 	/** @api */
 	public function getType(Expr $node): Type
 	{
+		$uncachedType = $this->resolveUncachedType($node);
+		if ($uncachedType !== null) {
+			return $uncachedType;
+		}
+
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
@@ -638,7 +643,7 @@ class MutatingScope implements Scope
 		return $key;
 	}
 
-	private function resolveType(Expr $node): Type
+	private function resolveUncachedType(Expr $node): ?Type
 	{
 		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
 			return new NeverType(true);
@@ -668,6 +673,109 @@ class MutatingScope implements Scope
 			return new BooleanType();
 		}
 
+		if ($node instanceof Node\Expr\BooleanNot) {
+			if ($this->treatPhpDocTypesAsCertain) {
+				$exprBooleanType = $this->getType($node->expr)->toBoolean();
+			} else {
+				$exprBooleanType = $this->getNativeType($node->expr)->toBoolean();
+			}
+			if ($exprBooleanType instanceof ConstantBooleanType) {
+				return new ConstantBooleanType(!$exprBooleanType->getValue());
+			}
+
+			return new BooleanType();
+		}
+
+		if ($node instanceof Node\Expr\UnaryPlus) {
+			return $this->getType($node->expr)->toNumber();
+		}
+
+		if ($node instanceof Expr\ErrorSuppress
+			|| $node instanceof Expr\Assign
+		) {
+			return $this->getType($node->expr);
+		}
+
+		if ($node instanceof Expr\Clone_) {
+			return $this->getType($node->expr);
+		}
+
+		if ($node instanceof LNumber) {
+			return new ConstantIntegerType($node->value);
+		} elseif ($node instanceof String_) {
+			return new ConstantStringType($node->value);
+		}
+
+		if ($node instanceof DNumber) {
+			return new ConstantFloatType($node->value);
+		}
+
+		if ($node instanceof Int_) {
+			return $this->getType($node->expr)->toInteger();
+		} elseif ($node instanceof Bool_) {
+			return $this->getType($node->expr)->toBoolean();
+		} elseif ($node instanceof Double) {
+			return $this->getType($node->expr)->toFloat();
+		} elseif ($node instanceof Node\Expr\Cast\String_) {
+			return $this->getType($node->expr)->toString();
+		} elseif ($node instanceof Node\Expr\Cast\Array_) {
+			return $this->getType($node->expr)->toArray();
+		} elseif ($node instanceof Node\Scalar\MagicConst\Line) {
+			return new ConstantIntegerType($node->getLine());
+		} elseif ($node instanceof Node\Scalar\MagicConst\Class_) {
+			if (!$this->isInClass()) {
+				return new ConstantStringType('');
+			}
+
+			return new ConstantStringType($this->getClassReflection()->getName(), true);
+		} elseif ($node instanceof Node\Scalar\MagicConst\Dir) {
+			return new ConstantStringType(dirname($this->getFile()));
+		} elseif ($node instanceof Node\Scalar\MagicConst\File) {
+			return new ConstantStringType($this->getFile());
+		} elseif ($node instanceof Node\Scalar\MagicConst\Namespace_) {
+			return new ConstantStringType($this->namespace ?? '');
+		} elseif ($node instanceof Node\Scalar\MagicConst\Method) {
+			if ($this->isInAnonymousFunction()) {
+				return new ConstantStringType('{closure}');
+			}
+
+			$function = $this->getFunction();
+			if ($function === null) {
+				return new ConstantStringType('');
+			}
+			if ($function instanceof MethodReflection) {
+				return new ConstantStringType(
+					sprintf('%s::%s', $function->getDeclaringClass()->getName(), $function->getName())
+				);
+			}
+
+			return new ConstantStringType($function->getName());
+		} elseif ($node instanceof Node\Scalar\MagicConst\Function_) {
+			if ($this->isInAnonymousFunction()) {
+				return new ConstantStringType('{closure}');
+			}
+			$function = $this->getFunction();
+			if ($function === null) {
+				return new ConstantStringType('');
+			}
+
+			return new ConstantStringType($function->getName());
+		} elseif ($node instanceof Node\Scalar\MagicConst\Trait_) {
+			if (!$this->isInTrait()) {
+				return new ConstantStringType('');
+			}
+			return new ConstantStringType($this->getTraitReflection()->getName(), true);
+		} elseif ($node instanceof Unset_) {
+			return new NullType();
+		} elseif ($node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
+			return $this->getType($node->var);
+		}
+
+		return null;
+	}
+
+	private function resolveType(Expr $node): Type
+	{
 		if ($node instanceof Expr\Isset_) {
 			$result = new ConstantBooleanType(true);
 			foreach ($node->vars as $var) {
@@ -708,19 +816,6 @@ class MutatingScope implements Scope
 			}
 
 			return $result;
-		}
-
-		if ($node instanceof Node\Expr\BooleanNot) {
-			if ($this->treatPhpDocTypesAsCertain) {
-				$exprBooleanType = $this->getType($node->expr)->toBoolean();
-			} else {
-				$exprBooleanType = $this->getNativeType($node->expr)->toBoolean();
-			}
-			if ($exprBooleanType instanceof ConstantBooleanType) {
-				return new ConstantBooleanType(!$exprBooleanType->getValue());
-			}
-
-			return new BooleanType();
 		}
 
 		if ($node instanceof Node\Expr\BitwiseNot) {
@@ -1003,16 +1098,6 @@ class MutatingScope implements Scope
 			return new BooleanType();
 		}
 
-		if ($node instanceof Node\Expr\UnaryPlus) {
-			return $this->getType($node->expr)->toNumber();
-		}
-
-		if ($node instanceof Expr\ErrorSuppress
-			|| $node instanceof Expr\Assign
-		) {
-			return $this->getType($node->expr);
-		}
-
 		if ($node instanceof Node\Expr\UnaryMinus) {
 			$type = $this->getType($node->expr)->toNumber();
 			$scalarValues = TypeUtils::getConstantScalars($type);
@@ -1190,14 +1275,6 @@ class MutatingScope implements Scope
 			}
 
 			return new IntegerType();
-		}
-
-		if ($node instanceof Expr\BinaryOp\Spaceship) {
-			return IntegerRangeType::fromInterval(-1, 1);
-		}
-
-		if ($node instanceof Expr\Clone_) {
-			return $this->getType($node->expr);
 		}
 
 		if (
@@ -1440,11 +1517,7 @@ class MutatingScope implements Scope
 			return $resultType;
 		}
 
-		if ($node instanceof LNumber) {
-			return new ConstantIntegerType($node->value);
-		} elseif ($node instanceof String_) {
-			return new ConstantStringType($node->value);
-		} elseif ($node instanceof Node\Scalar\Encapsed) {
+		if ($node instanceof Node\Scalar\Encapsed) {
 			$parts = [];
 			foreach ($node->parts as $part) {
 				if ($part instanceof EncapsedStringPart) {
@@ -1495,8 +1568,6 @@ class MutatingScope implements Scope
 			}
 
 			return $constantString;
-		} elseif ($node instanceof DNumber) {
-			return new ConstantFloatType($node->value);
 		} elseif ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
 			if ($node instanceof FuncCall) {
 				if ($node->name instanceof Name) {
@@ -1793,61 +1864,6 @@ class MutatingScope implements Scope
 			}
 			return $arrayBuilder->getArray();
 
-		} elseif ($node instanceof Int_) {
-			return $this->getType($node->expr)->toInteger();
-		} elseif ($node instanceof Bool_) {
-			return $this->getType($node->expr)->toBoolean();
-		} elseif ($node instanceof Double) {
-			return $this->getType($node->expr)->toFloat();
-		} elseif ($node instanceof Node\Expr\Cast\String_) {
-			return $this->getType($node->expr)->toString();
-		} elseif ($node instanceof Node\Expr\Cast\Array_) {
-			return $this->getType($node->expr)->toArray();
-		} elseif ($node instanceof Node\Scalar\MagicConst\Line) {
-			return new ConstantIntegerType($node->getLine());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Class_) {
-			if (!$this->isInClass()) {
-				return new ConstantStringType('');
-			}
-
-			return new ConstantStringType($this->getClassReflection()->getName(), true);
-		} elseif ($node instanceof Node\Scalar\MagicConst\Dir) {
-			return new ConstantStringType(dirname($this->getFile()));
-		} elseif ($node instanceof Node\Scalar\MagicConst\File) {
-			return new ConstantStringType($this->getFile());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Namespace_) {
-			return new ConstantStringType($this->namespace ?? '');
-		} elseif ($node instanceof Node\Scalar\MagicConst\Method) {
-			if ($this->isInAnonymousFunction()) {
-				return new ConstantStringType('{closure}');
-			}
-
-			$function = $this->getFunction();
-			if ($function === null) {
-				return new ConstantStringType('');
-			}
-			if ($function instanceof MethodReflection) {
-				return new ConstantStringType(
-					sprintf('%s::%s', $function->getDeclaringClass()->getName(), $function->getName())
-				);
-			}
-
-			return new ConstantStringType($function->getName());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Function_) {
-			if ($this->isInAnonymousFunction()) {
-				return new ConstantStringType('{closure}');
-			}
-			$function = $this->getFunction();
-			if ($function === null) {
-				return new ConstantStringType('');
-			}
-
-			return new ConstantStringType($function->getName());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Trait_) {
-			if (!$this->isInTrait()) {
-				return new ConstantStringType('');
-			}
-			return new ConstantStringType($this->getTraitReflection()->getName(), true);
 		} elseif ($node instanceof Object_) {
 			$castToObject = static function (Type $type): Type {
 				if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
@@ -1863,10 +1879,6 @@ class MutatingScope implements Scope
 			}
 
 			return $castToObject($exprType);
-		} elseif ($node instanceof Unset_) {
-			return new NullType();
-		} elseif ($node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
-			return $this->getType($node->var);
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
 			$varType = $this->getType($node->var);
 			$varScalars = TypeUtils::getConstantScalars($varType);

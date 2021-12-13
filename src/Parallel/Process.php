@@ -126,7 +126,11 @@ class Process
 		$this->lastData = $data;
 		$this->timer = $this->loop->addTimer($this->timeoutSeconds, function (): void {
 			$onError = $this->onError;
-			$onError(new Exception(sprintf('Child process timed out after %.1f seconds. Try making it longer with parallel.processTimeout setting.', $this->timeoutSeconds)));
+			$message = sprintf('Child process timed out after %.1f seconds. Try making it longer with parallel.processTimeout setting.', $this->timeoutSeconds);
+			if ($this->lastData !== null) {
+				$message .= sprintf("\nLast data before exit: %s", Json::encode($this->lastData, Json::PRETTY));
+			}
+			$onError(new Exception($message));
 		});
 	}
 

@@ -3,7 +3,6 @@
 namespace PHPStan\Parallel;
 
 use Exception;
-use Nette\Utils\Json;
 use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -43,9 +42,6 @@ class Process
 	private $onError;
 
 	private ?TimerInterface $timer = null;
-
-	/** @var mixed[]|null */
-	private ?array $lastData = null;
 
 	public function __construct(
 		string $command,
@@ -97,9 +93,6 @@ class Process
 			if (is_string($stdErr)) {
 				$output .= $stdErr;
 			}
-			if ($this->lastData !== null) {
-				$output .= sprintf("\nLast data before exit: %s", Json::encode($this->lastData, Json::PRETTY));
-			}
 			$onExit($exitCode, $output);
 			fclose($this->stdOut);
 			fclose($this->stdErr);
@@ -123,14 +116,9 @@ class Process
 	{
 		$this->cancelTimer();
 		$this->in->write($data);
-		$this->lastData = $data;
 		$this->timer = $this->loop->addTimer($this->timeoutSeconds, function (): void {
 			$onError = $this->onError;
-			$message = sprintf('Child process timed out after %.1f seconds. Try making it longer with parallel.processTimeout setting.', $this->timeoutSeconds);
-			if ($this->lastData !== null) {
-				$message .= sprintf("\nLast data before exit: %s", Json::encode($this->lastData, Json::PRETTY));
-			}
-			$onError(new Exception($message));
+			$onError(new Exception(sprintf('Child process timed out after %.1f seconds. Try making it longer with parallel.processTimeout setting.', $this->timeoutSeconds)));
 		});
 	}
 

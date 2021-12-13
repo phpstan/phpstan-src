@@ -5893,7 +5893,7 @@ return [
 'ldap_sasl_bind' => ['bool', 'link_identifier'=>'resource', 'binddn='=>'string', 'password='=>'string', 'sasl_mech='=>'string', 'sasl_realm='=>'string', 'sasl_authc_id='=>'string', 'sasl_authz_id='=>'string', 'props='=>'string'],
 'ldap_search' => ['resource|false', 'link_identifier'=>'resource|array', 'base_dn'=>'string', 'filter'=>'string', 'attrs='=>'array', 'attrsonly='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'servercontrols='=>'array'],
 'ldap_set_option' => ['bool', 'link_identifier'=>'resource|null', 'option'=>'int', 'newval'=>'mixed'],
-'ldap_set_rebind_proc' => ['bool', 'link_identifier'=>'resource', 'callback'=>'string'],
+'ldap_set_rebind_proc' => ['bool', 'link_identifier'=>'resource', 'callback'=>'callable'],
 'ldap_sort' => ['bool', 'link_identifier'=>'resource', 'result_identifier'=>'resource', 'sortfilter'=>'string'],
 'ldap_start_tls' => ['bool', 'link_identifier'=>'resource'],
 'ldap_t61_to_8859' => ['string|false', 'value'=>'string'],

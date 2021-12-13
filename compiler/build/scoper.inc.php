@@ -231,6 +231,13 @@ return [
 			return str_replace(sprintf('%s\\Attribute', $prefix), 'Attribute', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
+			if (strpos($filePath, 'src/') !== 0) {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\ReturnTypeWillChange', $prefix), 'ReturnTypeWillChange', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php') {
 				return $content;
 			}

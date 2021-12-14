@@ -4,5 +4,6 @@ parameters:
 		skipCheckGenericClasses: []
 		explicitMixedInUnknownGenericNew: true
 		arrayFilter: true
+		arrayUnpacking: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Countable.stub

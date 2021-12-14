@@ -1638,7 +1638,7 @@ return [
 'DateTimeZone::__construct' => ['void', 'timezone'=>'string'],
 'DateTimeZone::__set_state' => ['DateTimeZone', 'array'=>'array'],
 'DateTimeZone::__wakeup' => ['void'],
-'DateTimeZone::getLocation' => ['array{country_code: string, latitude: float, longitude: float, comments: string}'],
+'DateTimeZone::getLocation' => ['array{country_code: string, latitude: float, longitude: float, comments: string}|false'],
 'DateTimeZone::getName' => ['string'],
 'DateTimeZone::getOffset' => ['int', 'datetime'=>'DateTimeInterface'],
 'DateTimeZone::getTransitions' => ['array', 'timestamp_begin='=>'int', 'timestamp_end='=>'int'],

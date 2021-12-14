@@ -682,6 +682,15 @@ final class Set implements Collection, ArrayAccess
 	{
 	}
 
+    /**
+     * @template TNewValue
+     * @param callable(TValue): TNewValue $callback
+     * @return Set<TNewValue>
+     */
+    public function map(callable $callback): Set
+    {
+    }
+
 	/**
 	 * @template TValue2
 	 * @param iterable<TValue2> $values

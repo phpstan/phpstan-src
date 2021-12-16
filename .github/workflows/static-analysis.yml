@@ -47,9 +47,26 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
+      - name: "Install PHP for code transform"
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: 8.0
+          extensions: mbstring
+
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
-        run: php bin/transform-source.php
+        shell: bash
+        run: build/transform-source
+
+      - name: "Reinstall matrix PHP version"
+        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          extensions: mbstring
 
       - name: "Downgrade PHPUnit"
         if: matrix.php-version == '7.1' || matrix.php-version == '7.2'

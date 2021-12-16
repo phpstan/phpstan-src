@@ -14,7 +14,9 @@ use function dirname;
 use function realpath;
 use function sort;
 use function strlen;
+use function strpos;
 use function substr;
+use const DIRECTORY_SEPARATOR;
 use const PHP_VERSION_ID;
 
 class AutoloadFilesTest extends TestCase
@@ -43,7 +45,10 @@ class AutoloadFilesTest extends TestCase
 			}
 
 			foreach ($json['autoload']['files'] as $file) {
-				$autoloadFile = substr(dirname($realpath) . '/' . $file, strlen($vendorPath) + 1);
+				$autoloadFile = substr(dirname($realpath) . DIRECTORY_SEPARATOR . $file, strlen($vendorPath) + 1);
+				if (strpos($autoloadFile, 'rector' . DIRECTORY_SEPARATOR . 'rector' . DIRECTORY_SEPARATOR) === 0) {
+					continue;
+				}
 				$autoloadFiles[] = $fileHelper->normalizePath($autoloadFile);
 			}
 		}

@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use function basename;
+use function chdir;
 use function dirname;
 use function escapeshellarg;
 use function exec;
@@ -260,7 +261,8 @@ php;
 
 	private function transformSource(): void
 	{
-		exec(escapeshellarg(__DIR__ . '/../../../bin/transform-source.php'), $outputLines, $exitCode);
+		chdir(__DIR__ . '/../../..');
+		exec(escapeshellarg(__DIR__ . '/../../../build/transform-source'), $outputLines, $exitCode);
 		if ($exitCode === 0) {
 			return;
 		}

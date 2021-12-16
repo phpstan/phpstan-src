@@ -46,10 +46,6 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		if (PHP_VERSION_ID < 70200) {
-			$this->markTestSkipped('Test requires PHP 7.2.');
-		}
-
 		$this->analyse([__DIR__ . '/data/enum-case-attributes.php'], [
 			[
 				'Attribute class EnumCaseAttributes\AttributeWithPropertyTarget does not have the class constant target.',

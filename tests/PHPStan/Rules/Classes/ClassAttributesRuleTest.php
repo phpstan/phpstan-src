@@ -46,10 +46,6 @@ class ClassAttributesRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		if (PHP_VERSION_ID < 70200) {
-			$this->markTestSkipped('Test requires PHP 7.2.');
-		}
-
 		$this->analyse([__DIR__ . '/data/class-attributes.php'], [
 			[
 				'Attribute class ClassAttributes\Nonexistent does not exist.',
@@ -106,10 +102,6 @@ class ClassAttributesRuleTest extends RuleTestCase
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
-		if (PHP_VERSION_ID < 70200) {
-			$this->markTestSkipped('Test requires PHP 7.2.');
 		}
 
 		$this->analyse([__DIR__ . '/data/enum-attributes.php'], [

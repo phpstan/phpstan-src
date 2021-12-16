@@ -216,9 +216,6 @@ class ClassReflectionTest extends PHPStanTestCase
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
-		if (PHP_VERSION_ID < 70200) {
-			$this->markTestSkipped('Test requires PHP 7.2.');
-		}
 		$reflectionProvider = $this->createReflectionProvider();
 		$reflection = $reflectionProvider->getClass($className);
 		$this->assertSame($expected, $reflection->isAttributeClass());

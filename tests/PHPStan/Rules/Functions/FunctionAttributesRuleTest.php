@@ -46,10 +46,6 @@ class FunctionAttributesRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		if (PHP_VERSION_ID < 70200) {
-			$this->markTestSkipped('Test requires PHP 7.2.');
-		}
-
 		$this->analyse([__DIR__ . '/data/function-attributes.php'], [
 			[
 				'Attribute class FunctionAttributes\Foo does not have the function target.',

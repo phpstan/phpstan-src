@@ -46,10 +46,6 @@ class ClassConstantAttributesRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		if (PHP_VERSION_ID < 70200) {
-			$this->markTestSkipped('Test requires PHP 7.2.');
-		}
-
 		$this->analyse([__DIR__ . '/data/class-constant-attributes.php'], [
 			[
 				'Attribute class ClassConstantAttributes\Foo does not have the class constant target.',

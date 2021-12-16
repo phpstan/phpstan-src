@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+vendor/bin/rector process src tests/PHPStan -c build/rector-downgrade.php

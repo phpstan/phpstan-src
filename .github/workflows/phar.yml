@@ -36,7 +36,7 @@ jobs:
         run: "composer install --no-interaction --no-progress --working-dir=compiler"
 
       - name: "Transform source code"
-        run: php bin/transform-source.php
+        run: build/transform-source
 
       - name: "Compile PHAR"
         run: php compiler/bin/compile

@@ -1,0 +1,21 @@
+@package rector/rector
+
+--- packages/NodeTypeResolver/PHPStan/Scope/PHPStanNodeScopeResolver.php	2021-12-16 21:10:20.000000000 +0100
++++ packages/NodeTypeResolver/PHPStan/Scope/PHPStanNodeScopeResolver.php	2021-12-16 21:10:27.000000000 +0100
+@@ -226,12 +226,12 @@
+     {
+         // 1. get PHPStan locator
+         /** @var ClassReflector $classReflector */
+-        $classReflector = $this->privatesAccessor->getPrivateProperty($nodeScopeResolver, 'classReflector');
++        //$classReflector = $this->privatesAccessor->getPrivateProperty($nodeScopeResolver, 'classReflector');
+         /** @var SourceLocator $sourceLocator */
+-        $sourceLocator = $this->privatesAccessor->getPrivateProperty($classReflector, 'sourceLocator');
++        //$sourceLocator = $this->privatesAccessor->getPrivateProperty($classReflector, 'sourceLocator');
+         // 2. get Rector locator
+-        $aggregateSourceLocator = new \PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator([$sourceLocator, $this->renamedClassesSourceLocator, $this->parentAttributeSourceLocator]);
+-        $this->privatesAccessor->setPrivateProperty($classReflector, 'sourceLocator', $aggregateSourceLocator);
++        //$aggregateSourceLocator = new \PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator([$sourceLocator, $this->renamedClassesSourceLocator, $this->parentAttributeSourceLocator]);
++        //$this->privatesAccessor->setPrivateProperty($classReflector, 'sourceLocator', $aggregateSourceLocator);
+     }
+     private function createDummyClassScopeContext(\PHPStan\Analyser\MutatingScope $mutatingScope) : \PHPStan\Analyser\ScopeContext
+     {

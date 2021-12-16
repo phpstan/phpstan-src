@@ -13,8 +13,7 @@ use const PHP_VERSION_ID;
 class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
 	protected function getRule(): Rule
 	{

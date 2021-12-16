@@ -13,8 +13,7 @@ use const PHP_VERSION_ID;
 class OffsetAccessAssignmentRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
 	protected function getRule(): Rule
 	{

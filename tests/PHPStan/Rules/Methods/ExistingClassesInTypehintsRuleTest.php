@@ -16,8 +16,7 @@ use const PHP_VERSION_ID;
 class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersionId = PHP_VERSION_ID;
+	private int $phpVersionId = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{

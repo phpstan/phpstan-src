@@ -12,11 +12,9 @@ use const PHP_VERSION_ID;
 class MissingReturnRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixedMissingReturn;
+	private bool $checkExplicitMixedMissingReturn;
 
-	/** @var bool */
-	private $checkPhpDocMissingReturn = true;
+	private bool $checkPhpDocMissingReturn = true;
 
 	protected function getRule(): Rule
 	{

@@ -18,8 +18,7 @@ use const PHP_VERSION_ID;
 class CallStaticMethodsRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
 	protected function getRule(): Rule
 	{

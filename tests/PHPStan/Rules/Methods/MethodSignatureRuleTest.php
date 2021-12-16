@@ -13,11 +13,9 @@ use const PHP_VERSION_ID;
 class MethodSignatureRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
-	/** @var bool */
-	private $reportStatic;
+	private bool $reportStatic;
 
 	protected function getRule(): Rule
 	{

@@ -13,8 +13,7 @@ use const PHP_VERSION_ID;
 class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
 	protected function getRule(): Rule
 	{

@@ -41,8 +41,7 @@ use const PHP_VERSION_ID;
 abstract class PHPStanTestCase extends TestCase
 {
 
-	/** @var bool */
-	public static $useStaticReflectionProvider = false;
+	public static bool $useStaticReflectionProvider = false;
 
 	/** @var array<string, Container> */
 	private static array $containers = [];

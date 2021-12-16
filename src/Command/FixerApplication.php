@@ -74,40 +74,31 @@ use const PHP_URL_PORT;
 class FixerApplication
 {
 
-	/** @var FileMonitor */
-	private $fileMonitor;
+	private FileMonitor $fileMonitor;
 
-	/** @var ResultCacheManagerFactory */
-	private $resultCacheManagerFactory;
+	private ResultCacheManagerFactory $resultCacheManagerFactory;
 
-	/** @var ResultCacheClearer */
-	private $resultCacheClearer;
+	private ResultCacheClearer $resultCacheClearer;
 
-	/** @var IgnoredErrorHelper */
-	private $ignoredErrorHelper;
+	private IgnoredErrorHelper $ignoredErrorHelper;
 
-	/** @var CpuCoreCounter */
-	private $cpuCoreCounter;
+	private CpuCoreCounter $cpuCoreCounter;
 
-	/** @var Scheduler */
-	private $scheduler;
+	private Scheduler $scheduler;
 
 	/** @var string[] */
-	private $analysedPaths;
+	private array $analysedPaths;
 
 	/** @var (ExtendedPromiseInterface&CancellablePromiseInterface)|null */
 	private $processInProgress;
 
-	/** @var string */
-	private $currentWorkingDirectory;
+	private string $currentWorkingDirectory;
 
-	/** @var string */
-	private $fixerTmpDir;
+	private string $fixerTmpDir;
 
 	private int $maximumNumberOfProcesses;
 
-	/** @var string|null */
-	private $fixerSuggestionId;
+	private ?string $fixerSuggestionId = null;
 
 	/**
 	 * @param string[] $analysedPaths

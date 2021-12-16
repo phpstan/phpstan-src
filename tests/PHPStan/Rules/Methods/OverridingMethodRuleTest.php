@@ -16,8 +16,7 @@ use const PHP_VERSION_ID;
 class OverridingMethodRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersionId;
+	private int $phpVersionId;
 
 	protected function getRule(): Rule
 	{

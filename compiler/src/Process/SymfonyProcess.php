@@ -8,7 +8,7 @@ final class SymfonyProcess implements Process
 {
 
 	/** @var \Symfony\Component\Process\Process<string, string> */
-	private $process;
+	private \Symfony\Component\Process\Process $process;
 
 	/**
 	 * @param string[] $command

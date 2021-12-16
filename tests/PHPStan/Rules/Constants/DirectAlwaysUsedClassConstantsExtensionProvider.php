@@ -6,7 +6,7 @@ class DirectAlwaysUsedClassConstantsExtensionProvider implements AlwaysUsedClass
 {
 
 	/** @var AlwaysUsedClassConstantsExtension[] */
-	private $extensions;
+	private array $extensions;
 
 	/**
 	 * @param AlwaysUsedClassConstantsExtension[] $extensions

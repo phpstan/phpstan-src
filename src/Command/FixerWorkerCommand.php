@@ -24,7 +24,7 @@ class FixerWorkerCommand extends Command
 	private const NAME = 'fixer:worker';
 
 	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
+	private array $composerAutoloaderProjectPaths;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths

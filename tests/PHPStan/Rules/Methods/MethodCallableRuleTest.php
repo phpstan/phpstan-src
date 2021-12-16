@@ -14,8 +14,7 @@ use const PHP_VERSION_ID;
 class MethodCallableRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersion = PHP_VERSION_ID;
+	private int $phpVersion = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{

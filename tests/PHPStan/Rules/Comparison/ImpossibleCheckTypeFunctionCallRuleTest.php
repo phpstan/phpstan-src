@@ -13,11 +13,9 @@ use const PHP_VERSION_ID;
 class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueCheckTypeFunctionCall;
+	private bool $checkAlwaysTrueCheckTypeFunctionCall;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	protected function getRule(): Rule
 	{

@@ -17,20 +17,15 @@ use const PHP_VERSION_ID;
 class CallMethodsRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
-	/** @var bool */
-	private $checkNullables;
+	private bool $checkNullables;
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
-	/** @var int */
-	private $phpVersion = PHP_VERSION_ID;
+	private int $phpVersion = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{

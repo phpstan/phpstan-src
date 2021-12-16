@@ -13,11 +13,9 @@ use const PHP_VERSION_ID;
 class AccessPropertiesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
 	protected function getRule(): Rule
 	{

@@ -10,8 +10,7 @@ use function sprintf;
 class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 {
 
-	/** @var FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
 	protected function setUp(): void
 	{

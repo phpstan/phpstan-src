@@ -42,6 +42,9 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
+		<properties>
+			<property name="enableNativeTypeHint" value="true"/>
+		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation">
 		<severity>10</severity>

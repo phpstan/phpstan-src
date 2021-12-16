@@ -9,11 +9,9 @@ use function sprintf;
 class RunnableStub implements Runnable
 {
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var Deferred */
-	private $deferred;
+	private Deferred $deferred;
 
 	public function __construct(string $name)
 	{

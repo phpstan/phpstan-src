@@ -12,8 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
 	protected function getRule(): Rule
 	{

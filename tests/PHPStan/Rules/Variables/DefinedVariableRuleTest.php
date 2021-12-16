@@ -12,17 +12,13 @@ use const PHP_VERSION_ID;
 class DefinedVariableRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $cliArgumentsVariablesRegistered;
+	private bool $cliArgumentsVariablesRegistered;
 
-	/** @var bool */
-	private $checkMaybeUndefinedVariables;
+	private bool $checkMaybeUndefinedVariables;
 
-	/** @var bool */
-	private $polluteScopeWithLoopInitialAssignments;
+	private bool $polluteScopeWithLoopInitialAssignments;
 
-	/** @var bool */
-	private $polluteScopeWithAlwaysIterableForeach;
+	private bool $polluteScopeWithAlwaysIterableForeach;
 
 	protected function getRule(): Rule
 	{

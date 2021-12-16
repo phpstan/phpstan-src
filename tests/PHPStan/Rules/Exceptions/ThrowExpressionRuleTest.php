@@ -13,8 +13,7 @@ use const PHP_VERSION_ID;
 class ThrowExpressionRuleTest extends RuleTestCase
 {
 
-	/** @var PhpVersion */
-	private $phpVersion;
+	private PhpVersion $phpVersion;
 
 	protected function getRule(): Rule
 	{

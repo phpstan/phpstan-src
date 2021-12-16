@@ -8,8 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class DefaultProcessFactory implements ProcessFactory
 {
 
-	/** @var OutputInterface */
-	private $output;
+	private OutputInterface $output;
 
 	public function __construct()
 	{

@@ -12,8 +12,7 @@ use const PHP_VERSION_ID;
 class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueStrictComparison;
+	private bool $checkAlwaysTrueStrictComparison;
 
 	protected function getRule(): Rule
 	{

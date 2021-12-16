@@ -2145,6 +2145,11 @@ class MutatingScope implements Scope
 					continue;
 				}
 
+				if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($constantName)) {
+					$types[] = new ObjectType($constantClassReflection->getName());
+					continue;
+				}
+
 				$constantReflection = $constantClassReflection->getConstant($constantName);
 				if (
 					$constantReflection instanceof ClassConstantReflection

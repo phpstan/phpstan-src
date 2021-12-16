@@ -55,6 +55,8 @@ enum Baz : int
 
 	case ONE = 1;
 	case TWO = 2;
+	const THREE = 3;
+	const FOUR = 4;
 
 }
 
@@ -70,6 +72,10 @@ class BazClass
 
 		assertType(Baz::class, Baz::from($i));
 		assertType(Baz::class . '|null', Baz::tryFrom($i));
+
+		assertType('3', Baz::THREE);
+		assertType('4', Baz::FOUR);
+		assertType('*ERROR*', Baz::NONEXISTENT);
 	}
 
 }

@@ -540,6 +540,19 @@ class ClassReflection
 		return false;
 	}
 
+	public function hasEnumCase(string $name): bool
+	{
+		if (!$this->isEnum()) {
+			return false;
+		}
+
+		if (!method_exists($this->reflection, 'hasCase')) {
+			return false;
+		}
+
+		return $this->reflection->hasCase($name);
+	}
+
 	public function isClass(): bool
 	{
 		return !$this->isInterface() && !$this->isTrait() && !$this->isEnum();

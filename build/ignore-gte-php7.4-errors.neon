@@ -8,3 +8,6 @@ parameters:
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 		- '#^Class PHPStan\\Rules\\RuleErrors\\RuleError(?:\d+) has an uninitialized property (?:\$message|\$line|\$identifier|\$tip|\$file|\$metadata)#'
 		- '#Extension has an uninitialized property (?:\$typeSpecifier|\$broker)#'
+		-
+			message: '#has an uninitialized property#'
+			path: ../tests

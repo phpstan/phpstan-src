@@ -11,8 +11,7 @@ use PHPStan\Rules\Rule;
 class AnonymousClassNameRule implements Rule
 {
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
+	private ReflectionProvider $reflectionProvider;
 
 	public function __construct(ReflectionProvider $reflectionProvider)
 	{

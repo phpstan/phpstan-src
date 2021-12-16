@@ -32,7 +32,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 {
 
 	/** @var Scope[][] */
-	private static $assertTypesCache = [];
+	private static array $assertTypesCache = [];
 
 	public function testClassMethodScope(): void
 	{

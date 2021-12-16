@@ -12,8 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class ReadOnlyPropertyRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersionId;
+	private int $phpVersionId;
 
 	protected function getRule(): Rule
 	{

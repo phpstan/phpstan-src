@@ -12,8 +12,7 @@ use function sprintf;
 class OverridingPropertyRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	protected function getRule(): Rule
 	{

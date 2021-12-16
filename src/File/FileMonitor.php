@@ -11,14 +11,13 @@ use function sha1;
 class FileMonitor
 {
 
-	/** @var FileFinder */
-	private $fileFinder;
+	private FileFinder $fileFinder;
 
 	/** @var array<string, string>|null */
-	private $fileHashes;
+	private ?array $fileHashes = null;
 
 	/** @var array<string>|null */
-	private $paths;
+	private ?array $paths = null;
 
 	public function __construct(FileFinder $fileFinder)
 	{

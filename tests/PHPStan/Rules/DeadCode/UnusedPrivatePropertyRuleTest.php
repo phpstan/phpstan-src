@@ -17,10 +17,10 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 {
 
 	/** @var string[] */
-	private $alwaysWrittenTags;
+	private array $alwaysWrittenTags;
 
 	/** @var string[] */
-	private $alwaysReadTags;
+	private array $alwaysReadTags;
 
 	protected function getRule(): Rule
 	{

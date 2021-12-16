@@ -11,8 +11,7 @@ use PHPStan\Testing\RuleTestCase;
 class UnreachableStatementRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	protected function getRule(): Rule
 	{

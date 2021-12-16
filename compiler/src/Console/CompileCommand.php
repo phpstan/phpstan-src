@@ -35,17 +35,13 @@ use const JSON_UNESCAPED_SLASHES;
 final class CompileCommand extends Command
 {
 
-	/** @var Filesystem */
-	private $filesystem;
+	private Filesystem $filesystem;
 
-	/** @var ProcessFactory */
-	private $processFactory;
+	private ProcessFactory $processFactory;
 
-	/** @var string */
-	private $dataDir;
+	private string $dataDir;
 
-	/** @var string */
-	private $buildDir;
+	private string $buildDir;
 
 	public function __construct(
 		Filesystem $filesystem,

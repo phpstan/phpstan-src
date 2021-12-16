@@ -11,8 +11,7 @@ use PHPStan\Testing\RuleTestCase;
 class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain = true;
+	private bool $treatPhpDocTypesAsCertain = true;
 
 	protected function getRule(): Rule
 	{

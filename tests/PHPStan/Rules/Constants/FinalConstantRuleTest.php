@@ -12,8 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class FinalConstantRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersionId;
+	private int $phpVersionId;
 
 	protected function getRule(): Rule
 	{

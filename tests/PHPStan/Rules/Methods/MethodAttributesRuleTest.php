@@ -19,8 +19,7 @@ use const PHP_VERSION_ID;
 class MethodAttributesRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersion;
+	private int $phpVersion;
 
 	protected function getRule(): Rule
 	{

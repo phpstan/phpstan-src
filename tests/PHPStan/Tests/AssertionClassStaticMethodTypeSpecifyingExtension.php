@@ -13,8 +13,7 @@ use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodTypeSpecifyingExtension
 {
 
-	/** @var bool|null */
-	private $nullContext;
+	private ?bool $nullContext = null;
 
 	public function __construct(?bool $nullContext)
 	{

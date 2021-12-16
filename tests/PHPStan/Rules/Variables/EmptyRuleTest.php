@@ -14,8 +14,7 @@ use PHPStan\Testing\RuleTestCase;
 class EmptyRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	protected function getRule(): Rule
 	{

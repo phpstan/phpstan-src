@@ -17,14 +17,11 @@ use function tmpfile;
 class ProcessPromise implements Runnable
 {
 
-	/** @var LoopInterface */
-	private $loop;
+	private LoopInterface $loop;
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var string */
-	private $command;
+	private string $command;
 
 	private Deferred $deferred;
 

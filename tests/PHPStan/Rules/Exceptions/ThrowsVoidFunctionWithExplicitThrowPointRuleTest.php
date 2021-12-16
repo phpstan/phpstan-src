@@ -12,11 +12,10 @@ use ThrowsVoidFunction\MyException;
 class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $missingCheckedExceptionInThrows;
+	private bool $missingCheckedExceptionInThrows;
 
 	/** @var string[] */
-	private $checkedExceptionClasses;
+	private array $checkedExceptionClasses;
 
 	protected function getRule(): Rule
 	{

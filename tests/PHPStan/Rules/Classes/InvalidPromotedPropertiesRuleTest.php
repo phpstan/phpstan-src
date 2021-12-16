@@ -12,8 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersion;
+	private int $phpVersion;
 
 	protected function getRule(): Rule
 	{

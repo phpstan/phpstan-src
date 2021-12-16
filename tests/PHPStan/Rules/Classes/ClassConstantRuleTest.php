@@ -15,8 +15,7 @@ use const PHP_VERSION_ID;
 class ClassConstantRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersion;
+	private int $phpVersion;
 
 	protected function getRule(): Rule
 	{

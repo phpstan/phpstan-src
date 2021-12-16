@@ -25,8 +25,7 @@ use function spl_autoload_register;
 class BrokerTest extends PHPStanTestCase
 {
 
-	/** @var Broker */
-	private $broker;
+	private Broker $broker;
 
 	protected function setUp(): void
 	{

@@ -40,7 +40,7 @@ class FileWhitespaceRule implements Rule
 		$visitor = new class () extends NodeVisitorAbstract {
 
 			/** @var Node[] */
-			private $lastNodes = [];
+			private array $lastNodes = [];
 
 			/**
 			 * @return int|Node|null

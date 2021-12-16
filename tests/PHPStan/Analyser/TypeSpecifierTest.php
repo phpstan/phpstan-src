@@ -42,13 +42,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 	private const SURE_NOT_TRUTHY = '~' . self::TRUTHY_TYPE_DESCRIPTION;
 
 	/** @var Standard () */
-	private $printer;
+	private Standard $printer;
 
-	/** @var TypeSpecifier */
-	private $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
-	/** @var Scope */
-	private $scope;
+	private Scope $scope;
 
 	protected function setUp(): void
 	{

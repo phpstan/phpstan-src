@@ -10,8 +10,7 @@ use PHPStan\Testing\ErrorFormatterTestCase;
 class JunitErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	/** @var JunitErrorFormatter */
-	private $formatter;
+	private JunitErrorFormatter $formatter;
 
 	public function setUp(): void
 	{

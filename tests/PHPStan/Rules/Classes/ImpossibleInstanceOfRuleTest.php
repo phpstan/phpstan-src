@@ -11,11 +11,9 @@ use PHPStan\Testing\RuleTestCase;
 class ImpossibleInstanceOfRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueInstanceOf;
+	private bool $checkAlwaysTrueInstanceOf;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	protected function getRule(): Rule
 	{

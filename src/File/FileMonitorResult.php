@@ -8,16 +8,15 @@ class FileMonitorResult
 {
 
 	/** @var string[] */
-	private $newFiles;
+	private array $newFiles;
 
 	/** @var string[] */
-	private $changedFiles;
+	private array $changedFiles;
 
 	/** @var string[] */
-	private $deletedFiles;
+	private array $deletedFiles;
 
-	/** @var int */
-	private $totalFilesCount;
+	private int $totalFilesCount;
 
 	/**
 	 * @param string[] $newFiles

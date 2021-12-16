@@ -17,8 +17,7 @@ use const PHP_VERSION_ID;
 class CallCallablesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
 	protected function getRule(): Rule
 	{

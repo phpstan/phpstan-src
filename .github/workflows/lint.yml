@@ -42,7 +42,7 @@ jobs:
         run: "composer validate"
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
@@ -76,7 +76,7 @@ jobs:
         run: "composer validate"
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Lint"
         run: "make lint"
@@ -106,7 +106,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Composer Require Checker"
         run: "make composer-require-checker"

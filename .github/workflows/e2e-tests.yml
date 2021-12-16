@@ -38,7 +38,7 @@ jobs:
           ini-values: memory_limit=256M
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Tests"
         run: |
@@ -75,7 +75,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Test"
         run: ${{ matrix.script }}

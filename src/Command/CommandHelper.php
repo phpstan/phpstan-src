@@ -134,7 +134,9 @@ class CommandHelper
 				$discoverableConfigFile = $currentWorkingDirectory . DIRECTORY_SEPARATOR . $discoverableConfigName;
 				if (is_file($discoverableConfigFile)) {
 					$projectConfigFile = $discoverableConfigFile;
-					$errorOutput->writeLineFormatted(sprintf('Note: Using configuration file %s.', $projectConfigFile));
+					if ($errorOutput->isVerbose()) {
+						$errorOutput->writeLineFormatted(sprintf('Note: Using configuration file %s.', $projectConfigFile));
+					}
 					break;
 				}
 			}

@@ -49,6 +49,7 @@ use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
@@ -144,6 +145,7 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 use function trim;
+use const PHP_VERSION_ID;
 
 class NodeScopeResolver
 {
@@ -1492,7 +1494,7 @@ class NodeScopeResolver
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$betterReflectionClass->getName(),
-			new ReflectionClass($betterReflectionClass),
+			$betterReflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionEnum && PHP_VERSION_ID >= 80000 ? new ReflectionEnum($betterReflectionClass) : new ReflectionClass($betterReflectionClass),
 			null,
 			null,
 			null,

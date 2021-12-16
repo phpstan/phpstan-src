@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
 use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
@@ -47,6 +48,7 @@ use function array_key_exists;
 use function array_map;
 use function sprintf;
 use function strtolower;
+use const PHP_VERSION_ID;
 
 class BetterReflectionProvider implements ReflectionProvider
 {
@@ -171,7 +173,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$reflectionClass->getName(),
-			new ReflectionClass($reflectionClass),
+			$reflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionEnum && PHP_VERSION_ID >= 80000 ? new ReflectionEnum($reflectionClass) : new ReflectionClass($reflectionClass),
 			null,
 			null,
 			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName())

@@ -1,0 +1,11 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum given\\.$#"
+			count: 1
+			path: ../src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum given\\.$#"
+			count: 1
+			path: ../src/Analyser/NodeScopeResolver.php

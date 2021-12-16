@@ -45,7 +45,7 @@ jobs:
           extensions: mbstring
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Downgrade PHPUnit"
         if: matrix.php-version == '7.1' || matrix.php-version == '7.2'
@@ -81,7 +81,7 @@ jobs:
           extensions: mbstring
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Cache Result cache"
         uses: actions/cache@v2
@@ -126,7 +126,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Generate baseline"
         run: |

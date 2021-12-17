@@ -264,9 +264,7 @@ class ClassReflection
 			return $name;
 		}
 
-		return $name . '<' . implode(',', array_map(static function (Type $type): string {
-			return $type->describe(VerbosityLevel::typeOnly());
-		}, $this->resolvedTemplateTypeMap->getTypes())) . '>';
+		return $name . '<' . implode(',', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::typeOnly()), $this->resolvedTemplateTypeMap->getTypes())) . '>';
 	}
 
 	public function getCacheKey(): string
@@ -279,9 +277,7 @@ class ClassReflection
 		$cacheKey = $this->displayName;
 
 		if ($this->resolvedTemplateTypeMap !== null) {
-			$cacheKey .= '<' . implode(',', array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::cache());
-			}, $this->resolvedTemplateTypeMap->getTypes())) . '>';
+			$cacheKey .= '<' . implode(',', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::cache()), $this->resolvedTemplateTypeMap->getTypes())) . '>';
 		}
 
 		if ($this->extraCacheKey !== null) {
@@ -736,9 +732,7 @@ class ClassReflection
 			$traits = $this->getNativeReflection()->getTraits();
 		}
 
-		$traits = array_map(function (ReflectionClass $trait): ClassReflection {
-			return $this->reflectionProvider->getClass($trait->getName());
-		}, $traits);
+		$traits = array_map(fn (ReflectionClass $trait): ClassReflection => $this->reflectionProvider->getClass($trait->getName()), $traits);
 
 		if ($recursive) {
 			$parentClass = $this->getNativeReflection()->getParentClass();
@@ -903,15 +897,11 @@ class ClassReflection
 
 			unset(self::$resolvingTypeAliasImports[$this->getName()]);
 
-			$localAliases = array_map(static function (TypeAliasTag $typeAliasTag): TypeAlias {
-				return $typeAliasTag->getTypeAlias();
-			}, $typeAliasTags);
+			$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
 
 			$this->typeAliases = array_filter(
 				array_merge($importedAliases, $localAliases),
-				static function (?TypeAlias $typeAlias): bool {
-					return $typeAlias !== null;
-				},
+				static fn (?TypeAlias $typeAlias): bool => $typeAlias !== null,
 			);
 		}
 
@@ -1019,9 +1009,7 @@ class ClassReflection
 
 		$templateTypeScope = TemplateTypeScope::createWithClass($this->getName());
 
-		$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
-			return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
-		}, $this->getTemplateTags()));
+		$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $this->getTemplateTags()));
 
 		$this->templateTypeMap = $templateTypeMap;
 

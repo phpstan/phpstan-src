@@ -233,9 +233,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variable $%s in PHPDoc tag @var does not match any variable in the foreach loop: %s',
 				$name,
-				implode(', ', array_map(static function (string $name): string {
-					return sprintf('$%s', $name);
-				}, $variableNames)),
+				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), $variableNames)),
 			))->build();
 		}
 
@@ -278,9 +276,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variable $%s in PHPDoc tag @var does not match any static variable: %s',
 				$name,
-				implode(', ', array_map(static function (string $name): string {
-					return sprintf('$%s', $name);
-				}, array_keys($variableNames))),
+				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), array_keys($variableNames))),
 			))->build();
 		}
 
@@ -369,9 +365,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variable $%s in PHPDoc tag @var does not match any global variable: %s',
 				$name,
-				implode(', ', array_map(static function (string $name): string {
-					return sprintf('$%s', $name);
-				}, array_keys($variableNames))),
+				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), array_keys($variableNames))),
 			))->build();
 		}
 

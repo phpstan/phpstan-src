@@ -46,17 +46,15 @@ class AnalysisResult
 	{
 		usort(
 			$fileSpecificErrors,
-			static function (Error $a, Error $b): int {
-				return [
-					$a->getFile(),
-					$a->getLine(),
-					$a->getMessage(),
-				] <=> [
-					$b->getFile(),
-					$b->getLine(),
-					$b->getMessage(),
-				];
-			},
+			static fn (Error $a, Error $b): int => [
+				$a->getFile(),
+				$a->getLine(),
+				$a->getMessage(),
+			] <=> [
+				$b->getFile(),
+				$b->getLine(),
+				$b->getMessage(),
+			],
 		);
 
 		$this->fileSpecificErrors = $fileSpecificErrors;

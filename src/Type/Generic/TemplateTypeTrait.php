@@ -61,9 +61,7 @@ trait TemplateTypeTrait
 		return $level->handle(
 			$basicDescription,
 			$basicDescription,
-			function () use ($basicDescription): string {
-				return sprintf('%s (%s, %s)', $basicDescription(), $this->scope->describe(), $this->isArgument() ? 'argument' : 'parameter');
-			},
+			fn (): string => sprintf('%s (%s, %s)', $basicDescription(), $this->scope->describe(), $this->isArgument() ? 'argument' : 'parameter'),
 		);
 	}
 

@@ -1194,9 +1194,7 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
-				$catchType = TypeCombinator::union(...array_map(static function (Name $name): Type {
-					return new ObjectType($name->toString());
-				}, $catchNode->types));
+				$catchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
 				$originalCatchType = $catchType;
 				$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
 				$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
@@ -1508,9 +1506,7 @@ class NodeScopeResolver
 			$scope = $scope->enterExpressionAssign($expr);
 		}
 		if (!$expr instanceof Variable) {
-			return $this->lookForVariableAssignCallback($scope, $expr, static function (MutatingScope $scope, Expr $expr): MutatingScope {
-				return $scope->enterExpressionAssign($expr);
-			});
+			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->enterExpressionAssign($expr));
 		}
 
 		return $scope;
@@ -1520,9 +1516,7 @@ class NodeScopeResolver
 	{
 		$scope = $scope->exitExpressionAssign($expr);
 		if (!$expr instanceof Variable) {
-			return $this->lookForVariableAssignCallback($scope, $expr, static function (MutatingScope $scope, Expr $expr): MutatingScope {
-				return $scope->exitExpressionAssign($expr);
-			});
+			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->exitExpressionAssign($expr));
 		}
 
 		return $scope;
@@ -1790,9 +1784,7 @@ class NodeScopeResolver
 				$expr,
 				$nodeCallback,
 				$context,
-				function (MutatingScope $scope) use ($expr, $nodeCallback, $context): ExpressionResult {
-					return $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
-				},
+				fn (MutatingScope $scope): ExpressionResult => $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep()),
 				$expr instanceof Expr\AssignOp\Coalesce,
 			);
 			$scope = $result->getScope();
@@ -2043,12 +2035,8 @@ class NodeScopeResolver
 				$scope,
 				$exprResult->hasYield(),
 				$exprResult->getThrowPoints(),
-				static function () use ($scope, $expr): MutatingScope {
-					return $scope->filterByTruthyValue($expr);
-				},
-				static function () use ($scope, $expr): MutatingScope {
-					return $scope->filterByFalseyValue($expr);
-				},
+				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof StaticCall) {
 			$hasYield = false;
@@ -2192,12 +2180,8 @@ class NodeScopeResolver
 				$scope,
 				$exprResult->hasYield(),
 				$exprResult->getThrowPoints(),
-				static function () use ($scope, $expr): MutatingScope {
-					return $scope->filterByTruthyValue($expr);
-				},
-				static function () use ($scope, $expr): MutatingScope {
-					return $scope->filterByFalseyValue($expr);
-				},
+				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			$hasYield = false;
@@ -2298,12 +2282,8 @@ class NodeScopeResolver
 				$leftMergedWithRightScope,
 				$leftResult->hasYield() || $rightResult->hasYield(),
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
-				static function () use ($expr, $rightResult): MutatingScope {
-					return $rightResult->getScope()->filterByTruthyValue($expr);
-				},
-				static function () use ($leftMergedWithRightScope, $expr): MutatingScope {
-					return $leftMergedWithRightScope->filterByFalseyValue($expr);
-				},
+				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr),
+				static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof BooleanOr || $expr instanceof BinaryOp\LogicalOr) {
 			$leftResult = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
@@ -2316,12 +2296,8 @@ class NodeScopeResolver
 				$leftMergedWithRightScope,
 				$leftResult->hasYield() || $rightResult->hasYield(),
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
-				static function () use ($leftMergedWithRightScope, $expr): MutatingScope {
-					return $leftMergedWithRightScope->filterByTruthyValue($expr);
-				},
-				static function () use ($expr, $rightResult): MutatingScope {
-					return $rightResult->getScope()->filterByFalseyValue($expr);
-				},
+				static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
+				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof Coalesce) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
@@ -2532,9 +2508,7 @@ class NodeScopeResolver
 						static function (): void {
 						},
 						$context,
-						static function (MutatingScope $scope): ExpressionResult {
-							return new ExpressionResult($scope, false, []);
-						},
+						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []),
 						false,
 					)->getScope();
 				} else {
@@ -2563,12 +2537,8 @@ class NodeScopeResolver
 				$finalScope,
 				$ternaryCondResult->hasYield(),
 				$throwPoints,
-				static function () use ($finalScope, $expr): MutatingScope {
-					return $finalScope->filterByTruthyValue($expr);
-				},
-				static function () use ($finalScope, $expr): MutatingScope {
-					return $finalScope->filterByFalseyValue($expr);
-				},
+				static fn (): MutatingScope => $finalScope->filterByTruthyValue($expr),
+				static fn (): MutatingScope => $finalScope->filterByFalseyValue($expr),
 			);
 
 		} elseif ($expr instanceof Expr\Yield_) {
@@ -2701,12 +2671,8 @@ class NodeScopeResolver
 			$scope,
 			$hasYield,
 			$throwPoints,
-			static function () use ($scope, $expr): MutatingScope {
-				return $scope->filterByTruthyValue($expr);
-			},
-			static function () use ($scope, $expr): MutatingScope {
-				return $scope->filterByFalseyValue($expr);
-			},
+			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

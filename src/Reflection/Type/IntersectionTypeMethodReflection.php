@@ -81,28 +81,20 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function getVariants(): array
 	{
-		$returnType = TypeCombinator::intersect(...array_map(static function (MethodReflection $method): Type {
-			return TypeCombinator::intersect(...array_map(static function (ParametersAcceptor $acceptor): Type {
-				return $acceptor->getReturnType();
-			}, $method->getVariants()));
-		}, $this->methods));
+		$returnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getReturnType(), $method->getVariants())), $this->methods));
 
-		return array_map(static function (ParametersAcceptor $acceptor) use ($returnType): ParametersAcceptor {
-			return new FunctionVariant(
-				$acceptor->getTemplateTypeMap(),
-				$acceptor->getResolvedTemplateTypeMap(),
-				$acceptor->getParameters(),
-				$acceptor->isVariadic(),
-				$returnType,
-			);
-		}, $this->methods[0]->getVariants());
+		return array_map(static fn (ParametersAcceptor $acceptor): ParametersAcceptor => new FunctionVariant(
+			$acceptor->getTemplateTypeMap(),
+			$acceptor->getResolvedTemplateTypeMap(),
+			$acceptor->getParameters(),
+			$acceptor->isVariadic(),
+			$returnType,
+		), $this->methods[0]->getVariants());
 	}
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static function (MethodReflection $method): TrinaryLogic {
-			return $method->isDeprecated();
-		}, $this->methods));
+		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->isDeprecated(), $this->methods));
 	}
 
 	public function getDeprecatedDescription(): ?string
@@ -129,16 +121,12 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function isFinal(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static function (MethodReflection $method): TrinaryLogic {
-			return $method->isFinal();
-		}, $this->methods));
+		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->isFinal(), $this->methods));
 	}
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static function (MethodReflection $method): TrinaryLogic {
-			return $method->isInternal();
-		}, $this->methods));
+		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->isInternal(), $this->methods));
 	}
 
 	public function getThrowType(): ?Type
@@ -163,9 +151,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static function (MethodReflection $method): TrinaryLogic {
-			return $method->hasSideEffects();
-		}, $this->methods));
+		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->hasSideEffects(), $this->methods));
 	}
 
 	public function getDocComment(): ?string

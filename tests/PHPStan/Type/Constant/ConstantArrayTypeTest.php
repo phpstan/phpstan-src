@@ -517,14 +517,12 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				new MixedType(),
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn (string $name): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'receive constant array' => [
@@ -631,9 +629,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes()),
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 

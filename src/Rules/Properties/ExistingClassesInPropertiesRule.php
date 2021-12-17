@@ -98,9 +98,7 @@ class ExistingClassesInPropertiesRule implements Rule
 		if ($this->checkClassCaseSensitivity) {
 			$errors = array_merge(
 				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($node): ClassNameNodePair {
-					return new ClassNameNodePair($class, $node);
-				}, $referencedClasses)),
+				$this->classCaseSensitivityCheck->checkClassNames(array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $node), $referencedClasses)),
 			);
 		}
 

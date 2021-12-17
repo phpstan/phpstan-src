@@ -207,9 +207,7 @@ class MixedType implements CompoundType, SubtractableType
 			$property,
 			$property->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			},
+			static fn (Type $type): Type => $type,
 		);
 	}
 
@@ -235,9 +233,7 @@ class MixedType implements CompoundType, SubtractableType
 			$method,
 			$method->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			},
+			static fn (Type $type): Type => $type,
 		);
 	}
 
@@ -264,12 +260,8 @@ class MixedType implements CompoundType, SubtractableType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'mixed';
-			},
-			static function (): string {
-				return 'mixed';
-			},
+			static fn (): string => 'mixed',
+			static fn (): string => 'mixed',
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {

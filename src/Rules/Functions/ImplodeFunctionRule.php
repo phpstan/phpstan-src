@@ -66,9 +66,7 @@ class ImplodeFunctionRule implements Rule
 			$scope,
 			$arrayArg,
 			'',
-			static function (Type $type): bool {
-				return !$type->getIterableValueType()->toString() instanceof ErrorType;
-			},
+			static fn (Type $type): bool => !$type->getIterableValueType()->toString() instanceof ErrorType,
 		);
 
 		if ($typeResult->getType() instanceof ErrorType

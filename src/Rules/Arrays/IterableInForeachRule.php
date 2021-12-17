@@ -36,9 +36,7 @@ class IterableInForeachRule implements Rule
 			$scope,
 			$node->expr,
 			'Iterating over an object of an unknown class %s.',
-			static function (Type $type): bool {
-				return $type->isIterable()->yes();
-			},
+			static fn (Type $type): bool => $type->isIterable()->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

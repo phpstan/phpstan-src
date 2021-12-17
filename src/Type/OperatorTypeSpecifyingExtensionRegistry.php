@@ -36,9 +36,7 @@ class OperatorTypeSpecifyingExtensionRegistry
 	 */
 	public function getOperatorTypeSpecifyingExtensions(string $operator, Type $leftType, Type $rightType): array
 	{
-		return array_values(array_filter($this->extensions, static function (OperatorTypeSpecifyingExtension $extension) use ($operator, $leftType, $rightType): bool {
-			return $extension->isOperatorSupported($operator, $leftType, $rightType);
-		}));
+		return array_values(array_filter($this->extensions, static fn (OperatorTypeSpecifyingExtension $extension): bool => $extension->isOperatorSupported($operator, $leftType, $rightType)));
 	}
 
 }

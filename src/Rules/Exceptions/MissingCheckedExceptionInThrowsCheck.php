@@ -75,9 +75,7 @@ class MissingCheckedExceptionInThrowsCheck
 
 		$position = 0;
 		foreach ($tryCatch->catches as $catch) {
-			$type = TypeCombinator::union(...array_map(static function (Node\Name $class): ObjectType {
-				return new ObjectType($class->toString());
-			}, $catch->types));
+			$type = TypeCombinator::union(...array_map(static fn (Node\Name $class): ObjectType => new ObjectType($class->toString()), $catch->types));
 			if (!$throwPointType->isSuperTypeOf($type)->yes()) {
 				continue;
 			}

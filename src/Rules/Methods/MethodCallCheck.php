@@ -55,9 +55,7 @@ class MethodCallCheck
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $var),
 			sprintf('Call to method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($methodName)),
-			static function (Type $type) use ($methodName): bool {
-				return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-			},
+			static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 		);
 
 		$type = $typeResult->getType();

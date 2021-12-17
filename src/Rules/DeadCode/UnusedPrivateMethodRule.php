@@ -78,9 +78,7 @@ class UnusedPrivateMethodRule implements Rule
 					return [];
 				}
 
-				$methodNames = array_map(static function (ConstantStringType $type): string {
-					return $type->getValue();
-				}, $strings);
+				$methodNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);
 			}
 
 			if ($methodCallNode instanceof Node\Expr\MethodCall) {

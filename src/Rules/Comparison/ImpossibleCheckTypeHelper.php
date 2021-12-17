@@ -281,9 +281,7 @@ class ImpossibleCheckTypeHelper
 			return '';
 		}
 
-		$descriptions = array_map(static function (Arg $arg) use ($scope): string {
-			return $scope->getType($arg->value)->describe(VerbosityLevel::value());
-		}, $args);
+		$descriptions = array_map(static fn (Arg $arg): string => $scope->getType($arg->value)->describe(VerbosityLevel::value()), $args);
 
 		if (count($descriptions) < 3) {
 			return sprintf(' with %s', implode(' and ', $descriptions));

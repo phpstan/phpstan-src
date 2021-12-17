@@ -126,9 +126,7 @@ class ClassConstantRule implements Rule
 				$scope,
 				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class),
 				sprintf('Access to constant %s on an unknown class %%s.', SprintfHelper::escapeFormatString($constantName)),
-				static function (Type $type) use ($constantName): bool {
-					return $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes();
-				},
+				static fn (Type $type): bool => $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes(),
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {

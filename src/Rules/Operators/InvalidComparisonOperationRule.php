@@ -75,9 +75,7 @@ class InvalidComparisonOperationRule implements Rule
 	private function isNumberType(Scope $scope, Node\Expr $expr): bool
 	{
 		$acceptedType = new UnionType([new IntegerType(), new FloatType()]);
-		$onlyNumber = static function (Type $type) use ($acceptedType): bool {
-			return $acceptedType->accepts($type, true)->yes();
-		};
+		$onlyNumber = static fn (Type $type): bool => $acceptedType->accepts($type, true)->yes();
 
 		$type = $this->ruleLevelHelper->findTypeToCheck($scope, $expr, '', $onlyNumber)->getType();
 
@@ -99,9 +97,7 @@ class InvalidComparisonOperationRule implements Rule
 			$scope,
 			$expr,
 			'',
-			static function (Type $type) use ($acceptedType): bool {
-				return $acceptedType->isSuperTypeOf($type)->yes();
-			},
+			static fn (Type $type): bool => $acceptedType->isSuperTypeOf($type)->yes(),
 		)->getType();
 
 		if ($type instanceof ErrorType) {
@@ -126,9 +122,7 @@ class InvalidComparisonOperationRule implements Rule
 			$scope,
 			$expr,
 			'',
-			static function (Type $type): bool {
-				return $type->isArray()->yes();
-			},
+			static fn (Type $type): bool => $type->isArray()->yes(),
 		)->getType();
 
 		if (TypeCombinator::containsNull($type) && !$type instanceof NullType) {

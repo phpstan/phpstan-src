@@ -65,16 +65,12 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 
 		$constantStrings = TypeUtils::getConstantStrings($argType);
 		if (count($constantStrings) > 0) {
-			return TypeCombinator::union(...array_map(function (ConstantStringType $stringType): Type {
-				return $this->findParentClassNameType($stringType->getValue());
-			}, $constantStrings));
+			return TypeCombinator::union(...array_map(fn (ConstantStringType $stringType): Type => $this->findParentClassNameType($stringType->getValue()), $constantStrings));
 		}
 
 		$classNames = TypeUtils::getDirectClassNames($argType);
 		if (count($classNames) > 0) {
-			return TypeCombinator::union(...array_map(function (string $classNames): Type {
-				return $this->findParentClassNameType($classNames);
-			}, $classNames));
+			return TypeCombinator::union(...array_map(fn (string $classNames): Type => $this->findParentClassNameType($classNames), $classNames));
 		}
 
 		return $defaultReturnType;

@@ -65,9 +65,7 @@ class IntersectionTypePropertyReflection implements PropertyReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static function (PropertyReflection $property): TrinaryLogic {
-			return $property->isDeprecated();
-		}, $this->properties));
+		return TrinaryLogic::maxMin(...array_map(static fn (PropertyReflection $property): TrinaryLogic => $property->isDeprecated(), $this->properties));
 	}
 
 	public function getDeprecatedDescription(): ?string
@@ -94,9 +92,7 @@ class IntersectionTypePropertyReflection implements PropertyReflection
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static function (PropertyReflection $property): TrinaryLogic {
-			return $property->isInternal();
-		}, $this->properties));
+		return TrinaryLogic::maxMin(...array_map(static fn (PropertyReflection $property): TrinaryLogic => $property->isInternal(), $this->properties));
 	}
 
 	public function getDocComment(): ?string
@@ -106,16 +102,12 @@ class IntersectionTypePropertyReflection implements PropertyReflection
 
 	public function getReadableType(): Type
 	{
-		return TypeCombinator::intersect(...array_map(static function (PropertyReflection $property): Type {
-			return $property->getReadableType();
-		}, $this->properties));
+		return TypeCombinator::intersect(...array_map(static fn (PropertyReflection $property): Type => $property->getReadableType(), $this->properties));
 	}
 
 	public function getWritableType(): Type
 	{
-		return TypeCombinator::intersect(...array_map(static function (PropertyReflection $property): Type {
-			return $property->getWritableType();
-		}, $this->properties));
+		return TypeCombinator::intersect(...array_map(static fn (PropertyReflection $property): Type => $property->getWritableType(), $this->properties));
 	}
 
 	public function canChangeTypeAfterAssignment(): bool

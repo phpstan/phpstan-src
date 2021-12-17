@@ -302,9 +302,7 @@ class FunctionDefinitionCheck
 			if ($this->checkClassCaseSensitivity) {
 				$errors = array_merge(
 					$errors,
-					$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($parameterNodeCallback): ClassNameNodePair {
-						return new ClassNameNodePair($class, $parameterNodeCallback());
-					}, $referencedClasses)),
+					$this->classCaseSensitivityCheck->checkClassNames(array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $parameterNodeCallback()), $referencedClasses)),
 				);
 			}
 			if (!($parameter->getType() instanceof NonexistentParentClassType)) {
@@ -334,9 +332,7 @@ class FunctionDefinitionCheck
 		if ($this->checkClassCaseSensitivity) {
 			$errors = array_merge(
 				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($returnTypeNode): ClassNameNodePair {
-					return new ClassNameNodePair($class, $returnTypeNode);
-				}, $returnTypeReferencedClasses)),
+				$this->classCaseSensitivityCheck->checkClassNames(array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $returnTypeNode), $returnTypeReferencedClasses)),
 			);
 		}
 		if ($parametersAcceptor->getReturnType() instanceof NonexistentParentClassType) {

@@ -686,19 +686,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(Iterator::class)->yes()) {
-			return RecursionGuard::run($this, function (): Type {
-				return ParametersAcceptorSelector::selectSingle(
-					$this->getMethod('key', new OutOfClassScope())->getVariants(),
-				)->getReturnType();
-			});
+			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
+				$this->getMethod('key', new OutOfClassScope())->getVariants(),
+			)->getReturnType());
 		}
 
 		if ($this->isInstanceOf(IteratorAggregate::class)->yes()) {
-			$keyType = RecursionGuard::run($this, function (): Type {
-				return ParametersAcceptorSelector::selectSingle(
-					$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
-				)->getReturnType()->getIterableKeyType();
-			});
+			$keyType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
+				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
+			)->getReturnType()->getIterableKeyType());
 			if (!$keyType instanceof MixedType || $keyType->isExplicitMixed()) {
 				return $keyType;
 			}
@@ -719,19 +715,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getIterableValueType(): Type
 	{
 		if ($this->isInstanceOf(Iterator::class)->yes()) {
-			return RecursionGuard::run($this, function (): Type {
-				return ParametersAcceptorSelector::selectSingle(
-					$this->getMethod('current', new OutOfClassScope())->getVariants(),
-				)->getReturnType();
-			});
+			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
+				$this->getMethod('current', new OutOfClassScope())->getVariants(),
+			)->getReturnType());
 		}
 
 		if ($this->isInstanceOf(IteratorAggregate::class)->yes()) {
-			$valueType = RecursionGuard::run($this, function (): Type {
-				return ParametersAcceptorSelector::selectSingle(
-					$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
-				)->getReturnType()->getIterableValueType();
-			});
+			$valueType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
+				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
+			)->getReturnType()->getIterableValueType());
 			if (!$valueType instanceof MixedType || $valueType->isExplicitMixed()) {
 				return $valueType;
 			}
@@ -839,9 +831,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
-			return RecursionGuard::run($this, function (): Type {
-				return ParametersAcceptorSelector::selectSingle($this->getMethod('offsetGet', new OutOfClassScope())->getVariants())->getReturnType();
-			});
+			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle($this->getMethod('offsetGet', new OutOfClassScope())->getVariants())->getReturnType());
 		}
 
 		return new ErrorType();
@@ -1122,9 +1112,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return $this->cachedInterfaces = [];
 		}
 
-		return $this->cachedInterfaces = array_map(static function (ClassReflection $interfaceReflection): self {
-			return self::createFromReflection($interfaceReflection);
-		}, $thisReflection->getInterfaces());
+		return $this->cachedInterfaces = array_map(static fn (ClassReflection $interfaceReflection): self => self::createFromReflection($interfaceReflection), $thisReflection->getInterfaces());
 	}
 
 }

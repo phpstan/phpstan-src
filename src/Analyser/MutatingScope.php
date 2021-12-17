@@ -2939,9 +2939,7 @@ class MutatingScope implements Scope
 				$this->getFile(),
 				$templateTypeMap,
 				$this->getRealParameterTypes($classMethod),
-				array_map(static function (Type $type): Type {
-					return TemplateTypeHelper::toArgument($type);
-				}, $phpDocParameterTypes),
+				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $phpDocParameterTypes),
 				$this->getRealParameterDefaultValues($classMethod),
 				$this->transformStaticType($this->getFunctionType($classMethod->returnType, $classMethod->returnType === null, false)),
 				$phpDocReturnType !== null ? TemplateTypeHelper::toArgument($phpDocReturnType) : null,
@@ -3037,9 +3035,7 @@ class MutatingScope implements Scope
 				$this->getFile(),
 				$templateTypeMap,
 				$this->getRealParameterTypes($function),
-				array_map(static function (Type $type): Type {
-					return TemplateTypeHelper::toArgument($type);
-				}, $phpDocParameterTypes),
+				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $phpDocParameterTypes),
 				$this->getRealParameterDefaultValues($function),
 				$this->getFunctionType($function->returnType, $function->returnType === null, false),
 				$phpDocReturnType !== null ? TemplateTypeHelper::toArgument($phpDocReturnType) : null,
@@ -3540,9 +3536,7 @@ class MutatingScope implements Scope
 	 */
 	public function enterCatch(array $classes, ?string $variableName): self
 	{
-		$type = TypeCombinator::union(...array_map(static function (Node\Name $class): ObjectType {
-			return new ObjectType((string) $class);
-		}, $classes));
+		$type = TypeCombinator::union(...array_map(static fn (Node\Name $class): ObjectType => new ObjectType((string) $class), $classes));
 
 		return $this->enterCatchType($type, $variableName);
 	}
@@ -4273,16 +4267,10 @@ class MutatingScope implements Scope
 			return $this;
 		}
 
-		$variableHolderToType = static function (VariableTypeHolder $holder): Type {
-			return $holder->getType();
-		};
-		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
-			return new VariableTypeHolder($type, TrinaryLogic::createYes());
-		};
+		$variableHolderToType = static fn (VariableTypeHolder $holder): Type => $holder->getType();
+		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
 
-		$filterVariableHolders = static function (VariableTypeHolder $holder): bool {
-			return $holder->getCertainty()->yes();
-		};
+		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
 
 		$ourVariableTypes = $this->getVariableTypes();
 		$theirVariableTypes = $otherScope->getVariableTypes();
@@ -4476,15 +4464,9 @@ class MutatingScope implements Scope
 
 	public function processFinallyScope(self $finallyScope, self $originalFinallyScope): self
 	{
-		$variableHolderToType = static function (VariableTypeHolder $holder): Type {
-			return $holder->getType();
-		};
-		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
-			return new VariableTypeHolder($type, TrinaryLogic::createYes());
-		};
-		$filterVariableHolders = static function (VariableTypeHolder $holder): bool {
-			return $holder->getCertainty()->yes();
-		};
+		$variableHolderToType = static fn (VariableTypeHolder $holder): Type => $holder->getType();
+		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
+		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -4677,15 +4659,9 @@ class MutatingScope implements Scope
 			$otherScope->moreSpecificTypes,
 		);
 
-		$variableHolderToType = static function (VariableTypeHolder $holder): Type {
-			return $holder->getType();
-		};
-		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
-			return new VariableTypeHolder($type, TrinaryLogic::createYes());
-		};
-		$filterVariableHolders = static function (VariableTypeHolder $holder): bool {
-			return $holder->getCertainty()->yes();
-		};
+		$variableHolderToType = static fn (VariableTypeHolder $holder): Type => $holder->getType();
+		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
+		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
 		$nativeTypes = array_map($variableHolderToType, array_filter($this->generalizeVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes),
@@ -4908,9 +4884,7 @@ class MutatingScope implements Scope
 			return false;
 		}
 
-		$typeToVariableHolder = static function (Type $type): VariableTypeHolder {
-			return new VariableTypeHolder($type, TrinaryLogic::createYes());
-		};
+		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
 
 		$nativeExpressionTypesResult = $this->compareVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),

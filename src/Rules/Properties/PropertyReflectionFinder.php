@@ -25,9 +25,7 @@ class PropertyReflectionFinder
 			if ($propertyFetch->name instanceof Node\Identifier) {
 				$names = [$propertyFetch->name->name];
 			} else {
-				$names = array_map(static function (ConstantStringType $name): string {
-					return $name->getValue();
-				}, TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
+				$names = array_map(static fn (ConstantStringType $name): string => $name->getValue(), TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
 			}
 
 			$reflections = [];
@@ -60,9 +58,7 @@ class PropertyReflectionFinder
 		if ($propertyFetch->name instanceof VarLikeIdentifier) {
 			$names = [$propertyFetch->name->name];
 		} else {
-			$names = array_map(static function (ConstantStringType $name): string {
-				return $name->getValue();
-			}, TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
+			$names = array_map(static fn (ConstantStringType $name): string => $name->getValue(), TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
 		}
 
 		$reflections = [];

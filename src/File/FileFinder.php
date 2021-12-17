@@ -55,9 +55,7 @@ class FileFinder
 			}
 		}
 
-		$files = array_values(array_filter($files, function (string $file): bool {
-			return !$this->fileExcluder->isExcludedFromAnalysing($file);
-		}));
+		$files = array_values(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file)));
 
 		return new FileFinderResult($files, $onlyFiles);
 	}

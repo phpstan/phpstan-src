@@ -74,9 +74,7 @@ class InterfaceAncestorsRule implements Rule
 
 		$extendsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->extends,
-			array_map(static function (ExtendsTag $tag): Type {
-				return $tag->getType();
-			}, $extendsTags),
+			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $extendsTags),
 			sprintf('Interface %s @extends tag contains incompatible type %%s.', $escapedInterfaceName),
 			sprintf('Interface %s has @extends tag, but does not extend any interface.', $escapedInterfaceName),
 			sprintf('The @extends tag of interface %s describes %%s but the interface extends: %%s', $escapedInterfaceName),
@@ -91,9 +89,7 @@ class InterfaceAncestorsRule implements Rule
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
 			[],
-			array_map(static function (ImplementsTag $tag): Type {
-				return $tag->getType();
-			}, $implementsTags),
+			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $implementsTags),
 			sprintf('Interface %s @implements tag contains incompatible type %%s.', $escapedInterfaceName),
 			sprintf('Interface %s has @implements tag, but can not implement any interface, must extend from it.', $escapedInterfaceName),
 			'',

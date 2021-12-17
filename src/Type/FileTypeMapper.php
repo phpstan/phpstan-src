@@ -147,9 +147,7 @@ class FileTypeMapper
 		$templateTypeScope = $nameScope->getTemplateTypeScope();
 
 		if ($templateTypeScope !== null) {
-			$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
-				return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
-			}, $templateTags));
+			$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
 			$nameScope = $nameScope->withTemplateTypeMap(
 				new TemplateTypeMap(array_merge(
 					$nameScope->getTemplateTypeMap()->getTypes(),
@@ -157,9 +155,7 @@ class FileTypeMapper
 				)),
 			);
 			$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
-			$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
-				return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
-			}, $templateTags));
+			$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
 			$nameScope = $nameScope->withTemplateTypeMap(
 				new TemplateTypeMap(array_merge(
 					$nameScope->getTemplateTypeMap()->getTypes(),
@@ -207,9 +203,7 @@ class FileTypeMapper
 	{
 		if (!isset($this->memoryCache[$fileName])) {
 			$cacheKey = sprintf('%s-phpdocstring-v13-namescope', $fileName);
-			$variableCacheKey = implode(',', array_map(static function (array $file): string {
-				return sprintf('%s-%d', $file['filename'], $file['modifiedTime']);
-			}, $this->getCachedDependentFilesWithTimestamps($fileName)));
+			$variableCacheKey = implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName)));
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
 			if ($map === null) {
@@ -330,21 +324,16 @@ class FileTypeMapper
 							if ($templateTypeScope === null) {
 								throw new ShouldNotHappenException();
 							}
-							$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
-								return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
-							}, $templateTags));
+							$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
 							$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
-							$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
-								return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
-							}, $templateTags));
+							$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 
 							return (new TemplateTypeMap(array_merge(
 								$typeMapCb !== null ? $typeMapCb()->getTypes() : [],
 								$templateTypeMap->getTypes(),
-							)))->map(static function (string $name, Type $type) use ($className, $resolvableTemplateTypes): Type {
-								return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($className, $resolvableTemplateTypes): Type {
+							)))->map(static fn (string $name, Type $type): Type => TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($className, $resolvableTemplateTypes): Type {
 									if (!$type instanceof TemplateType) {
 										return $traverse($type);
 									}
@@ -360,8 +349,7 @@ class FileTypeMapper
 									}
 
 									return $traverse($type);
-								});
-							});
+							}));
 						};
 					}
 				}
@@ -382,16 +370,14 @@ class FileTypeMapper
 					&& !$node instanceof Node\Stmt\TraitUseAdaptation
 					&& !array_key_exists($nameScopeKey, $nameScopeMap)
 				) {
-					$nameScopeMap[$nameScopeKey] = static function () use ($namespace, $uses, $className, $functionName, $typeMapCb, $typeAliasesMap): NameScope {
-						return new NameScope(
-							$namespace,
-							$uses,
-							$className,
-							$functionName,
-							($typeMapCb !== null ? $typeMapCb() : TemplateTypeMap::createEmpty()),
-							$typeAliasesMap,
-						);
-					};
+					$nameScopeMap[$nameScopeKey] = static fn (): NameScope => new NameScope(
+						$namespace,
+						$uses,
+						$className,
+						$functionName,
+						($typeMapCb !== null ? $typeMapCb() : TemplateTypeMap::createEmpty()),
+						$typeAliasesMap,
+					);
 				}
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
@@ -512,9 +498,7 @@ class FileTypeMapper
 
 								$transformedTraitTypeMap = $traitReflection->typeMapFromList($useType->getTypes());
 
-								return $original->withTemplateTypeMap($traitTemplateTypeMap->map(static function (string $name, Type $type) use ($transformedTraitTypeMap): Type {
-									return TemplateTypeHelper::resolveTemplateTypes($type, $transformedTraitTypeMap);
-								}));
+								return $original->withTemplateTypeMap($traitTemplateTypeMap->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::resolveTemplateTypes($type, $transformedTraitTypeMap)));
 							};
 						}
 						$nameScopeMap = array_merge($nameScopeMap, $finalTraitPhpDocMap);

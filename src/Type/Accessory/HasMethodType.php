@@ -107,9 +107,7 @@ class HasMethodType implements AccessoryType, CompoundType
 			$method,
 			$method->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			},
+			static fn (Type $type): Type => $type,
 		);
 	}
 

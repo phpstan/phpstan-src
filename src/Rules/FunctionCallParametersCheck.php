@@ -237,9 +237,7 @@ class FunctionCallParametersCheck
 					$scope,
 					$argumentValue,
 					'',
-					static function (Type $type): bool {
-						return $type->isIterable()->yes();
-					},
+					static fn (Type $type): bool => $type->isIterable()->yes(),
 				);
 				$iterableTypeResultType = $iterableTypeResult->getType();
 				if (

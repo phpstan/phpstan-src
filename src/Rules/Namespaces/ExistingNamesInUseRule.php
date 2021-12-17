@@ -121,9 +121,7 @@ class ExistingNamesInUseRule implements Rule
 	private function checkClasses(array $uses): array
 	{
 		return $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static function (Node\Stmt\UseUse $use): ClassNameNodePair {
-				return new ClassNameNodePair((string) $use->name, $use->name);
-			}, $uses),
+			array_map(static fn (Node\Stmt\UseUse $use): ClassNameNodePair => new ClassNameNodePair((string) $use->name, $use->name), $uses),
 		);
 	}
 

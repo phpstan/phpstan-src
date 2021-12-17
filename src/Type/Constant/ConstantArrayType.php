@@ -771,15 +771,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			);
 		};
 		return $level->handle(
-			function () use ($level): string {
-				return parent::describe($level);
-			},
-			static function () use ($describeValue): string {
-				return $describeValue(true);
-			},
-			static function () use ($describeValue): string {
-				return $describeValue(false);
-			},
+			fn (): string => parent::describe($level),
+			static fn (): string => $describeValue(true),
+			static fn (): string => $describeValue(false),
 		);
 	}
 

@@ -35,9 +35,7 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 		if ($this->cachedDoNotResolveTemplateTypeMapToBounds !== null) {
 			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
 		}
-		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->propertyName, array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection {
-			return $prototype->doNotResolveTemplateTypeMapToBounds();
-		}, $this->propertyPrototypes));
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->propertyName, array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection => $prototype->doNotResolveTemplateTypeMapToBounds(), $this->propertyPrototypes));
 	}
 
 	public function getNakedProperty(): PropertyReflection
@@ -51,18 +49,14 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 			return $this->transformedProperty;
 		}
 
-		$methods = array_map(static function (UnresolvedPropertyPrototypeReflection $prototype): PropertyReflection {
-			return $prototype->getTransformedProperty();
-		}, $this->propertyPrototypes);
+		$methods = array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): PropertyReflection => $prototype->getTransformedProperty(), $this->propertyPrototypes);
 
 		return $this->transformedProperty = new UnionTypePropertyReflection($methods);
 	}
 
 	public function withFechedOnType(Type $type): UnresolvedPropertyPrototypeReflection
 	{
-		return new self($this->propertyName, array_map(static function (UnresolvedPropertyPrototypeReflection $prototype) use ($type): UnresolvedPropertyPrototypeReflection {
-			return $prototype->withFechedOnType($type);
-		}, $this->propertyPrototypes));
+		return new self($this->propertyName, array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection => $prototype->withFechedOnType($type), $this->propertyPrototypes));
 	}
 
 }

@@ -81,9 +81,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		if ($functionReflection->getName() === 'mb_str_split') {
 			if (count($functionCall->getArgs()) >= 3) {
 				$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
-				$values = array_unique(array_map(static function (ConstantStringType $encoding): string {
-					return $encoding->getValue();
-				}, $strings));
+				$values = array_unique(array_map(static fn (ConstantStringType $encoding): string => $encoding->getValue(), $strings));
 
 				if (count($values) !== 1) {
 					return $defaultReturnType;

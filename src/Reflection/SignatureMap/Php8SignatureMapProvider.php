@@ -284,9 +284,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$functionName,
 				$function->getDocComment()->getText(),
 			);
-			$phpDocParameterTypes = array_map(static function (ParamTag $param): Type {
-				return $param->getType();
-			}, $phpDoc->getParamTags());
+			$phpDocParameterTypes = array_map(static fn (ParamTag $param): Type => $param->getType(), $phpDoc->getParamTags());
 			if ($phpDoc->getReturnTag() !== null) {
 				$phpDocReturnType = $phpDoc->getReturnTag()->getType();
 			}

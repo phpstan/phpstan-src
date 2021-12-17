@@ -297,9 +297,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = null;
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static function (ReflectionParameter $parameter): string {
-			return $parameter->getName();
-		}, $reflectionFunction->getParameters()));
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
 			$docComment = $reflectionFunction->getDocComment();
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($reflectionFunction->getFileName(), null, null, $reflectionFunction->getName(), $docComment);
@@ -320,9 +318,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		return $this->functionReflectionFactory->create(
 			$reflectionFunction,
 			$templateTypeMap,
-			array_map(static function (ParamTag $paramTag): Type {
-				return $paramTag->getType();
-			}, $phpDocParameterTags),
+			array_map(static fn (ParamTag $paramTag): Type => $paramTag->getType(), $phpDocParameterTags),
 			$phpDocReturnTag !== null ? $phpDocReturnTag->getType() : null,
 			$phpDocThrowsTag !== null ? $phpDocThrowsTag->getType() : null,
 			$deprecatedTag !== null ? $deprecatedTag->getMessage() : null,

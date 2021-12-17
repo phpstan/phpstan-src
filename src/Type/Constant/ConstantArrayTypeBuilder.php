@@ -82,9 +82,7 @@ class ConstantArrayTypeBuilder
 			foreach ($this->keyTypes as $i => $keyType) {
 				if ($keyType->getValue() === $offsetType->getValue()) {
 					$this->valueTypes[$i] = $valueType;
-					$this->optionalKeys = array_values(array_filter($this->optionalKeys, static function (int $index) use ($i): bool {
-						return $index !== $i;
-					}));
+					$this->optionalKeys = array_values(array_filter($this->optionalKeys, static fn (int $index): bool => $index !== $i));
 					return;
 				}
 			}

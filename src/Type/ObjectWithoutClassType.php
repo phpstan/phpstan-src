@@ -104,12 +104,8 @@ class ObjectWithoutClassType implements SubtractableType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'object';
-			},
-			static function (): string {
-				return 'object';
-			},
+			static fn (): string => 'object',
+			static fn (): string => 'object',
 			function () use ($level): string {
 				$description = 'object';
 				if ($this->subtractedType !== null) {

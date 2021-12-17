@@ -172,9 +172,7 @@ class ClassReflectionTest extends PHPStanTestCase
 			'GenericInheritance\\I<DateTime>',
 			'GenericInheritance\\I0<DateTime>',
 			'GenericInheritance\\I1<int>',
-		], array_map(static function (ClassReflection $r): string {
-			return $r->getDisplayName();
-		}, array_values($reflection->getInterfaces())));
+		], array_map(static fn (ClassReflection $r): string => $r->getDisplayName(), array_values($reflection->getInterfaces())));
 	}
 
 	public function testIsGenericWithStubPhpDoc(): void
@@ -244,9 +242,7 @@ class ClassReflectionTest extends PHPStanTestCase
 
 		$this->assertSame(
 			array_map(
-				static function (ClassReflection $classReflection): string {
-					return $classReflection->getNativeReflection()->getName();
-				},
+				static fn (ClassReflection $classReflection): string => $classReflection->getNativeReflection()->getName(),
 				$reflectionProvider->getClass($className)->getTraits($recursive),
 			),
 			$expected,

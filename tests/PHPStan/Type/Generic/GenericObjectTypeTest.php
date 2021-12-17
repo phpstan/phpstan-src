@@ -230,14 +230,12 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	/** @return array<string,array{Type,Type,array<string,string>}> */
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			$bound ?? new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'simple' => [
@@ -338,23 +336,19 @@ class GenericObjectTypeTest extends PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes()),
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 
 	/** @return array<array{TemplateTypeVariance,Type,array<TemplateTypeReference>}> */
 	public function dataGetReferencedTypeArguments(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null): TemplateType {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound = null): TemplateType => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			$bound ?? new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'param: Invariant<T>' => [
@@ -494,19 +488,15 @@ class GenericObjectTypeTest extends PHPStanTestCase
 			$result[] = $r;
 		}
 
-		$comparableResult = array_map(static function (TemplateTypeReference $ref): array {
-			return [
-				'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
-				'positionVariance' => $ref->getPositionVariance()->describe(),
-			];
-		}, $result);
+		$comparableResult = array_map(static fn (TemplateTypeReference $ref): array => [
+			'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
+			'positionVariance' => $ref->getPositionVariance()->describe(),
+		], $result);
 
-		$comparableExpect = array_map(static function (TemplateTypeReference $ref): array {
-			return [
-				'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
-				'positionVariance' => $ref->getPositionVariance()->describe(),
-			];
-		}, $expectedReferences);
+		$comparableExpect = array_map(static fn (TemplateTypeReference $ref): array => [
+			'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
+			'positionVariance' => $ref->getPositionVariance()->describe(),
+		], $expectedReferences);
 
 		$this->assertSame($comparableExpect, $comparableResult);
 	}

@@ -299,9 +299,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = null;
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static function (ReflectionParameter $parameter): string {
-			return $parameter->getName();
-		}, $reflectionFunction->getParameters()));
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
 			$fileName = $reflectionFunction->getFileName();
 			$docComment = $reflectionFunction->getDocComment();
@@ -323,9 +321,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		$functionReflection = $this->functionReflectionFactory->create(
 			$reflectionFunction,
 			$templateTypeMap,
-			array_map(static function (ParamTag $paramTag): Type {
-				return $paramTag->getType();
-			}, $phpDocParameterTags),
+			array_map(static fn (ParamTag $paramTag): Type => $paramTag->getType(), $phpDocParameterTags),
 			$phpDocReturnTag !== null ? $phpDocReturnTag->getType() : null,
 			$phpDocThrowsTag !== null ? $phpDocThrowsTag->getType() : null,
 			$deprecatedTag !== null ? $deprecatedTag->getMessage() : null,
@@ -381,9 +377,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
-		return $this->resolveName($nameNode, static function (string $name): bool {
-			return defined($name);
-		}, $scope);
+		return $this->resolveName($nameNode, static fn (string $name): bool => defined($name), $scope);
 	}
 
 	/**

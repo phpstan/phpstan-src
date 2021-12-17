@@ -70,13 +70,9 @@ class InvalidBinaryOperationRule implements Rule
 			}
 
 			if ($node instanceof Node\Expr\AssignOp\Concat || $node instanceof Node\Expr\BinaryOp\Concat) {
-				$callback = static function (Type $type): bool {
-					return !$type->toString() instanceof ErrorType;
-				};
+				$callback = static fn (Type $type): bool => !$type->toString() instanceof ErrorType;
 			} else {
-				$callback = static function (Type $type): bool {
-					return !$type->toNumber() instanceof ErrorType;
-				};
+				$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType;
 			}
 
 			$leftType = $this->ruleLevelHelper->findTypeToCheck(

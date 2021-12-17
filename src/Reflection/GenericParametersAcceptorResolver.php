@@ -34,9 +34,7 @@ class GenericParametersAcceptorResolver
 		return new ResolvedFunctionVariant(
 			$parametersAcceptor,
 			new TemplateTypeMap(array_merge(
-				$parametersAcceptor->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
-					return new ErrorType();
-				})->getTypes(),
+				$parametersAcceptor->getTemplateTypeMap()->map(static fn (string $name, Type $type): Type => new ErrorType())->getTypes(),
 				$typeMap->getTypes(),
 			)),
 		);

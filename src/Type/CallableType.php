@@ -137,21 +137,15 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'callable';
-			},
-			function () use ($level): string {
-				return sprintf(
-					'callable(%s): %s',
-					implode(', ', array_map(
-						static function (ParameterReflection $param) use ($level): string {
-							return sprintf('%s%s', $param->isVariadic() ? '...' : '', $param->getType()->describe($level));
-						},
-						$this->getParameters(),
-					)),
-					$this->returnType->describe($level),
-				);
-			},
+			static fn (): string => 'callable',
+			fn (): string => sprintf(
+				'callable(%s): %s',
+				implode(', ', array_map(
+					static fn (ParameterReflection $param): string => sprintf('%s%s', $param->isVariadic() ? '...' : '', $param->getType()->describe($level)),
+					$this->getParameters(),
+				)),
+				$this->returnType->describe($level),
+			),
 		);
 	}
 

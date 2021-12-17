@@ -40,9 +40,7 @@ class ExistingClassInTraitUseRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static function (Node\Name $traitName): ClassNameNodePair {
-				return new ClassNameNodePair((string) $traitName, $traitName);
-			}, $node->traits),
+			array_map(static fn (Node\Name $traitName): ClassNameNodePair => new ClassNameNodePair((string) $traitName, $traitName), $node->traits),
 		);
 
 		if (!$scope->isInClass()) {

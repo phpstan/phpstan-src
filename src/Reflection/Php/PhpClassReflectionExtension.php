@@ -271,9 +271,7 @@ class PhpClassReflectionExtension
 				$nativeClassReflection = $declaringClassReflection->getNativeReflection();
 				$positionalParameterNames = [];
 				if ($nativeClassReflection->getConstructor() !== null) {
-					$positionalParameterNames = array_map(static function (ReflectionParameter $parameter): string {
-						return $parameter->getName();
-					}, $nativeClassReflection->getConstructor()->getParameters());
+					$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $nativeClassReflection->getConstructor()->getParameters());
 				}
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$constructorDocComment,
@@ -490,9 +488,7 @@ class PhpClassReflectionExtension
 				$phpDocReturnType = null;
 				$stubPhpDocPair = null;
 				if (count($variantNumbers) === 1) {
-					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
-						return $parameterSignature->getName();
-					}, $methodSignature->getParameters()));
+					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 					if ($stubPhpDocPair !== null) {
 						[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
 						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
@@ -572,9 +568,7 @@ class PhpClassReflectionExtension
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
 		$resolvedPhpDoc = null;
-		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (ReflectionParameter $parameter): string {
-			return $parameter->getName();
-		}, $methodReflection->getParameters()));
+		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $declaringClass;
 		if ($stubPhpDocPair !== null) {
 			[$resolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
@@ -584,9 +578,7 @@ class PhpClassReflectionExtension
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== null) {
 				$docComment = $methodReflection->getDocComment();
-				$positionalParameterNames = array_map(static function (ReflectionParameter $parameter): string {
-					return $parameter->getName();
-				}, $methodReflection->getParameters());
+				$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters());
 
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$docComment,

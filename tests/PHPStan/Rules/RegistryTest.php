@@ -26,12 +26,8 @@ class RegistryTest extends PHPStanTestCase
 
 	public function testGetRulesWithTwoDifferentInstances(): void
 	{
-		$fooRule = new UniversalRule(Node\Expr\FuncCall::class, static function (Node\Expr\FuncCall $node, Scope $scope): array {
-			return ['Foo error'];
-		});
-		$barRule = new UniversalRule(Node\Expr\FuncCall::class, static function (Node\Expr\FuncCall $node, Scope $scope): array {
-			return ['Bar error'];
-		});
+		$fooRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Foo error']);
+		$barRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Bar error']);
 
 		$registry = new Registry([
 			$fooRule,

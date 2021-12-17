@@ -106,9 +106,7 @@ class TemplateTypeCheck
 			}
 
 			if ($this->checkClassCaseSensitivity) {
-				$classNameNodePairs = array_map(static function (string $referencedClass) use ($node): ClassNameNodePair {
-					return new ClassNameNodePair($referencedClass, $node);
-				}, $boundType->getReferencedClasses());
+				$classNameNodePairs = array_map(static fn (string $referencedClass): ClassNameNodePair => new ClassNameNodePair($referencedClass, $node), $boundType->getReferencedClasses());
 				$messages = array_merge($messages, $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs));
 			}
 

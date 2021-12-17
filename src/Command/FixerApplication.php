@@ -579,9 +579,7 @@ class FixerApplication
 		));
 		$this->processInProgress = $process->run();
 
-		return $this->processInProgress->then(static function (string $output): array {
-			return Json::decode($output, Json::FORCE_ARRAY);
-		});
+		return $this->processInProgress->then(static fn (string $output): array => Json::decode($output, Json::FORCE_ARRAY));
 	}
 
 	private function getPhpstanVersion(): string

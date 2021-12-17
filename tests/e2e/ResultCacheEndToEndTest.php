@@ -166,9 +166,7 @@ class ResultCacheEndToEndTest extends TestCase
 	{
 		$new = [];
 		foreach ($resultCache['dependencies'] as $file => $data) {
-			$files = array_map(function (string $file): string {
-				return $this->relativizePath($file);
-			}, $data['dependentFiles']);
+			$files = array_map(fn (string $file): string => $this->relativizePath($file), $data['dependentFiles']);
 			sort($files);
 			$new[$this->relativizePath($file)] = $files;
 		}

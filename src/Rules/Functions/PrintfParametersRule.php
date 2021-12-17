@@ -128,9 +128,7 @@ class PrintfParametersRule implements Rule
 			return 0;
 		}
 
-		$placeholders = array_filter($matches, static function (array $match): bool {
-			return strlen($match['before']) % 2 === 0;
-		});
+		$placeholders = array_filter($matches, static fn (array $match): bool => strlen($match['before']) % 2 === 0);
 
 		if (count($placeholders) === 0) {
 			return 0;

@@ -160,25 +160,21 @@ class CallableTypeTest extends PHPStanTestCase
 
 	public function dataInferTemplateTypes(): array
 	{
-		$param = static function (Type $type): NativeParameterReflection {
-			return new NativeParameterReflection(
-				'',
-				false,
-				$type,
-				PassedByReference::createNo(),
-				false,
-				null,
-			);
-		};
+		$param = static fn (Type $type): NativeParameterReflection => new NativeParameterReflection(
+			'',
+			false,
+			$type,
+			PassedByReference::createNo(),
+			false,
+			null,
+		);
 
-		$templateType = static function (string $name): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				new MixedType(),
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn (string $name): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'template param' => [
@@ -272,9 +268,7 @@ class CallableTypeTest extends PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes()),
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 

@@ -1,7 +1,7 @@
 @package rector/rector
 
 --- packages/StaticTypeMapper/PhpParser/NameNodeMapper.php	2021-11-23 18:38:29.000000000 +0100
-+++ packages/StaticTypeMapper/PhpParser/NameNodeMapper2.php	2021-12-16 23:09:30.000000000 +0100
++++ packages/StaticTypeMapper/PhpParser/NameNodeMapper.php	2021-12-16 23:09:30.000000000 +0100
 @@ -106,7 +106,7 @@
              }
              return new \Rector\StaticTypeMapper\ValueObject\Type\ParentObjectWithoutClassType();

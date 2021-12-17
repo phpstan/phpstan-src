@@ -4,4 +4,4 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-vendor/bin/rector process src tests/PHPStan -c build/rector-downgrade.php
+vendor/bin/rector process src tests/PHPStan tests/e2e -c build/rector-downgrade.php

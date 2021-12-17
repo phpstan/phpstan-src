@@ -12,6 +12,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 		'tests/*/data/*',
 		'tests/PHPStan/Analyser/traits/*',
 		'tests/PHPStan/Generics/functions.php',
+		'tests/e2e/resultCache_1.php',
+		'tests/e2e/resultCache_2.php',
+		'tests/e2e/resultCache_3.php',
 	]);
 
 	$services = $containerConfigurator->services();
